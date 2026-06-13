@@ -4,10 +4,10 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Goal
-Debug the shell-side OR smoke-test capture path for the completed one-shot `DOC-SKILL-008` run, without making another OR call, while keeping the completed 5.4-mini phase boundaries intact and the separate `5.4` candidate phase paused.
+Sync the OR smoke-test capture-debug outcome and prepare a reusable file-first capture wrapper for future explicitly approved smoke-test use, without making another OR call, while keeping the completed 5.4-mini phase boundaries intact and the separate `5.4` candidate phase paused.
 
 ## Active Phase
-Documentation-skill controlled OR smoke-test capture-path debugging. The mini matrix phase remains complete for `DOC-SKILL-001`, `DOC-SKILL-002`, `DOC-SKILL-003`, `DOC-SKILL-006`, `DOC-SKILL-008`, `DOC-SKILL-009`, and `DOC-SKILL-010` with preserved counts `OR_CONFIRMED=7`, `NEEDS_STRONGER_TEST=0`, and `OR_REJECTED=0`. The single approved OR smoke-test call for `DOC-SKILL-008` on `qwen/qwen3.5-flash-02-23` remains the only executed smoke-test call. No new OR call was made during this block. The shell-side debug review concluded that the likely fault was a capture design gap: the response was routed through transient shell output instead of a file-first capture wrapper, so response body, `generation_id`, and `response_usage` were not durably persisted. The existing debug row remains debug failure evidence only, not accepted operational telemetry. The separate `5.4` candidate phase remains paused and planning-only. DOC-SKILL-011 remains `NOT RUN`; DOC-SKILL-012 and later remain `NOT RUN`. No production routing, no canonical routing-table update, no DOC-SKILL-011 run, no DOC-SKILL-012 start, no release action, and no product-code change.
+Documentation-skill OR smoke-test capture-debug sync and wrapper preparation. The mini matrix phase remains complete for `DOC-SKILL-001`, `DOC-SKILL-002`, `DOC-SKILL-003`, `DOC-SKILL-006`, `DOC-SKILL-008`, `DOC-SKILL-009`, and `DOC-SKILL-010` with preserved counts `OR_CONFIRMED=7`, `NEEDS_STRONGER_TEST=0`, and `OR_REJECTED=0`. The single approved OR smoke-test call for `DOC-SKILL-008` on `qwen/qwen3.5-flash-02-23` remains the only executed smoke-test call. No new OR call was made during this block. The capture-debug outcome is now synchronized with a reusable local file-first wrapper and a small wrapper plan. The wrapper writes request, response body, headers, parsed summary, stdout, stderr, and exit code to disk before any operator summary depends on shell output. The existing debug row remains debug failure evidence only, not accepted operational telemetry. The separate `5.4` candidate phase remains paused and planning-only. DOC-SKILL-011 remains `NOT RUN`; DOC-SKILL-012 and later remain `NOT RUN`. No production routing, no canonical routing-table update, no DOC-SKILL-011 run, no DOC-SKILL-012 start, no release action, and no product-code change.
 
 ## Last Decision
 The documentation-skill routing table remains the canonical reference for documentation-skill model and scope boundaries.
@@ -39,7 +39,7 @@ The separate `5.4` candidate phase remains paused and planning-only.
 This cost-accounting planning step does not create a global model approval, does not mark any model production-approved, does not update the canonical routing table, does not run DOC-SKILL-011, does not continue the `5.4` candidate phase, and does not start DOC-SKILL-012.
 
 ## Last Codex Work
-Reviewed the smoke-test shell command pattern and documented the likely capture failure mode plus a file-first replacement pattern. The new capture-debug note explains why stdout-only recovery was too weak, why `Invoke-RestMethod` without durable file artifacts was a poor fit for forensic telemetry capture, and how a safer wrapper should persist request, response body, response headers, stdout, stderr, exit code, parsed usage, and parsed `generation_id`.
+Synchronized the capture-debug outcome into the rolling state and prepared a reusable file-first wrapper plus a wrapper plan. The wrapper lives under `documentation/codex/model-routing/scripts/or_file_first_capture_wrapper.ps1` and supports local fixture validation without network access. It writes `request_body.json`, `response_body.json`, `response_headers.txt`, `response_summary.json`, `stdout.log`, `stderr.log`, and `exit_code.txt` under a per-run directory before any shell summary is emitted. A fixture-only validation run produced all required artifacts locally and confirmed parsed `generation_id` and `usage` in `response_summary.json` without making an OR call.
 
 The telemetry plan keeps the mini phase bounded to:
 
@@ -54,6 +54,10 @@ The telemetry plan keeps the mini phase bounded to:
 Exactly one approved OR call was attempted for the smoke test in the prior block. No second OR call was made in this debugging block, no production routing decision was made, no canonical routing-table update was made, no DOC-SKILL-011 run was started, and the separate `5.4` candidate phase was not continued.
 
 ## Changed Files
+- `documentation/codex/model-routing/scripts/or_file_first_capture_wrapper.ps1`
+- `documentation/codex/model-routing/or_file_first_capture_wrapper_plan_2026-06-13.md`
+- `documentation/codex/model-routing/wrapper_fixture_request_2026-06-13.json`
+- `documentation/codex/model-routing/wrapper_fixture_response_2026-06-13.json`
 - `documentation/codex/model-routing/or_healthcheck_smoke_test_capture_debug_2026-06-13.md`
 - `documentation/codex/model-routing/or_healthcheck_controlled_smoke_test_result_2026-06-13.md`
 - `documentation/codex/model-routing/or_healthcheck_telemetry_smoke_test_debug_2026-06-13.jsonl`
@@ -72,7 +76,7 @@ Exactly one approved OR call was attempted for the smoke test in the prior block
 
 ## Remote Sync Evidence
 - Branch context: `develop` / `backup/develop` workflow.
-- This block is intended to be committed as `docs(codex): debug or smoke test capture path` and pushed to `backup/develop` only.
+- This block is intended to be committed as `docs(codex): sync or smoke capture debug` and pushed to `backup/develop` only.
 - No push to `origin`, tag, merge, reset, release, routing-table update, DOC-SKILL-011 run, DOC-SKILL-012 continuation, or production routing activation is part of this block.
 
 ## Tests / Validation
@@ -105,6 +109,11 @@ Exactly one approved OR call was attempted for the smoke test in the prior block
 - No new OR call was made in the capture-debug block: PASS.
 - Likely root cause documented: PASS.
 - Capture-safe replacement pattern documented: PASS.
+- File-first wrapper script exists: PASS.
+- File-first wrapper plan exists: PASS.
+- Wrapper validation may use local fixture data only: PASS.
+- Local fixture wrapper validation created all required artifact files: PASS.
+- Local fixture wrapper validation parsed `generation_id` and `usage`: PASS.
 - Healthcheck output summaries are defined: PASS.
 - No global model approval language: PASS.
 - No production routing language: PASS.
@@ -125,13 +134,14 @@ Exactly one approved OR call was attempted for the smoke test in the prior block
 - The smoke-test plan is still planning-only and must not be treated as approval to run the OR call.
 - The smoke-test execution produced a capture gap, so the resulting row is debug evidence only and must not be treated as accepted operational telemetry.
 - A later explicitly approved follow-up would still need the file-first capture wrapper before any new smoke-test attempt is worth making.
+- The wrapper is locally prepared but still not authorized for a new live OR attempt without separate explicit approval.
 - The separate `5.4` phase is paused; no candidate list should be treated as evaluation evidence until a separate explicit phase runs.
 
 ## Next Recommended Step for ChatGPT
-Review whether the documented file-first capture wrapper is sufficient for a later explicitly approved follow-up, or whether the current debug-only evidence should remain the final state for the mini smoke-test phase.
+Review whether the prepared wrapper and its local-fixture validation are sufficient to close the smoke-test capture-debug phase without any further live retry.
 
 ## Next Recommended Step for Codex
-Keep the `5.4` candidate phase paused, do not run a second OR call, and treat the current debug row as failure/debug evidence only until a future explicitly approved file-first retry is requested.
+Keep the `5.4` candidate phase paused, do not run a second OR call, and use the wrapper only in local-fixture mode unless a future explicitly approved live retry is requested.
 
 ## Last Updated
-2026-06-13 17:58 local time
+2026-06-13 18:12 local time

@@ -1,0 +1,10 @@
+{
+  "id": "gen_fixture_doc_skill_008_001",
+  "model": "qwen/qwen3.5-flash-20260224",
+  "usage": {
+    "prompt_tokens": 123,
+    "completion_tokens": 456,
+    "total_tokens": 579,
+    "cost": 0.00012345
+  }
+}
