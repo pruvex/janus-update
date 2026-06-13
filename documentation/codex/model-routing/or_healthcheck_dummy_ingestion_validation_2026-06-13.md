@@ -8,13 +8,13 @@ Validate the dummy OR telemetry artifacts against the documented schema before a
 
 ## Ingestion Mode Used
 
-Documentation-only dry-run validation.
+Healthcheck runner dry-run with optional dummy JSONL input.
 
 Reason:
 
-- the current healthcheck runner `documentation/codex/skills/janus-health-check/scripts/health_snapshot.py` does not yet ingest OR telemetry JSONL
-- no non-invasive runtime ingestion path exists yet for the dummy telemetry sample
-- this report therefore validates the expected ingestion path and the artifact alignment without changing runtime behavior
+- the existing read-only runner now supports an optional `--or-telemetry-jsonl` path
+- only the dummy JSONL sample was used
+- no production behavior was changed because the runner reads OR telemetry only when the optional flag is passed
 
 ## Bound Artifacts
 
@@ -59,26 +59,38 @@ Required coverage confirmed for:
 
 ### 4. Healthcheck Runner Readiness
 
-- Result: `DRY-RUN ONLY`
-- Check: current `health_snapshot.py` is read-only hygiene tooling and does not yet read OR telemetry JSONL rows
+- Result: `PASS`
+- Check: current `health_snapshot.py` can now read the dummy OR telemetry JSONL via an optional flag and emit a bounded summary without changing default healthcheck behavior
+
+Observed dummy summary output:
+
+- `record_count`: `1`
+- `models_seen`: `qwen/qwen3.5-flash-02-23`
+- `skills_seen`: `DOC-SKILL-008`
+- `estimated_cost_total`: `0.00042`
+- `actual_cost_total`: `0.0004`
+- `confidence_average`: `72.0`
+- `fallback_count`: `0`
+- `validation_result_counts`: `PASS=1`
+- `recommendation_signal_counts`: `OR_PREFERRED=1`
 
 ## Expected Ingestion Path
 
-When runtime ingestion is implemented later, the expected path is:
+The current dry-run ingestion path is:
 
-1. append OR telemetry rows to a dedicated JSONL log file
+1. call `health_snapshot.py` with `--or-telemetry-jsonl <dummyfile>`
 2. parse each line as one JSON object
-3. validate required field presence against the documented schema
-4. derive healthcheck summaries from schema fields only
-5. render bounded healthcheck output without changing routing authority
+3. derive bounded OR summary fields from schema-backed sample data
+4. include the OR summary only when the optional flag is used
+5. keep normal healthcheck output unchanged when the flag is omitted
 
 ## Validation Summary
 
 - Dummy JSONL parses: `PASS`
 - Schema/sample/report field alignment: `PASS`
 - Summary example consistency: `PASS`
-- Existing runner direct ingestion: `NOT AVAILABLE`
-- Documentation-only ingestion path defined: `PASS`
+- Existing runner optional ingestion: `PASS`
+- Dry-run ingestion path defined: `PASS`
 
 ## Non-Goals Reconfirmed
 
