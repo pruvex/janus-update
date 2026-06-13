@@ -4,10 +4,10 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Goal
-Prepare DOC-SKILL-010 fixture checkpoint and sync the task-level status, queue state, and usage log.
+Close out DOC-SKILL-010 live evaluation, sync the task-level status, queue state, and usage log, and stop before DOC-SKILL-011.
 
 ## Active Phase
-Documentation-skill DOC-SKILL-010 fixture-preparation checkpoint. DOC-SKILL-001, DOC-SKILL-002, DOC-SKILL-003, DOC-SKILL-006, DOC-SKILL-008, and DOC-SKILL-009 remain `TASK_DECISION_RECORDED`; DOC-SKILL-010 is prepared and remains `NOT RUN`. No production routing, no canonical routing-table update, no DOC-SKILL-011 start, no release action, and no product-code change.
+Documentation-skill DOC-SKILL-010 live-evaluation closeout. DOC-SKILL-001, DOC-SKILL-002, DOC-SKILL-003, DOC-SKILL-006, DOC-SKILL-008, and DOC-SKILL-009 remain `TASK_DECISION_RECORDED`; DOC-SKILL-010 is `TASK_DECISION_RECORDED` after the live evaluation; DOC-SKILL-011 and later remain `NOT RUN`. No production routing, no canonical routing-table update, no DOC-SKILL-011 start, no release action, and no product-code change.
 
 ## Last Decision
 The documentation-skill routing table remains the canonical reference for documentation-skill model and scope boundaries.
@@ -20,18 +20,17 @@ DOC-SKILL-003 remains `TASK_DECISION_RECORDED` in the GPT-5.4 mini evaluation qu
 
 DOC-SKILL-006 remains `TASK_DECISION_RECORDED` in the GPT-5.4 mini evaluation queue.
 
-DOC-SKILL-010 is prepared as the next task-level documentation-skill evaluation and remains `NOT RUN`. It uses the established reduced candidate strategy:
+DOC-SKILL-010 completed its reduced live evaluation and the selected external candidate is `qwen/qwen3.5-flash-02-23`. The task-level decision was recorded after sequential evaluation:
 
-- default external candidate: `openai/gpt-oss-20b`
-- backups, only if needed:
-  1. `openai/gpt-oss-120b`
-  2. `qwen/qwen3.5-flash-02-23`
-  3. `deepseek/deepseek-v4-flash`
+- `openai/gpt-oss-20b` - HOLD
+- `openai/gpt-oss-120b` - HOLD
+- `qwen/qwen3.5-flash-02-23` - PASS
+- `deepseek/deepseek-v4-flash` - NOT RUN / not needed after first PASS
 
-This is fixture preparation only. No OpenRouter calls were run, no production routing decision was made, no model was marked production-approved, no canonical routing-table update was made, and no DOC-SKILL-011 or later task was started.
+The live evaluation preserved the governance boundaries: no production routing decision was made, no model was marked production-approved, no canonical routing-table update was made, and no DOC-SKILL-011 or later task was started.
 
 ## Last Codex Work
-Prepared the DOC-SKILL-010 fixture package and recorded the queue state for the next task-level evaluation.
+Ran the DOC-SKILL-010 reduced live evaluation and recorded the task-level decision.
 
 Saved evidence under:
 
@@ -42,10 +41,13 @@ Saved evidence under:
 - `documentation/codex/model-routing/live-eval/DOC-SKILL-010-GPT54-MINI-LIVE-EVAL-001/live_eval_gate.md`
 - `documentation/codex/model-routing/live-eval/DOC-SKILL-010-GPT54-MINI-LIVE-EVAL-001/request_payloads/manifest.md`
 - `documentation/codex/model-routing/live-eval/DOC-SKILL-010-GPT54-MINI-LIVE-EVAL-001/request_payloads/*.json`
+- `documentation/codex/model-routing/live-eval/DOC-SKILL-010-GPT54-MINI-LIVE-EVAL-001/results/evaluation_results.json`
+- `documentation/codex/model-routing/live-eval/DOC-SKILL-010-GPT54-MINI-LIVE-EVAL-001/results/evaluation_summary.md`
+- `documentation/codex/model-routing/live-eval/DOC-SKILL-010-GPT54-MINI-LIVE-EVAL-001/results/task_model_decision.md`
 
 The DOC-SKILL-010 gate includes scorer calibration from the DOC-SKILL-006 run: do not over-require the exact phrase `non-binding` when governance boundaries are clearly preserved.
 
-Updated the GPT-5.4 mini evaluation queue with DOC-SKILL-010 as `NOT RUN` and DOC-SKILL-011+ still `NOT RUN`.
+Updated the GPT-5.4 mini evaluation queue with DOC-SKILL-010 as `TASK_DECISION_RECORDED` and DOC-SKILL-011+ still `NOT RUN`.
 
 ## Changed Files
 - `documentation/codex/model-routing/live-eval/DOC-SKILL-010-GPT54-MINI-LIVE-EVAL-001/README.md`
@@ -73,7 +75,7 @@ Updated the GPT-5.4 mini evaluation queue with DOC-SKILL-010 as `NOT RUN` and DO
 - DOC-SKILL-006 remains `TASK_DECISION_RECORDED`: PASS.
 - DOC-SKILL-008 remains `TASK_DECISION_RECORDED`: PASS.
 - DOC-SKILL-009 remains `TASK_DECISION_RECORDED`: PASS.
-- DOC-SKILL-010 remains `NOT RUN`: PASS.
+- DOC-SKILL-010 becomes `TASK_DECISION_RECORDED`: PASS.
 - DOC-SKILL-011+ remain `NOT RUN`: PASS.
 - No routing table update: PASS.
 - No production routing activation: PASS.

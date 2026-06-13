@@ -1,0 +1,62 @@
+{
+  "fixture_id": "DOC-SKILL-010-GPT54-MINI-LIVE-EVAL-001",
+  "task_id": "DOC-SKILL-010",
+  "task_name": "Prepare Non-Binding Review Notes",
+  "status": "COMPLETED_EVALUATED",
+  "selected_external_candidate": "qwen/qwen3.5-flash-02-23",
+  "internal_default_model": "GPT-5.4 mini low",
+  "attempted_models": [
+    {
+      "model_id": "openai/gpt-oss-20b",
+      "result": "HOLD",
+      "raw_file": "results/raw/01_openai_gpt-oss-20b.json",
+      "normalized_file": "results/normalized/01_openai_gpt-oss-20b.md"
+    },
+    {
+      "model_id": "openai/gpt-oss-120b",
+      "result": "HOLD",
+      "raw_file": "results/raw/02_openai_gpt-oss-120b.json",
+      "normalized_file": "results/normalized/02_openai_gpt-oss-120b.md"
+    },
+    {
+      "model_id": "qwen/qwen3.5-flash-02-23",
+      "result": "PASS",
+      "raw_file": "results/raw/03_qwen_qwen3.5-flash-02-23.json",
+      "normalized_file": "results/normalized/03_qwen_qwen3.5-flash-02-23.md"
+    }
+  ],
+  "skipped_models": [
+    {
+      "model_id": "deepseek/deepseek-v4-flash",
+      "reason": "sequential stop after first PASS"
+    }
+  ],
+  "counts": {
+    "attempted": 3,
+    "completed": 3,
+    "failed": 0,
+    "skipped": 1
+  },
+  "per_model_summary": [
+    {
+      "model_id": "openai/gpt-oss-20b",
+      "result": "HOLD"
+    },
+    {
+      "model_id": "openai/gpt-oss-120b",
+      "result": "HOLD"
+    },
+    {
+      "model_id": "qwen/qwen3.5-flash-02-23",
+      "result": "PASS"
+    }
+  ],
+  "governance_checks": {
+    "overall_hold_remains_hold": true,
+    "pass_models_remain_pass": true,
+    "production_approved_false_preserved": true,
+    "no_production_routing_approval": true,
+    "no_repo_write_or_git_action": true,
+    "no_raw_private_prompt_exposure": true
+  }
+}
