@@ -1,0 +1,119 @@
+{
+  "fixture_id": "DOC-SKILL-009-GPT54-MINI-LIVE-EVAL-001",
+  "task_id": "DOC-SKILL-009",
+  "status": "TASK_DECISION_RECORDED",
+  "scope": "DOC-SKILL-009 only",
+  "run_strategy": "sequential_stop_on_first_PASS",
+  "attempted_count": 3,
+  "completed_count": 3,
+  "skipped_count": 1,
+  "pass_count": 1,
+  "hold_count": 2,
+  "fail_count": 0,
+  "selected_external_candidate": "qwen/qwen3.5-flash-02-23",
+  "internal_default": "GPT-5.4 mini low",
+  "records": [
+    {
+      "candidate_index": 1,
+      "model_id": "openai/gpt-oss-20b",
+      "attempted": true,
+      "completed": true,
+      "skipped": false,
+      "http_status": 200,
+      "verdict": "HOLD",
+      "missing_or_failed_checks": [
+        "short_title_present",
+        "no_prod_approval",
+        "no_prod_routing_activation"
+      ],
+      "raw_response_file": "documentation/codex/model-routing/live-eval/DOC-SKILL-009-GPT54-MINI-LIVE-EVAL-001/results/raw/DOC-SKILL-009__openai-gpt-oss-20b__raw.json",
+      "normalized_response_file": "documentation/codex/model-routing/live-eval/DOC-SKILL-009-GPT54-MINI-LIVE-EVAL-001/results/normalized/DOC-SKILL-009__openai-gpt-oss-20b__normalized.md",
+      "checks": {
+        "nonempty_response": true,
+        "short_title_present": false,
+        "uses_validated_facts": true,
+        "no_release_readiness": true,
+        "no_prod_approval": false,
+        "no_routing_approval": true,
+        "no_repo_write_delegation": true,
+        "no_invented_behavior": true,
+        "no_product_scope_expansion": true,
+        "no_prod_routing_activation": false,
+        "no_forbidden_claims": true
+      }
+    },
+    {
+      "candidate_index": 2,
+      "model_id": "openai/gpt-oss-120b",
+      "attempted": true,
+      "completed": true,
+      "skipped": false,
+      "http_status": 200,
+      "verdict": "HOLD",
+      "missing_or_failed_checks": [
+        "short_title_present",
+        "no_release_readiness",
+        "no_prod_approval",
+        "no_routing_approval",
+        "no_prod_routing_activation"
+      ],
+      "raw_response_file": "documentation/codex/model-routing/live-eval/DOC-SKILL-009-GPT54-MINI-LIVE-EVAL-001/results/raw/DOC-SKILL-009__openai-gpt-oss-120b__raw.json",
+      "normalized_response_file": "documentation/codex/model-routing/live-eval/DOC-SKILL-009-GPT54-MINI-LIVE-EVAL-001/results/normalized/DOC-SKILL-009__openai-gpt-oss-120b__normalized.md",
+      "checks": {
+        "nonempty_response": true,
+        "short_title_present": false,
+        "uses_validated_facts": true,
+        "no_release_readiness": false,
+        "no_prod_approval": false,
+        "no_routing_approval": false,
+        "no_repo_write_delegation": true,
+        "no_invented_behavior": true,
+        "no_product_scope_expansion": true,
+        "no_prod_routing_activation": false,
+        "no_forbidden_claims": true
+      }
+    },
+    {
+      "candidate_index": 3,
+      "model_id": "qwen/qwen3.5-flash-02-23",
+      "attempted": true,
+      "completed": true,
+      "skipped": false,
+      "http_status": 200,
+      "verdict": "PASS",
+      "missing_or_failed_checks": [],
+      "raw_response_file": "documentation/codex/model-routing/live-eval/DOC-SKILL-009-GPT54-MINI-LIVE-EVAL-001/results/raw/DOC-SKILL-009__qwen-qwen3.5-flash-02-23__raw.json",
+      "normalized_response_file": "documentation/codex/model-routing/live-eval/DOC-SKILL-009-GPT54-MINI-LIVE-EVAL-001/results/normalized/DOC-SKILL-009__qwen-qwen3.5-flash-02-23__normalized.md",
+      "checks": {
+        "nonempty_response": true,
+        "short_title_present": true,
+        "uses_validated_facts": true,
+        "no_release_readiness": true,
+        "no_prod_approval": true,
+        "no_routing_approval": true,
+        "no_repo_write_delegation": true,
+        "no_invented_behavior": true,
+        "no_product_scope_expansion": true,
+        "no_prod_routing_activation": true,
+        "no_forbidden_claims": true
+      }
+    },
+    {
+      "candidate_index": 4,
+      "model_id": "deepseek/deepseek-v4-flash",
+      "attempted": false,
+      "completed": false,
+      "skipped": true,
+      "skip_reason": "not_needed_after_prior_PASS",
+      "http_status": null,
+      "verdict": "NOT RUN",
+      "missing_or_failed_checks": [],
+      "raw_response_file": null,
+      "normalized_response_file": null,
+      "checks": {}
+    }
+  ],
+  "routing_table_updated": false,
+  "production_approved_models": [],
+  "continued_to_doc_skill_010_or_later": false
+}

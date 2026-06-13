@@ -1,6 +1,6 @@
 # Documentation Skill GPT-5.4 Mini Task Eval Queue v1 - 2026-06-13
 
-Status: PLANNING / DOC-SKILL-009 NOT RUN / NO OPENROUTER INFERENCE
+Status: PLANNING + LIVE-EVAL CLOSEOUT / DOC-SKILL-009 TASK_DECISION_RECORDED / NO OPENROUTER INFERENCE
 
 ## Purpose
 
@@ -96,7 +96,8 @@ This artifact does not run model calls, fetch live pricing, generate benchmark J
 - A1 candidate set reference: `documentation/codex/model-routing/openrouter_doc_skill_a1_shortlist_2026-06-12.csv`
 - Prepared fixture path: `documentation/codex/model-routing/live-eval/DOC-SKILL-009-GPT54-MINI-LIVE-EVAL-001/`
 - Candidate strategy: default `openai/gpt-oss-20b`; backups `openai/gpt-oss-120b`, `qwen/qwen3.5-flash-02-23`, `deepseek/deepseek-v4-flash`.
-- Status: NOT RUN
+- Reduced live-evaluation result: selected external candidate `qwen/qwen3.5-flash-02-23`; `openai/gpt-oss-20b` and `openai/gpt-oss-120b` were HOLD; `deepseek/deepseek-v4-flash` was not needed after prior PASS.
+- Status: TASK_DECISION_RECORDED
 - Note: Evaluate this task separately before moving to the next task.
 
 ## DOC-SKILL-010 - Prepare Non-Binding Review Notes

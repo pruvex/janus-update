@@ -1,0 +1,23 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{"id":"gen-1781352352-tnj2XwUdNr1neWI10RVl","object":"chat.completion","created":1781352352,"model":"deepseek/deepseek-v4-flash-20260423","provider":"Io Net","system_fingerprint":"vllm-0.21.0-tp8-ep-413aa6fb","service_tier":null,"choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"stop","message":{"role":"assistant","content":"1. **DOC-SKILL-009: Sanitized SKILL_USAGE_LOG Summary (for local review)**\n\n- **DOC-SKILL-006 evaluation:** A default candidate was held due to a fixed exclusion detail; backup_1 passed and was selected; backup_2 and backup_3 were not used. No routing table update occurred. No production approval was given.\n- **DOC-SKILL-003 evaluation:** The selected external candidate was `openai/gpt-oss-20b`; backups were retained as extra evidence. No production routing activation occurred. No canonical routing-table update was made.\n\n**Governance note:** These entries summarize only validated facts from the provided sanitized input. No release-readiness, production approval, routing approval, or implementation authority is implied or granted. No behavior is invented, and no product scope is expanded. This summary is for local reviewer use only and does not authorize any production or repository actions.","refusal":null,"reasoning":null}}],"usage":{"prompt_tokens":745,"completion_tokens":193,"total_tokens":938,"cost":0.00022725,"is_byok":false,"prompt_tokens_details":{"cached_tokens":0,"cache_write_tokens":0,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.00022725,"upstream_inference_prompt_cost":0.00015198,"upstream_inference_completions_cost":0.00007527},"completion_tokens_details":{"reasoning_tokens":0,"image_tokens":0,"audio_tokens":0}}}

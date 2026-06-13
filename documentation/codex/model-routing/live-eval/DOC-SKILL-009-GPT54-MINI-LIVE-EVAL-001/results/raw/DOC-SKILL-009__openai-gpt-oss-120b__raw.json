@@ -1,0 +1,23 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{"id":"gen-1781352325-dPaqCQ3iHt8NSSEHcM1x","object":"chat.completion","created":1781352325,"model":"openai/gpt-oss-120b","provider":"WandB","system_fingerprint":null,"service_tier":null,"choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"stop","message":{"role":"assistant","content":"**Short title**  \nUpdate SKILL_USAGE_LOG Summary – Validated Facts\n\n**Validated facts**  \n- The default candidate was held due to a fixed exclusion detail (DOC‑SKILL‑006).  \n- Backup 1 passed its checks and was selected; backups 2 and 3 were not required.  \n- No routing‑table update was performed and no production approval was granted.  \n- An external candidate, **openai/gpt‑oss‑20b**, was selected (DOC‑SKILL‑003).  \n- Backups were retained as extra evidence but were not activated.  \n- No production routing activation occurred and no canonical routing‑table update was made.  \n\n**Governance note**  \nThis log entry compiles only the validated facts from the sanitized input. It does not imply release readiness, nor does it grant or suggest any production, routing, Git, repository, or release authority. All boundaries concerning production approval and routing approval remain unchanged.","refusal":null,"reasoning":"We need to produce short title, bullet list of validated facts, and governance note. Using sanitized input facts.\n\nFacts from source notes:\n\nFrom DOC-SKILL-006 reduced live evaluation:\n- default candidate held on a fixed exclusion detail\n- backup_1 passed and was selected\n- backup_2 and backup_3 were not needed\n- no routing table update\n- no production approval\n\nFrom DOC-SKILL-003 reduced live evaluation:\n- selected external candidate openai/gpt-oss-20b\n- backups retained as extra evidence\n- no production routing activation\n- no canonical routing-table update\n\nSummarize.\n\nGovernance note: mention that summary reflects validated facts only, no release readiness, no production or routing approvals, etc.\n\nReturn format:\n\n1. Short title\n2. Bullets\n3. Governance note\n\nProceed.","reasoning_details":[{"type":"reasoning.text","text":"We need to produce short title, bullet list of validated facts, and governance note. Using sanitized input facts.\n\nFacts from source notes:\n\nFrom DOC-SKILL-006 reduced live evaluation:\n- default candidate held on a fixed exclusion detail\n- backup_1 passed and was selected\n- backup_2 and backup_3 were not needed\n- no routing table update\n- no production approval\n\nFrom DOC-SKILL-003 reduced live evaluation:\n- selected external candidate openai/gpt-oss-20b\n- backups retained as extra evidence\n- no production routing activation\n- no canonical routing-table update\n\nSummarize.\n\nGovernance note: mention that summary reflects validated facts only, no release readiness, no production or routing approvals, etc.\n\nReturn format:\n\n1. Short title\n2. Bullets\n3. Governance note\n\nProceed.","format":"unknown","index":0}]}}],"usage":{"prompt_tokens":780,"completion_tokens":378,"total_tokens":1158,"cost":0.00008412,"is_byok":false,"prompt_tokens_details":{"cached_tokens":32,"cache_write_tokens":0,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.00008412,"upstream_inference_prompt_cost":0.0000312,"upstream_inference_completions_cost":0.00005292},"completion_tokens_details":{"reasoning_tokens":216,"image_tokens":0,"audio_tokens":0}}}
