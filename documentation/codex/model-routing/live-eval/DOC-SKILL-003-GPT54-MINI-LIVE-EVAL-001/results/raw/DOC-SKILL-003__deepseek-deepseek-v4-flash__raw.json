@@ -1,0 +1,56 @@
+{
+  "fixture_id": "DOC-SKILL-003-GPT54-MINI-LIVE-EVAL-001",
+  "task_id": "DOC-SKILL-003",
+  "model_id": "deepseek/deepseek-v4-flash",
+  "role": "backup_3",
+  "started_at": "2026-06-13T12:50:41+0200",
+  "completed_at": "2026-06-13T12:50:46+0200",
+  "http_status": 200,
+  "provider_error": null,
+  "response": {
+    "id": "gen-1781347842-mdLhg5pw9VP97xSbM7qP",
+    "object": "chat.completion",
+    "created": 1781347842,
+    "model": "deepseek/deepseek-v4-flash-20260423",
+    "provider": "DigitalOcean",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "**1. Handoff title**  \nDOC-SKILL-003: Draft Codex Handoff (sanitized)\n\n**2. Bound artifacts**  \n- sanitized-validation-summary.md  \n- sanitized-evidence-index.md  \n- sanitized-scope-note.md  \n\n**3. Next skill and allowed action**  \n- **Next skill:** janus-documentation-update  \n- **Allowed action:** record validated documentation evidence only  \n\n**4. Gate and stop conditions**  \n- Verify bound artifacts before editing.  \n- Stop if required evidence is missing.  \n- Do not expand scope beyond the listed artifacts.  \n- Do not run implementation, Git, release, or production\u2011routing actions.  \n\n**5. Fixed exclusions**  \n- no product implementation  \n- no architecture decision  \n- no Git commit or push authority  \n- no release authority  \n- no production routing approval  \n- no OpenRouter production activation  \n- no raw private prompt or evidence exposure",
+          "refusal": null,
+          "reasoning": null
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 783,
+      "completion_tokens": 199,
+      "total_tokens": 982,
+      "cost": 0.000124005,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.000124005,
+        "upstream_inference_prompt_cost": 8.2215e-05,
+        "upstream_inference_completions_cost": 4.179e-05
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "fixture_id": "DOC-SKILL-003-GPT54-MINI-LIVE-EVAL-001",
+  "task_id": "DOC-SKILL-003",
+  "model_id": "qwen/qwen3.5-flash-02-23",
+  "role": "backup_2",
+  "started_at": "2026-06-13T12:50:34+0200",
+  "completed_at": "2026-06-13T12:50:41+0200",
+  "http_status": 200,
+  "provider_error": null,
+  "response": {
+    "id": "gen-1781347835-KYosSKtlW0TeGrJXJ2oL",
+    "object": "chat.completion",
+    "created": 1781347835,
+    "model": "qwen/qwen3.5-flash-20260224",
+    "provider": "Alibaba",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "# Draft Codex Handoff\n\n## Bound Artifacts\n- sanitized-validation-summary.md\n- sanitized-evidence-index.md\n- sanitized-scope-note.md\n\n## Next Skill and Allowed Action\n- **Skill:** janus-documentation-update\n- **Action:** record validated documentation evidence only\n\n## Gate and Stop Conditions\n- Verify bound artifacts before editing\n- Stop if required evidence is missing\n- Do not expand scope beyond the listed artifacts\n- Do not run implementation, Git, release, or production-routing actions\n\n## Fixed Exclusions\n- no product implementation\n- no architecture decision\n- no Git commit or push authority\n- no release authority\n- no production routing approval\n- no OpenRouter production activation\n- no raw private prompt or evidence exposure",
+          "refusal": null,
+          "reasoning": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   **Role:** Constrained documentation assist model.\n    *   **Task:** Draft Codex handoff wording (DOC-SKILL-003) based *only* on the provided sanitized input JSON.\n    *   **Output Format:** Concise Markdown only.\n    *   **Required Sections:**\n        1.  Handoff title\n        2.  Bound artifacts\n        3.  Next skill and allowed action\n        4.  Gate and stop conditions\n        5.  Fixed exclusions\n    *   **Constraints:**\n        *   Use only sanitized input.\n        *   Preserve governance constraints (no OpenRouter calls, no production approval, etc.).\n        *   Do not skip gates.\n        *   Do not broaden context.\n        *   Do not grant implementation/Git/release/production authority.\n        *   Do not invent/expose raw private evidence.\n        *   Keep it copy-safe.\n\n2.  **Extract Information from Sanitized Input:**\n    *   `task_name`: \"Draft Codex handoff\"\n    *   `handoff_context.next_skill`: \"janus-documentation-update\"\n    *   `handoff_context.next_action`: \"record validated documentation evidence only\"\n    *   `handoff_context.bound_artifacts`: `[\"sanitized-validation-summary.md\", \"sanitized-evidence-index.md\", \"sanitized-scope-note.md\"]`\n    *   `handoff_context.required_gate_language`:\n        *   \"Verify bound artifacts before editing\"\n        *   \"Stop if required evidence is missing\"\n        *   \"Do not expand scope beyond the listed artifacts\"\n        *   \"Do not run implementation, Git, release, or production-routing actions\"\n    *   `handoff_context.fixed_exclusions`:\n        *   \"no product implementation\"\n        *   \"no architecture decision\"\n        *   \"no Git commit or push authority\"\n        *   \"no release authority\"\n        *   \"no production routing approval\"\n        *   \"no OpenRouter production activation\"\n        *   \"no raw private prompt or evidence exposure\"\n\n3.  **Draft the Content (adhering to constraints):**\n\n    *   *Handoff Title:* Use `task_name` or a variation. \"Draft Codex handoff\" is appropriate.\n    *   *Bound Artifacts:* List the items from `bound_artifacts`.\n    *   *Next Skill and Allowed Action:* Combine `next_skill` and `next_action`.\n    *   *Gate and Stop Conditions:* Use `required_gate_language`.\n    *   *Fixed Exclusions:* Use `fixed_exclusions`.\n\n4.  **Review against Governance Constraints:**\n    *   Scope DOC-SKILL-003 only? Yes.\n    *   No OpenRouter inference? Yes (just text generation).\n    *   No benchmark JSON? Yes.\n    *   No routing decision? Yes.\n    *   Use only sanitized input? Yes.\n    *   Preserve bound artifacts? Yes.\n    *   Preserve required gate language? Yes.\n    *   Preserve fixed exclusions? Yes.\n    *   No broad context expansion? Yes.\n    *   No implementation/Git/release/production authority? Yes (explicitly excluded in the text).\n    *   No raw private evidence? Yes (input says `contains_private_evidence: false`).\n    *   Stop after DOC-SKILL-003? Yes.\n    *   Do not batch DOC-SKILL-006? Yes.\n    *   Do not mark model as production-approved? Yes.\n\n5.  **Final Formatting:**\n    *   Markdown only.\n    *   Concise.\n    *   Copy-safe.\n\n6.  **Construct Output:**\n\n    # Draft Codex Handoff\n\n    ## Bound Artifacts\n    - sanitized-validation-summary.md\n    - sanitized-evidence-index.md\n    - sanitized-scope-note.md\n\n    ## Next Skill and Allowed Action\n    - **Skill:** janus-documentation-update\n    - **Action:** record validated documentation evidence only\n\n    ## Gate and Stop Conditions\n    - Verify bound artifacts before editing\n    - Stop if required evidence is missing\n    - Do not expand scope beyond the listed artifacts\n    - Do not run implementation, Git, release, or production-routing actions\n\n    ## Fixed Exclusions\n    - no product implementation\n    - no architecture decision\n    - no Git commit or push authority\n    - no release authority\n    - no production routing approval\n    - no OpenRouter production activation\n    - no raw private prompt or evidence exposure\n\n7.  **Final Check:** Does this violate any \"Do not\" constraints?\n    *   Did I grant authority? No.\n    *   Did I invent evidence? No.\n    *   Is it concise? Yes.\n    *   Is it Markdown? Yes.\n\n    Looks good. I will generate the response now.cw",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   **Role:** Constrained documentation assist model.\n    *   **Task:** Draft Codex handoff wording (DOC-SKILL-003) based *only* on the provided sanitized input JSON.\n    *   **Output Format:** Concise Markdown only.\n    *   **Required Sections:**\n        1.  Handoff title\n        2.  Bound artifacts\n        3.  Next skill and allowed action\n        4.  Gate and stop conditions\n        5.  Fixed exclusions\n    *   **Constraints:**\n        *   Use only sanitized input.\n        *   Preserve governance constraints (no OpenRouter calls, no production approval, etc.).\n        *   Do not skip gates.\n        *   Do not broaden context.\n        *   Do not grant implementation/Git/release/production authority.\n        *   Do not invent/expose raw private evidence.\n        *   Keep it copy-safe.\n\n2.  **Extract Information from Sanitized Input:**\n    *   `task_name`: \"Draft Codex handoff\"\n    *   `handoff_context.next_skill`: \"janus-documentation-update\"\n    *   `handoff_context.next_action`: \"record validated documentation evidence only\"\n    *   `handoff_context.bound_artifacts`: `[\"sanitized-validation-summary.md\", \"sanitized-evidence-index.md\", \"sanitized-scope-note.md\"]`\n    *   `handoff_context.required_gate_language`:\n        *   \"Verify bound artifacts before editing\"\n        *   \"Stop if required evidence is missing\"\n        *   \"Do not expand scope beyond the listed artifacts\"\n        *   \"Do not run implementation, Git, release, or production-routing actions\"\n    *   `handoff_context.fixed_exclusions`:\n        *   \"no product implementation\"\n        *   \"no architecture decision\"\n        *   \"no Git commit or push authority\"\n        *   \"no release authority\"\n        *   \"no production routing approval\"\n        *   \"no OpenRouter production activation\"\n        *   \"no raw private prompt or evidence exposure\"\n\n3.  **Draft the Content (adhering to constraints):**\n\n    *   *Handoff Title:* Use `task_name` or a variation. \"Draft Codex handoff\" is appropriate.\n    *   *Bound Artifacts:* List the items from `bound_artifacts`.\n    *   *Next Skill and Allowed Action:* Combine `next_skill` and `next_action`.\n    *   *Gate and Stop Conditions:* Use `required_gate_language`.\n    *   *Fixed Exclusions:* Use `fixed_exclusions`.\n\n4.  **Review against Governance Constraints:**\n    *   Scope DOC-SKILL-003 only? Yes.\n    *   No OpenRouter inference? Yes (just text generation).\n    *   No benchmark JSON? Yes.\n    *   No routing decision? Yes.\n    *   Use only sanitized input? Yes.\n    *   Preserve bound artifacts? Yes.\n    *   Preserve required gate language? Yes.\n    *   Preserve fixed exclusions? Yes.\n    *   No broad context expansion? Yes.\n    *   No implementation/Git/release/production authority? Yes (explicitly excluded in the text).\n    *   No raw private evidence? Yes (input says `contains_private_evidence: false`).\n    *   Stop after DOC-SKILL-003? Yes.\n    *   Do not batch DOC-SKILL-006? Yes.\n    *   Do not mark model as production-approved? Yes.\n\n5.  **Final Formatting:**\n    *   Markdown only.\n    *   Concise.\n    *   Copy-safe.\n\n6.  **Construct Output:**\n\n    # Draft Codex Handoff\n\n    ## Bound Artifacts\n    - sanitized-validation-summary.md\n    - sanitized-evidence-index.md\n    - sanitized-scope-note.md\n\n    ## Next Skill and Allowed Action\n    - **Skill:** janus-documentation-update\n    - **Action:** record validated documentation evidence only\n\n    ## Gate and Stop Conditions\n    - Verify bound artifacts before editing\n    - Stop if required evidence is missing\n    - Do not expand scope beyond the listed artifacts\n    - Do not run implementation, Git, release, or production-routing actions\n\n    ## Fixed Exclusions\n    - no product implementation\n    - no architecture decision\n    - no Git commit or push authority\n    - no release authority\n    - no production routing approval\n    - no OpenRouter production activation\n    - no raw private prompt or evidence exposure\n\n7.  **Final Check:** Does this violate any \"Do not\" constraints?\n    *   Did I grant authority? No.\n    *   Did I invent evidence? No.\n    *   Is it concise? Yes.\n    *   Is it Markdown? Yes.\n\n    Looks good. I will generate the response now.cw",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 844,
+      "completion_tokens": 1238,
+      "total_tokens": 2082,
+      "cost": 0.00037674,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.00037674,
+        "upstream_inference_prompt_cost": 5.486e-05,
+        "upstream_inference_completions_cost": 0.00032188
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1079,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  }
+}

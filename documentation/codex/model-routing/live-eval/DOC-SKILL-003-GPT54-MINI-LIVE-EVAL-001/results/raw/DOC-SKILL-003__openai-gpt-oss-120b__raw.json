@@ -1,0 +1,64 @@
+{
+  "fixture_id": "DOC-SKILL-003-GPT54-MINI-LIVE-EVAL-001",
+  "task_id": "DOC-SKILL-003",
+  "model_id": "openai/gpt-oss-120b",
+  "role": "backup_1",
+  "started_at": "2026-06-13T12:50:32+0200",
+  "completed_at": "2026-06-13T12:50:34+0200",
+  "http_status": 200,
+  "provider_error": null,
+  "response": {
+    "id": "gen-1781347834-1kpjksaK3TaJtheG4JLq",
+    "object": "chat.completion",
+    "created": 1781347834,
+    "model": "openai/gpt-oss-120b",
+    "provider": "Nebius",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "## Handoff Title  \n**DOC\u2011SKILL\u2011003 \u2013 Draft Codex handoff**\n\n## Bound Artifacts  \n- `sanitized-validation-summary.md`  \n- `sanitized-evidence-index.md`  \n- `sanitized-scope-note.md`\n\n## Next Skill & Allowed Action  \n- **Next skill:** `janus-documentation-update`  \n- **Allowed action:** *record validated documentation evidence only*\n\n## Gate & Stop Conditions  \n- Verify bound artifacts before editing  \n- Stop if required evidence is missing  \n- Do not expand scope beyond the listed artifacts  \n- Do not run implementation, Git, release, or production\u2011routing actions  \n\n## Fixed Exclusions  \n- no product implementation  \n- no architecture decision  \n- no Git commit or push authority  \n- no release authority  \n- no production routing approval  \n- no OpenRouter production activation  \n- no raw private prompt or evidence exposure",
+          "refusal": null,
+          "reasoning": "We need to produce a concise markdown handoff with sections: title, bound artifacts, next skill and allowed action, gate and stop conditions, fixed exclusions. Use the required gate language list. Must include bound artifact list exactly as given. Must not add extra. Must not grant authority. Must be copy-safe. Provide bullet points.\n\nLet's craft:\n\n**Handoff Title:** Draft Codex handoff \u2013 DOC\u2011SKILL\u2011003\n\nBound artifacts list: list three items.\n\nNext skill: janus-documentation-update; allowed action: record validated documentation evidence only.\n\nGate and stop conditions: include the required gate language lines.\n\nFixed exclusions: list them.\n\nMake sure to preserve wording exactly as in input.\n\nReturn markdown only.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "We need to produce a concise markdown handoff with sections: title, bound artifacts, next skill and allowed action, gate and stop conditions, fixed exclusions. Use the required gate language list. Must include bound artifact list exactly as given. Must not add extra. Must not grant authority. Must be copy-safe. Provide bullet points.\n\nLet's craft:\n\n**Handoff Title:** Draft Codex handoff \u2013 DOC\u2011SKILL\u2011003\n\nBound artifacts list: list three items.\n\nNext skill: janus-documentation-update; allowed action: record validated documentation evidence only.\n\nGate and stop conditions: include the required gate language lines.\n\nFixed exclusions: list them.\n\nMake sure to preserve wording exactly as in input.\n\nReturn markdown only.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 810,
+      "completion_tokens": 335,
+      "total_tokens": 1145,
+      "cost": 0.0003225,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 64,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.0003225,
+        "upstream_inference_prompt_cost": 0.0001215,
+        "upstream_inference_completions_cost": 0.000201
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 195,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  }
+}

@@ -29,11 +29,18 @@ GPT-5.4 mini low.
 
 ## Status
 
-NOT RUN
+TASK_DECISION_RECORDED
+
+## Reduced Live Evaluation Result
+
+- Attempted models: 4
+- Completed normalized responses: 4
+- Selected external candidate: `openai/gpt-oss-20b`
+- Backup evidence: all three backups PASS but not selected
+- Calibration note: the initial evaluator over-required explicit non-binding wording; calibrated evidence review marks the default candidate PASS because it preserved artifacts, gates, exclusions, and did not grant repo authority.
 
 ## Notes
 
-This fixture prepares DOC-SKILL-003 only.
-Do not run OpenRouter inference/model tests until explicitly approved.
+This fixture records DOC-SKILL-003 only.
 Do not batch with DOC-SKILL-006 or later tasks.
 Do not update production routing, mark any model production-approved, or update the canonical routing table.
