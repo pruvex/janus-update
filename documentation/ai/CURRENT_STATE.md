@@ -4,10 +4,10 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Goal
-Create operational OR telemetry schema and dummy sample artifacts for the completed mini workflow plan, preserve the 5.4-mini phase boundaries, and keep the separate 5.4 candidate phase paused before any continuation.
+Validate OR telemetry schema ingestion with dummy data, preserve the completed 5.4-mini phase boundaries, and keep the separate 5.4 candidate phase paused before any continuation.
 
 ## Active Phase
-Documentation-skill OR telemetry operationalization in dummy form. The mini matrix phase remains complete for `DOC-SKILL-001`, `DOC-SKILL-002`, `DOC-SKILL-003`, `DOC-SKILL-006`, `DOC-SKILL-008`, `DOC-SKILL-009`, and `DOC-SKILL-010` with preserved counts `OR_CONFIRMED=7`, `NEEDS_STRONGER_TEST=0`, and `OR_REJECTED=0`. The telemetry planning layer now has schema documentation, a dummy JSONL sample record, and a dummy healthcheck summary example without starting any new model work. The separate `5.4` candidate phase remains paused and planning-only. DOC-SKILL-011 remains `NOT RUN`; DOC-SKILL-012 and later remain `NOT RUN`. No production routing, no canonical routing-table update, no DOC-SKILL-011 run, no DOC-SKILL-012 start, no release action, and no product-code change.
+Documentation-skill OR telemetry dummy-ingestion validation. The mini matrix phase remains complete for `DOC-SKILL-001`, `DOC-SKILL-002`, `DOC-SKILL-003`, `DOC-SKILL-006`, `DOC-SKILL-008`, `DOC-SKILL-009`, and `DOC-SKILL-010` with preserved counts `OR_CONFIRMED=7`, `NEEDS_STRONGER_TEST=0`, and `OR_REJECTED=0`. The telemetry planning layer now has schema documentation, a dummy JSONL sample record, a dummy healthcheck summary example, and a dry-run ingestion validation report without starting any new model work. The separate `5.4` candidate phase remains paused and planning-only. DOC-SKILL-011 remains `NOT RUN`; DOC-SKILL-012 and later remain `NOT RUN`. No production routing, no canonical routing-table update, no DOC-SKILL-011 run, no DOC-SKILL-012 start, no release action, and no product-code change.
 
 ## Last Decision
 The documentation-skill routing table remains the canonical reference for documentation-skill model and scope boundaries.
@@ -39,7 +39,7 @@ The separate `5.4` candidate phase remains paused and planning-only.
 This cost-accounting planning step does not create a global model approval, does not mark any model production-approved, does not update the canonical routing table, does not run DOC-SKILL-011, does not continue the `5.4` candidate phase, and does not start DOC-SKILL-012.
 
 ## Last Codex Work
-Created operational dummy artifacts for OR telemetry: JSONL schema documentation, one dummy JSONL sample record, and one dummy healthcheck summary example. The artifacts reflect planned cost, usage, confidence, fallback, and recommendation fields without creating any live telemetry or changing workflow authority.
+Validated the dummy OR telemetry artifacts against the documented schema and created a documentation-only dry-run ingestion report. The validation confirmed JSON parsing, schema/sample/report alignment, summary consistency, and the current lack of direct ingestion support in the existing healthcheck runner.
 
 The telemetry plan keeps the mini phase bounded to:
 
@@ -54,6 +54,7 @@ The telemetry plan keeps the mini phase bounded to:
 No model calls were run, no OR calls were run, no live eval was started, no production routing decision was made, no canonical routing-table update was made, no DOC-SKILL-011 run was started, and the separate `5.4` candidate phase was not continued.
 
 ## Changed Files
+- `documentation/codex/model-routing/or_healthcheck_dummy_ingestion_validation_2026-06-13.md`
 - `documentation/codex/model-routing/or_healthcheck_telemetry_jsonl_schema_2026-06-13.md`
 - `documentation/codex/model-routing/or_healthcheck_telemetry_dummy_sample_2026-06-13.jsonl`
 - `documentation/codex/model-routing/or_healthcheck_summary_dummy_example_2026-06-13.md`
@@ -66,7 +67,7 @@ No model calls were run, no OR calls were run, no live eval was started, no prod
 
 ## Remote Sync Evidence
 - Branch context: `develop` / `backup/develop` workflow.
-- This block is intended to be committed as `docs(codex): add or telemetry schema sample` and pushed to `backup/develop` only.
+- This block is intended to be committed as `docs(codex): validate or telemetry dummy ingestion` and pushed to `backup/develop` only.
 - No push to `origin`, tag, merge, reset, release, routing-table update, DOC-SKILL-011 run, DOC-SKILL-012 continuation, or production routing activation is part of this block.
 
 ## Tests / Validation
@@ -84,6 +85,8 @@ No model calls were run, no OR calls were run, no live eval was started, no prod
 - Dummy sample record parses as JSON: PASS.
 - Schema contains all planned telemetry, cost, and confidence fields: PASS.
 - Dummy summary example references only schema fields: PASS.
+- Schema/sample/report field alignment: PASS.
+- Existing runner direct ingestion path unavailable, documentation-only dry-run used: PASS.
 - Healthcheck output summaries are defined: PASS.
 - No global model approval language: PASS.
 - No production routing language: PASS.
@@ -101,13 +104,14 @@ No model calls were run, no OR calls were run, no live eval was started, no prod
 - The completed mini matrix is task-level documentation evidence only and must not be misread as a global model approval or production routing update.
 - The telemetry plan is planning-only; confidence scores remain future-facing until enough comparable historical rows, price snapshots, and usage capture exist.
 - The new schema and examples are dummy artifacts only; they do not prove runtime ingestion until future implementation lands.
+- The dummy ingestion validation is documentation-only because the current healthcheck runner has no OR telemetry JSONL reader yet.
 - The separate `5.4` phase is paused; no candidate list should be treated as evaluation evidence until a separate explicit phase runs.
 
 ## Next Recommended Step for ChatGPT
-Review the schema row shape and dummy summary example, then confirm whether the planned telemetry output is sufficient before any separate `5.4` candidate work resumes.
+Review the dry-run ingestion report and confirm whether the documented ingestion path is sufficient before any separate `5.4` candidate work resumes.
 
 ## Next Recommended Step for Codex
-Keep the `5.4` candidate phase paused, treat the schema and dummy artifacts as documentation-only, and do not start any candidate continuation, OR call, or live eval until explicitly approved.
+Keep the `5.4` candidate phase paused, treat the ingestion validation as documentation-only, and do not start any candidate continuation, OR call, or live eval until explicitly approved.
 
 ## Last Updated
-2026-06-13 18:05 local time
+2026-06-13 18:20 local time
