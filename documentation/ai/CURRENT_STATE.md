@@ -62,7 +62,7 @@ Updated the GPT-5.4 mini evaluation queue with DOC-SKILL-009 as `TASK_DECISION_R
 
 ## Tests / Validation
 - Start-of-work healthcheck reminder: DUE, user previously deferred it for later.
-- Bound artifact reread for DOC-SKILL-008 fixture preparation: PASS.
+- Bound artifact reread for DOC-SKILL-009 live-evaluation closeout: PASS.
 - DOC-SKILL-001 remains `TASK_DECISION_RECORDED`: PASS.
 - DOC-SKILL-002 remains `TASK_DECISION_RECORDED`: PASS.
 - DOC-SKILL-003 remains `TASK_DECISION_RECORDED`: PASS.

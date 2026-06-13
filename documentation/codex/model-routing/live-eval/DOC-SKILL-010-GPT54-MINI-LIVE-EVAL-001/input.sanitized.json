@@ -1,0 +1,60 @@
+{
+  "fixture_id": "DOC-SKILL-010-GPT54-MINI-LIVE-EVAL-001",
+  "task_id": "DOC-SKILL-010",
+  "task_name": "Prepare Non-Binding Review Notes",
+  "sanitized": true,
+  "contains_private_evidence": false,
+  "production_approved": false,
+  "routing_approved": false,
+  "summary_target": "sanitized_skill_usage_log_bullets",
+  "source_notes": [
+    {
+      "item": "DOC-SKILL-006 reduced live evaluation",
+      "facts": [
+        "default candidate held on a fixed exclusion detail",
+        "backup_1 passed and was selected",
+        "backup_2 and backup_3 were not needed",
+        "no routing table update",
+        "no production approval"
+      ]
+    },
+    {
+      "item": "DOC-SKILL-003 reduced live evaluation",
+      "facts": [
+        "selected external candidate openai/gpt-oss-20b",
+        "backups retained as extra evidence",
+        "no production routing activation",
+        "no canonical routing-table update"
+      ]
+    }
+  ],
+  "skill_usage_log_goals": [
+    "summarize validated facts only",
+    "avoid release readiness claims",
+    "avoid invented behavior",
+    "avoid product-scope expansion",
+    "preserve no-production boundaries"
+  ],
+  "constraints": {
+    "must_preserve": [
+      "validated facts only",
+      "no release-readiness implication",
+      "no production approval",
+      "no routing approval",
+      "no repo-write delegation",
+      "no invented behavior",
+      "no product-scope expansion",
+      "no production routing activation"
+    ],
+    "must_not_do": [
+      "claim release readiness",
+      "invent behavior",
+      "expand product scope",
+      "approve production routing",
+      "activate production routing",
+      "grant repo-write authority",
+      "grant Git authority",
+      "grant release authority"
+    ]
+  }
+}
