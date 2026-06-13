@@ -1,0 +1,83 @@
+{
+  "status": "NOT RUN",
+  "role": "backup 3",
+  "task_id": "DOC-SKILL-003",
+  "fixture_id": "DOC-SKILL-003-GPT54-MINI-LIVE-EVAL-001",
+  "model_id": "deepseek/deepseek-v4-flash",
+  "prompt_text": "You are assisting with DOC-SKILL-003: Draft Codex handoff.\n\nDraft copy-safe handoff wording from the sanitized handoff context for local reviewer use.\n\nRequirements:\n- Use only the sanitized input.\n- Include the bound artifact list.\n- Include the next skill and allowed action.\n- Preserve the required gate language.\n- Preserve all fixed exclusions.\n- Do not skip gates.\n- Do not broaden context beyond the listed artifacts.\n- Do not grant implementation authority.\n- Do not grant Git commit, push, tag, merge, or release authority.\n- Do not approve production routing or OpenRouter production activation.\n- Do not invent or expose raw private evidence.\n- Keep the handoff concise and copy-safe.\n\nReturn:\n1. Handoff title\n2. Bound artifacts\n3. Next skill and allowed action\n4. Gate and stop conditions\n5. Fixed exclusions\n",
+  "sanitized_input": {
+    "fixture_id": "DOC-SKILL-003-GPT54-MINI-LIVE-EVAL-001",
+    "task_id": "DOC-SKILL-003",
+    "task_name": "Draft Codex handoff",
+    "sanitized": true,
+    "contains_private_evidence": false,
+    "production_approved": false,
+    "routing_approved": false,
+    "summary_target": "copy_safe_codex_handoff",
+    "handoff_context": {
+      "source_status": "VALIDATED",
+      "current_phase": "documentation checkpoint complete",
+      "next_skill": "janus-documentation-update",
+      "next_action": "record validated documentation evidence only",
+      "bound_artifacts": [
+        "sanitized-validation-summary.md",
+        "sanitized-evidence-index.md",
+        "sanitized-scope-note.md"
+      ],
+      "required_gate_language": [
+        "Verify bound artifacts before editing",
+        "Stop if required evidence is missing",
+        "Do not expand scope beyond the listed artifacts",
+        "Do not run implementation, Git, release, or production-routing actions"
+      ],
+      "fixed_exclusions": [
+        "no product implementation",
+        "no architecture decision",
+        "no Git commit or push authority",
+        "no release authority",
+        "no production routing approval",
+        "no OpenRouter production activation",
+        "no raw private prompt or evidence exposure"
+      ]
+    },
+    "constraints": {
+      "must_include": [
+        "handoff title",
+        "bound artifact list",
+        "next skill",
+        "allowed action",
+        "stop conditions",
+        "fixed exclusions"
+      ],
+      "must_not_do": [
+        "skip gates",
+        "expand context",
+        "grant implementation authority",
+        "grant Git authority",
+        "grant release authority",
+        "approve production routing",
+        "invent raw private evidence"
+      ]
+    }
+  },
+  "governance_constraints": [
+    "scope DOC-SKILL-003 only",
+    "no OpenRouter inference/model calls in this preparation step",
+    "no benchmark JSON generation",
+    "no routing decision",
+    "use only sanitized input",
+    "preserve bound artifacts",
+    "preserve required gate language",
+    "preserve fixed exclusions",
+    "no broad context expansion",
+    "no implementation authority",
+    "no Git authority",
+    "no release authority",
+    "no production routing approval",
+    "no OpenRouter production activation",
+    "no raw private prompt or evidence exposure",
+    "stop after DOC-SKILL-003",
+    "do not batch DOC-SKILL-006 or later",
+    "do not mark any model as production-approved"
+  ]
+}

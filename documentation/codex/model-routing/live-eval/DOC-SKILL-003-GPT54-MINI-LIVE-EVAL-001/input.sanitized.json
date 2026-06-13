@@ -1,0 +1,55 @@
+{
+  "fixture_id": "DOC-SKILL-003-GPT54-MINI-LIVE-EVAL-001",
+  "task_id": "DOC-SKILL-003",
+  "task_name": "Draft Codex handoff",
+  "sanitized": true,
+  "contains_private_evidence": false,
+  "production_approved": false,
+  "routing_approved": false,
+  "summary_target": "copy_safe_codex_handoff",
+  "handoff_context": {
+    "source_status": "VALIDATED",
+    "current_phase": "documentation checkpoint complete",
+    "next_skill": "janus-documentation-update",
+    "next_action": "record validated documentation evidence only",
+    "bound_artifacts": [
+      "sanitized-validation-summary.md",
+      "sanitized-evidence-index.md",
+      "sanitized-scope-note.md"
+    ],
+    "required_gate_language": [
+      "Verify bound artifacts before editing",
+      "Stop if required evidence is missing",
+      "Do not expand scope beyond the listed artifacts",
+      "Do not run implementation, Git, release, or production-routing actions"
+    ],
+    "fixed_exclusions": [
+      "no product implementation",
+      "no architecture decision",
+      "no Git commit or push authority",
+      "no release authority",
+      "no production routing approval",
+      "no OpenRouter production activation",
+      "no raw private prompt or evidence exposure"
+    ]
+  },
+  "constraints": {
+    "must_include": [
+      "handoff title",
+      "bound artifact list",
+      "next skill",
+      "allowed action",
+      "stop conditions",
+      "fixed exclusions"
+    ],
+    "must_not_do": [
+      "skip gates",
+      "expand context",
+      "grant implementation authority",
+      "grant Git authority",
+      "grant release authority",
+      "approve production routing",
+      "invent raw private evidence"
+    ]
+  }
+}
