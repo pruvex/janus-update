@@ -1,0 +1,22 @@
+{
+  "workflow_id": "FIXED-OR-MISSING-CONFIDENCE-001",
+  "skill_id": "DOC-SKILL-001",
+  "local_codex_option": "handle locally with Codex",
+  "or_option": "handle with OR using fixed model openai/gpt-oss-20b",
+  "estimated_or_cost": 0.000196101,
+  "confidence_status": {
+    "cost_estimate_confidence_percent": null,
+    "cost_estimate_sample_count": 1,
+    "cost_estimate_mean_abs_error_percent": 49.29,
+    "cost_estimate_p50_error_percent": 49.29,
+    "cost_estimate_p90_error_percent": 49.29,
+    "cost_estimate_basis": "fixture_missing_confidence",
+    "prompt_template_hash": "sha256:fixture",
+    "task_variant": "benchmark_summary",
+    "price_snapshot_source": "fixture",
+    "price_snapshot_timestamp": "2026-06-13T00:00:00+02:00"
+  },
+  "per_call_cap_usd": 0.002,
+  "session_cap_usd": 0.006,
+  "note": "Operator-invoked fixed OR use only. No Auto Router. Not production routing."
+}

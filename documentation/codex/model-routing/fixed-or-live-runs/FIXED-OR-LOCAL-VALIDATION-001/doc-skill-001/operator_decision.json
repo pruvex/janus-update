@@ -1,0 +1,13 @@
+{
+  "workflow_id": "FIXED-OR-LOCAL-VALIDATION-001",
+  "skill_id": "DOC-SKILL-001",
+  "selected_path": "codex_only_operator_choice",
+  "local_codex_option": "enabled",
+  "or_option": "enabled_but_not_used",
+  "or_model": "openai/gpt-oss-20b",
+  "validation_result": "PASS",
+  "fallback_used": "YES",
+  "rework_required": "NO",
+  "final_outcome": "LOCAL_CODEX_PATH_SELECTED",
+  "operator_message": "Operator chose local Codex path. No OR call was made."
+}

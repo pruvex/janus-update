@@ -1,0 +1,30 @@
+{
+  "id": "gen_fixture_fixed_or_live_doc_skill_001_001",
+  "model": "openai/gpt-oss-20b",
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "message": {
+        "role": "assistant",
+        "content": "Fixture response for bounded fixed OR validation."
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 612,
+    "completion_tokens": 331,
+    "total_tokens": 943,
+    "cost": 0.00011844,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 119,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}
