@@ -4,10 +4,10 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Goal
-Close the `5.4 mini` OR live evidence layer across all seven approved mini skills, keep the original first `DOC-SKILL-008` smoke-test row as debug failure evidence only, and preserve the completed `5.4 mini` phase boundaries while the separate `5.4` candidate phase remains paused.
+Draft a controlled `Auto-sparsam` mode proposal for the seven live-evidenced `5.4 mini` documentation skills while keeping the bounded mini evidence layer closed, the original first `DOC-SKILL-008` smoke-test row debug-only, and the separate `5.4` candidate phase paused.
 
 ## Active Phase
-Documentation-skill mini OR live evidence closeout. The mini matrix phase remains complete for `DOC-SKILL-001`, `DOC-SKILL-002`, `DOC-SKILL-003`, `DOC-SKILL-006`, `DOC-SKILL-008`, `DOC-SKILL-009`, and `DOC-SKILL-010` with preserved counts `OR_CONFIRMED=7`, `NEEDS_STRONGER_TEST=0`, and `OR_REJECTED=0`. The original first explicitly approved OR smoke-test call for `DOC-SKILL-008` on `qwen/qwen3.5-flash-02-23` remains debug failure evidence only because shell-side capture lost response body, `generation_id`, and `response_usage`. After that debug-only first row, all later explicitly approved live OR executions in this layer completed as bounded accepted telemetry: one approved `DOC-SKILL-008` live retry on `qwen/qwen3.5-flash-02-23`, one approved three-call mini batch for `DOC-SKILL-009`, `DOC-SKILL-010`, and optional `DOC-SKILL-006`, and one approved three-call remaining mini batch for `DOC-SKILL-001`, `DOC-SKILL-002`, and `DOC-SKILL-003`. All accepted live calls used the file-first wrapper, stayed within the approved cost caps, persisted response body plus `generation_id` and usage, wrote accepted telemetry rows, and passed `health_snapshot.py --or-telemetry-jsonl` ingestion. This remains bounded local telemetry evidence only: no production routing, no canonical routing-table update, no `DOC-SKILL-011` run, no `DOC-SKILL-012` start, no release action, and no product-code change. The separate `5.4` candidate phase remains paused and planning-only.
+Documentation-skill mini Auto-sparsam proposal drafting. The mini matrix phase remains complete for `DOC-SKILL-001`, `DOC-SKILL-002`, `DOC-SKILL-003`, `DOC-SKILL-006`, `DOC-SKILL-008`, `DOC-SKILL-009`, and `DOC-SKILL-010` with preserved counts `OR_CONFIRMED=7`, `NEEDS_STRONGER_TEST=0`, and `OR_REJECTED=0`. The original first explicitly approved OR smoke-test call for `DOC-SKILL-008` on `qwen/qwen3.5-flash-02-23` remains debug failure evidence only because shell-side capture lost response body, `generation_id`, and `response_usage`. Accepted live evidence still consists only of the approved `DOC-SKILL-008` live retry, the accepted three-row mini batch for `DOC-SKILL-009`, `DOC-SKILL-010`, and `DOC-SKILL-006`, and the accepted three-row remaining mini batch for `DOC-SKILL-001`, `DOC-SKILL-002`, and `DOC-SKILL-003`. The new proposal adds a planning-only bounded `Auto-sparsam` operating mode for those seven skills with explicit cost, confidence, file-first telemetry, healthcheck ingestion, fallback, abort, and manual-review gates. This remains bounded local workflow planning only: no production routing, no canonical routing-table update, no `DOC-SKILL-011` run, no `DOC-SKILL-012` start, no release action, and no product-code change. The separate `5.4` candidate phase remains paused and planning-only.
 
 ## Last Decision
 The documentation-skill routing table remains the canonical reference for documentation-skill model and scope boundaries.
@@ -39,7 +39,7 @@ The separate `5.4` candidate phase remains paused and planning-only.
 This cost-accounting planning step does not create a global model approval, does not mark any model production-approved, does not update the canonical routing table, does not run DOC-SKILL-011, does not continue the `5.4` candidate phase, and does not start DOC-SKILL-012.
 
 ## Last Codex Work
-Closed the mini OR live evidence layer with one consolidated closeout note that summarizes all seven accepted live telemetry rows across the approved `DOC-SKILL-008` retry, the accepted three-row mini batch, and the accepted three-row remaining mini batch. The closeout keeps the first `DOC-SKILL-008` smoke-test row excluded as debug-only evidence and fixes CURRENT_STATE wording so it now acknowledges every explicitly approved live OR call and batch in this layer instead of only the earliest smoke-test/retry chain.
+Drafted a controlled `Auto-sparsam` mode proposal for the seven live-evidenced mini documentation skills. The proposal maps each approved skill to its selected OR model, keeps the first `DOC-SKILL-008` smoke-test row excluded as debug-only evidence, and defines bounded non-production gates for per-call cost, total session cost, pre-call estimate display, confidence display, mandatory file-first telemetry capture, mandatory healthcheck ingestion, fallback rules, abort rules, and manual-review triggers.
 
 The telemetry plan keeps the mini phase bounded to:
 
@@ -54,10 +54,9 @@ The telemetry plan keeps the mini phase bounded to:
 Exactly one approved OR call was attempted for the smoke test in the prior block. No second OR call was made in this debugging block, no production routing decision was made, no canonical routing-table update was made, no DOC-SKILL-011 run was started, and the separate `5.4` candidate phase was not continued.
 
 ## Changed Files
-- `documentation/codex/model-routing/scripts/or_file_first_capture_wrapper.ps1`
-- `documentation/codex/model-routing/doc_skill_gpt54_mini_or_live_evidence_closeout_2026-06-13.md`
-- `documentation/codex/model-routing/or_healthcheck_telemetry_mini_live_batch_remaining_2026-06-13.jsonl`
-- `documentation/codex/model-routing/or_healthcheck_mini_live_batch_remaining_result_2026-06-13.md`
+- `documentation/codex/model-routing/doc_skill_gpt54_mini_auto_sparsam_mode_proposal_2026-06-13.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
 - `documentation/codex/model-routing/smoke-test-capture/mini-batch-remaining-2026-06-13-live-001/doc-skill-001-openai-gpt-oss-20b/request_body.json`
 - `documentation/codex/model-routing/smoke-test-capture/mini-batch-remaining-2026-06-13-live-001/doc-skill-001-openai-gpt-oss-20b/request_body_source.json`
 - `documentation/codex/model-routing/smoke-test-capture/mini-batch-remaining-2026-06-13-live-001/doc-skill-001-openai-gpt-oss-20b/response_body.json`
