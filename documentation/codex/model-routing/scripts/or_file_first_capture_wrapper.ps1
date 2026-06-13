@@ -146,12 +146,34 @@ try {
 
     $parsed = $rawBody | ConvertFrom-Json
     $usage = Safe-JsonField -Object $parsed -Name "usage"
+    $choices = Safe-JsonField -Object $parsed -Name "choices"
+    $finishReason = $null
+    if ($choices) {
+        $firstChoice = $null
+        if ($choices -is [System.Array]) {
+            if ($choices.Length -gt 0) {
+                $firstChoice = $choices[0]
+            }
+        }
+        else {
+            $firstChoice = $choices
+        }
+        if ($firstChoice) {
+            $finishReason = Safe-JsonField -Object $firstChoice -Name "finish_reason"
+        }
+    }
+    $actualCost = $null
+    if ($usage) {
+        $actualCost = Safe-JsonField -Object $usage -Name "cost"
+    }
     $summaryObject = [ordered]@{
         capture_mode = $(if ($UseLocalFixture) { "local_fixture" } else { "live_http" })
         http_status = $statusCode
         generation_id = Safe-JsonField -Object $parsed -Name "id"
         model = Safe-JsonField -Object $parsed -Name "model"
+        finish_reason = $finishReason
         usage = $usage
+        actual_or_cost = $actualCost
     }
 
     Write-Artifact -Path $summaryPath -Value ($summaryObject | ConvertTo-Json -Depth 20)
