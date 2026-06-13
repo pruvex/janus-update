@@ -1,0 +1,19 @@
+﻿
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1781368060-0IkPKtPP6wutxzFB1PAy","object":"chat.completion","created":1781368060,"model":"openai/gpt-oss-20b","provider":"Novita","system_fingerprint":null,"service_tier":null,"choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"stop","message":{"role":"assistant","content":"# Model Scoring Report Summary – DOC‑SKILL‑002\n\n## 1. Overall Status\n- **Overall status:** `HOLD`\n\n## 2. Per‑Model Scoring Summary\n| Model | Score | Status | Routing State | Disabled | Notes |\n|-------|-------|--------|----------------|----------|-------|\n| `model_alpha` | 88 | PASS | HOLD | No | Met schema & preservation checks; needs repeatability confirmation before routing. |\n| `model_beta` | N/A | UNKNOWN | HOLD | Yes (missing repeatability evidence) | Do not score as PASS; disabled state must be preserved. |\n| `model_gamma` | 74 | HOLD | HOLD | No | Partial preservation of disabled‑state wording; no production activation allowed. |\n\n## 3. Disabled / UNKNOWN / HOLD Notes\n- `model_beta` is **disabled** due to missing repeatability evidence; its status remains **UNKNOWN** and must not be treated as PASS.  \n- All models are in **HOLD** routing state; no routing discussion or approval is permitted.  \n- `model_gamma` is in HOLD status and explicitly states that no production activation is allowed.\n\n## 4. Final Governance Note\n- **Production approved:** `false`  \n- **Routing approved:** `false`  \n- No routing is approved, no production activation is allowed, and policy overrides are not permitted.","refusal":null,"reasoning":"We need to produce concise Markdown summary. Must preserve states. Provide overall status, per-model scoring summary, disabled/UNKNOWN/HOLD notes, final governance note. Must explicitly state production_approved=false, routing_approved=false. Do not approve routing. Keep concise. Use sanitized input. Let's craft.\n\nWe need to list each model with score, status, routing_state, disabled flag, notes. Also mention disabled/UNKNOWN/HOLD notes. Final governance note: production_approved=false, routing_approved=false, no routing approval, no production activation.\n\nLet's produce.","reasoning_details":[{"type":"reasoning.text","text":"We need to produce concise Markdown summary. Must preserve states. Provide overall status, per-model scoring summary, disabled/UNKNOWN/HOLD notes, final governance note. Must explicitly state production_approved=false, routing_approved=false. Do not approve routing. Keep concise. Use sanitized input. Let's craft.\n\nWe need to list each model with score, status, routing_state, disabled flag, notes. Also mention disabled/UNKNOWN/HOLD notes. Final governance note: production_approved=false, routing_approved=false, no routing approval, no production activation.\n\nLet's produce.","format":"unknown","index":0}]}}],"usage":{"prompt_tokens":731,"completion_tokens":410,"total_tokens":1141,"cost":0.00009074,"is_byok":false,"prompt_tokens_details":{"cached_tokens":0,"cache_write_tokens":0,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.00009074,"upstream_inference_prompt_cost":0.00002924,"upstream_inference_completions_cost":0.0000615},"completion_tokens_details":{"reasoning_tokens":148,"image_tokens":0,"audio_tokens":0}}}

@@ -1,0 +1,25 @@
+﻿
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1781368054-6AwL5DuPv325hvLzv8Pd","object":"chat.completion","created":1781368054,"model":"openai/gpt-oss-20b","provider":"Phala","system_fingerprint":null,"service_tier":null,"choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"stop","message":{"role":"assistant","content":"**Overall Status**  \n- Benchmark result: **HOLD**  \n- Production approval: **false** (no routing decision approved)\n\n**Per‑Model Summary**\n\n| Model      | Status | Score | Key Notes |\n|------------|--------|-------|-----------|\n| model_alpha | PASS | 0.86 | Schema projection complete; no policy violations; reviewer confirmation required before production use |\n| model_beta  | HOLD | 0.71 | Required fields preserved; ambiguity in disabled‑state wording; not eligible for production routing |\n| model_gamma | PASS | 0.79 | Evidence summarized correctly; no raw prompt exposure; still blocked from production approval |\n\n**Blocking Notes**\n- `model_beta` remains on HOLD due to wording ambiguity.\n- All models are currently blocked from production routing and approval.\n\n**Final Governance Note**\n- `production_approved = false`.  \n- No production routing decision has been approved.  \n- No model is approved for production use.","refusal":null,"reasoning":"We need to produce concise markdown summary. Must preserve overall HOLD/PASS state accurately. Explicitly state production_approved=false. Mention no production routing decision approved. Do not infer readiness. Do not approve any model. No raw prompts. No repo writes. Keep concise.\n\nReturn: 1. Overall status 2. Per-model summary 3. Blocking notes 4. Final governance note.\n\nWe need to summarize each model: status, score, notes. But we must not mention production approval. We can mention that each model is blocked from production routing. For model_alpha: PASS, score 0.86, notes: Completed schema projection, No policy violations detected, Requires reviewer confirmation before production use. For model_beta: HOLD, score 0.71, notes: Output preserved required fields, One ambiguity in disabled-state wording, Not eligible for production routing. For model_gamma: PASS, score 0.79, notes: Summarized benchmark evidence correctly, No raw prompt exposure, Still blocked from production approval.\n\nWe need to mention that no production routing decision is approved. Also final governance note: production_approved=false, no routing decision, no approval.\n\nLet's produce markdown:\n\n- Overall status: HOLD\n- Per-model summary: table maybe.\n\nBlocking notes: mention that model_beta is on HOLD due to ambiguity; all models blocked from production routing; no production approval.\n\nFinal governance note: production_approved=false; no routing decision; no approval.\n\nLet's produce concise.","reasoning_details":[{"type":"reasoning.text","text":"We need to produce concise markdown summary. Must preserve overall HOLD/PASS state accurately. Explicitly state production_approved=false. Mention no production routing decision approved. Do not infer readiness. Do not approve any model. No raw prompts. No repo writes. Keep concise.\n\nReturn: 1. Overall status 2. Per-model summary 3. Blocking notes 4. Final governance note.\n\nWe need to summarize each model: status, score, notes. But we must not mention production approval. We can mention that each model is blocked from production routing. For model_alpha: PASS, score 0.86, notes: Completed schema projection, No policy violations detected, Requires reviewer confirmation before production use. For model_beta: HOLD, score 0.71, notes: Output preserved required fields, One ambiguity in disabled-state wording, Not eligible for production routing. For model_gamma: PASS, score 0.79, notes: Summarized benchmark evidence correctly, No raw prompt exposure, Still blocked from production approval.\n\nWe need to mention that no production routing decision is approved. Also final governance note: production_approved=false, no routing decision, no approval.\n\nLet's produce markdown:\n\n- Overall status: HOLD\n- Per-model summary: table maybe.\n\nBlocking notes: mention that model_beta is on HOLD due to ambiguity; all models blocked from production routing; no production approval.\n\nFinal governance note: production_approved=false; no routing decision; no approval.\n\nLet's produce concise.","format":"unknown","index":0}]}}],"usage":{"prompt_tokens":596,"completion_tokens":504,"total_tokens":1100,"cost":0.00009944,"is_byok":false,"prompt_tokens_details":{"cached_tokens":0,"cache_write_tokens":0,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.00009944,"upstream_inference_prompt_cost":0.00002384,"upstream_inference_completions_cost":0.0000756},"completion_tokens_details":{"reasoning_tokens":385,"image_tokens":0,"audio_tokens":0}}}
