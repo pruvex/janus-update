@@ -94,6 +94,7 @@ try {
         foreach ($key in $Headers.Keys) {
             switch -Regex ($key) {
                 '^Authorization$' { $request.Headers['Authorization'] = [string]$Headers[$key] }
+                '^Content-Type$' { $request.ContentType = [string]$Headers[$key] }
                 '^HTTP-Referer$' { $request.Referer = [string]$Headers[$key] }
                 '^User-Agent$' { $request.UserAgent = [string]$Headers[$key] }
                 default { $request.Headers[$key] = [string]$Headers[$key] }

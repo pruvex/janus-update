@@ -4,10 +4,10 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Goal
-Close the approved OR telemetry live-retry block for `DOC-SKILL-008` with accepted file-first capture evidence, keep the original first smoke-test row as debug failure evidence only, and preserve the completed 5.4-mini phase boundaries while the separate `5.4` candidate phase remains paused.
+Close the bounded mini OR live evidence batch for `DOC-SKILL-009`, `DOC-SKILL-010`, and optional `DOC-SKILL-006` with accepted file-first capture evidence, keep the original first `DOC-SKILL-008` smoke-test row as debug failure evidence only, and preserve the completed 5.4-mini phase boundaries while the separate `5.4` candidate phase remains paused.
 
 ## Active Phase
-Documentation-skill OR telemetry live-retry closure. The mini matrix phase remains complete for `DOC-SKILL-001`, `DOC-SKILL-002`, `DOC-SKILL-003`, `DOC-SKILL-006`, `DOC-SKILL-008`, `DOC-SKILL-009`, and `DOC-SKILL-010` with preserved counts `OR_CONFIRMED=7`, `NEEDS_STRONGER_TEST=0`, and `OR_REJECTED=0`. The original first approved OR smoke-test call for `DOC-SKILL-008` on `qwen/qwen3.5-flash-02-23` remains debug failure evidence only because shell-side capture lost response body, `generation_id`, and `response_usage`. A later separately approved single live retry was executed exactly once through the file-first wrapper and captured `response_body.json`, `response_headers.txt`, `response_summary.json`, `stdout.log`, `stderr.log`, and `exit_code.txt` locally. The retry remained under the `0.0020` cap, recovered `generation_id` plus usage from `response_summary.json`, and produced one accepted bounded telemetry row for local healthcheck ingestion. This remains smoke-test evidence only: no production routing, no canonical routing-table update, no `DOC-SKILL-011` run, no `DOC-SKILL-012` start, no release action, and no product-code change. The separate `5.4` candidate phase remains paused and planning-only.
+Documentation-skill bounded mini OR live evidence batch closure. The mini matrix phase remains complete for `DOC-SKILL-001`, `DOC-SKILL-002`, `DOC-SKILL-003`, `DOC-SKILL-006`, `DOC-SKILL-008`, `DOC-SKILL-009`, and `DOC-SKILL-010` with preserved counts `OR_CONFIRMED=7`, `NEEDS_STRONGER_TEST=0`, and `OR_REJECTED=0`. The original first approved OR smoke-test call for `DOC-SKILL-008` on `qwen/qwen3.5-flash-02-23` remains debug failure evidence only because shell-side capture lost response body, `generation_id`, and `response_usage`. The separately approved `DOC-SKILL-008` live retry remains accepted bounded telemetry evidence only. A later controlled batch then executed exactly three live OR calls through the file-first wrapper: `DOC-SKILL-009` on `qwen/qwen3.5-flash-02-23`, `DOC-SKILL-010` on `qwen/qwen3.5-flash-02-23`, and optional `DOC-SKILL-006` on `openai/gpt-oss-120b`. All three calls stayed within the `0.0020` per-call cap and the `0.0060` batch cap, persisted file-first artifacts, recovered `generation_id` plus usage from `response_summary.json`, wrote accepted telemetry rows, and passed `health_snapshot.py --or-telemetry-jsonl` ingestion as a three-row batch. This remains bounded local telemetry evidence only: no production routing, no canonical routing-table update, no `DOC-SKILL-011` run, no `DOC-SKILL-012` start, no release action, and no product-code change. The separate `5.4` candidate phase remains paused and planning-only.
 
 ## Last Decision
 The documentation-skill routing table remains the canonical reference for documentation-skill model and scope boundaries.
@@ -39,7 +39,7 @@ The separate `5.4` candidate phase remains paused and planning-only.
 This cost-accounting planning step does not create a global model approval, does not mark any model production-approved, does not update the canonical routing table, does not run DOC-SKILL-011, does not continue the `5.4` candidate phase, and does not start DOC-SKILL-012.
 
 ## Last Codex Work
-Ran the separately approved single live retry for `DOC-SKILL-008` through the file-first wrapper after patching the wrapper for local PowerShell compatibility. The retry persisted request, response, headers, summary, stdout, stderr, and exit-code artifacts before returning the operator summary. `response_summary.json` recorded HTTP `200`, `generation_id=gen-1781366532-8Xvtr6Rhfus4G6dlVdfW`, actual usage, and actual cost `0.000570895`, which stayed below the `0.0020` cap. A real telemetry JSONL row was written only for the accepted retry capture, and `health_snapshot.py --or-telemetry-jsonl` successfully ingested that row with `record_count=1`, `fallback_count=0`, `validation_result_counts={"PASS": 1}`, and `recommendation_signal_counts={"OR_PREFERRED": 1}`. The original first smoke-test result still remains debug-only because that earlier run lost response body, `generation_id`, and `response_usage`.
+Ran the controlled bounded mini live batch through the file-first wrapper after a second PowerShell-compatibility patch in the wrapper to set `Content-Type` via `HttpWebRequest.ContentType`. The batch produced accepted telemetry rows for `DOC-SKILL-009`, `DOC-SKILL-010`, and `DOC-SKILL-006`, with total actual OR cost `0.0014551`. Each call persisted `request_body.json`, `response_body.json`, `response_headers.txt`, `response_summary.json`, `stdout.log`, `stderr.log`, and `exit_code.txt`, and each accepted row recorded `generation_id`, usage, actual cost, and `validation_result=PASS`. `health_snapshot.py --or-telemetry-jsonl` successfully ingested the batch file with `record_count=3`, `fallback_count=0`, `validation_result_counts={"PASS": 3}`, and `recommendation_signal_counts={"OR_PREFERRED": 3}`. The original first `DOC-SKILL-008` smoke-test result still remains debug-only because that earlier run lost response body, `generation_id`, and `response_usage`.
 
 The telemetry plan keeps the mini phase bounded to:
 
@@ -55,6 +55,32 @@ Exactly one approved OR call was attempted for the smoke test in the prior block
 
 ## Changed Files
 - `documentation/codex/model-routing/scripts/or_file_first_capture_wrapper.ps1`
+- `documentation/codex/model-routing/or_healthcheck_telemetry_mini_live_batch_2026-06-13.jsonl`
+- `documentation/codex/model-routing/or_healthcheck_mini_live_batch_result_2026-06-13.md`
+- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-009-qwen-qwen3.5-flash-02-23/request_body.json`
+- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-009-qwen-qwen3.5-flash-02-23/request_body_source.json`
+- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-009-qwen-qwen3.5-flash-02-23/response_body.json`
+- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-009-qwen-qwen3.5-flash-02-23/response_headers.txt`
+- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-009-qwen-qwen3.5-flash-02-23/response_summary.json`
+- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-009-qwen-qwen3.5-flash-02-23/stdout.log`
+- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-009-qwen-qwen3.5-flash-02-23/stderr.log`
+- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-009-qwen-qwen3.5-flash-02-23/exit_code.txt`
+- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-010-qwen-qwen3.5-flash-02-23/request_body.json`
+- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-010-qwen-qwen3.5-flash-02-23/request_body_source.json`
+- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-010-qwen-qwen3.5-flash-02-23/response_body.json`
+- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-010-qwen-qwen3.5-flash-02-23/response_headers.txt`
+- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-010-qwen-qwen3.5-flash-02-23/response_summary.json`
+- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-010-qwen-qwen3.5-flash-02-23/stdout.log`
+- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-010-qwen-qwen3.5-flash-02-23/stderr.log`
+- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-010-qwen-qwen3.5-flash-02-23/exit_code.txt`
+- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-006-openai-gpt-oss-120b/request_body.json`
+- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-006-openai-gpt-oss-120b/request_body_source.json`
+- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-006-openai-gpt-oss-120b/response_body.json`
+- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-006-openai-gpt-oss-120b/response_headers.txt`
+- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-006-openai-gpt-oss-120b/response_summary.json`
+- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-006-openai-gpt-oss-120b/stdout.log`
+- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-006-openai-gpt-oss-120b/stderr.log`
+- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-006-openai-gpt-oss-120b/exit_code.txt`
 - `documentation/codex/model-routing/or_healthcheck_telemetry_smoke_test_live_retry_2026-06-13.jsonl`
 - `documentation/codex/model-routing/smoke-test-capture/live-retry-2026-06-13-doc-skill-008-001/request_body.json`
 - `documentation/codex/model-routing/smoke-test-capture/live-retry-2026-06-13-doc-skill-008-001/request_body_source.json`
@@ -112,6 +138,7 @@ Exactly one approved OR call was attempted for the smoke test in the prior block
 - One approved OR call attempted: PASS.
 - No second OR call attempted: PASS.
 - Separately approved single live retry attempted exactly once: PASS.
+- Controlled mini live evidence batch attempted `3` calls total: PASS.
 - Pre-call cost estimate under cap: PASS.
 - Direct shell-side response capture recovered `response_usage`: FAIL.
 - Fallback-estimate debug row created: PASS.
@@ -122,6 +149,13 @@ Exactly one approved OR call was attempted for the smoke test in the prior block
 - Accepted live retry telemetry JSONL row created: PASS.
 - `health_snapshot.py --or-telemetry-jsonl` reads the accepted retry row: PASS.
 - OR summary output matches the accepted retry row: PASS.
+- Mini live batch telemetry JSONL file exists: PASS.
+- `DOC-SKILL-009` accepted row has response body, `generation_id`, usage, actual cost, and `validation_result=PASS`: PASS.
+- `DOC-SKILL-010` accepted row has response body, `generation_id`, usage, actual cost, and `validation_result=PASS`: PASS.
+- `DOC-SKILL-006` accepted row has response body, `generation_id`, usage, actual cost, and `validation_result=PASS`: PASS.
+- Mini live batch total actual cost `0.0014551` <= `0.0060`: PASS.
+- `health_snapshot.py --or-telemetry-jsonl` reads the accepted mini batch file: PASS.
+- Mini live batch OR summary output matches the accepted batch file: PASS.
 - Capture-debug note exists: PASS.
 - No new OR call was made in the capture-debug block: PASS.
 - Likely root cause documented: PASS.
@@ -153,14 +187,15 @@ Exactly one approved OR call was attempted for the smoke test in the prior block
 - The smoke-test plan is still planning-only and must not be treated as approval to run the OR call.
 - The smoke-test execution produced a capture gap, so the resulting row is debug evidence only and must not be treated as accepted operational telemetry.
 - The accepted retry proves capture for this one bounded task/model pair only; it is not a global OR approval or production-routing approval.
+- The bounded mini live batch adds task-level local evidence for three approved mini skills only; it still does not create any global OR approval or production-routing approval.
 - Any later live retry beyond this accepted block would still need separate explicit approval.
 - The separate `5.4` phase is paused; no candidate list should be treated as evaluation evidence until a separate explicit phase runs.
 
 ## Next Recommended Step for ChatGPT
-Treat the first smoke-test row as debug-only, treat the accepted retry row as bounded local telemetry evidence only, and keep the separate `5.4` candidate phase paused until a new planning-only request arrives.
+Treat the first `DOC-SKILL-008` smoke-test row as debug-only, treat the accepted retry row plus the accepted three-row mini batch as bounded local telemetry evidence only, and keep the separate `5.4` candidate phase paused until a new planning-only request arrives.
 
 ## Next Recommended Step for Codex
-Stop after documentation/governance closeout, keep the accepted retry row as bounded smoke-test evidence only, and do not continue into any further OR call or `5.4` candidate work without a new explicit request.
+Stop after documentation/governance closeout, keep the accepted retry row plus the accepted mini batch as bounded smoke-test evidence only, and do not continue into any further OR call or `5.4` candidate work without a new explicit request.
 
 ## Last Updated
-2026-06-13 19:09 local time
+2026-06-13 20:22 local time
