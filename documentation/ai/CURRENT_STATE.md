@@ -4,10 +4,10 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Goal
-Implement a bounded operator-invoked `Auto-sparsam` runner skeleton for the seven live-evidenced `5.4 mini` documentation skills while keeping the mini evidence layer closed, the first `DOC-SKILL-008` smoke-test row debug-only, and the separate `5.4` candidate phase paused.
+Run one bounded Auto Router experiment inside the existing mini `Auto-sparsam` framework for `DOC-SKILL-010`, compare it against the fixed-model baseline, and keep all non-production boundaries intact.
 
 ## Active Phase
-Documentation-skill mini Auto-sparsam runner skeleton implementation. The mini matrix phase remains complete for `DOC-SKILL-001`, `DOC-SKILL-002`, `DOC-SKILL-003`, `DOC-SKILL-006`, `DOC-SKILL-008`, `DOC-SKILL-009`, and `DOC-SKILL-010` with preserved counts `OR_CONFIRMED=7`, `NEEDS_STRONGER_TEST=0`, and `OR_REJECTED=0`. The original first explicitly approved OR smoke-test call for `DOC-SKILL-008` on `qwen/qwen3.5-flash-02-23` remains debug failure evidence only because shell-side capture lost response body, `generation_id`, and `response_usage`. Accepted live evidence still consists only of the approved `DOC-SKILL-008` live retry, the accepted three-row mini batch for `DOC-SKILL-009`, `DOC-SKILL-010`, and `DOC-SKILL-006`, and the accepted three-row remaining mini batch for `DOC-SKILL-001`, `DOC-SKILL-002`, and `DOC-SKILL-003`. The new runner skeleton now implements bounded allowed-skill detection, fixed per-skill model lookup, pre-call estimate and confidence gates, file-first wrapper invocation, session JSONL naming, post-call healthcheck ingestion, fallback-to-Codex-only handling, manual-review triggers, abort handling, and compact operator summary output. This remains bounded local workflow tooling only: no live OR calls in this block, no production routing, no canonical routing-table update, no `DOC-SKILL-011` run, no `DOC-SKILL-012` start, no release action, and no product-code change. The separate `5.4` candidate phase remains paused and planning-only.
+Documentation-skill mini Auto Router experiment closeout. The mini matrix phase remains complete for `DOC-SKILL-001`, `DOC-SKILL-002`, `DOC-SKILL-003`, `DOC-SKILL-006`, `DOC-SKILL-008`, `DOC-SKILL-009`, and `DOC-SKILL-010` with preserved counts `OR_CONFIRMED=7`, `NEEDS_STRONGER_TEST=0`, and `OR_REJECTED=0`. The original first explicitly approved OR smoke-test call for `DOC-SKILL-008` on `qwen/qwen3.5-flash-02-23` remains debug failure evidence only because shell-side capture lost response body, `generation_id`, and `response_usage`. Accepted live evidence still consists only of the approved `DOC-SKILL-008` live retry, the accepted three-row mini batch for `DOC-SKILL-009`, `DOC-SKILL-010`, and `DOC-SKILL-006`, and the accepted three-row remaining mini batch for `DOC-SKILL-001`, `DOC-SKILL-002`, and `DOC-SKILL-003`. A separate bounded Auto Router experiment was run for `DOC-SKILL-010` using `openrouter/auto` with a restricted allowed-model pool and `cost_quality_tradeoff=8`. The single live call selected `openai/gpt-oss-120b`, stayed under the `0.0020` cap, produced file-first artifacts, wrote one experiment telemetry row, and passed `health_snapshot.py --or-telemetry-jsonl` ingestion. This remains experiment-only local evidence: it does not replace the fixed-model Auto-sparsam implementation plan, does not activate production routing, does not update the canonical routing table, does not create any global OR approval, does not run `DOC-SKILL-011`, does not start `DOC-SKILL-012`, and does not continue the separate `5.4` candidate phase.
 
 ## Last Decision
 The documentation-skill routing table remains the canonical reference for documentation-skill model and scope boundaries.
@@ -39,7 +39,7 @@ The separate `5.4` candidate phase remains paused and planning-only.
 This cost-accounting planning step does not create a global model approval, does not mark any model production-approved, does not update the canonical routing table, does not run DOC-SKILL-011, does not continue the `5.4` candidate phase, and does not start DOC-SKILL-012.
 
 ## Last Codex Work
-Implemented a Python runner skeleton at `documentation/codex/model-routing/scripts/mini_auto_sparsam_runner.py`. The skeleton stays operator-invoked and bounded to the seven scoped mini skills, routes out-of-scope work to `Codex-only` before wrapper invocation, aborts before wrapper invocation when estimate/confidence metadata is missing, uses the existing file-first wrapper path, writes the planned session JSONL naming pattern, runs `health_snapshot.py --or-telemetry-jsonl`, and prints a compact `AUTO-SPARSAM SUMMARY` from fixture-only data.
+Created a separate Auto Router experiment plan for `DOC-SKILL-010`, reused the existing file-first wrapper without patching it, and ran exactly one live `openrouter/auto` call with plugin-restricted allowed models. The experiment selected `openai/gpt-oss-120b`, captured `generation_id`, usage, actual cost, and response artifacts, wrote one experiment telemetry JSONL row, passed `health_snapshot.py --or-telemetry-jsonl`, and documented the comparison against the fixed `qwen/qwen3.5-flash-02-23` baseline. The result stays bounded and non-production, and the fixed-model Auto-sparsam plan remains the canonical path.
 
 The telemetry plan keeps the mini phase bounded to:
 
@@ -54,13 +54,23 @@ The telemetry plan keeps the mini phase bounded to:
 Exactly one approved OR call was attempted for the smoke test in the prior block. No second OR call was made in this debugging block, no production routing decision was made, no canonical routing-table update was made, no DOC-SKILL-011 run was started, and the separate `5.4` candidate phase was not continued.
 
 ## Changed Files
-- `documentation/codex/model-routing/scripts/mini_auto_sparsam_runner.py`
+- `documentation/codex/model-routing/or_auto_router_experiment_plan_2026-06-13.md`
+- `documentation/codex/model-routing/or_healthcheck_telemetry_auto_router_experiment_2026-06-13.jsonl`
+- `documentation/codex/model-routing/or_auto_router_experiment_result_2026-06-13.md`
+- `documentation/codex/model-routing/smoke-test-capture/auto-router-experiment-2026-06-13-doc-skill-010-001/request_body_source.json`
+- `documentation/codex/model-routing/smoke-test-capture/auto-router-experiment-2026-06-13-doc-skill-010-001/request_body.json`
+- `documentation/codex/model-routing/smoke-test-capture/auto-router-experiment-2026-06-13-doc-skill-010-001/response_body.json`
+- `documentation/codex/model-routing/smoke-test-capture/auto-router-experiment-2026-06-13-doc-skill-010-001/response_headers.txt`
+- `documentation/codex/model-routing/smoke-test-capture/auto-router-experiment-2026-06-13-doc-skill-010-001/response_summary.json`
+- `documentation/codex/model-routing/smoke-test-capture/auto-router-experiment-2026-06-13-doc-skill-010-001/stdout.log`
+- `documentation/codex/model-routing/smoke-test-capture/auto-router-experiment-2026-06-13-doc-skill-010-001/stderr.log`
+- `documentation/codex/model-routing/smoke-test-capture/auto-router-experiment-2026-06-13-doc-skill-010-001/exit_code.txt`
 - `documentation/ai/CURRENT_STATE.md`
 - `documentation/codex/SKILL_USAGE_LOG.md`
 
 ## Remote Sync Evidence
 - Branch context: `develop` / `backup/develop` workflow.
-- This block is intended to be committed as `feat(codex): add mini auto sparsam runner skeleton` and pushed to `backup/develop` only.
+- This block is intended to be committed as `test(codex): evaluate auto router for mini auto sparsam` and pushed to `backup/develop` only.
 - No push to `origin`, tag, merge, reset, release, routing-table update, DOC-SKILL-011 run, DOC-SKILL-012 continuation, or production routing activation is part of this block.
 
 ## Tests / Validation
@@ -137,29 +147,34 @@ Exactly one approved OR call was attempted for the smoke test in the prior block
 - The separate `5.4` candidate phase remains paused and planning-only: PASS.
 - No DOC-SKILL-011 run: PASS.
 - No DOC-SKILL-012 start: PASS.
-- Runner skeleton exists: PASS.
-- Fixture/local validation for `DOC-SKILL-008` completed through wrapper fixture mode: PASS.
-- Fixture/local operator summary output was produced: PASS.
-- Session JSONL naming matches the implementation plan pattern: PASS.
-- Out-of-scope `DOC-SKILL-011` routed to `Codex-only` before wrapper invocation: PASS.
-- Missing estimate/confidence metadata aborted before wrapper invocation: PASS.
+- Auto Router experiment plan exists: PASS.
+- Exactly one Auto Router live call attempted: PASS.
+- Pre-call estimate `0.0004821` <= `0.0020`: PASS.
+- `response_body.json` parse: PASS.
+- `response_summary.json` contains `generation_id`: PASS.
+- `response_summary.json` contains selected routed model `openai/gpt-oss-120b`: PASS.
+- `response_summary.json` contains usage and actual cost `0.00040905`: PASS.
+- actual cost `0.00040905` <= `0.0020`: PASS.
+- experiment telemetry JSONL parse: PASS.
+- `health_snapshot.py --or-telemetry-jsonl` ingests the experiment JSONL: PASS.
+- experiment result note compares Auto Router selection against the fixed `DOC-SKILL-010` baseline: PASS.
 - `git diff --check`: PASS.
 - Staged-only git guard required before commit: PASS.
 
 ## Open Risks
 - The repository worktree contains many unrelated pre-existing modified and untracked files. Commit staging must remain path-specific.
 - The completed mini matrix is task-level documentation evidence only and must not be misread as a global model approval or production routing update.
-- The telemetry plan is planning-only; confidence scores remain future-facing until enough comparable historical rows, price snapshots, and usage capture exist.
-- The runner is a skeleton only and currently validated in fixture/local mode, not with any new live OR execution.
-- Session telemetry and healthcheck outputs are local workflow artifacts only and must not be read as production routing activation.
-- Any future non-fixture OR execution would still need separate explicit approval.
+- The Auto Router experiment is a single bounded data point for one skill only and must not be generalized into a routing policy.
+- The Auto Router response hit `finish_reason=length`, so the experiment is technically captured but still marked `rework_required=YES` and `recommendation_signal=MANUAL_REVIEW`.
+- Session telemetry and healthcheck outputs are local experiment artifacts only and must not be read as production routing activation.
+- Any future Auto Router or non-fixture OR execution beyond this one call would still need separate explicit approval.
 - The separate `5.4` phase is paused; no candidate list should be treated as evaluation evidence until a separate explicit phase runs.
 
 ## Next Recommended Step for ChatGPT
-Treat this runner as a bounded local skeleton only, keep the first `DOC-SKILL-008` smoke-test row debug-only, keep the accepted live evidence layer as local evidence only, and require a separate explicit approval before any future non-fixture Auto-sparsam run.
+Treat the Auto Router result as one bounded experiment only, keep the fixed-model Auto-sparsam implementation plan unchanged, keep the first `DOC-SKILL-008` smoke-test row debug-only, and require explicit approval before any further Auto Router or non-fixture OR experiment.
 
 ## Next Recommended Step for Codex
-Stop after the runner-skeleton checkpoint, keep Auto-sparsam in fixture/local validation mode only, and do not continue into any live OR call, production routing change, or `5.4` candidate work without a new explicit request.
+Stop after this single-call experiment closeout, keep the fixed-model Auto-sparsam path as the canonical bounded plan, and do not continue into any further Auto Router call, production routing change, or `5.4` candidate work without a new explicit request.
 
 ## Last Updated
-2026-06-13 21:15 local time
+2026-06-13 21:33 local time
