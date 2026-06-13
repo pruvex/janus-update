@@ -4,10 +4,10 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Goal
-Draft the operator-invoked implementation plan for bounded `Auto-sparsam` mode across the seven live-evidenced `5.4 mini` documentation skills while keeping the bounded mini evidence layer closed, the original first `DOC-SKILL-008` smoke-test row debug-only, and the separate `5.4` candidate phase paused.
+Implement a bounded operator-invoked `Auto-sparsam` runner skeleton for the seven live-evidenced `5.4 mini` documentation skills while keeping the mini evidence layer closed, the first `DOC-SKILL-008` smoke-test row debug-only, and the separate `5.4` candidate phase paused.
 
 ## Active Phase
-Documentation-skill mini Auto-sparsam implementation planning. The mini matrix phase remains complete for `DOC-SKILL-001`, `DOC-SKILL-002`, `DOC-SKILL-003`, `DOC-SKILL-006`, `DOC-SKILL-008`, `DOC-SKILL-009`, and `DOC-SKILL-010` with preserved counts `OR_CONFIRMED=7`, `NEEDS_STRONGER_TEST=0`, and `OR_REJECTED=0`. The original first explicitly approved OR smoke-test call for `DOC-SKILL-008` on `qwen/qwen3.5-flash-02-23` remains debug failure evidence only because shell-side capture lost response body, `generation_id`, and `response_usage`. Accepted live evidence still consists only of the approved `DOC-SKILL-008` live retry, the accepted three-row mini batch for `DOC-SKILL-009`, `DOC-SKILL-010`, and `DOC-SKILL-006`, and the accepted three-row remaining mini batch for `DOC-SKILL-001`, `DOC-SKILL-002`, and `DOC-SKILL-003`. The new implementation plan translates the proposal into an operator-invoked flow with allowed-skill detection, fixed per-skill model mapping, pre-call estimate and confidence displays, file-first wrapper invocation, session JSONL naming, required healthcheck ingestion, fallback-to-Codex-only behavior, manual-review triggers, abort rules, and required operator summary output. This remains bounded local workflow planning only: no production routing, no canonical routing-table update, no `DOC-SKILL-011` run, no `DOC-SKILL-012` start, no release action, and no product-code change. The separate `5.4` candidate phase remains paused and planning-only.
+Documentation-skill mini Auto-sparsam runner skeleton implementation. The mini matrix phase remains complete for `DOC-SKILL-001`, `DOC-SKILL-002`, `DOC-SKILL-003`, `DOC-SKILL-006`, `DOC-SKILL-008`, `DOC-SKILL-009`, and `DOC-SKILL-010` with preserved counts `OR_CONFIRMED=7`, `NEEDS_STRONGER_TEST=0`, and `OR_REJECTED=0`. The original first explicitly approved OR smoke-test call for `DOC-SKILL-008` on `qwen/qwen3.5-flash-02-23` remains debug failure evidence only because shell-side capture lost response body, `generation_id`, and `response_usage`. Accepted live evidence still consists only of the approved `DOC-SKILL-008` live retry, the accepted three-row mini batch for `DOC-SKILL-009`, `DOC-SKILL-010`, and `DOC-SKILL-006`, and the accepted three-row remaining mini batch for `DOC-SKILL-001`, `DOC-SKILL-002`, and `DOC-SKILL-003`. The new runner skeleton now implements bounded allowed-skill detection, fixed per-skill model lookup, pre-call estimate and confidence gates, file-first wrapper invocation, session JSONL naming, post-call healthcheck ingestion, fallback-to-Codex-only handling, manual-review triggers, abort handling, and compact operator summary output. This remains bounded local workflow tooling only: no live OR calls in this block, no production routing, no canonical routing-table update, no `DOC-SKILL-011` run, no `DOC-SKILL-012` start, no release action, and no product-code change. The separate `5.4` candidate phase remains paused and planning-only.
 
 ## Last Decision
 The documentation-skill routing table remains the canonical reference for documentation-skill model and scope boundaries.
@@ -39,7 +39,7 @@ The separate `5.4` candidate phase remains paused and planning-only.
 This cost-accounting planning step does not create a global model approval, does not mark any model production-approved, does not update the canonical routing table, does not run DOC-SKILL-011, does not continue the `5.4` candidate phase, and does not start DOC-SKILL-012.
 
 ## Last Codex Work
-Drafted the implementation plan for operator-invoked mini `Auto-sparsam` mode. The plan keeps the first `DOC-SKILL-008` smoke-test row excluded as debug-only evidence and defines the bounded execution flow from allowed-skill detection through model selection, pre-call estimate/confidence display, file-first wrapper invocation, telemetry session naming, healthcheck ingestion, fallback-to-Codex-only behavior, manual-review triggers, abort rules, operator summary output, and governance boundaries.
+Implemented a Python runner skeleton at `documentation/codex/model-routing/scripts/mini_auto_sparsam_runner.py`. The skeleton stays operator-invoked and bounded to the seven scoped mini skills, routes out-of-scope work to `Codex-only` before wrapper invocation, aborts before wrapper invocation when estimate/confidence metadata is missing, uses the existing file-first wrapper path, writes the planned session JSONL naming pattern, runs `health_snapshot.py --or-telemetry-jsonl`, and prints a compact `AUTO-SPARSAM SUMMARY` from fixture-only data.
 
 The telemetry plan keeps the mini phase bounded to:
 
@@ -54,90 +54,13 @@ The telemetry plan keeps the mini phase bounded to:
 Exactly one approved OR call was attempted for the smoke test in the prior block. No second OR call was made in this debugging block, no production routing decision was made, no canonical routing-table update was made, no DOC-SKILL-011 run was started, and the separate `5.4` candidate phase was not continued.
 
 ## Changed Files
-- `documentation/codex/model-routing/doc_skill_gpt54_mini_auto_sparsam_implementation_plan_2026-06-13.md`
-- `documentation/ai/CURRENT_STATE.md`
-- `documentation/codex/SKILL_USAGE_LOG.md`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-remaining-2026-06-13-live-001/doc-skill-001-openai-gpt-oss-20b/request_body.json`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-remaining-2026-06-13-live-001/doc-skill-001-openai-gpt-oss-20b/request_body_source.json`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-remaining-2026-06-13-live-001/doc-skill-001-openai-gpt-oss-20b/response_body.json`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-remaining-2026-06-13-live-001/doc-skill-001-openai-gpt-oss-20b/response_headers.txt`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-remaining-2026-06-13-live-001/doc-skill-001-openai-gpt-oss-20b/response_summary.json`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-remaining-2026-06-13-live-001/doc-skill-001-openai-gpt-oss-20b/stdout.log`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-remaining-2026-06-13-live-001/doc-skill-001-openai-gpt-oss-20b/stderr.log`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-remaining-2026-06-13-live-001/doc-skill-001-openai-gpt-oss-20b/exit_code.txt`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-remaining-2026-06-13-live-001/doc-skill-002-openai-gpt-oss-20b/request_body.json`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-remaining-2026-06-13-live-001/doc-skill-002-openai-gpt-oss-20b/request_body_source.json`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-remaining-2026-06-13-live-001/doc-skill-002-openai-gpt-oss-20b/response_body.json`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-remaining-2026-06-13-live-001/doc-skill-002-openai-gpt-oss-20b/response_headers.txt`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-remaining-2026-06-13-live-001/doc-skill-002-openai-gpt-oss-20b/response_summary.json`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-remaining-2026-06-13-live-001/doc-skill-002-openai-gpt-oss-20b/stdout.log`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-remaining-2026-06-13-live-001/doc-skill-002-openai-gpt-oss-20b/stderr.log`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-remaining-2026-06-13-live-001/doc-skill-002-openai-gpt-oss-20b/exit_code.txt`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-remaining-2026-06-13-live-001/doc-skill-003-openai-gpt-oss-20b/request_body.json`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-remaining-2026-06-13-live-001/doc-skill-003-openai-gpt-oss-20b/request_body_source.json`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-remaining-2026-06-13-live-001/doc-skill-003-openai-gpt-oss-20b/response_body.json`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-remaining-2026-06-13-live-001/doc-skill-003-openai-gpt-oss-20b/response_headers.txt`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-remaining-2026-06-13-live-001/doc-skill-003-openai-gpt-oss-20b/response_summary.json`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-remaining-2026-06-13-live-001/doc-skill-003-openai-gpt-oss-20b/stdout.log`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-remaining-2026-06-13-live-001/doc-skill-003-openai-gpt-oss-20b/stderr.log`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-remaining-2026-06-13-live-001/doc-skill-003-openai-gpt-oss-20b/exit_code.txt`
-- `documentation/codex/model-routing/or_healthcheck_telemetry_mini_live_batch_2026-06-13.jsonl`
-- `documentation/codex/model-routing/or_healthcheck_mini_live_batch_result_2026-06-13.md`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-009-qwen-qwen3.5-flash-02-23/request_body.json`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-009-qwen-qwen3.5-flash-02-23/request_body_source.json`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-009-qwen-qwen3.5-flash-02-23/response_body.json`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-009-qwen-qwen3.5-flash-02-23/response_headers.txt`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-009-qwen-qwen3.5-flash-02-23/response_summary.json`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-009-qwen-qwen3.5-flash-02-23/stdout.log`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-009-qwen-qwen3.5-flash-02-23/stderr.log`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-009-qwen-qwen3.5-flash-02-23/exit_code.txt`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-010-qwen-qwen3.5-flash-02-23/request_body.json`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-010-qwen-qwen3.5-flash-02-23/request_body_source.json`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-010-qwen-qwen3.5-flash-02-23/response_body.json`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-010-qwen-qwen3.5-flash-02-23/response_headers.txt`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-010-qwen-qwen3.5-flash-02-23/response_summary.json`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-010-qwen-qwen3.5-flash-02-23/stdout.log`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-010-qwen-qwen3.5-flash-02-23/stderr.log`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-010-qwen-qwen3.5-flash-02-23/exit_code.txt`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-006-openai-gpt-oss-120b/request_body.json`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-006-openai-gpt-oss-120b/request_body_source.json`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-006-openai-gpt-oss-120b/response_body.json`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-006-openai-gpt-oss-120b/response_headers.txt`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-006-openai-gpt-oss-120b/response_summary.json`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-006-openai-gpt-oss-120b/stdout.log`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-006-openai-gpt-oss-120b/stderr.log`
-- `documentation/codex/model-routing/smoke-test-capture/mini-batch-2026-06-13-live-001/doc-skill-006-openai-gpt-oss-120b/exit_code.txt`
-- `documentation/codex/model-routing/or_healthcheck_telemetry_smoke_test_live_retry_2026-06-13.jsonl`
-- `documentation/codex/model-routing/smoke-test-capture/live-retry-2026-06-13-doc-skill-008-001/request_body.json`
-- `documentation/codex/model-routing/smoke-test-capture/live-retry-2026-06-13-doc-skill-008-001/request_body_source.json`
-- `documentation/codex/model-routing/smoke-test-capture/live-retry-2026-06-13-doc-skill-008-001/response_body.json`
-- `documentation/codex/model-routing/smoke-test-capture/live-retry-2026-06-13-doc-skill-008-001/response_headers.txt`
-- `documentation/codex/model-routing/smoke-test-capture/live-retry-2026-06-13-doc-skill-008-001/response_summary.json`
-- `documentation/codex/model-routing/smoke-test-capture/live-retry-2026-06-13-doc-skill-008-001/stdout.log`
-- `documentation/codex/model-routing/smoke-test-capture/live-retry-2026-06-13-doc-skill-008-001/stderr.log`
-- `documentation/codex/model-routing/smoke-test-capture/live-retry-2026-06-13-doc-skill-008-001/exit_code.txt`
-- `documentation/codex/model-routing/or_file_first_capture_wrapper_plan_2026-06-13.md`
-- `documentation/codex/model-routing/wrapper_fixture_request_2026-06-13.json`
-- `documentation/codex/model-routing/wrapper_fixture_response_2026-06-13.json`
-- `documentation/codex/model-routing/or_healthcheck_smoke_test_capture_debug_2026-06-13.md`
-- `documentation/codex/model-routing/or_healthcheck_controlled_smoke_test_result_2026-06-13.md`
-- `documentation/codex/model-routing/or_healthcheck_telemetry_smoke_test_debug_2026-06-13.jsonl`
-- `documentation/codex/model-routing/or_healthcheck_controlled_smoke_test_plan_2026-06-13.md`
-- `documentation/codex/skills/janus-health-check/scripts/health_snapshot.py`
-- `documentation/codex/model-routing/or_healthcheck_dummy_ingestion_validation_2026-06-13.md`
-- `documentation/codex/model-routing/or_healthcheck_telemetry_jsonl_schema_2026-06-13.md`
-- `documentation/codex/model-routing/or_healthcheck_telemetry_dummy_sample_2026-06-13.jsonl`
-- `documentation/codex/model-routing/or_healthcheck_summary_dummy_example_2026-06-13.md`
-- `documentation/codex/model-routing/or_healthcheck_telemetry_plan_2026-06-13.md`
-- `documentation/codex/model-routing/doc_skill_gpt54_mini_workflow_routing_plan_2026-06-13.md`
-- `documentation/codex/model-routing/doc_skill_gpt54_or_candidate_list_plan_2026-06-13.md`
-- `documentation/codex/model-routing/doc_skill_gpt54_mini_or_replacement_matrix_2026-06-13.md`
+- `documentation/codex/model-routing/scripts/mini_auto_sparsam_runner.py`
 - `documentation/ai/CURRENT_STATE.md`
 - `documentation/codex/SKILL_USAGE_LOG.md`
 
 ## Remote Sync Evidence
 - Branch context: `develop` / `backup/develop` workflow.
-- This block is intended to be committed as `docs(codex): close or smoke capture debug` and pushed to `backup/develop` only.
+- This block is intended to be committed as `feat(codex): add mini auto sparsam runner skeleton` and pushed to `backup/develop` only.
 - No push to `origin`, tag, merge, reset, release, routing-table update, DOC-SKILL-011 run, DOC-SKILL-012 continuation, or production routing activation is part of this block.
 
 ## Tests / Validation
@@ -214,6 +137,12 @@ Exactly one approved OR call was attempted for the smoke test in the prior block
 - The separate `5.4` candidate phase remains paused and planning-only: PASS.
 - No DOC-SKILL-011 run: PASS.
 - No DOC-SKILL-012 start: PASS.
+- Runner skeleton exists: PASS.
+- Fixture/local validation for `DOC-SKILL-008` completed through wrapper fixture mode: PASS.
+- Fixture/local operator summary output was produced: PASS.
+- Session JSONL naming matches the implementation plan pattern: PASS.
+- Out-of-scope `DOC-SKILL-011` routed to `Codex-only` before wrapper invocation: PASS.
+- Missing estimate/confidence metadata aborted before wrapper invocation: PASS.
 - `git diff --check`: PASS.
 - Staged-only git guard required before commit: PASS.
 
@@ -221,21 +150,16 @@ Exactly one approved OR call was attempted for the smoke test in the prior block
 - The repository worktree contains many unrelated pre-existing modified and untracked files. Commit staging must remain path-specific.
 - The completed mini matrix is task-level documentation evidence only and must not be misread as a global model approval or production routing update.
 - The telemetry plan is planning-only; confidence scores remain future-facing until enough comparable historical rows, price snapshots, and usage capture exist.
-- The new schema and examples are dummy artifacts only; they do not prove runtime ingestion until future implementation lands.
-- The new ingestion path is dummy-only by convention and still depends on explicit operator input; no production OR log path is wired yet.
-- The smoke-test plan is still planning-only and must not be treated as approval to run the OR call.
-- The smoke-test execution produced a capture gap, so the resulting row is debug evidence only and must not be treated as accepted operational telemetry.
-- The accepted retry proves capture for this one bounded task/model pair only; it is not a global OR approval or production-routing approval.
-- The bounded mini live batch adds task-level local evidence for three approved mini skills only; it still does not create any global OR approval or production-routing approval.
-- The bounded remaining mini live batch adds task-level local evidence for the last three approved mini skills only; it still does not create any global OR approval or production-routing approval.
-- Any later live retry beyond this accepted block would still need separate explicit approval.
+- The runner is a skeleton only and currently validated in fixture/local mode, not with any new live OR execution.
+- Session telemetry and healthcheck outputs are local workflow artifacts only and must not be read as production routing activation.
+- Any future non-fixture OR execution would still need separate explicit approval.
 - The separate `5.4` phase is paused; no candidate list should be treated as evaluation evidence until a separate explicit phase runs.
 
 ## Next Recommended Step for ChatGPT
-Treat the first `DOC-SKILL-008` smoke-test row as debug-only, treat the accepted retry row plus both accepted three-row mini batches as bounded local telemetry evidence only, and keep the separate `5.4` candidate phase paused until a new planning-only request arrives.
+Treat this runner as a bounded local skeleton only, keep the first `DOC-SKILL-008` smoke-test row debug-only, keep the accepted live evidence layer as local evidence only, and require a separate explicit approval before any future non-fixture Auto-sparsam run.
 
 ## Next Recommended Step for Codex
-Stop after documentation/governance closeout, keep the accepted retry row plus both accepted mini batches as bounded smoke-test evidence only, and do not continue into any further OR call or `5.4` candidate work without a new explicit request.
+Stop after the runner-skeleton checkpoint, keep Auto-sparsam in fixture/local validation mode only, and do not continue into any live OR call, production routing change, or `5.4` candidate work without a new explicit request.
 
 ## Last Updated
-2026-06-13 20:39 local time
+2026-06-13 21:15 local time
