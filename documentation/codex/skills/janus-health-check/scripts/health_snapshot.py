@@ -188,10 +188,72 @@ def usage_summary(repo: Path, mode: str) -> dict[str, object]:
     return data
 
 
+def parse_jsonl(path: Path) -> list[dict[str, object]]:
+    if not path.exists():
+        return []
+    rows: list[dict[str, object]] = []
+    for raw_line in path.read_text(encoding="utf-8-sig", errors="replace").splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+        row = json.loads(line)
+        if isinstance(row, dict):
+            rows.append(row)
+    return rows
+
+
+def _sum_numeric(rows: list[dict[str, object]], field: str) -> float:
+    total = 0.0
+    for row in rows:
+        value = row.get(field)
+        if isinstance(value, (int, float)):
+            total += float(value)
+    return total
+
+
+def _average_numeric(rows: list[dict[str, object]], field: str) -> float | None:
+    values = [float(value) for row in rows if isinstance((value := row.get(field)), (int, float))]
+    if not values:
+        return None
+    return sum(values) / len(values)
+
+
+def or_telemetry_summary(path: Path | None) -> dict[str, object] | None:
+    if path is None:
+        return None
+    rows = parse_jsonl(path)
+    models = sorted({str(row["or_model"]) for row in rows if row.get("or_model") not in {None, "", "N_A"}})
+    skills = sorted({str(row["skill_id"]) for row in rows if row.get("skill_id")})
+    validation_counts = collections.Counter(str(row.get("validation_result", "N_A")) for row in rows)
+    recommendation_counts = collections.Counter(str(row.get("recommendation_signal", "N_A")) for row in rows)
+    fallback_count = sum(1 for row in rows if str(row.get("fallback_used", "NO")).upper() == "YES")
+    summary: dict[str, object] = {
+        "source": str(path),
+        "record_count": len(rows),
+        "models_seen": models,
+        "skills_seen": skills,
+        "estimated_cost_total": round(_sum_numeric(rows, "estimated_or_cost"), 8),
+        "actual_cost_total": round(_sum_numeric(rows, "actual_or_cost"), 8),
+        "confidence_average": _average_numeric(rows, "cost_estimate_confidence_percent"),
+        "fallback_count": fallback_count,
+        "validation_result_counts": dict(validation_counts),
+        "recommendation_signal_counts": dict(recommendation_counts),
+    }
+    if isinstance(summary["confidence_average"], float):
+        summary["confidence_average"] = round(summary["confidence_average"], 2)
+    return summary
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Collect a read-only Janus health snapshot.")
     parser.add_argument("--repo", type=Path, default=Path.cwd())
     parser.add_argument("--mode", choices=["DAILY", "WEEKLY", "MONTHLY"], default="DAILY")
+    parser.add_argument(
+        "--or-telemetry-jsonl",
+        type=Path,
+        default=None,
+        help="Optional dummy OR telemetry JSONL path for read-only summary ingestion.",
+    )
     args = parser.parse_args()
 
     repo = args.repo.resolve()
@@ -217,6 +279,10 @@ def main() -> int:
         "root_legacy_log_artifacts": root_legacy_log_artifacts(repo),
         "skill_usage": usage_summary(repo, args.mode),
     }
+
+    or_summary = or_telemetry_summary(args.or_telemetry_jsonl)
+    if or_summary is not None:
+        data["or_telemetry"] = or_summary
 
     if args.mode in {"WEEKLY", "MONTHLY"}:
         data["large_files_over_500kb"] = large_files(repo)
