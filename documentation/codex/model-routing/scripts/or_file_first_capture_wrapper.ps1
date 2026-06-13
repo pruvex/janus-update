@@ -88,16 +88,56 @@ try {
     }
     else {
         $bodyJson = Get-Content -LiteralPath $requestPath -Raw
-        $response = Invoke-WebRequest `
-            -Method Post `
-            -Uri $Uri `
-            -Headers $Headers `
-            -Body $bodyJson `
-            -ContentType "application/json" `
-            -ResponseHeadersVariable responseHeaders `
-            -StatusCodeVariable statusCode `
-            -SkipHttpErrorCheck
-        $rawBody = $response.Content
+        $request = [System.Net.HttpWebRequest]::Create($Uri)
+        $request.Method = "POST"
+        $request.ContentType = "application/json"
+        foreach ($key in $Headers.Keys) {
+            switch -Regex ($key) {
+                '^Authorization$' { $request.Headers['Authorization'] = [string]$Headers[$key] }
+                '^HTTP-Referer$' { $request.Referer = [string]$Headers[$key] }
+                '^User-Agent$' { $request.UserAgent = [string]$Headers[$key] }
+                default { $request.Headers[$key] = [string]$Headers[$key] }
+            }
+        }
+        $bytes = [System.Text.Encoding]::UTF8.GetBytes($bodyJson)
+        $request.ContentLength = $bytes.Length
+        $requestStream = $request.GetRequestStream()
+        try {
+            $requestStream.Write($bytes, 0, $bytes.Length)
+        }
+        finally {
+            $requestStream.Dispose()
+        }
+
+        try {
+            $response = $request.GetResponse()
+        }
+        catch [System.Net.WebException] {
+            if ($_.Exception.Response) {
+                $response = $_.Exception.Response
+            }
+            else {
+                throw
+            }
+        }
+
+        try {
+            $statusCode = [int]$response.StatusCode
+            $responseHeaders = [ordered]@{}
+            foreach ($name in $response.Headers.AllKeys) {
+                $responseHeaders[$name] = $response.Headers[$name]
+            }
+            $reader = New-Object System.IO.StreamReader($response.GetResponseStream())
+            try {
+                $rawBody = $reader.ReadToEnd()
+            }
+            finally {
+                $reader.Dispose()
+            }
+        }
+        finally {
+            $response.Dispose()
+        }
     }
 
     Write-Artifact -Path $bodyPath -Value $rawBody

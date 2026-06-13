@@ -1,0 +1,29 @@
+﻿{
+    "capture_mode":  "live_http",
+    "http_status":  200,
+    "generation_id":  "gen-1781366532-8Xvtr6Rhfus4G6dlVdfW",
+    "model":  "qwen/qwen3.5-flash-20260224",
+    "usage":  {
+                  "prompt_tokens":  743,
+                  "completion_tokens":  2010,
+                  "total_tokens":  2753,
+                  "cost":  0.000570895,
+                  "is_byok":  false,
+                  "prompt_tokens_details":  {
+                                                "cached_tokens":  0,
+                                                "cache_write_tokens":  0,
+                                                "audio_tokens":  0,
+                                                "video_tokens":  0
+                                            },
+                  "cost_details":  {
+                                       "upstream_inference_cost":  0.000570895,
+                                       "upstream_inference_prompt_cost":  0.000048295,
+                                       "upstream_inference_completions_cost":  0.0005226
+                                   },
+                  "completion_tokens_details":  {
+                                                    "reasoning_tokens":  1865,
+                                                    "image_tokens":  0,
+                                                    "audio_tokens":  0
+                                                }
+              }
+}
