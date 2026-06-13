@@ -4,10 +4,10 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Goal
-Execute the approved one-shot OR telemetry smoke test for `DOC-SKILL-008`, keep the completed 5.4-mini phase boundaries intact, and preserve the separate `5.4` candidate phase pause.
+Debug the shell-side OR smoke-test capture path for the completed one-shot `DOC-SKILL-008` run, without making another OR call, while keeping the completed 5.4-mini phase boundaries intact and the separate `5.4` candidate phase paused.
 
 ## Active Phase
-Documentation-skill controlled OR smoke-test execution and capture review. The mini matrix phase remains complete for `DOC-SKILL-001`, `DOC-SKILL-002`, `DOC-SKILL-003`, `DOC-SKILL-006`, `DOC-SKILL-008`, `DOC-SKILL-009`, and `DOC-SKILL-010` with preserved counts `OR_CONFIRMED=7`, `NEEDS_STRONGER_TEST=0`, and `OR_REJECTED=0`. One approved OR smoke-test call for `DOC-SKILL-008` on `qwen/qwen3.5-flash-02-23` was executed under the `0.0020` cap, but the shell-side response capture returned no recoverable body, `generation_id`, or `response_usage`, so the no-persist rule for accepted operational telemetry is being applied and the resulting row is retained as debug failure evidence only. The separate `5.4` candidate phase remains paused and planning-only. DOC-SKILL-011 remains `NOT RUN`; DOC-SKILL-012 and later remain `NOT RUN`. No production routing, no canonical routing-table update, no DOC-SKILL-011 run, no DOC-SKILL-012 start, no release action, and no product-code change.
+Documentation-skill controlled OR smoke-test capture-path debugging. The mini matrix phase remains complete for `DOC-SKILL-001`, `DOC-SKILL-002`, `DOC-SKILL-003`, `DOC-SKILL-006`, `DOC-SKILL-008`, `DOC-SKILL-009`, and `DOC-SKILL-010` with preserved counts `OR_CONFIRMED=7`, `NEEDS_STRONGER_TEST=0`, and `OR_REJECTED=0`. The single approved OR smoke-test call for `DOC-SKILL-008` on `qwen/qwen3.5-flash-02-23` remains the only executed smoke-test call. No new OR call was made during this block. The shell-side debug review concluded that the likely fault was a capture design gap: the response was routed through transient shell output instead of a file-first capture wrapper, so response body, `generation_id`, and `response_usage` were not durably persisted. The existing debug row remains debug failure evidence only, not accepted operational telemetry. The separate `5.4` candidate phase remains paused and planning-only. DOC-SKILL-011 remains `NOT RUN`; DOC-SKILL-012 and later remain `NOT RUN`. No production routing, no canonical routing-table update, no DOC-SKILL-011 run, no DOC-SKILL-012 start, no release action, and no product-code change.
 
 ## Last Decision
 The documentation-skill routing table remains the canonical reference for documentation-skill model and scope boundaries.
@@ -39,7 +39,7 @@ The separate `5.4` candidate phase remains paused and planning-only.
 This cost-accounting planning step does not create a global model approval, does not mark any model production-approved, does not update the canonical routing table, does not run DOC-SKILL-011, does not continue the `5.4` candidate phase, and does not start DOC-SKILL-012.
 
 ## Last Codex Work
-Executed the one approved OR telemetry smoke-test attempt for `DOC-SKILL-008` and recorded the result as debug-only failure evidence after the direct shell capture returned no recoverable response payload. A fallback-estimate JSONL row and smoke-test result note were created so the healthcheck ingestion path can still be exercised without treating the row as accepted operational telemetry.
+Reviewed the smoke-test shell command pattern and documented the likely capture failure mode plus a file-first replacement pattern. The new capture-debug note explains why stdout-only recovery was too weak, why `Invoke-RestMethod` without durable file artifacts was a poor fit for forensic telemetry capture, and how a safer wrapper should persist request, response body, response headers, stdout, stderr, exit code, parsed usage, and parsed `generation_id`.
 
 The telemetry plan keeps the mini phase bounded to:
 
@@ -51,9 +51,10 @@ The telemetry plan keeps the mini phase bounded to:
 - `DOC-SKILL-009`
 - `DOC-SKILL-010`
 
-Exactly one approved OR call was attempted for the smoke test. No second OR call was made, no production routing decision was made, no canonical routing-table update was made, no DOC-SKILL-011 run was started, and the separate `5.4` candidate phase was not continued.
+Exactly one approved OR call was attempted for the smoke test in the prior block. No second OR call was made in this debugging block, no production routing decision was made, no canonical routing-table update was made, no DOC-SKILL-011 run was started, and the separate `5.4` candidate phase was not continued.
 
 ## Changed Files
+- `documentation/codex/model-routing/or_healthcheck_smoke_test_capture_debug_2026-06-13.md`
 - `documentation/codex/model-routing/or_healthcheck_controlled_smoke_test_result_2026-06-13.md`
 - `documentation/codex/model-routing/or_healthcheck_telemetry_smoke_test_debug_2026-06-13.jsonl`
 - `documentation/codex/model-routing/or_healthcheck_controlled_smoke_test_plan_2026-06-13.md`
@@ -71,7 +72,7 @@ Exactly one approved OR call was attempted for the smoke test. No second OR call
 
 ## Remote Sync Evidence
 - Branch context: `develop` / `backup/develop` workflow.
-- This block is intended to be committed as `test(codex): run controlled or telemetry smoke test` and pushed to `backup/develop` only.
+- This block is intended to be committed as `docs(codex): debug or smoke test capture path` and pushed to `backup/develop` only.
 - No push to `origin`, tag, merge, reset, release, routing-table update, DOC-SKILL-011 run, DOC-SKILL-012 continuation, or production routing activation is part of this block.
 
 ## Tests / Validation
@@ -100,6 +101,10 @@ Exactly one approved OR call was attempted for the smoke test. No second OR call
 - Pre-call cost estimate under cap: PASS.
 - Direct shell-side response capture recovered `response_usage`: FAIL.
 - Fallback-estimate debug row created: PASS.
+- Capture-debug note exists: PASS.
+- No new OR call was made in the capture-debug block: PASS.
+- Likely root cause documented: PASS.
+- Capture-safe replacement pattern documented: PASS.
 - Healthcheck output summaries are defined: PASS.
 - No global model approval language: PASS.
 - No production routing language: PASS.
@@ -119,13 +124,14 @@ Exactly one approved OR call was attempted for the smoke test. No second OR call
 - The new ingestion path is dummy-only by convention and still depends on explicit operator input; no production OR log path is wired yet.
 - The smoke-test plan is still planning-only and must not be treated as approval to run the OR call.
 - The smoke-test execution produced a capture gap, so the resulting row is debug evidence only and must not be treated as accepted operational telemetry.
+- A later explicitly approved follow-up would still need the file-first capture wrapper before any new smoke-test attempt is worth making.
 - The separate `5.4` phase is paused; no candidate list should be treated as evaluation evidence until a separate explicit phase runs.
 
 ## Next Recommended Step for ChatGPT
-Review whether the one-call capture gap should be accepted as sufficient dry-run evidence or whether a later explicitly approved follow-up is needed to recover response-level usage and `generation_id`.
+Review whether the documented file-first capture wrapper is sufficient for a later explicitly approved follow-up, or whether the current debug-only evidence should remain the final state for the mini smoke-test phase.
 
 ## Next Recommended Step for Codex
-Keep the `5.4` candidate phase paused, do not run a second OR call, and limit the current smoke-test outcome to debug/abort evidence plus local ingestion validation.
+Keep the `5.4` candidate phase paused, do not run a second OR call, and treat the current debug row as failure/debug evidence only until a future explicitly approved file-first retry is requested.
 
 ## Last Updated
-2026-06-13 17:33 local time
+2026-06-13 17:58 local time

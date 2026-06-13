@@ -30,6 +30,8 @@ Status: EXECUTED ONCE / DEBUG EVIDENCE ONLY / NO PRODUCTION ROUTING / NO CANONIC
 - the direct shell execution returned no recoverable response body in the captured command output
 - `generation_id` could not be recovered from the shell-side smoke-test command
 - `response_usage` could not be recovered from the shell-side smoke-test command
+- capture-path debug note:
+  - `documentation/codex/model-routing/or_healthcheck_smoke_test_capture_debug_2026-06-13.md`
 
 ## Telemetry Handling
 
