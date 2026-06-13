@@ -1,0 +1,64 @@
+{
+  "fixture_id": "DOC-SKILL-008-GPT54-MINI-LIVE-EVAL-001",
+  "task_id": "DOC-SKILL-008",
+  "model_id": "openai/gpt-oss-120b",
+  "role": "backup_1",
+  "started_at": "2026-06-13T13:46:39+0200",
+  "completed_at": "2026-06-13T13:46:42+0200",
+  "http_status": 200,
+  "provider_error": null,
+  "response": {
+    "id": "gen-1781351200-7A0B35CSdM93pVrSGpiO",
+    "object": "chat.completion",
+    "created": 1781351200,
+    "model": "openai/gpt-oss-120b",
+    "provider": "WandB",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "## Changelog Summary\n\n- **DOC\u2011SKILL\u2011006**: Reduced live evaluation kept the default candidate on a fixed exclusion detail; `backup_1` passed and was selected, while `backup_2` and `backup_3` were not needed. No routing\u2011table update and no production approval were performed.  \n- **DOC\u2011SKILL\u2011003**: Reduced live evaluation selected external candidate `openai/gpt-oss-20b`; backups were retained as extra evidence. No production routing activation or canonical routing\u2011table update occurred.  \n\n**Governance Note:** These items are not production\u2011approved, not routing\u2011approved, and do not imply release readiness. No implementation, Git, release, or repo\u2011write authority is granted.",
+          "refusal": null,
+          "reasoning": "We need to produce a concise markdown with title, bullets summarizing validated facts from source notes, and a governance note. Must not claim release readiness, no production approval, no routing approval. Use only sanitized input.\n\nFacts:\n\nFrom DOC-SKILL-006 reduced live evaluation:\n- default candidate held on a fixed exclusion detail\n- backup_1 passed and was selected\n- backup_2 and backup_3 were not needed\n- no routing table update\n- no production approval\n\nFrom DOC-SKILL-003 reduced live evaluation:\n- selected external candidate openai/gpt-oss-20b\n- backups retained as extra evidence\n- no production routing activation\n- no canonical routing-table update\n\nWe need concise bullets.\n\nGovernance note: something like \"All changes are not production-approved or routing-approved; no release readiness implied.\"\n\nReturn markdown.\n\n",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "We need to produce a concise markdown with title, bullets summarizing validated facts from source notes, and a governance note. Must not claim release readiness, no production approval, no routing approval. Use only sanitized input.\n\nFacts:\n\nFrom DOC-SKILL-006 reduced live evaluation:\n- default candidate held on a fixed exclusion detail\n- backup_1 passed and was selected\n- backup_2 and backup_3 were not needed\n- no routing table update\n- no production approval\n\nFrom DOC-SKILL-003 reduced live evaluation:\n- selected external candidate openai/gpt-oss-20b\n- backups retained as extra evidence\n- no production routing activation\n- no canonical routing-table update\n\nWe need concise bullets.\n\nGovernance note: something like \"All changes are not production-approved or routing-approved; no release readiness implied.\"\n\nReturn markdown.\n\n",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 832,
+      "completion_tokens": 337,
+      "total_tokens": 1169,
+      "cost": 8.046e-05,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 64,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 8.046e-05,
+        "upstream_inference_prompt_cost": 3.328e-05,
+        "upstream_inference_completions_cost": 4.718e-05
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 227,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  }
+}
