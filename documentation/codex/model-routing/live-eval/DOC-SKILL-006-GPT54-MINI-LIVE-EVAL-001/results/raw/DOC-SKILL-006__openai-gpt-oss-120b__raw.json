@@ -1,0 +1,64 @@
+{
+  "fixture_id": "DOC-SKILL-006-GPT54-MINI-LIVE-EVAL-001",
+  "task_id": "DOC-SKILL-006",
+  "model_id": "openai/gpt-oss-120b",
+  "role": "backup_1",
+  "started_at": "2026-06-13T13:14:09+0200",
+  "completed_at": "2026-06-13T13:14:23+0200",
+  "http_status": 200,
+  "provider_error": null,
+  "response": {
+    "id": "gen-1781349251-IzwwfFH9BmzXWDphlC0w",
+    "object": "chat.completion",
+    "created": 1781349251,
+    "model": "openai/gpt-oss-120b",
+    "provider": "DeepInfra",
+    "system_fingerprint": null,
+    "service_tier": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "# Gate Notes\n\nStatus: NOT RUN / no production routing\n\n## Scope\n\nThis note applies to DOC-SKILL-006 only. Preserve meaning and do not add policy.\n\n- bound artifact: sanitized-draft.md\n- allowed action: format markdown only\n- stop if required evidence is missing\n- do not run implementation git release or production routing actions\n\n## Exclusions\n\n- no repo-write delegation\n- no semantic rewrite\n- no production approval\n- no OpenRouter production activation\n- no raw private evidence exposure",
+          "refusal": null,
+          "reasoning": "We need to output cleaned markdown. Input source markdown:\n\n```\n# Gate notes\n\nStatus :   NOT RUN / no production routing\n\n## scope\n\nThis note applies to DOC-SKILL-006 only.   Preserve meaning and do not add policy.\n\n- bound artifact: sanitized-draft.md\n- allowed action : format markdown only\n- stop if required evidence is missing\n- do not run implementation git release or production routing actions\n\n## exclusions\n\n* no repo-write delegation\n* no semantic rewrite\n* no production approval\n* no OpenRouter production activation\n* no raw private evidence exposure\n```\n\nWe need to normalize headings capitalization, spacing around labels, consistent bullet style. Use consistent bullet style: maybe hyphens. Ensure spacing around colon consistent: \"Status: NOT RUN / no production routing\". \"allowed action: format markdown only\". \"bound artifact: sanitized-draft.md\". Also headings: \"# Gate Notes\" maybe capitalize each word. \"## Scope\". \"## Exclusions\". Ensure bullet list uses hyphens. So final markdown:\n\n```\n# Gate Notes\n\nStatus: NOT RUN / no production routing\n\n## Scope\n\nThis note applies to DOC-SKILL-006 only. Preserve meaning and do not add policy.\n\n- bound artifact: sanitized-draft.md\n- allowed action: format markdown only\n- stop if required evidence is missing\n- do not run implementation git release or production routing actions\n\n## Exclusions\n\n- no repo-write delegation\n- no semantic rewrite\n- no production approval\n- no OpenRouter production activation\n- no raw private evidence exposure\n```\n\nCheck preserve required phrases: \"NOT RUN\", \"DOC-SKILL-006 only\", \"sanitized-draft.md\", \"format markdown only\", \"stop if required evidence is missing\", \"do not run implementation git release or production routing actions\", \"no repo-write delegation\", \"no semantic rewrite\", \"no production approval\", \"no OpenRouter production activation\", \"no raw private evidence exposure\". All present.\n\nSpacing around labels: colon after \"Status\". Good.\n\nReturn only cleaned markdown.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "We need to output cleaned markdown. Input source markdown:\n\n```\n# Gate notes\n\nStatus :   NOT RUN / no production routing\n\n## scope\n\nThis note applies to DOC-SKILL-006 only.   Preserve meaning and do not add policy.\n\n- bound artifact: sanitized-draft.md\n- allowed action : format markdown only\n- stop if required evidence is missing\n- do not run implementation git release or production routing actions\n\n## exclusions\n\n* no repo-write delegation\n* no semantic rewrite\n* no production approval\n* no OpenRouter production activation\n* no raw private evidence exposure\n```\n\nWe need to normalize headings capitalization, spacing around labels, consistent bullet style. Use consistent bullet style: maybe hyphens. Ensure spacing around colon consistent: \"Status: NOT RUN / no production routing\". \"allowed action: format markdown only\". \"bound artifact: sanitized-draft.md\". Also headings: \"# Gate Notes\" maybe capitalize each word. \"## Scope\". \"## Exclusions\". Ensure bullet list uses hyphens. So final markdown:\n\n```\n# Gate Notes\n\nStatus: NOT RUN / no production routing\n\n## Scope\n\nThis note applies to DOC-SKILL-006 only. Preserve meaning and do not add policy.\n\n- bound artifact: sanitized-draft.md\n- allowed action: format markdown only\n- stop if required evidence is missing\n- do not run implementation git release or production routing actions\n\n## Exclusions\n\n- no repo-write delegation\n- no semantic rewrite\n- no production approval\n- no OpenRouter production activation\n- no raw private evidence exposure\n```\n\nCheck preserve required phrases: \"NOT RUN\", \"DOC-SKILL-006 only\", \"sanitized-draft.md\", \"format markdown only\", \"stop if required evidence is missing\", \"do not run implementation git release or production routing actions\", \"no repo-write delegation\", \"no semantic rewrite\", \"no production approval\", \"no OpenRouter production activation\", \"no raw private evidence exposure\". All present.\n\nSpacing around labels: colon after \"Status\". Good.\n\nReturn only cleaned markdown.",
+              "format": "unknown",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 847,
+      "completion_tokens": 540,
+      "total_tokens": 1387,
+      "cost": 0.000135633,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.000135633,
+        "upstream_inference_prompt_cost": 3.3033e-05,
+        "upstream_inference_completions_cost": 0.0001026
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 537,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    }
+  }
+}

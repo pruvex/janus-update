@@ -66,9 +66,10 @@ This artifact does not run model calls, fetch live pricing, generate benchmark J
 - Proposed single-task fixture name: `DOC-SKILL-006-GPT54-MINI-LIVE-EVAL-001`
 - Prepared fixture path: `documentation/codex/model-routing/live-eval/DOC-SKILL-006-GPT54-MINI-LIVE-EVAL-001/`
 - Candidate strategy: default `openai/gpt-oss-20b`; backups `openai/gpt-oss-120b`, `qwen/qwen3.5-flash-02-23`, `deepseek/deepseek-v4-flash`.
+- Reduced live-evaluation result: selected external candidate `openai/gpt-oss-120b`; default candidate retained as HOLD; later backups NOT RUN / not needed.
 - Expected pass/fail rubric reference: `documentation/codex/model-routing/documentation_skill_or_candidate_evaluation_plan_v1_2026-06-12.md#passfail-rubric`
 - A1 candidate set reference: `documentation/codex/model-routing/openrouter_doc_skill_a1_shortlist_2026-06-12.csv`
-- Status: NOT RUN
+- Status: TASK_DECISION_RECORDED
 - Note: Evaluate this task separately before moving to the next task.
 
 ## DOC-SKILL-008 - Write Changelog-Style Summary
