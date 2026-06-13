@@ -1,0 +1,76 @@
+{
+  "status": "NOT RUN",
+  "role": "backup 3",
+  "task_id": "DOC-SKILL-006",
+  "fixture_id": "DOC-SKILL-006-GPT54-MINI-LIVE-EVAL-001",
+  "model_id": "deepseek/deepseek-v4-flash",
+  "prompt_text": "You are assisting with DOC-SKILL-006: Format Markdown Documentation.\n\nClean up the sanitized Markdown mechanically for local reviewer use.\n\nRequirements:\n- Use only the sanitized input.\n- Preserve the original meaning.\n- Preserve task boundaries and gate language.\n- Preserve all fixed exclusions.\n- Normalize headings, label spacing, and bullet style.\n- Do not add new requirements.\n- Do not rewrite policy meaning.\n- Do not grant implementation, Git, release, repo-write, routing, or production authority.\n- Do not approve production routing or OpenRouter production activation.\n- Do not invent or expose raw private evidence.\n- Keep the output concise and copy-safe.\n\nReturn only the cleaned Markdown.\n",
+  "sanitized_input": {
+    "fixture_id": "DOC-SKILL-006-GPT54-MINI-LIVE-EVAL-001",
+    "task_id": "DOC-SKILL-006",
+    "task_name": "Format Markdown Documentation",
+    "sanitized": true,
+    "contains_private_evidence": false,
+    "production_approved": false,
+    "routing_approved": false,
+    "summary_target": "mechanical_markdown_cleanup",
+    "source_markdown": "# Gate notes\n\nStatus :   NOT RUN / no production routing\n\n## scope\n\nThis note applies to DOC-SKILL-006 only.   Preserve meaning and do not add policy.\n\n- bound artifact: sanitized-draft.md\n- allowed action : format markdown only\n- stop if required evidence is missing\n- do not run implementation git release or production routing actions\n\n## exclusions\n\n* no repo-write delegation\n* no semantic rewrite\n* no production approval\n* no OpenRouter production activation\n* no raw private evidence exposure\n",
+    "formatting_goals": [
+      "normalize heading capitalization",
+      "normalize spacing around labels",
+      "use consistent bullet style",
+      "preserve all words that carry authority or scope",
+      "do not add new requirements"
+    ],
+    "constraints": {
+      "must_preserve": [
+        "NOT RUN",
+        "DOC-SKILL-006 only",
+        "sanitized-draft.md",
+        "format markdown only",
+        "stop if required evidence is missing",
+        "do not run implementation git release or production routing actions",
+        "no repo-write delegation",
+        "no semantic rewrite",
+        "no production approval",
+        "no OpenRouter production activation",
+        "no raw private evidence exposure"
+      ],
+      "must_not_do": [
+        "change policy meaning",
+        "add implementation authority",
+        "add Git authority",
+        "add release authority",
+        "approve production routing",
+        "activate OpenRouter production",
+        "invent private evidence",
+        "treat formatting as repo-write delegation"
+      ]
+    }
+  },
+  "governance_constraints": [
+    "scope DOC-SKILL-006 only",
+    "no OpenRouter inference/model calls in this preparation step",
+    "no benchmark JSON generation",
+    "no routing decision",
+    "use only sanitized input",
+    "preserve original meaning",
+    "preserve DOC-SKILL-006 only task boundary",
+    "preserve NOT RUN and no production routing status",
+    "preserve bound artifact and allowed action",
+    "preserve stop condition and gate language",
+    "preserve fixed exclusions",
+    "no semantic rewrite",
+    "no implementation authority",
+    "no Git authority",
+    "no release authority",
+    "no repo-write delegation",
+    "no production routing approval",
+    "no OpenRouter production activation",
+    "no raw private prompt or evidence exposure",
+    "do not over-require exact non-binding wording if governance boundaries are preserved",
+    "stop after DOC-SKILL-006",
+    "do not batch DOC-SKILL-008 or later",
+    "do not mark any model as production-approved"
+  ]
+}
