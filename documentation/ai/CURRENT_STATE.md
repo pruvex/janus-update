@@ -4,10 +4,10 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Goal
-Run one bounded Auto Router completion-budget retry for `DOC-SKILL-010`, verify that the prior `finish_reason=length` issue is resolved without crossing the cost cap, and keep all non-production boundaries intact.
+Record the completed Auto Router retry outcome for `DOC-SKILL-010` and classify the skill as an Auto Router `FURTHER_TEST_CANDIDATE` while keeping the fixed-model Auto-sparsam path canonical.
 
 ## Active Phase
-Documentation-skill mini Auto Router completion-budget retry closeout. The mini matrix phase remains complete for `DOC-SKILL-001`, `DOC-SKILL-002`, `DOC-SKILL-003`, `DOC-SKILL-006`, `DOC-SKILL-008`, `DOC-SKILL-009`, and `DOC-SKILL-010` with preserved counts `OR_CONFIRMED=7`, `NEEDS_STRONGER_TEST=0`, and `OR_REJECTED=0`. The original first explicitly approved OR smoke-test call for `DOC-SKILL-008` on `qwen/qwen3.5-flash-02-23` remains debug failure evidence only because shell-side capture lost response body, `generation_id`, and `response_usage`. Accepted live evidence still consists only of the approved `DOC-SKILL-008` live retry, the accepted three-row mini batch for `DOC-SKILL-009`, `DOC-SKILL-010`, and `DOC-SKILL-006`, and the accepted three-row remaining mini batch for `DOC-SKILL-001`, `DOC-SKILL-002`, and `DOC-SKILL-003`. The first bounded Auto Router experiment for `DOC-SKILL-010` selected `openai/gpt-oss-120b` but ended with `finish_reason=length`. A separate completion-budget retry for the same skill again selected `openai/gpt-oss-120b`, stayed under the `0.0020` cap, produced file-first artifacts, and resolved the finish condition to `finish_reason=stop`. This remains experiment-only local evidence: it does not replace the fixed-model Auto-sparsam implementation plan, does not activate production routing, does not update the canonical routing table, does not create any global OR approval, does not run `DOC-SKILL-011`, does not start `DOC-SKILL-012`, and does not continue the separate `5.4` candidate phase.
+Documentation-skill mini Auto Router classification closeout. The mini matrix phase remains complete for `DOC-SKILL-001`, `DOC-SKILL-002`, `DOC-SKILL-003`, `DOC-SKILL-006`, `DOC-SKILL-008`, `DOC-SKILL-009`, and `DOC-SKILL-010` with preserved counts `OR_CONFIRMED=7`, `NEEDS_STRONGER_TEST=0`, and `OR_REJECTED=0`. The original first explicitly approved OR smoke-test call for `DOC-SKILL-008` on `qwen/qwen3.5-flash-02-23` remains debug failure evidence only because shell-side capture lost response body, `generation_id`, and `response_usage`. Accepted live evidence still consists only of the approved `DOC-SKILL-008` live retry, the accepted three-row mini batch for `DOC-SKILL-009`, `DOC-SKILL-010`, and `DOC-SKILL-006`, and the accepted three-row remaining mini batch for `DOC-SKILL-001`, `DOC-SKILL-002`, and `DOC-SKILL-003`. For `DOC-SKILL-010`, the first bounded Auto Router experiment selected `openai/gpt-oss-120b` but ended with `finish_reason=length`, and the completion-budget retry again selected `openai/gpt-oss-120b` and resolved the finish condition to `finish_reason=stop` while staying below the fixed `qwen/qwen3.5-flash-02-23` baseline cost. The new classification marks `DOC-SKILL-010` Auto Router status as `FURTHER_TEST_CANDIDATE`, while fixed-model Auto-sparsam remains canonical and Auto Router remains experiment-only.
 
 ## Last Decision
 The documentation-skill routing table remains the canonical reference for documentation-skill model and scope boundaries.
@@ -39,7 +39,7 @@ The separate `5.4` candidate phase remains paused and planning-only.
 This cost-accounting planning step does not create a global model approval, does not mark any model production-approved, does not update the canonical routing table, does not run DOC-SKILL-011, does not continue the `5.4` candidate phase, and does not start DOC-SKILL-012.
 
 ## Last Codex Work
-Created a short completion-budget retry plan for `DOC-SKILL-010`, hardened the file-first wrapper summary extraction for `finish_reason`, and ran exactly one additional live `openrouter/auto` retry call with a higher completion budget. The retry again selected `openai/gpt-oss-120b`, captured `generation_id`, selected model, `finish_reason=stop`, usage, actual cost, and response artifacts, wrote one accepted retry telemetry JSONL row, passed `health_snapshot.py --or-telemetry-jsonl`, and documented the comparison against both the fixed `qwen/qwen3.5-flash-02-23` baseline and the first length-limited Auto Router experiment. The result stays bounded and non-production, and the fixed-model Auto-sparsam plan remains the canonical path.
+Created a short classification note for `DOC-SKILL-010` Auto Router status. The note records `FURTHER_TEST_CANDIDATE` as the current classification, explains why `KEEP_FIXED` is too final as an evaluation label, why `MANUAL_REVIEW` should not be the final status label after the successful retry, why `AUTO_ROUTER_CONFIRMED` is still too strong, what additional evidence would be needed before replacing the fixed baseline, and that the fixed-model Auto-sparsam path remains canonical while Auto Router remains experiment-only.
 
 The telemetry plan keeps the mini phase bounded to:
 
@@ -54,24 +54,13 @@ The telemetry plan keeps the mini phase bounded to:
 Exactly one approved OR call was attempted for the smoke test in the prior block. No second OR call was made in this debugging block, no production routing decision was made, no canonical routing-table update was made, no DOC-SKILL-011 run was started, and the separate `5.4` candidate phase was not continued.
 
 ## Changed Files
-- `documentation/codex/model-routing/or_auto_router_completion_budget_retry_plan_2026-06-13.md`
-- `documentation/codex/model-routing/or_healthcheck_telemetry_auto_router_completion_budget_retry_2026-06-13.jsonl`
-- `documentation/codex/model-routing/or_auto_router_completion_budget_retry_result_2026-06-13.md`
-- `documentation/codex/model-routing/scripts/or_file_first_capture_wrapper.ps1`
-- `documentation/codex/model-routing/smoke-test-capture/auto-router-completion-budget-retry-2026-06-13-doc-skill-010-001/request_body_source.json`
-- `documentation/codex/model-routing/smoke-test-capture/auto-router-completion-budget-retry-2026-06-13-doc-skill-010-001/request_body.json`
-- `documentation/codex/model-routing/smoke-test-capture/auto-router-completion-budget-retry-2026-06-13-doc-skill-010-001/response_body.json`
-- `documentation/codex/model-routing/smoke-test-capture/auto-router-completion-budget-retry-2026-06-13-doc-skill-010-001/response_headers.txt`
-- `documentation/codex/model-routing/smoke-test-capture/auto-router-completion-budget-retry-2026-06-13-doc-skill-010-001/response_summary.json`
-- `documentation/codex/model-routing/smoke-test-capture/auto-router-completion-budget-retry-2026-06-13-doc-skill-010-001/stdout.log`
-- `documentation/codex/model-routing/smoke-test-capture/auto-router-completion-budget-retry-2026-06-13-doc-skill-010-001/stderr.log`
-- `documentation/codex/model-routing/smoke-test-capture/auto-router-completion-budget-retry-2026-06-13-doc-skill-010-001/exit_code.txt`
+- `documentation/codex/model-routing/or_auto_router_doc_skill_010_classification_2026-06-13.md`
 - `documentation/ai/CURRENT_STATE.md`
 - `documentation/codex/SKILL_USAGE_LOG.md`
 
 ## Remote Sync Evidence
 - Branch context: `develop` / `backup/develop` workflow.
-- This block is intended to be committed as `test(codex): retry auto router completion budget` and pushed to `backup/develop` only.
+- This block is intended to be committed as `docs(codex): classify auto router doc skill 010` and pushed to `backup/develop` only.
 - No push to `origin`, tag, merge, reset, release, routing-table update, DOC-SKILL-011 run, DOC-SKILL-012 continuation, or production routing activation is part of this block.
 
 ## Tests / Validation
@@ -148,35 +137,27 @@ Exactly one approved OR call was attempted for the smoke test in the prior block
 - The separate `5.4` candidate phase remains paused and planning-only: PASS.
 - No DOC-SKILL-011 run: PASS.
 - No DOC-SKILL-012 start: PASS.
-- Auto Router completion-budget retry plan exists: PASS.
-- Exactly one Auto Router retry live call attempted: PASS.
-- Pre-call retry estimate `0.0007821` <= `0.0020`: PASS.
-- `response_body.json` parse: PASS.
-- `response_summary.json` contains `generation_id`: PASS.
-- `response_summary.json` contains selected routed model `openai/gpt-oss-120b`: PASS.
-- `response_summary.json` contains `finish_reason=stop`: PASS.
-- `response_summary.json` contains usage and actual cost `0.00053955`: PASS.
-- actual cost `0.00053955` <= `0.0020`: PASS.
-- retry telemetry JSONL parse: PASS.
-- `health_snapshot.py --or-telemetry-jsonl` ingests the retry telemetry: PASS.
-- retry result note compares fixed baseline vs first Auto Router experiment vs retry: PASS.
+- Auto Router classification note exists: PASS.
+- `DOC-SKILL-010` Auto Router status marked `FURTHER_TEST_CANDIDATE`: PASS.
+- fixed baseline remains canonical: PASS.
+- Auto Router remains experiment-only: PASS.
 - `git diff --check`: PASS.
 - Staged-only git guard required before commit: PASS.
 
 ## Open Risks
 - The repository worktree contains many unrelated pre-existing modified and untracked files. Commit staging must remain path-specific.
 - The completed mini matrix is task-level documentation evidence only and must not be misread as a global model approval or production routing update.
-- The Auto Router retry remains a bounded experiment for one skill only and must not be generalized into a routing policy.
-- Auto Router selected the same routed model on both calls, but that still does not justify replacing the fixed-model Auto-sparsam plan.
+- The Auto Router classification remains based on one skill only and must not be generalized into a routing policy.
+- `FURTHER_TEST_CANDIDATE` still requires additional multi-session evidence before any baseline replacement is considered.
 - Session telemetry and healthcheck outputs are local experiment artifacts only and must not be read as production routing activation.
 - Any future Auto Router or non-fixture OR execution beyond this one call would still need separate explicit approval.
 - The separate `5.4` phase is paused; no candidate list should be treated as evaluation evidence until a separate explicit phase runs.
 
 ## Next Recommended Step for ChatGPT
-Treat the completion-budget retry as bounded experiment evidence only, keep the fixed-model Auto-sparsam implementation plan unchanged, keep the first `DOC-SKILL-008` smoke-test row debug-only, and require explicit approval before any further Auto Router or non-fixture OR experiment.
+Treat `DOC-SKILL-010` Auto Router as `FURTHER_TEST_CANDIDATE` only, keep the fixed-model Auto-sparsam implementation plan unchanged and canonical, keep the first `DOC-SKILL-008` smoke-test row debug-only, and require explicit approval before any further Auto Router or non-fixture OR experiment.
 
 ## Next Recommended Step for Codex
-Stop after this single-call retry closeout, keep the fixed-model Auto-sparsam path as the canonical bounded plan, and do not continue into any further Auto Router call, production routing change, or `5.4` candidate work without a new explicit request.
+Stop after this classification closeout, keep the fixed-model Auto-sparsam path as the canonical bounded plan, and do not continue into any further Auto Router call, production routing change, or `5.4` candidate work without a new explicit request.
 
 ## Last Updated
-2026-06-13 21:46 local time
+2026-06-13 22:02 local time
