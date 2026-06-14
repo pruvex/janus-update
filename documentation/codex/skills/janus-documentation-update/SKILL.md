@@ -49,9 +49,112 @@ DOCUMENTATION SKILL MODEL SWITCH GATE
 - Reason:
 ```
 
-Do not switch models automatically. Do not activate OpenRouter. Do not enable production routing. OpenRouter remains disabled for routing and production decisions; any future OR assist remains limited to explicitly approved, sanitized, non-binding assist fixtures outside repo-write authority.
+Do not switch models automatically. Do not enable production routing. OpenRouter remains disabled for routing and production decisions except for the bounded fixed-model operator-choice path described below. Auto Router remains disabled.
 
 If the routing table marks any requested scope as blocked or upstream-owned, do not solve it inside this skill. Route to the required upstream Janus skill path first, then return to `janus-documentation-update` only after the upstream decision, audit, validation, or approval evidence exists.
+
+## Bounded Fixed OR Operator Choice
+
+For real-world documentation-skill testing, this skill may offer one bounded `local` versus fixed `or` choice only when all of the following are true:
+
+- the classified row is exactly one of `DOC-SKILL-001`, `DOC-SKILL-002`, `DOC-SKILL-003`, `DOC-SKILL-006`, `DOC-SKILL-008`, `DOC-SKILL-009`, or `DOC-SKILL-010`
+- the normal target remains `GPT-5.4 mini`
+- the request stays inside documentation-skill safe scope
+- the request does not drift into release, git-governance, canonical routing-table, production routing, `DOC-SKILL-011`, `DOC-SKILL-012`, or broader `5.4` candidate work
+
+Binding implementation artifacts:
+
+- `C:\KI\Janus-Projekt\documentation\codex\model-routing\config\doc_skill_mini_fixed_or_live_enabled_2026-06-13.json`
+- `C:\KI\Janus-Projekt\documentation\codex\model-routing\scripts\doc_skill_mini_fixed_or_live_runner.py`
+
+When the task is eligible, first run the runner in prompt mode and use its output as the operator gate:
+
+```powershell
+python documentation/codex/model-routing/scripts/doc_skill_mini_fixed_or_live_runner.py --skill-id <DOC-SKILL-XXX> --normal-target-model "<declared model/reasoning>" --task-intent documentation_skill --operator-choice prompt
+```
+
+Then present this exact user-facing gate:
+
+```text
+FIXED OR OPERATOR CHOICE
+- Documentation task:
+- Skill ID:
+- 1 = Codex
+- 2 = OpenRouter
+- Selected OR model:
+- Voraussichtliche Kosten:
+- Genauigkeit:
+- User action:
+- Boundaries:
+```
+
+Gate rules:
+
+- if the user chooses `1`, `local`, or `codex`, invoke the same runner with `--operator-choice local`
+- if the user chooses `2`, `or`, `opr`, or `openrouter`, invoke the same runner with `--operator-choice or`
+- if the user already explicitly requested `local` or fixed `or` for an eligible task, you may skip the extra wait and invoke the runner directly
+- if prompt mode or the follow-up invocation returns a pre-wrapper abort or Codex-only fallback, do not force OR; continue with local Codex handling or `Manual-review` according to the result
+- use `--use-local-fixture` only for bounded validation work, never for live everyday operator choice
+
+Forbidden inside this path:
+
+- Auto Router
+- dynamic model substitution outside the fixed config
+- any OR use for out-of-scope documentation skills
+- any claim that this is production routing or global OR approval
+
+## Bounded Sidecar Draft Operator Choice
+
+For normal documentation-update workflow use, this skill may offer one bounded `Codex` versus `Sidecar` choice only when all of the following are true:
+
+- the request is inside documentation-skill safe scope
+- the work is a non-binding draft, summary, milestone note, changelog draft, or handoff draft
+- no release, git-governance, final audit, canonical routing-table, production routing, backlog move, registry write, or `CURRENT_STATE` authority is being delegated
+- the sidecar can stay `read-only`
+
+Binding implementation artifacts:
+
+- `C:\KI\Janus-Projekt\documentation\codex\model-routing\scripts\codex_sidecar_skill_runner.ps1`
+- `C:\KI\Janus-Projekt\documentation\codex\model-routing\scripts\doc_skill_sidecar_draft_runner.py`
+- `C:\KI\Janus-Projekt\documentation\codex\model-routing\codex_sidecar_agent_live_pilot_result_2026-06-14.md`
+
+When the task is eligible, first run the helper in prompt mode and use its output as the operator gate:
+
+```powershell
+python documentation/codex/model-routing/scripts/doc_skill_sidecar_draft_runner.py --task-label "<short documentation draft task>" --normal-target-model "<declared model/reasoning>" --operator-choice prompt
+```
+
+Then present this exact user-facing gate:
+
+```text
+CODEX SIDECAR DELEGATION GATE
+- Skill:
+- Task:
+- 1 = Codex
+- 2 = Sidecar
+- Sidecar model/provider:
+- Sandbox:
+- Estimated cost/quota impact:
+- Expected delegation value:
+- Codex App review after sidecar:
+- User action:
+- Boundaries:
+```
+
+Gate rules:
+
+- if the user chooses `1`, `local`, or `codex`, invoke the same helper with `--operator-choice local`
+- if the user chooses `2` or `sidecar`, invoke the same helper with `--operator-choice sidecar --prompt-path <bounded prompt path>`
+- keep sidecar runs `read-only` unless a later explicit validation artifact proves a write-capable path is safe
+- Codex App must review the returned draft and perform any binding documentation writes locally
+- do not treat a sidecar draft as authoritative state
+
+Forbidden inside this path:
+
+- sidecar file writes
+- sidecar Git commands
+- sidecar release or routing decisions
+- sidecar updates to `CURRENT_STATE`, backlog sections, registries, changelog acceptance, or final completion markers
 
 ## Required Gate
 
