@@ -1,0 +1,11 @@
+﻿{
+    "status":  "FAILED",
+    "exit_code":  null,
+    "timed_out":  false,
+    "timeout_seconds":  180,
+    "command_json":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-LIVE-PILOT-READONLY-180-001\\command.json",
+    "stdout_log":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-LIVE-PILOT-READONLY-180-001\\stdout.log",
+    "stderr_log":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-LIVE-PILOT-READONLY-180-001\\stderr.log",
+    "last_message":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-LIVE-PILOT-READONLY-180-001\\last_message.md",
+    "event_stream":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-LIVE-PILOT-READONLY-180-001\\event_stream.jsonl"
+}

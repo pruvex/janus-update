@@ -1,0 +1,16 @@
+{
+  "summary_header": "CODEX SIDECAR DELEGATION RESULT",
+  "workflow_id": "SIDECAR-DOC-FLOW-20260614-023718",
+  "task_label": "Sidecar documentation draft local path validation",
+  "selected_path": "codex_only_operator_choice",
+  "skill": "janus-documentation-update",
+  "normal_target_model": "gpt-5.4 / medium",
+  "sidecar_model_provider": "Codex CLI sidecar / gpt-5.4",
+  "final_outcome": "LOCAL_CODEX_PATH_SELECTED",
+  "validation_result": "PASS",
+  "operator_result_lines": [
+    "Ergebnis: Codex lokal ausgewaehlt",
+    "Tatsaechliche Kosten: N/A (kein Sidecar-Lauf)"
+  ],
+  "operator_message": "Operator chose the normal Codex path. No sidecar run was made."
+}

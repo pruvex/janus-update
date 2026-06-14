@@ -1,0 +1,9 @@
+﻿{
+    "status":  "DRY_RUN",
+    "exit_code":  null,
+    "command_json":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-DRY-RUN-COMPAT-CHECK\\command.json",
+    "stdout_log":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-DRY-RUN-COMPAT-CHECK\\stdout.log",
+    "stderr_log":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-DRY-RUN-COMPAT-CHECK\\stderr.log",
+    "last_message":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-DRY-RUN-COMPAT-CHECK\\last_message.md",
+    "event_stream":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-DRY-RUN-COMPAT-CHECK\\event_stream.jsonl"
+}

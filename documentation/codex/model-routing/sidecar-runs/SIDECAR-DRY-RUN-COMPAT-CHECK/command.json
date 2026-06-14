@@ -1,0 +1,43 @@
+﻿{
+    "codex_path":  "codex",
+    "arguments":  [
+                      "exec",
+                      "--cd",
+                      "C:\\KI\\Janus-Projekt",
+                      "--model",
+                      "gpt-5.4",
+                      "--sandbox",
+                      "read-only",
+                      "--ask-for-approval",
+                      "never",
+                      "--output-last-message",
+                      "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-DRY-RUN-COMPAT-CHECK\\last_message.md",
+                      "-"
+                  ],
+    "process_executable":  "C:\\nvm4w\\nodejs\\node.exe",
+    "process_arguments":  [
+                              "C:\\nvm4w\\nodejs\\node_modules\\@openai\\codex\\bin\\codex.js",
+                              "exec",
+                              "--cd",
+                              "C:\\KI\\Janus-Projekt",
+                              "--model",
+                              "gpt-5.4",
+                              "--sandbox",
+                              "read-only",
+                              "--ask-for-approval",
+                              "never",
+                              "--output-last-message",
+                              "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-DRY-RUN-COMPAT-CHECK\\last_message.md",
+                              "-"
+                          ],
+    "run_directory":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-DRY-RUN-COMPAT-CHECK",
+    "prompt_path":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-fixtures\\sidecar_live_pilot_prompt_2026-06-14.md",
+    "working_directory":  "C:\\KI\\Janus-Projekt",
+    "model":  "gpt-5.4",
+    "sandbox":  "read-only",
+    "approval_policy":  "never",
+    "use_oss":  false,
+    "local_provider":  "",
+    "json_events":  false,
+    "execute":  false
+}

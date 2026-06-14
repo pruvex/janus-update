@@ -1,0 +1,11 @@
+﻿{
+    "status":  "TIMEOUT",
+    "exit_code":  null,
+    "timed_out":  true,
+    "timeout_seconds":  20,
+    "command_json":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-LIVE-PILOT-TIMEOUT-GUARD-002\\command.json",
+    "stdout_log":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-LIVE-PILOT-TIMEOUT-GUARD-002\\stdout.log",
+    "stderr_log":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-LIVE-PILOT-TIMEOUT-GUARD-002\\stderr.log",
+    "last_message":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-LIVE-PILOT-TIMEOUT-GUARD-002\\last_message.md",
+    "event_stream":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-LIVE-PILOT-TIMEOUT-GUARD-002\\event_stream.jsonl"
+}

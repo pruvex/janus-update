@@ -1,0 +1,14 @@
+{
+    "status":  "PASS",
+    "exit_code":  null,
+    "timed_out":  false,
+    "timeout_seconds":  180,
+    "artifact_success":  true,
+    "last_message_present":  true,
+    "stdout_present":  true,
+    "command_json":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-DOC-FLOW-20260614-023725\\command.json",
+    "stdout_log":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-DOC-FLOW-20260614-023725\\stdout.log",
+    "stderr_log":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-DOC-FLOW-20260614-023725\\stderr.log",
+    "last_message":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-DOC-FLOW-20260614-023725\\last_message.md",
+    "event_stream":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-DOC-FLOW-20260614-023725\\event_stream.jsonl"
+}
