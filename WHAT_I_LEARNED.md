@@ -49,6 +49,17 @@
 - **Epic:** BACKLOG-097
 - **Confidence:** High
 - **Tags:** Ollama, LocalLLM, Recommendations, HardwareScan, ToolCalling, Vibecoding, UX
+
+## [PATTERN] #ContactPetDetailsShouldNormalizeToSingleSentence "Pet details on contact cards should collapse into one clean sentence per pet"
+- **Kontext:** BACKLOG-110 / Kontakt-Wohnort landet als Besonderheit statt im Adressblock (2026-06-15).
+- **Problem:** Contact cards can accumulate multiple overlapping pet snippets such as `hat einen Hund`, `Olis hund heißt tasso`, `Oli hat auch eine katze`, and `hat eine Katze`, which makes the contact card look fragmented even when the facts are all correct.
+- **Loesung:** Normalize pet facts on the contact read/write path into a single sentence form per pet, prefer the named variant when it exists (`hat einen Hund namens tasso`), map owner-prefixed `auch` variants to a clean generic sentence (`hat eine Katze`), and drop weaker duplicates when a stronger named variant is already present.
+- **Haertung:** `python -m py_compile backend/data/crud.py backend/tests/test_contact_card_normalization.py` PASS; `python -m pytest backend/tests/test_contact_card_normalization.py -q` PASS; live Janus retest PASS with a clean address-book view.
+- **Tripwire:** If pet facts reappear as separate cluttered lines or a named pet reverts to a generic duplicate, the contact normalization layer has drifted.
+- **Location:** `backend/data/crud.py`, `backend/tests/test_contact_card_normalization.py`, `documentation/test-runs/BACKLOG-110_debug_contact_apply_normalization_addendum_2026-06-14.md`
+- **Epic:** BACKLOG-110
+- **Confidence:** High
+- **Tags:** Contacts, Normalization, Deduplication, PetFacts, UX, Regression
 ## [PATTERN] #BACKLOG-098_MailAiMustFailVisibleNotSilent "Mail-AI errors must surface as degraded state and log redaction must keep sensitive mail content out of technical traces"
 - **Kontext:** BACKLOG-098 / Janus Mail bundle final audit hardening.
 - **Problem:** AI thread-assist could silently fall back to heuristic outputs when provider payloads failed, and technical debug logs could expose sensitive mail details (subject/body/attachment names).
@@ -151,3 +162,14 @@
 - **Epic:** SPEC-15
 - **Confidence:** High
 - **Tags:** janus-final-audit,playwright,manual-evidence,ui-validation
+
+## [PATTERN] #StructuredExecutorFallbackMustStayReviewable "Structured delegation fallback should return explicit local-reviewable state instead of hard-aborting the operator path"
+- **Kontext:** TASK-SPEC17 / first structured executor slice for OR sidecar delegation (2026-06-15).
+- **Problem:** A bounded structured delegation route can fail safely at the executor or validator seam and still create bad operator ergonomics if the dispatcher hard-aborts instead of surfacing a reviewable fallback result. In dirty worktrees this also weakens auditability because the failure is harder to package as one coherent bounded outcome.
+- **Loesung:** Keep the structured executor narrow and deterministic, but convert unsupported or failed generator-review routes into an explicit local fallback result such as `CODEX_LOCAL_FALLBACK_REQUIRED`. Pair that with one task-scoped audit package and focused PASS-plus-expected-FAIL validation so the fallback path is auditable without pretending it is a successful delegated execution.
+- **Haertung:** Executor CLI, validator PASS path, validator expected-FAIL path, dispatcher success path, dispatcher fallback path, focused pytest suite, execution-result validator and final-audit validator all passed on the bounded Spec-17 package.
+- **Tripwire:** If a future structured delegation regression again aborts the operator flow without an explicit fallback state, or if final audit has only success evidence but no reviewable bounded failure artifact for the fallback seam, the structured delegation contract has drifted.
+- **Location:** `documentation/codex/model-routing/scripts/codex_structured_action_executor.py`, `documentation/codex/model-routing/scripts/codex_structured_action_generator_review_runner.py`, `documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py`, `documentation/codex/model-routing/tests/test_codex_structured_action_executor.py`, `documentation/tasks/TASK-SPEC17_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC17_final_audit.md`
+- **Epic:** TASK-SPEC17
+- **Confidence:** High
+- **Tags:** StructuredExecutor, Fallback, AuditHardening, ORSidecar, Dispatcher, Validator, DirtyWorktree

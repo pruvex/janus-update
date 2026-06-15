@@ -1,0 +1,12 @@
+{
+  "generator_id": "compile_testspec_to_testplan_v1",
+  "inputs": {
+    "spec_path": "documentation/TEST_SPEC/07_regression_suite/18_testspec_testplan_generator_regression.md",
+    "test_run_id": "TEST-RUN-2099-12-31-998",
+    "output_dir": "__RUN_DIR__/generated"
+  },
+  "declared_output_artifacts": [
+    "__RUN_DIR__/generated/TEST-RUN-2099-12-31-998_plan.json",
+    "__RUN_DIR__/generated/TEST-RUN-2099-12-31-998_generated.spec.js"
+  ]
+}

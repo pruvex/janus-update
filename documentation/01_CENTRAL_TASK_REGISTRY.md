@@ -4,6 +4,24 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-SPEC17 - Structured Executor First Slice for OR Sidecar Delegation
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-SPEC17_final_audit.md` (PASS)
+- **Spec**: `documentation/SPEC/Spec Done/17_structured_executor_first_slice_for_or_sidecar_delegation.md`
+- **Task**: `documentation/tasks/TASK-SPEC17_structured_executor_first_slice_for_or_sidecar_delegation.md`
+- **Execution Results**: `documentation/tasks/TASK-SPEC17.1_execution_result.md`, `documentation/tasks/TASK-SPEC17.2_execution_result.md`, `documentation/tasks/TASK-SPEC17.3_execution_result.md`
+- **Validation**: Der erste gebundene Structured-Executor-Slice fuer die OR- oder Sidecar-Delegation ist jetzt auditiert und abgeschlossen. Der Executor nimmt strukturierte Requests deterministisch an, unterstuetzt genau den ersten `compile_testspec_to_testplan_v1`-Generatorpfad plus `validate_runner_v1`, und der Dispatcher faellt bei nicht unterstuetzten oder fehlschlagenden Generator-Review-Routen reviewbar auf `CODEX_LOCAL_FALLBACK_REQUIRED` zurueck statt hart abzubrechen. Final Audit PASS mit fokussierter CLI-, Pytest- und Validator-Evidenz.
+- **Changed Files**: `documentation/codex/model-routing/scripts/codex_structured_action_executor.py`, `documentation/codex/model-routing/scripts/codex_structured_action_generator_review_runner.py`, `documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py`, `documentation/codex/model-routing/structured-action-fixtures/delegated_request_validate_runner_failure_2026-06-15.json`, `documentation/codex/model-routing/structured-action-fixtures/invalid_generated_runner_2026-06-15.spec.js`, `documentation/codex/model-routing/structured-action-fixtures/builder_generator_payload_compile_testspec_2026-06-15.json`, `documentation/codex/model-routing/tests/test_codex_structured_action_executor.py`, `documentation/tasks/TASK-SPEC17_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC17_final_audit.md`.
+
+### BACKLOG-110 - Kontakt-Wohnort landet als Besonderheit statt im Adressblock
+
+- **Status**: DONE
+- **Final Audit**: `documentation/test-runs/BACKLOG-110_debug_contact_apply_normalization_addendum_2026-06-14.md` (PASS)
+- **Task**: `documentation/tasks/backlog_BACKLOG-110_kontakt_wohnort_landet_als_besonderheit_statt_im_adressblock.md`
+- **Validation**: Der Kontaktpfad fuer `Oliver Schwab` fuehrt Wohnort-/Adressinformationen jetzt in den Adressblock statt in `Besonderheiten`, und die Pet-Details werden auf der Kontaktkarte zu kompakten Ein-Satz-Formen wie `hat einen Hund namens tasso` und `hat eine Katze` normalisiert. Live-Retest und gezielte Backend-Regressionen PASS.
+- **Changed Files**: `backend/data/crud.py`, `backend/tests/test_contact_card_normalization.py`, `documentation/test-runs/BACKLOG-110_debug_contact_apply_normalization_addendum_2026-06-14.md`, `documentation/ai/CURRENT_STATE.md`, `documentation/codex/SKILL_USAGE_LOG.md`.
+
 ### TASK-SPEC11 - CURRENT_STATE als verpflichtendes Janus-Sync-Artefakt
 
 - **Status**: DONE
