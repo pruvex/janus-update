@@ -1533,3 +1533,185 @@ Open risks:
 Next recommended step for ChatGPT override: checkpoint both accepted quickchange pilots with `janus-git-governance`, then decide whether to bind the first bounded delegated non-quickchange workflow or add one more narrow pilot in another safe class.
 
 Next recommended step for Codex override: use `janus-git-governance` on `5.4` medium for a scoped checkpoint commit, or stay on `5.4 mini` low only if you want one more purely mechanical documentation sync before any new live delegated class is attempted.
+
+## Execution Patch Candidate Override
+Timestamp: `2026-06-16 02:16 local time`
+
+Current goal override: prove the first bounded delegated non-quickchange workflow on a real `janus-executioner` slice without granting apply authority to the delegated path.
+
+Active phase override: `janus-executioner`, canonical state `PASS` for the delegation path and `HANDOFF` for the concrete patch proposal. The first live `execution_patch_candidate` run completed successfully as a bounded Codex review artifact, but the specific `BACKLOG-107` patch proposal is not yet strong enough for direct local apply.
+
+What changed:
+- Created the bound execution input package `documentation/codex/model-routing/execution-review-fixtures/backlog_107_execution_patch_candidate_input_package_2026-06-16.json`.
+- Ran the shared bounded dispatcher with `--task-class execution_patch_candidate`, `--operator-choice delegated`, and `--execution-live-sidecar` under workflow `BOUNDED-EXECUTION-BACKLOG-107-001`.
+- Captured a read-only delegated patch proposal with structured review artifacts in `documentation/codex/model-routing/execution-review-runs/BOUNDED-EXECUTION-BACKLOG-107-001/`.
+- Rejected immediate local apply for the concrete proposal after Codex review because the patch only reroutes `scripts/dev-log-utils.cjs` plus documentation references and does not yet address the broader `BACKLOG-107` output-family scope strongly enough for task completion.
+
+Changed files:
+- `documentation/codex/model-routing/execution-review-fixtures/backlog_107_execution_patch_candidate_input_package_2026-06-16.json`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks run:
+- bounded dispatcher prompt gate for `execution_patch_candidate`: PASS
+- bounded delegated live run `BOUNDED-EXECUTION-BACKLOG-107-001`: PASS
+- delegated result validation summary: PASS
+- structured patch capture: PASS
+- Codex diff review against bounded `BACKLOG-107` scope: PASS for artifact quality, REJECT for immediate apply sufficiency
+
+Open risks:
+- The delegated path itself is now proven for one real `janus-executioner` review slice, but `BACKLOG-107` still needs a stronger patch proposal or local Codex execution before the backlog item can advance.
+- This run used the Codex CLI sidecar path (`gpt-5.4`) rather than a fixed OpenRouter worker, so it proves the bounded execution-review workflow more than OR cost savings.
+- The repo still contains many unrelated local changes outside this execution-review slice.
+- No new commit or push has happened after this execution-review result, so a remote such as GitHub or `backup` does not yet contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT override: either tighten `BACKLOG-107` into a smaller first apply slice and rerun `execution_patch_candidate`, or switch to local Codex execution for `BACKLOG-107` while treating this delegated run as workflow evidence only.
+
+Next recommended step for Codex override: stay on `5.4` medium and prepare one narrower `BACKLOG-107` applyable sub-slice if delegated execution should be retried; otherwise run local `janus-executioner` for the full bounded backlog task.
+
+## Execution Slice Narrowing Override
+Timestamp: `2026-06-16 02:28 local time`
+
+Current goal override: convert the too-broad `BACKLOG-107` execution candidate into one smaller applyable first slice so the delegated execution-review path can be retried against a truly atomic implementation target.
+
+Active phase override: `janus-task-breakdown` -> `janus-preimplementation-check`, canonical state `PASS`. The first applyable `BACKLOG-107` sub-slice is now explicitly bound and prechecked.
+
+What changed:
+- Created the narrowed task artifact `documentation/tasks/backlog_BACKLOG-107_first_apply_slice_runtime_log_target_alignment.md`.
+- Bound the first apply slice to one shared helper path plus directly coupled hygiene references only:
+  - `scripts/dev-log-utils.cjs`
+  - `documentation/codex/skills/janus-health-check/scripts/health_snapshot.py`
+  - `documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md`
+  - `.gitignore`
+  - `documentation/test-runs/BACKLOG-107_execution_validation.md`
+- Created and validated `documentation/tasks/backlog_BACKLOG-107_first_apply_slice_preimplementation_check.md` for target task `TASK-BACKLOG-107-R1.1`.
+
+Changed files:
+- `documentation/tasks/backlog_BACKLOG-107_first_apply_slice_runtime_log_target_alignment.md`
+- `documentation/tasks/backlog_BACKLOG-107_first_apply_slice_preimplementation_check.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks run:
+- `python C:\Users\pruve\.codex\skills\janus-task-breakdown\scripts\validate_task_handoff.py --task documentation/tasks/backlog_BACKLOG-107_first_apply_slice_runtime_log_target_alignment.md --target TASK-BACKLOG-107-R1.1`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py documentation/tasks/backlog_BACKLOG-107_first_apply_slice_preimplementation_check.md`: PASS
+- `git diff --check -- documentation/tasks/backlog_BACKLOG-107_first_apply_slice_runtime_log_target_alignment.md documentation/tasks/backlog_BACKLOG-107_first_apply_slice_preimplementation_check.md`: PASS
+
+Open risks:
+- The narrowed slice is prechecked, but no second delegated execution review has been run yet against `TASK-BACKLOG-107-R1.1`.
+- The delegated execution-review path is proven as workflow, but not yet with an accepted apply-worthy patch for this backlog family.
+- The repo still contains many unrelated local changes outside this slice.
+- No new commit or push has happened after this narrowing step, so a remote such as GitHub or `backup` does not yet contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT override: rerun the bounded `execution_patch_candidate` path against `TASK-BACKLOG-107-R1.1` instead of the broader original `BACKLOG-107` scope.
+
+Next recommended step for Codex override: stay on `5.4` low to medium and use the new prechecked slice as the exact input package for the next delegated execution patch-candidate run.
+
+## Execution Slice Retry Override
+Timestamp: `2026-06-16 02:36 local time`
+
+Current goal override: verify whether the narrowed `BACKLOG-107` first apply slice is now tight enough to produce an actually apply-worthy delegated patch candidate instead of only workflow evidence.
+
+Active phase override: `janus-executioner`, canonical state `HANDOFF`. The second delegated `execution_patch_candidate` run for `TASK-BACKLOG-107-R1.1` completed successfully and now yields an apply-worthy bounded review candidate, but Codex has not applied it yet.
+
+What changed:
+- Created the narrowed execution input package `documentation/codex/model-routing/execution-review-fixtures/backlog_107_r1_execution_patch_candidate_input_package_2026-06-16.json`.
+- Ran the shared bounded dispatcher with `--task-class execution_patch_candidate`, `--operator-choice delegated`, and `--execution-live-sidecar` under workflow `BOUNDED-EXECUTION-BACKLOG-107-R1-001`.
+- Captured a second read-only delegated patch proposal and structured review artifacts in `documentation/codex/model-routing/execution-review-runs/BOUNDED-EXECUTION-BACKLOG-107-R1-001/`.
+- Codex review now considers the narrowed patch candidate apply-worthy in principle because it stays inside the five-file first-slice contract and aligns the shared runtime-log helper plus its coupled hygiene references without widening into broader launcher or telemetry work.
+
+Changed files:
+- `documentation/codex/model-routing/execution-review-fixtures/backlog_107_r1_execution_patch_candidate_input_package_2026-06-16.json`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks run:
+- bounded delegated live run `BOUNDED-EXECUTION-BACKLOG-107-R1-001`: PASS
+- delegated result validation summary: PASS
+- structured patch capture: PASS
+- Codex diff review against `TASK-BACKLOG-107-R1.1`: PASS for bounded apply-worthiness
+
+Open risks:
+- The patch candidate is apply-worthy, but no local apply, validation rerun, or execution result has happened yet.
+- This still proves the bounded Codex CLI sidecar execution-review workflow, not OpenRouter cost-saving behavior.
+- The repo still contains many unrelated local changes outside this slice.
+- No new commit or push has happened after this second execution-review result, so a remote such as GitHub or `backup` does not yet contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT override: either approve Codex-local apply of the accepted `TASK-BACKLOG-107-R1.1` proposal or keep it as review evidence and stop before product-file edits.
+
+Next recommended step for Codex override: if approved, apply the accepted bounded patch locally, run the declared slice checks, and record an execution result for `TASK-BACKLOG-107-R1.1`.
+
+## Execution Apply Override
+Timestamp: `2026-06-16 02:45 local time`
+
+Current goal override: convert the accepted bounded execution review candidate for `TASK-BACKLOG-107-R1.1` into a real local Codex implementation with bounded evidence, while keeping the backlog family split from broader output-path cleanup.
+
+Active phase override: `janus-executioner`, canonical state `PASS`. The first apply slice for `BACKLOG-107` is now locally implemented and validated after Codex accepted and applied the narrowed delegated patch candidate.
+
+What changed:
+- Applied the accepted bounded patch candidate locally for `TASK-BACKLOG-107-R1.1`.
+- The shared versioned backend/Vite dev-runtime log helper now targets `documentation/logs/dev-runtime/`.
+- The healthcheck legacy-log wording, dev-environment runbook, ignore rule, and bounded validation note were aligned to the same first-slice target path.
+- Recorded the formal execution result in `documentation/tasks/backlog_BACKLOG-107_first_apply_slice_execution_result.md`.
+
+Changed files:
+- `scripts/dev-log-utils.cjs`
+- `documentation/codex/skills/janus-health-check/scripts/health_snapshot.py`
+- `documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md`
+- `.gitignore`
+- `documentation/test-runs/BACKLOG-107_execution_validation.md`
+- `documentation/tasks/backlog_BACKLOG-107_first_apply_slice_execution_result.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks run:
+- `python documentation/codex/skills/janus-health-check/scripts/health_snapshot.py --repo C:\KI\Janus-Projekt --mode MONTHLY`: PASS
+- `rg -n "debug_logs|documentation/logs/dev-runtime|\.codex-vite|backend_hotfix|backend_live|backend_persist|backend_restart|backend_start_manual|backend_verify|tmp_uv8011" scripts package.json main.electron.cjs documentation -S`: PASS as bounded inspection; expected historical references remain outside this first slice
+- `node -e "const { runWithLogs } = require('./scripts/dev-log-utils.cjs'); console.log(typeof runWithLogs === 'function' ? 'PASS' : 'FAIL')"`: PASS
+- `node --check scripts/dev-log-utils.cjs`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py documentation/tasks/backlog_BACKLOG-107_first_apply_slice_execution_result.md`: PASS
+
+Open risks:
+- `BACKLOG-107` as a whole is not complete yet; only the first shared runtime-log family slice is done.
+- The bounded `rg` inspection still surfaces historical references and archived evidence outside this first slice that continue to mention `debug_logs/`.
+- The repo still contains many unrelated local changes outside this slice.
+- No new commit or push has happened after this local execution step, so a remote such as GitHub or `backup` does not yet contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT override: run `janus-final-audit` for the narrowed `TASK-BACKLOG-107-R1.1` slice, or prepare a compact audit package first if a cleaner review bundle is preferred.
+
+Next recommended step for Codex override: use `5.4` medium for `janus-final-audit` on the first apply slice, keeping the remaining broader `BACKLOG-107` launcher families explicitly out of scope.
+
+## Execution Slice Final Audit Override
+Timestamp: `2026-06-16 03:12 local time`
+
+Current goal override: seal the bounded `TASK-BACKLOG-107-R1.1` implementation with a clean final audit while explicitly not re-opening or re-declaring the full older `BACKLOG-107` completion.
+
+Active phase override: `janus-final-audit`, canonical state `PASS`. The narrowed first apply slice now has its own compact audit package and validated final-audit artifact.
+
+What changed:
+- Created the bounded audit package `documentation/tasks/BACKLOG-107_R1_1_AUDIT_PACKAGE.md`.
+- Created the final audit result `documentation/tasks/backlog_BACKLOG-107_first_apply_slice_final_audit.md`.
+- Confirmed that the `R1.1` slice passes final audit without widening into startup telemetry, legacy log deletion, or broader launcher-family cleanup.
+
+Changed files:
+- `documentation/tasks/BACKLOG-107_R1_1_AUDIT_PACKAGE.md`
+- `documentation/tasks/backlog_BACKLOG-107_first_apply_slice_final_audit.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks run:
+- `python documentation/codex/skills/janus-health-check/scripts/health_snapshot.py --repo C:\KI\Janus-Projekt --mode MONTHLY`: PASS
+- `rg -n "debug_logs|documentation/logs/dev-runtime|\.codex-vite|backend_hotfix|backend_live|backend_persist|backend_restart|backend_start_manual|backend_verify|tmp_uv8011" scripts package.json main.electron.cjs documentation -S`: PASS as bounded inspection with expected out-of-slice historical hits
+- `node -e "const { runWithLogs } = require('./scripts/dev-log-utils.cjs'); console.log(typeof runWithLogs === 'function' ? 'PASS' : 'FAIL')"`: PASS
+- `node --check scripts/dev-log-utils.cjs`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py documentation/tasks/backlog_BACKLOG-107_first_apply_slice_final_audit.md`: PASS
+
+Open risks:
+- `BACKLOG-107` overall still has possible later hygiene follow-up families, but those remain intentionally out of scope for this `R1.1` audit.
+- Historical docs and archived evidence outside this slice still mention `debug_logs/`; that is expected and not a blocker here.
+- The repo still contains many unrelated local changes outside the bounded slice.
+- No new commit or push has happened after this audit, so a remote such as GitHub or `backup` does not yet contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT override: run `janus-documentation-update` only if the bounded `R1.1` slice should be reflected in additional Janus state artifacts without disturbing the older broader `BACKLOG-107` closeout.
+
+Next recommended step for Codex override: use `5.4 mini` low for a compact `janus-documentation-update` closeout of the `R1.1` slice, or stop here if audit-only evidence is sufficient for now.
