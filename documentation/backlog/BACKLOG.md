@@ -355,7 +355,7 @@ Dashboard-Regeln:
 - **Completed at:** 2026-06-06
 - **Final Audit:** PASS
 - **Validation evidence:** `node --check scripts/write-startup-marker.cjs` PASS; `node --check electron/startup-telemetry.cjs` PASS; `python -m py_compile backend/services/telemetry/startup_config.py backend/main.py documentation/codex/skills/janus-health-check/scripts/health_snapshot.py` PASS; `python -m pytest -q tests/test_startup_config.py` PASS; `python documentation/codex/skills/janus-health-check/scripts/health_snapshot.py --repo C:\KI\Janus-Projekt --mode MONTHLY` PASS; Final Audit PASS via `documentation/test-runs/BACKLOG-107_final_audit.md`.
-- **Notizen:** Die Root-Logdateien selbst wurden bewusst nicht geloescht. Der Fix blieb auf Pfadhaertung, Startup-Telemetrie-Zielpfad und die gezielte Healthcheck-Einordnung der bekannten Legacy-Root-Logs begrenzt.
+- **Notizen:** Die Root-Logdateien selbst wurden bewusst nicht geloescht. Der Fix blieb auf Pfadhaertung, Startup-Telemetrie-Zielpfad und die gezielte Healthcheck-Einordnung der bekannten Legacy-Root-Logs begrenzt. Spaetere bounded Follow-up-Slices wurden getrennt dokumentiert: `TASK-BACKLOG-107-R1.1` fuer die gemeinsame dev-runtime Logziel-Familie und `TASK-BACKLOG-107-R1.2` fuer den verbleibenden Electron-Frontend-Debug-Export. Diese Slice-Closeouts ergaenzen den Verlauf, ohne den breiteren DONE-Stand von 2026-06-06 umzuschreiben.
 
 ### BACKLOG-106 - Lokale Datenbank-Artefakte aus dem Repo-Root herausziehen und sauber einordnen
 

@@ -1715,3 +1715,169 @@ Open risks:
 Next recommended step for ChatGPT override: run `janus-documentation-update` only if the bounded `R1.1` slice should be reflected in additional Janus state artifacts without disturbing the older broader `BACKLOG-107` closeout.
 
 Next recommended step for Codex override: use `5.4 mini` low for a compact `janus-documentation-update` closeout of the `R1.1` slice, or stop here if audit-only evidence is sufficient for now.
+
+## Execution Slice Follow-up Design Override
+Timestamp: `2026-06-16 03:28 local time`
+
+Current goal override: release the next smallest `BACKLOG-107` follow-up slice after the sealed `R1.1` closeout, without reopening the full backlog family or mixing in historical cleanup.
+
+Active phase override: `janus-task-breakdown`, canonical state `TASK DESIGN COMPLETE`. A second bounded target task now exists for the remaining Electron frontend debug export path that still writes to `debug_logs/` in dev mode.
+
+What changed:
+- Created `documentation/tasks/backlog_BACKLOG-107_second_apply_slice_frontend_debug_export_alignment.md`.
+- Released `TASK-BACKLOG-107-R1.2` as the next precheck target.
+- Kept the new slice intentionally narrow: one Electron handler plus the current bounded validation note only.
+
+Changed files:
+- `documentation/tasks/backlog_BACKLOG-107_second_apply_slice_frontend_debug_export_alignment.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks run:
+- `python C:\Users\pruve\.codex\skills\janus-task-breakdown\scripts\validate_task_handoff.py --task documentation/tasks/backlog_BACKLOG-107_second_apply_slice_frontend_debug_export_alignment.md --target TASK-BACKLOG-107-R1.2`: PASS
+- `git diff --check -- documentation/tasks/backlog_BACKLOG-107_second_apply_slice_frontend_debug_export_alignment.md`: PASS
+
+Open risks:
+- `main.electron.cjs` still contains the old `debug_logs/` dev-mode export path until `TASK-BACKLOG-107-R1.2` is actually implemented.
+- The repo still contains many unrelated local changes outside this new slice.
+- No new commit or push has happened after this task-design step, so a remote such as GitHub or `backup` does not yet contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT override: run `janus-preimplementation-check` for `TASK-BACKLOG-107-R1.2`.
+
+Next recommended step for Codex override: stay on `5.4` medium and precheck the new `TASK-BACKLOG-107-R1.2` slice before any implementation.
+
+## Execution Slice Follow-up Precheck Override
+Timestamp: `2026-06-16 03:40 local time`
+
+Current goal override: freeze the second bounded `BACKLOG-107` follow-up slice as an implementation-ready Electron-only precheck target before any code change happens.
+
+Active phase override: `janus-preimplementation-check`, canonical state `PRE-CHECK PASSED`. `TASK-BACKLOG-107-R1.2` is now formally prechecked and ready for one bounded local implementation pass.
+
+What changed:
+- Created `documentation/tasks/backlog_BACKLOG-107_second_apply_slice_preimplementation_check.md`.
+- Bound the follow-up implementation scope to exactly:
+  - `main.electron.cjs`
+  - `documentation/test-runs/BACKLOG-107_execution_validation.md`
+- Locked the evidence gate to `node --check`, bounded `rg` inspection, and `health_snapshot.py --mode MONTHLY`.
+- Confirmed the follow-up slice must keep production `%APPDATA%` behavior unchanged and must not reopen broader `BACKLOG-107` launcher-family or historical documentation cleanup.
+
+Changed files:
+- documentation/tasks/backlog_BACKLOG-107_second_apply_slice_preimplementation_check.md
+- documentation/codex/SKILL_USAGE_LOG.md
+- documentation/ai/CURRENT_STATE.md
+
+Checks run:
+- `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py documentation/tasks/backlog_BACKLOG-107_second_apply_slice_preimplementation_check.md`: PASS
+- `git diff --check -- documentation/tasks/backlog_BACKLOG-107_second_apply_slice_preimplementation_check.md`: PASS
+
+Open risks:
+- `main.electron.cjs` still contains the old dev-mode `debug_logs/` export path until `TASK-BACKLOG-107-R1.2` is actually implemented.
+- The repo still contains many unrelated local changes outside this bounded slice.
+- No new commit or push has happened after this precheck step, so a remote such as GitHub or `backup` does not yet contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT override: approve the bounded implementation of `TASK-BACKLOG-107-R1.2` via `janus-executioner`.
+
+Next recommended step for Codex override: stay on `5.4` low to medium and implement only the one remaining Electron dev-mode export path plus the validation note refresh.
+
+## Execution Slice Follow-up Apply Override
+Timestamp: `2026-06-16 03:49 local time`
+
+Current goal override: complete the second bounded `BACKLOG-107` follow-up slice so the remaining Electron dev-mode frontend debug export no longer drifts away from the accepted `documentation/logs/dev-runtime/` target family.
+
+Active phase override: `janus-executioner`, canonical state `PASS`. `TASK-BACKLOG-107-R1.2` is now locally implemented and verified.
+
+What changed:
+- Updated `main.electron.cjs` so `debug:write-frontend-log` now writes dev-mode frontend exports to `documentation/logs/dev-runtime/`.
+- Kept production-mode frontend debug export behavior unchanged on `%APPDATA%/.../debug_logs`.
+- Refreshed `documentation/test-runs/BACKLOG-107_execution_validation.md` so it now documents the `R1.2` Electron follow-up slice instead of the earlier `R1.1` helper-path slice.
+- Recorded the formal execution result in `documentation/tasks/backlog_BACKLOG-107_second_apply_slice_execution_result.md`.
+
+Changed files:
+- main.electron.cjs
+- documentation/test-runs/BACKLOG-107_execution_validation.md
+- documentation/tasks/backlog_BACKLOG-107_second_apply_slice_execution_result.md
+- documentation/codex/SKILL_USAGE_LOG.md
+- documentation/ai/CURRENT_STATE.md
+
+Checks run:
+- `node --check main.electron.cjs`: PASS
+- `rg -n "debug:write-frontend-log|debug_logs|documentation/logs/dev-runtime|frontend_log_" main.electron.cjs documentation/test-runs/BACKLOG-107_execution_validation.md -S`: PASS
+- `python documentation/codex/skills/janus-health-check/scripts/health_snapshot.py --repo C:\KI\Janus-Projekt --mode MONTHLY`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py documentation/tasks/backlog_BACKLOG-107_second_apply_slice_execution_result.md`: PASS
+
+Open risks:
+- This completes only the bounded `R1.2` Electron follow-up seam, not any broader `BACKLOG-107` historical cleanup families.
+- The repo still contains many unrelated local changes outside this bounded slice.
+- No new commit or push has happened after this execution step, so a remote such as GitHub or `backup` does not yet contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT override: prepare a compact `R1.2` audit package and run `janus-final-audit` for the bounded follow-up slice.
+
+Next recommended step for Codex override: stay on `5.4` medium and package `TASK-BACKLOG-107-R1.2` for final audit without widening back into the full `BACKLOG-107` family.
+
+## Execution Slice Follow-up Final Audit Override
+Timestamp: `2026-06-16 03:56 local time`
+
+Current goal override: seal the second bounded `BACKLOG-107` follow-up slice with a compact final audit while keeping both the older broad closeout and the bounded `R1.1` slice history intact.
+
+Active phase override: `janus-final-audit`, canonical state `PASS`. `TASK-BACKLOG-107-R1.2` now has its own compact audit package and validated final-audit artifact.
+
+What changed:
+- Created the bounded audit package `documentation/tasks/BACKLOG-107_R1_2_AUDIT_PACKAGE.md`.
+- Created the final audit result `documentation/tasks/backlog_BACKLOG-107_second_apply_slice_final_audit.md`.
+- Confirmed that `R1.2` passes final audit without widening into startup telemetry, legacy artifact deletion, registry rewrites, or broader launcher-family cleanup.
+
+Changed files:
+- documentation/tasks/BACKLOG-107_R1_2_AUDIT_PACKAGE.md
+- documentation/tasks/backlog_BACKLOG-107_second_apply_slice_final_audit.md
+- documentation/codex/SKILL_USAGE_LOG.md
+- documentation/ai/CURRENT_STATE.md
+
+Checks run:
+- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py documentation/tasks/backlog_BACKLOG-107_second_apply_slice_final_audit.md`: PASS
+- `git diff --check -- documentation/tasks/BACKLOG-107_R1_2_AUDIT_PACKAGE.md documentation/tasks/backlog_BACKLOG-107_second_apply_slice_final_audit.md`: PASS
+
+Open risks:
+- `BACKLOG-107` overall may still have later hygiene follow-up families, but those remain intentionally out of scope for this `R1.2` audit.
+- The repo still contains many unrelated local changes outside the bounded slice.
+- No new commit or push has happened after this audit, so a remote such as GitHub or `backup` does not yet contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT override: run `janus-documentation-update` only if the bounded `R1.2` slice should now be reflected in additional Janus state artifacts without disturbing the earlier broad `BACKLOG-107` closeout or the later `R1.1` slice history.
+
+Next recommended step for Codex override: use `5.4 mini` low for a compact `janus-documentation-update` closeout of `R1.2`, or stop here if audit-only evidence is sufficient for now.
+
+## Execution Slice Follow-up Documentation Override
+Timestamp: `2026-06-16 04:07 local time`
+
+Current goal override: synchronize the bounded `TASK-BACKLOG-107-R1.2` final-audit result into the Janus state artifacts without rewriting the older broad `BACKLOG-107` closeout or the later `R1.1` slice history.
+
+Active phase override: `janus-documentation-update`, canonical state `PASS`. The `R1.2` slice is now reflected in the central registry, the `BACKLOG-107` DONE entry notes, the dashboard snapshot, and the compact project-state summary.
+
+What changed:
+- Updated `documentation/01_CENTRAL_TASK_REGISTRY.md` so the `BACKLOG-107` closure now explicitly records the bounded `R1.1` and `R1.2` follow-on slices and their audit artifacts.
+- Updated `documentation/backlog/BACKLOG.md` so the existing `BACKLOG-107` DONE item now mentions the later bounded `R1.1` and `R1.2` follow-up slice closures without rewriting the original 2026-06-06 completion.
+- Updated `PROJECT_STATE.md` so the compact state row for `BACKLOG-107` reflects the broad closure plus both later bounded follow-up slices.
+- Re-synced `janus-dashboard/data/backlog.snapshot.json` after the bounded backlog-note update.
+- Intentionally skipped `CHANGELOG.md` because `R1.2` is an internal bounded hygiene follow-up with no new user-facing behavior beyond the already documented broader `BACKLOG-107` closure.
+
+Changed files:
+- documentation/01_CENTRAL_TASK_REGISTRY.md
+- documentation/backlog/BACKLOG.md
+- PROJECT_STATE.md
+- janus-dashboard/data/backlog.snapshot.json
+- documentation/codex/SKILL_USAGE_LOG.md
+- documentation/ai/CURRENT_STATE.md
+
+Checks run:
+- `python C:\Users\pruve\.codex\skills\janus-backlog-handoff\scripts\validate_backlog.py C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md`: PASS WITH LEGACY WARNINGS
+- `npm run sync:backlog` in `janus-dashboard`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-documentation-update\scripts\validate_doc_update.py --repo C:\KI\Janus-Projekt --marker BACKLOG-107 --require documentation/01_CENTRAL_TASK_REGISTRY.md --require PROJECT_STATE.md --require documentation/backlog/BACKLOG.md`: PASS
+- `git diff --check -- documentation/01_CENTRAL_TASK_REGISTRY.md documentation/backlog/BACKLOG.md PROJECT_STATE.md`: PASS
+
+Open risks:
+- The backlog validator still reports known legacy warnings unrelated to this bounded `R1.2` documentation update.
+- The repo still contains many unrelated local changes outside this bounded slice.
+- No new commit or push has happened after this documentation step, so a remote such as GitHub or `backup` does not yet contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT override: use `janus-git-governance` only if this bounded `R1.2` closure should now be checkpointed as its own scoped commit.
+
+Next recommended step for Codex override: stay on `5.4` medium for a scoped git-governance checkpoint, or stop here if the user wants to continue with the next bounded Janus slice first.

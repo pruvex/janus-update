@@ -1,26 +1,23 @@
 # BACKLOG-107 Execution Validation
 
-- **Target Task:** BACKLOG-107
-- **Date:** 2026-06-06
-- **Scope:** Haerte die verbliebenen versionierten Script-Output-Pfade fuer Startup-Telemetrie und reduziere wiederkehrende Root-Log-Funde durch gezielte Healthcheck-Klassifizierung statt generischem `root_suspicious`.
+- **Target Task:** TASK-BACKLOG-107-R1.2
+- **Date:** 2026-06-16
+- **Scope:** Richte den verbleibenden Electron-Frontend-Debug-Export im Dev-Mode auf `documentation/logs/dev-runtime/` aus und halte die bestehende bounded Validation-Note dazu aktuell.
 
 ## Checks
 
-- `node --check C:\KI\Janus-Projekt\scripts\write-startup-marker.cjs` - PASS
-- `node --check C:\KI\Janus-Projekt\electron\startup-telemetry.cjs` - PASS
-- `python -m py_compile C:\KI\Janus-Projekt\backend\services\telemetry\startup_config.py C:\KI\Janus-Projekt\backend\main.py C:\KI\Janus-Projekt\documentation\codex\skills\janus-health-check\scripts\health_snapshot.py` - PASS
-- `python -m pytest -q C:\KI\Janus-Projekt\tests\test_startup_config.py -vv` - PASS
+- `node --check C:\KI\Janus-Projekt\main.electron.cjs` - PASS
 - `python documentation/codex/skills/janus-health-check/scripts/health_snapshot.py --repo C:\KI\Janus-Projekt --mode MONTHLY` - PASS
+- `rg -n "debug:write-frontend-log|debug_logs|documentation/logs/dev-runtime|frontend_log_" main.electron.cjs documentation/test-runs/BACKLOG-107_execution_validation.md -S` - PASS
 - Targeted code inspection confirmed:
-  - startup telemetry markers now target `documentation/logs/janus_startup_telemetry.log`
-  - versioned backend/Vite dev-runtime logs still target `debug_logs/`
-  - known legacy root log files are reported under `root_legacy_log_artifacts`
-  - generic `root_suspicious` is empty for the current known recurring root-log family
+  - the Electron `debug:write-frontend-log` handler now targets `documentation/logs/dev-runtime/` in dev mode
+  - production-mode frontend debug exports still target `%APPDATA%/.../debug_logs`
+  - frontend debug exports continue to write `frontend_log_<timestamp>.md` artifacts
 
 ## Manual Janus Evidence
 
-N/A WITH REASON - This task changes local dev tooling paths, telemetry log routing, and hygiene reporting only. No user-facing UI, provider flow, backend API contract, or product workflow changed.
+N/A WITH REASON - This task changes only a local Electron dev-mode debug export path plus its bounded validation note. No user-facing UI, provider flow, backend API contract, or product workflow changed.
 
 ## Notes
 
-The root log files themselves were intentionally not deleted in this execution. BACKLOG-107 stays limited to path hardening and evidence/reporting clarity for recurring script-related artifacts.
+This slice intentionally stays bounded to the remaining Electron frontend debug export seam after `R1.1`. It does not widen into startup telemetry, legacy artifact deletion, registry rewrites, or broader launcher cleanup.

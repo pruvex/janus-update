@@ -1109,7 +1109,7 @@ ipcMain.handle('debug:write-frontend-log', async (event, payload = {}) => {
 
     const isDev = process.env.NODE_ENV === 'development';
     const debugDir = isDev
-      ? path.join(process.cwd(), 'debug_logs')
+      ? path.join(process.cwd(), 'documentation', 'logs', 'dev-runtime')
       : path.join(app.getPath('userData'), 'debug_logs');
     await fs.promises.mkdir(debugDir, { recursive: true });
 
