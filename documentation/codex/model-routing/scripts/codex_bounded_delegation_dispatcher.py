@@ -38,6 +38,11 @@ def write_json(path: Path, payload: dict) -> None:
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
+def write_text(path: Path, content: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content, encoding="utf-8")
+
+
 def output(payload: dict) -> None:
     print(json.dumps(payload, indent=2, ensure_ascii=False))
 
@@ -56,6 +61,200 @@ def parse_json_output(text: str, label: str) -> dict:
 def summarize_failure_text(text: str, limit: int = 600) -> str:
     collapsed = " ".join(part.strip() for part in text.splitlines() if part.strip())
     return collapsed[:limit] if collapsed else "No failure details captured."
+
+
+def load_json(path: Path) -> dict:
+    return json.loads(path.read_text(encoding="utf-8-sig"))
+
+
+def validate_write_candidate_entry(payload: dict, expected_target_task: str) -> list[str]:
+    required_fields = [
+        "workflow_id",
+        "bound_skill_context",
+        "target_task",
+        "spec_path",
+        "precheck_status",
+        "allowed_files",
+        "max_touched_files",
+        "manual_validation_gate",
+        "delegation_question",
+    ]
+    issues: list[str] = []
+    for field in required_fields:
+        if field not in payload:
+            issues.append(f"missing input field: {field}")
+
+    target_task = payload.get("target_task")
+    if not isinstance(target_task, str) or not target_task.strip():
+        issues.append("target_task must be a non-empty string")
+    elif target_task != expected_target_task:
+        issues.append(f"target_task must exactly match expected target task: {expected_target_task}")
+
+    if payload.get("precheck_status") != "PRE-CHECK PASSED":
+        issues.append("precheck_status must be exactly PRE-CHECK PASSED")
+
+    allowed_files = payload.get("allowed_files")
+    if not isinstance(allowed_files, list) or not allowed_files:
+        issues.append("allowed_files must be a non-empty list")
+    elif any(not isinstance(item, str) or not item.strip() for item in allowed_files):
+        issues.append("allowed_files entries must be non-empty strings")
+
+    max_touched_files = payload.get("max_touched_files")
+    if not isinstance(max_touched_files, int) or max_touched_files < 1:
+        issues.append("max_touched_files must be an integer >= 1")
+
+    if not str(payload.get("manual_validation_gate", "")).strip():
+        issues.append("manual_validation_gate must be present")
+    if not str(payload.get("delegation_question", "")).strip():
+        issues.append("delegation_question must be present")
+
+    for flag in ("delete_intent", "rename_intent", "move_intent"):
+        if payload.get(flag) is True:
+            issues.append(f"{flag} is not allowed in write-candidate entry")
+    for field in ("deleted_files", "renamed_files", "moved_files"):
+        value = payload.get(field)
+        if isinstance(value, list) and value:
+            issues.append(f"{field} must be empty for write-candidate entry")
+
+    requested_operations = payload.get("requested_operations")
+    if isinstance(requested_operations, list):
+        forbidden = [item for item in requested_operations if str(item).strip().lower() in {"delete", "rename", "move"}]
+        if forbidden:
+            issues.append(f"requested_operations contains forbidden entries: {', '.join(forbidden)}")
+
+    return issues
+
+
+def build_write_candidate_validator_manifest(payload: dict) -> dict:
+    return {
+        "validator_id": "validate_write_candidate_entry_v1",
+        "inputs": {
+            "target_task": payload["target_task"],
+            "precheck_status": payload["precheck_status"],
+            "allowed_files": [str(item).replace("\\", "/") for item in payload["allowed_files"]],
+            "max_touched_files": payload["max_touched_files"],
+            "forbid_delete_rename_move": True,
+            "manual_validation_gate": payload["manual_validation_gate"],
+            "delegation_question": payload["delegation_question"],
+        },
+    }
+
+
+def invoke_write_candidate_entry_gate(args: argparse.Namespace, workflow_id: str) -> dict:
+    if args.execution_input_package is None:
+        raise SystemExit("execution_write_apply_candidate entry gate requires --execution-input-package")
+
+    input_payload = load_json(args.execution_input_package.resolve())
+    expected_target_task = args.execution_expected_target_task or args.task_label
+    run_dir = RUN_ROOT / workflow_id
+    input_copy_path = run_dir / "write_candidate_entry_input.json"
+    validation_path = run_dir / "write_candidate_entry_validation.json"
+    manifest_path = run_dir / "write_candidate_entry_validator_manifest.json"
+    request_path = run_dir / "write_candidate_entry_request.json"
+
+    write_json(input_copy_path, input_payload)
+    issues = validate_write_candidate_entry(input_payload, expected_target_task)
+    validation_payload = {
+        "workflow_id": workflow_id,
+        "mode": "execution_write_apply_candidate_entry_gate",
+        "expected_target_task": expected_target_task,
+        "validation_pass": not issues,
+        "issues": issues,
+        "delete_rename_move_tripwire": "PASS" if not any("forbidden" in issue or "must be empty" in issue or "_intent" in issue for issue in issues) else "FAIL",
+    }
+    write_json(validation_path, validation_payload)
+
+    if issues:
+        return {
+            "summary_header": "BOUNDED DELEGATION DISPATCH RESULT",
+            "workflow_id": workflow_id,
+            "task_class": args.task_class,
+            "task_label": args.task_label,
+            "selected_path": "delegated_execution_write_apply_candidate_entry_gate",
+            "validation_result": "FAIL",
+            "final_outcome": "EXECUTION_WRITE_APPLY_CANDIDATE_ENTRY_REJECT_AND_FALLBACK",
+            "input_package_path": str(input_copy_path),
+            "validation_summary_path": str(validation_path),
+            "reject_reasons": issues,
+            "operator_result_lines": [
+                "Ergebnis: Delegated write-candidate Entry abgelehnt",
+                "Route: Fallback auf Codex-only vor spaeteren Write-Phasen",
+            ],
+            "operator_message": (
+                "The delegated write-candidate entry failed bounded contract validation. "
+                "Codex must keep execution local until a corrected prechecked entry package exists."
+            ),
+        }
+
+    manifest_payload = build_write_candidate_validator_manifest(input_payload)
+    write_json(manifest_path, manifest_payload)
+    builder_command = [
+        "python",
+        str(MODEL_ROUTING_DIR / "scripts" / "codex_structured_action_request_builder.py"),
+        "--workflow-id",
+        f"{workflow_id}-ENTRY",
+        "--skill-id",
+        "janus-executioner",
+        "--action-type",
+        "run_validator",
+        "--summary",
+        "Capture the bounded execution write-candidate entry contract for later Codex-owned review.",
+        "--source-path",
+        str(manifest_path),
+        "--output-request-json",
+        str(request_path),
+        "--non-goal",
+        "No delegated write apply",
+        "--non-goal",
+        "No diff capture in entry gate slice",
+        "--non-goal",
+        "No task completion claim",
+    ]
+    builder_result = run_command(builder_command)
+    write_text(run_dir / "write_candidate_entry_builder_stdout.txt", builder_result.stdout)
+    write_text(run_dir / "write_candidate_entry_builder_stderr.txt", builder_result.stderr)
+    if builder_result.returncode != 0:
+        return {
+            "summary_header": "BOUNDED DELEGATION DISPATCH RESULT",
+            "workflow_id": workflow_id,
+            "task_class": args.task_class,
+            "task_label": args.task_label,
+            "selected_path": "delegated_execution_write_apply_candidate_entry_gate",
+            "validation_result": "FAIL",
+            "final_outcome": "EXECUTION_WRITE_APPLY_CANDIDATE_ENTRY_REJECT_AND_FALLBACK",
+            "input_package_path": str(input_copy_path),
+            "validation_summary_path": str(validation_path),
+            "validator_manifest_path": str(manifest_path),
+            "builder_stdout_path": str(run_dir / "write_candidate_entry_builder_stdout.txt"),
+            "builder_stderr_path": str(run_dir / "write_candidate_entry_builder_stderr.txt"),
+            "operator_result_lines": [
+                "Ergebnis: Review-Artefakt fuer Entry-Gate konnte nicht gebaut werden",
+                "Route: Fallback auf Codex-only",
+            ],
+            "operator_message": "Entry contract validation passed, but the reviewable request artifact could not be built.",
+        }
+
+    return {
+        "summary_header": "BOUNDED DELEGATION DISPATCH RESULT",
+        "workflow_id": workflow_id,
+        "task_class": args.task_class,
+        "task_label": args.task_label,
+        "selected_path": "delegated_execution_write_apply_candidate_entry_gate",
+        "validation_result": "PASS",
+        "final_outcome": "EXECUTION_WRITE_APPLY_CANDIDATE_ENTRY_ACCEPTED_FOR_LATER_PHASES",
+        "input_package_path": str(input_copy_path),
+        "validation_summary_path": str(validation_path),
+        "validator_manifest_path": str(manifest_path),
+        "structured_request_path": str(request_path),
+        "operator_result_lines": [
+            "Ergebnis: Delegated write-candidate Entry zugelassen",
+            "Route: Nur Entry-Gate bestanden, spaetere Write-Phasen bleiben separat",
+        ],
+        "operator_message": (
+            "The delegated write-candidate entry contract passed bounded validation and was captured as a reviewable artifact. "
+            "Later diff, validation-summary, and Codex-owned acceptance phases remain separate."
+        ),
+    }
 
 
 def prompt_summary(args: argparse.Namespace, workflow_id: str) -> dict:
@@ -197,6 +396,7 @@ def invoke_quickchange_patch_review(args: argparse.Namespace, workflow_id: str) 
         workflow_id,
         "--max-touched-files",
         str(args.max_touched_files),
+        "--execute-live",
     ]
     for item in args.editable_path:
         command.extend(["--editable-path", item])
@@ -371,8 +571,12 @@ def invoke_execution_patch_candidate(args: argparse.Namespace, workflow_id: str)
 
 
 def invoke_execution_write_apply_candidate(args: argparse.Namespace, workflow_id: str) -> dict:
+    if args.execution_input_package is not None:
+        return invoke_write_candidate_entry_gate(args, workflow_id)
     if args.accepted_source_run_dir is None:
-        raise SystemExit("execution_write_apply_candidate delegated flow requires --accepted-source-run-dir")
+        raise SystemExit(
+            "execution_write_apply_candidate delegated flow requires either --execution-input-package or --accepted-source-run-dir"
+        )
     command = [
         "python",
         str(EXECUTION_WRITE_APPLY_RUNNER),
@@ -413,6 +617,7 @@ def main() -> int:
     parser.add_argument("--test-triage-input-package", type=Path, default=None)
     parser.add_argument("--test-triage-fixture-result", type=Path, default=None)
     parser.add_argument("--execution-input-package", type=Path, default=None)
+    parser.add_argument("--execution-expected-target-task", default=None)
     parser.add_argument("--execution-fixture-result", type=Path, default=None)
     parser.add_argument("--execution-sidecar-model", default="gpt-5.4")
     parser.add_argument("--execution-sidecar-timeout-seconds", type=int, default=180)

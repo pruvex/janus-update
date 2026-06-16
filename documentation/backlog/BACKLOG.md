@@ -82,6 +82,11 @@ Dashboard-Regeln:
 ## NEEDS INFO
 
 ## IN PROGRESS
+  - [ ] Codex behaelt explizit die finale Accept-/Reject-Autoritaet und der delegated Pfad claimt keine Task-Fertigstellung, Git-, Release- oder Routing-Hoheit.
+  - [ ] Ein erster echter Mini-Quickchange kann nachweisbar ueber diesen Pfad laufen oder sauber bounded auf Codex-local zurueckfallen.
+- **Fehlende Informationen:**
+  - Keine
+- **Notizen:** Das ist kein breiter `janus-executioner`-Delegationswunsch, sondern der fehlende letzte Infrastruktur-/Governance-Schritt vor dem ersten echten bounded OR-Quickchange-Pilot.
 
 ### BACKLOG-111 - Kontaktfakt-Feedback bestaetigt neue Fakten nicht sauber und erkennt Wiederholungen nicht als bereits bekannt
 
@@ -121,22 +126,22 @@ Dashboard-Regeln:
 ### BACKLOG-110 - Kontakt-Wohnort landet als Besonderheit statt im Adressblock
 
 - **Typ:** BUG
-- **Status:** IN PROGRESS
+- **Status:** DONE
 - **Quelle:** User Intake
 - **Erstellt:** 2026-06-09
-- **Aktualisiert:** 2026-06-09
+- **Aktualisiert:** 2026-06-15
 - **Follow-up zu:** BACKLOG-108 - Bestaetigtes Kontaktwissen aus Chat landet nicht im bestehenden Adressbuchkontakt
-- **Kurzbeschreibung:** Wenn Janus fuer einen Privatkontakt einen Wohnort wie `wohnt in KÃ¶ln Stammheim` erkennt oder aus dem Memory-/Kontaktabgleich ableitet, landet diese Information aktuell unter `Besonderheiten`. Sie sollte stattdessen als Adress-/Wohnortinformation im dafuer vorgesehenen oberen Kontaktblock stehen.
+- **Kurzbeschreibung:** Wenn Janus fuer einen Privatkontakt einen Wohnort wie `wohnt in KÃ¶ln Stammheim` erkennt oder aus dem Memory-/Kontaktabgleich ableitet, landete diese Information initial unter `Besonderheiten`. Der Kontaktpfad wurde so repariert, dass Wohnort/Adressinformationen in das strukturierte Adressfeld bzw. den oberen Kontaktblock geschrieben werden, und die Folge-Fixes die Pet-Details auf der Kontaktkarte nun auch sprachlich sauber normalisieren.
 - **Erwartetes Verhalten:** Wohnort-/Adressinformationen eines Kontakts werden in das strukturierte Adressfeld bzw. den oberen Kontaktblock geschrieben und dort angezeigt, nicht als `Besonderheit`.
-- **Tatsaechliches Verhalten:** Beim Kontakt `Oliver Schwab` steht `wohnt in KÃ¶ln Stammheim` aktuell unter `Besonderheiten`, obwohl der Nutzer erwartet, dass diese Information im Adressbereich direkt unter den Kernkontaktdaten erscheint.
-- **Reproduktion / Kontext:** Aktueller Live-Zustand im Adressbuch nach Kontakt-/Memory-Debug zu Chris und Oli. Die Kontaktkarte von `Oliver Schwab` zeigt `wohnt in KÃ¶ln Stammheim` im Feld `Besonderheiten` statt im Adressblock.
+- **Tatsaechliches Verhalten:** Beim Kontakt `Oliver Schwab` stand `wohnt in KÃ¶ln Stammheim` anfangs unter `Besonderheiten`; nach dem Fix wird der Wohnort korrekt im Adressbereich gehalten und die Pet-Details werden als kompakte Ein-Satz-Wordingform angezeigt.
+- **Reproduktion / Kontext:** Live-Zustand im Adressbuch nach Kontakt-/Memory-Debug zu Chris und Oli; der Kontaktpfad zeigte die fragliche Information zuerst unter `Besonderheiten`, spaeter wurde die Karte lokal repariert und live sauber retestet.
 - **Betroffener Bereich:** Adressbuch / Kontaktpersistenz / Kontakt-Normalisierung / UI-Darstellung
-- **Nachweise:** User-Live-Pruefung vom 2026-06-09 an der Kontaktkarte `Oliver Schwab`; aktueller Karteninhalt mit `wohnt in KÃ¶ln Stammheim` unter `Besonderheiten`.
+- **Nachweise:** User-Live-Pruefung vom 2026-06-15 an der Kontaktkarte `Oliver Schwab`; aktuelle Kartenansicht mit sauberem Adressblock und kompakter Pet-Detail-Form.
 - **Akzeptanzkriterien:**
-  - [ ] Kontaktfakten wie `wohnt in <Ort>` werden fuer Privatkontakte nicht mehr als `personal_details`/`Besonderheiten` persistiert, wenn sie als Wohnort/Adresse modelliert werden koennen.
-  - [ ] Bestehende Kontaktkarten mit solchen Wohnort-Details werden beim relevanten Lese-/Normalisierungspfad oder durch einen klaren Migrations-/Cleanup-Pfad in das Adressfeld ueberfuehrt.
-  - [ ] Die Kontaktkarte zeigt den Wohnort im oberen Adressblock statt unter `Besonderheiten`.
-  - [ ] Bestehende echte `Besonderheiten` wie `vegetarier` bleiben weiterhin im Details-/Besonderheiten-Bereich.
+  - [x] Kontaktfakten wie `wohnt in <Ort>` werden fuer Privatkontakte nicht mehr als `personal_details`/`Besonderheiten` persistiert, wenn sie als Wohnort/Adresse modelliert werden koennen.
+  - [x] Bestehende Kontaktkarten mit solchen Wohnort-Details werden beim relevanten Lese-/Normalisierungspfad oder durch einen klaren Migrations-/Cleanup-Pfad in das Adressfeld ueberfuehrt.
+  - [x] Die Kontaktkarte zeigt den Wohnort im oberen Adressblock statt unter `Besonderheiten`.
+  - [x] Bestehende echte `Besonderheiten` wie `vegetarier` bleiben weiterhin im Details-/Besonderheiten-Bereich.
 - **Fehlende Informationen:**
   - Keine
 - **Wichtigkeit:** HIGH
@@ -152,8 +157,13 @@ Dashboard-Regeln:
 - **Handoff:** documentation/tasks/backlog_BACKLOG-110_kontakt_wohnort_landet_als_besonderheit_statt_im_adressblock.md
 - **Recommended next skill:** SKILL 3
 - **Handoff created:** 2026-06-09
+- **Final audit:** PASS
+- **Validation evidence:** `python -m py_compile backend/data/crud.py backend/tests/test_contact_card_normalization.py`; `python -m pytest backend/tests/test_contact_card_normalization.py -q`; live Janus retest with `Oliver Schwab wohnt in Köln-Stammheim`, `und er hat einen Hund`, `oli hat auch eine katze` PASS
+- **Completed in version:** N/A
+- **Completed by task:** N/A
 
 ## READY
+
 
 ### BACKLOG-109 - Lokale DB-Snapshots vor riskanten Debug-, Repair- und Migrationsschritten anlegen
 
@@ -239,6 +249,34 @@ Dashboard-Regeln:
 - **Notizen:** False Positives aus TEST-RUN-2026-05-19-007 - TestPlan-Expectations muessen verfeinert werden
 
 ## DONE
+
+### BACKLOG-112 - Quickchange-Delegationspfad fuehrt neuen OR-Pilot noch nur als Dry-Run statt als echten bounded Live-Execute aus
+
+- **Typ:** TECH_DEBT
+- **Status:** DONE
+- **Quelle:** Audit
+- **Erstellt:** 2026-06-16
+- **Aktualisiert:** 2026-06-16
+- **Kurzbeschreibung:** Der als erster echter OR-Pilot ausgewaehlte `janus-quickchange`-Delegationspfad unterstuetzt jetzt einen echten bounded Live-Execute-Versuch statt neue delegated Quickchange-Runs nur im Dry-Run-/Review-Modus enden zu lassen.
+- **Erwartetes Verhalten:** Wenn fuer einen winzigen vorgeprueften Quickchange der delegated Pfad ausgewaehlt wird, kann Janus genau einen echten bounded Live-Execute-Versuch innerhalb der exakten Allowlist und des Touched-File-Caps starten und danach diff-, changed-files- und validation-basiert durch Codex akzeptieren oder verwerfen.
+- **Tatsaechliches Verhalten:** Der bounded Quickchange-Pfad erreicht jetzt den expliziten Live-Execute-Seam, bleibt weiter auf exakte editable-path Allowlists, Touched-File-Cap, Delete-/Rename-/Move-Tripwire, Diff-Capture und lokale Validation-Capture begrenzt und ist durch Dispatcher- und Helper-Evidenz final auditiert.
+- **Reproduktion / Kontext:** Die urspruengliche Analyse vom 2026-06-16 zeigte, dass `codex_bounded_delegation_dispatcher.py` den `quickchange_patch_review`-Pfad in `quickchange_sidecar_write_pilot_runner.py` noch ohne `-Execute` aufrief. `BACKLOG-112` fuehrte daraufhin einen gebundenen Fix plus Re-Audit-Delta ein, sodass derselbe operator-facing Pfad nun den bounded Live-Execute-Seam erreicht und mit fokussierter Dispatcher-/Helper-Evidenz final als `PASS` auditiert ist.
+- **Betroffener Bereich:** Codex model-routing / bounded delegation / janus-quickchange / OR-Sidecar runner governance
+- **Nachweise:** `documentation/tasks/backlog_BACKLOG-112_execution_result.md`, `documentation/tasks/backlog_BACKLOG-112_reaudit_delta_execution_result.md`, `documentation/tasks/BACKLOG-112_AUDIT_PACKAGE.md`, `documentation/tasks/backlog_BACKLOG-112_final_audit.md`
+- **Akzeptanzkriterien:**
+  - [x] Fuer einen winzigen gebundenen Quickchange existiert ein echter bounded delegated Live-Execute-Pfad statt nur Dry-Run-/Review-Ausgabe.
+  - [x] Der Live-Pfad bleibt auf exakte editable-path Allowlists, Touched-File-Cap, Delete-/Rename-/Move-Tripwire, Diff-Capture und lokale Validation-Capture begrenzt.
+- **Fehlende Informationen:**
+  - Keine
+- **Wichtigkeit:** HIGH
+- **Umsetzungsrisiko:** LOW
+- **Aufwand:** M
+- **Umsetzungsreife:** DONE
+- **Empfehlung:** DONE
+- **Completed by task:** `documentation/tasks/backlog_BACKLOG-112_quickchange_delegationspfad_live_execute_handoff.md`
+- **Completed at:** 2026-06-16
+- **Final Audit:** `documentation/tasks/backlog_BACKLOG-112_final_audit.md` (`PASS`)
+- **Validation evidence:** `python -m py_compile documentation/codex/model-routing/scripts/quickchange_sidecar_write_pilot_runner.py documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py documentation/codex/model-routing/tests/test_quickchange_sidecar_write_pilot_runner.py documentation/codex/model-routing/tests/test_quickchange_live_operator_path.py`; `python -m pytest documentation/codex/model-routing/tests/test_quickchange_sidecar_write_pilot_runner.py -q`; `python -m pytest documentation/codex/model-routing/tests/test_quickchange_live_operator_path.py -q`; `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py documentation/tasks/backlog_BACKLOG-112_execution_result.md`; `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py documentation/tasks/backlog_BACKLOG-112_reaudit_delta_execution_result.md`; `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py documentation/tasks/backlog_BACKLOG-112_final_audit.md`
 
 ### BACKLOG-108 - Bestaetigtes Kontaktwissen aus Chat landet nicht im bestehenden Adressbuchkontakt
 

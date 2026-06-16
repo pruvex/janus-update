@@ -4,6 +4,16 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-SPEC18 - Bounded Execution Write Apply Candidate for OR Sidecar Delegation
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-SPEC18_final_audit.md` (PASS)
+- **Spec**: `documentation/SPEC/Spec Done/18_bounded_execution_write_apply_candidate_for_or_sidecar_delegation.md`
+- **Task**: `documentation/tasks/TASK-SPEC18_bounded_execution_write_apply_candidate_for_or_sidecar_delegation.md`
+- **Execution Results**: `documentation/tasks/TASK-SPEC18.1_execution_result.md`, `documentation/tasks/TASK-SPEC18.2_execution_result.md`, `documentation/tasks/TASK-SPEC18.3_execution_result.md`
+- **Validation**: Der erste gebundene delegated write-apply candidate ist jetzt final auditiert und abgeschlossen. Der Pfad erzwingt exakte editable-path Allowlists plus Touched-File-Cap am Einstieg, verlangt reviewbare `git_diff.patch`- und `changed_files.txt`-Artefakte und akzeptiert nur Kandidaten mit vorhandener lokaler `validation_summary.json` und explizit Codex-owned finalem Accept-or-Reject-Ausgang. Final Audit PASS mit fokussierter CLI-, Pytest- und Validator-Evidenz ueber alle drei gebundenen Haertungs-Slices.
+- **Changed Files**: `documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py`, `documentation/codex/model-routing/scripts/codex_structured_action_request_builder.py`, `documentation/codex/model-routing/scripts/codex_execution_write_apply_candidate_runner.py`, `documentation/codex/model-routing/tests/test_bounded_write_candidate_entry_gate.py`, `documentation/codex/model-routing/tests/test_bounded_write_candidate_artifact_capture.py`, `documentation/codex/model-routing/tests/test_bounded_write_candidate_validation_acceptance.py`, `documentation/tasks/TASK-SPEC18.1_execution_result.md`, `documentation/tasks/TASK-SPEC18.2_execution_result.md`, `documentation/tasks/TASK-SPEC18.3_execution_result.md`, `documentation/tasks/TASK-SPEC18_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC18_final_audit.md`.
+
 ### TASK-SPEC17 - Structured Executor First Slice for OR Sidecar Delegation
 
 - **Status**: DONE
@@ -62,6 +72,15 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 - **Changed Files**: `backend/api/routers/contacts.py`, `backend/data/contact_schemas.py`, `backend/data/crud.py`, `backend/data/database.py`, `backend/data/models.py`, `backend/services/chat_orchestrator.py`, `backend/services/contact_manager.py`, `backend/services/memory_extractor.py`, `backend/tests/integration/test_error_resilience.py`, `backend/tests/test_calendar_tools.py`, `backend/tests/test_contact_manager.py`, `backend/tests/test_memory_tools.py`, `backend/tests/test_memory_write_update_conflict_handling.py`, `backend/tools/calendar_tools.py`, `backend/tools/contact_tools.py`, `backend/tools/memory_tools.py`, `frontend/css/settings.css`, `frontend/index.html`, `frontend/js/settings.js`, `tests/e2e/generated/TASK-SPEC15-address-book-ui-evidence.spec.js`, `documentation/tasks/TASK-SPEC15_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC15_final_audit_validation.md`, `documentation/tasks/TASK-SPEC15_final_audit.md`.
 
 ## Backlog Closures
+
+### BACKLOG-112 - Quickchange-Delegationspfad fuehrt neuen OR-Pilot noch nur als Dry-Run statt als echten bounded Live-Execute aus
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/backlog_BACKLOG-112_final_audit.md` (PASS)
+- **Task**: `documentation/tasks/backlog_BACKLOG-112_quickchange_delegationspfad_live_execute_handoff.md`
+- **Execution Results**: `documentation/tasks/backlog_BACKLOG-112_execution_result.md`, `documentation/tasks/backlog_BACKLOG-112_reaudit_delta_execution_result.md`
+- **Validation**: Der erste operator-facing `janus-quickchange` Delegationspfad kann neue bounded Quickchange-Runs jetzt explizit als Live-Execute-Versuch statt nur als Dry-Run starten. Der Dispatcher reicht den Live-Execute-Seam fuer `quickchange_patch_review` weiter, und die fokussierte Re-Audit-Evidenz bestaetigt, dass der Pfad weiterhin auf exakte editable-path Allowlists, Touched-File-Cap, Delete-/Rename-/Move-Tripwire, Diff-Capture und lokale Validation-Capture begrenzt bleibt. Final Audit PASS mit fokussierter CLI-, Pytest-, Execution-Result-Validator- und Final-Audit-Validator-Evidenz.
+- **Changed Files**: `documentation/codex/model-routing/scripts/quickchange_sidecar_write_pilot_runner.py`, `documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py`, `documentation/codex/model-routing/tests/test_quickchange_sidecar_write_pilot_runner.py`, `documentation/codex/model-routing/tests/test_quickchange_live_operator_path.py`, `documentation/tasks/backlog_BACKLOG-112_execution_result.md`, `documentation/tasks/backlog_BACKLOG-112_reaudit_delta_execution_result.md`, `documentation/tasks/BACKLOG-112_AUDIT_PACKAGE.md`, `documentation/tasks/backlog_BACKLOG-112_final_audit.md`.
 
 ### BACKLOG-108 - Bestaetigtes Kontaktwissen aus Chat landet nicht im bestehenden Adressbuchkontakt
 

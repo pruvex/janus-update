@@ -4,7 +4,9 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Snapshot Update
-As of `2026-06-15 17:18 +02:00`, the `BACKLOG-110` contact-debug branch remains closed and the active Janus work has advanced another bounded step on the OpenRouter or Sidecar implementation track. The first structured-executor feature spec for bounded `janus-test-pipeline` delegation is now review-approved, compiled into `TASK-SPEC17`, and narrowed through `janus-task-breakdown` to one preimplementation-ready target: `TASK-SPEC17.1`.
+As of `2026-06-16 01:08 +02:00`, `BACKLOG-112` is fully documentation-closed after final audit `PASS`. The backlog item now sits in `DONE`, the central registry and project state reflect the sealed quickchange delegated live-execute seam, and the dashboard snapshot has been re-synced for the first real bounded OR pilot path.
+
+The active Janus work remains on the OpenRouter or Sidecar implementation track, but one concrete operational blocker has now been retired: the operator-facing `janus-quickchange` delegated path no longer terminates new runs as dry-run-only and now reaches the bounded live-execute seam with focused dispatcher/helper evidence.
 
 The remaining defect has been resolved. The dog fact no longer pollutes the address field, and the address book now keeps the residence in the correct block while pet details are normalized into compact wording.
 
@@ -19,12 +21,16 @@ The live proof target has been met for the contact-debug branch. The active Janu
 
 Goal override for the active architecture track: prepare the first structured executor implementation slice for safe implementation by releasing exactly one bounded precheck target, `TASK-SPEC17.1 Structured action request intake and validation skeleton`.
 
+Operational delegation override: with `BACKLOG-112` now sealed, the first real bounded OR pilot path is no longer blocked by a dry-run-only `janus-quickchange` seam.
+
 Stabilize the real Janus runtime for `BACKLOG-110` after the accepted read-only `execution_patch_candidate` proposal and local Codex apply. The immediate target is no longer delegation architecture, but the live contact/address-book workflow: ordinary contact fact statements such as `Oliver Schwab wohnt in Köln-Stammheim` must enter the real tool path and stop returning the earlier `keine verifizierten Fakten` response.
 
 ## Active Phase
 The contact-debug branch is now operationally closed after live verification and documentation sync.
 
 The active phase has shifted from task compilation to task-refinement completion for the OpenRouter or Sidecar structured executor path. The bounded operator package remains workflow-ready for eight classes, and the new feature spec for the first deterministic `janus-test-pipeline` executor slice is now narrowed to one released precheck target before implementation.
+
+The newest completed phase is `janus-documentation-update` for `BACKLOG-112`, which sealed the quickchange delegated live-execute closeout across backlog, registry, project-state, changelog, dashboard snapshot, skill log, and CURRENT_STATE.
 
 - a validated dry-run helper path
 - one attempted live delegated run blocked by missing `node` PATH resolution
@@ -78,6 +84,20 @@ Completed `janus-task-breakdown` for `TASK-SPEC17.1` and released exactly one bo
 - The released target keeps scope on request intake, schema or shape validation, deterministic run-directory artifacts, and explicit rejection of unsupported or forbidden action types.
 - Generator mapping, validator mapping, dispatcher fallback integration, and any write or apply authority remain out of scope for this first target and must stay in `TASK-SPEC17.2` or `TASK-SPEC17.3`.
 - The existing `codex_structured_action_executor.py` remains implementation context only for the next precheck; it is not a competing requirements source against Spec 17 plus `TASK-SPEC17`.
+
+Backlog prioritization update:
+
+- `BACKLOG-112` is now the top operational blocker for the first real bounded OR pilot class (`janus-quickchange`) and has been marked `HIGH` / `LOW` / `M` / `READY` / `DO NOW` in `documentation/backlog/BACKLOG.md`.
+- The item captures the dry-run-only gap in the current delegated quickchange path and keeps the live-execute pilot blocked until the helper can produce a real bounded write attempt.
+- The item has now been handed off via `janus-backlog-handoff` into `documentation/tasks/backlog_BACKLOG-112_quickchange_delegationspfad_live_execute_handoff.md` and moved to `IN PROGRESS`.
+- `BACKLOG-112` has now passed `janus-preimplementation-check` in `documentation/tasks/backlog_BACKLOG-112_preimplementation_check.md`.
+- `BACKLOG-112` has now been implemented in `documentation/tasks/backlog_BACKLOG-112_execution_result.md`.
+- The quickchange delegated helper now supports an explicit bounded live execute attempt, and the existing dispatcher path now invokes that mode for `quickchange_patch_review`.
+- `BACKLOG-112` now has a compact audit package in `documentation/tasks/BACKLOG-112_AUDIT_PACKAGE.md` and a validated final-audit report in `documentation/tasks/backlog_BACKLOG-112_final_audit.md`.
+- A narrow re-audit delta added the missing bounded dispatcher/helper-level operator-path evidence in `documentation/codex/model-routing/tests/test_quickchange_live_operator_path.py` and `documentation/tasks/backlog_BACKLOG-112_reaudit_delta_execution_result.md`.
+- Final audit for `BACKLOG-112` is now `PASS`.
+- `janus-documentation-update` has now completed the `BACKLOG-112` closeout across `documentation/backlog/BACKLOG.md`, `documentation/01_CENTRAL_TASK_REGISTRY.md`, `PROJECT_STATE.md`, `CHANGELOG.md`, `janus-dashboard/data/backlog.snapshot.json`, and `documentation/codex/SKILL_USAGE_LOG.md`.
+- `BACKLOG-112` is now marked `DONE` and no longer blocks the first real bounded OR quickchange pilot on documentation or governance grounds.
 
 Newest local debug slice after the partially improved live retest:
 
@@ -908,6 +928,7 @@ Changed files:
 - PROJECT_STATE.md
 - CHANGELOG.md
 - WHAT_I_LEARNED.md
+- documentation/codex/SKILL_USAGE_LOG.md
 - documentation/ai/CURRENT_STATE.md
 - documentation/codex/SKILL_USAGE_LOG.md
 
@@ -925,3 +946,522 @@ Open risks:
 Next recommended step for ChatGPT override: either checkpoint the sealed Spec-17 documentation state or decide on one fresh bounded follow-up slice for structured delegation.
 
 Next recommended step for Codex override: if the user wants to continue the architecture track, route back through `janus-skill-router` or into one new bounded precheck on `5.4` medium instead of extending Spec 17 informally.
+
+## Spec Generation 18 Override
+Timestamp: `2026-06-15 18:45 local time`
+
+Current goal override: define the next bounded OR or Sidecar follow-up after the audited Spec-17 foundation so the architecture track can move toward real delegated write value without skipping Codex-owned acceptance gates.
+
+Active phase override: `janus-spec-generator`, canonical state `PASS`. A new bounded follow-up spec now exists for the first delegated write-apply candidate path, instead of informally extending Spec 17.
+
+What changed:
+- Locked the next architecture step to `execution_write_apply_candidate` rather than additional assist-only expansion.
+- Generated a fresh follow-up spec at `documentation/SPEC/18_bounded_execution_write_apply_candidate_for_or_sidecar_delegation.md`.
+- Preserved the key governance rule that delegated write attempts remain bounded by exact allowlists, touched-file caps, mandatory diff and validation capture, and Codex-owned accept or reject authority.
+
+Changed files:
+- documentation/SPEC/18_bounded_execution_write_apply_candidate_for_or_sidecar_delegation.md
+- documentation/ai/CURRENT_STATE.md
+
+Checks run:
+- reviewed `documentation/codex/model-routing/codex_execution_write_apply_candidate_plan_2026-06-14.md`
+- reviewed the sealed Spec-17 outcome and CURRENT_STATE open-risk thread
+- spec structure generated in Janus Diamond format: PASS
+
+Open risks:
+- The new spec is still unreviewed; no task, precheck, or implementation artifact exists yet for Spec 18.
+- The repo still contains many unrelated dirty and untracked changes outside the sealed Spec-17 checkpoint and this new spec.
+- No push has happened, so remotes may not contain the new Spec-18 design state.
+
+Next recommended step for ChatGPT override: review the new bounded write-candidate spec and confirm whether its acceptance and abort rules stay narrow enough for the intended OR workhorse path.
+
+Next recommended step for Codex override: run `janus-spec-review` on `documentation/SPEC/18_bounded_execution_write_apply_candidate_for_or_sidecar_delegation.md` using `5.4` with medium-high reasoning.
+
+## Spec Review 18 Override
+Timestamp: `2026-06-15 18:52 local time`
+
+Current goal override: verify that the new bounded delegated write-apply candidate spec is narrow, deterministic, and ready for task compilation without silently broadening OR or Sidecar authority.
+
+Active phase override: `janus-spec-review`, canonical state `PASS`. Spec 18 is reviewed and ready for task compilation with non-blocking notes only.
+
+What changed:
+- Reviewed `documentation/SPEC/18_bounded_execution_write_apply_candidate_for_or_sidecar_delegation.md` against Janus spec gates for bounded scope, acceptance clarity, and decomposition readiness.
+- Wrote the `SPEC REVIEW METADATA` block with `APPROVED_WITH_NOTES`.
+- Kept the write candidate bounded to exact allowlists, touched-file caps, mandatory diff plus validation capture, and Codex-owned accept or reject authority.
+
+Changed files:
+- documentation/SPEC/18_bounded_execution_write_apply_candidate_for_or_sidecar_delegation.md
+- documentation/ai/CURRENT_STATE.md
+
+Checks run:
+- `python C:\Users\pruve\.codex\skills\janus-spec-review\scripts\validate_spec_review.py --spec documentation/SPEC/18_bounded_execution_write_apply_candidate_for_or_sidecar_delegation.md`: pending
+- spec review gate pass on bounded scope, edge cases, non-goals, and decomposition readiness: PASS
+
+Open risks:
+- The spec is intentionally strict, but the first implementation slice still needs later task compilation to choose an exact first write-candidate seam instead of leaving that to implementation chat.
+- The repo still contains many unrelated dirty and untracked changes outside the sealed Spec-17 checkpoint and Spec-18 review state.
+- No push has happened, so remotes may not contain the new Spec-18 reviewed state.
+
+Next recommended step for ChatGPT override: compile Spec 18 into bounded implementation tasks and keep the first task narrower than full write-capable rollout.
+
+Next recommended step for Codex override: run `janus-spec-to-task` on `documentation/SPEC/18_bounded_execution_write_apply_candidate_for_or_sidecar_delegation.md` using `5.4` with medium-high reasoning.
+
+## Spec To Task 18 Override
+Timestamp: `2026-06-15 18:58 local time`
+
+Current goal override: convert the reviewed Spec-18 write-candidate design into bounded implementation tasks so the next execution path can resume through normal task-breakdown and precheck gates.
+
+Active phase override: `janus-spec-to-task`, canonical state `PASS`. Spec 18 is now compiled into one deterministic task artifact with three bounded implementation slices.
+
+What changed:
+- Created `documentation/tasks/TASK-SPEC18_bounded_execution_write_apply_candidate_for_or_sidecar_delegation.md`.
+- Split the work into three bounded slices:
+  - entry-contract plus allowlist enforcement
+  - reviewable diff plus changed-files capture
+  - validation summary plus Codex-owned accept or reject flow
+- Kept the first slice narrower than a full write-capable rollout by making entry gating and hard rejects the first implementation target.
+
+Changed files:
+- documentation/tasks/TASK-SPEC18_bounded_execution_write_apply_candidate_for_or_sidecar_delegation.md
+- documentation/ai/CURRENT_STATE.md
+
+Checks run:
+- task decomposition reviewed against reviewed Spec 18: PASS
+- `python C:\Users\pruve\.codex\skills\janus-spec-to-task\scripts\validate_task_artifact.py --task documentation/tasks/TASK-SPEC18_bounded_execution_write_apply_candidate_for_or_sidecar_delegation.md`: PASS
+
+Open risks:
+- The generated tasks still depend on later task-breakdown choosing one exact first target seam and file cluster before preimplementation can begin.
+- The repo still contains many unrelated dirty and untracked changes outside the sealed Spec-17 checkpoint and the new Spec-18 path.
+- No push has happened, so remotes may not contain the new Spec-18 task artifact.
+
+Next recommended step for ChatGPT override: release exactly one target task from `TASK-SPEC18`, starting with the entry-contract and allowlist gate rather than jumping to later diff or validation slices.
+
+Next recommended step for Codex override: run `janus-task-breakdown` on `documentation/tasks/TASK-SPEC18_bounded_execution_write_apply_candidate_for_or_sidecar_delegation.md` with `Target Task: TASK-SPEC18.1`.
+
+## Task Breakdown 18.1 Override
+Timestamp: `2026-06-15 19:05 local time`
+
+Current goal override: release exactly one first implementation-ready task from Spec 18 without accidentally widening the delegated write-candidate rollout into later diff or validation phases.
+
+Active phase override: `janus-task-breakdown`, canonical state `PASS`. `TASK-SPEC18.1` is now released as the single preimplementation target for the bounded write-candidate entry gate.
+
+What changed:
+- Created `documentation/tasks/TASK-SPEC18.1_task_breakdown.md`.
+- Narrowed the first implementation slice to exact entry-contract enforcement only:
+  - exact target-task gate
+  - exact editable-path allowlist requirement
+  - touched-file-cap requirement
+  - delete-rename-move tripwire
+  - reviewable reject or fallback status
+- Kept diff capture, changed-files capture, validation-summary capture, and final accept-reject normalization explicitly out of scope for this first target.
+
+Changed files:
+- documentation/tasks/TASK-SPEC18.1_task_breakdown.md
+- documentation/ai/CURRENT_STATE.md
+
+Checks run:
+- `python C:\Users\pruve\.codex\skills\janus-task-breakdown\scripts\validate_task_handoff.py --task documentation/tasks/TASK-SPEC18.1_task_breakdown.md --target TASK-SPEC18.1`: PASS
+- task-breakdown gate on scope, files, tests, and first-slice narrowness: PASS
+
+Open risks:
+- The first write-candidate task still needs preimplementation to freeze one exact fixture family and one exact test surface before execution starts.
+- The repo still contains many unrelated dirty and untracked changes outside the sealed Spec-17 checkpoint and new Spec-18 path.
+- No push has happened, so remotes may not contain the new Spec-18 task-breakdown state.
+
+Next recommended step for ChatGPT override: run the preimplementation gate only for `TASK-SPEC18.1` and keep later write-candidate phases out of scope until the entry contract is green.
+
+Next recommended step for Codex override: run `janus-preimplementation-check` for `TASK-SPEC18.1` on `5.4` with medium reasoning.
+
+## Preimplementation Check 18.1 Override
+Timestamp: `2026-06-15 19:12 local time`
+
+Current goal override: freeze the first delegated write-candidate slice as one exact prechecked execution gate before any later diff-capture, changed-files capture, or validation-summary expansion begins.
+
+Active phase override: `janus-preimplementation-check`, canonical state `PASS`. `TASK-SPEC18.1` is now implementation-ready as the first bounded delegated write-candidate entry-gate slice.
+
+What changed:
+- Created `documentation/tasks/TASK-SPEC18.1_preimplementation_check.md`.
+- Confirmed that `TASK-SPEC18.1` stays atomic:
+  - one exact target-task contract
+  - one exact editable-path allowlist requirement
+  - one touched-file-cap requirement
+  - one delete-rename-move tripwire family
+  - one reviewable reject or fallback output family
+- Kept diff capture, changed-files capture, validation-summary capture, and final accept-reject normalization explicitly out of scope for this first implementation target.
+
+Changed files:
+- documentation/tasks/TASK-SPEC18.1_preimplementation_check.md
+- documentation/ai/CURRENT_STATE.md
+
+Checks run:
+- `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py documentation/tasks/TASK-SPEC18.1_preimplementation_check.md`: PASS
+- precheck gate on artifact identity, scope boundedness, file cluster, test surface, and model assignment: PASS
+
+Open risks:
+- The planned focused pytest target for this slice does not exist yet and must be introduced by the implementation result as part of the bounded evidence bundle.
+- The repo still contains many unrelated dirty and untracked changes outside the sealed Spec-17 checkpoint and new Spec-18 path.
+- No push has happened, so remotes may not contain the new Spec-18 precheck state.
+
+Next recommended step for ChatGPT override: start execution only for `TASK-SPEC18.1` and do not pull later write-candidate phases forward during implementation.
+
+Next recommended step for Codex override: run `janus-executioner` for `TASK-SPEC18.1` on `5.4` with medium reasoning.
+
+## Execution 18.1 Override
+Timestamp: `2026-06-15 19:35 local time`
+
+Current goal override: land the first bounded delegated write-candidate entry gate so only exact prechecked target-task packages with explicit allowlists and touched-file caps can enter later delegated execution phases.
+
+Active phase override: `janus-executioner`, canonical state `PASS`. `TASK-SPEC18.1` is complete as the first admissibility gate for delegated execution write candidates.
+
+What changed:
+- Hardened `documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py` with an explicit `execution_write_apply_candidate` entry-gate path for:
+  - exact target-task matching
+  - required allowlist
+  - required touched-file cap
+  - delete-rename-move tripwire rejection
+  - reviewable reject or fallback status before later write phases
+- Hardened `documentation/codex/model-routing/scripts/codex_structured_action_request_builder.py` so `validate_write_candidate_entry_v1` manifests cannot skip the bounded entry-contract fields.
+- Added four focused fixtures plus `documentation/codex/model-routing/tests/test_bounded_write_candidate_entry_gate.py` to prove:
+  - valid bounded entry acceptance
+  - missing allowlist rejection
+  - missing touched-file-cap rejection
+  - delete-intent rejection
+- Created `documentation/tasks/TASK-SPEC18.1_execution_result.md`.
+
+Changed files:
+- documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py
+- documentation/codex/model-routing/scripts/codex_structured_action_request_builder.py
+- documentation/codex/model-routing/structured-action-fixtures/execution_write_candidate_entry_valid_2026-06-15.json
+- documentation/codex/model-routing/structured-action-fixtures/execution_write_candidate_entry_missing_allowlist_2026-06-15.json
+- documentation/codex/model-routing/structured-action-fixtures/execution_write_candidate_entry_missing_touched_cap_2026-06-15.json
+- documentation/codex/model-routing/structured-action-fixtures/execution_write_candidate_entry_delete_intent_2026-06-15.json
+- documentation/codex/model-routing/tests/test_bounded_write_candidate_entry_gate.py
+- documentation/tasks/TASK-SPEC18.1_execution_result.md
+- documentation/ai/CURRENT_STATE.md
+
+Checks run:
+- `python -m py_compile documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py documentation/codex/model-routing/scripts/codex_structured_action_request_builder.py`: PASS
+- `python -m pytest documentation/codex/model-routing/tests/test_bounded_write_candidate_entry_gate.py -q`: PASS (`4 passed`)
+- `python documentation/codex/model-routing/tests/test_bounded_write_candidate_entry_gate.py`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py documentation/tasks/TASK-SPEC18.1_execution_result.md`: PASS
+- `git diff --check`: PASS with CRLF warnings only in unrelated dirty-worktree files
+- staged-only git guard via `git diff --cached --name-only`: PASS (nothing staged)
+
+Open risks:
+- Later `TASK-SPEC18.2` still has to add actual diff plus changed-files artifact capture for the admitted delegated write-candidate path.
+- Later `TASK-SPEC18.3` still has to add validation-summary capture and final Codex-owned accept or reject normalization.
+- The repo still contains many unrelated dirty and untracked changes outside the sealed Spec-17 checkpoint and current Spec-18 path.
+- No push has happened, so remotes may not contain the new Spec-18 execution state.
+
+Next recommended step for ChatGPT override: precheck and execute `TASK-SPEC18.2` next if you want to continue the bounded delegated write-candidate rollout; otherwise final-audit just this first gate slice.
+
+Next recommended step for Codex override: run `janus-preimplementation-check` for `TASK-SPEC18.2` on `5.4` with medium reasoning.
+
+## Preimplementation Check 18.2 Override
+Timestamp: `2026-06-15 19:46 local time`
+
+Current goal override: freeze the second delegated write-candidate slice as one exact prechecked artifact-capture seam before any later validation-summary or accept-reject normalization begins.
+
+Active phase override: `janus-preimplementation-check`, canonical state `PASS`. `TASK-SPEC18.2` is now implementation-ready as the bounded diff-plus-changed-files capture slice.
+
+What changed:
+- Created `documentation/tasks/TASK-SPEC18.2_preimplementation_check.md`.
+- Confirmed that `TASK-SPEC18.2` stays atomic:
+  - required `git_diff.patch`
+  - required `changed_files.txt`
+  - required `summary.json`, `stdout.log`, `stderr.log`, and `exit_code.txt`
+  - reject-capable artifact completeness checks before later validation-summary and accept-reject phases
+- Kept validation-summary capture and final Codex-owned accept or reject normalization explicitly out of scope for this second implementation target.
+
+Changed files:
+- documentation/tasks/TASK-SPEC18.2_preimplementation_check.md
+- documentation/ai/CURRENT_STATE.md
+
+Checks run:
+- `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py documentation/tasks/TASK-SPEC18.2_preimplementation_check.md`: PASS
+- `git diff --check`: PASS with CRLF warnings only in unrelated dirty-worktree files
+- staged-only git guard via `git diff --cached --name-only`: PASS (nothing staged)
+
+Open risks:
+- The planned focused pytest target for artifact completeness does not exist yet and must be introduced by the implementation result as part of the bounded evidence bundle.
+- `TASK-SPEC18.3` still remains for validation-summary capture and final Codex-owned accept or reject normalization.
+- The repo still contains many unrelated dirty and untracked changes outside the sealed Spec-17 checkpoint and current Spec-18 path.
+- No push has happened, so remotes may not contain the new Spec-18 precheck state.
+
+Next recommended step for ChatGPT override: start execution only for `TASK-SPEC18.2` and do not pull `TASK-SPEC18.3` forward during implementation.
+
+Next recommended step for Codex override: run `janus-executioner` for `TASK-SPEC18.2` on `5.4` with medium reasoning.
+
+## Execution 18.2 Override
+Timestamp: `2026-06-15 19:55 local time`
+
+Current goal override: land the second bounded delegated write-candidate slice so an admitted candidate always carries reviewable diff and changed-files artifacts plus the standard run bundle before any later acceptance logic.
+
+Active phase override: `janus-executioner`, canonical state `PASS`. `TASK-SPEC18.2` is complete as the bounded diff-plus-changed-files artifact-capture slice.
+
+What changed:
+- Hardened `documentation/codex/model-routing/scripts/codex_execution_write_apply_candidate_runner.py` so accepted-source validation now requires:
+  - `summary.json`
+  - `stdout.log`
+  - `stderr.log`
+  - `exit_code.txt`
+  - `git_diff.patch`
+  - `changed_files.txt`
+- Added artifact-quality checks for:
+  - empty `git_diff.patch`
+  - empty `changed_files.txt`
+  - mismatch between `changed_files.txt` and `validation_summary.json`
+  - summary pointers that do not reference `git_diff.patch` and `changed_files.txt`
+- Added `documentation/codex/model-routing/tests/test_bounded_write_candidate_artifact_capture.py` with focused coverage for:
+  - complete accepted-source bundle
+  - missing diff artifact
+  - missing changed-files artifact
+  - changed-files mismatch
+- Created `documentation/tasks/TASK-SPEC18.2_execution_result.md`.
+
+Changed files:
+- documentation/codex/model-routing/scripts/codex_execution_write_apply_candidate_runner.py
+- documentation/codex/model-routing/tests/test_bounded_write_candidate_artifact_capture.py
+- documentation/tasks/TASK-SPEC18.2_execution_result.md
+- documentation/ai/CURRENT_STATE.md
+
+Checks run:
+- `python -m py_compile documentation/codex/model-routing/scripts/codex_execution_write_apply_candidate_runner.py`: PASS
+- `python -m pytest documentation/codex/model-routing/tests/test_bounded_write_candidate_artifact_capture.py -q`: PASS (`4 passed`)
+- `python documentation/codex/model-routing/tests/test_bounded_write_candidate_artifact_capture.py`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py documentation/tasks/TASK-SPEC18.2_execution_result.md`: PASS
+- `git diff --check`: PASS with CRLF warnings only in unrelated dirty-worktree files
+- staged-only git guard via `git diff --cached --name-only`: PASS (nothing staged)
+
+Open risks:
+- `TASK-SPEC18.3` still remains for validation-summary capture and final Codex-owned accept or reject normalization.
+- This slice validates accepted-source artifact completeness locally but does not yet normalize the final operator-facing accept or reject outcome.
+- The repo still contains many unrelated dirty and untracked changes outside the sealed Spec-17 checkpoint and current Spec-18 path.
+- No push has happened, so remotes may not contain the new Spec-18 execution state.
+
+Next recommended step for ChatGPT override: precheck and execute `TASK-SPEC18.3` next if you want to finish the bounded delegated write-candidate rollout; otherwise final-audit just the first two slices.
+
+Next recommended step for Codex override: run `janus-preimplementation-check` for `TASK-SPEC18.3` on `5.4` with medium reasoning.
+
+## Preimplementation Check 18.3 Override
+Timestamp: `2026-06-15 20:03 local time`
+
+Current goal override: freeze the final delegated write-candidate slice as one exact validation-summary and Codex-owned accept-or-reject seam before any broader rollout or audit closeout.
+
+Active phase override: `janus-preimplementation-check`, canonical state `PASS`. `TASK-SPEC18.3` is now implementation-ready as the final validation-summary plus accept-or-reject slice.
+
+What changed:
+- Created `documentation/tasks/TASK-SPEC18.3_preimplementation_check.md`.
+- Confirmed that `TASK-SPEC18.3` stays atomic:
+  - required `validation_summary.json`
+  - reject on missing local validation summary
+  - reject on failed local validation
+  - normalized operator-facing final outcome that keeps Codex as explicit accept-or-reject owner
+- Kept broader rollout, new delegation classes, and earlier allowlist or diff-capture work explicitly out of scope for this last implementation target.
+
+Changed files:
+- documentation/tasks/TASK-SPEC18.3_preimplementation_check.md
+- documentation/ai/CURRENT_STATE.md
+
+Checks run:
+- `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py documentation/tasks/TASK-SPEC18.3_preimplementation_check.md`: PASS
+- `git diff --check`: PASS with CRLF warnings only in unrelated dirty-worktree files
+- staged-only git guard via `git diff --cached --name-only`: PASS (nothing staged)
+
+Open risks:
+- The planned focused pytest target for validation-summary and normalized final outcomes does not exist yet and must be introduced by the implementation result as part of the bounded evidence bundle.
+- After `TASK-SPEC18.3`, the remaining question becomes whether to final-audit the sealed Spec-18 package or continue into a fresh higher-level workflow slice.
+- The repo still contains many unrelated dirty and untracked changes outside the sealed Spec-17 checkpoint and current Spec-18 path.
+- No push has happened, so remotes may not contain the new Spec-18 precheck state.
+
+Next recommended step for ChatGPT override: start execution only for `TASK-SPEC18.3` and keep the final scope on validation-summary enforcement plus Codex-owned accept-or-reject wording.
+
+Next recommended step for Codex override: run `janus-executioner` for `TASK-SPEC18.3` on `5.4` with medium reasoning.
+
+## Execution 18.3 Override
+Timestamp: `2026-06-15 20:11 local time`
+
+Current goal override: close the final delegated write-candidate trust boundary so accepted proposal-first evidence must include validation-summary proof and an explicit Codex-owned accept-or-reject operator outcome.
+
+Active phase override: `janus-executioner`, canonical state `PASS`. `TASK-SPEC18.3` is complete as the final validation-summary plus Codex-owned accept-or-reject slice.
+
+What changed:
+- Hardened `documentation/codex/model-routing/scripts/codex_execution_write_apply_candidate_runner.py` so accepted-source validation now:
+  - rejects missing `validation_summary.json`
+  - rejects non-`PASS` validation status
+  - preserves reject behavior when `accepted_for_codex_patch_review` is false
+- Normalized the operator-facing PASS outcome to:
+  - `EXECUTION_WRITE_APPLY_CANDIDATE_READY_FOR_CODEX_ACCEPT_REJECT`
+- Added `main_with_args(...)` for deterministic runner invocation in focused local tests.
+- Added `documentation/codex/model-routing/tests/test_bounded_write_candidate_validation_acceptance.py` with focused coverage for:
+  - missing `validation_summary.json`
+  - failed local validation
+  - normalized Codex-owned PASS outcome
+- Created `documentation/tasks/TASK-SPEC18.3_execution_result.md`.
+
+Changed files:
+- documentation/codex/model-routing/scripts/codex_execution_write_apply_candidate_runner.py
+- documentation/codex/model-routing/tests/test_bounded_write_candidate_validation_acceptance.py
+- documentation/tasks/TASK-SPEC18.3_execution_result.md
+- documentation/ai/CURRENT_STATE.md
+
+Checks run:
+- `python -m py_compile documentation/codex/model-routing/scripts/codex_execution_write_apply_candidate_runner.py documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py`: PASS
+- `python -m pytest documentation/codex/model-routing/tests/test_bounded_write_candidate_validation_acceptance.py -q`: PASS (`3 passed`)
+- `python documentation/codex/model-routing/tests/test_bounded_write_candidate_validation_acceptance.py`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py documentation/tasks/TASK-SPEC18.3_execution_result.md`: PASS
+- `git diff --check`: PASS with CRLF warnings only in unrelated dirty-worktree files
+- staged-only git guard via `git diff --cached --name-only`: PASS (nothing staged)
+
+Open risks:
+- Spec 18 implementation is now complete, but the package has not yet passed `janus-final-audit`.
+- No compact audit package exists yet for the Spec-18 slice, so final audit may either work directly from the three execution results or benefit from a task-scoped audit package first.
+- The repo still contains many unrelated dirty and untracked changes outside the sealed Spec-17 checkpoint and current Spec-18 path.
+- No push has happened, so remotes may not contain the new Spec-18 execution state.
+
+Next recommended step for ChatGPT override: run `janus-final-audit` for the sealed Spec-18 package, optionally after building a compact task-scoped audit package.
+
+Next recommended step for Codex override: run `janus-final-audit` on `5.5` with high reasoning if you want the strongest release-gate style review for the completed Spec-18 slice package.
+
+## Final Audit 18 Override
+Timestamp: `2026-06-15 23:21 local time`
+
+Current goal override: close the bounded delegated write-apply candidate rollout with a formal final audit, archive the finished Spec-18 package, and hand off only the documentation closeout.
+
+Active phase override: `janus-final-audit`, canonical state `PASS`. Spec 18 passed final audit and has been moved to `documentation/SPEC/Spec Done/`.
+
+What changed:
+- Created `documentation/tasks/TASK-SPEC18_AUDIT_PACKAGE.md` as the compact bounded audit package for the completed three-slice rollout.
+- Created `documentation/tasks/TASK-SPEC18_final_audit.md` and validated it with the Janus final-audit validator.
+- Appended Spec implementation metadata to Spec 18 and moved it to:
+  - `documentation/SPEC/Spec Done/18_bounded_execution_write_apply_candidate_for_or_sidecar_delegation.md`
+- Kept the audit decision bounded to:
+  - exact allowlist and touched-file-cap entry gating
+  - mandatory diff and changed-files evidence
+  - mandatory validation-summary evidence plus explicit Codex-owned accept-or-reject wording
+
+Changed files:
+- documentation/tasks/TASK-SPEC18_AUDIT_PACKAGE.md
+- documentation/tasks/TASK-SPEC18_final_audit.md
+- documentation/SPEC/Spec Done/18_bounded_execution_write_apply_candidate_for_or_sidecar_delegation.md
+- documentation/codex/SKILL_USAGE_LOG.md
+- documentation/ai/CURRENT_STATE.md
+
+Checks run:
+- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py documentation/tasks/TASK-SPEC18_final_audit.md`: PASS
+- audit package evidence review across `TASK-SPEC18.1`, `TASK-SPEC18.2`, and `TASK-SPEC18.3`: PASS
+- Spec-18 archival move to `documentation/SPEC/Spec Done/`: PASS
+- `git diff --check`: PASS with CRLF warnings only in unrelated dirty-worktree files
+- staged-only git guard via `git diff --cached --name-only`: PASS (nothing staged)
+
+Open risks:
+- The repo still contains unrelated dirty and untracked changes outside the sealed Spec-18 path, so any later commit must stay scoped.
+- No push has happened, so remotes may not contain the passed Spec-18 audit state or the latest `CURRENT_STATE`.
+- Documentation closeout for the passed Spec-18 package still remains as the next Janus skill gate.
+
+Next recommended step for ChatGPT override: start `janus-documentation-update` for the passed Spec-18 package so registry/state artifacts can be synchronized against the new final audit.
+
+Next recommended step for Codex override: run `janus-documentation-update` on `5.4 mini` with low reasoning for the documentation-only closeout block.
+
+## Documentation Update 18 Override
+Timestamp: `2026-06-16 00:05 local time`
+
+Current goal override: synchronize the passed Spec-18 package across the central registry, project snapshot, changelog, reusable learning memory, and CURRENT_STATE so the bounded delegated write-candidate rollout is queryable as a sealed documentation state.
+
+Active phase override: `janus-documentation-update`, canonical state `PASS`. The passed Spec-18 package is now documented across the required Janus closeout artifacts.
+
+What changed:
+- Added a `TASK-SPEC18` closure entry to `documentation/01_CENTRAL_TASK_REGISTRY.md`.
+- Updated `PROJECT_STATE.md` so `TASK-SPEC18` appears in the compact current-session delta and the header timestamp reflects the newest sealed package.
+- Added an `Unreleased` changelog bullet for the bounded delegated write-apply candidate hardening package in `CHANGELOG.md`.
+- Appended the reusable pattern `#DelegatedWriteCandidateNeedsThreeTrustSeams` to `WHAT_I_LEARNED.md`.
+
+Changed files:
+- documentation/01_CENTRAL_TASK_REGISTRY.md
+- PROJECT_STATE.md
+- CHANGELOG.md
+- WHAT_I_LEARNED.md
+- documentation/ai/CURRENT_STATE.md
+
+Checks run:
+- `python documentation/codex/scripts/search_what_i_learned.py --query "bounded delegated write candidate final audit documentation closeout" --limit 5`: PASS
+- `python documentation/codex/scripts/append_learning_pattern.py --id DelegatedWriteCandidateNeedsThreeTrustSeams ...`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-documentation-update\scripts\validate_doc_update.py --repo C:\KI\Janus-Projekt --marker TASK-SPEC18 --require documentation/01_CENTRAL_TASK_REGISTRY.md --require PROJECT_STATE.md --require CHANGELOG.md --require WHAT_I_LEARNED.md`: PASS
+- `git diff --check`: PASS with CRLF warnings only in unrelated dirty-worktree files
+- staged-only git guard via `git diff --cached --name-only`: PASS (nothing staged)
+
+Open risks:
+- The sealed `BACKLOG-112` package removes the dry-run-only operator-path blocker, but no new live OR pilot has been executed yet through the newly documented quickchange seam.
+- The repo still contains unrelated dirty and untracked changes outside the sealed Spec-18 package, so any later commit must stay intentionally scoped.
+- No push has happened, so remotes may not contain the `BACKLOG-112` documentation closeout or this synchronized CURRENT_STATE snapshot.
+- The next real decision is whether to checkpoint the sealed `BACKLOG-112` package or move directly into the next bounded OR pilot planning or execution gate.
+
+Next recommended step for ChatGPT override: if you want to preserve the sealed package now, route next to `janus-git-governance`; otherwise resume the bounded OR pilot track from the now-unblocked `janus-quickchange` seam or continue the structured-executor precheck path.
+
+Next recommended step for Codex override: use `janus-git-governance` on `5.4` medium for a scoped checkpoint, or `janus-quickchange` / bounded pilot planning on `5.4` medium now that `BACKLOG-112` is sealed.
+
+## First Real OR Pilot Decision Override
+Timestamp: `2026-06-16 00:13 local time`
+
+Current goal override: lock the first real bounded OR pilot class so later live testing starts on the safest write-capable Janus surface instead of broad execution work.
+
+Active phase override: `janus-feature-design`, canonical state `PASS`. The first real bounded OR pilot is now decision-locked as a `janus-quickchange` delegated write candidate, not a broader `janus-executioner` slice.
+
+What changed:
+- Created `documentation/codex/model-routing/codex_first_real_or_pilot_decision_summary_2026-06-16.md`.
+- Locked the first real OR pilot to:
+  - existing `janus-quickchange` surface
+  - one tiny prechecked write slice
+  - exact allowlist, touched-file-cap, diff, changed-files, and validation evidence
+  - explicit Codex-owned final accept-or-reject authority
+- Explicitly kept broader `janus-executioner` delegation, test-pipeline write retries, Auto Router, and production routing out of scope for the first live pilot.
+
+Changed files:
+- documentation/codex/model-routing/codex_first_real_or_pilot_decision_summary_2026-06-16.md
+- documentation/codex/SKILL_USAGE_LOG.md
+- documentation/ai/CURRENT_STATE.md
+
+Checks run:
+- repo evidence reread for `execution_write_apply_candidate` and delegation-matrix guidance: PASS
+- `git diff --check`: PASS with CRLF warnings only in unrelated dirty-worktree files
+- staged-only git guard via `git diff --cached --name-only`: PASS (nothing staged)
+
+Open risks:
+- The pilot class is now chosen, but there is still no concrete tiny quickchange slice bound for the first live OR run.
+- The repo still contains unrelated dirty and untracked changes outside the pilot planning artifact.
+- No push has happened, so remotes may not contain the sealed Spec-18 closeout or this pilot decision.
+
+Next recommended step for ChatGPT override: bind one tiny real quickchange candidate and route it through `janus-quickchange` as the first bounded OR pilot.
+
+Next recommended step for Codex override: run `janus-quickchange` on `5.4` medium to select and validate one tiny real quickchange slice for the first live OR test.
+
+## Backlog Intake 112 Override
+Timestamp: `2026-06-16 00:24 local time`
+
+Current goal override: capture the newly discovered quickchange live-execute gap as a bindable Janus backlog item before any real OR pilot is attempted through that path.
+
+Active phase override: `janus-backlog-intake`, canonical state `PASS`. The first real OR pilot is temporarily blocked by a documented bounded-runner gap, and that gap is now captured as a ready backlog item.
+
+What changed:
+- Added `BACKLOG-112` to `documentation/backlog/BACKLOG.md`.
+- Captured that the chosen first real OR pilot class (`janus-quickchange`) still routes new delegated runs through a Dry-Run helper path instead of a real bounded live execute path.
+- Locked the next concrete work item to enabling a true bounded live execute attempt under the existing allowlist, file-cap, diff, and validation gates.
+
+Changed files:
+- documentation/backlog/BACKLOG.md
+- documentation/codex/SKILL_USAGE_LOG.md
+- documentation/ai/CURRENT_STATE.md
+
+Checks run:
+- bounded quickchange runner-path inspection across dispatcher and sidecar runner: PASS
+- `git diff --check`: PASS with CRLF warnings only in unrelated dirty-worktree files
+- staged-only git guard via `git diff --cached --name-only`: PASS (nothing staged)
+
+Open risks:
+- The first real OR pilot still cannot run through the intended quickchange path until `BACKLOG-112` is implemented.
+- The repo still contains unrelated dirty and untracked changes outside this backlog-intake artifact.
+- No push has happened, so remotes may not contain the new pilot-decision note or `BACKLOG-112`.
+
+Next recommended step for ChatGPT override: prioritize `BACKLOG-112` and route it toward a bounded implementation handoff so the first real OR quickchange pilot can become executable.
+
+Next recommended step for Codex override: run `janus-backlog-prioritization` on `5.4 mini` low if you want to keep the pipeline formal, or stay on `5.4` medium and prepare the bounded implementation route for `BACKLOG-112`.
