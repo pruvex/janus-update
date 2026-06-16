@@ -1499,3 +1499,37 @@ Open risks:
 Next recommended step for ChatGPT override: if this pilot should be preserved immediately, route next to `janus-git-governance`; otherwise bind one second tiny delegated quickchange in a similarly narrow frontend copy surface to extend evidence.
 
 Next recommended step for Codex override: use `janus-git-governance` on `5.4` medium for a scoped checkpoint, or stay on `janus-quickchange` with `5.4` medium for one more tiny delegated write candidate in a clean one-file UI copy surface.
+
+## Quickchange Pilot Extension Override
+Timestamp: `2026-06-16 01:47 local time`
+
+Current goal override: extend bounded delegated quickchange evidence with a second accepted one-file live run on a different frontend surface so the operator-facing path is no longer proven by only one copy-only example.
+
+Active phase override: `janus-quickchange`, canonical state `PASS`. A second delegated quickchange run has now completed under the shared bounded dispatcher on a separate clean file with the same one-file allowlist and acceptance discipline.
+
+What changed:
+- Created a second bounded sidecar prompt fixture in `documentation/codex/model-routing/sidecar-fixtures/quickchange_mail_ai_summary_labels_to_german_2026-06-16.md`.
+- Ran `documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py` with `--task-class quickchange_patch_review`, `--operator-choice delegated`, `--editable-path frontend/js/mail-modal.js`, and `--max-touched-files 1` under workflow `BOUNDED-QUICKCHANGE-MAIL-AI-LABELS-001`.
+- Accepted the delegated result locally after artifact review: `frontend/js/mail-modal.js` now uses `Zusammenfassung:` and `Antwort:` for the visible mail AI summary labels while keeping `Prio:` unchanged.
+
+Changed files:
+- `documentation/codex/model-routing/sidecar-fixtures/quickchange_mail_ai_summary_labels_to_german_2026-06-16.md`
+- `frontend/js/mail-modal.js`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks run:
+- bounded dispatcher delegated quickchange run `BOUNDED-QUICKCHANGE-MAIL-AI-LABELS-001`: PASS
+- sidecar summary allowlist/touched-file/delete-rename-move gates: PASS
+- `node --check frontend/js/mail-modal.js`: PASS
+- `rg -n "Summary:|Reply:|Prio:|Zusammenfassung:|Antwort:" frontend/js/mail-modal.js`: PASS
+- diff review of `frontend/js/mail-modal.js`: PASS
+
+Open risks:
+- Two accepted bounded quickchange live runs now exist, but this still does not authorize broad delegated write use for larger Janus skills or multi-file changes.
+- The repo still contains many unrelated local changes outside this quickchange slice.
+- No new commit or push has happened after this second quickchange, so a remote such as GitHub or `backup` does not yet contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT override: checkpoint both accepted quickchange pilots with `janus-git-governance`, then decide whether to bind the first bounded delegated non-quickchange workflow or add one more narrow pilot in another safe class.
+
+Next recommended step for Codex override: use `janus-git-governance` on `5.4` medium for a scoped checkpoint commit, or stay on `5.4 mini` low only if you want one more purely mechanical documentation sync before any new live delegated class is attempted.

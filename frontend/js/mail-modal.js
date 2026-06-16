@@ -433,7 +433,7 @@ function renderAiPanel(detail) {
   if (!summaryEl || !replyEl || !prioEl || !staleEl) return;
   if (!detail) {
     summaryEl.textContent = "Keine Analyse vorhanden.";
-    replyEl.textContent = "Reply: ?";
+    replyEl.textContent = "Antwort: ?";
     prioEl.textContent = "Prio: ?";
     staleEl.style.display = "none";
     return;
@@ -442,7 +442,7 @@ function renderAiPanel(detail) {
     summaryEl.textContent = globalAiAssistEnabled
       ? "Thread-AI ist für diesen Thread deaktiviert."
       : "AI Mail Assist ist global OFF.";
-    replyEl.textContent = "Reply: -";
+    replyEl.textContent = "Antwort: -";
     prioEl.textContent = "Prio: -";
     staleEl.style.display = "none";
     return;
@@ -452,19 +452,19 @@ function renderAiPanel(detail) {
     staleEl.style.display = aiAnalysisState.signature && aiAnalysisState.signature !== currentSig ? "" : "none";
     if (aiAnalysisState.degraded) {
       summaryEl.textContent = `AI nicht verfuegbar: ${aiAnalysisState.error_message || "Providerfehler"}`;
-      replyEl.textContent = "Reply: ?";
+      replyEl.textContent = "Antwort: ?";
       prioEl.textContent = "Prio: ?";
       aiSummarySignature = aiAnalysisState.signature || currentSig;
       return;
     }
-    summaryEl.textContent = `Summary: ${aiAnalysisState.summary || "-"}`;
-    replyEl.textContent = `Reply: ${aiAnalysisState.reply_needed || "-"}`;
+    summaryEl.textContent = `Zusammenfassung: ${aiAnalysisState.summary || "-"}`;
+    replyEl.textContent = `Antwort: ${aiAnalysisState.reply_needed || "-"}`;
     prioEl.textContent = `Prio: ${aiAnalysisState.priority || "-"}`;
     aiSummarySignature = aiAnalysisState.signature || currentSig;
   } else {
     staleEl.style.display = "none";
     summaryEl.textContent = "Noch keine AI-Analyse. Bitte 'AI aktualisieren' klicken.";
-    replyEl.textContent = "Reply: ?";
+    replyEl.textContent = "Antwort: ?";
     prioEl.textContent = "Prio: ?";
   }
 }
