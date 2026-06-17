@@ -4,6 +4,16 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-SPEC19 - Bounded OR Worker Mode for Janus Skills
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-SPEC19_final_audit.md` (PASS)
+- **Spec**: `documentation/SPEC/Spec Done/19_bounded_or_worker_mode_for_janus_skills.md`
+- **Task**: `documentation/tasks/TASK-SPEC19_bounded_or_worker_mode_for_janus_skills.md`
+- **Execution Results**: `documentation/tasks/TASK-SPEC19.1_execution_result.md`, `documentation/tasks/TASK-SPEC19.2_execution_result.md`, `documentation/tasks/TASK-SPEC19.3_execution_result.md`
+- **Validation**: Der bounded OR worker Rollout wurde mit drei klar getrennten Slices abgeschlossen: gemeinsame Eligibility-Grenze, einheitliche Gate-Ausgabe und Codex-owned Post-Run-Accept/Reject/Fallback-Normalisierung. Final Audit PASS mit kompakter Audit-Package-Evidenz und gruenen lokalen Checks ohne Produktionsrouting.
+- **Changed Files**: `documentation/codex/model-routing/scripts/bounded_or_worker_eligibility.py`, `documentation/codex/model-routing/config/bounded_or_worker_eligibility_2026-06-17.json`, `documentation/codex/model-routing/scripts/bounded_or_worker_gate_prompt.py`, `documentation/codex/model-routing/scripts/bounded_or_worker_outcome.py`, `documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py`, `documentation/codex/model-routing/scripts/doc_skill_mini_fixed_or_live_runner.py`, `documentation/codex/model-routing/scripts/codex_debug_hypothesis_review_runner.py`, `documentation/codex/model-routing/scripts/codex_test_result_triage_review_runner.py`, `documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py`, `documentation/tasks/TASK-SPEC19.1_execution_result.md`, `documentation/tasks/TASK-SPEC19.2_execution_result.md`, `documentation/tasks/TASK-SPEC19.3_execution_result.md`, `documentation/tasks/TASK-SPEC19_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC19_final_audit.md`, `documentation/SPEC/Spec Done/19_bounded_or_worker_mode_for_janus_skills.md`.
+
 ### TASK-SPEC18 - Bounded Execution Write Apply Candidate for OR Sidecar Delegation
 
 - **Status**: DONE

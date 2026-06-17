@@ -4,6 +4,20 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Snapshot Update
+As of `2026-06-17 15:22 +02:00`, the `TASK-SPEC19` final-audit closeout is now fully reflected in the Janus state artifacts: `CURRENT_STATE`, `SKILL_USAGE_LOG`, `documentation/01_CENTRAL_TASK_REGISTRY.md`, and `PROJECT_STATE.md` are aligned on the bounded OR worker rollout being DONE and audit-cleared.
+
+As of `2026-06-17 15:22 +02:00`, `TASK-SPEC19` has passed final audit. The three-slice bounded OR worker rollout is now audit-cleared, `Spec 19` is marked `DONE`, and the spec has been moved to `documentation/SPEC/Spec Done/19_bounded_or_worker_mode_for_janus_skills.md`.
+
+As of `2026-06-17 15:22 +02:00`, the first bounded OR worker rollout is now locally complete across all three planned slices. The final bounded governance seam, `TASK-SPEC19.3`, is implemented and verified, so the package is ready for final audit.
+
+As of `2026-06-17 14:53 +02:00`, the third bounded OR worker slice is now fully staged for implementation: `TASK-SPEC19.3` has been released and prechecked as the Codex-owned post-run acceptance, reject, and fallback normalization slice.
+
+As of `2026-06-17 00:45 +02:00`, `TASK-SPEC19.2` is locally implemented and verified. The bounded OR worker rollout now has both the shared eligibility layer and the unified operator-gate layer in place before any post-run acceptance normalization begins.
+
+As of `2026-06-17 00:45 +02:00`, `TASK-SPEC19.2` is no longer only released as a handoff. The unified operator-gate slice is now formally prechecked and ready for one bounded local implementation pass.
+
+As of `2026-06-17 00:45 +02:00`, the bounded OR worker rollout has advanced from the shared eligibility slice to the next bounded handoff: `TASK-SPEC19.2` is now released as the unified operator-gate slice and is ready for `janus-preimplementation-check`.
+
 As of `2026-06-16 01:08 +02:00`, `BACKLOG-112` is fully documentation-closed after final audit `PASS`. The backlog item now sits in `DONE`, the central registry and project state reflect the sealed quickchange delegated live-execute seam, and the dashboard snapshot has been re-synced for the first real bounded OR pilot path.
 
 The active Janus work remains on the OpenRouter or Sidecar implementation track, but one concrete operational blocker has now been retired: the operator-facing `janus-quickchange` delegated path no longer terminates new runs as dry-run-only and now reaches the bounded live-execute seam with focused dispatcher/helper evidence.
@@ -17,6 +31,102 @@ The newest local slice isolated one final persistence seam for the same contact 
 The latest local formatting pass cleans the remaining presentation bug in the contact card itself: named pet facts collapse into one sentence such as `hat einen Hund namens tasso`, owner-prefixed variants such as `Oli hat auch eine katze` normalize down to `hat eine Katze`, and weaker generic duplicates are dropped when a stronger named variant already exists. The live retest confirmed that the cleaned wording now appears automatically in everyday use.
 
 ## Current Goal
+Documentation override: synchronize the passed `TASK-SPEC19` final-audit package into the Janus state artifacts without widening scope beyond the bounded OR worker rollout.
+
+Audit override: seal the completed three-slice bounded OR worker package after all local implementation and verification gates have passed.
+
+`TASK-SPEC19.3` is now locally implemented and verified. The final slice introduces:
+
+- explicit Codex-owned outcome status for accepted OR paths
+- explicit Codex-owned outcome status for rejected OR paths and fallback cases
+- dispatcher-side normalization so delegated assist-only and fallback paths are not misread as accepted OR runs
+- focused regression coverage for accept, reject, fallback, and review-pending outcome states
+
+Precheck override: freeze `TASK-SPEC19.3` as the third implementation-ready bounded OR worker slice before any post-run acceptance code change begins.
+
+`TASK-SPEC19.3` is now the active next target. This slice is intentionally limited to post-run Codex-owned outcome discipline:
+
+- explicit accept, reject, and fallback normalization after OR output
+- reject or fallback when validation or required artifacts are missing
+- visible final Codex-owned operator summary fields for accepted and rejected OR results
+- no new eligibility policy and no new gate-display policy in this slice
+
+Execution override: finish the second bounded OR worker implementation slice by landing the unified operator gate before any post-run acceptance behavior is attempted.
+
+`TASK-SPEC19.2` is now locally implemented and verified. The second slice introduces:
+
+- one shared operator prompt wording for bounded OR worker choices
+- hard suppression of the OR gate when selected model, estimated cost, or confidence is missing
+- unified `OpenRouter` choice labeling in the dispatcher-backed gate surface
+- direct prompt-mode enforcement of the same rule in the assist-only debug and triage review runners
+
+Execution override: freeze `TASK-SPEC19.2` as the second implementation-ready bounded OR worker slice before any gate UI code change begins.
+
+`TASK-SPEC19.2` is now formally implementation-ready. The second slice stays intentionally narrow:
+
+- same visible `1 = Codex` / `2 = OpenRouter` operator gate across the first allowed bounded skill classes
+- model, estimated cost, and confidence as hard display prerequisites
+- deterministic no-gate or Codex-only behavior when required prompt data is missing
+- no post-run accept-reject ownership or fallback-after-run normalization in this slice
+
+Precheck override: freeze `TASK-SPEC19.2` as the second implementation-ready slice of the bounded OR worker rollout before any gate UI code change begins.
+
+`TASK-SPEC19.2` is now the active next target. This slice is intentionally limited to the unified pre-run operator gate:
+
+- same visible `1 = Codex` / `2 = OpenRouter` choice style across the first allowed bounded skill classes
+- model, estimated cost, and confidence as hard gate-display requirements
+- deterministic no-gate or Codex-only behavior when required prompt data is missing
+- no post-run accept-reject normalization in this slice
+
+Execution override: finish the first bounded OR worker implementation slice by landing the shared eligibility contract before any unified gate UI or post-run acceptance behavior is attempted.
+
+`TASK-SPEC19.1` is now locally implemented and verified. The first slice introduces:
+
+- one shared OR eligibility helper
+- one central bounded OR worker eligibility config
+- shared `OR_ALLOWED`, `OR_NOT_ELIGIBLE`, and `OR_EVIDENCE_MISSING` outcomes
+- deterministic Codex-only fallback before any OR gate appears for blocked or non-evidenced skills
+
+Precheck override: freeze `TASK-SPEC19.1` as the first implementation-ready slice of the bounded OR worker rollout before any code change begins.
+
+The first execution-ready target is now explicitly limited to the shared OR eligibility layer:
+
+- one common eligibility contract for bounded skill classes
+- evidence-backed OR eligibility as a hard requirement
+- deterministic no-gate fallback for missing or blocked skills
+- no gate UI, no cost-confidence prompt, and no post-run acceptance logic in this first slice
+
+Task-breakdown override: release exactly one first execution-ready slice from `TASK-SPEC19` so the bounded OR worker rollout starts with the shared eligibility gate instead of jumping directly into broad UI or acceptance behavior.
+
+`TASK-SPEC19.1` is now the active first implementation target. The first rollout slice is intentionally narrow:
+
+- shared OR eligibility contract
+- explicit allowed-versus-not-allowed skill classification
+- evidence-backed OR eligibility requirement
+- deterministic no-gate fallback to Codex-only for missing or blocked skills
+
+Task-compilation override: convert reviewed `Spec 19` into a deterministic Janus task package so the bounded OR worker rollout can start with narrow implementation slices instead of broad architecture work.
+
+`TASK-SPEC19` now exists and splits the new cross-skill OR worker mode into three bounded first-wave slices:
+
+- shared OR eligibility contract
+- unified `1 = Codex` / `2 = OpenRouter` gate with cost and confidence display
+- Codex-owned acceptance, fallback, and operator-summary normalization
+
+Spec-review override: seal the new cross-skill OR worker concept as a review-approved Janus feature contract before task compilation starts.
+
+`Spec 19` is now review-approved with notes. The bounded OR worker idea is no longer just a planning direction; it is now a task-compilable Janus feature artifact covering:
+
+- one unified `1 = Codex` / `2 = OpenRouter` operator gate
+- OR allowed to handle the main bounded work block for eligible skills
+- mandatory Codex review and final acceptance after every OR run
+- rollout restricted to clearly bounded skill classes first
+- OR gate visibility only when evidence-backed eligibility plus cost and confidence data exist
+
+Feature-pipeline override: turn the locked cross-skill OpenRouter workhorse idea into a reviewable Janus feature package instead of continuing with isolated documentation-only OR cases.
+
+The new bounded worker target is now anchored as `Spec 19`, where a unified Delegations-Gate appears only for skills with evidence-backed OR eligibility, OR may handle the main bounded work block, and Codex still always reviews and accepts or rejects the result.
+
 The live proof target has been met for the contact-debug branch. The active Janus goal is now fully back on the OpenRouter or Sidecar implementation track.
 
 Goal override for the active architecture track: prepare the first structured executor implementation slice for safe implementation by releasing exactly one bounded precheck target, `TASK-SPEC17.1 Structured action request intake and validation skeleton`.
@@ -26,6 +136,18 @@ Operational delegation override: with `BACKLOG-112` now sealed, the first real b
 Stabilize the real Janus runtime for `BACKLOG-110` after the accepted read-only `execution_patch_candidate` proposal and local Codex apply. The immediate target is no longer delegation architecture, but the live contact/address-book workflow: ordinary contact fact statements such as `Oliver Schwab wohnt in Köln-Stammheim` must enter the real tool path and stop returning the earlier `keine verifizierten Fakten` response.
 
 ## Active Phase
+The active phase is now `janus-final-audit`, canonical state `PASS`, for `TASK-SPEC19`. The package is audit-cleared and ready for `janus-documentation-update`.
+
+The active phase is now `janus-executioner`, canonical state `PASS`, for `TASK-SPEC19.3`. The full first-wave bounded OR worker package is locally implemented and can move next into final audit.
+
+The active phase is now `janus-preimplementation-check`, canonical state `PRE-CHECK PASSED`, for `TASK-SPEC19.3`. The rollout has moved from the unified operator gate into the final bounded post-run acceptance and fallback normalization lane.
+
+The active phase is now `janus-executioner`, canonical state `PASS`, for `TASK-SPEC19.2`. The rollout has completed the unified operator-gate slice and can move next into the post-run acceptance and fallback normalization slice.
+
+The active phase is now `janus-preimplementation-check`, canonical state `PRE-CHECK PASSED`, for `TASK-SPEC19.2`. The rollout has moved from released handoff into implementation-ready gate status for the unified operator-choice slice.
+
+The active phase is now `janus-task-breakdown` complete for `TASK-SPEC19.2`, with the rollout moving from the shared eligibility contract into the unified operator-gate precheck lane.
+
 The contact-debug branch is now operationally closed after live verification and documentation sync.
 
 The active phase has shifted from task compilation to task-refinement completion for the OpenRouter or Sidecar structured executor path. The bounded operator package remains workflow-ready for eight classes, and the new feature spec for the first deterministic `janus-test-pipeline` executor slice is now narrowed to one released precheck target before implementation.
@@ -78,6 +200,213 @@ New sidecar evidence:
 - `SIDECAR-TEST-ARTIFACT-LIVE-FINAL-RETRY-001` then used the PowerShell-safe form, but still produced no target files and ended with the same immediate command-failure outcome in the Sidecar response text
 
 ## Last Codex Work
+Built `documentation/tasks/TASK-SPEC19_AUDIT_PACKAGE.md`, completed final audit in `documentation/tasks/TASK-SPEC19_final_audit.md`, and synchronized the closeout into the central registry and project state.
+
+What changed in the audit step:
+
+- created a compact audit package for the full three-slice `TASK-SPEC19` scope
+- validated the full package against the bound spec, task file, precheck, execution results, and scoped evidence only
+- updated `Spec 19` with implementation metadata and moved it to `documentation/SPEC/Spec Done/19_bounded_or_worker_mode_for_janus_skills.md`
+
+Validation for the audit step is complete:
+
+- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py documentation/tasks/TASK-SPEC19_final_audit.md`: PASS
+- scoped `git diff --check` for the audit artifacts and moved spec: PASS
+
+Open boundaries remain explicit:
+
+- no production routing activation
+- no canonical routing-table update
+- documentation/state closeout still pending
+
+Implemented `TASK-SPEC19.3` and recorded the result in `documentation/tasks/TASK-SPEC19.3_execution_result.md`.
+
+What changed in the final bounded acceptance slice:
+
+- added `documentation/codex/model-routing/scripts/bounded_or_worker_outcome.py` as the shared Codex-owned outcome normalizer
+- updated `codex_bounded_delegation_dispatcher.py` so prompt, local, delegated, fallback, and assist-only result surfaces all carry explicit Codex-owned outcome status
+- updated `doc_skill_mini_fixed_or_live_runner.py` so accepted OR runs, rejected OR runs, fallback cases, and Codex-local paths expose explicit Codex-owned outcome status in operator summaries
+- extended focused regression coverage in `documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py`
+
+Validation for the execution slice is complete:
+
+- `python -m py_compile ...`: PASS
+- `python -m pytest documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py -q`: PASS
+- `python -m pytest documentation/codex/model-routing/tests -q -k "accept or reject or fallback or codex_owned"`: PASS
+- `validate_execution_result.py` passes for `TASK-SPEC19.3_execution_result.md`
+
+Open boundaries remain explicit:
+
+- no production routing or canonical routing-table update
+- no new live OR evidence campaign in this slice
+- no widening into new eligibility or gate-display policy beyond the already completed slices
+
+Prechecked `TASK-SPEC19.3` with `janus-preimplementation-check` in `documentation/tasks/TASK-SPEC19.3_preimplementation_check.md`.
+
+Released `TASK-SPEC19.3` through `janus-task-breakdown` in `documentation/tasks/TASK-SPEC19.3_task_breakdown.md`.
+
+The new released and prechecked slice keeps the bounded OR worker rollout tightly constrained to one final governance seam:
+
+- Codex-owned post-run accept or reject normalization
+- fallback when validation, usage, or required artifacts are incomplete
+- visible final operator outcome fields for accepted and rejected OR paths
+- explicit regression protection so Codex-only and assist-only paths are not mislabeled as accepted OR runs
+
+Validation for the handoff and precheck gates is complete:
+
+- `validate_task_handoff.py` passes for `TASK-SPEC19.3`
+- `validate_precheck.py` passes for `TASK-SPEC19.3`
+- scoped `git diff --check` passes without blocking content errors
+
+Implemented `TASK-SPEC19.2` and recorded the result in `documentation/tasks/TASK-SPEC19.2_execution_result.md`.
+
+What changed in the unified operator-gate slice:
+
+- added `documentation/codex/model-routing/scripts/bounded_or_worker_gate_prompt.py` as the shared gate-prompt helper
+- updated `codex_bounded_delegation_dispatcher.py` so prompt-mode OR gates require selected model, estimated cost, and confidence and otherwise suppress the OR choice cleanly
+- updated `doc_skill_mini_fixed_or_live_runner.py` to reuse the same prompt wording helper
+- updated `codex_debug_hypothesis_review_runner.py` and `codex_test_result_triage_review_runner.py` so direct prompt mode also enforces model, cost, and confidence before exposing the OR choice
+- extended focused regression coverage in `documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py`
+
+Validation for the execution slice is complete:
+
+- `python -m py_compile ...`: PASS
+- `python -m pytest documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py -q`: PASS
+- `python -m pytest documentation/codex/model-routing/tests -q -k "gate or confidence or cost or codex_only"`: PASS
+- `validate_execution_result.py` passes for `TASK-SPEC19.2_execution_result.md`
+
+Open boundaries remain explicit:
+
+- no post-run Codex-owned accept-reject normalization yet
+- no fallback-after-run normalization yet
+- no production routing or canonical routing-table changes
+
+Prechecked `TASK-SPEC19.2` with `janus-preimplementation-check` in `documentation/tasks/TASK-SPEC19.2_preimplementation_check.md`.
+
+The precheck confirms that the second bounded OR worker slice is implementation-ready and still atomic:
+
+- `codex_bounded_delegation_dispatcher.py`, `doc_skill_mini_fixed_or_live_runner.py`, `codex_debug_hypothesis_review_runner.py`, and `codex_test_result_triage_review_runner.py` are the primary code surfaces
+- focused model-routing tests remain bounded supporting surfaces
+- required gate-display fields are locked to selected model, estimated cost, and confidence
+- later `TASK-SPEC19.3` post-run accept-reject and fallback-after-run normalization stays out of scope
+
+Validation for the precheck gate is complete:
+
+- `validate_precheck.py` passes for `TASK-SPEC19.2`
+- scoped `git diff --check` passes without blocking content errors
+
+Released `TASK-SPEC19.2` through `janus-task-breakdown` in `documentation/tasks/TASK-SPEC19.2_task_breakdown.md`.
+
+The new released slice keeps the bounded OR worker rollout tightly constrained to one operator-facing entry seam:
+
+- normalize the visible `1 = Codex` / `2 = OpenRouter` gate style
+- require selected model, estimated cost, and confidence before a normal OR option is shown
+- fall back reviewably to no-gate or Codex-only when prompt data is incomplete
+- keep post-run accept-reject ownership and fallback-after-run behavior explicitly out of scope for later `TASK-SPEC19.3`
+
+Validation for the task-breakdown gate is complete:
+
+- `validate_task_handoff.py` passes for `TASK-SPEC19.2`
+- scoped `git diff --check` passes without blocking content errors
+
+Implemented `TASK-SPEC19.1` and recorded the result in `documentation/tasks/TASK-SPEC19.1_execution_result.md`.
+
+What changed in the first shared eligibility slice:
+
+- added `documentation/codex/model-routing/scripts/bounded_or_worker_eligibility.py` as the common bounded OR eligibility helper
+- added `documentation/codex/model-routing/config/bounded_or_worker_eligibility_2026-06-17.json` as the central contract for allowed skill classes and evidence-backed eligibility
+- wired the mini documentation fixed-OR runner into the shared eligibility contract before any OR gate or wrapper path is reached
+- wired the bounded delegation dispatcher to expose the same eligibility outcome fields and to stop delegated execution early when a task class falls outside the shared contract
+- added focused regression coverage in `documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py`
+
+Validation for the execution slice is complete:
+
+- `python -m py_compile ...`: PASS
+- `python -m pytest documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py -q`: PASS
+- `python -m pytest documentation/codex/model-routing/tests -q -k "eligibility or fixed_or"`: PASS
+- `validate_execution_result.py` passes for `TASK-SPEC19.1_execution_result.md`
+
+Open boundaries remain explicit:
+
+- no unified `1 = Codex` / `2 = OpenRouter` gate normalization yet
+- no cost-confidence prompt enforcement yet
+- no post-run Codex-owned accept-reject normalization yet
+
+Prechecked `TASK-SPEC19.1` with `janus-preimplementation-check` in `documentation/tasks/TASK-SPEC19.1_preimplementation_check.md`.
+
+The precheck confirms that the first bounded OR worker slice is implementation-ready and still atomic:
+
+- `codex_bounded_delegation_dispatcher.py` and `doc_skill_mini_fixed_or_live_runner.py` are the primary code surfaces
+- config and focused model-routing tests remain bounded supporting surfaces
+- later `TASK-SPEC19.2` unified gate prompt work stays out of scope
+- later `TASK-SPEC19.3` accept-reject and fallback-after-run normalization stays out of scope
+
+Validation for the precheck gate is complete:
+
+- `validate_precheck.py` passes for `TASK-SPEC19.1`
+- scoped `git diff --check` passes without blocking content errors
+
+Released `TASK-SPEC19.1` through `janus-task-breakdown` in `documentation/tasks/TASK-SPEC19.1_task_breakdown.md`.
+
+The released first slice keeps the new bounded OR worker mode tightly scoped to one shared entry boundary:
+
+- which skill classes are explicitly OR-eligible
+- which skills stay blocked or not yet evidenced
+- how `OR_ALLOWED`, `OR_NOT_ELIGIBLE`, and `OR_EVIDENCE_MISSING` are made deterministic
+- how the workflow falls back to Codex-only before any later gate-prompt or post-run acceptance work
+
+This release intentionally keeps the later tasks out of scope:
+
+- no unified `1 = Codex` / `2 = OpenRouter` gate display yet
+- no cost or confidence prompt rendering yet
+- no post-OR Codex-owned accept-or-reject normalization yet
+
+Validation for task breakdown is complete:
+
+- `validate_task_handoff.py` passes for `TASK-SPEC19.1`
+- scoped `git diff --check` passes without blocking content errors
+
+Compiled `Spec 19` into `documentation/tasks/TASK-SPEC19_bounded_or_worker_mode_for_janus_skills.md` with `janus-spec-to-task`.
+
+The new task package keeps the rollout intentionally narrow and deterministic:
+
+- `TASK-SPEC19.1` defines the shared OR eligibility and no-gate contract
+- `TASK-SPEC19.2` normalizes the unified gate plus required model, cost, and confidence display
+- `TASK-SPEC19.3` hardens Codex-owned accept-or-reject and fallback behavior after OR runs
+
+This task package does not implement anything yet and does not widen into production routing, global OR approval, or broad execution authority. It only creates the execution-ready structure for `janus-task-breakdown`.
+
+Validation for task compilation is complete:
+
+- `validate_task_artifact.py` passes for `TASK-SPEC19`
+- scoped `git diff --check` passes without blocking content errors
+
+Reviewed `documentation/SPEC/19_bounded_or_worker_mode_for_janus_skills.md` with `janus-spec-review` and marked it `APPROVED_WITH_NOTES`.
+
+The review confirms that the feature is ready for `janus-spec-to-task` without reopening the user decisions. The non-blocking notes are structural rather than product-blocking:
+
+- the rollout stays intentionally bounded to clearly eligible skill classes first
+- no production routing or global OR approval is implied
+- later task compilation should keep the first implementation slices narrow so the cross-skill worker mode does not sprawl into broad execution authority immediately
+
+Validation for the review gate is complete:
+
+- `validate_spec_review.py` passes for `Spec 19`
+- the review metadata block is now written into the spec
+- scoped `git diff --check` passes without blocking content errors
+
+Generated `documentation/SPEC/19_bounded_or_worker_mode_for_janus_skills.md` from the locked feature-design decisions for the next alltagsfaehige OR architecture step.
+
+The new spec raises the abstraction level from individual documentation or sidecar pilot paths to one shared bounded worker mode:
+
+- one unified `1 = Codex` / `2 = OpenRouter` gate
+- OR allowed to handle the main bounded work block for eligible skills
+- Codex must always perform active review and final acceptance
+- the first rollout stays limited to clearly bounded skill classes
+- the OR option appears only when evidence-backed eligibility plus cost and confidence data exist for that concrete skill run
+
+This step intentionally does not implement, route to production, or pick one global OR model. It creates the reviewable feature contract needed before spec review, task compilation, and bounded implementation slices.
+
 Completed `janus-task-breakdown` for `TASK-SPEC17.1` and released exactly one bounded precheck target:
 
 - `documentation/tasks/TASK-SPEC17.1_task_breakdown.md` now binds the next implementation gate to `TASK-SPEC17.1` only.
