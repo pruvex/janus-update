@@ -4,6 +4,77 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Snapshot Update
+As of `2026-06-18 23:10 +02:00`, `TASK-SPEC19.4` is now documentation-synced as its own audit-cleared slice in `documentation/01_CENTRAL_TASK_REGISTRY.md` and `PROJECT_STATE.md`. The first everyday `janus-quickchange` bounded OR worker consumer is therefore closed not only in audit artifacts, but also in the Janus state surfaces that track sealed work.
+
+As of `2026-06-18 22:50 +02:00`, `TASK-SPEC19.4` passed final audit from the compact package `documentation/tasks/TASK-SPEC19.4_AUDIT_PACKAGE.md`. The first everyday `janus-quickchange` bounded OR worker consumer slice is audit-cleared and ready for `janus-documentation-update`; no dev chat history was used as a source.
+
+## TASK-SPEC19.4 Documentation Update Override
+Timestamp: `2026-06-18 23:10 +02:00`
+
+Current goal override: synchronize the passed `TASK-SPEC19.4` final-audit result into the Janus state artifacts without reopening the broader `TASK-SPEC19` rollout, changing production routing status, or widening scope beyond the first everyday quickchange consumer slice.
+
+Active phase override: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- Added a dedicated `TASK-SPEC19.4` closure entry to `documentation/01_CENTRAL_TASK_REGISTRY.md`.
+- Added a dedicated `TASK-SPEC19.4` compact state row to `PROJECT_STATE.md`.
+- Kept the update additive: the broader `TASK-SPEC19` rollout entry stays intact, while the first everyday quickchange consumer is now independently visible as an audit-cleared follow-on slice.
+
+Changed files:
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-documentation-update\scripts\validate_doc_update.py --repo C:\KI\Janus-Projekt --marker TASK-SPEC19.4 --require documentation/01_CENTRAL_TASK_REGISTRY.md --require PROJECT_STATE.md`: PASS
+- `git diff --check -- documentation/01_CENTRAL_TASK_REGISTRY.md PROJECT_STATE.md documentation/ai/CURRENT_STATE.md`: PASS with CRLF warning only for `CURRENT_STATE.md`
+
+Open risks:
+- The broader repository remains dirty outside this slice.
+- No commit or push happened after this documentation sync, so a remote such as GitHub or `backup` may not contain the latest `CURRENT_STATE`, registry, or project-state closeout.
+
+Next recommended step for ChatGPT: use `janus-git-governance` if the `TASK-SPEC19.4` closure should now be checkpointed as a scoped commit, or stop here if local documentation sync is sufficient for now.
+
+Next recommended step for Codex: stay on `5.4` low to medium for a scoped git-governance checkpoint; do not widen into release, production routing, or broader OR rollout work from this closeout step alone.
+
+## TASK-SPEC19.4 Final Audit Override
+Timestamp: `2026-06-18 22:50 +02:00`
+
+Current goal override: seal `TASK-SPEC19.4` from the compact audit package so the first everyday `janus-quickchange` bounded OR worker consumer can move to documentation sync without reopening implementation history.
+
+Active phase override: `janus-final-audit`, canonical state `PASS`.
+
+Last Codex work:
+- Loaded only `documentation/tasks/TASK-SPEC19.4_AUDIT_PACKAGE.md` as the audit source after the Janus model gate and start-of-work reminder check.
+- Confirmed the package contains the bound Spec, Task, Precheck, changed files, validation evidence, manual evidence N/A reason, and completion status required for final audit.
+- Decided `FINAL AUDIT RESULT: PASS` for the bounded quickchange consumer slice.
+
+Changed files:
+- `documentation/tasks/TASK-SPEC19.4_final_audit.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\codex-start-of-work-check\scripts\due_healthchecks.py`: CLEAR
+- Audit package evidence reviewed: py_compile PASS, quickchange live operator path tests PASS (`3 passed`), sidecar write pilot runner tests PASS (`2 passed`)
+
+Open risks:
+- The broader repository remains dirty outside this slice.
+- No commit or push happened after this audit, so a remote such as GitHub or `backup` may not contain the latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: run `janus-documentation-update` using the final audit result, package path, changed files, and validation evidence from `TASK-SPEC19.4`.
+
+Next recommended step for Codex: use `5.4` low to medium for the documentation sync unless the user requests git governance or another audit gate.
+
+As of `2026-06-18 22:36 +02:00`, `TASK-SPEC19.4` now has a compact scoped audit package at `documentation/tasks/TASK-SPEC19.4_AUDIT_PACKAGE.md`. The first everyday `janus-quickchange` bounded OR worker consumer slice is ready for final audit without dragging unrelated dirty-worktree scope into the review surface.
+
+As of `2026-06-17 15:51 +02:00`, `TASK-SPEC19.4` is now locally implemented and verified. The first real `janus-quickchange` bounded OR worker consumer now uses the everyday visible `Codex` versus `OpenRouter` semantics consistently across the skill contract, dispatcher meaning, helper prompt surfaces, and alias handling.
+
+As of `2026-06-17 15:40 +02:00`, `TASK-SPEC19.4` is now formally prechecked. The first real `janus-quickchange` bounded OR worker consumer slice is implementation-ready and locked to quickchange operator semantics plus bounded acceptance wording only.
+
+As of `2026-06-17 15:34 +02:00`, the bounded OR worker rollout has moved from the closed foundation package into the first real everyday consumer release: `TASK-SPEC19.4` is now released as the `janus-quickchange` operator-path integration slice and is ready for `janus-preimplementation-check`.
+
 As of `2026-06-17 15:22 +02:00`, the `TASK-SPEC19` final-audit closeout is now fully reflected in the Janus state artifacts: `CURRENT_STATE`, `SKILL_USAGE_LOG`, `documentation/01_CENTRAL_TASK_REGISTRY.md`, and `PROJECT_STATE.md` are aligned on the bounded OR worker rollout being DONE and audit-cleared.
 
 As of `2026-06-17 15:22 +02:00`, `TASK-SPEC19` has passed final audit. The three-slice bounded OR worker rollout is now audit-cleared, `Spec 19` is marked `DONE`, and the spec has been moved to `documentation/SPEC/Spec Done/19_bounded_or_worker_mode_for_janus_skills.md`.
@@ -31,6 +102,16 @@ The newest local slice isolated one final persistence seam for the same contact 
 The latest local formatting pass cleans the remaining presentation bug in the contact card itself: named pet facts collapse into one sentence such as `hat einen Hund namens tasso`, owner-prefixed variants such as `Oli hat auch eine katze` normalize down to `hat eine Katze`, and weaker generic duplicates are dropped when a stronger named variant already exists. The live retest confirmed that the cleaned wording now appears automatically in everyday use.
 
 ## Current Goal
+Final-audit override: seal `TASK-SPEC19.4` from the compact audit package so the first everyday `janus-quickchange` bounded OR worker consumer can move to documentation sync without reopening implementation history.
+
+Audit-package override: package `TASK-SPEC19.4` for a compact final audit so the first everyday `janus-quickchange` bounded OR worker consumer can be reviewed in isolation from the broader dirty worktree.
+
+Execution override: implement the first real everyday bounded OR worker consumer so `janus-quickchange` becomes the first alltagstauglicher OR-facing skill built on the finished shared foundation.
+
+Precheck override: freeze `TASK-SPEC19.4` as the first implementation-ready everyday bounded OR worker consumer before any quickchange gate or operator-path code changes begin.
+
+Task-breakdown override: release exactly one first everyday bounded OR worker consumer so the completed shared OR foundation is exercised through `janus-quickchange` before any broader debug-, execution-, or release-class rollout.
+
 Documentation override: synchronize the passed `TASK-SPEC19` final-audit package into the Janus state artifacts without widening scope beyond the bounded OR worker rollout.
 
 Audit override: seal the completed three-slice bounded OR worker package after all local implementation and verification gates have passed.
@@ -136,6 +217,16 @@ Operational delegation override: with `BACKLOG-112` now sealed, the first real b
 Stabilize the real Janus runtime for `BACKLOG-110` after the accepted read-only `execution_patch_candidate` proposal and local Codex apply. The immediate target is no longer delegation architecture, but the live contact/address-book workflow: ordinary contact fact statements such as `Oliver Schwab wohnt in Köln-Stammheim` must enter the real tool path and stop returning the earlier `keine verifizierten Fakten` response.
 
 ## Active Phase
+The active phase is now `janus-final-audit`, canonical state `PASS`, for `TASK-SPEC19.4`. The next bounded gate is `janus-documentation-update`.
+
+The active phase is now `codex-audit-package-builder`, canonical state `PASS`, for `TASK-SPEC19.4`. The compact audit package is ready and the next bounded gate is `janus-final-audit`.
+
+The active phase is now `janus-executioner`, canonical state `PASS`, for `TASK-SPEC19.4`. The first everyday quickchange consumer slice is locally implemented and ready for audit-package handoff.
+
+The active phase is now `janus-preimplementation-check`, canonical state `PRE-CHECK PASSED`, for `TASK-SPEC19.4`. The next bounded target is the `janus-quickchange` consumer implementation slice, ready for `janus-executioner`.
+
+The active phase is now `janus-task-breakdown`, canonical state `TASK DESIGN COMPLETE`, for `TASK-SPEC19.4`. The next bounded target is the `janus-quickchange` consumer slice, ready for `janus-preimplementation-check`.
+
 The active phase is now `janus-final-audit`, canonical state `PASS`, for `TASK-SPEC19`. The package is audit-cleared and ready for `janus-documentation-update`.
 
 The active phase is now `janus-executioner`, canonical state `PASS`, for `TASK-SPEC19.3`. The full first-wave bounded OR worker package is locally implemented and can move next into final audit.
@@ -200,6 +291,48 @@ New sidecar evidence:
 - `SIDECAR-TEST-ARTIFACT-LIVE-FINAL-RETRY-001` then used the PowerShell-safe form, but still produced no target files and ended with the same immediate command-failure outcome in the Sidecar response text
 
 ## Last Codex Work
+Implemented `TASK-SPEC19.4` and recorded the result in `documentation/tasks/TASK-SPEC19.4_execution_result.md`.
+
+What changed in the execution step:
+
+- updated the versioned `janus-quickchange` skill contract so the first bounded OR worker consumer presents the everyday visible `1 = Codex` and `2 = OpenRouter` semantics
+- aligned dispatcher-side quickchange meaning text to the same OpenRouter wording while preserving bounded review-first and Codex-owned final acceptance boundaries
+- hardened both quickchange helpers so `openrouter` and `or` are accepted aliases at the operator-input seam
+- added focused regression coverage for the OpenRouter prompt label and the live quickchange alias path
+
+Validation for the execution step is complete:
+
+- `python -m py_compile documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py documentation/codex/model-routing/scripts/quickchange_sidecar_write_pilot_runner.py documentation/codex/model-routing/scripts/codex_quickchange_write_apply_runner.py`: PASS
+- `python -m pytest documentation/codex/model-routing/tests/test_quickchange_live_operator_path.py -q`: PASS
+- `python -m pytest documentation/codex/model-routing/tests/test_quickchange_sidecar_write_pilot_runner.py -q`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py documentation/tasks/TASK-SPEC19.4_execution_result.md`: PASS
+
+Prechecked `TASK-SPEC19.4` in `documentation/tasks/TASK-SPEC19.4_preimplementation_check.md`.
+
+What changed in the precheck step:
+
+- created the formal preimplementation gate artifact for the first `janus-quickchange` bounded OR worker consumer
+- locked the implementation scope to quickchange gate semantics, bounded acceptance wording, and the focused quickchange regression cluster
+- confirmed the slice must not widen into production routing, broad execution delegation, or non-quickchange skill rollout
+
+Validation for the precheck step is complete:
+
+- `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py documentation/tasks/TASK-SPEC19.4_preimplementation_check.md`: PASS
+- scoped `git diff --check` for the precheck artifact: PASS
+
+Released `TASK-SPEC19.4` in `documentation/tasks/TASK-SPEC19.4_task_breakdown.md` as the first real everyday `janus-quickchange` consumer slice for the bounded OR worker rollout.
+
+What changed in the task-breakdown step:
+
+- extended `documentation/tasks/TASK-SPEC19_bounded_or_worker_mode_for_janus_skills.md` with a new `TASK-SPEC19.4` follow-on slice for the first everyday consumer
+- created a dedicated handoff artifact for `TASK-SPEC19.4`
+- kept the scope narrow to quickchange gate semantics, bounded acceptance signaling, and focused quickchange-path regression
+
+Validation for the task-breakdown step is complete:
+
+- `python C:\Users\pruve\.codex\skills\janus-task-breakdown\scripts\validate_task_handoff.py --task documentation/tasks/TASK-SPEC19_bounded_or_worker_mode_for_janus_skills.md --target TASK-SPEC19.4`: PASS
+- scoped `git diff --check` for the task-breakdown artifacts: PASS
+
 Built `documentation/tasks/TASK-SPEC19_AUDIT_PACKAGE.md`, completed final audit in `documentation/tasks/TASK-SPEC19_final_audit.md`, and synchronized the closeout into the central registry and project state.
 
 What changed in the audit step:
@@ -983,7 +1116,7 @@ Treat the eight validated bounded delegation classes as still available, but for
 Run `janus-preimplementation-check` on `TASK-SPEC17.1`, then continue into implementation only if the precheck keeps the slice bounded to request intake, validation, run artifacts, and forbidden-action rejection.
 
 ## Last Updated
-2026-06-15 18:27 local time
+2026-06-18 22:36 local time
 
 ## Latest Handoff Override
 Timestamp: `2026-06-15 17:18 local time`
