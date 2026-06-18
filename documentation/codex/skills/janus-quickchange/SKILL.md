@@ -71,6 +71,77 @@ If any line is unclear, do not guess broadly. Route out.
 If the change remains valid and the same warm Codex context can continue, route directly to `janus-documentation-update` with a compact same-context `NEXT`.
 If control must move to ChatGPT, emit exactly one compact fenced `text` handoff block.
 
+## Bounded Delegation Gate
+
+For tiny eligible quickchange work that fits one of the already validated bounded delegation classes `quickchange_patch_review` or `quickchange_write_apply`, prefer the shared dispatcher as the operator-facing gate instead of choosing low-level helpers manually.
+
+Binding artifacts:
+
+- `C:\KI\Janus-Projekt\documentation\codex\model-routing\scripts\codex_bounded_delegation_dispatcher.py`
+- `C:\KI\Janus-Projekt\documentation\codex\model-routing\scripts\quickchange_sidecar_write_pilot_runner.py`
+- `C:\KI\Janus-Projekt\documentation\codex\model-routing\codex_bounded_delegation_dispatcher_canonical_entry_2026-06-14.md`
+
+Use prompt mode first for review-first quickchanges:
+
+```powershell
+python documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py --task-class quickchange_patch_review --task-label "<short quickchange task>" --normal-target-model "<declared model/reasoning>" --operator-choice prompt --workflow-id <WORKFLOW-ID> --editable-path <relative-path> --max-touched-files <N>
+```
+
+Expected operator gate:
+
+- `1 = Codex`
+- `2 = OpenRouter`
+
+Meaning here:
+
+- `1` keeps the quickchange fully local in Codex.
+- `2` uses the bounded OpenRouter quickchange patch-review path.
+
+Boundaries stay strict:
+
+- no production routing
+- no canonical routing-table update
+- no Git or release authority by delegated path
+- no auto-apply of delegated patches
+- Codex App remains final reviewer and acceptance owner
+
+If the user chooses the OpenRouter path:
+
+- if the user chooses `1`, `local`, or `codex`, invoke the dispatcher with `--operator-choice local`
+- if the user chooses `2`, `or`, `openrouter`, `delegated`, or `sidecar`, invoke the dispatcher with `--operator-choice delegated --prompt-path <bounded prompt path>`
+- pass the exact `--editable-path` allowlist and `--max-touched-files` cap that belong to the quickchange brief
+
+Important:
+
+- this OpenRouter quickchange path is still bounded and review-first
+- it is not broad write authority
+- it is not a general code-generation mode
+- it should be used only when the quickchange still satisfies this skill's tiny-scope rules
+
+For tiny file-write quickchanges that already have an accepted bounded source package and must stay inside an exact file allowlist, use the separate `quickchange_write_apply` class:
+
+```powershell
+python documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py --task-class quickchange_write_apply --task-label "<short quickchange task>" --normal-target-model "<declared model/reasoning>" --operator-choice prompt --workflow-id <WORKFLOW-ID> --accepted-source-run-dir <accepted-sidecar-run-dir>
+```
+
+Meaning there:
+
+- `1` keeps the quickchange fully local in Codex.
+- `2` uses the bounded OpenRouter quickchange write-apply acceptance path.
+
+Extra write-apply boundaries:
+
+- delegated write evidence must come from an accepted bounded source run
+- Codex still owns diff review, validation review, and final acceptance
+- no delete, rename, or move authority is granted by this class
+- no fresh broad write delegation starts from this gate alone
+
+Use `quickchange_write_apply` only when:
+
+- the quickchange remains tiny and deterministic
+- the accepted source package already proves allowlist, touched-file cap, and delete/rename/move tripwires
+- Codex is explicitly acting as final acceptance owner
+
 ## Mini Test Plan
 
 Before edits, state:
