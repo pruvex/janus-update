@@ -1,6 +1,6 @@
 ﻿# PROJECT_STATE.md (Diamond-OS V0.4.31-beta.82)
 **Zweck:** Schlanke Triage-Uebersicht fuer den aktuellen Projektzustand.
-**Aktualisiert:** 2026-06-17 (TASK-SPEC19 bounded OR worker rollout final auditiert und dokumentiert - PASS; Registry, Project State und CURRENT_STATE auf den auditierten Abschlussstand synchronisiert)
+**Aktualisiert:** 2026-06-18 (TASK-SPEC19.4 als erster everyday janus-quickchange bounded OR worker consumer final auditiert und dokumentiert - PASS; Registry, Project State und CURRENT_STATE auf den Slice-Closeout synchronisiert)
 
 ---
 
@@ -8,6 +8,7 @@
 
 | Epic / Task | Status | Kurzstand |
 |---|---|---|
+| **TASK-SPEC19.4 First everyday janus-quickchange bounded OR worker consumer** | SEALED | Der erste echte alltagstaugliche `janus-quickchange` Consumer auf der bounded OR worker Foundation ist jetzt final auditiert und dokumentiert. Der sichtbare Operatorpfad bleibt konsistent bei `1 = Codex` und `2 = OpenRouter`, waehrend Patch-Review und Write-Apply weiterhin bounded bleiben und der finale Accept-or-Reject-Ausgang explizit Codex-owned ist. Validation: `py_compile` PASS; quickchange live operator path pytest PASS (3/3); quickchange sidecar write pilot runner pytest PASS (2/2); compact audit package PASS; final audit PASS; no production routing. |
 | **TASK-SPEC19 Bounded OR Worker Mode fuer Janus Skills** | SEALED | Der bounded OR worker Rollout ist jetzt final auditiert und dokumentiert. Die drei Slices decken die gemeinsame Eligibility-Grenze, die einheitliche Gate-Ausgabe sowie die Codex-owned Post-Run-Accept/Reject/Fallback-Normalisierung ab. Validation: compact audit package PASS; final audit PASS; no production routing. |
 | **BACKLOG-112 Quickchange delegated Live-Execute seam fuer den ersten realen OR-Pilot** | SEALED | Der operator-facing `janus-quickchange` Delegationspfad erreicht jetzt einen echten bounded Live-Execute-Versuch statt neue Quickchange-Runs nur im Dry-Run enden zu lassen. Dispatcher und Helper bleiben dabei auf exakte editable-path Allowlists, Touched-File-Cap, Delete-/Rename-/Move-Tripwire, Diff-Capture und lokale Validation-Capture begrenzt. Validation: `py_compile` PASS; fokussierte Pytests PASS; execution-result validators PASS; Final Audit PASS. |
 | **TASK-SPEC18 Bounded Execution Write Apply Candidate fuer OR Sidecar Delegation** | SEALED | Der erste gebundene delegated write-apply candidate ist final auditiert und dokumentiert. Die Slice erzwingt jetzt exakte editable-path Allowlists plus Touched-File-Cap am Einstieg, reviewbare Diff- und Changed-Files-Artefakte fuer akzeptable Kandidaten sowie eine verpflichtende `validation_summary.json` mit explizit Codex-owned finalem Accept-or-Reject-Ausgang. Validation: `py_compile` PASS; Entry-Gate-Pytest PASS (4/4); Artifact-Capture-Pytest PASS (4/4); Validation-Acceptance-Pytest PASS (3/3); execution-result validators PASS; Final Audit PASS. |

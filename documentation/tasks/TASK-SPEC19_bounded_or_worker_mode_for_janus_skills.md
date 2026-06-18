@@ -81,3 +81,31 @@ TASK-SPEC19
   - Regressionstest fuer bestehende Codex-only und assist-only bounded Pfade
 - Model: 5.4
 - Reason: Dieser Slice verbindet den OR-Hauptarbeitsmodus mit der fuer den Alltag entscheidenden Codex-Abnahme-Disziplin und haelt die Governance-Grenze explizit.
+
+### TASK-SPEC19.4 Janus-quickchange as the first everyday bounded OR worker consumer
+- Ziel: `janus-quickchange` als ersten echten alltagstauglichen bounded OR-Consumer an den gemeinsamen Dispatcher anbinden, ohne den Scope auf breite Execution-, Release- oder unbounded Write-Arbeit auszuweiten.
+- Scope: Quickchange-spezifische Operator-Gate-Normalisierung fuer `quickchange_patch_review` und `quickchange_write_apply`, klare OpenRouter-Benennung im Skill-Vertrag, Codex-owned Akzeptanzgrenzen fuer den ersten Everyday-Consumer und fixture-basierte Regression fuer den Prompt-/Operator-Pfad.
+- Files:
+  - documentation/codex/skills/janus-quickchange/SKILL.md
+  - documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py
+  - documentation/codex/model-routing/scripts/quickchange_sidecar_write_pilot_runner.py
+  - documentation/codex/model-routing/scripts/codex_quickchange_write_apply_runner.py
+  - documentation/codex/model-routing/tests/test_quickchange_live_operator_path.py
+  - documentation/codex/model-routing/tests/test_quickchange_sidecar_write_pilot_runner.py
+- Steps:
+  - Den ersten bounded OR-Worker-Consumer explizit auf `janus-quickchange` festlegen und die Skill-Anleitung auf den gemeinsamen Dispatcher-Gate-Pfad ausrichten.
+  - Den user-facing Gate-Sinn fuer `quickchange_patch_review` und `quickchange_write_apply` so normalisieren, dass `1 = Codex` und `2 = OpenRouter` im Quickchange-Alltag konsistent verstanden werden.
+  - Sicherstellen, dass bounded Review-first- und Write-apply-Grenzen sichtbar bleiben und weiterhin keine breite Write-, Git-, Release- oder Produktionsrouting-Autoritaet suggeriert wird.
+  - Fixture-basierte Regression absichern, dass der Quickchange-Operatorpfad das Gate, die execute-live-Weitergabe und die bounded Acceptance-Grenzen korrekt transportiert.
+- Acceptance Criteria:
+  - `janus-quickchange` beschreibt den gemeinsamen Dispatcher als den kanonischen Operator-Gate-Einstieg fuer die ersten bounded OR-Quickchange-Klassen.
+  - Der Quickchange-Operatorpfad verwendet fuer die sichtbare Alltagsauswahl konsistent `1 = Codex` und `2 = OpenRouter`, ohne den bounded Review-/Acceptance-Charakter zu verlieren.
+  - `quickchange_patch_review` und `quickchange_write_apply` bleiben explizit bounded und Codex-owned im finalen Accept/Reject-Ausgang.
+  - Nicht geeignete Quickchanges oder fehlende bounded Voraussetzungen fuehren weiterhin deterministisch zu lokalem Codex-Pfad statt zu stiller OR-Ausweitung.
+- Tests:
+  - Positivtest fuer den Quickchange-Operatorpfad mit sichtbarem `Codex`-vs-`OpenRouter`-Gate
+  - Regressionstest fuer `quickchange_patch_review` mit `--execute-live`-Weitergabe und Allowlist-Grenzen
+  - Regressionstest fuer `quickchange_write_apply` mit bounded Acceptance-Semantik
+  - Py-Compile-Check fuer die betroffenen Quickchange-/Dispatcher-Skripte
+- Model: 5.4
+- Reason: Dieser Slice bringt den bounded OR worker aus der reinen Foundation in den ersten echten Janus-Alltagspfad und bleibt dabei klein genug, um als sicherer erster Consumer hart validiert zu werden.

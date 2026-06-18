@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 
@@ -20,6 +21,16 @@ TEST_TRIAGE_RUNNER = MODEL_ROUTING_DIR / "scripts" / "codex_test_result_triage_r
 EXECUTION_PATCH_RUNNER = MODEL_ROUTING_DIR / "scripts" / "codex_execution_patch_candidate_runner.py"
 EXECUTION_WRITE_APPLY_RUNNER = MODEL_ROUTING_DIR / "scripts" / "codex_execution_write_apply_candidate_runner.py"
 RUN_ROOT = MODEL_ROUTING_DIR / "bounded-dispatch-runs"
+if str(MODEL_ROUTING_DIR / "scripts") not in sys.path:
+    sys.path.insert(0, str(MODEL_ROUTING_DIR / "scripts"))
+
+from bounded_or_worker_eligibility import evaluate_dispatch_task_class
+from bounded_or_worker_gate_prompt import (
+    build_missing_gate_result,
+    build_operator_prompt_lines,
+    missing_gate_fields,
+)
+from bounded_or_worker_outcome import normalize_codex_owned_outcome
 
 
 def normalize_choice(value: str) -> str:
@@ -45,6 +56,19 @@ def write_text(path: Path, content: str) -> None:
 
 def output(payload: dict) -> None:
     print(json.dumps(payload, indent=2, ensure_ascii=False))
+
+
+def with_codex_owned_outcome(payload: dict) -> dict:
+    normalized = normalize_codex_owned_outcome(
+        selected_path=str(payload.get("selected_path", "")),
+        validation_result=str(payload.get("validation_result", "")),
+        final_outcome=str(payload.get("final_outcome", "")),
+        fallback_used=payload.get("fallback_used"),
+        rework_required=payload.get("rework_required"),
+    )
+    merged = dict(payload)
+    merged.update(normalized)
+    return merged
 
 
 def run_command(command: list[str]) -> subprocess.CompletedProcess[str]:
@@ -258,6 +282,43 @@ def invoke_write_candidate_entry_gate(args: argparse.Namespace, workflow_id: str
 
 
 def prompt_summary(args: argparse.Namespace, workflow_id: str) -> dict:
+    eligibility = evaluate_dispatch_task_class(task_class=args.task_class)
+    if eligibility["eligibility_result"] != "OR_ALLOWED":
+        return {
+            "summary_header": "BOUNDED DELEGATION DISPATCH RESULT",
+            "workflow_id": workflow_id,
+            "task_class": args.task_class,
+            "task_label": args.task_label,
+            "selected_path": "codex_only_pre_dispatch",
+            "eligibility_result": eligibility["eligibility_result"],
+            "eligibility_reason_code": eligibility["reason_code"],
+            "evidence_status": eligibility["evidence_status"],
+            "validation_result": "PASS",
+            "final_outcome": "LOCAL_CODEX_PATH_SELECTED",
+            "operator_result_lines": [
+                f"Ergebnis: {eligibility['eligibility_result']}",
+                f"Route: {args.task_class} bleibt lokal",
+            ],
+            "operator_message": eligibility["message"],
+        }
+    missing_fields = missing_gate_fields(
+        selected_or_model=getattr(args, "selected_or_model", None),
+        estimated_or_cost=getattr(args, "estimated_or_cost", None),
+        cost_estimate_confidence_percent=getattr(args, "cost_estimate_confidence_percent", None),
+    )
+    if missing_fields:
+        return build_missing_gate_result(
+            workflow_id=workflow_id,
+            task_label=args.task_label,
+            selected_path="codex_only_prompt_data_missing",
+            missing_fields=missing_fields,
+            final_outcome="LOCAL_CODEX_PATH_SELECTED",
+            normal_target_model=args.normal_target_model,
+            task_class=args.task_class,
+            eligibility_result=eligibility["eligibility_result"],
+            eligibility_reason_code=eligibility["reason_code"],
+            evidence_status=eligibility["evidence_status"],
+        )
     route_notes = {
         "documentation_draft": "Uses the read-only documentation sidecar draft runner.",
         "quickchange_patch_review": "Uses the bounded quickchange patch-review helper and optional structured patch capture.",
@@ -270,61 +331,36 @@ def prompt_summary(args: argparse.Namespace, workflow_id: str) -> dict:
     }
     delegated_meaning = {
         "documentation_draft": "Sidecar read-only draft, then Codex review.",
-        "quickchange_patch_review": "Sidecar patch proposal flow, still bounded and review-first.",
-        "quickchange_write_apply": "Delegated bounded workspace-write quickchange, but Codex still owns diff validation and final acceptance.",
+        "quickchange_patch_review": "OpenRouter patch proposal flow, still bounded and review-first.",
+        "quickchange_write_apply": "OpenRouter bounded workspace-write quickchange, but Codex still owns diff validation and final acceptance.",
         "generator_review": "Delegated intent, but local deterministic builder/executor path instead of sidecar write execution.",
         "debug_hypothesis_review": "Delegated assist-only hypothesis review, but Codex still owns reproduction, validation, and next debug action.",
         "test_result_triage_review": "Delegated assist-only triage review, but Codex still owns final classification, rerun, and routing decisions.",
         "execution_patch_candidate": "Delegated proposal-only execution patch candidate, but Codex still owns patch review, apply/reject, and final task completion.",
         "execution_write_apply_candidate": "Delegated bounded execution write candidate, but Codex still owns future live-write approval, diff review, validation review, and final task completion.",
     }
-    operator_prompt_lines = {
-        "documentation_draft": [
-            "Willst du 1 Codex das machen lassen?",
-            "Oder 2 den bounded documentation_draft Delegation-Pfad nutzen?",
-        ],
-        "quickchange_patch_review": [
-            "Willst du 1 Codex das machen lassen?",
-            "Oder 2 den bounded quickchange_patch_review Delegation-Pfad nutzen?",
-        ],
-        "quickchange_write_apply": [
-            "Willst du 1 Codex das machen lassen?",
-            "Oder 2 den bounded quickchange_write_apply Delegation-Pfad nutzen?",
-        ],
-        "generator_review": [
-            "Willst du 1 Codex das machen lassen?",
-            "Oder 2 den bounded generator_review Delegation-Pfad nutzen?",
-        ],
-        "debug_hypothesis_review": [
-            "Willst du 1 Codex das machen lassen?",
-            "Oder 2 den bounded debug_hypothesis_review Delegation-Pfad nutzen?",
-        ],
-        "test_result_triage_review": [
-            "Willst du 1 Codex das machen lassen?",
-            "Oder 2 den bounded test_result_triage_review Delegation-Pfad nutzen?",
-        ],
-        "execution_patch_candidate": [
-            "Willst du 1 Codex das machen lassen?",
-            "Oder 2 den bounded execution_patch_candidate Delegation-Pfad nutzen?",
-        ],
-        "execution_write_apply_candidate": [
-            "Willst du 1 Codex das machen lassen?",
-            "Oder 2 den bounded execution_write_apply_candidate Delegation-Pfad nutzen?",
-        ],
-    }
     return {
         "summary_header": "BOUNDED DELEGATION DISPATCH GATE",
         "workflow_id": workflow_id,
         "task_class": args.task_class,
         "task_label": args.task_label,
+        "eligibility_result": eligibility["eligibility_result"],
+        "eligibility_reason_code": eligibility["reason_code"],
+        "evidence_status": eligibility["evidence_status"],
         "normal_target_model": args.normal_target_model,
+        "selected_or_model": args.selected_or_model,
+        "estimated_or_cost": float(args.estimated_or_cost),
+        "cost_estimate_confidence_percent": float(args.cost_estimate_confidence_percent),
         "choice_1": "Codex",
-        "choice_2": "Delegated",
+        "choice_2": "OpenRouter",
         "delegated_meaning": delegated_meaning[args.task_class],
         "route_note": route_notes[args.task_class],
         "final_outcome": "AWAITING_OPERATOR_CHOICE",
         "validation_result": "PASS",
-        "operator_prompt_lines": operator_prompt_lines[args.task_class],
+        "operator_prompt_lines": build_operator_prompt_lines(
+            estimated_or_cost=float(args.estimated_or_cost),
+            cost_estimate_confidence_percent=float(args.cost_estimate_confidence_percent),
+        ),
         "boundaries": [
             "No production routing",
             "No canonical routing-table update",
@@ -335,12 +371,16 @@ def prompt_summary(args: argparse.Namespace, workflow_id: str) -> dict:
 
 
 def local_summary(args: argparse.Namespace, workflow_id: str) -> dict:
+    eligibility = evaluate_dispatch_task_class(task_class=args.task_class)
     return {
         "summary_header": "BOUNDED DELEGATION DISPATCH RESULT",
         "workflow_id": workflow_id,
         "task_class": args.task_class,
         "task_label": args.task_label,
         "selected_path": "codex_only_operator_choice",
+        "eligibility_result": eligibility["eligibility_result"],
+        "eligibility_reason_code": eligibility["reason_code"],
+        "evidence_status": eligibility["evidence_status"],
         "validation_result": "PASS",
         "final_outcome": "LOCAL_CODEX_PATH_SELECTED",
         "operator_result_lines": [
@@ -604,6 +644,9 @@ def main() -> int:
     parser.add_argument("--normal-target-model", required=True)
     parser.add_argument("--operator-choice", required=True)
     parser.add_argument("--workflow-id", required=True)
+    parser.add_argument("--selected-or-model", default=None)
+    parser.add_argument("--estimated-or-cost", type=float, default=None)
+    parser.add_argument("--cost-estimate-confidence-percent", type=float, default=None)
     parser.add_argument("--prompt-path", type=Path, default=None)
     parser.add_argument("--structured-review-flow", action="store_true")
     parser.add_argument("--structured-review-source-run-dir", type=Path, default=None)
@@ -629,16 +672,39 @@ def main() -> int:
     run_dir = RUN_ROOT / workflow_id
     run_dir.mkdir(parents=True, exist_ok=True)
     choice = normalize_choice(args.operator_choice)
+    eligibility = evaluate_dispatch_task_class(task_class=args.task_class)
 
     if choice == "prompt":
-        result = prompt_summary(args, workflow_id)
+        result = with_codex_owned_outcome(prompt_summary(args, workflow_id))
         write_json(run_dir / "operator_choice_prompt.json", result)
         output(result)
         return 0
 
     if choice == "local":
-        result = local_summary(args, workflow_id)
+        result = with_codex_owned_outcome(local_summary(args, workflow_id))
         write_json(run_dir / "operator_choice_local.json", result)
+        output(result)
+        return 0
+
+    if eligibility["eligibility_result"] != "OR_ALLOWED":
+        result = with_codex_owned_outcome({
+            "summary_header": "BOUNDED DELEGATION DISPATCH RESULT",
+            "workflow_id": workflow_id,
+            "task_class": args.task_class,
+            "task_label": args.task_label,
+            "selected_path": "codex_only_pre_dispatch",
+            "eligibility_result": eligibility["eligibility_result"],
+            "eligibility_reason_code": eligibility["reason_code"],
+            "evidence_status": eligibility["evidence_status"],
+            "validation_result": "PASS",
+            "final_outcome": "LOCAL_CODEX_PATH_SELECTED",
+            "operator_result_lines": [
+                f"Ergebnis: {eligibility['eligibility_result']}",
+                f"Route: {args.task_class} bleibt lokal",
+            ],
+            "operator_message": eligibility["message"],
+        })
+        write_json(run_dir / "operator_choice_blocked_by_eligibility.json", result)
         output(result)
         return 0
 
@@ -659,6 +725,7 @@ def main() -> int:
     else:
         result = invoke_generator_review(args, workflow_id)
 
+    result = with_codex_owned_outcome(result)
     write_json(run_dir / "dispatcher_result.json", result)
     output(result)
     return 0

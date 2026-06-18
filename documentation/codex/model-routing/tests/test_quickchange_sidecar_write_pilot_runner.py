@@ -19,6 +19,21 @@ SPEC.loader.exec_module(runner)
 
 
 class QuickchangeSidecarWritePilotRunnerTests(unittest.TestCase):
+    def test_prompt_summary_uses_openrouter_choice_label(self) -> None:
+        result = runner.prompt_summary(
+            workflow_id="TASK-SPEC19-4-PROMPT",
+            task_label="Tiny quickchange gate wording",
+            normal_target_model="5.4",
+            sidecar_model="gpt-5.4",
+            editable_paths=["frontend/index.html"],
+            max_touched_files=2,
+            diff_size_cap="small",
+        )
+
+        self.assertEqual(result["choice_1"], "Codex")
+        self.assertEqual(result["choice_2"], "OpenRouter")
+        self.assertEqual(result["sidecar_model_provider"], "OpenRouter sidecar / gpt-5.4")
+
     def test_invoke_live_run_includes_execute_flag_and_allowlist_controls(self) -> None:
         captured: dict[str, object] = {}
 

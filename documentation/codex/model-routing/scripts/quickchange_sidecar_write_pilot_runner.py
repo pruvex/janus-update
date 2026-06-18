@@ -36,9 +36,9 @@ def normalize_choice(choice: str) -> str:
         return "prompt"
     if value in {"local", "codex", "1"}:
         return "local"
-    if value in {"sidecar", "2"}:
+    if value in {"sidecar", "openrouter", "or", "2"}:
         return "sidecar"
-    raise SystemExit("operator-choice must be one of: prompt, local/1/codex, sidecar/2")
+    raise SystemExit("operator-choice must be one of: prompt, local/1/codex, openrouter/or/2/sidecar")
 
 
 def build_run_dir(workflow_id: str) -> Path:
@@ -71,8 +71,8 @@ def prompt_summary(
         "selected_path": "operator_choice_pending",
         "normal_target_model": normal_target_model,
         "choice_1": "Codex",
-        "choice_2": "Sidecar",
-        "sidecar_model_provider": f"Codex CLI sidecar / {sidecar_model}",
+        "choice_2": "OpenRouter",
+        "sidecar_model_provider": f"OpenRouter sidecar / {sidecar_model}",
         "sandbox": "workspace-write",
         "editable_paths": editable_paths,
         "max_touched_files": max_touched_files,
@@ -106,7 +106,7 @@ def local_summary(*, workflow_id: str, task_label: str, normal_target_model: str
         "sidecar_model_provider": f"Codex CLI sidecar / {sidecar_model}",
         "final_outcome": "LOCAL_CODEX_PATH_SELECTED",
         "validation_result": "PASS",
-        "operator_message": "Operator chose the local Codex quickchange path. No sidecar write attempt was made.",
+        "operator_message": "Operator chose the local Codex quickchange path. No OpenRouter write attempt was made.",
     }
 
 

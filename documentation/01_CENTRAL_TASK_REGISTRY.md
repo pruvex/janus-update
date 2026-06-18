@@ -14,6 +14,19 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 - **Validation**: Der bounded OR worker Rollout wurde mit drei klar getrennten Slices abgeschlossen: gemeinsame Eligibility-Grenze, einheitliche Gate-Ausgabe und Codex-owned Post-Run-Accept/Reject/Fallback-Normalisierung. Final Audit PASS mit kompakter Audit-Package-Evidenz und gruenen lokalen Checks ohne Produktionsrouting.
 - **Changed Files**: `documentation/codex/model-routing/scripts/bounded_or_worker_eligibility.py`, `documentation/codex/model-routing/config/bounded_or_worker_eligibility_2026-06-17.json`, `documentation/codex/model-routing/scripts/bounded_or_worker_gate_prompt.py`, `documentation/codex/model-routing/scripts/bounded_or_worker_outcome.py`, `documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py`, `documentation/codex/model-routing/scripts/doc_skill_mini_fixed_or_live_runner.py`, `documentation/codex/model-routing/scripts/codex_debug_hypothesis_review_runner.py`, `documentation/codex/model-routing/scripts/codex_test_result_triage_review_runner.py`, `documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py`, `documentation/tasks/TASK-SPEC19.1_execution_result.md`, `documentation/tasks/TASK-SPEC19.2_execution_result.md`, `documentation/tasks/TASK-SPEC19.3_execution_result.md`, `documentation/tasks/TASK-SPEC19_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC19_final_audit.md`, `documentation/SPEC/Spec Done/19_bounded_or_worker_mode_for_janus_skills.md`.
 
+### TASK-SPEC19.4 - Janus-quickchange as the first everyday bounded OR worker consumer
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-SPEC19.4_final_audit.md` (PASS)
+- **Spec**: `documentation/SPEC/Spec Done/19_bounded_or_worker_mode_for_janus_skills.md`
+- **Parent Task**: `documentation/tasks/TASK-SPEC19_bounded_or_worker_mode_for_janus_skills.md`
+- **Task Breakdown**: `documentation/tasks/TASK-SPEC19.4_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-SPEC19.4_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-SPEC19.4_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-SPEC19.4_AUDIT_PACKAGE.md`
+- **Validation**: `TASK-SPEC19.4` seals the first real everyday `janus-quickchange` bounded OR worker consumer on top of the already finished shared foundation. The visible operator choice is consistently `1 = Codex` and `2 = OpenRouter`, quickchange patch-review and write-apply remain explicitly bounded plus Codex-owned at the final accept-or-reject seam, and focused local automated evidence passed without widening into production routing, broad execution delegation, or non-quickchange rollout.
+- **Changed Files**: `documentation/codex/skills/janus-quickchange/SKILL.md`, `documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py`, `documentation/codex/model-routing/scripts/quickchange_sidecar_write_pilot_runner.py`, `documentation/codex/model-routing/scripts/codex_quickchange_write_apply_runner.py`, `documentation/codex/model-routing/tests/test_quickchange_live_operator_path.py`, `documentation/codex/model-routing/tests/test_quickchange_sidecar_write_pilot_runner.py`, `documentation/tasks/TASK-SPEC19_bounded_or_worker_mode_for_janus_skills.md`, `documentation/tasks/TASK-SPEC19.4_task_breakdown.md`, `documentation/tasks/TASK-SPEC19.4_preimplementation_check.md`, `documentation/tasks/TASK-SPEC19.4_execution_result.md`, `documentation/tasks/TASK-SPEC19.4_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC19.4_final_audit.md`.
+
 ### TASK-SPEC18 - Bounded Execution Write Apply Candidate for OR Sidecar Delegation
 
 - **Status**: DONE
