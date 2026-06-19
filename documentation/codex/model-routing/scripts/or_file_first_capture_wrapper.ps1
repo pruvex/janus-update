@@ -7,6 +7,10 @@ param(
 
     [string]$Uri = "https://openrouter.ai/api/v1/chat/completions",
     [hashtable]$Headers = @{},
+    [string]$AuthorizationBearer = "",
+    [string]$HttpReferer = "",
+    [string]$XTitle = "",
+    [int]$RequestTimeoutMs = 120000,
     [switch]$UseLocalFixture,
     [string]$LocalFixtureResponsePath = ""
 )
@@ -46,6 +50,100 @@ function Safe-JsonField {
     return $property.Value
 }
 
+function Get-FirstItemOrNull {
+    param(
+        $Value
+    )
+
+    if ($null -eq $Value) {
+        return $null
+    }
+    if ($Value -is [System.Array]) {
+        if ($Value.Length -gt 0) {
+            return $Value[0]
+        }
+        return $null
+    }
+    return $Value
+}
+
+function Get-ResponseFinishReason {
+    param(
+        $Parsed
+    )
+
+    $choices = Safe-JsonField -Object $Parsed -Name "choices"
+    if ($choices) {
+        $firstChoice = Get-FirstItemOrNull -Value $choices
+        if ($firstChoice) {
+            $finishReason = Safe-JsonField -Object $firstChoice -Name "finish_reason"
+            if ($finishReason) {
+                return [string]$finishReason
+            }
+        }
+    }
+
+    $incompleteDetails = Safe-JsonField -Object $Parsed -Name "incomplete_details"
+    $incompleteReason = Safe-JsonField -Object $incompleteDetails -Name "reason"
+    if ($incompleteReason) {
+        return [string]$incompleteReason
+    }
+
+    $statusValue = Safe-JsonField -Object $Parsed -Name "status"
+    if ($statusValue) {
+        if ([string]$statusValue -eq "completed") {
+            return "stop"
+        }
+        return [string]$statusValue
+    }
+
+    return $null
+}
+
+function Get-ApiShape {
+    param(
+        $Parsed
+    )
+
+    $choices = Safe-JsonField -Object $Parsed -Name "choices"
+    if ($choices) {
+        return "chat_completions"
+    }
+    $output = Safe-JsonField -Object $Parsed -Name "output"
+    if ($output) {
+        return "responses"
+    }
+    return "unknown"
+}
+
+function Get-OutputItemTypes {
+    param(
+        $Parsed
+    )
+
+    $output = Safe-JsonField -Object $Parsed -Name "output"
+    if (-not $output) {
+        return @()
+    }
+
+    $items = @()
+    if ($output -is [System.Array]) {
+        $items = $output
+    }
+    else {
+        $items = @($output)
+    }
+
+    $types = @()
+    foreach ($item in $items) {
+        $itemType = Safe-JsonField -Object $item -Name "type"
+        if ($itemType) {
+            $types += [string]$itemType
+        }
+    }
+    return $types
+}
+
 $runDir = [System.IO.Path]::GetFullPath($RunDirectory)
 $requestPath = [System.IO.Path]::GetFullPath($RequestBodyPath)
 
@@ -54,6 +152,16 @@ if (-not (Test-Path $requestPath)) {
 }
 
 New-Item -ItemType Directory -Force -Path $runDir | Out-Null
+
+if ($AuthorizationBearer) {
+    $Headers["Authorization"] = $AuthorizationBearer
+}
+if ($HttpReferer) {
+    $Headers["HTTP-Referer"] = $HttpReferer
+}
+if ($XTitle) {
+    $Headers["X-OpenRouter-Title"] = $XTitle
+}
 
 $stdoutPath = Join-Path $runDir "stdout.log"
 $stderrPath = Join-Path $runDir "stderr.log"
@@ -91,6 +199,8 @@ try {
         $request = [System.Net.HttpWebRequest]::Create($Uri)
         $request.Method = "POST"
         $request.ContentType = "application/json"
+        $request.Timeout = $RequestTimeoutMs
+        $request.ReadWriteTimeout = $RequestTimeoutMs
         foreach ($key in $Headers.Keys) {
             switch -Regex ($key) {
                 '^Authorization$' { $request.Headers['Authorization'] = [string]$Headers[$key] }
@@ -146,37 +256,29 @@ try {
 
     $parsed = $rawBody | ConvertFrom-Json
     $usage = Safe-JsonField -Object $parsed -Name "usage"
-    $choices = Safe-JsonField -Object $parsed -Name "choices"
-    $finishReason = $null
-    if ($choices) {
-        $firstChoice = $null
-        if ($choices -is [System.Array]) {
-            if ($choices.Length -gt 0) {
-                $firstChoice = $choices[0]
-            }
-        }
-        else {
-            $firstChoice = $choices
-        }
-        if ($firstChoice) {
-            $finishReason = Safe-JsonField -Object $firstChoice -Name "finish_reason"
-        }
-    }
+    $apiShape = Get-ApiShape -Parsed $parsed
+    $finishReason = Get-ResponseFinishReason -Parsed $parsed
     $actualCost = $null
     if ($usage) {
         $actualCost = Safe-JsonField -Object $usage -Name "cost"
     }
+    $outputTypes = Get-OutputItemTypes -Parsed $parsed
     $summaryObject = [ordered]@{
         capture_mode = $(if ($UseLocalFixture) { "local_fixture" } else { "live_http" })
         http_status = $statusCode
+        api_shape = $apiShape
+        response_object = Safe-JsonField -Object $parsed -Name "object"
+        response_status = Safe-JsonField -Object $parsed -Name "status"
         generation_id = Safe-JsonField -Object $parsed -Name "id"
         model = Safe-JsonField -Object $parsed -Name "model"
         finish_reason = $finishReason
         usage = $usage
         actual_or_cost = $actualCost
+        output_item_count = $outputTypes.Count
+        output_item_types = $outputTypes
     }
 
-    Write-Artifact -Path $summaryPath -Value ($summaryObject | ConvertTo-Json -Depth 20)
+    Write-Artifact -Path $summaryPath -Value ($summaryObject | ConvertTo-Json -Depth 30)
     Write-Artifact -Path $stdoutPath -Value "CAPTURE_OK`nrequest_body=$requestArtifactPath`nresponse_body=$bodyPath`nresponse_headers=$headersPath`nresponse_summary=$summaryPath"
     Write-Artifact -Path $stderrPath -Value ""
     Write-Artifact -Path $exitCodePath -Value "0" -Encoding "ascii"
