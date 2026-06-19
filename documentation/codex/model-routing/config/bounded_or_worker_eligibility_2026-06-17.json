@@ -1,0 +1,92 @@
+{
+  "config_version": "2026-06-17",
+  "status": "SHARED_BOUNDED_OR_WORKER_ELIGIBILITY_CONTRACT_ONLY",
+  "scope_note": "Shared bounded OR worker eligibility contract. No production routing. No canonical routing-table update.",
+  "doc_skill_fixed_or": {
+    "required_task_intent": "documentation_skill",
+    "normal_target_model_match": [
+      "5.4 mini",
+      "gpt-5.4 mini"
+    ],
+    "skills": {
+      "DOC-SKILL-001": {
+        "selected_or_model": "openai/gpt-oss-20b",
+        "evidence_status": "LIVE_EVIDENCE_CONFIRMED"
+      },
+      "DOC-SKILL-002": {
+        "selected_or_model": "openai/gpt-oss-20b",
+        "evidence_status": "LIVE_EVIDENCE_CONFIRMED"
+      },
+      "DOC-SKILL-003": {
+        "selected_or_model": "openai/gpt-oss-20b",
+        "evidence_status": "LIVE_EVIDENCE_CONFIRMED"
+      },
+      "DOC-SKILL-006": {
+        "selected_or_model": "openai/gpt-oss-120b",
+        "evidence_status": "LIVE_EVIDENCE_CONFIRMED"
+      },
+      "DOC-SKILL-008": {
+        "selected_or_model": "qwen/qwen3.5-flash-02-23",
+        "evidence_status": "LIVE_EVIDENCE_CONFIRMED"
+      },
+      "DOC-SKILL-009": {
+        "selected_or_model": "qwen/qwen3.5-flash-02-23",
+        "evidence_status": "LIVE_EVIDENCE_CONFIRMED"
+      },
+      "DOC-SKILL-010": {
+        "selected_or_model": "qwen/qwen3.5-flash-02-23",
+        "evidence_status": "LIVE_EVIDENCE_CONFIRMED"
+      }
+    }
+  },
+  "dispatcher_task_classes": {
+    "documentation_draft": {
+      "eligibility_result": "OR_ALLOWED",
+      "evidence_status": "BOUNDED_WORKFLOW_READY",
+      "reason_code": "ELIGIBILITY_CONFIRMED",
+      "message": "Bounded documentation draft delegation is already workflow-ready."
+    },
+    "quickchange_patch_review": {
+      "eligibility_result": "OR_ALLOWED",
+      "evidence_status": "BOUNDED_WORKFLOW_READY",
+      "reason_code": "ELIGIBILITY_CONFIRMED",
+      "message": "Bounded quickchange patch review is already workflow-ready."
+    },
+    "quickchange_write_apply": {
+      "eligibility_result": "OR_ALLOWED",
+      "evidence_status": "BOUNDED_LIVE_EVIDENCE_CONFIRMED",
+      "reason_code": "ELIGIBILITY_CONFIRMED",
+      "message": "Bounded quickchange write-apply path has accepted live evidence."
+    },
+    "generator_review": {
+      "eligibility_result": "OR_ALLOWED",
+      "evidence_status": "BOUNDED_WORKFLOW_READY",
+      "reason_code": "ELIGIBILITY_CONFIRMED",
+      "message": "Bounded generator review is allowed through the shared delegation contract."
+    },
+    "debug_hypothesis_review": {
+      "eligibility_result": "OR_ALLOWED",
+      "evidence_status": "BOUNDED_LIVE_EVIDENCE_CONFIRMED",
+      "reason_code": "ELIGIBILITY_CONFIRMED",
+      "message": "Bounded debug hypothesis review is allowed for the first worker rollout."
+    },
+    "test_result_triage_review": {
+      "eligibility_result": "OR_ALLOWED",
+      "evidence_status": "BOUNDED_LIVE_EVIDENCE_CONFIRMED",
+      "reason_code": "ELIGIBILITY_CONFIRMED",
+      "message": "Bounded test-result triage review is allowed for the first worker rollout."
+    },
+    "execution_patch_candidate": {
+      "eligibility_result": "OR_ALLOWED",
+      "evidence_status": "BOUNDED_LIVE_EVIDENCE_CONFIRMED",
+      "reason_code": "ELIGIBILITY_CONFIRMED",
+      "message": "Proposal-first execution patch candidates are allowed as bounded reviewed delegation."
+    },
+    "execution_write_apply_candidate": {
+      "eligibility_result": "OR_ALLOWED",
+      "evidence_status": "BOUNDED_AUDITED_FOUNDATION",
+      "reason_code": "ELIGIBILITY_CONFIRMED",
+      "message": "Execution write-apply candidate entry remains bounded and reviewed under Codex-owned acceptance."
+    }
+  }
+}

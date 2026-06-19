@@ -1,0 +1,104 @@
+{
+  "config_version": "2026-06-14",
+  "status": "LIVE_OPERATOR_INVOKED_FIXED_OR_ENABLEMENT_ONLY_BATCH7_OVERRIDE",
+  "scope_note": "Bounded local workflow only. Not production routing. Auto Router disabled. Temporary seven-skill live batch override.",
+  "normal_target_model_match": [
+    "5.4 mini",
+    "gpt-5.4 mini"
+  ],
+  "enabled_skills": {
+    "DOC-SKILL-001": {
+      "selected_or_model": "openai/gpt-oss-20b",
+      "fixture_dir": "documentation/codex/model-routing/live-eval/DOC-SKILL-001-GPT54-MINI-LIVE-EVAL-001",
+      "task_variant": "benchmark_summary"
+    },
+    "DOC-SKILL-002": {
+      "selected_or_model": "openai/gpt-oss-20b",
+      "fixture_dir": "documentation/codex/model-routing/live-eval/DOC-SKILL-002-GPT54-MINI-LIVE-EVAL-001",
+      "task_variant": "scoring_summary"
+    },
+    "DOC-SKILL-003": {
+      "selected_or_model": "openai/gpt-oss-20b",
+      "fixture_dir": "documentation/codex/model-routing/live-eval/DOC-SKILL-003-GPT54-MINI-LIVE-EVAL-001",
+      "task_variant": "copy_safe_handoff"
+    },
+    "DOC-SKILL-006": {
+      "selected_or_model": "openai/gpt-oss-120b",
+      "fixture_dir": "documentation/codex/model-routing/live-eval/DOC-SKILL-006-GPT54-MINI-LIVE-EVAL-001",
+      "task_variant": "mechanical_markdown_cleanup"
+    },
+    "DOC-SKILL-008": {
+      "selected_or_model": "qwen/qwen3.5-flash-02-23",
+      "fixture_dir": "documentation/codex/model-routing/live-eval/DOC-SKILL-008-GPT54-MINI-LIVE-EVAL-001",
+      "task_variant": "summary_short"
+    },
+    "DOC-SKILL-009": {
+      "selected_or_model": "qwen/qwen3.5-flash-02-23",
+      "fixture_dir": "documentation/codex/model-routing/live-eval/DOC-SKILL-009-GPT54-MINI-LIVE-EVAL-001",
+      "task_variant": "summary_short"
+    },
+    "DOC-SKILL-010": {
+      "selected_or_model": "qwen/qwen3.5-flash-02-23",
+      "fixture_dir": "documentation/codex/model-routing/live-eval/DOC-SKILL-010-GPT54-MINI-LIVE-EVAL-001",
+      "task_variant": "review_notes_short"
+    }
+  },
+  "local_codex_option_enabled": true,
+  "or_option_enabled": true,
+  "auto_router_enabled": false,
+  "per_call_cap_usd": 0.002,
+  "session_cap_usd": 0.006,
+  "max_or_calls_per_session": 7,
+  "fixed_or_runs_dir": "documentation/codex/model-routing/fixed-or-live-runs",
+  "file_first_wrapper_path": "documentation/codex/model-routing/scripts/or_file_first_capture_wrapper.ps1",
+  "session_jsonl_naming_pattern": "documentation/codex/model-routing/or_healthcheck_telemetry_fixed_or_session_<YYYY-MM-DD>_<workflow_id>.jsonl",
+  "healthcheck_command": "python documentation/codex/skills/janus-health-check/scripts/health_snapshot.py --repo C:/KI/Janus-Projekt --or-telemetry-jsonl <session_jsonl_path>",
+  "baseline_telemetry_sources": [
+    "documentation/codex/model-routing/or_healthcheck_telemetry_smoke_test_live_retry_2026-06-13.jsonl",
+    "documentation/codex/model-routing/or_healthcheck_telemetry_mini_live_batch_2026-06-13.jsonl",
+    "documentation/codex/model-routing/or_healthcheck_telemetry_mini_live_batch_remaining_2026-06-13.jsonl"
+  ],
+  "fallback_rules": [
+    "skill is not one of the seven enabled mini skills",
+    "task drifts outside documentation-skill intent",
+    "estimate is missing",
+    "confidence display is missing",
+    "estimated cost exceeds cap",
+    "operator chooses local Codex path",
+    "governance or release or routing-table or DOC-SKILL-011 or DOC-SKILL-012 or 5.4-candidate work is detected"
+  ],
+  "abort_rules": [
+    "response body missing or unparsable",
+    "generation_id missing",
+    "usage missing and unrecoverable",
+    "actual cost missing or over cap",
+    "finish_reason=length",
+    "healthcheck ingestion fails",
+    "validation_result is not PASS"
+  ],
+  "manual_review_triggers": [
+    "confidence is below threshold",
+    "task intent mismatch",
+    "governance boundary detected",
+    "fallback_used=YES",
+    "rework_required=YES",
+    "reason_for_escalation populated"
+  ],
+  "operator_summary_fields": [
+    "workflow_id",
+    "skill_id",
+    "selected_path",
+    "local_codex_option",
+    "or_option",
+    "or_model",
+    "estimated_or_cost",
+    "cost_estimate_confidence_percent",
+    "actual_or_cost",
+    "finish_reason",
+    "validation_result",
+    "fallback_used",
+    "rework_required",
+    "session_jsonl_path",
+    "healthcheck_summary_path"
+  ]
+}

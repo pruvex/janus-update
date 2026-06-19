@@ -14,11 +14,13 @@ REPO_ROOT = Path(__file__).resolve().parents[4]
 MODEL_ROUTING_DIR = REPO_ROOT / "documentation" / "codex" / "model-routing"
 DOC_RUNNER = MODEL_ROUTING_DIR / "scripts" / "doc_skill_sidecar_draft_runner.py"
 PATCH_RUNNER = MODEL_ROUTING_DIR / "scripts" / "quickchange_sidecar_write_pilot_runner.py"
+DIRECT_OR_QUICKCHANGE_RUNNER = MODEL_ROUTING_DIR / "scripts" / "openrouter_direct_quickchange_patch_runner.py"
 QUICKCHANGE_APPLY_RUNNER = MODEL_ROUTING_DIR / "scripts" / "codex_quickchange_write_apply_runner.py"
 GENERATOR_RUNNER = MODEL_ROUTING_DIR / "scripts" / "codex_structured_action_generator_review_runner.py"
 DEBUG_REVIEW_RUNNER = MODEL_ROUTING_DIR / "scripts" / "codex_debug_hypothesis_review_runner.py"
 TEST_TRIAGE_RUNNER = MODEL_ROUTING_DIR / "scripts" / "codex_test_result_triage_review_runner.py"
 EXECUTION_PATCH_RUNNER = MODEL_ROUTING_DIR / "scripts" / "codex_execution_patch_candidate_runner.py"
+DIRECT_OR_EXECUTION_PATCH_RUNNER = MODEL_ROUTING_DIR / "scripts" / "openrouter_direct_execution_patch_candidate_runner.py"
 EXECUTION_WRITE_APPLY_RUNNER = MODEL_ROUTING_DIR / "scripts" / "codex_execution_write_apply_candidate_runner.py"
 RUN_ROOT = MODEL_ROUTING_DIR / "bounded-dispatch-runs"
 if str(MODEL_ROUTING_DIR / "scripts") not in sys.path:
@@ -421,6 +423,64 @@ def invoke_quickchange_patch_review(args: argparse.Namespace, workflow_id: str) 
         raise SystemExit("quickchange_patch_review delegated flow requires --prompt-path")
     if not args.editable_path:
         raise SystemExit("quickchange_patch_review delegated flow requires at least one --editable-path")
+    selected_model = args.selected_or_model or "gpt-5.4"
+    if "/" in selected_model:
+        command = [
+            "python",
+            str(DIRECT_OR_QUICKCHANGE_RUNNER),
+            "--task-label",
+            args.task_label,
+            "--normal-target-model",
+            args.normal_target_model,
+            "--model",
+            selected_model,
+            "--task-class",
+            args.task_class,
+            "--prompt-path",
+            str(args.prompt_path.resolve()),
+            "--workflow-id",
+            workflow_id,
+            "--max-touched-files",
+            str(args.max_touched_files),
+            "--estimated-or-cost",
+            str(args.estimated_or_cost),
+            "--cost-estimate-confidence-percent",
+            str(args.cost_estimate_confidence_percent),
+            "--estimated-prompt-tokens",
+            str(args.estimated_prompt_tokens),
+            "--estimated-completion-tokens",
+            str(args.estimated_completion_tokens),
+            "--cost-estimate-sample-count",
+            str(args.cost_estimate_sample_count),
+            "--cost-estimate-mean-abs-error-percent",
+            str(args.cost_estimate_mean_abs_error_percent),
+            "--cost-estimate-p50-error-percent",
+            str(args.cost_estimate_p50_error_percent),
+            "--cost-estimate-p90-error-percent",
+            str(args.cost_estimate_p90_error_percent),
+            "--cost-estimate-basis",
+            args.cost_estimate_basis,
+            "--prompt-template-hash",
+            args.prompt_template_hash,
+            "--task-variant",
+            args.task_variant,
+            "--price-snapshot-source",
+            args.price_snapshot_source,
+            "--price-snapshot-timestamp",
+            args.price_snapshot_timestamp,
+        ]
+        for item in args.editable_path:
+            command.extend(["--editable-path", item])
+        if args.use_local_or_fixture:
+            command.append("--use-local-fixture")
+            if args.or_local_fixture_response_path:
+                command.extend(["--local-fixture-response-path", str(args.or_local_fixture_response_path.resolve())])
+        if args.execute_direct_or:
+            command.append("--execute-live")
+        completed = run_command(command)
+        if completed.returncode != 0:
+            raise SystemExit(f"quickchange_patch_review direct OR flow failed:\nSTDOUT:\n{completed.stdout}\nSTDERR:\n{completed.stderr}")
+        return parse_json_output(completed.stdout, "quickchange_patch_review direct OR flow")
     command = [
         "python",
         str(PATCH_RUNNER),
@@ -436,6 +496,8 @@ def invoke_quickchange_patch_review(args: argparse.Namespace, workflow_id: str) 
         workflow_id,
         "--max-touched-files",
         str(args.max_touched_files),
+        "--sidecar-model",
+        selected_model,
         "--execute-live",
     ]
     for item in args.editable_path:
@@ -582,6 +644,59 @@ def invoke_test_result_triage_review(args: argparse.Namespace, workflow_id: str)
 def invoke_execution_patch_candidate(args: argparse.Namespace, workflow_id: str) -> dict:
     if args.execution_input_package is None:
         raise SystemExit("execution_patch_candidate delegated flow requires --execution-input-package")
+    if (args.selected_or_model and "/" in args.selected_or_model) or args.execute_direct_or or args.use_local_or_fixture:
+        command = [
+            "python",
+            str(DIRECT_OR_EXECUTION_PATCH_RUNNER),
+            "--task-label",
+            args.task_label,
+            "--normal-target-model",
+            args.normal_target_model,
+            "--model",
+            args.selected_or_model or "openai/gpt-oss-20b",
+            "--task-class",
+            args.task_class,
+            "--workflow-id",
+            workflow_id,
+            "--input-package-json",
+            str(args.execution_input_package.resolve()),
+            "--estimated-or-cost",
+            str(args.estimated_or_cost),
+            "--cost-estimate-confidence-percent",
+            str(args.cost_estimate_confidence_percent),
+            "--estimated-prompt-tokens",
+            str(args.estimated_prompt_tokens),
+            "--estimated-completion-tokens",
+            str(args.estimated_completion_tokens),
+            "--cost-estimate-sample-count",
+            str(args.cost_estimate_sample_count),
+            "--cost-estimate-mean-abs-error-percent",
+            str(args.cost_estimate_mean_abs_error_percent),
+            "--cost-estimate-p50-error-percent",
+            str(args.cost_estimate_p50_error_percent),
+            "--cost-estimate-p90-error-percent",
+            str(args.cost_estimate_p90_error_percent),
+            "--cost-estimate-basis",
+            args.cost_estimate_basis,
+            "--prompt-template-hash",
+            args.prompt_template_hash,
+            "--task-variant",
+            "execution_patch_candidate",
+            "--price-snapshot-source",
+            args.price_snapshot_source,
+            "--price-snapshot-timestamp",
+            args.price_snapshot_timestamp,
+        ]
+        if args.use_local_or_fixture:
+            command.append("--use-local-fixture")
+            if args.or_local_fixture_response_path:
+                command.extend(["--local-fixture-response-path", str(args.or_local_fixture_response_path.resolve())])
+        if args.execute_direct_or:
+            command.append("--execute-live")
+        completed = run_command(command)
+        if completed.returncode != 0:
+            raise SystemExit(f"execution_patch_candidate direct OR flow failed:\nSTDOUT:\n{completed.stdout}\nSTDERR:\n{completed.stderr}")
+        return parse_json_output(completed.stdout, "execution_patch_candidate direct OR flow")
     command = [
         "python",
         str(EXECUTION_PATCH_RUNNER),
@@ -646,12 +761,26 @@ def main() -> int:
     parser.add_argument("--workflow-id", required=True)
     parser.add_argument("--selected-or-model", default=None)
     parser.add_argument("--estimated-or-cost", type=float, default=None)
+    parser.add_argument("--estimated-prompt-tokens", type=int, default=0)
+    parser.add_argument("--estimated-completion-tokens", type=int, default=0)
     parser.add_argument("--cost-estimate-confidence-percent", type=float, default=None)
+    parser.add_argument("--cost-estimate-sample-count", type=int, default=0)
+    parser.add_argument("--cost-estimate-mean-abs-error-percent", type=float, default=0.0)
+    parser.add_argument("--cost-estimate-p50-error-percent", type=float, default=0.0)
+    parser.add_argument("--cost-estimate-p90-error-percent", type=float, default=0.0)
+    parser.add_argument("--cost-estimate-basis", default="dispatcher_direct_or_initial")
+    parser.add_argument("--prompt-template-hash", default="dispatcher_direct_or_quickchange_v1")
+    parser.add_argument("--task-variant", default="quickchange_patch_review")
+    parser.add_argument("--price-snapshot-source", default="manual_current_openrouter_model_page")
+    parser.add_argument("--price-snapshot-timestamp", default="")
     parser.add_argument("--prompt-path", type=Path, default=None)
     parser.add_argument("--structured-review-flow", action="store_true")
     parser.add_argument("--structured-review-source-run-dir", type=Path, default=None)
     parser.add_argument("--editable-path", action="append", default=[])
     parser.add_argument("--max-touched-files", type=int, default=1)
+    parser.add_argument("--execute-direct-or", action="store_true")
+    parser.add_argument("--use-local-or-fixture", action="store_true")
+    parser.add_argument("--or-local-fixture-response-path", type=Path, default=None)
     parser.add_argument("--generator-manifest", type=Path, default=None)
     parser.add_argument("--generator-skill-id", default="janus-test-pipeline")
     parser.add_argument("--generator-summary", default=None)

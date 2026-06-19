@@ -32,6 +32,12 @@ HEALTH_SNAPSHOT_PATH = (
     / "scripts"
     / "health_snapshot.py"
 )
+if str(MODEL_ROUTING_DIR / "scripts") not in sys.path:
+    sys.path.insert(0, str(MODEL_ROUTING_DIR / "scripts"))
+
+from bounded_or_worker_eligibility import evaluate_doc_skill_fixed_or
+from bounded_or_worker_gate_prompt import build_operator_prompt_lines
+from bounded_or_worker_outcome import normalize_codex_owned_outcome
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -171,6 +177,28 @@ def output_summary(data: dict[str, Any]) -> None:
     print(json.dumps(data, indent=2, ensure_ascii=False))
 
 
+def with_codex_owned_outcome(data: dict[str, Any]) -> dict[str, Any]:
+    normalized = normalize_codex_owned_outcome(
+        selected_path=str(data.get("selected_path", "")),
+        validation_result=str(data.get("validation_result", "")),
+        final_outcome=str(data.get("final_outcome", "")),
+        fallback_used=data.get("fallback_used"),
+        rework_required=data.get("rework_required"),
+    )
+    merged = dict(data)
+    merged.update(normalized)
+    return merged
+
+
+def choice_aliases(choice: str) -> set[str]:
+    mapping = {
+        "prompt": {"prompt"},
+        "local": {"local", "1", "codex"},
+        "or": {"or", "2", "opr", "openrouter"},
+    }
+    return mapping[choice]
+
+
 def fail_pre_wrapper(
     *,
     workflow_id: str,
@@ -183,7 +211,7 @@ def fail_pre_wrapper(
     rework_required: str = "NO",
     or_model: str = "N_A",
 ) -> int:
-    output_summary(
+    summary = with_codex_owned_outcome(
         {
             "workflow_id": workflow_id,
             "skill_id": skill_id,
@@ -193,9 +221,54 @@ def fail_pre_wrapper(
             "fallback_used": fallback_used,
             "rework_required": rework_required,
             "final_outcome": final_outcome,
+            "operator_result_lines": [
+                f"Ergebnis: {final_outcome}",
+                "Tatsaechliche Kosten: nicht verfuegbar",
+            ],
             "operator_message": operator_message,
         }
     )
+    summary["operator_result_lines"].append(
+        f"Codex-Status: {summary['codex_owned_outcome_status']}"
+    )
+    output_summary(summary)
+    return 0
+
+
+def eligibility_summary(
+    *,
+    workflow_id: str,
+    skill_id: str,
+    eligibility: dict[str, Any],
+    final_outcome: str,
+    selected_path: str = "codex_only_pre_wrapper",
+    validation_result: str = "PASS",
+) -> int:
+    summary = with_codex_owned_outcome(
+        {
+            "workflow_id": workflow_id,
+            "skill_id": skill_id,
+            "selected_path": selected_path,
+            "eligibility_result": eligibility["eligibility_result"],
+            "eligibility_reason_code": eligibility["reason_code"],
+            "eligibility_message": eligibility["message"],
+            "evidence_status": eligibility["evidence_status"],
+            "or_model": eligibility["selected_or_model"],
+            "validation_result": validation_result,
+            "fallback_used": "YES",
+            "rework_required": "NO" if validation_result == "PASS" else "YES",
+            "final_outcome": final_outcome,
+            "operator_result_lines": [
+                f"Ergebnis: {eligibility['eligibility_result']}",
+                "Tatsaechliche Kosten: nicht verfuegbar",
+            ],
+            "operator_message": eligibility["message"],
+        }
+    )
+    summary["operator_result_lines"].append(
+        f"Codex-Status: {summary['codex_owned_outcome_status']}"
+    )
+    output_summary(summary)
     return 0
 
 
@@ -232,13 +305,12 @@ def invoke_wrapper(
             raise RuntimeError("OPENROUTER_API_KEY missing for live fixed OR invocation")
         command.extend(
             [
-                "-Headers",
-                (
-                    "@{ Authorization='Bearer "
-                    + api_key
-                    + "'; 'HTTP-Referer'='https://github.com/pruvex/Janus-Projekt';"
-                    + " 'X-Title'='Janus Codex Fixed OR Mini Skills' }"
-                ),
+                "-AuthorizationBearer",
+                f"Bearer {api_key}",
+                "-HttpReferer",
+                "https://github.com/pruvex/Janus-Projekt",
+                "-XTitle",
+                "Janus Codex Fixed OR Mini Skills",
             ]
         )
     return run_command(command, REPO_ROOT)
@@ -260,7 +332,7 @@ def main() -> int:
     parser.add_argument("--skill-id", required=True)
     parser.add_argument("--normal-target-model", required=True)
     parser.add_argument("--task-intent", default="documentation_skill")
-    parser.add_argument("--operator-choice", choices=["local", "or"], required=True)
+    parser.add_argument("--operator-choice", required=True)
     parser.add_argument("--workflow-id", default=None)
     parser.add_argument("--session-call-count", type=int, default=1)
     parser.add_argument("--session-cost-so-far", type=float, default=0.0)
@@ -270,50 +342,37 @@ def main() -> int:
     args = parser.parse_args()
 
     config = load_json(args.config_path)
+    normalized_choice = norm(args.operator_choice)
+    if normalized_choice in choice_aliases("prompt"):
+        args.operator_choice = "prompt"
+    elif normalized_choice in choice_aliases("local"):
+        args.operator_choice = "local"
+    elif normalized_choice in choice_aliases("or"):
+        args.operator_choice = "or"
+    else:
+        raise SystemExit("operator-choice must be one of: prompt, local/1/codex, or or/2/opr/openrouter")
     workflow_id = args.workflow_id or f"FIXED-OR-{datetime.now().strftime('%Y%m%d-%H%M%S')}-{args.skill_id}"
 
+    eligibility = evaluate_doc_skill_fixed_or(
+        skill_id=args.skill_id,
+        normal_target_model=args.normal_target_model,
+        task_intent=args.task_intent,
+        governance_flag=args.governance_flag,
+    )
     enabled_skills = config["enabled_skills"]
-    if args.skill_id not in enabled_skills:
-        return fail_pre_wrapper(
+    if eligibility["eligibility_result"] == "OR_NOT_ELIGIBLE":
+        return eligibility_summary(
             workflow_id=workflow_id,
             skill_id=args.skill_id,
-            final_outcome="CODEX_ONLY_OUT_OF_SCOPE_SKILL",
-            selected_path="codex_only_pre_wrapper",
-            operator_message="Skill is outside the seven enabled mini documentation skills.",
-            validation_result="PASS",
+            eligibility=eligibility,
+            final_outcome="CODEX_ONLY_OR_NOT_ELIGIBLE",
         )
-
-    if norm(args.task_intent) != "documentation_skill":
-        return fail_pre_wrapper(
+    if eligibility["eligibility_result"] == "OR_EVIDENCE_MISSING":
+        return eligibility_summary(
             workflow_id=workflow_id,
             skill_id=args.skill_id,
-            final_outcome="CODEX_ONLY_TASK_INTENT_MISMATCH",
-            selected_path="codex_only_pre_wrapper",
-            operator_message="Task intent drifted outside documentation-skill scope.",
-            validation_result="PASS",
-            or_model=enabled_skills[args.skill_id]["selected_or_model"],
-        )
-
-    if not model_matches(args.normal_target_model, config):
-        return fail_pre_wrapper(
-            workflow_id=workflow_id,
-            skill_id=args.skill_id,
-            final_outcome="CODEX_ONLY_NORMAL_TARGET_NOT_GPT54_MINI",
-            selected_path="codex_only_pre_wrapper",
-            operator_message="Normal target would not be GPT-5.4 mini, so fixed OR is not offered.",
-            validation_result="PASS",
-            or_model=enabled_skills[args.skill_id]["selected_or_model"],
-        )
-
-    if args.governance_flag:
-        return fail_pre_wrapper(
-            workflow_id=workflow_id,
-            skill_id=args.skill_id,
-            final_outcome="CODEX_ONLY_GOVERNANCE_BOUNDARY",
-            selected_path="codex_only_pre_wrapper",
-            operator_message="Governance or release boundary detected before wrapper invocation.",
-            validation_result="PASS",
-            or_model=enabled_skills[args.skill_id]["selected_or_model"],
+            eligibility=eligibility,
+            final_outcome="CODEX_ONLY_OR_EVIDENCE_MISSING",
         )
 
     skill_config = enabled_skills[args.skill_id]
@@ -333,6 +392,9 @@ def main() -> int:
         )
     operator_prompt = make_operator_prompt(args, config, baseline_row, skill_config, workflow_id)
     session_dir, session_jsonl_path, request_body_source_path = build_paths(config, workflow_id, args.skill_id)
+    operator_prompt["eligibility_result"] = eligibility["eligibility_result"]
+    operator_prompt["eligibility_reason_code"] = eligibility["reason_code"]
+    operator_prompt["evidence_status"] = eligibility["evidence_status"]
     write_json(session_dir / "operator_choice_prompt.json", operator_prompt)
 
     estimated_or_cost_raw = baseline_row.get("estimated_or_cost")
@@ -414,11 +476,53 @@ def main() -> int:
             or_model=skill_config["selected_or_model"],
         )
 
+    if args.operator_choice == "prompt":
+        summary = with_codex_owned_outcome(
+            {
+                "summary_header": "FIXED OR OPERATOR CHOICE",
+                "workflow_id": workflow_id,
+                "skill_id": args.skill_id,
+                "selected_path": "operator_choice_pending",
+                "eligibility_result": eligibility["eligibility_result"],
+                "eligibility_reason_code": eligibility["reason_code"],
+                "evidence_status": eligibility["evidence_status"],
+                "choice_1": "Codex",
+                "choice_2": "OpenRouter",
+                "or_model": skill_config["selected_or_model"],
+                "estimated_or_cost": estimated_or_cost,
+                "cost_estimate_confidence_percent": baseline_row["cost_estimate_confidence_percent"],
+                "cost_estimate_sample_count": baseline_row["cost_estimate_sample_count"],
+                "cost_estimate_mean_abs_error_percent": baseline_row["cost_estimate_mean_abs_error_percent"],
+                "cost_estimate_p50_error_percent": baseline_row["cost_estimate_p50_error_percent"],
+                "cost_estimate_p90_error_percent": baseline_row["cost_estimate_p90_error_percent"],
+                "per_call_cap_usd": config["per_call_cap_usd"],
+                "session_cap_usd": config["session_cap_usd"],
+                "validation_result": "PASS",
+                "fallback_used": "NO",
+                "rework_required": "NO",
+                "final_outcome": "AWAITING_OPERATOR_CHOICE",
+                "operator_prompt_lines": build_operator_prompt_lines(
+                    estimated_or_cost=estimated_or_cost,
+                    cost_estimate_confidence_percent=float(baseline_row["cost_estimate_confidence_percent"]),
+                ),
+                "operator_message": (
+                    "Eligible bounded mini documentation task detected. "
+                    "Reply with 1 or 2 to continue. "
+                    "No OR call has been made."
+                ),
+            }
+        )
+        output_summary(summary)
+        return 0
+
     if args.operator_choice == "local":
-        summary = {
+        summary = with_codex_owned_outcome({
             "workflow_id": workflow_id,
             "skill_id": args.skill_id,
             "selected_path": "codex_only_operator_choice",
+            "eligibility_result": eligibility["eligibility_result"],
+            "eligibility_reason_code": eligibility["reason_code"],
+            "evidence_status": eligibility["evidence_status"],
             "local_codex_option": "enabled",
             "or_option": "enabled_but_not_used",
             "or_model": skill_config["selected_or_model"],
@@ -426,8 +530,15 @@ def main() -> int:
             "fallback_used": "YES",
             "rework_required": "NO",
             "final_outcome": "LOCAL_CODEX_PATH_SELECTED",
+            "operator_result_lines": [
+                "Ergebnis: Codex lokal ausgewaehlt",
+                "Tatsaechliche Kosten: 0.000000000",
+            ],
             "operator_message": "Operator chose local Codex path. No OR call was made.",
-        }
+        })
+        summary["operator_result_lines"].append(
+            f"Codex-Status: {summary['codex_owned_outcome_status']}"
+        )
         write_json(session_dir / "operator_decision.json", summary)
         output_summary(summary)
         return 0
@@ -547,6 +658,9 @@ def main() -> int:
         "skill_id": args.skill_id,
         "routing_mode": "operator_invoked_fixed_or",
         "selected_path": "fixed_or_then_codex_validate",
+        "eligibility_result": eligibility["eligibility_result"],
+        "eligibility_reason_code": eligibility["reason_code"],
+        "evidence_status": eligibility["evidence_status"],
         "codex_default_model": args.normal_target_model,
         "or_model": skill_config["selected_or_model"],
         "estimated_prompt_tokens": baseline_row["estimated_prompt_tokens"],
@@ -602,11 +716,14 @@ def main() -> int:
     hc_summary = json.loads(hc_result.stdout)
     write_json(session_dir / "healthcheck_summary.json", hc_summary)
 
-    operator_summary = {
+    operator_summary = with_codex_owned_outcome({
         "summary_header": "FIXED OR MINI DOC SKILL SUMMARY",
         "workflow_id": workflow_id,
         "skill_id": args.skill_id,
         "selected_path": "fixed_or_then_codex_validate",
+        "eligibility_result": eligibility["eligibility_result"],
+        "eligibility_reason_code": eligibility["reason_code"],
+        "evidence_status": eligibility["evidence_status"],
         "local_codex_option": "enabled",
         "or_option": "enabled",
         "or_model": skill_config["selected_or_model"],
@@ -617,10 +734,17 @@ def main() -> int:
         "validation_result": "PASS",
         "fallback_used": "NO",
         "rework_required": "NO",
+        "operator_result_lines": [
+            f"Ergebnis: OR erfolgreich ({finish_reason})",
+            f"Tatsaechliche Kosten: {float(actual_or_cost):.9f}",
+        ],
         "session_jsonl_path": str(session_jsonl_path),
         "healthcheck_summary_path": str(session_dir / "healthcheck_summary.json"),
         "operator_message": "Accepted fixed-model OR row captured and ingested locally. No Auto Router used.",
-    }
+    })
+    operator_summary["operator_result_lines"].append(
+        f"Codex-Status: {operator_summary['codex_owned_outcome_status']}"
+    )
     write_json(session_dir / "operator_summary.json", operator_summary)
     output_summary(operator_summary)
     return 0

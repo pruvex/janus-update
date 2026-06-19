@@ -1,0 +1,36 @@
+{
+  "version": "2026-06-19",
+  "default_profile": "quickchange_patch_review",
+  "profiles": {
+    "quickchange_patch_review": {
+      "per_call_cap_usd": 0.002,
+      "session_cap_usd": 0.006,
+      "description": "Tiny one-file or one-cluster quickchange proposal work."
+    },
+    "documentation_draft": {
+      "per_call_cap_usd": 0.01,
+      "session_cap_usd": 0.03,
+      "description": "Bounded documentation draft work where OR remains non-authoritative."
+    },
+    "debug_hypothesis_review": {
+      "per_call_cap_usd": 0.03,
+      "session_cap_usd": 0.09,
+      "description": "Assist-only debug review with larger reasoning budget than quickchange."
+    },
+    "test_result_triage_review": {
+      "per_call_cap_usd": 0.03,
+      "session_cap_usd": 0.09,
+      "description": "Assist-only test triage and classification review."
+    },
+    "execution_patch_candidate": {
+      "per_call_cap_usd": 0.05,
+      "session_cap_usd": 0.15,
+      "description": "Proposal-only code patch candidate work for prechecked execution slices."
+    },
+    "execution_write_apply_candidate": {
+      "per_call_cap_usd": 0.1,
+      "session_cap_usd": 0.3,
+      "description": "Future bounded write-capable execution class with stronger local review gates."
+    }
+  }
+}
