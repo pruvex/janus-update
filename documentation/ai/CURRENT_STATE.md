@@ -4,9 +4,950 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Snapshot Update
+As of `2026-06-19 18:02 +02:00`, the Qwen Responses/apply-patch lane is now documented as accepted bounded live evidence for `janus-quickchange` after the local validator seams were repaired. The accepted run `DIRECT-OR-QWEN-RESPONSES-LIVE-003` stayed under the `0.0020` cap at `0.00039468` USD, captured `generation_id` and usage, and now revalidates as `PASS` with `health_snapshot.py` ingestion also `PASS`. The remaining fixes were strictly local parser/validator behavior: accept the observed `in_progress` item status on a completed Responses output and handle unified-diff context-prefix spaces correctly during applicability checks. No additional OR call was made during this documentation update.
+
+As of `2026-06-19 17:44 +02:00`, the final bounded Qwen Responses/apply-patch live retry is now accepted for the `janus-quickchange` class after local validator seam repair. Workflow `DIRECT-OR-QWEN-RESPONSES-LIVE-003` stayed under the `0.0020` cap at `0.00039468` USD, captured `generation_id`, usage, and one bounded `openrouter:apply_patch` proposal, and now revalidates as `PASS` with `health_snapshot.py` ingestion also `PASS`. The remaining fixes were local only: accept the observed `in_progress` tool-item status on completed Responses output, and correctly handle unified-diff context-prefix spaces during applicability checks. No additional OR call was made after the single approved live retry.
+
+As of `2026-06-19 17:20 +02:00`, the Qwen quickchange Responses lane now has an additional single-call hardening step on top of the input slicing fix. The runner now explicitly disables parallel tool calls, caps tool calls at one, and instructs the model to return unified diff hunks instead of excerpt snapshots. Local fixture validation still passes on the hardened request shape. No new live OR call was made in this hardening step.
+
+As of `2026-06-19 17:03 +02:00`, the bounded input-slicing fix for the Qwen quickchange Responses lane is now implemented and locally validated. The runner no longer sends the full `frontend/index.html`; it now extracts only the two relevant placeholder excerpts plus tight context. In fixture validation, the generated request body shrank from `149580` bytes on the saved live path to `3050` bytes on the sliced path, which is about a `97.96%` reduction. No new live OR call was made in this slicing step.
+
+As of `2026-06-19 16:42 +02:00`, the one approved live Qwen Responses/apply-patch retry has completed and produced a mixed but highly useful evidence point. Qwen used the OpenRouter patch tool semantically correctly and proposed the intended `frontend/index.html` placeholder edits, but the run was still rejected because the full-file input strategy exploded prompt usage to `69856` input tokens and `0.023917075` USD, far above the `0.0020` cap. A small local parser seam around the actual OpenRouter tool-output shape has already been fixed afterward, so the remaining blocker is now cost/input-shaping, not tool invocation capability.
+
+As of `2026-06-19 16:05 +02:00`, the first fixture-only implementation of the new Qwen agentic contract is now working end to end. The shared file-first wrapper can summarize OpenRouter Responses API captures, and a new bounded Qwen `openrouter:apply_patch` runner now passes local unit tests plus a full fixture run with allowlisted file-content input, patch-applicability validation, telemetry JSONL output, and `health_snapshot.py` ingestion. Qwen is therefore no longer blocked at the architecture layer; the next gate is one explicitly approved bounded live Responses API retry.
+
+As of `2026-06-19 14:49 +02:00`, the escalated Qwen quickchange failure has been reclassified as an integration-contract mismatch rather than a coding-capability rejection. Official Qwen and OpenRouter documentation confirms that Qwen3-Coder is intended for tool-driven agentic coding. The selected next architecture is therefore a Responses API `openrouter:apply_patch` proposal lane with real allowlisted file content and Codex-owned validation/apply, followed later by a bounded read/search/patch/test agent loop for larger work. No new live OR call was made in this decision pass.
+
+As of `2026-06-19 02:43 +02:00`, the one approved Qwen live retry through the official-doc-hardened request path has completed and escalated the issue instead of resolving it. The stricter request shape no longer produced a non-canonical JSON envelope; instead OpenRouter returned HTTP `404` with `No endpoints found that can handle the requested parameters.` Qwen is therefore blocked on a provider-compatibility seam for the hardened structured-output lane and remains unaccepted for bounded quickchange use.
+
+As of `2026-06-19 02:34 +02:00`, the Qwen quickchange debug lane now has an official-doc-guided request hardening step, still without another live OR call. The direct OpenRouter quickchange runner now adds `provider.require_parameters=true` for structured-output requests, enables OpenRouter `response-healing`, and applies a Qwen-specific `/no_think` hint on `qwen/*` requests. Qwen remains unaccepted pending one fresh bounded live retry through this hardened path.
+
+As of `2026-06-19 02:18 +02:00`, one real bounded Qwen quickchange live retry has now run after the first schema-compatibility fix. Capture, `generation_id`, usage, finish reason, actual cost, and `health_snapshot.py` ingestion all passed, but the model returned a second non-canonical envelope variant (`summary` + structured `diff[]`) instead of the earlier `file` + `diff` shape. Qwen therefore remains semantically promising but operationally schema-unstable on the bounded quickchange lane; it is still not accepted live evidence for this Janus class.
+
+As of `2026-06-19 02:12 +02:00`, the Qwen quickchange schema-envelope issue has been narrowed and locally repaired without a new live OR call. A small compatibility coercion was added to the bounded quickchange runner so the already captured `qwen/qwen3-coder-flash` quickchange payload shape now re-validates as `PASS` in fixture mode with healthcheck ingestion still passing. This means the earlier Qwen quickchange fail was a local schema-adapter gap, not a transport, cost, or semantic-task failure.
+
+As of `2026-06-19 02:00 +02:00`, the accepted DeepSeek larger-class evidence has been folded into the bounded operator routing docs. The shared operator playbook and enablement closeout now treat `execution_patch_candidate` as a validated everyday bounded class, with `deepseek/deepseek-v4-flash` called out as the current accepted larger-class candidate under Codex-owned review/apply boundaries. No new live OR call was made in this routing-update step.
+
+As of `2026-06-19 01:53 +02:00`, the hardened second DeepSeek larger-class live retry has now been formally reclassified as accepted bounded execution-patch-candidate evidence. The prior rejection was traced to the repaired `.gitignore` normalization seam, and the captured live artifact `DIRECT-OR-DEEPSEEK-EXECUTION-LIVE-002` now re-validates locally without result-payload issues. No new live OR call was made in this reclassification step.
+
+As of `2026-06-19 01:49 +02:00`, the remaining local validator seam for the hardened second DeepSeek larger-class retry has been fixed. The root cause was `normalize_repo_path()` stripping the leading dot from `.gitignore`. After the normalization repair and a direct local re-check of the already captured `DIRECT-OR-DEEPSEEK-EXECUTION-LIVE-002` artifact, the prior validation issue disappears. This strongly indicates that the last DeepSeek larger-class live retry was falsely rejected by local validator logic rather than by a real model-quality failure. No new live OR call was made in this seam-fix step.
+
+As of `2026-06-19 01:44 +02:00`, the hardened second DeepSeek `execution_patch_candidate` live retry has now run. The previous Codex-ownership wording failures are gone, which confirms the prompt hardening worked. The only remaining rejection is `changed_files must match the files declared in patch_text`, and the captured evidence strongly suggests this is a bounded validator/path-normalization seam around `.gitignore`, not a broad model-quality failure. No further live call was made after this retry.
+
+As of `2026-06-19 01:38 +02:00`, the narrow prompt/contract hardening step for the larger direct OR execution class is complete. The runner now injects exact Codex-ownership phrases for manual validation and apply-or-reject authority. Syntax validation passed, and a local fixture run on the hardened path passed with healthcheck ingestion. No new live OR call was made in this hardening step.
+
+As of `2026-06-19 01:33 +02:00`, the first larger direct OR family-first retry on `deepseek/deepseek-v4-flash` has now been recorded. It is substantially stronger than the earlier `gpt-oss-20b` result for `execution_patch_candidate`: transport, patch body, changed-file scope, validation-step presence, cost cap, and healthcheck ingestion all passed. The remaining fail is narrowed to two Janus governance wording fields preserving explicit Codex manual-validation and apply/reject ownership. DeepSeek is therefore the current strongest larger-class `FURTHER_TEST_CANDIDATE`, but not yet accepted.
+
+As of `2026-06-19 01:28 +02:00`, the family-first quickchange comparison ladder has produced a clear split. `qwen/qwen3-coder-flash` captured and solved the task semantically but failed the Janus response envelope, while `deepseek/deepseek-v4-flash` passed the same bounded lane cleanly with lower-than-estimated cost, valid schema, and successful healthcheck ingestion. DeepSeek is now the strongest current next candidate for the first larger direct-OR `execution_patch_candidate` retry.
+
+As of `2026-06-19 01:24 +02:00`, the first family-first live comparison on `qwen/qwen3-coder-flash` for `quickchange_patch_review` is now recorded. The call itself succeeded on transport, usage capture, finish reason, healthcheck ingestion, and cost cap, but it failed Janus bounded validation because the model returned the wrong JSON envelope. The semantic diff was correct, but the schema contract was not. Per the debug plan, the larger `execution_patch_candidate` Qwen comparison remains intentionally blocked until this smaller-class result is classified.
+
+As of `2026-06-19 01:17 +02:00`, the next OR step is no longer hand-wavy candidate brainstorming. A validator-clean `janus-debug` comparison package now exists for the first family-first bounded OR retest sequence. It binds the current failure as `EXECUTION_PATCH_CANDIDATE_MODEL_FIT_MISMATCH` and fixes the next two concrete comparisons to `qwen/qwen3-coder-flash`: first on `quickchange_patch_review`, then on `execution_patch_candidate` if capture and validation pass. No live OR call was made in this planning/debug step.
+
+As of `2026-06-19 01:08 +02:00`, the next OR candidate pool has been refreshed so we stop overfitting on the first `gpt-oss-*` corridor. A new planning note now confirms that `openai/gpt-5.3-codex` and the stronger modern `Qwen` rows belong in the real next-test pool, alongside `DeepSeek`, `Kimi`, and `GLM`, with task-class recommendations for `quickchange_patch_review`, `DOC-SKILL-002/006/008`, and `execution_patch_candidate`. No live OR call was made in this refresh step.
+
+As of `2026-06-19 00:44 +02:00`, the second bounded live `execution_patch_candidate` direct-OR attempt has cleanly separated transport from model-fit. The wrapper timeout hardening worked and real response artifacts were captured, but `openai/gpt-oss-20b` on the current provider path returned `finish_reason=error` and failed to produce the required structured JSON patch candidate. The result is a real live negative evidence point for this model/class combination, not a transport failure.
+
+As of `2026-06-19 00:40 +02:00`, the first bounded live `execution_patch_candidate` direct-OR attempt has been classified as timeout-blocked transport evidence only, not accepted telemetry. The live chain reached request-body creation but did not persist any response artifacts before the outer timeout. The file-first wrapper is now hardened with internal HTTP timeout settings, and fixture validation after that hardening still passes.
+
+As of `2026-06-19 00:19 +02:00`, the direct OpenRouter worker path has been extended from `janus-quickchange` into the first larger bounded code-work consumer: `execution_patch_candidate`. Fixture validation now passes through the new direct execution patch runner and the shared dispatcher, with the larger `execution_patch_candidate` budget profile active and `health_snapshot.py` ingestion still passing. No live OR call was made in this enablement step.
+
+As of `2026-06-19 00:19 +02:00`, the direct OpenRouter path no longer uses a misleading one-size-fits-all micro-cap. Task-class budget profiles are now wired into the direct OR runner, so `quickchange` stays on a tight budget while larger bounded classes such as execution patch candidates can use a larger allowed spend corridor without being falsely rejected at `> 0.0020`.
+
+As of `2026-06-19 00:19 +02:00`, the first bounded live `janus-quickchange` retry through the corrected direct OpenRouter transport has succeeded. `openai/gpt-oss-20b` returned a valid one-file patch proposal with `finish_reason=stop`, real usage and cost capture, and passing `health_snapshot.py` telemetry ingestion. The direct worker path now has real operational evidence; Codex still remains the review and local-apply owner.
+
+As of `2026-06-19 00:19 +02:00`, the OpenRouter worker integration has a corrected transport path for `janus-quickchange`: real OpenRouter model slugs now route through a direct OpenRouter file-first capture runner instead of the ChatGPT-account-backed Codex CLI model-selection surface. Fixture validation passed through direct runner, dispatcher, structured patch extraction, telemetry JSONL, and `health_snapshot.py` ingestion. No live OR call was made in this fix.
+
+As of `2026-06-19 00:42 +02:00`, the first real `janus-quickchange` OR live attempt has produced a hard integration blocker instead of model-quality evidence. The bounded runner now reaches the real Codex sidecar process, but the requested external model `openai/gpt-oss-20b` is rejected by the current ChatGPT-account-backed Codex surface before any accepted delegated patch result can exist.
+
+As of `2026-06-19 00:19 +02:00`, the first real quickchange OpenRouter candidate is no longer abstract. A concrete one-file, one-intent live candidate brief now exists for the two chat placeholder lines in `frontend/index.html`, explicitly excluding the separate API-key placeholder wording change in the same file so the first OR run stays maximally narrow.
+
+As of `2026-06-19 00:08 +02:00`, the first bounded `janus-quickchange` OpenRouter live test package is now concretely planned. The rollout is no longer waiting on general model brainstorming: the first live path is fixed-model first, starts at `quickchange_patch_review`, and is prepared around `openai/gpt-oss-20b` with one-file allowlist discipline before any later Auto Router experiment.
+
+As of `2026-06-18 23:55 +02:00`, the bounded OR worker rollout has moved from infrastructure-complete to first model-assignment planning for real `janus-quickchange` use. A new fixed OpenRouter shortlist now exists for the first everyday quickchange tests, with `openai/gpt-oss-20b`, `openai/gpt-oss-120b`, and `qwen/qwen3-30b-a3b-instruct-2507` identified as the first cheap test corridor, while Auto Router remains intentionally deferred until fixed-model evidence exists.
+
 As of `2026-06-18 23:10 +02:00`, `TASK-SPEC19.4` is now documentation-synced as its own audit-cleared slice in `documentation/01_CENTRAL_TASK_REGISTRY.md` and `PROJECT_STATE.md`. The first everyday `janus-quickchange` bounded OR worker consumer is therefore closed not only in audit artifacts, but also in the Janus state surfaces that track sealed work.
 
 As of `2026-06-18 22:50 +02:00`, `TASK-SPEC19.4` passed final audit from the compact package `documentation/tasks/TASK-SPEC19.4_AUDIT_PACKAGE.md`. The first everyday `janus-quickchange` bounded OR worker consumer slice is audit-cleared and ready for `janus-documentation-update`; no dev chat history was used as a source.
+
+## OR Bounded Routing Docs Update Override
+Timestamp: `2026-06-19 02:00 +02:00`
+
+Current goal override: fold the accepted DeepSeek larger-class evidence into the shared bounded operator routing docs so everyday operator guidance reflects the validated `execution_patch_candidate` lane.
+
+Active phase override: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- updated the shared bounded operator playbook to include `execution_patch_candidate` as an everyday validated class
+- documented when the larger bounded patch-candidate lane should stay `1 = Codex` versus when `2 = Delegated` is appropriate
+- updated the enablement closeout so the accepted `deepseek/deepseek-v4-flash` evidence is visible in the shared workflow-ready summary
+
+Changed files:
+- `documentation/codex/model-routing/codex_bounded_operator_playbook_2026-06-14.md`
+- `documentation/codex/model-routing/codex_bounded_operator_enablement_closeout_2026-06-14.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- targeted reread of accepted DeepSeek larger-class evidence and shared bounded routing docs: PASS
+- routing wording and class-count consistency update: PASS
+- no new live OR call made
+
+Open risks:
+- This step updates routing guidance only; it does not expand delegated authority beyond bounded review-first classes.
+- Fixed-model and accepted-evidence boundaries still remain class-specific, not global OR approval.
+- No commit or push happened after this routing-docs update, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: use the updated shared operator playbook when explaining when bounded delegated patch-candidate work is appropriate.
+
+Next recommended step for Codex: keep future direct-OR worker/routing refinements anchored to the four validated bounded classes unless new explicit evidence is added.
+
+## OR Qwen Official Integration Research Override
+Timestamp: `2026-06-19 02:34 +02:00`
+
+Current goal override: verify from official Qwen and OpenRouter documentation which request-path hardening steps are justified before spending another bounded Qwen live retry.
+
+Active phase override: `janus-debug`, canonical state `HANDOFF`.
+
+Last Codex work:
+- reread the two captured Qwen quickchange live responses and confirmed the failure remains schema-envelope drift, not transport, usage, or cost
+- researched official OpenRouter structured-output, provider-routing, and response-healing guidance plus official Qwen non-thinking guidance
+- hardened the quickchange direct-OR request builder to use `provider.require_parameters=true`, `response-healing`, and a Qwen-specific `/no_think` hint for `qwen/*` models
+- added targeted local tests and recorded a compact debug note with source links
+
+Changed files:
+- `documentation/codex/model-routing/scripts/openrouter_direct_quickchange_patch_runner.py`
+- `documentation/codex/model-routing/tests/test_openrouter_direct_quickchange_patch_runner.py`
+- `documentation/codex/model-routing/quickchange_direct_or_qwen_official_integration_findings_2026-06-19.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- targeted `WHAT_I_LEARNED` search for Qwen/OpenRouter structured JSON patterns: PASS
+- official-source review for OpenRouter structured outputs, provider routing, response healing, and Qwen thinking mode: PASS
+- `python -m py_compile documentation/codex/model-routing/scripts/openrouter_direct_quickchange_patch_runner.py`: PASS
+- `python -m unittest discover -s documentation/codex/model-routing/tests -p test_openrouter_direct_quickchange_patch_runner.py`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-debug\scripts\validate_debug_result.py documentation/codex/model-routing/quickchange_direct_or_qwen_official_integration_findings_2026-06-19.md`: PASS
+- `python documentation/codex/scripts/record_skill_usage.py ...`: PASS
+- `git diff --check`: PASS with CRLF warnings only
+- staged-only guard `git diff --cached --name-only`: PASS
+- no new live OR call made
+
+Open risks:
+- This hardens only the request path; it does not yet prove that the live Qwen provider path will return the canonical Janus quickchange schema.
+- `response-healing` can repair malformed JSON syntax, but it cannot invent missing semantic fields or repair a truncated response.
+- The repo still contains many unrelated local changes outside this bounded debug slice.
+- No commit or push happened after this debug step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: if Qwen remains strategically important, approve one bounded live quickchange retry through the hardened request path before deciding whether Qwen stays in the active workhorse pool.
+
+Next recommended step for Codex: finish the local validations for the hardened request builder, then stop unless a fresh bounded Qwen retry is explicitly approved.
+
+## OR Qwen Hardened Live Retry Override
+Timestamp: `2026-06-19 02:43 +02:00`
+
+Current goal override: validate the official-doc-hardened Qwen quickchange request path with exactly one bounded live retry.
+
+Active phase override: `janus-debug`, canonical state `ESCALATED`.
+
+Last Codex work:
+- ran exactly one bounded live retry through the hardened quickchange runner as workflow `DIRECT-OR-QWEN-QUICKCHANGE-LIVE-003`
+- confirmed the previous schema-envelope failure did not recur because the request never reached a compatible provider endpoint
+- captured a new provider-routing blocker: OpenRouter returned HTTP `404` with `No endpoints found that can handle the requested parameters`
+- recorded the iteration-5 debug result and compact escalation package instead of making another Qwen call
+
+Changed files:
+- `documentation/codex/model-routing/quickchange_direct_or_qwen_live_retry_after_official_hardening_2026-06-19.md`
+- `.windsurf/tmp/skill5_escalation_qwen_quickchange_20260619-0245.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- exact live OR call count for this step: `1`: PASS
+- `DIRECT-OR-QWEN-QUICKCHANGE-LIVE-003` artifact capture: PASS
+- response body parse for provider error payload: PASS
+- `health_snapshot.py` ingestion against the resulting telemetry row: PASS
+- no second OR call made after the failure: PASS
+
+Open risks:
+- Qwen remains unresolved on this lane because strict provider compatibility currently blocks routing, while relaxed settings allow unstable schema envelopes.
+- This evidence is lane-specific and does not imply a global Qwen rejection across all future bounded classes.
+- No commit or push happened after this escalation step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: escalate the Qwen quickchange lane to a deeper provider/contract decision pass before spending more live Qwen calls.
+
+Next recommended step for Codex: switch to `5.5` high for one bounded architecture/debug decision on whether Qwen gets provider-specific branching, alternate structured output strategy, or is parked for this lane.
+
+## OR Qwen Agentic Integration Decision Override
+Timestamp: `2026-06-19 14:49 +02:00`
+
+Current goal override: choose a Qwen integration contract that matches how Qwen3-Coder is successfully used for agentic coding while preserving Janus review, cost, and governance gates.
+
+Active phase override: `janus-debug`, canonical state `HANDOFF`.
+
+Last Codex work:
+- reviewed the captured Qwen quickchange evidence and confirmed both successful responses contained semantically useful patch content
+- verified from official Qwen and OpenRouter documentation that Qwen3-Coder is intended for tool-driven agentic coding
+- identified OpenRouter's Responses API `openrouter:apply_patch` server tool as the correct first bounded patch-proposal contract
+- documented a two-lane Qwen architecture: Responses API patch proposals first, bounded read/search/patch/test agent loop later
+
+Changed files:
+- `documentation/codex/model-routing/qwen_agentic_integration_decision_2026-06-19.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- targeted `WHAT_I_LEARNED` search for Qwen/OpenRouter tool and structured-output patterns: PASS
+- official OpenRouter review for structured outputs, provider routing, tool calling, and Responses API apply-patch: PASS
+- official Qwen3-Coder agentic-coding documentation review: PASS
+- captured Qwen live response comparison against the proposed tool-driven contract: PASS
+- no new live OR call made
+
+Open risks:
+- OpenRouter's `openrouter:apply_patch` server tool is beta and must be fixture-validated before another live Qwen call.
+- The Responses API capture and parser path does not yet exist in the Janus runner.
+- Larger Qwen agent work still needs a separately bounded tool loop; the patch-proposal lane alone is not full repository autonomy.
+- No commit or push happened after this decision step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat Qwen as an active integration candidate, not a rejected model, and explain that its next test will use the agentic patch contract rather than strict Chat Completions JSON schema.
+
+Next recommended step for Codex: implement the fixture-only Responses API `openrouter:apply_patch` capture, parsing, allowlist validation, patch-applicability check, telemetry, and healthcheck path before requesting one new live Qwen retry.
+
+## OR Qwen Responses Apply Patch Fixture Override
+Timestamp: `2026-06-19 16:05 +02:00`
+
+Current goal override: prove the new Qwen Responses API `openrouter:apply_patch` lane locally before spending another bounded live Qwen call.
+
+Active phase override: `janus-debug`, canonical state `HANDOFF`.
+
+Last Codex work:
+- extended the shared file-first wrapper so `response_summary.json` now distinguishes Chat Completions vs Responses API captures and records Responses output item types
+- created a dedicated bounded Qwen Responses/apply-patch runner that sends real allowlisted file content, validates update-only patch scope, and checks patch applicability without applying anything
+- added fixture artifacts and unit tests for the new Qwen lane
+- ran one full fixture workflow `DIRECT-OR-QWEN-RESPONSES-FIXTURE-001` and confirmed telemetry plus `health_snapshot.py` ingestion pass
+
+Changed files:
+- `documentation/codex/model-routing/scripts/or_file_first_capture_wrapper.ps1`
+- `documentation/codex/model-routing/scripts/openrouter_qwen_apply_patch_runner.py`
+- `documentation/codex/model-routing/tests/test_openrouter_qwen_apply_patch_runner.py`
+- `documentation/codex/model-routing/sidecar-fixtures/qwen_apply_patch_fixture_prompt_2026-06-19.md`
+- `documentation/codex/model-routing/sidecar-fixtures/qwen_apply_patch_fixture_response_2026-06-19.json`
+- `documentation/codex/model-routing/qwen_responses_apply_patch_fixture_debug_result_2026-06-19.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python -m py_compile documentation/codex/model-routing/scripts/openrouter_qwen_apply_patch_runner.py`: PASS
+- `python -m unittest discover -s documentation/codex/model-routing/tests -p test_openrouter_qwen_apply_patch_runner.py`: PASS
+- regression unittest `test_openrouter_direct_quickchange_patch_runner.py`: PASS
+- fixture workflow `DIRECT-OR-QWEN-RESPONSES-FIXTURE-001`: PASS
+- fixture `response_summary.json` review for `api_shape=responses`, `finish_reason=stop`, usage, and `apply_patch_call` output: PASS
+- fixture telemetry JSONL ingestion through `health_snapshot.py`: PASS
+- no live OR call made
+
+Open risks:
+- This proves the contract locally only; no accepted live Qwen Responses/apply-patch evidence exists yet.
+- The patch-applicability check is intentionally bounded and currently validates update-only V4A patch sections.
+- Larger Qwen agent loops still need a later bounded read/search/patch/test path; this step covers the first patch-proposal lane only.
+- No commit or push happened after this fixture implementation step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: explain that Qwen is now technically ready for one bounded live Responses/apply-patch retry, but still not broadly approved beyond this lane.
+
+Next recommended step for Codex: request explicit approval for exactly one bounded live Qwen Responses/apply-patch quickchange retry using the new runner and the existing file-first capture governance.
+
+## OR Qwen Responses Apply Patch Live Retry Override
+Timestamp: `2026-06-19 16:42 +02:00`
+
+Current goal override: evaluate exactly one approved live Qwen Responses API `openrouter:apply_patch` retry and determine whether the new lane is blocked by tool semantics, parser seams, or cost/input-shaping.
+
+Active phase override: `janus-debug`, canonical state `HANDOFF`.
+
+Last Codex work:
+- ran exactly one approved live Qwen Responses/apply-patch retry as workflow `DIRECT-OR-QWEN-RESPONSES-LIVE-001`
+- confirmed that Qwen used the OpenRouter patch tool path rather than falling back to plain prose
+- identified two separate rejection causes from the same saved live artifact:
+  - the initial local parser expected `apply_patch_call` instead of the actual OpenRouter `openrouter:apply_patch` operation shape
+  - the full-file input strategy pushed the live request to `69856` input tokens and `0.023917075` USD, far above the `0.0020` cap
+- repaired the local parser seam and revalidated the saved live artifact locally, which shows the intended patch operations are semantically acceptable and the remaining blocker is cost/input-shaping
+
+Changed files:
+- `documentation/codex/model-routing/scripts/openrouter_qwen_apply_patch_runner.py`
+- `documentation/codex/model-routing/tests/test_openrouter_qwen_apply_patch_runner.py`
+- `documentation/codex/model-routing/or_healthcheck_telemetry_qwen_responses_apply_patch_2026-06-19_DIRECT-OR-QWEN-RESPONSES-LIVE-001.jsonl`
+- `documentation/codex/model-routing/qwen_responses_apply_patch_live_retry_debug_result_2026-06-19.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- exact live OR call count for this step: `1`: PASS
+- file-first live artifact capture for `DIRECT-OR-QWEN-RESPONSES-LIVE-001`: PASS
+- `response_summary.json` capture for `generation_id`, cost, and Responses shape: PASS
+- `health_snapshot.py` ingestion of the live telemetry row: PASS
+- local parser fix for actual OpenRouter tool-output shape: PASS
+- `python -m py_compile documentation/codex/model-routing/scripts/openrouter_qwen_apply_patch_runner.py`: PASS
+- `python -m unittest discover -s documentation/codex/model-routing/tests -p test_openrouter_qwen_apply_patch_runner.py`: PASS
+- saved-live local revalidation of the captured response body against the repaired parser: PASS for patch semantics; FAIL for cost cap
+- no second live OR call made
+
+Open risks:
+- The remaining blocker is no longer tool usage; it is bounded cost control because sending the full `frontend/index.html` content is too expensive for this lane.
+- The current quickchange Qwen Responses runner still needs input slicing or excerpt construction before another live retry is worth spending.
+- This is one lane-specific live result and does not imply a broad Qwen rejection for all future bounded classes.
+- No commit or push happened after this live-retry debug step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: explain that Qwen can use the patch tool correctly here, but the current input package is far too large and must be narrowed before another live attempt.
+
+Next recommended step for Codex: implement bounded input slicing for the Qwen quickchange Responses lane, then request approval for one fresh live retry only after the pre-call estimate is back under the allowed cap.
+
+## OR Qwen Responses Apply Patch Input Slicing Override
+Timestamp: `2026-06-19 17:03 +02:00`
+
+Current goal override: reduce the Qwen quickchange Responses lane input package enough that the next live retry has a realistic chance to stay inside the bounded cost cap.
+
+Active phase override: `janus-debug`, canonical state `HANDOFF`.
+
+Last Codex work:
+- implemented excerpt-based file input generation in the Qwen Responses runner
+- derived excerpt anchors directly from prompt target strings and merged only the matching line windows
+- added request-input telemetry so each run records whether full-file or excerpt mode was used and how large the request body was
+- validated the sliced lane locally with fixture workflow `DIRECT-OR-QWEN-RESPONSES-FIXTURE-002`
+
+Changed files:
+- `documentation/codex/model-routing/scripts/openrouter_qwen_apply_patch_runner.py`
+- `documentation/codex/model-routing/tests/test_openrouter_qwen_apply_patch_runner.py`
+- `documentation/codex/model-routing/qwen_responses_apply_patch_input_slicing_debug_result_2026-06-19.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python -m py_compile documentation/codex/model-routing/scripts/openrouter_qwen_apply_patch_runner.py`: PASS
+- `python -m unittest discover -s documentation/codex/model-routing/tests -p test_openrouter_qwen_apply_patch_runner.py`: PASS
+- regression unittest `test_openrouter_direct_quickchange_patch_runner.py`: PASS
+- fixture workflow `DIRECT-OR-QWEN-RESPONSES-FIXTURE-002`: PASS
+- request-input summary review: PASS
+- request body reduction from `149580` bytes to `3050` bytes: PASS
+- no new live OR call made
+
+Open risks:
+- The request is now much smaller locally, but only a fresh live retry can prove the real token/cost drop on OpenRouter.
+- The current excerpt logic depends on prompt anchors; if a future prompt lacks strong target strings, the runner will intentionally block on large files.
+- This step improves only the bounded quickchange Responses lane, not larger Qwen agent loops.
+- No commit or push happened after this slicing step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: explain that the economic blocker has a concrete local fix now, and the next meaningful question is whether to spend one fresh bounded live retry on the sliced lane.
+
+Next recommended step for Codex: request explicit approval for one fresh bounded live Qwen Responses/apply-patch retry using the sliced input path and a new pre-call estimate under the cap.
+
+## OR Qwen Responses Single Call Hardening Override
+Timestamp: `2026-06-19 17:20 +02:00`
+
+Current goal override: reduce the remaining multi-operation ambiguity on the Qwen quickchange Responses lane before spending another real live retry.
+
+Active phase override: `janus-debug`, canonical state `HANDOFF`.
+
+Last Codex work:
+- hardened the Qwen Responses request so it now sets `parallel_tool_calls=false`
+- capped the request to `max_tool_calls=1`
+- tightened the system and user instructions so the model is asked for one final unified-diff tool payload instead of excerpt snapshots
+- revalidated the hardened request shape locally with fixture workflow `DIRECT-OR-QWEN-RESPONSES-FIXTURE-003`
+
+Changed files:
+- `documentation/codex/model-routing/scripts/openrouter_qwen_apply_patch_runner.py`
+- `documentation/codex/model-routing/tests/test_openrouter_qwen_apply_patch_runner.py`
+- `documentation/codex/model-routing/qwen_responses_apply_patch_single_call_hardening_debug_result_2026-06-19.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python -m py_compile documentation/codex/model-routing/scripts/openrouter_qwen_apply_patch_runner.py`: PASS
+- `python -m unittest discover -s documentation/codex/model-routing/tests -p test_openrouter_qwen_apply_patch_runner.py`: PASS
+- hardened sliced fixture workflow `DIRECT-OR-QWEN-RESPONSES-FIXTURE-003`: PASS
+- no new live OR call made
+
+Open risks:
+- The next real proof still requires one fresh live retry on the hardened request path.
+- This hardening improves the bounded quickchange Responses lane only.
+- No commit or push happened after this hardening step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: explain that the lane is now locally hardened against the exact multi-call ambiguity seen in `DIRECT-OR-QWEN-RESPONSES-LIVE-002`.
+
+Next recommended step for Codex: request explicit approval for one fresh bounded live Qwen Responses/apply-patch retry on the sliced plus single-call-hardened path.
+
+## OR Qwen Quickchange Schema Compatibility Override
+Timestamp: `2026-06-19 02:12 +02:00`
+
+Current goal override: determine whether the earlier Qwen quickchange bounded failure was a real model-quality miss or only a local Janus schema-adapter mismatch.
+
+Active phase override: `janus-debug`, canonical state `HANDOFF`.
+
+Last Codex work:
+- inspected the saved `DIRECT-OR-QWEN-QUICKCHANGE-LIVE-001` response body and confirmed the model returned a bounded `file` + `diff` quickchange payload
+- added a narrow compatibility coercion path to the quickchange direct-OR runner
+- revalidated the saved live response in fixture mode and confirmed `validation_result=PASS` plus `health_snapshot.py` ingestion `PASS`
+
+Changed files:
+- `documentation/codex/model-routing/scripts/openrouter_direct_quickchange_patch_runner.py`
+- `documentation/codex/model-routing/quickchange_direct_or_qwen_schema_compatibility_fix_2026-06-19.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python -m py_compile documentation/codex/model-routing/scripts/openrouter_direct_quickchange_patch_runner.py`: PASS
+- fixture workflow `DIRECT-OR-QWEN-QUICKCHANGE-SCHEMA-FIXTURE-001`: PASS
+- local operator summary / validation summary / healthcheck summary review: PASS
+- no new live OR call made
+
+Open risks:
+- Qwen still does not yet have newly accepted live quickchange evidence under the hardened runner; only the saved live response has been revalidated locally.
+- This fix is intentionally narrow to the quickchange envelope and does not imply any broader schema relaxation for larger classes.
+- No commit or push happened after this debug step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: approve one bounded live Qwen quickchange retry if we want real accepted evidence for this family under the hardened runner.
+
+Next recommended step for Codex: keep the next Qwen step scoped to one quickchange live retry before considering any larger-class Qwen run.
+
+## OR Candidate Refresh Override
+Timestamp: `2026-06-19 01:08 +02:00`
+
+Current goal override: refresh the next real OpenRouter candidate pool so upcoming bounded OR tests use current strong coding families instead of over-repeating the first `gpt-oss-*` path.
+
+Active phase override: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- Reviewed the earlier `5.4` candidate shortlist and classification artifacts against the current direct-OR evidence.
+- Confirmed local inventory coverage for `openai/gpt-5.3-codex`, multiple `Qwen` coding rows, `Kimi`, `DeepSeek`, `GLM`, and `MiniMax`.
+- Created a refreshed candidate-planning note that maps the next serious family pool by task class and explicitly elevates `qwen/qwen3-coder-flash`, `deepseek/deepseek-v4-flash`, `moonshotai/kimi-k2.6`, `z-ai/glm-5.1`, and `openai/gpt-5.3-codex`.
+
+Changed files:
+- `documentation/codex/model-routing/or_workhorse_candidate_refresh_2026-06-19.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- local inventory slug presence check in `documentation/codex/openrouter-delegation/model_price_inventory_2026-06-12.json`: PASS
+- targeted artifact reread for prior `5.4` candidate shortlist and classification notes: PASS
+- current-source refresh via OpenRouter model pages and Artificial Analysis changelog: PASS
+- no live OR call made
+
+Open risks:
+- This refresh improves candidate selection, but it is still planning evidence only.
+- `minimax/minimax-m3` remains a hold candidate until its prior schema/provider concerns are revisited.
+- The current negative live evidence for `openai/gpt-oss-20b` on `execution_patch_candidate` still stands.
+- No commit or push happened after this refresh, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: approve a small family-first bounded comparison batch starting with `qwen/qwen3-coder-flash` and `deepseek/deepseek-v4-flash`, not another broad blind sweep.
+
+Next recommended step for Codex: stay on `5.4 mini` low for one more planning block if we only formalize the next queue, or switch to `5.4` medium before executing the first new bounded live comparisons.
+
+## OR Family-First Comparison Debug Override
+Timestamp: `2026-06-19 01:17 +02:00`
+
+Current goal override: convert the refreshed OR candidate pool into a validator-clean first comparison package so the next live calls are bounded, family-first, and directly comparable against the current `execution_patch_candidate` mismatch evidence.
+
+Active phase override: `janus-debug`, canonical state `HANDOFF`.
+
+Last Codex work:
+- Read the bound direct-OR success and failure notes plus the refreshed candidate note.
+- Ran a targeted `WHAT_I_LEARNED` lookup for structured OR fallback/reviewability patterns.
+- Inspected the direct OpenRouter quickchange and execution runner parameters to bind the next comparisons to real existing CLIs.
+- Created a formal debug result and comparison package that fixes the next two concrete comparisons to `qwen/qwen3-coder-flash`: first `quickchange_patch_review`, then `execution_patch_candidate` if the first comparison passes capture and validation.
+- Validated the debug package with the local `janus-debug` validator.
+
+Changed files:
+- `documentation/codex/model-routing/or_family_first_comparison_debug_plan_2026-06-19.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python documentation/codex/scripts/search_what_i_learned.py --query "OpenRouter structured JSON finish_reason error provider JSON execution_patch_candidate quickchange"`: PASS
+- targeted runner inspection for `openrouter_direct_quickchange_patch_runner.py` and `openrouter_direct_execution_patch_candidate_runner.py`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-debug\scripts\validate_debug_result.py documentation/codex/model-routing/or_family_first_comparison_debug_plan_2026-06-19.md`: PASS
+- no live OR call made
+
+Open risks:
+- This is a bounded comparison plan only; no new family has live evidence yet.
+- The current negative live evidence for `openai/gpt-oss-20b` on `execution_patch_candidate` remains the active mismatch anchor.
+- If `qwen/qwen3-coder-flash` fails already on quickchange capture or validation, the larger execution comparison should stop immediately.
+- No commit or push happened after this debug package, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: explicitly approve the first bounded family-first live comparison on `qwen/qwen3-coder-flash` for `quickchange_patch_review`.
+
+Next recommended step for Codex: stay on `5.4` medium and run exactly one bounded `quickchange_patch_review` direct-OR comparison on `qwen/qwen3-coder-flash`, then only proceed to the larger execution comparison if the first comparison passes.
+
+## OR Family-First Qwen Quickchange Comparison Override
+Timestamp: `2026-06-19 01:24 +02:00`
+
+Current goal override: run the first family-first live OR comparison on a known-good bounded class and determine whether `qwen/qwen3-coder-flash` clears the current Janus quickchange contract before any larger-class comparison is attempted.
+
+Active phase override: `janus-debug`, canonical state `NEEDS RETEST`.
+
+Last Codex work:
+- Reused the accepted bounded quickchange prompt and allowlist from the prior direct OR live success.
+- Ran exactly one live direct OR quickchange comparison on `qwen/qwen3-coder-flash`.
+- Captured full file-first artifacts, generation id, usage, actual cost, and healthcheck ingestion.
+- Read the returned proposal and the validation artifacts.
+- Classified the result as a schema-envelope mismatch rather than a transport, cost, or semantic-task failure.
+- Stopped before the larger `execution_patch_candidate` comparison, as required by the debug plan.
+
+Changed files:
+- `documentation/codex/model-routing/quickchange_direct_or_qwen_coder_flash_result_2026-06-19.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- one live direct OR quickchange comparison `DIRECT-OR-QWEN-QUICKCHANGE-LIVE-001`: completed
+- file-first artifact persistence: PASS
+- `generation_id` capture: PASS
+- usage capture: PASS
+- actual cost `0.000241020 <= 0.002000000`: PASS
+- `finish_reason=stop`: PASS
+- bounded validation: FAIL due to response schema mismatch
+- `health_snapshot.py` ingestion: PASS
+
+Open risks:
+- `qwen/qwen3-coder-flash` has not yet satisfied the Janus quickchange response envelope.
+- The result is promising semantically, but not safe enough to promote into the larger structured execution class yet.
+- We still need one more family comparison to learn whether the envelope issue is Qwen-specific or common across non-OpenAI coding families.
+- No commit or push happened after this live comparison, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: approve the same quickchange comparison lane for `deepseek/deepseek-v4-flash` before any larger-class family retry.
+
+Next recommended step for Codex: stay on `5.4` medium and run exactly one bounded `quickchange_patch_review` direct-OR comparison on `deepseek/deepseek-v4-flash`, then compare its schema discipline against the Qwen result.
+
+## OR Family-First DeepSeek Quickchange Comparison Override
+Timestamp: `2026-06-19 01:28 +02:00`
+
+Current goal override: compare a second modern OR family on the same smallest bounded lane and determine whether the current schema-discipline problem is family-specific or general before attempting another larger direct OR class.
+
+Active phase override: `janus-debug`, canonical state `PASS`.
+
+Last Codex work:
+- Looked up the current OpenRouter model page for `deepseek/deepseek-v4-flash` and confirmed the live comparison estimate stayed far below the quickchange cap.
+- Ran exactly one live direct OR quickchange comparison on `deepseek/deepseek-v4-flash`.
+- Captured full file-first artifacts, generation id, usage, actual cost, validation result, and healthcheck ingestion.
+- Compared the DeepSeek result against the earlier Qwen quickchange result and recorded the family split formally.
+
+Changed files:
+- `documentation/codex/model-routing/quickchange_direct_or_deepseek_v4_flash_result_2026-06-19.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- current OpenRouter model-page pricing check for `deepseek/deepseek-v4-flash`: PASS
+- one live direct OR quickchange comparison `DIRECT-OR-DEEPSEEK-QUICKCHANGE-LIVE-001`: PASS
+- file-first artifact persistence: PASS
+- `generation_id` capture: PASS
+- usage capture: PASS
+- actual cost `0.000086600 <= 0.002000000`: PASS
+- `finish_reason=stop`: PASS
+- bounded validation: PASS
+- `health_snapshot.py` ingestion: PASS
+
+Open risks:
+- This is still only quickchange-lane evidence; it does not yet prove larger-class structured patch-candidate fitness.
+- The repo remains broadly dirty outside this bounded OR evidence slice.
+- No commit or push happened after this live comparison, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: approve one bounded `execution_patch_candidate` direct-OR retry on `deepseek/deepseek-v4-flash`.
+
+Next recommended step for Codex: stay on `5.4` medium and run exactly one bounded larger-class direct OR comparison on `deepseek/deepseek-v4-flash`, using the same prechecked execution package family as the current `gpt-oss-20b` mismatch anchor.
+
+## OR Family-First DeepSeek Execution Comparison Override
+Timestamp: `2026-06-19 01:33 +02:00`
+
+Current goal override: test whether the strongest current non-OpenAI family candidate can satisfy the larger bounded `execution_patch_candidate` contract better than the current `gpt-oss-20b` anchor.
+
+Active phase override: `janus-debug`, canonical state `NEEDS RETEST`.
+
+Last Codex work:
+- Confirmed the current OpenRouter model-page pricing for `deepseek/deepseek-v4-flash` before the live call.
+- Ran exactly one live direct OR `execution_patch_candidate` comparison on the same prechecked input-package family used by the current mismatch anchor.
+- Captured full file-first artifacts, generation id, usage, actual cost, patch candidate result, validation summary, and healthcheck ingestion.
+- Read the returned patch candidate and classified the remaining failure as a narrow governance-contract wording mismatch, not a structural patch-generation failure.
+- Recorded the result as stronger than `gpt-oss-20b`, but still not accepted.
+
+Changed files:
+- `documentation/codex/model-routing/direct_or_execution_patch_candidate_deepseek_v4_flash_result_2026-06-19.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- current OpenRouter model-page pricing check for `deepseek/deepseek-v4-flash`: PASS
+- one live direct OR execution comparison `DIRECT-OR-DEEPSEEK-EXECUTION-LIVE-001`: completed
+- file-first artifact persistence: PASS
+- `generation_id` capture: PASS
+- usage capture: PASS
+- actual cost `0.000471744 <= 0.050000000`: PASS
+- `finish_reason=stop`: PASS
+- bounded file scope and patch structure: PASS
+- bounded validation: FAIL only on Codex-governance wording fields
+- `health_snapshot.py` ingestion: PASS
+
+Open risks:
+- The larger class is still not accepted because the output must preserve explicit Codex-owned manual validation and apply/reject language.
+- Another retry on the same class should only happen after prompt/governance wording tightening, not as a blind repeat.
+- No commit or push happened after this live comparison, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: approve one narrow wording-hardening step for the `execution_patch_candidate` direct OR prompt before any second DeepSeek larger-class retry.
+
+Next recommended step for Codex: stay on `5.4` medium and tighten the execution patch candidate prompt/contract around explicit `Codex must manually validate` and `Codex must apply or reject locally`, then stop for approval before any new live retry.
+
+## OR Execution Prompt Hardening Override
+Timestamp: `2026-06-19 01:38 +02:00`
+
+Current goal override: harden the larger direct OR execution prompt so the remaining DeepSeek mismatch is attacked at the exact Janus governance seam instead of by repeating a live call unchanged.
+
+Active phase override: `janus-debug`, canonical state `HANDOFF`.
+
+Last Codex work:
+- Updated the direct execution patch candidate request builder to inject exact Codex-ownership phrases for manual validation and local apply-or-reject authority.
+- Added explicit field-level contract guidance for `manual_validation_note` and `codex_acceptance_rule`.
+- Verified the runner still parses and executes.
+- Ran a local fixture validation on the hardened execution path and confirmed a `PASS` result with healthcheck ingestion.
+- Documented the hardening step as its own bounded debug artifact.
+
+Changed files:
+- `documentation/codex/model-routing/scripts/openrouter_direct_execution_patch_candidate_runner.py`
+- `documentation/codex/model-routing/direct_or_execution_patch_candidate_prompt_hardening_2026-06-19.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python -m py_compile documentation/codex/model-routing/scripts/openrouter_direct_execution_patch_candidate_runner.py`: PASS
+- local hardened fixture run `DIRECT-OR-DEEPSEEK-EXECUTION-HARDEN-FIXTURE-001`: PASS
+- `health_snapshot.py` ingestion on hardened fixture telemetry: PASS
+- no new live OR call made
+
+Open risks:
+- The next live DeepSeek retry is still unproven until we run it.
+- The repo remains broadly dirty outside this bounded OR evidence slice.
+- No commit or push happened after this prompt hardening, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: approve exactly one bounded second live `execution_patch_candidate` retry on `deepseek/deepseek-v4-flash` with the hardened prompt.
+
+Next recommended step for Codex: stay on `5.4` medium and run exactly one hardened larger-class DeepSeek live retry if the user approves.
+
+## OR Execution DeepSeek Hardened Retry Override
+Timestamp: `2026-06-19 01:44 +02:00`
+
+Current goal override: verify whether the hardened DeepSeek larger-class retry clears the previous Codex-ownership wording seam and determine whether any remaining blocker is still model-related or now internal to the local validation seam.
+
+Active phase override: `janus-debug`, canonical state `NEEDS RETEST`.
+
+Last Codex work:
+- Ran exactly one hardened second live `execution_patch_candidate` retry on `deepseek/deepseek-v4-flash`.
+- Captured full file-first artifacts, generation id, usage, actual cost, patch candidate result, validation summary, and healthcheck ingestion.
+- Confirmed the two previous Codex-ownership wording failures no longer occur.
+- Compared the remaining validation issue against the returned patch and identified a likely `.gitignore` normalization seam between allowlist/path extraction and validator comparison.
+- Recorded the result as a likely internal validator mismatch rather than a broad model failure.
+
+Changed files:
+- `documentation/codex/model-routing/direct_or_execution_patch_candidate_deepseek_v4_flash_hardened_retry_result_2026-06-19.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- one live hardened DeepSeek execution retry `DIRECT-OR-DEEPSEEK-EXECUTION-LIVE-002`: completed
+- file-first artifact persistence: PASS
+- `generation_id` capture: PASS
+- usage capture: PASS
+- actual cost `0.000735420 <= 0.050000000`: PASS
+- `finish_reason=stop`: PASS
+- Codex-ownership wording fields: PASS
+- remaining bounded validation: FAIL only on `changed_files` versus `patch_text` file matching
+- `health_snapshot.py` ingestion: PASS
+
+Open risks:
+- The remaining blocker now looks internal to the local validation seam, but that is still an inference until we inspect and test the validator path directly.
+- No additional live retry should be spent before the `.gitignore` normalization seam is checked locally.
+- No commit or push happened after this hardened live retry, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: approve a narrow local validation-seam debug on the execution runner to normalize `.gitignore` path matching before any further live retry.
+
+Next recommended step for Codex: stay on `5.4` medium and inspect/fix the `changed_files` versus `patch_text` normalization seam locally, then validate with fixture data only.
+
+## OR Execution Validator Normalization Fix Override
+Timestamp: `2026-06-19 01:49 +02:00`
+
+Current goal override: verify whether the remaining DeepSeek larger-class rejection was caused by local path normalization rather than by the model output itself.
+
+Active phase override: `janus-debug`, canonical state `PASS`.
+
+Last Codex work:
+- Fixed the local execution runner normalization seam so `.gitignore` keeps its leading dot.
+- Normalized patch-file extraction through the same path logic used for `changed_files`.
+- Confirmed the runner still compiles.
+- Confirmed the normalization behavior directly with function-level probes.
+- Re-ran the hardened execution fixture path successfully.
+- Re-validated the already captured `DIRECT-OR-DEEPSEEK-EXECUTION-LIVE-002` patch candidate locally with the fixed validator logic and confirmed the previous issue disappears.
+
+Changed files:
+- `documentation/codex/model-routing/scripts/openrouter_direct_execution_patch_candidate_runner.py`
+- `documentation/codex/model-routing/direct_or_execution_patch_candidate_validator_normalization_fix_2026-06-19.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python -m py_compile documentation/codex/model-routing/scripts/openrouter_direct_execution_patch_candidate_runner.py`: PASS
+- direct function probes for `.gitignore` normalization and patch extraction: PASS
+- local fixture run `DIRECT-OR-DEEPSEEK-EXECUTION-NORMALIZE-FIXTURE-001`: PASS
+- `health_snapshot.py` ingestion on normalization fixture telemetry: PASS
+- local re-validation of existing live artifact `DIRECT-OR-DEEPSEEK-EXECUTION-LIVE-002` with fixed validator logic: PASS
+- no new live OR call made
+
+Open risks:
+- The captured live artifact has now been locally vindicated, but the formal acceptance policy for reclassifying earlier rejected live evidence after validator repair should still be documented explicitly.
+- No commit or push happened after this normalization fix, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: approve a documentation/debug classification step that reclassifies the hardened second DeepSeek larger-class live retry as accepted evidence after the validator repair.
+
+Next recommended step for Codex: stay on `5.4` medium and document the reclassification instead of spending another live call on the same class.
+
+## OR Execution DeepSeek Reclassification Override
+Timestamp: `2026-06-19 01:53 +02:00`
+
+Current goal override: convert the repaired-validator finding into formal bounded evidence so the DeepSeek larger-class live retry can be reused without spending another live call on the same seam.
+
+Active phase override: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- Created a formal reclassification note for `DIRECT-OR-DEEPSEEK-EXECUTION-LIVE-002`.
+- Recorded that the prior rejection was caused by the repaired `.gitignore` normalization seam, not by new negative model evidence.
+- Declared the hardened second DeepSeek larger-class live retry accepted as bounded execution-patch-candidate evidence.
+
+Changed files:
+- `documentation/codex/model-routing/direct_or_execution_patch_candidate_deepseek_v4_flash_reclassification_2026-06-19.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- relied on the immediately preceding validator-fix evidence and live-artifact re-validation: PASS
+- no new live OR call made
+
+Open risks:
+- This is still bounded local evidence only, not production routing authority.
+- No commit or push happened after this reclassification step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: review whether the accepted DeepSeek larger-class evidence is strong enough to move into the next operator-choice or routing-planning artifact.
+
+Next recommended step for Codex: stay on `5.4` low to medium and use the accepted DeepSeek larger-class evidence in the next planning/update step instead of retesting the same seam.
+
+## Quickchange Direct OR Transport Override
+Timestamp: `2026-06-19 00:19 +02:00`
+
+Current goal override: replace the blocked Codex-CLI model-slug transport for `janus-quickchange` OpenRouter workers with a direct OpenRouter transport that still keeps Codex as reviewer, validator, local apply owner, and governance holder.
+
+Active phase override: `janus-debug`, canonical state `PASS`.
+
+Last Codex work:
+- Added a direct OpenRouter quickchange patch-proposal runner that builds a bounded request body, calls the file-first OpenRouter capture wrapper, extracts a structured patch proposal, validates allowlist and touched-file gates, writes telemetry JSONL, and runs healthcheck ingestion.
+- Updated the bounded delegation dispatcher so `quickchange_patch_review` with an OpenRouter model slug such as `openai/gpt-oss-20b` uses the direct OpenRouter runner instead of trying to pass that slug through the ChatGPT-account-backed Codex sidecar surface.
+- Corrected the file-first wrapper to use the documented `X-OpenRouter-Title` header.
+- Added a local fixture response and validated both the direct runner and dispatcher path without making a live OR call.
+
+Changed files:
+- `documentation/codex/model-routing/scripts/openrouter_direct_quickchange_patch_runner.py`
+- `documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py`
+- `documentation/codex/model-routing/scripts/or_file_first_capture_wrapper.ps1`
+- `documentation/codex/model-routing/sidecar-fixtures/direct_or_quickchange_fixture_response_2026-06-19.json`
+- `documentation/codex/model-routing/quickchange_direct_or_transport_result_2026-06-19.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python -m py_compile documentation\codex\model-routing\scripts\openrouter_direct_quickchange_patch_runner.py documentation\codex\model-routing\scripts\codex_bounded_delegation_dispatcher.py`: PASS
+- direct OpenRouter quickchange runner with local fixture `DIRECT-OR-QUICKCHANGE-FIXTURE-001`: PASS
+- dispatcher `quickchange_patch_review` with OpenRouter model slug and local fixture `DIRECT-OR-DISPATCH-FIXTURE-001`: PASS
+- generated telemetry JSONL ingested by `health_snapshot.py`: PASS
+- no live OR call made
+
+Open risks:
+- The direct OpenRouter live path still needs exactly one explicit live retry before it can count as real operational evidence.
+- OR output is still proposal-only; Codex must review and locally apply any accepted patch.
+- The broader repository remains dirty outside this slice.
+- No commit or push happened after this transport fix yet, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: approve one bounded live direct-OR quickchange patch-proposal retry using the same one-file placeholder candidate and `openai/gpt-oss-20b`, or first inspect the new result note.
+
+Next recommended step for Codex: stay on `5.4` medium and run exactly one direct-OR live quickchange retry through the dispatcher with `--execute-direct-or` after explicit user approval.
+
+## Quickchange Direct OR Live Retry Override
+Timestamp: `2026-06-19 00:19 +02:00`
+
+Current goal override: verify the corrected direct OpenRouter quickchange transport under one real bounded live call, with full file-first response capture and healthcheck telemetry ingestion.
+
+Active phase override: `janus-debug`, canonical state `PASS`.
+
+Last Codex work:
+- Ran exactly one live `quickchange_patch_review` OpenRouter call through the corrected direct transport via the bounded dispatcher.
+- Captured real response artifacts including `generation_id`, usage, and actual cost.
+- Validated the returned patch proposal against allowlist, touched-file cap, and cost gates.
+- Ingested the live telemetry JSONL through `health_snapshot.py`.
+- Recorded the live result as an accepted proposal-only evidence note.
+
+Changed files:
+- `documentation/codex/model-routing/quickchange_direct_or_live_retry_result_2026-06-19.md`
+- `documentation/codex/model-routing/direct-or-runs/DIRECT-OR-DISPATCH-LIVE-001/`
+- `documentation/codex/model-routing/or_healthcheck_telemetry_direct_or_quickchange_2026-06-19_DIRECT-OR-DISPATCH-LIVE-001.jsonl`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- one real direct OpenRouter quickchange retry `DIRECT-OR-DISPATCH-LIVE-001`: PASS
+- `finish_reason=stop`: PASS
+- actual cost `0.00014443` under cap `0.0020`: PASS
+- one-file allowlist validation for `frontend/index.html`: PASS
+- telemetry JSONL parse: PASS
+- `health_snapshot.py --or-telemetry-jsonl ...`: PASS
+
+Open risks:
+- This is accepted bounded proposal evidence, not broad OR write authority.
+- Codex still needs to review and locally apply or reject the proposed diff.
+- The broader repository remains dirty outside this slice.
+- No commit or push happened after this live retry, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: decide whether the exact accepted quickchange proposal should now be locally applied by Codex, or whether we should use this success to promote the same direct OR pattern into the next bounded task class.
+
+Next recommended step for Codex: stay on `5.4` medium and either perform Codex-owned review/apply of the accepted `frontend/index.html` placeholder patch or wire the direct OR path into the next bounded consumer.
+
+## OR Task Budget Profiles Override
+Timestamp: `2026-06-19 00:19 +02:00`
+
+Current goal override: remove the false global-cap assumption from the direct OR runner so larger bounded OR task classes are not prematurely blocked by the tiny quickchange budget.
+
+Active phase override: `janus-debug`, canonical state `PASS`.
+
+Last Codex work:
+- Added task-class OR budget profiles for `quickchange`, `documentation_draft`, `debug_hypothesis_review`, `test_result_triage_review`, `execution_patch_candidate`, and `execution_write_apply_candidate`.
+- Updated the direct OpenRouter runner so it loads the configured budget profile from task class when no explicit cap override is passed.
+- Updated the bounded dispatcher so it forwards the bounded task class into the direct OR runner.
+- Fixture-validated both a normal quickchange budget case and a larger `execution_patch_candidate` estimate that would have been blocked by the old global `0.0020` quickchange cap.
+
+Changed files:
+- `documentation/codex/model-routing/config/or_task_budget_profiles_2026-06-19.json`
+- `documentation/codex/model-routing/scripts/openrouter_direct_quickchange_patch_runner.py`
+- `documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py`
+- `documentation/codex/model-routing/or_task_budget_profiles_2026-06-19.md`
+- `documentation/codex/model-routing/or_task_budget_profiles_result_2026-06-19.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python -m py_compile documentation\codex\model-routing\scripts\openrouter_direct_quickchange_patch_runner.py documentation\codex\model-routing\scripts\codex_bounded_delegation_dispatcher.py`: PASS
+- fixture validation `DIRECT-OR-BUDGET-QUICKCHANGE-001`: PASS
+- fixture validation `DIRECT-OR-BUDGET-EXECUTION-001` with estimated cost `0.020000000`: PASS
+- no live OR call made in this budget-profile change
+
+Open risks:
+- Relative economics gating against the expected Codex-equivalent path is not implemented yet; budgeting is still absolute, but now class-aware.
+- The broader repository remains dirty outside this slice.
+- No commit or push happened after this budget-profile change, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: promote the direct OR transport into the next bounded consumer class with the new budget-profile system, then add a second economics gate that compares OR expected cost against the Codex path.
+
+Next recommended step for Codex: stay on `5.4` medium and extend the direct OR worker path from quickchange proposal work into the next bounded class instead of continuing under the old sidecar model-selection path.
+
+## Direct OR Execution Patch Candidate Override
+Timestamp: `2026-06-19 00:19 +02:00`
+
+Current goal override: prove that the corrected direct OpenRouter worker path can serve not only tiny quickchange proposals, but also the first larger proposal-only code patch candidate class for `janus-executioner`.
+
+Active phase override: `janus-debug`, canonical state `PASS`.
+
+Last Codex work:
+- Added a direct OpenRouter execution patch candidate runner that consumes the prechecked input package, builds a structured OpenRouter request, validates the returned bounded patch candidate contract, writes telemetry, and runs healthcheck ingestion.
+- Updated the bounded dispatcher so `execution_patch_candidate` can route through direct OpenRouter transport when an OpenRouter model slug is selected.
+- Fixture-validated both the new direct runner and the dispatcher path using the existing `BACKLOG-107-R1.1` prechecked execution input package.
+
+Changed files:
+- `documentation/codex/model-routing/scripts/openrouter_direct_execution_patch_candidate_runner.py`
+- `documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py`
+- `documentation/codex/model-routing/execution-review-fixtures/direct_or_execution_patch_candidate_fixture_response_2026-06-19.json`
+- `documentation/codex/model-routing/direct_or_execution_patch_candidate_enablement_2026-06-19.md`
+- `documentation/codex/model-routing/execution-direct-or-runs/DIRECT-OR-EXECUTION-FIXTURE-001/`
+- `documentation/codex/model-routing/execution-direct-or-runs/DIRECT-OR-EXECUTION-DISPATCH-FIXTURE-001/`
+- `documentation/codex/model-routing/or_healthcheck_telemetry_direct_or_execution_patch_2026-06-19_DIRECT-OR-EXECUTION-FIXTURE-001.jsonl`
+- `documentation/codex/model-routing/or_healthcheck_telemetry_direct_or_execution_patch_2026-06-19_DIRECT-OR-EXECUTION-DISPATCH-FIXTURE-001.jsonl`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python -m py_compile documentation\codex\model-routing\scripts\openrouter_direct_execution_patch_candidate_runner.py documentation\codex\model-routing\scripts\codex_bounded_delegation_dispatcher.py`: PASS
+- direct execution patch candidate fixture `DIRECT-OR-EXECUTION-FIXTURE-001`: PASS
+- dispatcher execution patch candidate fixture `DIRECT-OR-EXECUTION-DISPATCH-FIXTURE-001`: PASS
+- telemetry JSONL + `health_snapshot.py` ingestion: PASS
+- no live OR call made in this enablement step
+
+Open risks:
+- This is still fixture-backed evidence; the first live `execution_patch_candidate` retry has not run yet.
+- Codex remains apply/reject and validation owner; no broad OR write authority exists.
+- The broader repository remains dirty outside this slice.
+- No commit or push happened after this enablement step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: approve one bounded live direct OR `execution_patch_candidate` run on an already prechecked task slice, then compare the candidate against the existing Codex review contract before any apply decision.
+
+Next recommended step for Codex: stay on `5.4` medium and run exactly one bounded live direct OR execution patch candidate through the dispatcher after explicit user approval.
+
+## Direct OR Execution Live Timeout Override
+Timestamp: `2026-06-19 00:40 +02:00`
+
+Current goal override: classify the first bounded live direct OR `execution_patch_candidate` attempt correctly, harden the transport timeout at the wrapper layer, and avoid making a silent second live call.
+
+Active phase override: `janus-debug`, canonical state `BLOCKED`.
+
+Last Codex work:
+- Ran exactly one bounded live direct OR `execution_patch_candidate` attempt on `DIRECT-OR-EXECUTION-DISPATCH-LIVE-001`.
+- Confirmed that the attempt did not produce response artifacts or accepted telemetry before the outer timeout fired.
+- Inspected the process chain and confirmed the wrapper lacked an internal HTTP timeout boundary.
+- Hardened the file-first wrapper with explicit `Timeout` and `ReadWriteTimeout` support using `RequestTimeoutMs`.
+- Re-validated the execution patch candidate direct OR path with a local fixture after timeout hardening.
+- Documented the live attempt as timeout-blocked debug evidence only.
+
+Changed files:
+- `documentation/codex/model-routing/scripts/or_file_first_capture_wrapper.ps1`
+- `documentation/codex/model-routing/direct_or_execution_patch_candidate_live_timeout_debug_2026-06-19.md`
+- `documentation/codex/model-routing/execution-direct-or-runs/DIRECT-OR-EXECUTION-FIXTURE-TIMEOUT-HARDEN-001/`
+- `documentation/codex/model-routing/or_healthcheck_telemetry_direct_or_execution_patch_2026-06-19_DIRECT-OR-EXECUTION-FIXTURE-TIMEOUT-HARDEN-001.jsonl`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- one live direct OR execution patch candidate attempt `DIRECT-OR-EXECUTION-DISPATCH-LIVE-001`: BLOCKED by timeout before response artifact capture
+- PowerShell parse validation for `or_file_first_capture_wrapper.ps1`: PASS
+- post-hardening fixture validation `DIRECT-OR-EXECUTION-FIXTURE-TIMEOUT-HARDEN-001`: PASS
+- post-hardening telemetry JSONL + `health_snapshot.py` ingestion: PASS
+
+Open risks:
+- The first live execution patch candidate attempt still lacks accepted telemetry evidence.
+- A second live retry would require explicit user approval because one live OR call has already been spent for this class.
+- The broader repository remains dirty outside this slice.
+- No commit or push happened after this timeout-hardening step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: explicitly approve or reject one additional bounded live `execution_patch_candidate` retry now that the wrapper timeout hardening is in place.
+
+Next recommended step for Codex: stay on `5.4` medium and make no second live OR call until the user explicitly approves the retry.
+
+## Direct OR Execution Live Retry Override
+Timestamp: `2026-06-19 00:44 +02:00`
+
+Current goal override: evaluate exactly one post-hardening live direct OR `execution_patch_candidate` retry and classify whether the class is blocked by transport or by model/provider output reliability.
+
+Active phase override: `janus-debug`, canonical state `BLOCKED`.
+
+Last Codex work:
+- Ran exactly one additional bounded live direct OR `execution_patch_candidate` retry on `DIRECT-OR-EXECUTION-DISPATCH-LIVE-002`.
+- Captured full response artifacts, usage, generation id, and healthcheck-ingested telemetry.
+- Confirmed the transport now returns successfully after timeout hardening.
+- Confirmed the returned result is still unacceptable for the bounded execution patch candidate contract because the provider returned `finish_reason=error` and no valid structured JSON payload.
+- Documented the result as a real live negative evidence point for the current model/provider combination on this class.
+
+Changed files:
+- `documentation/codex/model-routing/direct_or_execution_patch_candidate_live_retry_result_2026-06-19.md`
+- `documentation/codex/model-routing/execution-direct-or-runs/DIRECT-OR-EXECUTION-DISPATCH-LIVE-002/`
+- `documentation/codex/model-routing/or_healthcheck_telemetry_direct_or_execution_patch_2026-06-19_DIRECT-OR-EXECUTION-DISPATCH-LIVE-002.jsonl`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- one live direct OR execution patch candidate retry `DIRECT-OR-EXECUTION-DISPATCH-LIVE-002`: FAIL
+- HTTP response capture after timeout hardening: PASS
+- `generation_id` capture: PASS
+- telemetry JSONL parse: PASS
+- `health_snapshot.py --or-telemetry-jsonl ...`: PASS
+- bounded validation result: FAIL because no valid structured JSON patch candidate was produced
+
+Open risks:
+- `execution_patch_candidate` is not yet evidence-backed for `openai/gpt-oss-20b` on the current provider path.
+- This is a real negative evidence point for the current model/class combination, not a transport failure.
+- The broader repository remains dirty outside this slice.
+- No commit or push happened after this live retry result, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: keep `execution_patch_candidate` canonical on Codex for now, or explicitly approve one different stronger OR candidate for this class if broader live exploration is desired.
+
+Next recommended step for Codex: stay on `5.4` medium and do not keep retrying the same model/class combination; either route this class back to Codex or test a different OR model under the same bounded contract.
 
 ## TASK-SPEC19.4 Documentation Update Override
 Timestamp: `2026-06-18 23:10 +02:00`
@@ -37,6 +978,140 @@ Open risks:
 Next recommended step for ChatGPT: use `janus-git-governance` if the `TASK-SPEC19.4` closure should now be checkpointed as a scoped commit, or stop here if local documentation sync is sufficient for now.
 
 Next recommended step for Codex: stay on `5.4` low to medium for a scoped git-governance checkpoint; do not widen into release, production routing, or broader OR rollout work from this closeout step alone.
+
+## Quickchange OR Candidate Planning Override
+Timestamp: `2026-06-18 23:55 +02:00`
+
+Current goal override: assign the first cheap fixed OpenRouter candidates for real `janus-quickchange` live tests now that the bounded worker infrastructure and first quickchange consumer slice are already closed.
+
+Active phase override: `janus-skill-router`, canonical state `PASS`.
+
+Last Codex work:
+- Re-read the bounded quickchange consumer artifacts and delegation roadmap to keep the first live model assignment aligned with the already accepted bounded worker contract.
+- Reviewed current OpenRouter documentation for Auto Router restrictions and current model pages for price/capability metadata.
+- Created a first fixed-model shortlist artifact for `janus-quickchange` instead of jumping directly to Auto Router.
+
+Changed files:
+- `documentation/codex/model-routing/quickchange_or_fixed_candidate_shortlist_2026-06-18.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- focused bounded-worker artifact reread: PASS
+- current OpenRouter docs review for Auto Router allowed models and `cost_quality_tradeoff`: PASS
+- current OpenRouter model-page review for shortlist candidates and hold models: PASS
+- no live OR calls made
+
+Open risks:
+- pricing metadata is current, but quality evidence for quickchange still needs real bounded live runs
+- the broader repository remains dirty outside this planning slice
+- no commit or push has happened after this shortlist artifact, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: prepare the first bounded `janus-quickchange` live test package using the fixed candidate order `openai/gpt-oss-20b`, `openai/gpt-oss-120b`, then `qwen/qwen3-30b-a3b-instruct-2507`.
+
+Next recommended step for Codex: stay on `5.4` medium and prepare the first live `quickchange_patch_review` run with fixed-model evidence first; keep Auto Router deferred until accepted fixed-model runs exist.
+
+## Quickchange OR First Live Package Override
+Timestamp: `2026-06-19 00:08 +02:00`
+
+Current goal override: convert the new fixed quickchange shortlist into one exact first live test package so the first real OpenRouter quickchange run can happen under explicit bounded gates instead of open-ended model discussion.
+
+Active phase override: `janus-skill-router`, canonical state `PASS`.
+
+Last Codex work:
+- Verified that the current quickchange dispatcher path already accepts `or` / `openrouter` aliases and can pass a selected delegated model through the bounded sidecar runner.
+- Confirmed the delegated quickchange path is already enforcing allowlist, touched-file cap, and delete/rename/move tripwires.
+- Created a dedicated first-live-package planning artifact that fixes the first test order, the preferred first task shape, the first dispatcher command shape, and the reject/fallback conditions.
+
+Changed files:
+- `documentation/codex/model-routing/quickchange_or_first_live_test_package_plan_2026-06-18.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- focused runner inspection for quickchange delegated path: PASS
+- operator alias support for `2`, `or`, `openrouter`: PASS
+- allowlist/touched-file/delete-rename tripwire support review: PASS
+- no live OR calls made
+
+Open risks:
+- the first live quickchange evidence run still needs an exact real tiny request package
+- real cost and patch quality evidence still remain unproven until the first bounded live run happens
+- no commit or push happened after this planning artifact, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: prepare one exact real tiny quickchange brief and mini test plan, then request approval for the first live `openai/gpt-oss-20b` quickchange OR run.
+
+Next recommended step for Codex: stay on `5.4` medium and bind the first real one-file quickchange request to the new package plan before any live run approval is requested.
+
+## Quickchange OR First Live Candidate Override
+Timestamp: `2026-06-19 00:19 +02:00`
+
+Current goal override: bind one exact real quickchange request to the first OR live corridor so the first OpenRouter call can be approved or rejected against a precise one-file, one-intent brief.
+
+Active phase override: `janus-quickchange`, canonical state `PASS`.
+
+Last Codex work:
+- Inspected the current `frontend/index.html` diff and split the naturally small chat-placeholder wording change away from the separate API-key placeholder wording change in the same file.
+- Chose the two identical chat placeholder lines as the first real OR candidate because they preserve one intent, one file, one cluster.
+- Created a dedicated first-live candidate brief with exact scope, exact checks, and exact reject conditions.
+
+Changed files:
+- `documentation/codex/model-routing/quickchange_or_first_live_candidate_brief_2026-06-19.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `git diff -- frontend/index.html`: PASS for candidate inspection
+- focused placeholder search in `frontend/index.html`: PASS
+- no live OR calls made
+
+Open risks:
+- the live candidate is ready, but the first OpenRouter call still needs explicit user approval
+- `frontend/index.html` already contains an additional unrelated wording diff that must stay out of the first OR acceptance scope
+- no commit or push happened after this candidate-binding step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: request approval for exactly one live `quickchange_patch_review` OR run using `openai/gpt-oss-20b` on the two chat placeholder lines only.
+
+Next recommended step for Codex: stay on `5.4` medium and show the bounded `1 = Codex` / `2 = OpenRouter` gate for this exact candidate if the user wants to execute the first live run now.
+
+## Quickchange OR First Live Attempt Override
+Timestamp: `2026-06-19 00:42 +02:00`
+
+Current goal override: determine whether the first exact `janus-quickchange` OpenRouter live candidate can actually run through the current Codex sidecar surface.
+
+Active phase override: `janus-debug`, canonical state `BLOCKED`.
+
+Last Codex work:
+- Fixed two local runner issues in `codex_sidecar_skill_runner.ps1` so the delegated process path can reach Codex execution on Windows.
+- Fixed delegated model pass-through so `quickchange_patch_review` no longer silently falls back to `gpt-5.4` when a selected external model is declared.
+- Executed the approved first real quickchange delegated attempt for `openai/gpt-oss-20b`.
+- Captured the hard blocker: the current Codex execution surface rejects `openai/gpt-oss-20b` with `The 'openai/gpt-oss-20b' model is not supported when using Codex with a ChatGPT account.`
+
+Changed files:
+- `documentation/codex/model-routing/scripts/codex_sidecar_skill_runner.ps1`
+- `documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py`
+- `documentation/codex/model-routing/sidecar-fixtures/quickchange_or_live_prompt_2026-06-19.md`
+- `documentation/codex/model-routing/quickchange_or_fixed_candidate_shortlist_2026-06-18.md`
+- `documentation/codex/model-routing/quickchange_or_first_live_test_package_plan_2026-06-18.md`
+- `documentation/codex/model-routing/quickchange_or_first_live_candidate_brief_2026-06-19.md`
+- `documentation/codex/model-routing/quickchange_or_first_live_attempt_result_2026-06-19.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- local sidecar runner dry-run after wrapper fix: PASS
+- delegated prompt gate with selected model / estimate / confidence: PASS
+- one approved delegated live attempt: BLOCKED at model support boundary
+- live artifact review: PASS for blocker capture
+
+Open risks:
+- the current ChatGPT-account-backed Codex sidecar surface may not support the intended external OpenRouter model identifiers at all
+- no accepted OR quickchange evidence exists yet for this path
+- no commit or push happened after this blocked attempt, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: route this into a bounded `janus-debug` or architecture follow-up to decide whether the worker transport must move to a direct OpenRouter path instead of Codex-side model selection.
+
+Next recommended step for Codex: stay on `5.4` medium and isolate the model-access boundary as the primary blocker; do not interpret this result as a quickchange prompt failure.
 
 ## TASK-SPEC19.4 Final Audit Override
 Timestamp: `2026-06-18 22:50 +02:00`
