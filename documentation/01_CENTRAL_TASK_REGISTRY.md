@@ -4,6 +4,19 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-SPEC20.1 - Establish separate top-level Dev governance home
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-SPEC20.1_final_audit.md` (PASS)
+- **Spec**: `documentation/SPEC/Spec Done/20_separate_dev_or_infrastructure_governance.md`
+- **Parent Task**: `documentation/tasks/TASK-SPEC20_separate_dev_or_infrastructure_governance.md`
+- **Task Breakdown**: `documentation/tasks/TASK-SPEC20.1_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-SPEC20.1_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-SPEC20.1_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-SPEC20.1_AUDIT_PACKAGE.md`
+- **Validation**: `TASK-SPEC20.1` etabliert den ersten getrennten Dev-Governance-Home-Slice fuer die spaetere strikte Trennung von Janus-Produktarbeit und Dev- beziehungsweise OR-Infrastrukturarbeit. Der neue Top-Level-Bereich `development/` liegt ausserhalb von `documentation/` und fuehrt mit `README`, `DEV_STATE` und `DEV_BACKLOG` erstmals eine eigene Source-of-Truth fuer Infrastrukturarbeit ein, ohne bereits Janus-Backlog-Migration oder Janus-Governance-Haertung vorwegzunehmen. Final Audit PASS mit fokussierter Diff-, Konsistenz- und Validator-Evidenz.
+- **Changed Files**: `development/README.md`, `development/DEV_STATE.md`, `development/DEV_BACKLOG.md`, `documentation/tasks/TASK-SPEC20.1_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC20.1_execution_result.md`, `documentation/tasks/TASK-SPEC20.1_final_audit.md`, `documentation/SPEC/Spec Done/20_separate_dev_or_infrastructure_governance.md`.
+
 ### TASK-SPEC19 - Bounded OR Worker Mode for Janus Skills
 
 - **Status**: DONE

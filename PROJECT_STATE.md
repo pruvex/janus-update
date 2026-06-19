@@ -1,6 +1,6 @@
 ﻿# PROJECT_STATE.md (Diamond-OS V0.4.31-beta.82)
 **Zweck:** Schlanke Triage-Uebersicht fuer den aktuellen Projektzustand.
-**Aktualisiert:** 2026-06-18 (TASK-SPEC19.4 als erster everyday janus-quickchange bounded OR worker consumer final auditiert und dokumentiert - PASS; Registry, Project State und CURRENT_STATE auf den Slice-Closeout synchronisiert)
+**Aktualisiert:** 2026-06-19 (TASK-SPEC20.1 als erster separater Dev-Governance-Home-Slice final auditiert und dokumentiert - PASS; Registry, Project State, WHAT_I_LEARNED und CURRENT_STATE auf den Slice-Closeout synchronisiert)
 
 ---
 
@@ -8,6 +8,7 @@
 
 | Epic / Task | Status | Kurzstand |
 |---|---|---|
+| **TASK-SPEC20.1 Separate top-level Dev governance home** | SEALED | Der erste reale Trennungsslice zwischen Janus-Produktarbeit und Dev-/OR-Infrastruktur ist jetzt final auditiert und dokumentiert. Der neue Top-Level-Bereich `development/` fuehrt mit `README`, `DEV_STATE` und `DEV_BACKLOG` erstmals eine eigene Source-of-Truth fuer Infrastrukturarbeit ausserhalb der Janus-Produktdoku ein. Der Slice bleibt bewusst schmal: keine Janus-Backlog-Migration, keine `AGENTS.md`-Haertung und keine Workflow-Playbook-Aenderung in diesem Block. Validation: `git diff --check` PASS; Dev-Consistency-`rg` PASS; execution-result validator PASS; final-audit validator PASS. |
 | **TASK-SPEC19.4 First everyday janus-quickchange bounded OR worker consumer** | SEALED | Der erste echte alltagstaugliche `janus-quickchange` Consumer auf der bounded OR worker Foundation ist jetzt final auditiert und dokumentiert. Der sichtbare Operatorpfad bleibt konsistent bei `1 = Codex` und `2 = OpenRouter`, waehrend Patch-Review und Write-Apply weiterhin bounded bleiben und der finale Accept-or-Reject-Ausgang explizit Codex-owned ist. Validation: `py_compile` PASS; quickchange live operator path pytest PASS (3/3); quickchange sidecar write pilot runner pytest PASS (2/2); compact audit package PASS; final audit PASS; no production routing. |
 | **TASK-SPEC19 Bounded OR Worker Mode fuer Janus Skills** | SEALED | Der bounded OR worker Rollout ist jetzt final auditiert und dokumentiert. Die drei Slices decken die gemeinsame Eligibility-Grenze, die einheitliche Gate-Ausgabe sowie die Codex-owned Post-Run-Accept/Reject/Fallback-Normalisierung ab. Validation: compact audit package PASS; final audit PASS; no production routing. |
 | **BACKLOG-112 Quickchange delegated Live-Execute seam fuer den ersten realen OR-Pilot** | SEALED | Der operator-facing `janus-quickchange` Delegationspfad erreicht jetzt einen echten bounded Live-Execute-Versuch statt neue Quickchange-Runs nur im Dry-Run enden zu lassen. Dispatcher und Helper bleiben dabei auf exakte editable-path Allowlists, Touched-File-Cap, Delete-/Rename-/Move-Tripwire, Diff-Capture und lokale Validation-Capture begrenzt. Validation: `py_compile` PASS; fokussierte Pytests PASS; execution-result validators PASS; Final Audit PASS. |

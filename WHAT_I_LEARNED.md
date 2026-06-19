@@ -173,3 +173,27 @@
 - **Epic:** TASK-SPEC17
 - **Confidence:** High
 - **Tags:** StructuredExecutor, Fallback, AuditHardening, ORSidecar, Dispatcher, Validator, DirtyWorktree
+
+
+## [PATTERN] #DelegatedWriteCandidateNeedsThreeTrustSeams "Bounded delegated write candidates need separate entry, artifact, and validation trust seams before Codex acceptance"
+- **Kontext:** TASK-SPEC18 / bounded execution write apply candidate for OR sidecar delegation (2026-06-16).
+- **Problem:** A delegated write candidate can look reviewable too early if allowlist entry gating, diff-plus-changed-files evidence, and local validation ownership are not enforced as separate hard seams.
+- **Loesung:** Harden the path in three bounded slices: first reject any candidate without exact editable-path allowlist, touched-file cap, and delete-rename-move tripwires; then require non-empty git_diff.patch plus changed_files.txt and standard run artifacts; finally require validation_summary.json with PASS status and normalize the operator outcome to explicit Codex-owned accept-or-reject wording.
+- **Haertung:** Entry-gate pytest passed 4/4, artifact-capture pytest passed 4/4, validation-acceptance pytest passed 3/3, all execution-result validators passed, and the final audit passed on the sealed Spec-18 package.
+- **Tripwire:** If a future delegated write path can reach a reviewable PASS state without exact allowlist metadata, without diff plus changed-files evidence, without validation_summary.json, or while claiming final task completion instead of Codex-owned accept-or-reject authority, the bounded trust contract has drifted.
+- **Location:** documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py, documentation/codex/model-routing/scripts/codex_structured_action_request_builder.py, documentation/codex/model-routing/scripts/codex_execution_write_apply_candidate_runner.py, documentation/codex/model-routing/tests/test_bounded_write_candidate_entry_gate.py, documentation/codex/model-routing/tests/test_bounded_write_candidate_artifact_capture.py, documentation/codex/model-routing/tests/test_bounded_write_candidate_validation_acceptance.py, documentation/tasks/TASK-SPEC18_AUDIT_PACKAGE.md, documentation/tasks/TASK-SPEC18_final_audit.md
+- **Epic:** TASK-SPEC18
+- **Confidence:** High
+- **Tags:** DelegatedWrite, ORSidecar, TrustSeams, Allowlist, DiffEvidence, ValidationSummary, CodexAcceptance, AuditHardening
+
+
+## [PATTERN] #RepoValidatorsOverrideSkillSummary "Repo validators outrank abbreviated skill wording for Janus handoff formats"
+- **Kontext:** TASK-SPEC20.1 precheck and final-audit closeout for the first separate Dev governance home (2026-06-19).
+- **Problem:** The short Janus skill instructions for precheck and final audit still described older copy-block handoff styles, while the repo validators already enforced newer Codex-native output contracts. Following the skill summary alone produced validation failure even when the audit logic and evidence were otherwise correct.
+- **Loesung:** When Janus precheck or final-audit artifacts fail on format despite correct scope and evidence, inspect the repo validator scripts immediately and treat their required literals and forbidden tokens as the canonical contract. Update the artifact to the validator's Codex-native format instead of forcing the older copy-block style from abbreviated skill text.
+- **Haertung:** alidate_precheck.py passed only after removing the copy block and adding the Codex-native NEXT STEP fields; alidate_final_audit.py passed only after replacing NEXT_SKILL_HANDOFF and copy-prompt style with the validator-required NEXT_STEP block.
+- **Tripwire:** If a Janus precheck or final-audit artifact fails even though the scope and evidence look correct, and the text still contains tokens like BEGIN COPY, END COPY, NEXT_SKILL_HANDOFF, or Copy Prompt, the skill summary is likely older than the repo validator and the validator must win.
+- **Location:** documentation/tasks/TASK-SPEC20.1_preimplementation_check.md, documentation/tasks/TASK-SPEC20.1_final_audit.md, C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py, C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py
+- **Epic:** TASK-SPEC20.1
+- **Confidence:** High
+- **Tags:** Validators,Precheck,FinalAudit,DocumentationUpdate,Governance,Tripwire,CodexNativeFormat

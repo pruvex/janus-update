@@ -4,6 +4,1045 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Snapshot Update
+As of `2026-06-19 23:06 +02:00`, der nachgelagerte `janus-git-governance`-Check fuer den abgeschlossenen `TASK-SPEC20.1`-Slice ist inhaltlich fertig, aber als Checkpoint aktuell blockiert. Der Guard meldet einen stark gemischten Worktree auf `develop` mit 446 Dirty Entries in sieben Buckets (`backend`, `codex-governance`, `dashboard-backlog-sync`, `frontend`, `generated-test-artifacts`, `manual-review`, `skill-rules`). Besonders wichtig: `skill-rules` sind mit Nicht-Skill-Arbeit vermischt, daher waere ein pauschaler Commit im Moment governance-widrig. Es wurde bewusst kein Stage, kein Commit und kein Push ausgefuehrt; ein Remote wie GitHub oder `backup` muss diesen neuesten Governance-Befund noch nicht enthalten.
+
+## Git Governance Override
+Timestamp: `2026-06-19 23:06 +02:00`
+
+Current goal override: den lokal abgeschlossenen `TASK-SPEC20.1`-Block gegen den realen Repository-Zustand pruefen und entscheiden, ob ein sauberer Checkpoint aktuell verantwortbar ist.
+
+Active phase override: `janus-git-governance`, canonical state `BLOCKED`.
+
+Last Codex work:
+- hat `git status --short`, `git diff --name-only` und den formalen `git_guard.py`-Check gegen das volle Repository ausgefuehrt
+- hat den vom Guard geforderten `propose_changesets.py`-Split-Vorschlag erzeugt
+- hat bestaetigt, dass der `TASK-SPEC20.1`-Abschluss derzeit in einen deutlich groesseren Misch-Worktree eingebettet ist
+- hat bewusst weder gestaged noch committed noch gepusht
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `git status --short`: PASS
+- `git diff --name-only`: PASS
+- `python C:\\Users\\pruve\\.codex\\skills\\janus-git-governance\\scripts\\git_guard.py C:\\KI\\Janus-Projekt`: BLOCKED (`Dirty entries: 446`, `Changeset buckets: 7`, `skill-rules are mixed with non-skill work`)
+- `python C:\\Users\\pruve\\.codex\\skills\\janus-git-governance\\scripts\\propose_changesets.py C:\\KI\\Janus-Projekt`: PASS
+
+Open risks:
+- Ein einzelner Commit fuer den aktuellen Zustand wuerde validierte Governance-, Skill-, Backend-, Frontend-, Dashboard- und OR-Arbeit unzulaessig vermischen.
+- Der abgeschlossene `TASK-SPEC20.1`-Slice ist lokal dokumentiert, aber ohne saubere Changeset-Trennung noch nicht checkpoint-faehig.
+- Kein Commit und kein Push in diesem Schritt; ein Remote wie GitHub oder `backup` kann diesen Stand noch nicht enthalten.
+
+Next recommended step for ChatGPT: den Misch-Worktree als echten Governance-Blocker behandeln und keinen pauschalen Save-Schritt annehmen, bis der Nutzer explizit entscheidet, ob zuerst nur der `TASK-SPEC20.1`-nahe Slice isoliert oder ein groesseres Changeset bewusst gebuendelt werden soll.
+
+Next recommended step for Codex: einen schmalen staging-Vorschlag fuer genau den `TASK-SPEC20.1`-Governance-Slice vorbereiten und dabei `skill-rules`, Backend-/Frontend-Aenderungen und generierte Artefakte explizit draussen lassen.
+
+## Current Snapshot Update
+As of `2026-06-19 23:28 +02:00`, der audit-cleared Abschluss von `TASK-SPEC20.1` ist jetzt in die laufende Janus-Abschlussdokumentation synchronisiert. Die zentrale Registry fuehrt den ersten separaten Dev-Governance-Home-Slice nun als DONE, `PROJECT_STATE.md` zeigt ihn im aktuellen Session-Delta als SEALED, und `WHAT_I_LEARNED.md` enthaelt ein neues wiederverwendbares Pattern dafuer, dass bei Janus-Precheck- und Final-Audit-Formaten die Repo-Validatoren Vorrang vor verkuerzten Skill-Zusammenfassungen haben. Changelog und Backlog wurden bewusst nicht geaendert: kein user-facing Produktverhalten und kein gebundener Backlog-Marker. Es wurde kein Commit und kein Push ausgefuehrt, daher muss ein Remote wie GitHub oder `backup` diesen neuesten `CURRENT_STATE` noch nicht enthalten.
+
+## Dev And Product Separation Documentation Update Override
+Timestamp: `2026-06-19 23:28 +02:00`
+
+Current goal override: den final auditierten ersten Dev-Governance-Home-Slice sauber in die Janus-Abschlussdokumentation synchronisieren, ohne die neue Trennung wieder zu verwischen.
+
+Active phase override: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- hat `TASK-SPEC20.1` in die zentrale Task-Registry aufgenommen
+- hat `PROJECT_STATE.md` um den neuen SEALED-Session-Delta-Eintrag fuer den separaten Dev-Governance-Home-Slice erweitert
+- hat ein neues `WHAT_I_LEARNED`-Pattern fuer Validator-vs-Skill-Formatdrift bei Janus-Precheck- und Final-Audit-Artefakten angehaengt
+- hat Changelog und Backlog bewusst mit dokumentiertem Skip-Grund unberuehrt gelassen
+
+Changed files:
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `WHAT_I_LEARNED.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python documentation\\codex\\scripts\\search_what_i_learned.py --query "validator skill text mismatch precheck final audit format codex native next_step"`: PASS
+- `python documentation\\codex\\scripts\\append_learning_pattern.py ...`: PASS
+- `python C:\\Users\\pruve\\.codex\\skills\\janus-documentation-update\\scripts\\validate_doc_update.py --repo C:\\KI\\Janus-Projekt --marker TASK-SPEC20.1 --require documentation/01_CENTRAL_TASK_REGISTRY.md --require PROJECT_STATE.md --require WHAT_I_LEARNED.md`: PASS
+- `git diff --check -- documentation\\01_CENTRAL_TASK_REGISTRY.md PROJECT_STATE.md WHAT_I_LEARNED.md documentation\\ai\\CURRENT_STATE.md`: warnings-only for CRLF on CURRENT_STATE, otherwise PASS
+
+Open risks:
+- Nur `TASK-SPEC20.1` ist dokumentationsseitig geschlossen; die spaeteren Trennungsslices `TASK-SPEC20.2` und `TASK-SPEC20.3` bleiben offen.
+- Changelog und Backlog wurden absichtlich nicht aktualisiert; wenn spaetere Slices doch Produkt- oder Backlog-Auswirkungen bekommen, muss dieser Skip neu bewertet werden.
+- Kein Commit und kein Push in diesem Schritt; ein Remote wie GitHub oder `backup` kann diesen Stand noch nicht enthalten.
+
+Next recommended step for ChatGPT: den neuen Dev-Bereich als getrennte kanonische Infrastruktur-Source-of-Truth behandeln und künftige Folgearbeit nur noch ueber die offenen Trennungsslices planen.
+
+Next recommended step for Codex: den Dokumentationssync formal validieren und danach `janus-git-governance` fuer einen optionalen Checkpoint empfehlen, falls der Nutzer diesen Slice sichern will.
+
+## Current Snapshot Update
+As of `2026-06-19 23:21 +02:00`, `TASK-SPEC20.1` ist final auditiert und freigegeben. Der erste Governance-Slice fuer die Trennung von Janus-Produktarbeit und Dev-/OR-Infrastruktur hat den neuen `development/`-Top-Level-Bereich sauber eingefuehrt, die zugehoerige Spec ist nach [Spec Done](C:/KI/Janus-Projekt/documentation/SPEC/Spec Done/20_separate_dev_or_infrastructure_governance.md) ueberfuehrt, und der Audit-Stand ist in [TASK-SPEC20.1_final_audit.md](C:/KI/Janus-Projekt/documentation/tasks/TASK-SPEC20.1_final_audit.md:1) festgehalten. Der Slice bleibt bewusst schmal: keine Backlog-Migration, keine `AGENTS.md`-Aenderung, keine Workflow-Playbook-Haertung. Es wurde kein Commit und kein Push ausgefuehrt, daher muss ein Remote wie GitHub oder `backup` diesen neuesten `CURRENT_STATE` noch nicht enthalten.
+
+## Dev And Product Separation Final Audit Override
+Timestamp: `2026-06-19 23:21 +02:00`
+
+Current goal override: den ersten Dev-Governance-Home-Slice sauber final auditieren und fuer Dokumentationssync freigeben.
+
+Active phase override: `janus-final-audit`, canonical state `PASS`.
+
+Last Codex work:
+- hat das Audit-Package auf den geforderten Mindestinhalt ergaenzt
+- hat die Spec 20 bei PASS nach `Spec Done` ueberfuehrt und mit Implementierungsmetadaten versehen
+- hat den Final-Audit-Report fuer `TASK-SPEC20.1` geschrieben und validatorgruen gemacht
+- hat den naechsten Schritt auf `janus-documentation-update` gesetzt
+
+Changed files:
+- `documentation/tasks/TASK-SPEC20.1_AUDIT_PACKAGE.md`
+- `documentation/tasks/TASK-SPEC20.1_final_audit.md`
+- `documentation/SPEC/Spec Done/20_separate_dev_or_infrastructure_governance.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\\Users\\pruve\\.codex\\skills\\janus-final-audit\\scripts\\validate_final_audit.py documentation\\tasks\\TASK-SPEC20.1_final_audit.md`: PASS
+- `git diff --check -- documentation\\tasks\\TASK-SPEC20.1_AUDIT_PACKAGE.md documentation\\tasks\\TASK-SPEC20.1_final_audit.md "documentation\\SPEC\\Spec Done\\20_separate_dev_or_infrastructure_governance.md"`: PASS
+
+Open risks:
+- Der auditierte Slice deckt nur den neuen Dev-Governance-Home-Bereich ab; Migration bestehender Mischthemen und Janus-Regelhaertung bleiben offene Folgeslices.
+- Der neue Dev-Bereich ist lokal angelegt, aber ohne Dokumentationssync noch nicht in die laufende Janus-Abschlussdokumentation integriert.
+- Kein Commit und kein Push in diesem Schritt; ein Remote wie GitHub oder `backup` kann diesen Stand noch nicht enthalten.
+
+Next recommended step for ChatGPT: den ersten Dev-Governance-Slice als audit-cleared akzeptieren und weitere Trennungsschritte erst ueber die vorgesehenen Folgeslices anstossen.
+
+Next recommended step for Codex: `janus-documentation-update` ausfuehren und den audit-cleared Zustand von `TASK-SPEC20.1` in die relevanten Abschluss- und Ueberblicksartefakte synchronisieren.
+
+## Current Snapshot Update
+As of `2026-06-19 23:14 +02:00`, der erste reale Trennungsslice ist lokal umgesetzt. Der neue Top-Level-Bereich `development/` existiert jetzt mit drei kanonischen Startartefakten: [development/README.md](C:/KI/Janus-Projekt/development/README.md), [development/DEV_STATE.md](C:/KI/Janus-Projekt/development/DEV_STATE.md) und [development/DEV_BACKLOG.md](C:/KI/Janus-Projekt/development/DEV_BACKLOG.md). Damit hat Dev- und OR-Infrastrukturarbeit erstmals ein eigenes, von der Janus-Produktdoku getrenntes Source-of-Truth-Zuhause. Die spaeteren Slices fuer Backlog-Migration und Janus-Governance-Haertung wurden bewusst nicht vorgezogen. Es wurde kein Commit und kein Push ausgefuehrt, daher muss ein Remote wie GitHub oder `backup` diesen neuesten `CURRENT_STATE` noch nicht enthalten.
+
+## Dev And Product Separation Execution Override
+Timestamp: `2026-06-19 23:14 +02:00`
+
+Current goal override: den ersten bounded Umsetzungsslice fuer das getrennte Dev-System lokal implementieren, ohne Migration oder Janus-Regelhaertung mit hineinzuziehen.
+
+Active phase override: `janus-executioner`, canonical state `HANDOFF`.
+
+Last Codex work:
+- hat den neuen `development/`-Top-Level-Bereich als erstes getrenntes Dev-Zuhause angelegt
+- hat `README`, `DEV_STATE` und `DEV_BACKLOG` als kanonische Startartefakte erstellt
+- hat die Source-of-Truth- und Nicht-Autoritaetsregeln zwischen den drei Dev-Artefakten konsistent gehalten
+- hat Audit-Package und Execution-Result fuer `TASK-SPEC20.1` geschrieben und validiert
+
+Changed files:
+- `development/README.md`
+- `development/DEV_STATE.md`
+- `development/DEV_BACKLOG.md`
+- `documentation/tasks/TASK-SPEC20.1_AUDIT_PACKAGE.md`
+- `documentation/tasks/TASK-SPEC20.1_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `git diff --check -- development\\README.md development\\DEV_STATE.md development\\DEV_BACKLOG.md documentation\\tasks\\TASK-SPEC20.1_AUDIT_PACKAGE.md documentation\\tasks\\TASK-SPEC20.1_execution_result.md`: PASS
+- `rg -n "Source of Truth|Source Of Truth|product|authority|Dev- and OR-infrastructure" development`: PASS
+- `python C:\\Users\\pruve\\.codex\\skills\\janus-executioner\\scripts\\validate_execution_result.py documentation\\tasks\\TASK-SPEC20.1_execution_result.md`: PASS
+
+Open risks:
+- Der neue Dev-Bereich existiert jetzt, aber der bestehende Mischbestand im Janus-Backlog ist noch nicht migriert.
+- Janus-Governance-Dateien erzwingen die neue Trennung noch nicht selbst; das bleibt ein spaeterer Slice.
+- Die laufenden technischen Environment- und OR-Themen bleiben inhaltlich offen; dieser Block hat nur die Governance-Heimat geschaffen.
+- Kein Commit und kein Push in diesem Schritt; ein Remote wie GitHub oder `backup` kann diesen Stand noch nicht enthalten.
+
+Next recommended step for ChatGPT: den neuen Dev-Bereich als kanonisches Zuhause fuer Dev- und OR-Infrastruktur anerkennen und weitere Trennungsschritte nur noch ueber die freigegebenen Folgeslices laufen lassen.
+
+Next recommended step for Codex: `janus-final-audit` fuer `TASK-SPEC20.1` ausfuehren und pruefen, ob der neue Dev-Governance-Home-Slice sauber, scope-treu und ohne versteckte Janus-Regel- oder Backlog-Migration abgeschlossen ist.
+
+## Current Snapshot Update
+As of `2026-06-19 23:07 +02:00`, `TASK-SPEC20.1` ist jetzt formal prechecked und fuer eine erste gebundene Umsetzung freigegeben. Der erste reale Slice bleibt bewusst klein: Er darf nur den neuen `development/`-Top-Level-Bereich mit `development/README.md`, `development/DEV_STATE.md` und `development/DEV_BACKLOG.md` anlegen. Migration bestehender Mischthemen, Aenderungen an `AGENTS.md`, am Workflow-Playbook oder am Janus-Backlog bleiben fuer spaetere Slices gesperrt. Der Precheck musste einmal auf den echten Repo-Validator nachgeschaerft werden, weil dieser bereits das neuere Codex-native Format ohne Copy-Block erzwingt. Es wurde kein Commit und kein Push ausgefuehrt, daher muss ein Remote wie GitHub oder `backup` diesen neuesten `CURRENT_STATE` noch nicht enthalten.
+
+## Dev And Product Separation Precheck Override
+Timestamp: `2026-06-19 23:07 +02:00`
+
+Current goal override: den ersten kleinen Umsetzungsslice fuer das getrennte Dev-System formal pruefen und nur bei sauberer Scope-Grenze fuer Skill 4 freigeben.
+
+Active phase override: `janus-preimplementation-check`, canonical state `HANDOFF`.
+
+Last Codex work:
+- hat `TASK-SPEC20.1` gegen die Preimplementation-Gates geprueft
+- hat den ersten Slice strikt auf drei neue Dateien unter `development/` begrenzt
+- hat den Precheck-Handoff an den echten Repo-Validator angepasst
+- hat `TASK-SPEC20.1` fuer `janus-executioner` freigegeben
+
+Changed files:
+- `documentation/tasks/TASK-SPEC20.1_preimplementation_check.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `janus-preimplementation-check` skill reread: PASS
+- bound spec reread: PASS
+- bound task-file reread: PASS
+- bound task-breakdown reread: PASS
+- `python C:\\Users\\pruve\\.codex\\skills\\janus-preimplementation-check\\scripts\\validate_precheck.py documentation\\tasks\\TASK-SPEC20.1_preimplementation_check.md`: PASS
+- `git diff --check -- documentation\\tasks\\TASK-SPEC20.1_preimplementation_check.md`: PASS
+
+Open risks:
+- Der neue `development/`-Bereich existiert noch nicht; der Slice ist erst freigegeben, aber noch nicht implementiert.
+- Der bestehende Mischbestand im Janus-Backlog bleibt unveraendert, bis spaetere Slices ausgefuehrt werden.
+- Die Repo-Validatorlogik weicht leicht von der knappen Skill-Beschreibung ab; kuenftige Prechecks muessen weiter am Validator, nicht nur am Kurztext, gespiegelt werden.
+- Kein Commit und kein Push in diesem Schritt; ein Remote wie GitHub oder `backup` kann diesen Stand noch nicht enthalten.
+
+Next recommended step for ChatGPT: den ersten Slice weiter strikt klein halten und keine spaeteren Migrations- oder Governance-Haertungen in denselben Implementierungsblock hineinziehen.
+
+Next recommended step for Codex: `janus-executioner` fuer `TASK-SPEC20.1` starten und nur die drei neuen Startartefakte unter `development/` erstellen sowie die definierte Konsistenzpruefung ausfuehren.
+
+## Current Snapshot Update
+As of `2026-06-19 23:00 +02:00`, der erste konkrete Governance-Slice fuer die Trennung von Janus-Produktarbeit und Dev-/OR-Infrastruktur ist jetzt auf Task-Breakdown-Ebene freigegeben. [documentation/tasks/TASK-SPEC20.1_task_breakdown.md] released `TASK-SPEC20.1` als bewusst kleinen Starttask fuer den Aufbau des separaten `development/`-Top-Level-Bereichs mit genau drei kanonischen Startartefakten: `development/README.md`, `development/DEV_STATE.md` und `development/DEV_BACKLOG.md`. Migration bestehender Mischthemen und Janus-Regelhaertung bleiben explizit spaetere Slices und duerfen in diesem ersten Schritt nicht vorgezogen werden. Es wurde kein Commit und kein Push ausgefuehrt, daher muss ein Remote wie GitHub oder `backup` diesen neuesten `CURRENT_STATE` noch nicht enthalten.
+
+## Dev And Product Separation Task Breakdown Override
+Timestamp: `2026-06-19 23:00 +02:00`
+
+Current goal override: genau einen ersten umsetzungsfaehigen Startslice fuer das neue Dev-System freigeben, ohne Migration oder Governance-Haertung vorzeitig mitzuziehen.
+
+Active phase override: `janus-task-breakdown`, canonical state `HANDOFF`.
+
+Last Codex work:
+- hat `TASK-SPEC20.1` als ersten konkreten Zieltask fuer den separaten Dev-Bereich freigegeben
+- hat den Scope auf drei neue Dateien unter `development/` begrenzt
+- hat Migration des Janus-Backlogs und Janus-Governance-Dateiaenderungen explizit aus diesem Slice herausgehalten
+- hat den Breakdown-Handoff formal validiert
+
+Changed files:
+- `documentation/tasks/TASK-SPEC20.1_task_breakdown.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `janus-task-breakdown` skill reread: PASS
+- bound spec reread: PASS
+- bound task-file reread: PASS
+- `python C:\\Users\\pruve\\.codex\\skills\\janus-task-breakdown\\scripts\\validate_task_handoff.py --task documentation\\tasks\\TASK-SPEC20.1_task_breakdown.md --target TASK-SPEC20.1`: PASS
+- `git diff --check -- documentation\\tasks\\TASK-SPEC20.1_task_breakdown.md`: PASS
+
+Open risks:
+- Es existiert weiterhin noch kein reales `development/`-System; der erste Slice ist erst freigegeben, aber noch nicht prechecked oder umgesetzt.
+- Der bestehende Mischbestand im Janus-Backlog bleibt unveraendert, bis `TASK-SPEC20.2` spaeter ausgefuehrt wird.
+- Die laufenden technischen Environment- und OR-Themen bleiben fachlich offen; dieser Schritt organisiert nur die Reihenfolge der Trennung.
+- Kein Commit und kein Push in diesem Schritt; ein Remote wie GitHub oder `backup` kann diesen Stand noch nicht enthalten.
+
+Next recommended step for ChatGPT: den ersten Slice strikt klein halten und vorerst keine Migration oder Janus-Regelhaertung in denselben Arbeitsblock hineinziehen.
+
+Next recommended step for Codex: `janus-preimplementation-check` auf `TASK-SPEC20.1` ausfuehren und pruefen, ob der neue `development/`-Bereich mit genau drei Startartefakten ohne Scope-Erweiterung sauber umgesetzt werden kann.
+
+## Current Snapshot Update
+As of `2026-06-19 22:53 +02:00`, die freigegebene Governance-Spec zur Trennung von Janus-Produktarbeit und Dev-/OR-Infrastruktur ist jetzt in eine kleine umsetzbare Taskfolge kompiliert. Die neue Task-Datei [documentation/tasks/TASK-SPEC20_separate_dev_or_infrastructure_governance.md] zerlegt die Arbeit in drei klare Slices: Aufbau des neuen `development/`-Top-Level-Bereichs, Migration vermischter Dev-/OR-Themen aus dem Janus-Backlog und Nachhaertung der aktiven Janus-Governance-Dateien gegen Rueckvermischung. In diesem Schritt wurde noch nichts umgesetzt; der naechste formale Gate-Schritt ist `janus-task-breakdown`. Es wurde kein Commit und kein Push ausgefuehrt, daher muss ein Remote wie GitHub oder `backup` diesen neuesten `CURRENT_STATE` noch nicht enthalten.
+
+## Dev And Product Separation Task Compilation Override
+Timestamp: `2026-06-19 22:53 +02:00`
+
+Current goal override: die freigegebene Governance-Spec in eine deterministische, umsetzbare Taskfolge fuer spaetere Ausfuehrung ueberfuehren.
+
+Active phase override: `janus-spec-to-task`, canonical state `HANDOFF`.
+
+Last Codex work:
+- hat die Governance-Spec in drei klar getrennte Umsetzungs-Slices kompiliert
+- hat den neuen Dev-Top-Level-Bereich, die Backlog-Migration und die Janus-Governance-Haertung als getrennte Tasks festgelegt
+- hat die neue Task-Datei formal validiert
+- hat den naechsten Gate-Schritt auf `janus-task-breakdown` gesetzt
+
+Changed files:
+- `documentation/tasks/TASK-SPEC20_separate_dev_or_infrastructure_governance.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `janus-spec-to-task` skill reread: PASS
+- bound spec reread: PASS
+- `python C:\\Users\\pruve\\.codex\\skills\\janus-spec-to-task\\scripts\\validate_task_artifact.py --task documentation\\tasks\\TASK-SPEC20_separate_dev_or_infrastructure_governance.md`: PASS
+- `git diff --check -- documentation\\tasks\\TASK-SPEC20_separate_dev_or_infrastructure_governance.md`: PASS
+
+Open risks:
+- Die Taskfolge ist erstellt, aber noch nicht in `janus-task-breakdown` verfeinert und noch nicht prechecked.
+- Der bestehende Mischbestand im Janus-Backlog bleibt bis zur spaeteren Umsetzung unveraendert bestehen.
+- Die laufenden technischen Environment- und OR-Themen bleiben fachlich offen; diese Task-Kompilierung organisiert nur die kuenftige Trennung.
+- Kein Commit und kein Push in diesem Schritt; ein Remote wie GitHub oder `backup` kann diesen Stand noch nicht enthalten.
+
+Next recommended step for ChatGPT: den neuen Task-Handoff als den kanonischen naechsten Umsetzungspfad behandeln und bis dahin keine ad-hoc Strukturaenderungen ausserhalb dieser Taskfolge annehmen.
+
+Next recommended step for Codex: `janus-task-breakdown` auf [documentation/tasks/TASK-SPEC20_separate_dev_or_infrastructure_governance.md] ausfuehren und `TASK-SPEC20.1` als ersten konkreten Zieltask fuer den Aufbau des separaten Dev-Bereichs freigeben.
+
+## Current Snapshot Update
+As of `2026-06-19 22:47 +02:00`, die neue Governance-Spec fuer die strikte Trennung von Janus-Produktarbeit und Dev-/OR-Infrastruktur ist jetzt formal reviewed und als `APPROVED_WITH_NOTES` freigegeben. Die Spec [documentation/SPEC/20_separate_dev_or_infrastructure_governance.md] ist damit bereit fuer `janus-spec-to-task`. Nicht-blockierende Review-Notiz bleibt nur, dass die spaetere konkrete Benennung des neuen Top-Level-Dev-Bereichs erst im Task- oder Umsetzungsfluss finalisiert werden soll; die Governance-Regeln selbst gelten als ausreichend klar und zerlegbar. Es wurde kein Commit und kein Push ausgefuehrt, daher muss ein Remote wie GitHub oder `backup` diesen neuesten `CURRENT_STATE` noch nicht enthalten.
+
+## Dev And Product Separation Spec Review Override
+Timestamp: `2026-06-19 22:47 +02:00`
+
+Current goal override: die Governance-Spec fuer die Trennung von Janus-Produktarbeit und Dev-/OR-Infrastruktur formal reviewen und fuer Task-Kompilierung freigeben.
+
+Active phase override: `janus-spec-review`, canonical state `HANDOFF`.
+
+Last Codex work:
+- hat die Governance-Spec gegen die Janus Spec-Review-Gates geprueft
+- hat die Spec als `APPROVED_WITH_NOTES` freigegeben
+- hat das Review-Metadatenfeld in der Spec geschrieben
+- hat den naechsten Schritt auf `janus-spec-to-task` festgelegt
+
+Changed files:
+- `documentation/SPEC/20_separate_dev_or_infrastructure_governance.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `janus-spec-review` skill reread: PASS
+- bound spec reread: PASS
+- `python C:\\Users\\pruve\\.codex\\skills\\janus-spec-review\\scripts\\validate_spec_review.py --spec documentation\\SPEC\\20_separate_dev_or_infrastructure_governance.md`: PASS
+- `git diff --check -- documentation\\SPEC\\20_separate_dev_or_infrastructure_governance.md`: PASS
+
+Open risks:
+- Die Spec ist review-freigegeben, aber das neue Dev-System, die Migrationsschritte und die bereinigten Janus-Backlog-Grenzen existieren noch nicht als Task-Artefakte oder Umsetzung.
+- Der aktuelle Mischbestand im Janus-Backlog bleibt bis zur spaeteren Migration weiterhin real vorhanden.
+- Die laufenden technischen Environment- und OR-Themen bleiben inhaltlich offen; dieser Review schliesst nur die Governance-Spec ab.
+- Kein Commit und kein Push in diesem Schritt; ein Remote wie GitHub oder `backup` kann diesen Stand noch nicht enthalten.
+
+Next recommended step for ChatGPT: die Governance-Spec als freigegebenen Rahmen behandeln und weitere Trennungsschritte nur noch ueber Task-Artefakte oder eine separate Dev-Struktur planen.
+
+Next recommended step for Codex: `janus-spec-to-task` auf [documentation/SPEC/20_separate_dev_or_infrastructure_governance.md] ausfuehren und daraus eine kleine, klar getrennte Taskfolge fuer Dev-Bereich, Dev-Backlog, Migrationsregel und Janus-Verweisregel erzeugen.
+
+## Current Snapshot Update
+As of `2026-06-19 22:41 +02:00`, die Governance-Entscheidung zur strikten Trennung von Janus-Produktarbeit und Dev-/OR-Infrastruktur ist jetzt als formale Feature-Spec geschrieben. Die neue Spec [documentation/SPEC/20_separate_dev_or_infrastructure_governance.md] bindet die Regeln fuer ein produktreines Janus-Backlog, einen getrennten Top-Level-Dev-Bereich, ein eigenes Dev-Backlog, die aktive Migration bestehender gemischter Dev-/OR-Themen und die Verweisregel zwischen Janus und Dev-System. In diesem Schritt wurden keine Produkt- oder Infrastrukturstrukturen umgesetzt, sondern nur die formale Spec fuer den naechsten Review-Gate erzeugt. Es wurde kein Commit und kein Push ausgefuehrt, daher muss ein Remote wie GitHub oder `backup` diesen neuesten `CURRENT_STATE` noch nicht enthalten.
+
+## Dev And Product Separation Spec Override
+Timestamp: `2026-06-19 22:41 +02:00`
+
+Current goal override: die gelockte Trennungsentscheidung als formale Janus-Governance-Spec fixieren, bevor Review, Migration oder Strukturaufbau starten.
+
+Active phase override: `janus-spec-generator`, canonical state `HANDOFF`.
+
+Last Codex work:
+- hat die gelockte Designentscheidung in eine formale Janus Feature Spec ueberfuehrt
+- hat die Trennung zwischen Janus-Produktarbeit und Dev-/OR-Infrastruktur als neue Governance-Surface spezifiziert
+- hat die Regeln fuer getrennte Source-of-Truth-Systeme, aktive Migration bestehender Mischthemen und schlanke Janus-Verweise festgeschrieben
+- hat den naechsten Gate-Schritt auf `janus-spec-review` vorbereitet
+
+Changed files:
+- `documentation/SPEC/20_separate_dev_or_infrastructure_governance.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `janus-spec-generator` skill reread: PASS
+- `documentation/codex/CODEX_WORKFLOW_PLAYBOOK.md` targeted reread: PASS
+- `documentation/pipeline/PIPELINE_CONTRACT.md` targeted reread: PASS
+- required spec headings check via `rg`: PASS
+- `git diff --check -- documentation\\SPEC\\20_separate_dev_or_infrastructure_governance.md`: PASS
+
+Open risks:
+- Die Spec ist noch nicht reviewed und damit noch nicht als freigegebene Governance-Grundlage bestaetigt.
+- Der bestehende Mischbestand im Janus-Backlog ist weiterhin real vorhanden, bis ein Folgeschritt die Migration und neue Dev-Struktur wirklich anlegt.
+- Die laufenden technischen Environment- und OR-Themen bleiben fachlich offen; diese Spec trennt nur die kuenftige Steuerung und Dokumentation.
+- Kein Commit und kein Push in diesem Schritt; ein Remote wie GitHub oder `backup` kann diesen Stand noch nicht enthalten.
+
+Next recommended step for ChatGPT: den neuen Governance-Scope als formale Spec anerkennen und fuer Folgearbeit strikt zwischen Janus-Produktsystem und kuenftigem Dev-System unterscheiden.
+
+Next recommended step for Codex: `janus-spec-review` auf [documentation/SPEC/20_separate_dev_or_infrastructure_governance.md] ausfuehren und pruefen, ob die Trennungsregeln ohne versteckte Doppelpflege oder Migrationsluecken freigabefertig sind.
+
+## Current Snapshot Update
+As of `2026-06-19 22:34 +02:00`, the Trennungsentscheidung fuer Janus-Produktarbeit versus Dev-/OR-Infrastruktur ist jetzt auf Feature-Design-Ebene gelockt. Der Nutzer hat entschieden, dass das Janus-Backlog kuenftig rein produktorientiert bleibt, waehrend Dev-/OR-Arbeit in einen eigenen Top-Level-Bereich mit eigenem Dev-Backlog verschoben wird. Bereits vermischte Dev-/OR-Themen sollen aktiv aus dem Janus-Backlog migriert werden, und Janus soll kuenftig nur noch schlanke Verweise auf das Dev-System behalten, wenn Produktarbeit von Infrastruktur abhaengt. In diesem Schritt wurden keine Produktdateien implementiert und kein Commit oder Push ausgefuehrt, daher muss ein Remote wie GitHub oder `backup` diesen neuesten `CURRENT_STATE` noch nicht enthalten.
+
+## Dev And Product Separation Design Override
+Timestamp: `2026-06-19 22:34 +02:00`
+
+Current goal override: die organisatorische und dokumentarische Trennung zwischen Janus-Produktarbeit und Dev-/OR-Infrastruktur sauber entscheiden, bevor weitere Struktur- oder Backlog-Aenderungen passieren.
+
+Active phase override: `janus-feature-design`, canonical state `HANDOFF`.
+
+Last Codex work:
+- hat die Trennungsentscheidung in vier gebundenen Feature-Design-Fragen mit dem Nutzer gelockt
+- hat festgelegt, dass Janus-Backlog und Janus-Produktdoku produktfokussiert bleiben
+- hat festgelegt, dass Dev-/OR-Infrastruktur in einen eigenen Top-Level-Bereich mit eigenem Dev-Backlog verschoben wird
+- hat festgelegt, dass bestehende vermischte Dev-/OR-Themen aktiv migriert und kuenftig nur noch per schlankem Janus-Verweis referenziert werden
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `janus-feature-design` skill reread: PASS
+- bound decision sequence completed: PASS
+- `documentation/ai/CURRENT_STATE.md` reread for active-state alignment: PASS
+- `documentation/backlog/BACKLOG.md` reread for mixed product/dev evidence: PASS
+
+Open risks:
+- Die Trennungsentscheidung ist gelockt, aber die neue Dev-Struktur, das Dev-Backlog und die Migrationsregeln existieren noch nicht als Artefakte.
+- Das Janus-Backlog enthaelt weiterhin historische und aktive Dev-/OR-Themen, bis die Migration in einem Folgeschritt wirklich umgesetzt wird.
+- Die bereits laufende Backend-Umgebungsdiagnose bleibt technisch offen; diese Designentscheidung trennt nur den Prozess, behebt aber noch nicht den Environment-Blocker.
+- Kein Commit und kein Push in diesem Schritt; ein Remote wie GitHub oder `backup` kann diesen Stand noch nicht enthalten.
+
+Next recommended step for ChatGPT: die gelockte Trennungsentscheidung als eigenstaendiges Feature fuer die Arbeitsorganisation anerkennen und fuer Folgeschritte nur noch produktbezogene Themen im Janus-System halten.
+
+Next recommended step for Codex: `janus-spec-generator` fuer eine kleine Governance-/Struktur-Spec nutzen, die den neuen Top-Level-Dev-Bereich, das Dev-Backlog, die Migrationsregel fuer bestehende OR-/Tooling-Themen und die Janus-Verweisregel formalisiert.
+
+## Current Snapshot Update
+As of `2026-06-19 22:09 +02:00`, the `BACKLOG-110-W1` code slice is still intact and the environment diagnosis is sharper again. The project-local `backend\venv` now imports the bounded residence helper successfully, and the shared pytest bootstrap was advanced past `cachetools`, `pyparsing`, `zstandard`, and `fpdf2`. The focused pytest path still does not reach the bounded test logic because the broad backend bootstrap now fails later at missing `openai`, with a parallel `sentence_transformers` / `transformers` / `torchvision` import inconsistency on the vector-service degrade path. This is a shared backend environment-stack issue, not a new product-slice issue. No commit or push happened in this step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+## Backend Test Environment Debug Override
+Timestamp: `2026-06-19 22:09 +02:00`
+
+Current goal override: separate the first write-pilot product slice from the broader backend test-environment blocker and capture the exact remaining failure edge.
+
+Active phase override: `janus-debug`, canonical state `HANDOFF`.
+
+Last Codex work:
+- validated that the local `backend\venv` exists and can now import the bounded residence helper again
+- repaired several additional shared backend test dependencies in the project-local environment
+- advanced the shared pytest bootstrap failure edge from `cachetools` to `openai`
+- confirmed a parallel `sentence_transformers` / `transformers` / `torchvision` import inconsistency on the vector-service lazy-load degrade path
+
+Changed files:
+- `documentation/codex/model-routing/backlog_110_write_pilot_backend_test_environment_debug_2026-06-19.md`
+- `documentation/tasks/backlog_BACKLOG-110_first_write_apply_pilot_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `backend\venv\Scripts\python.exe -c "import pytest,pydantic; ..."`: PASS
+- direct residence-helper import probe: PASS
+- `backend\venv\Scripts\python.exe -m pip install cachetools==5.5.2 --target backend\venv\Lib\site-packages`: PASS
+- `backend\venv\Scripts\python.exe -m pip install pyparsing==3.2.5 zstandard==0.25.0 --target backend\venv\Lib\site-packages`: PASS
+- `backend\venv\Scripts\python.exe -m pip install fpdf2==2.8.4 --target backend\venv\Lib\site-packages`: PASS
+- pytest rerun under workspace-local `APPDATA`: FAIL at later shared backend bootstrap import edge (`openai`)
+
+Open risks:
+- The local backend environment now contains targeted ad-hoc package installs and may still need one clean bounded hardening pass for reproducible repo-local testing.
+- The shared backend bootstrap also shows a wider vector-stack inconsistency around `sentence_transformers` / `transformers` / `torchvision`, so even after `openai` there may still be more unrelated environment drift to resolve.
+- `TASK-BACKLOG-110-W1` still cannot move to final audit until the shared backend pytest environment is complete enough for its declared validation gate.
+- No commit or push happened after this debug step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: explain that the next blocker is environment hardening, not more product changes on `BACKLOG-110-W1`.
+
+Next recommended step for Codex: run one more bounded backend-environment hardening pass aimed only at the shared pytest bootstrap chain needed for `backend/tests/test_contact_manager.py`, starting with `openai` and then reassessing whether the vector-stack inconsistency is still a real blocker.
+
+As of `2026-06-19 17:50 +02:00`, the bounded `TASK-BACKLOG-110-W1` write-pilot slice is now implemented locally, but not yet audit-ready. The code change stayed inside the frozen backend seam: residence-note extraction in `contact_manager.py` now uses the shared address sanitizer, and focused regression coverage was added for the existing-contact update path. However, the declared backend validation gate could not run completely in the active Python environment because `pytest` and `pydantic` are missing there. No commit or push happened in this step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+As of `2026-06-19 17:50 +02:00`, the bounded `TASK-BACKLOG-110-W1` write-pilot slice is now implemented locally, but not yet audit-ready. The code change stayed inside the frozen backend seam: residence-note extraction in `contact_manager.py` now uses the shared address sanitizer, and focused regression coverage was added for the existing-contact update path. However, the declared backend validation gate could not run completely in the active Python environment because `pytest` and `pydantic` are missing there. No commit or push happened in this step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+## Write Pilot Execution Override
+Timestamp: `2026-06-19 17:50 +02:00`
+
+Current goal override: implement the first bounded write-capable pilot slice locally and classify the remaining validation blocker honestly.
+
+Active phase override: `janus-executioner`, canonical state `NEEDS_INFO`.
+
+Last Codex work:
+- implemented the bounded residence-note sanitization improvement in the existing contact extraction path
+- added focused regression coverage for existing-contact residence updates
+- documented the missing backend test-environment dependency seam as the current validation blocker
+
+Changed files:
+- `backend/services/contact_manager.py`
+- `backend/tests/test_contact_manager.py`
+- `documentation/tasks/backlog_BACKLOG-110_first_write_apply_pilot_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m py_compile backend/services/contact_manager.py backend/tests/test_contact_manager.py`: PASS
+- `python -m pytest backend/tests/test_contact_manager.py -q`: FAIL (`No module named pytest`)
+- direct import probe for `backend.services.contact_manager`: FAIL (`No module named pydantic`)
+
+Open risks:
+- The product slice is implemented, but the bounded backend validation gate is blocked by the active Python environment.
+- Until the correct backend Python environment is available, this slice cannot honestly move to final audit.
+- No commit or push happened after this execution step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: explain that the code slice is in place, but the immediate blocker is the missing local Python test environment rather than another product bug.
+
+Next recommended step for Codex: either use the correct Janus backend Python environment if available or set up the missing test dependencies before rerunning the bounded `TASK-BACKLOG-110-W1` validation gate.
+
+As of `2026-06-19 17:39 +02:00`, the first `execution_write_apply_candidate` pilot slice is now formally prechecked. `TASK-BACKLOG-110-W1` is frozen as a backend-only first write-capable pilot for new explicit residence facts, with `backend/services/contact_manager.py` plus `backend/tests/test_contact_manager.py` as the primary required files, a two-file-first touched-file target, and only narrow optional fallback to `backend/data/crud.py` or `backend/tests/test_contact_card_normalization.py` if strictly required. No live write approval exists yet; this step only seals the precheck contract. No commit or push happened in this step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+As of `2026-06-19 17:39 +02:00`, the first `execution_write_apply_candidate` pilot slice is now formally prechecked. `TASK-BACKLOG-110-W1` is frozen as a backend-only first write-capable pilot for new explicit residence facts, with `backend/services/contact_manager.py` plus `backend/tests/test_contact_manager.py` as the primary required files, a two-file-first touched-file target, and only narrow optional fallback to `backend/data/crud.py` or `backend/tests/test_contact_card_normalization.py` if strictly required. No live write approval exists yet; this step only seals the precheck contract. No commit or push happened in this step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+## Write Pilot Precheck Override
+Timestamp: `2026-06-19 17:39 +02:00`
+
+Current goal override: freeze the exact first write-capable pilot slice as a formal execution handoff before any live write-capable approval is considered.
+
+Active phase override: `janus-preimplementation-check`, canonical state `PRE-CHECK PASSED`.
+
+Last Codex work:
+- verified artifact identity across the narrowed `BACKLOG-110` pilot slice, the older `BACKLOG-110` precheck, and Spec 15
+- froze the first write-capable pilot as a backend-only execution handoff
+- pinned the primary required files, bounded optional files, and validation commands for the first pilot
+
+Changed files:
+- `documentation/tasks/backlog_BACKLOG-110_first_write_apply_pilot_preimplementation_check.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- narrowed pilot slice reread: PASS
+- original `BACKLOG-110` precheck reread: PASS
+- Spec 15 reread: PASS
+- precheck artifact written: PASS
+
+Open risks:
+- This is still precheck-only evidence; no live write-capable call has been approved or executed.
+- The optional fallback files must remain truly optional and must not silently widen the first pilot into a broader cleanup slice.
+- No commit or push happened after this precheck step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: explain that the first write-capable pilot is now formally frozen and the next decision is whether to implement locally first or prepare the bounded live pilot plan.
+
+Next recommended step for Codex: use `janus-executioner` if you want to implement the bounded slice locally first, or write one explicit live pilot plan if the goal is to test the OR write-capable path next.
+
+As of `2026-06-19 17:33 +02:00`, the first exact `execution_write_apply_candidate` pilot candidate is now bound at task-breakdown level. The selected pilot is a narrowed backend-only slice derived from `BACKLOG-110`: route new explicit residence facts into the structured address path without mixing in cleanup migration, frontend rendering follow-up, or broader contact-model work. This gives the write-capable OR path one real candidate with a small file cluster and conservative validation seam, but no live write approval exists yet. No commit or push happened in this step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+As of `2026-06-19 17:33 +02:00`, the first exact `execution_write_apply_candidate` pilot candidate is now bound at task-breakdown level. The selected pilot is a narrowed backend-only slice derived from `BACKLOG-110`: route new explicit residence facts into the structured address path without mixing in cleanup migration, frontend rendering follow-up, or broader contact-model work. This gives the write-capable OR path one real candidate with a small file cluster and conservative validation seam, but no live write approval exists yet. No commit or push happened in this step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+## Write Pilot Slice Binding Override
+Timestamp: `2026-06-19 17:33 +02:00`
+
+Current goal override: bind the first exact `execution_write_apply_candidate` pilot slice before any live write-capable approval is considered.
+
+Active phase override: `janus-task-breakdown`, canonical state `TASK DESIGN COMPLETE`.
+
+Last Codex work:
+- compared the available real prechecked backend candidates against the write-pilot constraints
+- rejected `BACKLOG-108` as too broad for the first write-capable pilot
+- released a narrowed backend-only first pilot slice derived from `BACKLOG-110`
+
+Changed files:
+- `documentation/tasks/backlog_BACKLOG-110_first_write_apply_pilot_slice.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- readiness gate reread: PASS
+- `BACKLOG-108` precheck/task comparison: PASS
+- `BACKLOG-110` precheck/task comparison: PASS
+- first pilot slice artifact written: PASS
+
+Open risks:
+- The new pilot slice is task-breakdown evidence only until `janus-preimplementation-check` confirms the exact file cluster and validation bundle.
+- The broader cleanup/migration aspects of `BACKLOG-110` remain intentionally out of scope for this first write-capable pilot.
+- No commit or push happened after this task-binding step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: explain that the write-capable path now has a concrete first pilot slice and no longer lacks an exact target.
+
+Next recommended step for Codex: run `janus-preimplementation-check` on `TASK-BACKLOG-110-W1` and freeze the exact file cluster, touched-file cap, and validation bundle for the first live write-capable pilot.
+
+As of `2026-06-19 17:24 +02:00`, the accepted DeepSeek compact-contract larger-class evidence is now folded into the shared OR worker documentation. The operator playbook, enablement closeout, and write-apply readiness gate all now reflect that `DIRECT-OR-DEEPSEEK-EXECUTION-LIVE-006` joins `DIRECT-OR-DEEPSEEK-EXECUTION-LIVE-002` as a second accepted bounded larger-class `execution_patch_candidate` evidence point for `deepseek/deepseek-v4-flash`. The write-capable class remains not live-approved yet because no exact write-pilot slice is bound. No commit or push happened in this step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+As of `2026-06-19 17:24 +02:00`, the accepted DeepSeek compact-contract larger-class evidence is now folded into the shared OR worker documentation. The operator playbook, enablement closeout, and write-apply readiness gate all now reflect that `DIRECT-OR-DEEPSEEK-EXECUTION-LIVE-006` joins `DIRECT-OR-DEEPSEEK-EXECUTION-LIVE-002` as a second accepted bounded larger-class `execution_patch_candidate` evidence point for `deepseek/deepseek-v4-flash`. The write-capable class remains not live-approved yet because no exact write-pilot slice is bound. No commit or push happened in this step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+## Larger-Class Evidence Sync Override
+Timestamp: `2026-06-19 17:24 +02:00`
+
+Current goal override: synchronize the accepted compact-contract DeepSeek evidence into the shared bounded OR worker guidance and readiness gate.
+
+Active phase override: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- updated the shared bounded operator playbook with the second accepted larger-class DeepSeek evidence point
+- updated the bounded operator enablement closeout so the compact-contract acceptance is visible in the class summary
+- updated the write-apply readiness gate so Gate 1 is now satisfied while the exact live write pilot slice is still missing
+
+Changed files:
+- `documentation/codex/model-routing/codex_bounded_operator_playbook_2026-06-14.md`
+- `documentation/codex/model-routing/codex_bounded_operator_enablement_closeout_2026-06-14.md`
+- `documentation/codex/model-routing/execution_write_apply_candidate_readiness_gate_2026-06-19.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- accepted LIVE-006 evidence reread: PASS
+- shared routing note sync: PASS
+- readiness gate update: PASS
+
+Open risks:
+- `execution_write_apply_candidate` is still not live-ready because no exact first write-capable pilot slice is bound yet.
+- This documentation sync does not approve production routing, canonical routing-table updates, or autonomous write authority.
+- No commit or push happened after this documentation sync, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: explain that the larger-class DeepSeek evidence layer is now strong enough to move from evidence-building into first write-pilot planning.
+
+Next recommended step for Codex: bind one exact `execution_write_apply_candidate` pilot slice with file cluster, touched-file cap, and validation bundle before any live write-capable approval is considered.
+
+As of `2026-06-19 17:18 +02:00`, the first live larger-class DeepSeek retry under the redesigned compact contract has now succeeded. Workflow `DIRECT-OR-DEEPSEEK-EXECUTION-LIVE-006` on `BACKLOG-108` finished with `finish_reason=stop`, `validation_result=PASS`, actual cost `0.00039312` USD versus `0.00045` estimated, and passing `health_snapshot.py` ingestion. This is accepted bounded `execution_patch_candidate` proposal evidence only; Codex still remains apply/reject and validation owner. No commit or push happened in this step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+As of `2026-06-19 17:18 +02:00`, the first live larger-class DeepSeek retry under the redesigned compact contract has now succeeded. Workflow `DIRECT-OR-DEEPSEEK-EXECUTION-LIVE-006` on `BACKLOG-108` finished with `finish_reason=stop`, `validation_result=PASS`, actual cost `0.00039312` USD versus `0.00045` estimated, and passing `health_snapshot.py` ingestion. This is accepted bounded `execution_patch_candidate` proposal evidence only; Codex still remains apply/reject and validation owner. No commit or push happened in this step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+## Compact Contract Live Success Override
+Timestamp: `2026-06-19 17:18 +02:00`
+
+Current goal override: close the larger-class DeepSeek compact-contract live retry with accepted evidence and synchronize Janus state.
+
+Active phase override: `janus-debug`, canonical state `HANDOFF`.
+
+Last Codex work:
+- reread the completed live artifacts for `DIRECT-OR-DEEPSEEK-EXECUTION-LIVE-006`
+- wrote the formal debug-success note for the compact-contract retry
+- synchronized the successful live retry into `CURRENT_STATE`
+
+Changed files:
+- `documentation/codex/model-routing/deepseek_execution_patch_candidate_compact_contract_live_success_2026-06-19.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- live retry artifact reread for `DIRECT-OR-DEEPSEEK-EXECUTION-LIVE-006`: PASS
+- telemetry JSONL parse: PASS
+- `health_snapshot.py --or-telemetry-jsonl`: PASS
+- debug-result note written from persisted artifacts: PASS
+
+Open risks:
+- This is accepted bounded proposal evidence only, not a local apply or completed Janus task implementation.
+- The resulting patch candidate still needs separate Codex review if the `BACKLOG-108` seam should be implemented for real.
+- No commit or push happened after this live-result sync step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: explain that the compact-contract redesign is now proven by one accepted live larger-class DeepSeek retry.
+
+Next recommended step for Codex: use `janus-documentation-update` to fold this accepted larger-class evidence into the shared OR worker routing and readiness notes before the first write-capable live pilot.
+
+As of `2026-06-19 17:12 +02:00`, the larger-class DeepSeek contract redesign is now implemented and locally validated. The direct execution-patch runner was slimmed down to a smaller input and smaller required return contract, unit tests pass, and fixture workflow `DIRECT-OR-DEEPSEEK-EXECUTION-REDESIGN-FIXTURE-002` finished with `finish_reason=stop`, `validation_result=PASS`, and passing `health_snapshot.py` ingestion. No new live OR call was made in this step.
+As of `2026-06-19 17:12 +02:00`, the larger-class DeepSeek contract redesign is now implemented and locally validated. The direct execution-patch runner was slimmed down to a smaller input and smaller required return contract, unit tests pass, and fixture workflow `DIRECT-OR-DEEPSEEK-EXECUTION-REDESIGN-FIXTURE-002` finished with `finish_reason=stop`, `validation_result=PASS`, and passing `health_snapshot.py` ingestion. No new live OR call was made in this step.
+
+## Contract Redesign Validation Override
+Timestamp: `2026-06-19 17:12 +02:00`
+
+Current goal override: prove locally that the compact larger-class contract removes the previous one-shot truncation pressure before another live retry is considered.
+
+Active phase override: `janus-debug`, canonical state `HANDOFF`.
+
+Last Codex work:
+- implemented the compact larger-class contract redesign inside the direct execution-patch runner
+- added direct unit coverage for compact request construction and Codex-side post-processing
+- ran one fixture-only end-to-end validation of the redesigned contract
+
+Changed files:
+- `documentation/codex/model-routing/scripts/openrouter_direct_execution_patch_candidate_runner.py`
+- `documentation/codex/model-routing/tests/test_openrouter_direct_execution_patch_candidate_runner.py`
+- `documentation/codex/model-routing/deepseek_execution_patch_candidate_contract_redesign_result_2026-06-19.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m py_compile documentation/codex/model-routing/scripts/openrouter_direct_execution_patch_candidate_runner.py`: PASS
+- `python -m unittest documentation.codex.model-routing.tests.test_openrouter_direct_execution_patch_candidate_runner`: PASS
+- fixture-only run `DIRECT-OR-DEEPSEEK-EXECUTION-REDESIGN-FIXTURE-002`: PASS
+- telemetry JSONL parse plus `health_snapshot.py --or-telemetry-jsonl`: PASS
+
+Open risks:
+- This is still fixture-only evidence; no new live larger-class DeepSeek proof exists yet under the redesigned contract.
+- A future live run could still fail for reasons not covered by the fixture, though the local truncation pressure is now materially reduced.
+- No commit or push happened after this redesign-validation step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: explain that the contract redesign now passes local validation and the next meaningful step is one bounded live retry under the new compact contract.
+
+Next recommended step for Codex: if explicitly approved, run exactly one bounded DeepSeek larger-class live retry with the redesigned compact contract.
+
+As of `2026-06-19 17:04 +02:00`, the larger-class DeepSeek problem is now explicitly classified as a contract-design issue rather than a slice-selection issue. The repeated `finish_reason=length` failures on both `BACKLOG-110` and `BACKLOG-108` point to the current one-shot prompt/input/output contract being too heavy for a single strict JSON patch-candidate return. No new OR call was made in this step.
+
+## Contract Redesign Override
+Timestamp: `2026-06-19 17:04 +02:00`
+
+Current goal override: convert the repeated larger-class DeepSeek live failures into one concrete contract-redesign plan before any further live spend.
+
+Active phase override: `janus-debug`, canonical state `HANDOFF`.
+
+Last Codex work:
+- compared the completed larger-class request bodies for `BACKLOG-110` and `BACKLOG-108`
+- identified the current larger-class contract as too heavy for a single strict JSON return
+- wrote one bounded redesign plan covering smaller input, smaller output contract, and retry sequencing
+
+Changed files:
+- `documentation/codex/model-routing/deepseek_execution_patch_candidate_contract_redesign_plan_2026-06-19.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- reread of `BACKLOG-110` request body: PASS
+- reread of `BACKLOG-108` request body: PASS
+- reread of both larger-class result notes: PASS
+- redesign plan written: PASS
+
+Open risks:
+- The missing second accepted larger-class DeepSeek evidence point still does not exist.
+- Any further live retry on the unchanged larger-class contract is now likely low-value spend.
+- No commit or push happened after this planning step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: explain that the next smart move is not another slice test, but shrinking the larger-class contract before another live run.
+
+Next recommended step for Codex: implement and fixture-validate the bounded larger-class contract redesign before any new DeepSeek live retry.
+
+As of `2026-06-19 16:58 +02:00`, the one approved DeepSeek `BACKLOG-108` larger-class live run has now completed and failed in the same structural way as the earlier `BACKLOG-110` attempts. Workflow `DIRECT-OR-DEEPSEEK-EXECUTION-LIVE-005` passed capture, `generation_id`, usage, cost, telemetry, and `health_snapshot.py` ingestion, and actual cost stayed at `0.0005986541` USD versus `0.000603` estimated and a `0.05` class cap. But the run still ended with `finish_reason=length`, so `BACKLOG-108` also did not produce the missing second accepted larger-class evidence point. This now points more strongly at the current larger-class prompt/input contract than at one specific slice.
+
+## BACKLOG-108 Live Result Override
+Timestamp: `2026-06-19 16:58 +02:00`
+
+Current goal override: classify whether the one approved `BACKLOG-108` DeepSeek live run closes the missing second accepted larger-class evidence point.
+
+Active phase override: `janus-debug`, canonical state `HANDOFF`.
+
+Last Codex work:
+- ran exactly one bounded DeepSeek live proposal-first call on `BACKLOG-108`
+- verified response capture, usage, telemetry, and healthcheck artifacts
+- classified the result as additional negative evidence for the current larger-class contract
+
+Changed files:
+- `documentation/codex/model-routing/deepseek_execution_patch_candidate_backlog108_result_2026-06-19.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- one approved live OR run `DIRECT-OR-DEEPSEEK-EXECUTION-LIVE-005`: PASS for capture / FAIL for bounded acceptance
+- telemetry JSONL parse: PASS
+- `health_snapshot.py --or-telemetry-jsonl`: PASS
+- live result note written from completed artifacts: PASS
+
+Open risks:
+- The missing second accepted larger-class DeepSeek evidence point still does not exist.
+- We now have repeated length-truncation evidence across two different real prechecked slices, which suggests the larger-class prompt/input contract needs redesign before more live spend.
+- No commit or push happened after this live-result sync step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: explain that the problem is now probably the current larger-class contract itself, not only one unlucky slice.
+
+Next recommended step for Codex: redesign the larger-class prompt/input shape before any further DeepSeek live retry.
+
+As of `2026-06-19 16:52 +02:00`, the next larger-class DeepSeek live candidate is now operationally prepared on `BACKLOG-108` without executing it. A bounded input package plus run-prep note now exist for one future `execution_patch_candidate` live run under workflow `DIRECT-OR-DEEPSEEK-EXECUTION-LIVE-005`. No new OR call was made in this step.
+
+## BACKLOG-108 Live Prep Override
+Timestamp: `2026-06-19 16:52 +02:00`
+
+Current goal override: prepare the next bounded larger-class DeepSeek live proposal run on `BACKLOG-108` after reselection.
+
+Active phase override: `janus-debug`, canonical state `HANDOFF`.
+
+Last Codex work:
+- translated the `BACKLOG-108` precheck into one concrete execution-patch input package
+- pinned one bounded DeepSeek live run command for `BACKLOG-108`
+- kept the run in prep-only state without executing it
+
+Changed files:
+- `documentation/codex/model-routing/execution-review-fixtures/backlog_108_execution_patch_candidate_input_package_2026-06-19.json`
+- `documentation/codex/model-routing/deepseek_execution_patch_candidate_backlog108_prep_2026-06-19.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `BACKLOG-108` precheck reread: PASS
+- `BACKLOG-108` task reread: PASS
+- input package prepared: PASS
+- live prep note written: PASS
+
+Open risks:
+- The missing second accepted larger-class DeepSeek evidence point still does not exist until a future live run passes.
+- `BACKLOG-108` remains a broader seam than `BACKLOG-110`, so Codex review discipline still matters even if the OR proposal stays bounded.
+- No commit or push happened after this prep step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: explain that `BACKLOG-108` is now fully prepped and only the explicit live approval is still missing.
+
+Next recommended step for Codex: if explicitly approved, run exactly one bounded DeepSeek `execution_patch_candidate` live proposal-first call on `BACKLOG-108`.
+
+As of `2026-06-19 16:47 +02:00`, the larger-class second-slice choice has now been deliberately reselected. `BACKLOG-110` is no longer the preferred next DeepSeek evidence slice because two live runs on that exact slice ended with the same `finish_reason=length` seam despite good capture, usage, cost, and healthcheck results. The next preferred second real slice is now `BACKLOG-108`, which is still prechecked but exercises a different existing-contact persistence seam. No new OR call was made in this step.
+
+## Second Slice Reselection Override
+Timestamp: `2026-06-19 16:47 +02:00`
+
+Current goal override: replace `BACKLOG-110` as the next second-slice candidate after the repeated negative length-truncation evidence.
+
+Active phase override: `janus-debug`, canonical state `HANDOFF`.
+
+Last Codex work:
+- reviewed the two negative `BACKLOG-110` DeepSeek live outcomes against the earlier slice-selection rationale
+- confirmed that repeating the same slice again is no longer the best immediate evidence-building move
+- reselected `BACKLOG-108` as the next preferred second real prechecked slice for larger-class DeepSeek evidence
+
+Changed files:
+- `documentation/codex/model-routing/execution_patch_candidate_second_slice_reselection_2026-06-19.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- reread of prior second-slice selection note: PASS
+- reread of `BACKLOG-110` retry result: PASS
+- reread of `BACKLOG-108` precheck and task artifact: PASS
+- reselection note written: PASS
+
+Open risks:
+- The missing second accepted larger-class DeepSeek evidence point still does not exist.
+- `BACKLOG-108` is broader than `BACKLOG-110`, so the next live proposal run still needs disciplined bounded review.
+- No commit or push happened after this reselection step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: explain that `BACKLOG-108` is now the better next second-slice investment because `BACKLOG-110` already consumed two negative live attempts.
+
+Next recommended step for Codex: if explicitly approved, prepare exactly one bounded DeepSeek `execution_patch_candidate` live run on `BACKLOG-108`.
+
+As of `2026-06-19 16:41 +02:00`, the one approved higher-completion DeepSeek retry for `BACKLOG-110` has now fully completed and still failed on the same core seam. Workflow `DIRECT-OR-DEEPSEEK-EXECUTION-LIVE-004` eventually wrote full response, validation, telemetry, and `health_snapshot.py` artifacts after the outer shell already timed out, so the shell timeout was not the real OR outcome. The real outcome is still `finish_reason=length` at `3200` completion tokens, with actual cost `0.0007378` USD versus `0.000684` estimated and a `0.05` class cap. `BACKLOG-110` therefore remains unaccepted as the missing second larger-class evidence point, and a third retry on the same prompt shape is no longer recommended.
+
+## DeepSeek BACKLOG-110 Retry Result Override
+Timestamp: `2026-06-19 16:41 +02:00`
+
+Current goal override: classify whether the one approved higher-completion retry closes the larger-class evidence gap for `BACKLOG-110`.
+
+Active phase override: `janus-debug`, canonical state `HANDOFF`.
+
+Last Codex work:
+- ran exactly one higher-completion DeepSeek live retry for `BACKLOG-110`
+- verified that the actual OR run completed after the outer shell timed out
+- classified the persisted `finish_reason=length` outcome as negative evidence for this exact slice and prompt shape
+
+Changed files:
+- `documentation/codex/model-routing/deepseek_execution_patch_candidate_backlog110_retry_result_2026-06-19.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- one approved live OR retry `DIRECT-OR-DEEPSEEK-EXECUTION-LIVE-004`: PASS for capture / FAIL for bounded acceptance
+- telemetry JSONL parse: PASS
+- `health_snapshot.py --or-telemetry-jsonl`: PASS
+- retry result note written from completed artifacts: PASS
+
+Open risks:
+- The second accepted larger-class DeepSeek evidence point still does not exist.
+- `BACKLOG-110` now looks like a poor immediate retry target on the present prompt shape because two live runs ended at the same `length` seam.
+- No commit or push happened after this retry-result sync step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: explain that the retry did complete, but it still length-truncated at `3200` completion tokens, so we should stop retrying this same slice for now.
+
+Next recommended step for Codex: select a different second real prechecked slice for larger-class DeepSeek evidence, or redesign the prompt/input shape before any further live retry on `BACKLOG-110`.
+
+As of `2026-06-19 16:16 +02:00`, the next DeepSeek `BACKLOG-110` move is now fully prepared as a bounded higher-completion retry plan, but still not executed. The prepared retry keeps the same `execution_patch_candidate` slice and model family, raises `--max-tokens` from the prior 2200 ceiling to `3200`, and projects `0.000684` USD estimated cost, still far below the `0.05` class cap. No new OR call was made in this planning step.
+
+## DeepSeek BACKLOG-110 Retry Plan Override
+Timestamp: `2026-06-19 16:16 +02:00`
+
+Current goal override: turn the `BACKLOG-110` length-seam finding into one explicit, bounded retry plan instead of leaving the next live step ambiguous.
+
+Active phase override: `janus-debug`, canonical state `HANDOFF`.
+
+Last Codex work:
+- inspected the direct OR execution runner to confirm the live probe failed at the completion ceiling rather than a transport seam
+- translated the prior `finish_reason=length` evidence into one explicit higher-completion retry plan
+- pinned the exact retry command, estimated cost, and acceptance gates for a possible next approved live run
+
+Changed files:
+- `documentation/codex/model-routing/deepseek_execution_patch_candidate_backlog110_retry_plan_2026-06-19.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- targeted runner parameter inspection: PASS
+- prior `BACKLOG-110` probe reread: PASS
+- retry plan written with explicit cap and acceptance gates: PASS
+
+Open risks:
+- The second accepted larger-class DeepSeek evidence point still does not exist until a retry actually passes.
+- A future retry still requires explicit approval because it is another live OR call.
+- No commit or push happened after this retry-planning step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: explain that the live retry is now prepared and the only open question is whether to spend the one additional DeepSeek call.
+
+Next recommended step for Codex: if explicitly approved, run exactly one higher-completion DeepSeek retry on `BACKLOG-110` using the prepared command and acceptance gates.
+
+As of `2026-06-19 16:10 +02:00`, exactly one approved DeepSeek `execution_patch_candidate` live probe on `BACKLOG-110` has now completed under workflow `DIRECT-OR-DEEPSEEK-EXECUTION-LIVE-003`. Transport, response capture, `generation_id`, usage, actual cost, telemetry JSONL parsing, and `health_snapshot.py` ingestion all passed, and the actual cost stayed at `0.00048402` USD versus a `0.000432` estimate and a `0.05` class cap. The run is still not accepted as the missing second larger-class evidence point because the model stopped with `finish_reason=length`, the JSON content truncated, and the fallback patch-candidate artifact remained incomplete. No additional OR call was made in this step.
+
+## DeepSeek BACKLOG-110 Probe Override
+Timestamp: `2026-06-19 16:10 +02:00`
+
+Current goal override: classify the one approved `BACKLOG-110` DeepSeek live probe and determine whether it closes the missing second accepted larger-class `execution_patch_candidate` evidence point.
+
+Active phase override: `janus-debug`, canonical state `HANDOFF`.
+
+Last Codex work:
+- verified the saved live probe artifacts for workflow `DIRECT-OR-DEEPSEEK-EXECUTION-LIVE-003`
+- reconstructed the missing debug-result note directly from `response_summary.json`, `validation_summary.json`, `patch_candidate_result.json`, and `healthcheck_summary.json`
+- synchronized Janus state so the live probe is preserved as debug failure evidence only rather than accepted larger-class evidence
+
+Changed files:
+- `documentation/codex/model-routing/deepseek_execution_patch_candidate_backlog110_probe_debug_result_2026-06-19.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- targeted WHAT_I_LEARNED lookup for the failure seam: PASS with no direct prior match
+- live probe artifact reread for `DIRECT-OR-DEEPSEEK-EXECUTION-LIVE-003`: PASS
+- debug-result note reconstruction from captured artifacts: PASS
+
+Open risks:
+- The missing second accepted larger-class DeepSeek evidence point still does not exist.
+- The failure class is now narrowed to a completion-budget seam on `BACKLOG-110`, so any next live retry must be explicitly approved and should increase the completion budget.
+- No commit or push happened after this debug sync step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: explain that the `BACKLOG-110` DeepSeek probe passed capture and cost gates but failed on `finish_reason=length`, so it remains debug-only evidence.
+
+Next recommended step for Codex: only if explicitly approved, run one higher-completion DeepSeek retry on `BACKLOG-110`; otherwise keep looking for the safest second accepted larger-class evidence point.
+
+## Second Slice Selection Override
+Timestamp: `2026-06-19 16:08 +02:00`
+
+Current goal override: bind the cleanest second real slice for the next DeepSeek `execution_patch_candidate` evidence run.
+
+Active phase override: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- compared currently available real prechecked slices for suitability as the second accepted larger-class proposal-first OR run
+- selected `BACKLOG-110` as the preferred next slice
+- documented why `BACKLOG-110` is cleaner than `BACKLOG-108` for this exact purpose
+
+Changed files:
+- `documentation/codex/model-routing/execution_patch_candidate_second_slice_selection_2026-06-19.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- targeted reread of `BACKLOG-110` precheck and task artifact: PASS
+- targeted reread of `BACKLOG-108` precheck and task artifact: PASS
+- exclusion check for already completed `BACKLOG-102`: PASS
+- selection note written: PASS
+
+Open risks:
+- This is still a slice-selection step only; no second accepted DeepSeek proposal-first run exists yet.
+- A live call for `BACKLOG-110` still requires explicit approval before execution.
+- No commit or push happened after this slice-selection step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: explain that `BACKLOG-110` is now the cleanest next candidate for the second accepted DeepSeek larger-class proposal run.
+
+Next recommended step for Codex: if explicitly approved, run exactly one bounded direct OR `execution_patch_candidate` proposal-first call on `BACKLOG-110` using `deepseek/deepseek-v4-flash`.
+
+As of `2026-06-19 16:08 +02:00`, the next OR workhorse expansion step is now pinned more concretely: `execution_write_apply_candidate` has a validated local and dispatcher foundation, but it is still not live-ready. The new readiness gate says the missing pieces are one second accepted direct OR `execution_patch_candidate` run on another real prechecked slice with the preferred worker family `deepseek/deepseek-v4-flash`, plus one exact first live write pilot slice. No new OR call was made in this step.
+
+## Execution Write Apply Readiness Override
+Timestamp: `2026-06-19 16:08 +02:00`
+
+Current goal override: convert the abstract write-candidate idea into one concrete readiness gate for the next OR workhorse expansion.
+
+Active phase override: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- reviewed the current write-candidate plan, helper runner, dispatcher result, and larger-class DeepSeek/Qwen evidence
+- created one readiness-gate note for `execution_write_apply_candidate`
+- locked the next missing proof point to one additional accepted direct OR `execution_patch_candidate` run on another real prechecked slice with DeepSeek before any first live write pilot is considered
+
+Changed files:
+- `documentation/codex/model-routing/execution_write_apply_candidate_readiness_gate_2026-06-19.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- targeted reread of write-candidate planning artifact: PASS
+- targeted reread of local helper/dispatcher foundation: PASS
+- targeted reread of current larger-class DeepSeek/Qwen evidence position: PASS
+- readiness-gate synchronization note written: PASS
+
+Open risks:
+- `execution_write_apply_candidate` still lacks the second accepted direct OR larger-class proposal run required for a disciplined first live write pilot.
+- No exact first live write pilot slice is selected yet.
+- No commit or push happened after this readiness clarification step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: explain that the next real progress is not broad write activation, but one more accepted DeepSeek proposal-first run on a second real prechecked slice.
+
+Next recommended step for Codex: bind the next narrow prechecked slice for `execution_patch_candidate` and prepare exactly one DeepSeek larger-class proposal-first run as the final prerequisite before the first write-capable pilot plan.
+
+As of `2026-06-19 16:08 +02:00`, the larger bounded OR worker position for `execution_patch_candidate` is now clarified in workflow docs: `deepseek/deepseek-v4-flash` remains the preferred current OR candidate for this class, while `qwen/qwen3-coder-flash` is explicitly not accepted on the present live contract despite Qwen staying separately useful on the smaller quickchange lane. This is a documentation/routing clarification only; no new OR call was made in this step.
+
+## Execution Patch Candidate OR Position Override
+Timestamp: `2026-06-19 16:08 +02:00`
+
+Current goal override: lock the current larger-class OR worker position so everyday planning can rely on one clear candidate instead of mixing DeepSeek and Qwen evidence.
+
+Active phase override: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- created one explicit position note for the bounded `execution_patch_candidate` class
+- updated the shared operator playbook so the class-level evidence now distinguishes accepted DeepSeek larger-class evidence from negative Qwen larger-class live evidence
+- updated the bounded enablement closeout to keep the same distinction visible in the workflow-ready summary
+
+Changed files:
+- `documentation/codex/model-routing/execution_patch_candidate_or_model_position_2026-06-19.md`
+- `documentation/codex/model-routing/codex_bounded_operator_playbook_2026-06-14.md`
+- `documentation/codex/model-routing/codex_bounded_operator_enablement_closeout_2026-06-14.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- targeted evidence reread for accepted DeepSeek larger-class artifacts: PASS
+- targeted evidence reread for negative Qwen larger-class live artifact: PASS
+- routing clarification edits completed without widening scope: PASS
+
+Open risks:
+- This step clarifies working position only; it does not create production routing or global OR approval.
+- Qwen may still become viable later for this class if we deliberately harden its contract, but that is not current accepted evidence.
+- No commit or push happened after this clarification step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: explain that for the larger bounded patch-candidate lane we only need one reliable OR worker candidate, and right now that candidate is DeepSeek.
+
+Next recommended step for Codex: if the user wants to extend OR further, move from class-position clarification into the next bounded larger-class or write-capable planning gate rather than retesting the same Qwen seam immediately.
+
+As of `2026-06-19 16:08 +02:00`, the first bounded live Qwen `execution_patch_candidate` test has completed and is now classified as real negative live evidence for this class. Workflow `DIRECT-OR-QWEN-EXECUTION-LIVE-001` captured `generation_id`, usage, actual cost, telemetry, and passing `health_snapshot.py` ingestion, so transport and capture are no longer in doubt. The rejection is behavioral: `qwen/qwen3-coder-flash` emitted 10 `openrouter:apply_patch` output items instead of one final bounded proposal, included noisy `#@ title=` diff preambles, produced one context-mismatched hunk, and cost `0.005427825` USD versus a `0.00045` estimate. Qwen therefore remains unaccepted for the bounded `execution_patch_candidate` lane on the current contract, while `janus-quickchange` Qwen evidence stays separate.
+
+## Qwen Execution Patch Candidate Live Override
+Timestamp: `2026-06-19 16:08 +02:00`
+
+Current goal override: determine whether the locally validated Qwen `execution_patch_candidate` path also holds up as bounded live evidence.
+
+Active phase override: `janus-debug`, canonical state `HANDOFF`.
+
+Last Codex work:
+- ran exactly one bounded live Qwen `execution_patch_candidate` call via the validated file-first Responses/apply-patch runner
+- captured live response artifacts, `generation_id`, usage, actual cost, apply-patch calls, telemetry JSONL, and `health_snapshot.py` ingestion
+- classified the result as rejected live evidence because the model violated the bounded patch contract despite clean transport and capture
+
+Changed files:
+- `documentation/codex/model-routing/qwen_execution_patch_candidate_live_debug_result_2026-06-19.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- one bounded live run `DIRECT-OR-QWEN-EXECUTION-LIVE-001`: PASS for capture / FAIL for bounded acceptance
+- telemetry JSONL parse: PASS
+- `health_snapshot.py --or-telemetry-jsonl`: PASS
+- live validation summary classification: FAIL with explicit evidence
+
+Open risks:
+- Qwen `qwen/qwen3-coder-flash` currently does not preserve the one-call bounded execution patch contract for this class.
+- The live run stayed under the class cap of `0.05` USD but overshot the local estimate by `1106.18%`, so current cost prediction is not reliable for this lane.
+- This result does not invalidate the separate accepted Qwen `janus-quickchange` lane; it only rejects the current `execution_patch_candidate` contract for this model.
+- No commit or push happened after this live evidence step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: explain that live capture is solved, but Qwen is not accepted for `execution_patch_candidate` under the present contract because behavior and cost drift remain too noisy.
+
+Next recommended step for Codex: either harden the Qwen-specific request/validator seam around multi-item Responses output before any retest, or switch the next larger-class live comparison to another OR family.
+
+As of `2026-06-19 16:03 +02:00`, the Qwen `execution_patch_candidate` Responses/apply-patch lane now passes local fixture validation end to end. The new runner can build bounded excerpt inputs across the full BACKLOG-107 allowlist, validate one bounded `openrouter:apply_patch` proposal, emit telemetry, and pass `health_snapshot.py` ingestion under workflow `DIRECT-OR-QWEN-EXECUTION-FIXTURE-003` at `0.00041862` USD actual fixture cost versus `0.00045` estimated. No live OR call was made in this step; the lane remains `fixture-only` and still needs one explicitly approved bounded live run before it can count as accepted everyday evidence.
+
+## Qwen Execution Patch Candidate Fixture Override
+Timestamp: `2026-06-19 16:03 +02:00`
+
+Current goal override: finish the local architecture proof for the Qwen `execution_patch_candidate` path before any live retry is considered.
+
+Active phase override: `janus-debug`, canonical state `HANDOFF`.
+
+Last Codex work:
+- hardened the Qwen execution patch runner so bounded file context can be derived from exact anchors, repo-relevant search terms, or a bounded head/tail fallback for larger files
+- replaced the stale quickchange-oriented unit test copy with dedicated Qwen execution-path tests
+- added a real Responses/apply-patch fixture against the current repo state
+- ran one fixture-only end-to-end workflow `DIRECT-OR-QWEN-EXECUTION-FIXTURE-003` with telemetry output and passing `health_snapshot.py` ingestion
+
+Changed files:
+- `documentation/codex/model-routing/scripts/openrouter_qwen_execution_patch_candidate_runner.py`
+- `documentation/codex/model-routing/tests/test_openrouter_qwen_execution_patch_candidate_runner.py`
+- `documentation/codex/model-routing/execution-review-fixtures/qwen_execution_patch_candidate_fixture_response_2026-06-19.json`
+- `documentation/codex/model-routing/qwen_execution_patch_candidate_fixture_debug_result_2026-06-19.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m py_compile documentation/codex/model-routing/scripts/openrouter_qwen_execution_patch_candidate_runner.py`: PASS
+- `python -m unittest documentation.codex.model-routing.tests.test_openrouter_qwen_execution_patch_candidate_runner`: PASS
+- fixture-only run `DIRECT-OR-QWEN-EXECUTION-FIXTURE-003`: PASS
+- telemetry JSONL parse plus `health_snapshot.py --or-telemetry-jsonl`: PASS
+
+Open risks:
+- This is still fixture-only evidence; there is no new live OR proof yet for the Qwen execution lane.
+- The bounded head/tail fallback keeps the path operable, but real larger-file quality still needs one live evidence point before acceptance.
+- The repo still contains many unrelated local changes outside this slice.
+- No commit or push happened after this fixture-proof step, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: explain that the Qwen execution lane is now architecture-ready locally but still needs one explicit live approval before it can become an accepted everyday delegated class.
+
+Next recommended step for Codex: if explicitly approved, run exactly one bounded live Qwen `execution_patch_candidate` call with the validated runner and preserve the same telemetry and healthcheck gates.
+
 As of `2026-06-19 18:02 +02:00`, the Qwen Responses/apply-patch lane is now documented as accepted bounded live evidence for `janus-quickchange` after the local validator seams were repaired. The accepted run `DIRECT-OR-QWEN-RESPONSES-LIVE-003` stayed under the `0.0020` cap at `0.00039468` USD, captured `generation_id` and usage, and now revalidates as `PASS` with `health_snapshot.py` ingestion also `PASS`. The remaining fixes were strictly local parser/validator behavior: accept the observed `in_progress` item status on a completed Responses output and handle unified-diff context-prefix spaces correctly during applicability checks. No additional OR call was made during this documentation update.
 
 As of `2026-06-19 17:44 +02:00`, the final bounded Qwen Responses/apply-patch live retry is now accepted for the `janus-quickchange` class after local validator seam repair. Workflow `DIRECT-OR-QWEN-RESPONSES-LIVE-003` stayed under the `0.0020` cap at `0.00039468` USD, captured `generation_id`, usage, and one bounded `openrouter:apply_patch` proposal, and now revalidates as `PASS` with `health_snapshot.py` ingestion also `PASS`. The remaining fixes were local only: accept the observed `in_progress` tool-item status on completed Responses output, and correctly handle unified-diff context-prefix spaces during applicability checks. No additional OR call was made after the single approved live retry.
