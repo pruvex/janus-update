@@ -1,0 +1,23 @@
+﻿{
+  "workflow_id": "BACKLOG-107-R1-EXECUTION-PATCH-CANDIDATE-001",
+  "bound_skill_context": "janus-executioner",
+  "target_task": "TASK-BACKLOG-107-R1.1",
+  "spec_path": "documentation/tasks/backlog_BACKLOG-107_first_apply_slice_runtime_log_target_alignment.md",
+  "precheck_status": "PRE-CHECK PASSED",
+  "allowed_files": [
+    "scripts/dev-log-utils.cjs",
+    "documentation/codex/skills/janus-health-check/scripts/health_snapshot.py",
+    "documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md",
+    ".gitignore",
+    "documentation/test-runs/BACKLOG-107_execution_validation.md"
+  ],
+  "max_touched_files": 5,
+  "mini_test_plan": [
+    "python documentation/codex/skills/janus-health-check/scripts/health_snapshot.py --repo C:\\KI\\Janus-Projekt --mode MONTHLY",
+    "rg -n \"debug_logs|documentation/logs/dev-runtime|\\\\.codex-vite|backend_hotfix|backend_live|backend_persist|backend_restart|backend_start_manual|backend_verify|tmp_uv8011\" scripts package.json main.electron.cjs documentation -S",
+    "node -e \"const { runWithLogs } = require('./scripts/dev-log-utils.cjs'); console.log(typeof runWithLogs === 'function' ? 'PASS' : 'FAIL')\"",
+    "manual diff review for runtime-log target alignment only"
+  ],
+  "manual_validation_gate": "Codex must still verify that the patch stays inside the first runtime-log alignment slice, preserves local validation ownership, and does not widen into startup telemetry or unrelated launcher cleanup.",
+  "delegation_question": "Produce one bounded patch candidate that moves the shared versioned backend and Vite runtime-log family from debug_logs into documentation/logs/dev-runtime and aligns the coupled hygiene references only."
+}

@@ -1,0 +1,80 @@
+﻿{
+  "model": "deepseek/deepseek-v4-flash",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a bounded OpenRouter worker for a Janus execution patch candidate. Return only JSON matching the required schema. This is proposal-only work. Do not claim completion, release readiness, routing authority, git authority, or final validation authority. Codex will review and decide whether to apply or reject. The field manual_validation_note must explicitly say that Codex must manually validate locally. The field codex_acceptance_rule must explicitly say that Codex must review and apply or reject locally."
+    },
+    {
+      "role": "user",
+      "content": "{\n  \"target_task\": \"BACKLOG-108\",\n  \"allowed_files\": [\n    \"backend/services/chat_orchestrator.py\",\n    \"backend/services/contact_manager.py\",\n    \"backend/services/memory_extractor.py\",\n    \"backend/tools/memory_tools.py\",\n    \"backend/data/crud.py\",\n    \"backend/tests/test_contact_manager.py\",\n    \"backend/tests/test_memory_tools.py\",\n    \"backend/tests/test_memory_write_update_conflict_handling.py\"\n  ],\n  \"max_touched_files\": 8,\n  \"mini_test_plan\": [\n    \"python -m pytest backend/tests/test_contact_manager.py -q\",\n    \"python -m pytest backend/tests/test_memory_tools.py -q\",\n    \"python -m pytest backend/tests/test_memory_write_update_conflict_handling.py -q\",\n    \"python -m py_compile backend/services/chat_orchestrator.py backend/services/contact_manager.py backend/services/memory_extractor.py backend/tools/memory_tools.py backend/data/crud.py backend/tests/test_contact_manager.py backend/tests/test_memory_tools.py backend/tests/test_memory_write_update_conflict_handling.py\"\n  ],\n  \"manual_validation_gate\": \"Codex must still verify that confirmed facts for an already matched existing contact reach the intended contact persistence or explicit proposal path, and that Janus does not claim a fact is firmly stored when it remains memory-only.\",\n  \"delegation_question\": \"Produce one bounded patch candidate that closes the confirmed existing-contact fact gap so clear confirmed contact facts reach the approved persistence or proposal path without aggressive silent mutation on ambiguous statements.\",\n  \"required_manual_validation_phrase\": \"Codex must manually validate this patch locally before task completion.\",\n  \"required_acceptance_phrase\": \"Codex must review and apply or reject locally.\",\n  \"field_contract\": {\n    \"manual_validation_note\": \"Must contain the exact sentence: Codex must manually validate this patch locally before task completion.\",\n    \"codex_acceptance_rule\": \"Must contain the exact sentence: Codex must review and apply or reject locally.\"\n  },\n  \"spec_excerpt\": \"### BACKLOG-108 Bestaetigtes Kontaktwissen aus Chat im bestehenden Adressbuchkontakt persistieren\\n- Ziel:\\n  - Stelle sicher, dass bestaetigtes Kontaktwissen aus dem Chat bei eindeutig erkanntem bestehendem Kontakt nicht nur im Memory-/Chat-Kontext bleibt, sondern konsistent in den bestehenden Kontaktpersistenzpfad gelangt oder als sauberer Kontakt-Update-Vorschlag behandelt wird.\\n- Scope:\\n  - Touch only the existing chat-orchestration, contact-memory coupling, and contact persistence paths needed to close the confirmed-contact-fact gap for existing contacts.\\n  - Do not redesign the address-book data model, broaden private-contact proposal behavior, or introduce aggressive auto-mutation for ambiguous chat statements.\\n- Files:\\n  - `backend/services/chat_orchestrator.py`\\n  - `backend/services/contact_manager.py`\\n  - `backend/services/memory_extractor.py`\\n  - `backend/tools/memory_tools.py`\\n  - `backend/data/crud.py`\\n  - `backend/tests/test_contact_manager.py`\\n  - `backend/tests/test_memory_tools.py`\\n  - `backend/tests/test_memory_write_update_conflict_handling.py`\\n- Steps:\\n  1. Trace the current confirmed-contact-fact flow for an already known contact from chat interpretation through Memory/contact write handling and identify where persistence stops.\\n  2. Ensure clear confirmed contact facts for an already matched existing contact land in the correct contact update path or explicit reviewable proposal path instead of remaining Memory-only.\\n  3. Prevent Janus from claiming a contact fact is firmly remembered when it has not reached the intended contact persistence or proposal state.\\n  4. Add focused regression coverage for the confirmed existing-contact path, including ambiguity-safe behavior and no silent overreach on unclear statements.\\n- Acceptance Criteria:\\n  - When an existing contact is clearly matched in chat and the user confirms a direct personal fact such as a preference, dislike, or Besonderheit, the fact reaches the existing address-book contact through the approved persistence or proposal path.\\n  - Janus no longer states that a contact fact is firmly stored when it only exists in Memory/chat context and has not reached contact persistence.\\n  - Ambiguous or weak chat statements do not trigger aggressive silent contact mutation.\"\n}"
+    }
+  ],
+  "temperature": 0.0,
+  "max_tokens": 2600,
+  "response_format": {
+    "type": "json_schema",
+    "json_schema": {
+      "name": "janus_execution_patch_candidate_result",
+      "strict": true,
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "status",
+          "target_task",
+          "patch_text",
+          "changed_files",
+          "risk_list",
+          "suggested_validation_steps",
+          "manual_validation_note",
+          "codex_acceptance_rule",
+          "notes"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "PASS",
+              "WEAK_SIGNAL",
+              "BLOCKED"
+            ]
+          },
+          "target_task": {
+            "type": "string"
+          },
+          "patch_text": {
+            "type": "string"
+          },
+          "changed_files": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "risk_list": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "suggested_validation_steps": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "manual_validation_note": {
+            "type": "string"
+          },
+          "codex_acceptance_rule": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

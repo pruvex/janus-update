@@ -1,0 +1,29 @@
+﻿{
+  "workflow_id": "BACKLOG-110-EXECUTION-PATCH-CANDIDATE-LIVE-002-STRUCTURED",
+  "skill_id": "janus-executioner",
+  "action_type": "propose_patch",
+  "executor_status": "PASS",
+  "schema_validation": "PASS",
+  "mapping_resolution": "PASS",
+  "allowlist_status": "PASS",
+  "output_artifact_status": "PASS",
+  "codex_review_required": true,
+  "detail": "Patch captured for Codex review only; no apply attempted.",
+  "action_summary": {
+    "artifact_path": "documentation/codex/model-routing/structured-action-runs/BACKLOG-110-EXECUTION-PATCH-CANDIDATE-LIVE-002-STRUCTURED/20260614-205959/proposed_patch.diff",
+    "allowed_files": [
+      "backend/data/crud.py",
+      "backend/services/contact_manager.py",
+      "backend/tests/test_contact_card_normalization.py",
+      "backend/tests/test_contact_manager.py"
+    ],
+    "touched_files": [
+      "backend/data/crud.py",
+      "backend/services/contact_manager.py",
+      "backend/tests/test_contact_card_normalization.py",
+      "backend/tests/test_contact_manager.py"
+    ],
+    "auto_apply": false
+  },
+  "run_directory": "documentation/codex/model-routing/structured-action-runs/BACKLOG-110-EXECUTION-PATCH-CANDIDATE-LIVE-002-STRUCTURED/20260614-205959"
+}

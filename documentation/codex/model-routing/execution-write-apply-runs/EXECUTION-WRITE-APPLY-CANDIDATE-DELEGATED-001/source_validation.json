@@ -1,0 +1,63 @@
+﻿{
+  "input_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-review-runs\\EXECUTION-PATCH-CANDIDATE-DELEGATED-001\\input_package.json",
+  "validation_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-review-runs\\EXECUTION-PATCH-CANDIDATE-DELEGATED-001\\validation_summary.json",
+  "operator_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-review-runs\\EXECUTION-PATCH-CANDIDATE-DELEGATED-001\\operator_summary.json",
+  "delegated_result_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-review-runs\\EXECUTION-PATCH-CANDIDATE-DELEGATED-001\\delegated_result.md",
+  "allowed_files": [
+    "frontend/js/cost-visualizer.js",
+    "frontend/styles.css"
+  ],
+  "max_touched_files": 2,
+  "changed_files": [
+    "frontend/js/cost-visualizer.js",
+    "frontend/styles.css"
+  ],
+  "issues": [],
+  "input_payload": {
+    "workflow_id": "EXECUTION-PATCH-CANDIDATE-001",
+    "bound_skill_context": "janus-executioner",
+    "target_task": "TASK-SPEC14.4 bounded UI anomaly copy refinement",
+    "spec_path": "documentation/SPEC/14_gemini_cost_attribution_and_deepdive_forensics.md",
+    "precheck_status": "PRE-CHECK PASSED",
+    "allowed_files": [
+      "frontend/js/cost-visualizer.js",
+      "frontend/styles.css"
+    ],
+    "max_touched_files": 2,
+    "mini_test_plan": [
+      "node --check frontend/js/cost-visualizer.js",
+      "manual modal smoke check in Janus DeepDive anomaly section"
+    ],
+    "manual_validation_gate": "Codex must still request manual Janus UI confirmation after local checks.",
+    "delegation_question": "Produce one bounded patch candidate that adjusts the anomaly explanation text without broad refactor."
+  },
+  "validation_payload": {
+    "workflow_id": "EXECUTION-PATCH-CANDIDATE-DELEGATED-001",
+    "input_validation_pass": true,
+    "result_validation_pass": true,
+    "input_issues": [],
+    "result_issues": [],
+    "precheck_status": "PRE-CHECK PASSED",
+    "allowed_files": [
+      "frontend/js/cost-visualizer.js",
+      "frontend/styles.css"
+    ],
+    "changed_files": [
+      "frontend/js/cost-visualizer.js",
+      "frontend/styles.css"
+    ],
+    "accepted_for_codex_patch_review": true
+  },
+  "operator_payload": {
+    "summary_header": "EXECUTION PATCH CANDIDATE RESULT",
+    "workflow_id": "EXECUTION-PATCH-CANDIDATE-DELEGATED-001",
+    "skill": "janus-executioner",
+    "task_label": "Execution patch candidate delegated validation",
+    "selected_path": "delegated_execution_patch_candidate",
+    "normal_target_model": "5.4/medium",
+    "delegated_model_label": "bounded delegated review / fixture mode",
+    "validation_result": "PASS",
+    "final_outcome": "EXECUTION_PATCH_CANDIDATE_READY_FOR_CODEX_REVIEW",
+    "operator_message": "Delegated execution patch candidate stayed inside the prechecked allowlist and remains proposal-only. Codex must still review the patch, decide whether to apply or reject it, and keep final task ownership."
+  }
+}

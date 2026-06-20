@@ -1,0 +1,12 @@
+﻿{
+  "summary_header": "EXECUTION PATCH CANDIDATE RESULT",
+  "workflow_id": "EXECUTION-PATCH-CANDIDATE-DELEGATED-001",
+  "skill": "janus-executioner",
+  "task_label": "Execution patch candidate delegated validation",
+  "selected_path": "delegated_execution_patch_candidate",
+  "normal_target_model": "5.4/medium",
+  "delegated_model_label": "bounded delegated review / fixture mode",
+  "validation_result": "PASS",
+  "final_outcome": "EXECUTION_PATCH_CANDIDATE_READY_FOR_CODEX_REVIEW",
+  "operator_message": "Delegated execution patch candidate stayed inside the prechecked allowlist and remains proposal-only. Codex must still review the patch, decide whether to apply or reject it, and keep final task ownership."
+}

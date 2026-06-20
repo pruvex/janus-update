@@ -1,0 +1,80 @@
+﻿{
+  "model": "deepseek/deepseek-v4-flash",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a bounded OpenRouter worker for a Janus execution patch candidate. Return only JSON matching the required schema. This is proposal-only work. Do not claim completion, release readiness, routing authority, git authority, or final validation authority. Codex will review and decide whether to apply or reject."
+    },
+    {
+      "role": "user",
+      "content": "{\n  \"target_task\": \"TASK-BACKLOG-107-R1.1\",\n  \"allowed_files\": [\n    \"scripts/dev-log-utils.cjs\",\n    \"documentation/codex/skills/janus-health-check/scripts/health_snapshot.py\",\n    \"documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md\",\n    \"gitignore\",\n    \"documentation/test-runs/BACKLOG-107_execution_validation.md\"\n  ],\n  \"max_touched_files\": 5,\n  \"mini_test_plan\": [\n    \"python documentation/codex/skills/janus-health-check/scripts/health_snapshot.py --repo C:\\\\KI\\\\Janus-Projekt --mode MONTHLY\",\n    \"rg -n \\\"debug_logs|documentation/logs/dev-runtime|\\\\\\\\.codex-vite|backend_hotfix|backend_live|backend_persist|backend_restart|backend_start_manual|backend_verify|tmp_uv8011\\\" scripts package.json main.electron.cjs documentation -S\",\n    \"node -e \\\"const { runWithLogs } = require('./scripts/dev-log-utils.cjs'); console.log(typeof runWithLogs === 'function' ? 'PASS' : 'FAIL')\\\"\",\n    \"manual diff review for runtime-log target alignment only\"\n  ],\n  \"manual_validation_gate\": \"Codex must still verify that the patch stays inside the first runtime-log alignment slice, preserves local validation ownership, and does not widen into startup telemetry or unrelated launcher cleanup.\",\n  \"delegation_question\": \"Produce one bounded patch candidate that moves the shared versioned backend and Vite runtime-log family from debug_logs into documentation/logs/dev-runtime and aligns the coupled hygiene references only.\",\n  \"spec_excerpt\": \"### TASK-BACKLOG-107-R1.1 Move the shared versioned dev-runtime log family from `debug_logs/` into one intentional repo path\\n- Ziel:\\n  - Route the first recurring shared dev-runtime log family used by the versioned backend and Vite launcher helpers into one explicit target path so the root-log hygiene work can start from a small applyable slice.\\n- Scope:\\n  - Touch only the shared local dev-runtime log helper and the minimal healthcheck, runbook, ignore, and validation artifacts needed to reflect the new path.\\n  - Do not widen into startup telemetry, unrelated root cleanup, legacy artifact migration, or launcher families that are not already covered by the shared helper.\\n- Files:\\n  - `scripts/dev-log-utils.cjs`\\n  - `documentation/codex/skills/janus-health-check/scripts/health_snapshot.py`\\n  - `documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md`\\n  - `.gitignore`\\n  - `documentation/test-runs/BACKLOG-107_execution_validation.md`\\n- Steps:\\n  1. Change the shared helper that writes versioned backend and Vite runtime logs so the default target path becomes `documentation/logs/dev-runtime/` instead of `debug_logs/`.\\n  2. Update the healthcheck legacy-log classification text only as needed so it points to the same new intentional path.\\n  3. Update the runbook and ignore rules so the new log destination is explicit and stable.\\n  4. Refresh the bounded validation note for this backlog item so it records the first apply slice accurately.\\n- Acceptance Criteria:\\n  - The shared helper no longer writes the versioned backend and Vite runtime log family into `debug_logs/`.\\n  - The intended target path for that family is documented consistently as `documentation/logs/dev-runtime/`.\\n  - Healthcheck classification text, runbook wording, and ignore rules agree on the same target path.\\n  - No startup telemetry path, product runtime behavior, or broader repo cleanup logic is changed in this first slice.\"\n}"
+    }
+  ],
+  "temperature": 0.0,
+  "max_tokens": 2200,
+  "response_format": {
+    "type": "json_schema",
+    "json_schema": {
+      "name": "janus_execution_patch_candidate_result",
+      "strict": true,
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "status",
+          "target_task",
+          "patch_text",
+          "changed_files",
+          "risk_list",
+          "suggested_validation_steps",
+          "manual_validation_note",
+          "codex_acceptance_rule",
+          "notes"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "PASS",
+              "WEAK_SIGNAL",
+              "BLOCKED"
+            ]
+          },
+          "target_task": {
+            "type": "string"
+          },
+          "patch_text": {
+            "type": "string"
+          },
+          "changed_files": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "risk_list": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "suggested_validation_steps": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "manual_validation_note": {
+            "type": "string"
+          },
+          "codex_acceptance_rule": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,21 @@
+﻿{
+  "workflow_id": "BACKLOG-110-EXECUTION-PATCH-CANDIDATE-001",
+  "bound_skill_context": "janus-executioner",
+  "target_task": "BACKLOG-110",
+  "spec_path": "documentation/tasks/backlog_BACKLOG-110_kontakt_wohnort_landet_als_besonderheit_statt_im_adressblock.md",
+  "precheck_status": "PRE-CHECK PASSED",
+  "allowed_files": [
+    "backend/services/contact_manager.py",
+    "backend/data/crud.py",
+    "backend/tests/test_contact_manager.py",
+    "backend/tests/test_contact_card_normalization.py"
+  ],
+  "max_touched_files": 4,
+  "mini_test_plan": [
+    "python -m pytest backend/tests/test_contact_manager.py -q",
+    "python -m pytest backend/tests/test_contact_card_normalization.py -q",
+    "python -m py_compile backend/services/contact_manager.py backend/data/crud.py backend/tests/test_contact_manager.py backend/tests/test_contact_card_normalization.py"
+  ],
+  "manual_validation_gate": "Codex must still request manual Janus address-book verification after local checks if visible rendering behavior changes.",
+  "delegation_question": "Produce one bounded patch candidate that routes residence-style facts into the address field and upgrades existing affected contacts without broad address-book redesign."
+}

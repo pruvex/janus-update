@@ -1,0 +1,12 @@
+﻿{
+  "summary_header": "EXECUTION WRITE APPLY CANDIDATE RESULT",
+  "workflow_id": "EXECUTION-WRITE-APPLY-CANDIDATE-LOCAL-001",
+  "skill": "janus-executioner",
+  "task_label": "Execution write apply candidate local validation",
+  "selected_path": "codex_only_operator_choice",
+  "normal_target_model": "5.4/medium",
+  "delegated_model_label": "bounded workspace-write execution candidate / accepted proposal-first evidence path",
+  "final_outcome": "LOCAL_CODEX_PATH_SELECTED",
+  "validation_result": "PASS",
+  "operator_message": "Operator chose the local Codex execution path. No delegated execution write-apply candidate path was used."
+}

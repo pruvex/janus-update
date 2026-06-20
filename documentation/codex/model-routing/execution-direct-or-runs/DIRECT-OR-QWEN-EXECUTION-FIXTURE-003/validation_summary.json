@@ -1,0 +1,25 @@
+﻿{
+  "workflow_id": "DIRECT-OR-QWEN-EXECUTION-FIXTURE-003",
+  "validation_result": "PASS",
+  "budget_profile": "execution_patch_candidate",
+  "issues": [],
+  "touched_files": [
+    "scripts/dev-log-utils.cjs"
+  ],
+  "editable_paths": [
+    "scripts/dev-log-utils.cjs",
+    "documentation/codex/skills/janus-health-check/scripts/health_snapshot.py",
+    "documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md",
+    ".gitignore",
+    "documentation/test-runs/BACKLOG-107_execution_validation.md"
+  ],
+  "max_touched_files": 5,
+  "finish_reason": "stop",
+  "actual_or_cost": 0.00041862,
+  "cost_cap": 0.05,
+  "response_api_shape": "responses",
+  "response_output_item_types": [
+    "message",
+    "openrouter:apply_patch"
+  ]
+}

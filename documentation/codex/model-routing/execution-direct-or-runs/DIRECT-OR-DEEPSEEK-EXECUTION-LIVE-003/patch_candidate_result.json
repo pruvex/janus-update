@@ -1,0 +1,13 @@
+﻿{
+  "status": "BLOCKED",
+  "target_task": "BACKLOG-110",
+  "patch_text": "",
+  "changed_files": [],
+  "risk_list": [
+    "Could not parse model content as JSON: Unterminated string starting at: line 4 column 17 (char 73)"
+  ],
+  "suggested_validation_steps": [],
+  "manual_validation_note": "Codex must keep manual validation ownership because the model response could not be parsed.",
+  "codex_acceptance_rule": "Codex must review and apply or reject locally.",
+  "notes": "Parser fallback result"
+}

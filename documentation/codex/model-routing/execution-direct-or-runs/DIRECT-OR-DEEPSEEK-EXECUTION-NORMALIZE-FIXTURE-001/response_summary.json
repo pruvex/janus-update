@@ -1,0 +1,19 @@
+﻿{
+    "capture_mode":  "local_fixture",
+    "http_status":  200,
+    "generation_id":  "gen-direct-or-execution-fixture-001",
+    "model":  "openai/gpt-oss-20b",
+    "finish_reason":  "stop",
+    "usage":  {
+                  "prompt_tokens":  980,
+                  "completion_tokens":  320,
+                  "cost":  0.00021140,
+                  "prompt_tokens_details":  {
+                                                "cached_tokens":  0
+                                            },
+                  "completion_tokens_details":  {
+                                                    "reasoning_tokens":  0
+                                                }
+              },
+    "actual_or_cost":  0.00021140
+}

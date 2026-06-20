@@ -1,0 +1,223 @@
+﻿EXECUTION_PATCH_CANDIDATE_REVIEW
+Status: PASS
+Target Task: BACKLOG-110
+Changed Files:
+- backend/services/contact_manager.py
+- backend/data/crud.py
+- backend/tests/test_contact_manager.py
+- backend/tests/test_contact_card_normalization.py
+Risk List:
+- Patch is still proposal-only and may miss a hidden schema or migration dependency.
+- Codex must verify that no broader address normalization behavior regresses outside the bounded file cluster.
+Suggested Validation Steps:
+- python -m pytest backend/tests/test_contact_manager.py -q
+- python -m pytest backend/tests/test_contact_card_normalization.py -q
+- python -m py_compile backend/services/contact_manager.py backend/data/crud.py backend/tests/test_contact_manager.py backend/tests/test_contact_card_normalization.py
+Manual Validation Note: Codex still owns manual Janus validation. This read-only delegated patch proposal does not satisfy manual product verification.
+Codex Acceptance Rule: Codex must review this proposal and decide whether to apply or reject it. The delegated path has no apply or completion authority.
+Notes: Captured from read-only Codex CLI sidecar patch proposal.
+
+PATCH_TEXT
+--- a/backend/services/contact_manager.py
++++ b/backend/services/contact_manager.py
+@@ -232,7 +232,7 @@ _CONTACT_NAME_PREDICATES = {
+     "heisst_vollstaendig",
+     "heißt_vollstaendig",
+ }
+ _CONTACT_RESIDENCE_PREDICATES = {"wohnt_in", "lebt_in"}
+-_CONTACT_RESIDENCE_DETAIL_RE = re.compile(r"^wohnt\s+in\s+(.+)$", re.IGNORECASE)
++_CONTACT_RESIDENCE_DETAIL_RE = re.compile(r"^(?:wohnt|lebt)\s+in\s+(.+)$", re.IGNORECASE)
+
+
+ def _normalize_contact_name(name: Optional[str]) -> str:
+@@ -756,6 +756,15 @@ def _contact_type_from_payload(payload: Dict[str, Any]) -> str:
+     return "private_person" if _looks_private_contact(payload) else "organization"
+
+
++def _extract_residence_address(value: Optional[str]) -> Optional[str]:
++    text = str(value or "").strip()
++    if not text:
++        return None
++    match = _CONTACT_RESIDENCE_DETAIL_RE.match(text)
++    if not match:
++        return None
++    return match.group(1).replace("-", " ").strip(" .") or None
++
++
+ def _sanitize_contact_payload(contact_data_item: Dict[str, Any]) -> Dict[str, Any]:
+     payload = dict(contact_data_item or {})
+     payload["contact_type"] = _contact_type_from_payload(payload)
+@@ -777,6 +786,15 @@ def _sanitize_contact_payload(contact_data_item: Dict[str, Any]) -> Dict[str, A
+         cleaned["name"] = str(cleaned["name"]).strip()
+     if "category" not in cleaned:
+         cleaned["category"] = "Business" if cleaned.get("contact_type") == "organization" else "Privat"
++
++    if cleaned.get("contact_type") == "private_person":
++        residence_address = _extract_residence_address(cleaned.get("notes"))
++        if residence_address:
++            if not cleaned.get("address"):
++                cleaned["address"] = residence_address
++            cleaned.pop("notes", None)
++        elif cleaned.get("notes") is not None and not str(cleaned.get("notes")).strip():
++            cleaned.pop("notes", None)
++
+     return cleaned
+
+
+--- a/backend/data/crud.py
++++ b/backend/data/crud.py
+@@ -377,7 +377,7 @@ _CONTACT_STAR_WARS_FAN_RE = re.compile(
+ _CONTACT_STAR_WARS_MODELS_RE = re.compile(
+     r"\bstar[- ]?wars[- ]?modelle?\b",
+     re.IGNORECASE,
+ )
+-_CONTACT_RESIDENCE_DETAIL_RE = re.compile(r"^wohnt\s+in\s+(.+)$", re.IGNORECASE)
++_CONTACT_RESIDENCE_DETAIL_RE = re.compile(r"^(?:wohnt|lebt)\s+in\s+(.+)$", re.IGNORECASE)
+
+
+ def _normalize_contact_preference_text(value: str) -> str:
+@@ -394,6 +394,15 @@ def _dedupe_contact_string_list(items: List[str]) -> List[str]:
+     return deduped
+
+
++def _extract_contact_residence_address(value: Optional[str]) -> Optional[str]:
++    text = str(value or "").strip()
++    if not text:
++        return None
++    match = _CONTACT_RESIDENCE_DETAIL_RE.match(text)
++    if not match:
++        return None
++    return match.group(1).replace("-", " ").strip(" .") or None
++
++
+ def _normalize_contact_structured_fields(contact: models.Contact) -> bool:
+     preferences = list(getattr(contact, "preferences", None) or [])
+     personal_details = list(getattr(contact, "personal_details", None) or [])
+@@ -401,6 +410,8 @@ def _normalize_contact_structured_fields(contact: models.Contact) -> bool:
+     cleaned_preferences: List[str] = []
+     cleaned_personal_details: List[str] = []
+     detail_keys: set[str] = set()
++    note_lines = [line.strip() for line in str(getattr(contact, "notes", None) or "").splitlines()]
++    cleaned_note_lines: List[str] = []
+     changed = False
+
+     for item in preferences:
+@@ -425,10 +436,9 @@ def _normalize_contact_structured_fields(contact: models.Contact) -> bool:
+         if not text:
+             changed = True
+             continue
+-        residence_match = _CONTACT_RESIDENCE_DETAIL_RE.match(text)
+-        if residence_match:
+-            normalized_address = residence_match.group(1).replace("-", " ").strip(" .")
+-            if normalized_address and not address:
++        normalized_address = _extract_contact_residence_address(text)
++        if normalized_address:
++            if not address:
+                 address = normalized_address
+             changed = True
+             continue
+@@ -447,11 +457,26 @@ def _normalize_contact_structured_fields(contact: models.Contact) -> bool:
+         cleaned_personal_details.append(text)
+         detail_keys.add(text.casefold())
+
++    for line in note_lines:
++        if not line:
++            changed = True
++            continue
++        normalized_address = _extract_contact_residence_address(line)
++        if normalized_address:
++            if not address:
++                address = normalized_address
++            changed = True
++            continue
++        cleaned_note_lines.append(line)
++
+     deduped_preferences = _dedupe_contact_string_list(cleaned_preferences)
+     deduped_personal_details = _dedupe_contact_string_list(cleaned_personal_details)
++    normalized_notes = "\n".join(cleaned_note_lines).strip() or None
+     if deduped_preferences != cleaned_preferences or deduped_personal_details != cleaned_personal_details:
+         changed = True
++    if normalized_notes != (str(getattr(contact, "notes", None) or "").strip() or None):
++        changed = True
+
+     if changed:
++        contact.notes = normalized_notes
+         contact.address = address or None
+         contact.preferences = deduped_preferences
+         contact.personal_details = deduped_personal_details
+--- a/backend/tests/test_contact_manager.py
++++ b/backend/tests/test_contact_manager.py
+@@ -48,6 +48,41 @@ async def test_extract_and_save_contact_stages_private_contact_proposal(db_sessi
+     assert crud.get_contacts(db_session, limit=20) == []
+
+
++@pytest.mark.asyncio
++async def test_extract_and_save_contact_routes_private_residence_note_into_address(db_session):
++    contact_manager._clear_pending_contact_proposals_for_tests()
++    with patch("backend.services.llm_gateway.call_llm", new_callable=AsyncMock) as mock_call_llm:
++        mock_call_llm.return_value = {
++            "type": "text",
++            "text": """
++            [
++              {
++                "name": "Oliver Schwab",
++                "category": "Private",
++                "notes": "wohnt in Köln-Stammheim"
++              }
++            ]
++            """,
++            "usage": {},
++            "cost": {},
++        }
++
++        with patch(
++            "backend.services.contact_manager.database.get_db_sync",
++            side_effect=_db_gen(db_session),
++        ):
++            result = await contact_manager.extract_and_save_contact(
++                text_block="Oliver Schwab wohnt in Köln-Stammheim",
++                api_key="dummy_key",
++                provider="gemini",
++                model="gemini-3-flash-preview",
++                chat_id=78,
++            )
++            confirm_result = contact_manager.confirm_pending_contact_proposal(78)
++
++    created = crud.search_contacts_by_name(db_session, "Oliver Schwab")[0]
++    assert result["proposals_staged"] == 1
++    assert confirm_result["status"] == "applied"
++    assert created.address == "Köln Stammheim"
++    assert created.notes is None
++
++
+ @pytest.mark.asyncio
+ async def test_rejected_contact_proposal_is_suppressed_until_new_evidence(db_session):
+     contact_manager._clear_pending_contact_proposals_for_tests()
+--- a/backend/tests/test_contact_card_normalization.py
++++ b/backend/tests/test_contact_card_normalization.py
+@@ -51,3 +51,23 @@ def test_contact_normalization_moves_residence_detail_into_address_and_keeps_rea
+     assert loaded is not None
+     assert loaded.address == "Köln Stammheim"
+     assert loaded.personal_details == ["vegetarier"]
++
++
++def test_contact_normalization_moves_residence_note_into_address_and_keeps_other_notes(db_session):
++    created = crud.create_contact(
++        db_session,
++        contact_schemas.ContactCreate(
++            name="Oliver Schwab",
++            nickname="Oli",
++            address=None,
++            personal_details=["vegetarier"],
++            notes="wohnt in Köln-Stammheim\nHat einen Hund",
++            category="Privat",
++        ),
++    )
++    assert created is not None
++
++    loaded = crud.get_contact(db_session, created.id)
++
++    assert loaded is not None
++    assert loaded.address == "Köln Stammheim"
++    assert loaded.personal_details == ["vegetarier"]
++    assert loaded.notes == "Hat einen Hund"

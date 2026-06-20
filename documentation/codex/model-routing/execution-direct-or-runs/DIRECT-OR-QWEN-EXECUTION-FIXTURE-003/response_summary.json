@@ -1,0 +1,28 @@
+﻿{
+    "capture_mode":  "local_fixture",
+    "http_status":  200,
+    "api_shape":  "responses",
+    "response_object":  "response",
+    "response_status":  "completed",
+    "generation_id":  "resp_qwen_execution_patch_fixture_001",
+    "model":  "qwen/qwen3-coder-flash",
+    "finish_reason":  "stop",
+    "usage":  {
+                  "prompt_tokens":  1184,
+                  "completion_tokens":  214,
+                  "total_tokens":  1398,
+                  "cost":  0.00041862,
+                  "prompt_tokens_details":  {
+                                                "cached_tokens":  0
+                                            },
+                  "completion_tokens_details":  {
+                                                    "reasoning_tokens":  0
+                                                }
+              },
+    "actual_or_cost":  0.00041862,
+    "output_item_count":  2,
+    "output_item_types":  [
+                              "message",
+                              "openrouter:apply_patch"
+                          ]
+}

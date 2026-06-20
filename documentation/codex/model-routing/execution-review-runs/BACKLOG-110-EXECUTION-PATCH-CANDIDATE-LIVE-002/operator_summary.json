@@ -1,0 +1,16 @@
+﻿{
+  "summary_header": "EXECUTION PATCH CANDIDATE RESULT",
+  "workflow_id": "BACKLOG-110-EXECUTION-PATCH-CANDIDATE-LIVE-002",
+  "skill": "janus-executioner",
+  "task_label": "BACKLOG-110 real execution patch candidate",
+  "selected_path": "delegated_execution_patch_candidate_sidecar_live",
+  "normal_target_model": "5.4/medium",
+  "delegated_model_label": "Codex CLI sidecar / gpt-5.4",
+  "validation_result": "PASS",
+  "final_outcome": "EXECUTION_PATCH_CANDIDATE_READY_FOR_CODEX_REVIEW",
+  "runner_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-review-runs\\BACKLOG-110-EXECUTION-PATCH-CANDIDATE-LIVE-002\\summary.json",
+  "last_message_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-review-runs\\BACKLOG-110-EXECUTION-PATCH-CANDIDATE-LIVE-002\\last_message.md",
+  "extracted_patch_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-review-runs\\BACKLOG-110-EXECUTION-PATCH-CANDIDATE-LIVE-002\\extracted_patch.diff",
+  "structured_request_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-review-runs\\BACKLOG-110-EXECUTION-PATCH-CANDIDATE-LIVE-002\\structured_request.json",
+  "operator_message": "Read-only sidecar patch proposal completed and was captured as a bounded Codex review artifact."
+}

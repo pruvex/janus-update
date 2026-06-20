@@ -1,0 +1,20 @@
+﻿{
+  "workflow_id": "DIRECT-OR-EXECUTION-FIXTURE-TIMEOUT-HARDEN-001",
+  "validation_result": "PASS",
+  "budget_profile": "execution_patch_candidate",
+  "issues": [],
+  "allowed_files": [
+    "scripts/dev-log-utils.cjs",
+    "documentation/codex/skills/janus-health-check/scripts/health_snapshot.py",
+    "documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md",
+    "gitignore",
+    "documentation/test-runs/BACKLOG-107_execution_validation.md"
+  ],
+  "changed_files": [
+    "scripts/dev-log-utils.cjs"
+  ],
+  "max_touched_files": 5,
+  "finish_reason": "stop",
+  "actual_or_cost": 0.0002114,
+  "cost_cap": 0.05
+}

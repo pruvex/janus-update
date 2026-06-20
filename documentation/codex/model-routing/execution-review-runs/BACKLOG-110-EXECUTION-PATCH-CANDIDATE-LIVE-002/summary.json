@@ -1,0 +1,23 @@
+﻿{
+    "status":  "PASS",
+    "exit_code":  null,
+    "timed_out":  false,
+    "timeout_seconds":  180,
+    "artifact_success":  true,
+    "last_message_present":  true,
+    "stdout_present":  true,
+    "command_json":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-review-runs\\BACKLOG-110-EXECUTION-PATCH-CANDIDATE-LIVE-002\\command.json",
+    "stdout_log":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-review-runs\\BACKLOG-110-EXECUTION-PATCH-CANDIDATE-LIVE-002\\stdout.log",
+    "stderr_log":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-review-runs\\BACKLOG-110-EXECUTION-PATCH-CANDIDATE-LIVE-002\\stderr.log",
+    "last_message":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-review-runs\\BACKLOG-110-EXECUTION-PATCH-CANDIDATE-LIVE-002\\last_message.md",
+    "event_stream":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-review-runs\\BACKLOG-110-EXECUTION-PATCH-CANDIDATE-LIVE-002\\event_stream.jsonl",
+    "editable_paths":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-review-runs\\BACKLOG-110-EXECUTION-PATCH-CANDIDATE-LIVE-002\\editable_paths.txt",
+    "pre_run_status":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-review-runs\\BACKLOG-110-EXECUTION-PATCH-CANDIDATE-LIVE-002\\pre_run_status.txt",
+    "post_run_status":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-review-runs\\BACKLOG-110-EXECUTION-PATCH-CANDIDATE-LIVE-002\\post_run_status.txt",
+    "changed_files":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-review-runs\\BACKLOG-110-EXECUTION-PATCH-CANDIDATE-LIVE-002\\changed_files.txt",
+    "git_diff":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-review-runs\\BACKLOG-110-EXECUTION-PATCH-CANDIDATE-LIVE-002\\git_diff.patch",
+    "validation_summary":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-review-runs\\BACKLOG-110-EXECUTION-PATCH-CANDIDATE-LIVE-002\\validation_summary.json",
+    "allowlist_ok":  true,
+    "touched_file_cap_ok":  true,
+    "delete_rename_move_ok":  true
+}

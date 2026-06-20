@@ -1,0 +1,80 @@
+﻿{
+  "model": "deepseek/deepseek-v4-flash",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a bounded OpenRouter worker for a Janus execution patch candidate. Return only JSON matching the required schema. This is proposal-only work. Do not claim completion, release readiness, routing authority, git authority, or final validation authority. Codex will review and decide whether to apply or reject. The field manual_validation_note must explicitly say that Codex must manually validate locally. The field codex_acceptance_rule must explicitly say that Codex must review and apply or reject locally."
+    },
+    {
+      "role": "user",
+      "content": "{\n  \"target_task\": \"BACKLOG-110\",\n  \"allowed_files\": [\n    \"backend/services/contact_manager.py\",\n    \"backend/data/crud.py\",\n    \"backend/tests/test_contact_manager.py\",\n    \"backend/tests/test_contact_card_normalization.py\"\n  ],\n  \"max_touched_files\": 4,\n  \"mini_test_plan\": [\n    \"python -m pytest backend/tests/test_contact_manager.py -q\",\n    \"python -m pytest backend/tests/test_contact_card_normalization.py -q\",\n    \"python -m py_compile backend/services/contact_manager.py backend/data/crud.py backend/tests/test_contact_manager.py backend/tests/test_contact_card_normalization.py\"\n  ],\n  \"manual_validation_gate\": \"Codex must still verify that residence-style facts such as 'wohnt in <Ort>' move into the structured address field conservatively, without over-migrating unrelated personal details or reopening broader contact-memory behavior.\",\n  \"delegation_question\": \"Produce one bounded patch candidate that routes residence-style contact facts into the address field, upgrades already affected contacts conservatively, and preserves real personal details such as 'vegetarier'.\",\n  \"required_manual_validation_phrase\": \"Codex must manually validate this patch locally before task completion.\",\n  \"required_acceptance_phrase\": \"Codex must review and apply or reject locally.\",\n  \"field_contract\": {\n    \"manual_validation_note\": \"Must contain the exact sentence: Codex must manually validate this patch locally before task completion.\",\n    \"codex_acceptance_rule\": \"Must contain the exact sentence: Codex must review and apply or reject locally.\"\n  },\n  \"spec_excerpt\": \"### BACKLOG-110 Kontakt-Wohnort aus Besonderheiten in den Adressblock ueberfuehren\\n- Ziel:\\n  - Stelle sicher, dass Wohnort-/Adressfakten wie `wohnt in Köln Stammheim` fuer Privatkontakte nicht als `Besonderheit` persistiert oder dargestellt werden, sondern im strukturierten Adressfeld des Kontakts landen.\\n- Scope:\\n  - Touch only the existing contact update, normalization, and address-book rendering paths needed to move residence-style facts from `personal_details` into the address/address-like contact field.\\n  - Include a bounded cleanup or read-normalization path for already affected contacts like `Oliver Schwab`.\\n  - Do not redesign the broader contact model, proposal architecture, or unrelated memory-recall behavior.\\n- Files:\\n  - `backend/services/contact_manager.py`\\n  - `backend/data/crud.py`\\n  - `backend/data/contact_schemas.py`\\n  - `backend/tests/test_contact_manager.py`\\n  - `backend/tests/test_contact_card_normalization.py`\\n  - `frontend/src` or existing address-book UI files only if a small presentation fix is strictly needed after backend normalization\\n- Steps:\\n  1. Trace where residence facts like `wohnt in <Ort>` are currently mapped into `personal_details` instead of the structured address/contact field.\\n  2. Route new residence-style contact facts into the correct address field for private contacts while preserving true personal details such as `vegetarier`.\\n  3. Add a bounded normalization or cleanup path so existing affected contacts are upgraded from `Besonderheiten` into the address block.\\n  4. Add focused regression coverage for residence mapping, cleanup, and visible card grouping.\\n- Acceptance Criteria:\\n  - Contact facts like `wohnt in <Ort>` are no longer persisted as `personal_details`/`Besonderheiten` when they represent residence/address data.\\n  - Existing affected contacts are upgraded so the residence appears in the address block instead of under `Besonderheiten`.\\n  - Genuine details such as `vegetarier` remain in `Besonderheiten`.\\n  - The contact card shows the residence near the top contact data rather than in the personal details section.\"\n}"
+    }
+  ],
+  "temperature": 0.0,
+  "max_tokens": 3200,
+  "response_format": {
+    "type": "json_schema",
+    "json_schema": {
+      "name": "janus_execution_patch_candidate_result",
+      "strict": true,
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "status",
+          "target_task",
+          "patch_text",
+          "changed_files",
+          "risk_list",
+          "suggested_validation_steps",
+          "manual_validation_note",
+          "codex_acceptance_rule",
+          "notes"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "PASS",
+              "WEAK_SIGNAL",
+              "BLOCKED"
+            ]
+          },
+          "target_task": {
+            "type": "string"
+          },
+          "patch_text": {
+            "type": "string"
+          },
+          "changed_files": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "risk_list": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "suggested_validation_steps": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "manual_validation_note": {
+            "type": "string"
+          },
+          "codex_acceptance_rule": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

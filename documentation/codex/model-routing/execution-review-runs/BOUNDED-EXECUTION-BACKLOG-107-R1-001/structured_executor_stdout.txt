@@ -1,0 +1,31 @@
+﻿{
+  "workflow_id": "BOUNDED-EXECUTION-BACKLOG-107-R1-001-STRUCTURED",
+  "skill_id": "janus-executioner",
+  "action_type": "propose_patch",
+  "executor_status": "PASS",
+  "schema_validation": "PASS",
+  "mapping_resolution": "PASS",
+  "allowlist_status": "PASS",
+  "output_artifact_status": "PASS",
+  "codex_review_required": true,
+  "detail": "Patch captured for Codex review only; no apply attempted.",
+  "action_summary": {
+    "artifact_path": "documentation/codex/model-routing/structured-action-runs/BOUNDED-EXECUTION-BACKLOG-107-R1-001-STRUCTURED/20260616-210333/proposed_patch.diff",
+    "allowed_files": [
+      ".gitignore",
+      "documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md",
+      "documentation/codex/skills/janus-health-check/scripts/health_snapshot.py",
+      "documentation/test-runs/BACKLOG-107_execution_validation.md",
+      "scripts/dev-log-utils.cjs"
+    ],
+    "touched_files": [
+      ".gitignore",
+      "documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md",
+      "documentation/codex/skills/janus-health-check/scripts/health_snapshot.py",
+      "documentation/test-runs/BACKLOG-107_execution_validation.md",
+      "scripts/dev-log-utils.cjs"
+    ],
+    "auto_apply": false
+  },
+  "run_directory": "documentation/codex/model-routing/structured-action-runs/BOUNDED-EXECUTION-BACKLOG-107-R1-001-STRUCTURED/20260616-210333"
+}

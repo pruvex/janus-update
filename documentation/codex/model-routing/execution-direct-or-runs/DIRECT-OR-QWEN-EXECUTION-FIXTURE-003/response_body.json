@@ -1,0 +1,41 @@
+﻿{
+  "id": "resp_qwen_execution_patch_fixture_001",
+  "object": "response",
+  "status": "completed",
+  "model": "qwen/qwen3-coder-flash",
+  "usage": {
+    "prompt_tokens": 1184,
+    "completion_tokens": 214,
+    "total_tokens": 1398,
+    "cost": 0.00041862,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "output": [
+    {
+      "id": "msg_fixture_001",
+      "type": "message",
+      "status": "completed",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "Bounded execution patch candidate prepared."
+        }
+      ]
+    },
+    {
+      "id": "st_fixture_001",
+      "type": "openrouter:apply_patch",
+      "status": "completed",
+      "operation": {
+        "type": "update_file",
+        "path": "scripts/dev-log-utils.cjs",
+        "diff": "```diff\n@@ -11,7 +11,8 @@\n \n function createLogStreams(prefix) {\n-  const logDir = path.join(process.cwd(), \"documentation\", \"logs\", \"dev-runtime\");\n+  const repoLogRoot = path.join(process.cwd(), \"documentation\", \"logs\");\n+  const logDir = path.join(repoLogRoot, \"dev-runtime\");\n   ensureDir(logDir);\n   const stamp = timestampForFile();\n   const outPath = path.join(logDir, `${prefix}_${stamp}.out.log`);\n```"
+      }
+    }
+  ]
+}

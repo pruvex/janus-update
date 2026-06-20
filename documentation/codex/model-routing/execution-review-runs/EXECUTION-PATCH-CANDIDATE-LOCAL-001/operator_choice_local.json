@@ -1,0 +1,12 @@
+﻿{
+  "summary_header": "EXECUTION PATCH CANDIDATE RESULT",
+  "workflow_id": "EXECUTION-PATCH-CANDIDATE-LOCAL-001",
+  "skill": "janus-executioner",
+  "task_label": "Execution patch candidate local validation",
+  "selected_path": "codex_only_operator_choice",
+  "normal_target_model": "5.4/medium",
+  "delegated_model_label": "bounded delegated review / fixture mode",
+  "final_outcome": "LOCAL_CODEX_PATH_SELECTED",
+  "validation_result": "PASS",
+  "operator_message": "Operator chose the local Codex execution path. No delegated execution patch candidate review was used."
+}

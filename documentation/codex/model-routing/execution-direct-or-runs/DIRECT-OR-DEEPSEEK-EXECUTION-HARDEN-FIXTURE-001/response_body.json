@@ -1,0 +1,24 @@
+﻿{
+  "id": "gen-direct-or-execution-fixture-001",
+  "model": "openai/gpt-oss-20b",
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "message": {
+        "role": "assistant",
+        "content": "{\"status\":\"PASS\",\"target_task\":\"TASK-BACKLOG-107-R1.1\",\"patch_text\":\"diff --git a/scripts/dev-log-utils.cjs b/scripts/dev-log-utils.cjs\\n--- a/scripts/dev-log-utils.cjs\\n+++ b/scripts/dev-log-utils.cjs\\n@@ -10,7 +10,7 @@\\n-const DEV_LOG_DIR = path.join(repoRoot, 'debug_logs');\\n+const DEV_LOG_DIR = path.join(repoRoot, 'documentation', 'logs', 'dev-runtime');\\n\",\"changed_files\":[\"scripts/dev-log-utils.cjs\"],\"risk_list\":[\"Proposal only; Codex must still verify that coupled hygiene references are handled in-scope or deferred intentionally.\"],\"suggested_validation_steps\":[\"python documentation/codex/skills/janus-health-check/scripts/health_snapshot.py --repo C:\\\\KI\\\\Janus-Projekt --mode MONTHLY\",\"node -e \\\"const { runWithLogs } = require('./scripts/dev-log-utils.cjs'); console.log(typeof runWithLogs === 'function' ? 'PASS' : 'FAIL')\\\"\"],\"manual_validation_note\":\"Codex must still perform manual validation for the bounded runtime-log alignment slice.\",\"codex_acceptance_rule\":\"Codex must review this proposal and decide whether to apply or reject it locally.\",\"notes\":\"Fixture result for direct OpenRouter execution patch candidate validation only.\"}"
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 980,
+    "completion_tokens": 320,
+    "cost": 0.00021140,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  }
+}

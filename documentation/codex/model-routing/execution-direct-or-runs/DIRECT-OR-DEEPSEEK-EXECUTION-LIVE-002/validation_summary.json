@@ -1,0 +1,26 @@
+﻿{
+  "workflow_id": "DIRECT-OR-DEEPSEEK-EXECUTION-LIVE-002",
+  "validation_result": "FAIL",
+  "budget_profile": "execution_patch_candidate",
+  "issues": [
+    "changed_files must match the files declared in patch_text"
+  ],
+  "allowed_files": [
+    "scripts/dev-log-utils.cjs",
+    "documentation/codex/skills/janus-health-check/scripts/health_snapshot.py",
+    "documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md",
+    "gitignore",
+    "documentation/test-runs/BACKLOG-107_execution_validation.md"
+  ],
+  "changed_files": [
+    "scripts/dev-log-utils.cjs",
+    "documentation/codex/skills/janus-health-check/scripts/health_snapshot.py",
+    "documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md",
+    ".gitignore",
+    "documentation/test-runs/BACKLOG-107_execution_validation.md"
+  ],
+  "max_touched_files": 5,
+  "finish_reason": "stop",
+  "actual_or_cost": 0.00073542,
+  "cost_cap": 0.05
+}

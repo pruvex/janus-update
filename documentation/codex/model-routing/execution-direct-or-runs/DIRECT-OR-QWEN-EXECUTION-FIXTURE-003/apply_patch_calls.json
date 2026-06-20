@@ -1,0 +1,13 @@
+﻿{
+  "calls": [
+    {
+      "id": "st_fixture_001",
+      "type": "openrouter:apply_patch",
+      "status": "completed",
+      "name": "openrouter:apply_patch",
+      "operation_type": "update_file",
+      "path": "scripts/dev-log-utils.cjs",
+      "diff": "```diff\n@@ -11,7 +11,8 @@\n \n function createLogStreams(prefix) {\n-  const logDir = path.join(process.cwd(), \"documentation\", \"logs\", \"dev-runtime\");\n+  const repoLogRoot = path.join(process.cwd(), \"documentation\", \"logs\");\n+  const logDir = path.join(repoLogRoot, \"dev-runtime\");\n   ensureDir(logDir);\n   const stamp = timestampForFile();\n   const outPath = path.join(logDir, `${prefix}_${stamp}.out.log`);\n```"
+    }
+  ]
+}

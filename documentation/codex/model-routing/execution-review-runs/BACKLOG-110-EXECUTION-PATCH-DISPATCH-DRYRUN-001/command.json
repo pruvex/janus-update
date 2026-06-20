@@ -1,0 +1,46 @@
+﻿{
+    "codex_path":  "codex",
+    "arguments":  [
+                      "exec",
+                      "--cd",
+                      "C:\\KI\\Janus-Projekt",
+                      "--model",
+                      "gpt-5.4",
+                      "--sandbox",
+                      "read-only",
+                      "--output-last-message",
+                      "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-review-runs\\BACKLOG-110-EXECUTION-PATCH-DISPATCH-DRYRUN-001\\last_message.md",
+                      "-"
+                  ],
+    "process_executable":  "C:\\nvm4w\\nodejs\\node.exe",
+    "process_arguments":  [
+                              "C:\\nvm4w\\nodejs\\node_modules\\@openai\\codex\\bin\\codex.js",
+                              "exec",
+                              "--cd",
+                              "C:\\KI\\Janus-Projekt",
+                              "--model",
+                              "gpt-5.4",
+                              "--sandbox",
+                              "read-only",
+                              "--output-last-message",
+                              "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-review-runs\\BACKLOG-110-EXECUTION-PATCH-DISPATCH-DRYRUN-001\\last_message.md",
+                              "-"
+                          ],
+    "run_directory":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-review-runs\\BACKLOG-110-EXECUTION-PATCH-DISPATCH-DRYRUN-001",
+    "prompt_path":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-review-runs\\BACKLOG-110-EXECUTION-PATCH-DISPATCH-DRYRUN-001\\sidecar_prompt.md",
+    "working_directory":  "C:\\KI\\Janus-Projekt",
+    "model":  "gpt-5.4",
+    "sandbox":  "read-only",
+    "approval_policy":  "never",
+    "timeout_seconds":  180,
+    "use_oss":  false,
+    "local_provider":  "",
+    "json_events":  false,
+    "editable_paths":  [
+
+                       ],
+    "max_touched_files":  0,
+    "capture_git_diff":  false,
+    "fail_on_delete_rename_move":  false,
+    "execute":  false
+}

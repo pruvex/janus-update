@@ -1,0 +1,94 @@
+﻿{
+  "calls": [
+    {
+      "id": "st_tmp_y7gswmd0wvl",
+      "type": "openrouter:apply_patch",
+      "status": "completed",
+      "name": "openrouter:apply_patch",
+      "operation_type": "update_file",
+      "path": "scripts/dev-log-utils.cjs",
+      "diff": "#@ title=scripts/dev-log-utils.cjs\n@@ -1,5 +1,5 @@\n #!/usr/bin/env node\n-const fs = require(\"fs\");\n-const path = require(\"path\");\n-const { spawn } = require(\"child_process\");\n+const fs = require(\"fs\");\n+const path = require(\"path\");\n+const { spawn } = require(\"child_process\");\n \n function ensureDir(dirPath) {\n   fs.mkdirSync(dirPath, { recursive: true });\n@@ -14,7 +14,7 @@\n \n function createLogStreams(prefix) {\n   const logDir = path.join(process.cwd(), \"documentation\", \"logs\", \"dev-runtime\");\n-  ensureDir(logDir);\n-  const stamp = timestampForFile();\n-  const outPath = path.join(logDir, `${prefix}_${stamp}.out.log`);\n-  const errPath = path.join(logDir, `${prefix}_${stamp}.err.log`);\n-  return {\n-    outPath,\n-    errPath,\n-    outStream: fs.createWriteStream(outPath, { flags: \"a\" }),\n-    errStream: fs.createWriteStream(errPath, { flags: \"a\" }),\n-  };\n+  ensureDir(logDir);\n+  const stamp = timestampForFile();\n+  const outPath = path.join(logDir, `${prefix}_${stamp}.out.log`);\n+  const errPath = path.join(logDir, `${prefix}_${stamp}.err.log`);\n+  return {\n+    outPath,\n+    errPath,\n+    outStream: fs.createWriteStream(outPath, { flags: \"a\" }),\n+    errStream: fs.createWriteStream(errPath, { flags: \"a\" }),\n+  };\n }\n"
+    },
+    {
+      "id": "st_tmp_6vxzq2shnw6",
+      "type": "openrouter:apply_patch",
+      "status": "completed",
+      "name": "openrouter:apply_patch",
+      "operation_type": "update_file",
+      "path": "documentation/codex/skills/janus-health-check/scripts/health_snapshot.py",
+      "diff": "#@ title=documentation/codex/skills/janus-health-check/scripts/health_snapshot.py\n@@ -43,21 +43,21 @@\n KNOWN_ROOT_LEGACY_LOG_ARTIFACTS = {\n     \".codex-vite-err.log\": \"legacy root Vite error log; current versioned dev start path writes Vite logs under documentation/logs/dev-runtime/\",\n     \".codex-vite-out.log\": \"legacy root Vite output log; current versioned dev start path writes Vite logs under documentation/logs/dev-runtime/\",\n-    \"backend_hotfix.err.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n-    \"backend_hotfix.out.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n-    \"backend_live.err.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n-    \"backend_live.out.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n-    \"backend_persist.err.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n-    \"backend_persist.out.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n-    \"backend_restart.err.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n-    \"backend_restart.out.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n-    \"backend_start.log\": \"legacy root backend start log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n-    \"backend_start_manual.err.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n-    \"backend_start_manual.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n-    \"backend_verify.err.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n-    \"backend_verify.out.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n-    \"startdev.log\": \"legacy root start-dev log; current versioned startup telemetry belongs under documentation/logs and dev runtime logs under documentation/logs/dev-runtime/\",\n-    \"tmp_uv8011_err.log\": \"legacy root temporary backend log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n-    \"tmp_uv8011_out.log\": \"legacy root temporary backend log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n+    \"backend_hotfix.err.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n+    \"backend_hotfix.out.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n+    \"backend_live.err.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n+    \"backend_live.out.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n+    \"backend_persist.err.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n+    \"backend_persist.out.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n+    \"backend_restart.err.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n+    \"backend_restart.out.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n+    \"backend_start.log\": \"legacy root backend start log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n+    \"backend_start_manual.err.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n+    \"backend_start_manual.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n+    \"backend_verify.err.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n+    \"backend_verify.out.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n+    \"startdev.log\": \"legacy root start-dev log; current versioned startup telemetry belongs under documentation/logs and dev runtime logs under documentation/logs/dev-runtime/\",\n+    \"tmp_uv8011_err.log\": \"legacy root temporary backend log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n+    \"tmp_uv8011_out.log\": \"legacy root temporary backend log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n }\n"
+    },
+    {
+      "id": "st_tmp_o6nc21943x",
+      "type": "openrouter:apply_patch",
+      "status": "completed",
+      "name": "openrouter:apply_patch",
+      "operation_type": "update_file",
+      "path": "documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md",
+      "diff": "#@ title=documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md\n@@ -63,5 +63,5 @@\n - Local dev runtime logs for `npm run start-backend-only`,\n   `npm run start-backend-only-without-reload`, and `npm run start-vite`\n   belong under `documentation/logs/dev-runtime/`.\n-- Local startup telemetry markers and aggregated startup timing logs belong\n+  Local startup telemetry markers and aggregated startup timing logs belong\n   under `documentation/logs/janus_startup_telemetry.log`.\n- Versioned dev start paths should not create recurring backend or Vite"
+    },
+    {
+      "id": "st_tmp_3fmldv95p94",
+      "type": "openrouter:apply_patch",
+      "status": "completed",
+      "name": "openrouter:apply_patch",
+      "operation_type": "update_file",
+      "path": ".gitignore",
+      "diff": "#@ title=.gitignore\n@@ -40,4 +40,4 @@\n janus_fallback.db*\n # Runtime fallback logs (generated during local dev runs)\n backend/backend/\n-documentation/logs/dev-runtime/\n+documentation/logs/dev-runtime/\n e2e_janus.db*\n playwright-report/data/\n playwright-report/trace/"
+    },
+    {
+      "id": "st_tmp_su52vdmmssp",
+      "type": "openrouter:apply_patch",
+      "status": "completed",
+      "name": "openrouter:apply_patch",
+      "operation_type": "update_file",
+      "path": "documentation/test-runs/BACKLOG-107_execution_validation.md",
+      "diff": "#@ title=documentation/test-runs/BACKLOG-107_execution_validation.md\n@@ -4,7 +4,7 @@\n - **Target Task:** TASK-BACKLOG-107-R1.2\n - **Date:** 2026-06-16\n - **Scope:** Richte den verbleibenden Electron-Frontend-Debug-Export im Dev-Mode auf `documentation/logs/dev-runtime/` aus und halte die bestehende bounded Validation-Note dazu aktuell.\n-\n-## Checks\n+\n+## Checks\n \n - `node --check C:\\KI\\Janus-Projekt\\main.electron.cjs` - PASS\n - `python documentation/codex/skills/janus-health-check/scripts/health_snapshot.py --repo C:\\KI\\Janus-Projekt --mode MONTHLY` -"
+    },
+    {
+      "id": "st_tmp_mz1o404e3j",
+      "type": "openrouter:apply_patch",
+      "status": "in_progress",
+      "name": "openrouter:apply_patch",
+      "operation_type": "update_file",
+      "path": "scripts/dev-log-utils.cjs",
+      "diff": "@@ -14,7 +14,7 @@\n function createLogStreams(prefix) {\n   const logDir = path.join(process.cwd(), \"documentation\", \"logs\", \"dev-runtime\");\n   ensureDir(logDir);\n-  const stamp = timestampForFile();\n-  const outPath = path.join(logDir, `${prefix}_${stamp}.out.log`);\n-  const errPath = path.join(logDir, `${prefix}_${stamp}.err.log`);\n+  const stamp = timestampForFile();\n+  const outPath = path.join(logDir, `${prefix}_${stamp}.out.log`);\n+  const errPath = path.join(logDir, `${prefix}_${stamp}.err.log`);\n   return {\n     outPath,\n     errPath,\n"
+    },
+    {
+      "id": "st_tmp_gqlti0cmgpt",
+      "type": "openrouter:apply_patch",
+      "status": "in_progress",
+      "name": "openrouter:apply_patch",
+      "operation_type": "update_file",
+      "path": "documentation/codex/skills/janus-health-check/scripts/health_snapshot.py",
+      "diff": "@@ -44,20 +44,20 @@\n KNOWN_ROOT_LEGACY_LOG_ARTIFACTS = {\n     \".codex-vite-err.log\": \"legacy root Vite error log; current versioned dev start path writes Vite logs under documentation/logs/dev-runtime/\",\n     \".codex-vite-out.log\": \"legacy root Vite output log; current versioned dev start path writes Vite logs under documentation/logs/dev-runtime/\",\n-    \"backend_hotfix.err.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n-    \"backend_hotfix.out.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n-    \"backend_live.err.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n-    \"backend_live.out.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n-    \"backend_persist.err.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n-    \"backend_persist.out.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n-    \"backend_restart.err.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n-    \"backend_restart.out.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n-    \"backend_start.log\": \"legacy root backend start log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n-    \"backend_start_manual.err.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n-    \"backend_start_manual.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n-    \"backend_verify.err.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n-    \"backend_verify.out.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n-    \"startdev.log\": \"legacy root start-dev log; current versioned startup telemetry belongs under documentation/logs and dev runtime logs under documentation/logs/dev-runtime/\",\n-    \"tmp_uv8011_err.log\": \"legacy root temporary backend log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n-    \"tmp_uv8011_out.log\": \"legacy root temporary backend log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n+    \"backend_hotfix.err.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n+    \"backend_hotfix.out.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n+    \"backend_live.err.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n+    \"backend_live.out.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n+    \"backend_persist.err.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n+    \"backend_persist.out.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n+    \"backend_restart.err.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n+    \"backend_restart.out.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n+    \"backend_start.log\": \"legacy root backend start log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n+    \"backend_start_manual.err.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n+    \"backend_start_manual.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n+    \"backend_verify.err.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n+    \"backend_verify.out.log\": \"legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n+    \"startdev.log\": \"legacy root start-dev log; current versioned startup telemetry belongs under documentation/logs and dev runtime logs under documentation/logs/dev-runtime/\",\n+    \"tmp_uv8011_err.log\": \"legacy root temporary backend log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n+    \"tmp_uv8011_out.log\": \"legacy root temporary backend log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/\",\n }\n"
+    },
+    {
+      "id": "st_tmp_yhwwx80ja1",
+      "type": "openrouter:apply_patch",
+      "status": "in_progress",
+      "name": "openrouter:apply_patch",
+      "operation_type": "update_file",
+      "path": "documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md",
+      "diff": "@@ -64,7 +64,7 @@\n - Local dev runtime logs for `npm run start-backend-only`,\n   `npm run start-backend-only-without-reload`, and `npm run start-vite`\n   belong under `documentation/logs/dev-runtime/`.\n-- Local startup telemetry markers and aggregated startup timing logs belong\n+  Local startup telemetry markers and aggregated startup timing logs belong\n   under `documentation/logs/janus_startup_telemetry.log`.\n - Versioned dev start paths should not create recurring backend or Vite\n"
+    },
+    {
+      "id": "st_tmp_qoh84123ezj",
+      "type": "openrouter:apply_patch",
+      "status": "in_progress",
+      "name": "openrouter:apply_patch",
+      "operation_type": "update_file",
+      "path": ".gitignore",
+      "diff": "@@ -40,7 +40,7 @@\n janus_fallback.db*\n # Runtime fallback logs (generated during local dev runs)\n backend/backend/\n-documentation/logs/dev-runtime/\n+documentation/logs/dev-runtime/\n e2e_janus.db*\n playwright-report/data/\n playwright-report/trace/\n"
+    },
+    {
+      "id": "st_tmp_bharmppkxcg",
+      "type": "openrouter:apply_patch",
+      "status": "in_progress",
+      "name": "openrouter:apply_patch",
+      "operation_type": "update_file",
+      "path": "documentation/test-runs/BACKLOG-107_execution_validation.md",
+      "diff": "@@ -11,7 +11,7 @@\n - `python documentation/codex/skills/janus-health-check/scripts/health_snapshot.py --repo C:\\\\KI\\\\Janus-Projekt --mode MONTHLY` - PASS\n - `rg -n \"debug:write-frontend-log|debug_logs|documentation/logs/dev-runtime|frontend_log_\" main.electron.cjs documentation/test-runs/BACKLOG-107_execution_validation.md -S` - PASS\n - Targeted code inspection confirmed:\n-  - the Electron `debug:write-frontend-log` handler now targets `documentation/logs/dev-runtime/` in dev mode\n+  - the Electron `debug:write-frontend-log` handler now targets `documentation/logs/dev-runtime/` in dev mode\n   - production-mode frontend debug exports still target `%APPDATA%/.../debug_logs`\n   - frontend debug exports continue to write `frontend_log_<timestamp>.md` artifacts\n"
+    }
+  ]
+}

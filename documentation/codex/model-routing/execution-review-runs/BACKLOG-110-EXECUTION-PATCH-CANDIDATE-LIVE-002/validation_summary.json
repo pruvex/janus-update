@@ -1,0 +1,23 @@
+﻿{
+  "workflow_id": "BACKLOG-110-EXECUTION-PATCH-CANDIDATE-LIVE-002",
+  "mode": "sidecar_read_only_live",
+  "input_validation_pass": true,
+  "result_validation_pass": true,
+  "input_issues": [],
+  "result_issues": [],
+  "precheck_status": "PRE-CHECK PASSED",
+  "allowed_files": [
+    "backend/services/contact_manager.py",
+    "backend/data/crud.py",
+    "backend/tests/test_contact_manager.py",
+    "backend/tests/test_contact_card_normalization.py"
+  ],
+  "changed_files": [
+    "backend/services/contact_manager.py",
+    "backend/data/crud.py",
+    "backend/tests/test_contact_manager.py",
+    "backend/tests/test_contact_card_normalization.py"
+  ],
+  "structured_capture_status": "PASS",
+  "accepted_for_codex_patch_review": true
+}

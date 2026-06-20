@@ -1,0 +1,4 @@
+﻿Name                           Value
+----                           -----
+X-Capture-Mode                 local_fixture
+Content-Type                   application/json

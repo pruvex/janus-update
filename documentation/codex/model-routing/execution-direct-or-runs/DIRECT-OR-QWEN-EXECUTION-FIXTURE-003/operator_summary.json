@@ -1,0 +1,30 @@
+﻿{
+  "summary_header": "QWEN RESPONSES EXECUTION PATCH RESULT",
+  "workflow_id": "DIRECT-OR-QWEN-EXECUTION-FIXTURE-003",
+  "task_label": "BACKLOG-107 execution patch candidate fixture",
+  "selected_path": "qwen_responses_execution_patch_candidate_then_codex_review",
+  "budget_profile": "execution_patch_candidate",
+  "normal_target_model": "5.4",
+  "or_model": "qwen/qwen3-coder-flash",
+  "estimated_or_cost": 0.00045,
+  "actual_or_cost": 0.00041862,
+  "cost_estimate_confidence_percent": 72.0,
+  "finish_reason": "stop",
+  "validation_result": "PASS",
+  "final_outcome": "QWEN_RESPONSES_EXECUTION_PATCH_CANDIDATE_READY_FOR_CODEX_REVIEW",
+  "fallback_used": "NO",
+  "rework_required": "NO",
+  "response_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DIRECT-OR-QWEN-EXECUTION-FIXTURE-003\\response_summary.json",
+  "apply_patch_calls_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DIRECT-OR-QWEN-EXECUTION-FIXTURE-003\\apply_patch_calls.json",
+  "request_input_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DIRECT-OR-QWEN-EXECUTION-FIXTURE-003\\request_input_summary.json",
+  "validation_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DIRECT-OR-QWEN-EXECUTION-FIXTURE-003\\validation_summary.json",
+  "telemetry_jsonl_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\or_healthcheck_telemetry_qwen_responses_execution_patch_candidate_2026-06-19_DIRECT-OR-QWEN-EXECUTION-FIXTURE-003.jsonl",
+  "healthcheck_status": "PASS",
+  "healthcheck_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DIRECT-OR-QWEN-EXECUTION-FIXTURE-003\\healthcheck_summary.json",
+  "operator_result_lines": [
+    "Ergebnis: QWEN_RESPONSES_EXECUTION_PATCH_CANDIDATE_READY_FOR_CODEX_REVIEW",
+    "Tatsaechliche Kosten: 0.000418620",
+    "Apply-patch-Aufrufe: 1"
+  ],
+  "operator_message": "Responses/apply_patch produced a bounded execution patch proposal. Codex must review and decide whether to apply locally."
+}

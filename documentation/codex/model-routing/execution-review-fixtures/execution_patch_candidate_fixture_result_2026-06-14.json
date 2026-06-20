@@ -1,0 +1,20 @@
+﻿{
+  "status": "PASS",
+  "target_task": "TASK-SPEC14.4 bounded UI anomaly copy refinement",
+  "patch_text": "--- a/frontend/js/cost-visualizer.js\n+++ b/frontend/js/cost-visualizer.js\n@@\n-const anomalyHint = \"Unexpected billing spike\";\n+const anomalyHint = \"Unexpected Gemini billing spike\";\n--- a/frontend/styles.css\n+++ b/frontend/styles.css\n@@\n-.anomaly-hint { letter-spacing: 0.01em; }\n+.anomaly-hint { letter-spacing: 0.02em; }\n",
+  "changed_files": [
+    "frontend/js/cost-visualizer.js",
+    "frontend/styles.css"
+  ],
+  "risk_list": [
+    "UI text may be more specific than the full product wording if upstream anomaly labels change.",
+    "Visual spacing tweak still needs local modal smoke review."
+  ],
+  "suggested_validation_steps": [
+    "node --check frontend/js/cost-visualizer.js",
+    "Open Janus anomaly modal and verify wording plus spacing"
+  ],
+  "manual_validation_note": "Manual Janus validation remains required and must be requested by Codex after local review.",
+  "codex_acceptance_rule": "Codex must review the proposed diff, decide whether to apply or reject it, and keep final task completion ownership.",
+  "notes": "Proposal stays inside the predeclared file cluster and does not claim task completion."
+}

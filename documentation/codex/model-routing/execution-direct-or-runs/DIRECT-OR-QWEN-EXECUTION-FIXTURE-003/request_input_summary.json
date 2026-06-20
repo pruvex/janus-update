@@ -1,0 +1,66 @@
+﻿{
+  "workflow_id": "DIRECT-OR-QWEN-EXECUTION-FIXTURE-003",
+  "request_body_bytes": 13131,
+  "file_inputs": [
+    {
+      "path": "scripts/dev-log-utils.cjs",
+      "content_mode": "excerpt",
+      "full_line_count": 67,
+      "excerpt_line_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 25
+        }
+      ],
+      "content_chars": 797
+    },
+    {
+      "path": "documentation/codex/skills/janus-health-check/scripts/health_snapshot.py",
+      "content_mode": "excerpt",
+      "full_line_count": 295,
+      "excerpt_line_ranges": [
+        {
+          "start_line": 41,
+          "end_line": 64
+        }
+      ],
+      "content_chars": 2830
+    },
+    {
+      "path": "documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md",
+      "content_mode": "excerpt",
+      "full_line_count": 91,
+      "excerpt_line_ranges": [
+        {
+          "start_line": 61,
+          "end_line": 67
+        }
+      ],
+      "content_chars": 409
+    },
+    {
+      "path": ".gitignore",
+      "content_mode": "excerpt",
+      "full_line_count": 43,
+      "excerpt_line_ranges": [
+        {
+          "start_line": 37,
+          "end_line": 43
+        }
+      ],
+      "content_chars": 210
+    },
+    {
+      "path": "documentation/test-runs/BACKLOG-107_execution_validation.md",
+      "content_mode": "excerpt",
+      "full_line_count": 23,
+      "excerpt_line_ranges": [
+        {
+          "start_line": 2,
+          "end_line": 16
+        }
+      ],
+      "content_chars": 976
+    }
+  ]
+}

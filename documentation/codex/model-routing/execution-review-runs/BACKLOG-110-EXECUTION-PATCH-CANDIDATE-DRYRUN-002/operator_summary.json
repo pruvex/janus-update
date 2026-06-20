@@ -1,0 +1,14 @@
+﻿{
+  "summary_header": "EXECUTION PATCH CANDIDATE RESULT",
+  "workflow_id": "BACKLOG-110-EXECUTION-PATCH-CANDIDATE-DRYRUN-002",
+  "skill": "janus-executioner",
+  "task_label": "BACKLOG-110 real execution patch candidate",
+  "selected_path": "delegated_execution_patch_candidate_sidecar_dry_run",
+  "normal_target_model": "5.4/medium",
+  "delegated_model_label": "Codex CLI sidecar / gpt-5.4",
+  "validation_result": "PASS",
+  "final_outcome": "DRY_RUN_VALIDATED",
+  "runner_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-review-runs\\BACKLOG-110-EXECUTION-PATCH-CANDIDATE-DRYRUN-002\\summary.json",
+  "sidecar_prompt_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-review-runs\\BACKLOG-110-EXECUTION-PATCH-CANDIDATE-DRYRUN-002\\sidecar_prompt.md",
+  "operator_message": "Dry-run validated the read-only sidecar proposal path. No live delegated model call was made."
+}

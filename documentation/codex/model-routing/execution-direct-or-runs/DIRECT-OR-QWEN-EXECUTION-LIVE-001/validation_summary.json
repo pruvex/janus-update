@@ -1,0 +1,44 @@
+﻿{
+  "workflow_id": "DIRECT-OR-QWEN-EXECUTION-LIVE-001",
+  "validation_result": "FAIL",
+  "budget_profile": "execution_patch_candidate",
+  "issues": [
+    "diff content before hunk marker",
+    "diff content before hunk marker",
+    "diff content before hunk marker",
+    "diff content before hunk marker",
+    "diff content before hunk marker",
+    "hunk context not found in current file: documentation/test-runs/BACKLOG-107_execution_validation.md"
+  ],
+  "touched_files": [
+    ".gitignore",
+    "documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md",
+    "documentation/codex/skills/janus-health-check/scripts/health_snapshot.py",
+    "documentation/test-runs/BACKLOG-107_execution_validation.md",
+    "scripts/dev-log-utils.cjs"
+  ],
+  "editable_paths": [
+    "scripts/dev-log-utils.cjs",
+    "documentation/codex/skills/janus-health-check/scripts/health_snapshot.py",
+    "documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md",
+    ".gitignore",
+    "documentation/test-runs/BACKLOG-107_execution_validation.md"
+  ],
+  "max_touched_files": 5,
+  "finish_reason": "stop",
+  "actual_or_cost": 0.005427825,
+  "cost_cap": 0.05,
+  "response_api_shape": "responses",
+  "response_output_item_types": [
+    "openrouter:apply_patch",
+    "openrouter:apply_patch",
+    "openrouter:apply_patch",
+    "openrouter:apply_patch",
+    "openrouter:apply_patch",
+    "openrouter:apply_patch",
+    "openrouter:apply_patch",
+    "openrouter:apply_patch",
+    "openrouter:apply_patch",
+    "openrouter:apply_patch"
+  ]
+}

@@ -1,0 +1,18 @@
+﻿{
+  "workflow_id": "EXECUTION-PATCH-CANDIDATE-001",
+  "bound_skill_context": "janus-executioner",
+  "target_task": "TASK-SPEC14.4 bounded UI anomaly copy refinement",
+  "spec_path": "documentation/SPEC/14_gemini_cost_attribution_and_deepdive_forensics.md",
+  "precheck_status": "PRE-CHECK PASSED",
+  "allowed_files": [
+    "frontend/js/cost-visualizer.js",
+    "frontend/styles.css"
+  ],
+  "max_touched_files": 2,
+  "mini_test_plan": [
+    "node --check frontend/js/cost-visualizer.js",
+    "manual modal smoke check in Janus DeepDive anomaly section"
+  ],
+  "manual_validation_gate": "Codex must still request manual Janus UI confirmation after local checks.",
+  "delegation_question": "Produce one bounded patch candidate that adjusts the anomaly explanation text without broad refactor."
+}
