@@ -4,6 +4,58 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-SPEC21.4 - Integrate the bounded OR worker path into janus-debug and janus-test-pipeline without widening the pilot scope
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-SPEC21.4_final_audit.md` (PASS)
+- **Spec**: `documentation/SPEC/Spec Done/21_assisted_or_workhorse_mode_for_janus_skills.md`
+- **Parent Task**: `documentation/tasks/TASK-SPEC21_assisted_or_workhorse_mode_for_janus_skills.md`
+- **Task Breakdown**: `documentation/tasks/TASK-SPEC21.4_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-SPEC21.4_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-SPEC21.4_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-SPEC21.4_AUDIT_PACKAGE.md`
+- **Validation**: `TASK-SPEC21.4` schliesst den vierten und letzten gebundenen Spec-21-Slice mit der alltagstauglichen Consumer-Integration fuer genau zwei freigegebene Pilotpfade ab. `janus-debug` kann den bounded OR-Arbeitspferd-Pfad jetzt nur fuer `debug_hypothesis_review` anbieten, `janus-test-pipeline` nur fuer `test_result_triage_review`; beide behalten ausserhalb dieser Klassen den Codex-only Pfad. Final Audit PASS mit fokussierter Consumer-, Capture- und Eligibility-Evidenz, installierter Skill-Hash-Paritaet sowie reproduzierbarer lokaler Fixture-Sichtbarkeit fuer Gate, Kosten, Confidence und den nicht-finalen Codex-owned Outcome. Damit ist Spec 21 insgesamt abgeschlossen, ohne Produktionsrouting, globale OR-Freigabe oder Scope-Erweiterung ueber die zwei Pilotklassen hinaus.
+- **Changed Files**: `documentation/codex/model-routing/scripts/codex_debug_hypothesis_review_runner.py`, `documentation/codex/model-routing/scripts/codex_test_result_triage_review_runner.py`, `documentation/codex/model-routing/scripts/generate_task_spec21_4_skill_context_evidence.py`, `documentation/codex/model-routing/tests/test_assistive_or_review_consumer_integration.py`, `documentation/codex/skills/janus-debug/SKILL.md`, `documentation/codex/skills/janus-test-pipeline/SKILL.md`, `documentation/tasks/TASK-SPEC21.4_skill_context_evidence.md`, `documentation/tasks/TASK-SPEC21.4_execution_result.md`, `documentation/tasks/TASK-SPEC21.4_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC21.4_final_audit.md`, `documentation/SPEC/Spec Done/21_assisted_or_workhorse_mode_for_janus_skills.md`.
+
+### TASK-SPEC21.3 - Add file-first OR capture, telemetry, and healthcheck ingestion for accepted and rejected pilot runs
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-SPEC21.3_final_audit.md` (PASS)
+- **Spec**: `documentation/SPEC/Spec Done/21_assisted_or_workhorse_mode_for_janus_skills.md`
+- **Parent Task**: `documentation/tasks/TASK-SPEC21_assisted_or_workhorse_mode_for_janus_skills.md`
+- **Task Breakdown**: `documentation/tasks/TASK-SPEC21.3_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-SPEC21.3_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-SPEC21.3_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-SPEC21.3_AUDIT_PACKAGE.md`
+- **Validation**: `TASK-SPEC21.3` schliesst den dritten gebundenen Spec-21-Slice mit file-first Capture, truthy Telemetry-Finalisierung und lokaler Healthcheck-Ingestion fuer die zwei bereits freigegebenen Pilotklassen ab. Akzeptierte, fehlende-Usage-, Wrapper-Failure- und Healthcheck-Failure-Pfade hinterlassen jetzt jeweils genau eine wahrheitsgetreue durable Telemetriezeile; Wrapper-Failure erzeugt direkt eine rejected fallback row, und Healthcheck-Failure rewritet dieselbe JSONL-Datei auf den finalen `FAIL`-/`CODEX_PREFERRED`-Zustand. Final Audit PASS mit fokussierter Capture-, Eligibility-, Compile-, DAILY-Healthcheck- und Validator-Evidenz. Spec 21 bleibt dabei bewusst in Arbeit, weil `TASK-SPEC21.4` weiterhin offen ist.
+- **Changed Files**: `documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py`, `documentation/codex/model-routing/tests/test_assistive_or_review_capture_dispatcher.py`, `documentation/tasks/TASK-SPEC21.3_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC21.3_execution_result.md`, `documentation/tasks/TASK-SPEC21.3_final_audit.md`.
+
+### TASK-SPEC21.2 - Normalize the operator gate with mandatory cost and confidence display
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-SPEC21.2_final_audit.md` (PASS)
+- **Spec**: `documentation/SPEC/Spec Done/21_assisted_or_workhorse_mode_for_janus_skills.md`
+- **Parent Task**: `documentation/tasks/TASK-SPEC21_assisted_or_workhorse_mode_for_janus_skills.md`
+- **Task Breakdown**: `documentation/tasks/TASK-SPEC21.2_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-SPEC21.2_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-SPEC21.2_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-SPEC21.2_AUDIT_PACKAGE.md`
+- **Validation**: `TASK-SPEC21.2` schliesst den zweiten gebundenen Spec-21-Slice mit einer sichtbaren, normalisierten Operator-Auswahl fuer die zwei bereits freigegebenen Pilotklassen ab. Das gemeinsame Gate zeigt jetzt konsistent `1 = Codex` und `2 = OR-Arbeitspferd` und verlangt vor jeder OR-Wahl ein ausgewaehltes OR-Modell, eine Kostenschaetzung und einen Confidence-Hinweis; fehlen diese Pflichtdaten, faellt der Pfad deterministisch auf Codex-only zurueck. Final Audit PASS mit fokussierter Unit-, Compile-, Direktprobe- und Validator-Evidenz. Spec 21 bleibt dabei bewusst in Arbeit, weil `TASK-SPEC21.3` und `TASK-SPEC21.4` noch offen sind.
+- **Changed Files**: `documentation/codex/model-routing/scripts/bounded_or_worker_gate_prompt.py`, `documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py`, `documentation/codex/model-routing/scripts/codex_debug_hypothesis_review_runner.py`, `documentation/codex/model-routing/scripts/codex_test_result_triage_review_runner.py`, `documentation/codex/model-routing/tests/test_bounded_or_worker_gate_prompt.py`, `documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py`, `documentation/codex/skills/janus-debug/SKILL.md`, `documentation/codex/skills/janus-test-pipeline/SKILL.md`, `documentation/tasks/TASK-SPEC21.2_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC21.2_execution_result.md`, `documentation/tasks/TASK-SPEC21.2_final_audit.md`.
+
+### TASK-SPEC21.1 - Enforce a locally testable OR eligibility and context-redaction gate for the pilot skills
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-SPEC21.1_final_audit.md` (PASS)
+- **Spec**: `documentation/SPEC/Spec Done/21_assisted_or_workhorse_mode_for_janus_skills.md`
+- **Parent Task**: `documentation/tasks/TASK-SPEC21_assisted_or_workhorse_mode_for_janus_skills.md`
+- **Task Breakdown**: `documentation/tasks/TASK-SPEC21.1_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-SPEC21.1_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-SPEC21.1_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-SPEC21.1_AUDIT_PACKAGE.md`
+- **Validation**: `TASK-SPEC21.1` schliesst den ersten gebundenen Spec-21-Slice mit einer lokal testbaren Pilotgrenze vor jedem externen OR-Request. Der gemeinsame Dispatcher akzeptiert nur noch `janus-debug/debug_hypothesis_review` und `janus-test-pipeline/test_result_triage_review`, blockiert Legacy-Klassen deterministisch vor dem Delegationspfad und erzwingt die Request-Redaction-/Allowlist-Grenze vor jedem moeglichen OR-Dispatch. Final Audit PASS mit fokussierter Unit-, Compile-, Probe-, CLI-Fallback- und Validator-Evidenz. Spec 21 bleibt dabei bewusst in Arbeit, weil `TASK-SPEC21.2` bis `TASK-SPEC21.4` noch offen sind.
+- **Changed Files**: `documentation/codex/model-routing/config/bounded_or_worker_eligibility_2026-06-17.json`, `documentation/codex/model-routing/scripts/bounded_or_worker_eligibility.py`, `documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py`, `documentation/codex/model-routing/scripts/codex_structured_action_request_builder.py`, `documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py`, `documentation/tasks/TASK-SPEC21.1_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC21.1_execution_result.md`, `documentation/tasks/TASK-SPEC21.1_final_audit.md`.
+
 ### TASK-SPEC20.1 - Establish separate top-level Dev governance home
 
 - **Status**: DONE

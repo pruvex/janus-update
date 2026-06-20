@@ -88,5 +88,54 @@
       "reason_code": "ELIGIBILITY_CONFIRMED",
       "message": "Execution write-apply candidate entry remains bounded and reviewed under Codex-owned acceptance."
     }
+  },
+  "assistive_or_workhorse_pilot": {
+    "status": "PILOT_SCOPE_ONLY",
+    "scope_note": "Spec 21 pilot scope. Only janus-debug/debug_hypothesis_review and janus-test-pipeline/test_result_triage_review may pass this pre-request gate.",
+    "skills": {
+      "janus-debug": {
+        "allowed_task_classes": [
+          "debug_hypothesis_review"
+        ]
+      },
+      "janus-test-pipeline": {
+        "allowed_task_classes": [
+          "test_result_triage_review"
+        ]
+      }
+    },
+    "request_package_allowlists": {
+      "debug_hypothesis_review": {
+        "required_fields": [
+          "workflow_id",
+          "bound_skill_context",
+          "expected_behavior",
+          "actual_behavior",
+          "evidence_snippets",
+          "iteration_number",
+          "explicit_question",
+          "redaction_ready"
+        ],
+        "optional_fields": [
+          "failure_code"
+        ],
+        "max_evidence_snippets": 3
+      },
+      "test_result_triage_review": {
+        "required_fields": [
+          "workflow_id",
+          "bound_skill_context",
+          "test_run_id",
+          "result_outcome_summary",
+          "evidence_snippets",
+          "classification_question",
+          "redaction_ready"
+        ],
+        "optional_fields": [
+          "candidate_blocker_category"
+        ],
+        "max_evidence_snippets": 3
+      }
+    }
   }
 }

@@ -58,6 +58,110 @@ TRIAGE_RUNNER_SPEC.loader.exec_module(triage_runner)
 
 
 class BoundedOrWorkerEligibilityTests(unittest.TestCase):
+    def test_assistive_or_pilot_allows_redacted_debug_package(self) -> None:
+        payload = {
+            "workflow_id": "WF-DEBUG-PILOT-001",
+            "bound_skill_context": "janus-debug",
+            "expected_behavior": "Delegated review should stay bounded.",
+            "actual_behavior": "Delegated review must only receive the minimal package.",
+            "evidence_snippets": [
+                "validator requested one bounded review only",
+                "no secrets appear in the reduced package",
+            ],
+            "iteration_number": 1,
+            "explicit_question": "What is the next local verifier?",
+            "redaction_ready": True,
+            "failure_code": "RUNNER_ARTIFACT_MISMATCH",
+        }
+
+        result = eligibility.evaluate_assistive_or_workhorse_pilot(
+            skill_id="janus-debug",
+            task_class="debug_hypothesis_review",
+            request_payload=payload,
+        )
+
+        self.assertEqual(result["eligibility_result"], "OR_ALLOWED")
+        self.assertEqual(result["reason_code"], "ELIGIBILITY_CONFIRMED")
+
+    def test_assistive_or_pilot_rejects_out_of_scope_task_class(self) -> None:
+        result = eligibility.evaluate_assistive_or_workhorse_pilot(
+            skill_id="janus-debug",
+            task_class="quickchange_patch_review",
+            request_payload={"redaction_ready": True, "evidence_snippets": ["narrow"]},
+        )
+
+        self.assertEqual(result["eligibility_result"], "OR_NOT_ELIGIBLE")
+        self.assertEqual(result["reason_code"], "TASK_CLASS_NOT_ALLOWED")
+
+    def test_assistive_or_pilot_rejects_debug_payload_with_forbidden_field(self) -> None:
+        payload = {
+            "workflow_id": "WF-DEBUG-PILOT-002",
+            "bound_skill_context": "janus-debug",
+            "expected_behavior": "Delegated review should stay bounded.",
+            "actual_behavior": "The request package still contains widened context.",
+            "evidence_snippets": ["snippet one"],
+            "iteration_number": 2,
+            "explicit_question": "Which verifier should Codex run?",
+            "redaction_ready": True,
+            "changed_files": [
+                "documentation/codex/model-routing/scripts/test_pipeline_sidecar_write_pilot_runner.py"
+            ],
+        }
+
+        result = eligibility.evaluate_assistive_or_workhorse_pilot(
+            skill_id="janus-debug",
+            task_class="debug_hypothesis_review",
+            request_payload=payload,
+        )
+
+        self.assertEqual(result["eligibility_result"], "OR_CONTEXT_REDACTION_REQUIRED")
+        self.assertIn("forbidden input field: changed_files", result["request_validation_issues"])
+
+    def test_assistive_or_pilot_rejects_triage_payload_with_path_leakage(self) -> None:
+        payload = {
+            "workflow_id": "WF-TRIAGE-PILOT-001",
+            "bound_skill_context": "janus-test-pipeline",
+            "test_run_id": "TEST-RUN-2026-06-20-001",
+            "result_outcome_summary": "Artifact mismatch after generation stage.",
+            "evidence_snippets": ["summary references only the bounded mismatch"],
+            "classification_question": "Is this infra or test bug?",
+            "redaction_ready": True,
+            "test_result_path": "documentation/test-results/TEST-RUN-2026-06-20-001_results.json",
+        }
+
+        result = eligibility.evaluate_assistive_or_workhorse_pilot(
+            skill_id="janus-test-pipeline",
+            task_class="test_result_triage_review",
+            request_payload=payload,
+        )
+
+        self.assertEqual(result["eligibility_result"], "OR_CONTEXT_REDACTION_REQUIRED")
+        self.assertIn("forbidden input field: test_result_path", result["request_validation_issues"])
+
+    def test_assistive_or_pilot_allows_redacted_triage_package(self) -> None:
+        payload = {
+            "workflow_id": "WF-TRIAGE-PILOT-002",
+            "bound_skill_context": "janus-test-pipeline",
+            "test_run_id": "TEST-RUN-2026-06-20-002",
+            "result_outcome_summary": "Generator mismatch remained after rerun.",
+            "evidence_snippets": [
+                "failure reproduced in bounded rerun summary",
+                "package contains no raw file paths",
+            ],
+            "classification_question": "Should Codex treat this as infra drift or product bug?",
+            "redaction_ready": True,
+            "candidate_blocker_category": "infra_or_harness",
+        }
+
+        result = eligibility.evaluate_assistive_or_workhorse_pilot(
+            skill_id="janus-test-pipeline",
+            task_class="test_result_triage_review",
+            request_payload=payload,
+        )
+
+        self.assertEqual(result["eligibility_result"], "OR_ALLOWED")
+        self.assertEqual(result["reason_code"], "ELIGIBILITY_CONFIRMED")
+
     def test_doc_skill_allowed_returns_or_allowed(self) -> None:
         result = eligibility.evaluate_doc_skill_fixed_or(
             skill_id="DOC-SKILL-001",
@@ -112,8 +216,24 @@ class BoundedOrWorkerEligibilityTests(unittest.TestCase):
 
         self.assertEqual(result["eligibility_result"], "OR_ALLOWED")
         self.assertEqual(result["final_outcome"], "AWAITING_OPERATOR_CHOICE")
-        self.assertEqual(result["choice_2"], "OpenRouter")
-        self.assertIn("voraussichtliche Kosten", result["operator_prompt_lines"][1])
+        self.assertEqual(result["choice_2"], "OR-Arbeitspferd")
+        self.assertIn("2 = OR-Arbeitspferd", result["operator_prompt_lines"])
+
+    def test_dispatcher_entry_gate_allows_triage_review_class(self) -> None:
+        result = dispatcher.evaluate_assistive_or_workhorse_dispatcher_eligibility(
+            task_class="test_result_triage_review"
+        )
+
+        self.assertEqual(result["eligibility_result"], "OR_ALLOWED")
+        self.assertEqual(result["reason_code"], "ELIGIBILITY_CONFIRMED")
+
+    def test_dispatcher_entry_gate_rejects_legacy_task_class(self) -> None:
+        result = dispatcher.evaluate_assistive_or_workhorse_dispatcher_eligibility(
+            task_class="quickchange_patch_review"
+        )
+
+        self.assertEqual(result["eligibility_result"], "OR_NOT_ELIGIBLE")
+        self.assertEqual(result["reason_code"], "SKILL_NOT_ALLOWED")
 
     def test_dispatcher_prompt_summary_suppresses_gate_without_cost(self) -> None:
         args = Namespace(
@@ -171,7 +291,7 @@ class BoundedOrWorkerEligibilityTests(unittest.TestCase):
         )
 
         self.assertEqual(result["final_outcome"], "AWAITING_OPERATOR_CHOICE")
-        self.assertEqual(result["choice_2"], "OpenRouter")
+        self.assertEqual(result["choice_2"], "OR-Arbeitspferd")
 
     def test_triage_prompt_summary_suppresses_gate_without_confidence(self) -> None:
         result = triage_runner.prompt_summary(
@@ -234,6 +354,42 @@ class BoundedOrWorkerEligibilityTests(unittest.TestCase):
         )
 
         self.assertEqual(result["codex_owned_outcome_status"], "DELEGATED_REJECT_AND_FALLBACK")
+
+    def test_dispatcher_rejects_debug_payload_before_runner(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            input_path = Path(temp_dir) / "debug_input.json"
+            input_path.write_text(
+                json.dumps(
+                    {
+                        "workflow_id": "WF-DEBUG-DISPATCH-001",
+                        "bound_skill_context": "janus-debug",
+                        "expected_behavior": "Delegated review should stay bounded.",
+                        "actual_behavior": "Legacy fixture leaked changed files.",
+                        "evidence_snippets": ["one bounded snippet"],
+                        "iteration_number": 1,
+                        "explicit_question": "What verifier should Codex run?",
+                        "redaction_ready": True,
+                        "changed_files": ["backend/services/chat_orchestrator.py"],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            payload, gate = dispatcher.validate_assistive_or_workhorse_request(
+                task_class="debug_hypothesis_review",
+                input_package_path=input_path,
+            )
+            result = dispatcher.build_assistive_or_pilot_reject_result(
+                workflow_id="WF-DEBUG-DISPATCH-001",
+                task_class="debug_hypothesis_review",
+                task_label="Debug pilot gate",
+                input_payload=payload,
+                eligibility=gate,
+            )
+
+        self.assertEqual(result["eligibility_result"], "OR_CONTEXT_REDACTION_REQUIRED")
+        self.assertEqual(result["selected_path"], "codex_only_pre_dispatch")
+        self.assertIn("forbidden input field: changed_files", result["request_validation_issues"])
 
 
 if __name__ == "__main__":

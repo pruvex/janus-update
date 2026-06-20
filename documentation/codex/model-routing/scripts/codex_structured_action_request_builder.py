@@ -38,6 +38,38 @@ def rel_repo(path: Path) -> str:
         return str(path.resolve())
 
 
+def validate_bounded_review_payload(
+    payload: dict,
+    *,
+    required_fields: list[str],
+    optional_fields: list[str] | None = None,
+    max_evidence_snippets: int | None = None,
+) -> list[str]:
+    issues: list[str] = []
+    optional = set(optional_fields or [])
+    allowed = set(required_fields) | optional
+
+    for field in required_fields:
+        if field not in payload:
+            issues.append(f"missing input field: {field}")
+
+    for field in payload:
+        if field not in allowed:
+            issues.append(f"forbidden input field: {field}")
+
+    snippets = payload.get("evidence_snippets")
+    if max_evidence_snippets is not None:
+        if not isinstance(snippets, list) or not snippets:
+            issues.append("evidence_snippets must be a non-empty list")
+        elif len(snippets) > max_evidence_snippets:
+            issues.append(f"evidence_snippets must contain at most {max_evidence_snippets} items")
+
+    if payload.get("redaction_ready") is not True:
+        issues.append("redaction_ready must be true for delegated review")
+
+    return issues
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Build one structured action request JSON from a bounded local artifact.")
     parser.add_argument("--workflow-id", required=True)

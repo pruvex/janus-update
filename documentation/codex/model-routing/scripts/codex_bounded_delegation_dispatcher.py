@@ -5,8 +5,11 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
+import time
+from datetime import datetime
 from pathlib import Path
 
 
@@ -23,16 +26,32 @@ EXECUTION_PATCH_RUNNER = MODEL_ROUTING_DIR / "scripts" / "codex_execution_patch_
 DIRECT_OR_EXECUTION_PATCH_RUNNER = MODEL_ROUTING_DIR / "scripts" / "openrouter_direct_execution_patch_candidate_runner.py"
 EXECUTION_WRITE_APPLY_RUNNER = MODEL_ROUTING_DIR / "scripts" / "codex_execution_write_apply_candidate_runner.py"
 RUN_ROOT = MODEL_ROUTING_DIR / "bounded-dispatch-runs"
+OR_TELEMETRY_DIR = MODEL_ROUTING_DIR
+WRAPPER_PATH = MODEL_ROUTING_DIR / "scripts" / "or_file_first_capture_wrapper.ps1"
+HEALTH_SNAPSHOT_PATH = (
+    REPO_ROOT
+    / "documentation"
+    / "codex"
+    / "skills"
+    / "janus-health-check"
+    / "scripts"
+    / "health_snapshot.py"
+)
 if str(MODEL_ROUTING_DIR / "scripts") not in sys.path:
     sys.path.insert(0, str(MODEL_ROUTING_DIR / "scripts"))
 
-from bounded_or_worker_eligibility import evaluate_dispatch_task_class
+import codex_debug_hypothesis_review_runner as debug_review_runner
+import codex_test_result_triage_review_runner as triage_review_runner
+from bounded_or_worker_eligibility import (
+    evaluate_assistive_or_workhorse_pilot,
+)
 from bounded_or_worker_gate_prompt import (
     build_missing_gate_result,
     build_operator_prompt_lines,
     missing_gate_fields,
 )
 from bounded_or_worker_outcome import normalize_codex_owned_outcome
+from codex_structured_action_request_builder import validate_bounded_review_payload
 
 
 def normalize_choice(value: str) -> str:
@@ -54,6 +73,18 @@ def write_json(path: Path, payload: dict) -> None:
 def write_text(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
+
+
+def append_jsonl(path: Path, row: dict[str, object]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8", newline="\n") as handle:
+        handle.write(json.dumps(row, ensure_ascii=False) + "\n")
+
+
+def write_single_jsonl_row(path: Path, row: dict[str, object]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="\n") as handle:
+        handle.write(json.dumps(row, ensure_ascii=False) + "\n")
 
 
 def output(payload: dict) -> None:
@@ -91,6 +122,709 @@ def summarize_failure_text(text: str, limit: int = 600) -> str:
 
 def load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8-sig"))
+
+
+def actual_or_cost(response_summary: dict[str, object]) -> float | None:
+    value = response_summary.get("actual_or_cost")
+    if isinstance(value, (int, float)):
+        return float(value)
+    usage = response_summary.get("usage")
+    if isinstance(usage, dict):
+        cost = usage.get("cost")
+        if isinstance(cost, (int, float)):
+            return float(cost)
+    return None
+
+
+def content_from_response(response_body: dict[str, object]) -> str:
+    choices = response_body.get("choices")
+    if not isinstance(choices, list) or not choices:
+        return ""
+    first_choice = choices[0] if isinstance(choices[0], dict) else {}
+    message = first_choice.get("message") if isinstance(first_choice, dict) else {}
+    if not isinstance(message, dict):
+        message = {}
+    content = message.get("content")
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        parts: list[str] = []
+        for item in content:
+            if isinstance(item, dict) and isinstance(item.get("text"), str):
+                parts.append(item["text"])
+        return "\n".join(parts)
+    return ""
+
+
+def parse_json_from_text(text: str) -> dict[str, object]:
+    stripped = text.strip()
+    if stripped.startswith("```"):
+        stripped = stripped.removeprefix("```json").removeprefix("```").strip()
+        if stripped.endswith("```"):
+            stripped = stripped[:-3].strip()
+    try:
+        parsed = json.loads(stripped)
+        if isinstance(parsed, dict):
+            return parsed
+    except json.JSONDecodeError:
+        pass
+    start = stripped.find("{")
+    end = stripped.rfind("}")
+    if start >= 0 and end > start:
+        parsed = json.loads(stripped[start : end + 1])
+        if isinstance(parsed, dict):
+            return parsed
+    raise ValueError("response content is not a JSON object")
+
+
+def invoke_file_first_wrapper(
+    *,
+    run_dir: Path,
+    request_body_path: Path,
+    use_local_fixture: bool,
+    local_fixture_response_path: Path | None,
+    execute_live: bool,
+    title: str,
+) -> subprocess.CompletedProcess[str]:
+    command = [
+        "powershell",
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        str(WRAPPER_PATH),
+        "-RunDirectory",
+        str(run_dir),
+        "-RequestBodyPath",
+        str(request_body_path),
+    ]
+    if use_local_fixture:
+        if local_fixture_response_path is None:
+            raise SystemExit("--use-local-or-fixture requires --or-local-fixture-response-path")
+        command.extend(["-UseLocalFixture", "-LocalFixtureResponsePath", str(local_fixture_response_path.resolve())])
+    elif execute_live:
+        api_key = os.environ.get("OPENROUTER_API_KEY")
+        if not api_key:
+            raise SystemExit("OPENROUTER_API_KEY missing for bounded assistive OR live invocation")
+        command.extend(
+            [
+                "-AuthorizationBearer",
+                f"Bearer {api_key}",
+                "-HttpReferer",
+                "https://github.com/pruvex/Janus-Projekt",
+                "-XTitle",
+                title,
+            ]
+        )
+    else:
+        raise SystemExit("choose --use-local-or-fixture or --execute-direct-or for bounded assistive OR review")
+    return run_command(command)
+
+
+def run_healthcheck(telemetry_path: Path, run_dir: Path) -> dict[str, object]:
+    command = [
+        sys.executable,
+        str(HEALTH_SNAPSHOT_PATH),
+        "--repo",
+        str(REPO_ROOT),
+        "--or-telemetry-jsonl",
+        str(telemetry_path),
+    ]
+    completed = run_command(command)
+    write_text(run_dir / "healthcheck_stdout.log", completed.stdout)
+    write_text(run_dir / "healthcheck_stderr.log", completed.stderr)
+    write_text(run_dir / "healthcheck_command.txt", " ".join(command) + "\n")
+    if completed.returncode != 0:
+        raise RuntimeError(completed.stderr.strip() or completed.stdout.strip() or "health_snapshot.py failed")
+    parsed = json.loads(completed.stdout)
+    if not isinstance(parsed, dict):
+        raise RuntimeError("health_snapshot.py did not return a JSON object")
+    write_json(run_dir / "healthcheck_summary.json", parsed)
+    return parsed
+
+
+PILOT_TASK_CLASS_SKILL_MAP = {
+    "debug_hypothesis_review": "janus-debug",
+    "test_result_triage_review": "janus-test-pipeline",
+}
+
+PILOT_VISIBLE_GATE_LABELS = {
+    "debug_hypothesis_review": "OR-Arbeitspferd",
+    "test_result_triage_review": "OR-Arbeitspferd",
+}
+
+PILOT_REQUEST_ALLOWLISTS = {
+    "debug_hypothesis_review": {
+        "required_fields": [
+            "workflow_id",
+            "bound_skill_context",
+            "expected_behavior",
+            "actual_behavior",
+            "evidence_snippets",
+            "iteration_number",
+            "explicit_question",
+            "redaction_ready",
+        ],
+        "optional_fields": ["failure_code"],
+        "max_evidence_snippets": 3,
+    },
+    "test_result_triage_review": {
+        "required_fields": [
+            "workflow_id",
+            "bound_skill_context",
+            "test_run_id",
+            "result_outcome_summary",
+            "evidence_snippets",
+            "classification_question",
+            "redaction_ready",
+        ],
+        "optional_fields": ["candidate_blocker_category"],
+        "max_evidence_snippets": 3,
+    },
+}
+
+DEBUG_REVIEW_RESULT_SCHEMA = {
+    "name": "janus_debug_hypothesis_review_result",
+    "strict": True,
+    "schema": {
+        "type": "object",
+        "additionalProperties": False,
+        "required": debug_review_runner.REQUIRED_RESULT_FIELDS,
+        "properties": {
+            "status": {"type": "string", "enum": ["PASS", "WEAK_SIGNAL", "BLOCKED"]},
+            "primary_failure_code": {"type": "string"},
+            "likely_subsystem": {"type": "string"},
+            "hypotheses": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 3,
+                "items": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "required": ["title", "confidence", "evidence"],
+                    "properties": {
+                        "title": {"type": "string"},
+                        "confidence": {"type": "string", "enum": ["LOW", "MEDIUM", "HIGH"]},
+                        "evidence": {"type": "string"},
+                    },
+                },
+            },
+            "suggested_local_verifiers": {"type": "string"},
+            "instrumentation_suggestion": {"type": "string"},
+            "escalation_trigger": {"type": "string"},
+            "redaction_check": {"type": "string", "enum": ["PASS"]},
+            "notes": {"type": "string"},
+        },
+    },
+}
+
+TRIAGE_REVIEW_RESULT_SCHEMA = {
+    "name": "janus_test_result_triage_review_result",
+    "strict": True,
+    "schema": {
+        "type": "object",
+        "additionalProperties": False,
+        "required": triage_review_runner.REQUIRED_RESULT_FIELDS,
+        "properties": {
+            "status": {"type": "string", "enum": ["PASS", "WEAK_SIGNAL", "BLOCKED"]},
+            "test_run_id": {"type": "string"},
+            "primary_outcome": {"type": "string"},
+            "likely_classification": {"type": "string", "enum": sorted(triage_review_runner.SUPPORTED_CLASSIFICATIONS)},
+            "likely_subsystem": {"type": "string"},
+            "finding_clusters": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 2,
+                "items": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "required": ["title", "confidence", "evidence"],
+                    "properties": {
+                        "title": {"type": "string"},
+                        "confidence": {"type": "string", "enum": ["LOW", "MEDIUM", "HIGH"]},
+                        "evidence": {"type": "string"},
+                    },
+                },
+            },
+            "suggested_next_local_verifiers": {"type": "string"},
+            "suggested_routing": {"type": "string"},
+            "escalation_trigger": {"type": "string"},
+            "redaction_check": {"type": "string", "enum": ["PASS"]},
+            "notes": {"type": "string"},
+        },
+    },
+}
+
+
+def evaluate_assistive_or_workhorse_dispatcher_eligibility(*, task_class: str) -> dict:
+    skill_id = PILOT_TASK_CLASS_SKILL_MAP.get(task_class, "__non_pilot_dispatcher_task__")
+    return evaluate_assistive_or_workhorse_pilot(
+        skill_id=skill_id,
+        task_class=task_class,
+    )
+
+
+def validate_assistive_or_workhorse_request(
+    *,
+    task_class: str,
+    input_package_path: Path,
+) -> tuple[dict, dict]:
+    payload = load_json(input_package_path.resolve())
+    allowlist = PILOT_REQUEST_ALLOWLISTS[task_class]
+    issues = validate_bounded_review_payload(
+        payload,
+        required_fields=allowlist["required_fields"],
+        optional_fields=allowlist["optional_fields"],
+        max_evidence_snippets=allowlist["max_evidence_snippets"],
+    )
+    eligibility = evaluate_assistive_or_workhorse_pilot(
+        skill_id=PILOT_TASK_CLASS_SKILL_MAP[task_class],
+        task_class=task_class,
+        request_payload=payload,
+    )
+    if issues and "request_validation_issues" not in eligibility:
+        eligibility = dict(eligibility)
+        eligibility["request_validation_issues"] = issues
+    return payload, eligibility
+
+
+def build_assistive_or_pilot_reject_result(
+    *,
+    workflow_id: str,
+    task_class: str,
+    task_label: str,
+    input_payload: dict,
+    eligibility: dict,
+) -> dict:
+    run_dir = RUN_ROOT / workflow_id
+    copied_input = run_dir / f"{task_class}_input_package_rejected.json"
+    write_json(copied_input, input_payload)
+    issues = eligibility.get("request_validation_issues", [])
+    result = {
+        "summary_header": "BOUNDED DELEGATION DISPATCH RESULT",
+        "workflow_id": workflow_id,
+        "task_class": task_class,
+        "task_label": task_label,
+        "selected_path": "codex_only_pre_dispatch",
+        "eligibility_result": eligibility["eligibility_result"],
+        "eligibility_reason_code": eligibility["reason_code"],
+        "evidence_status": eligibility.get("evidence_status", "N_A"),
+        "validation_result": "PASS",
+        "final_outcome": "LOCAL_CODEX_PATH_SELECTED",
+        "input_package_path": str(copied_input),
+        "operator_result_lines": [
+            f"Ergebnis: {eligibility['eligibility_result']}",
+            "Route: Codex-only bis das Request-Paket auf die Pilot-Allowlist reduziert ist",
+        ],
+        "operator_message": eligibility["message"],
+        "request_validation_issues": issues,
+    }
+    return result
+
+
+def build_assistive_review_request_body(*, task_class: str, model: str, input_payload: dict[str, object]) -> dict[str, object]:
+    if task_class == "debug_hypothesis_review":
+        schema = DEBUG_REVIEW_RESULT_SCHEMA
+        system = (
+            "You are a bounded OpenRouter worker for a Janus debug hypothesis review. "
+            "Return only JSON matching the schema. Do not claim a fix, do not run commands, and do not claim validation authority. "
+            "Codex remains local validation and acceptance owner."
+        )
+        user_payload = {
+            "task_class": task_class,
+            "workflow_id": input_payload.get("workflow_id"),
+            "bound_skill_context": input_payload.get("bound_skill_context"),
+            "expected_behavior": input_payload.get("expected_behavior"),
+            "actual_behavior": input_payload.get("actual_behavior"),
+            "evidence_snippets": input_payload.get("evidence_snippets"),
+            "iteration_number": input_payload.get("iteration_number"),
+            "explicit_question": input_payload.get("explicit_question"),
+            "constraints": [
+                "At most 3 hypotheses",
+                "No command execution",
+                "No final fix claim",
+                "redaction_check must be PASS",
+            ],
+        }
+    else:
+        schema = TRIAGE_REVIEW_RESULT_SCHEMA
+        system = (
+            "You are a bounded OpenRouter worker for a Janus test-result triage review. "
+            "Return only JSON matching the schema. Do not run tests, do not claim release readiness, and do not claim final PASS authority. "
+            "Codex remains local validation and routing owner."
+        )
+        user_payload = {
+            "task_class": task_class,
+            "workflow_id": input_payload.get("workflow_id"),
+            "bound_skill_context": input_payload.get("bound_skill_context"),
+            "test_run_id": input_payload.get("test_run_id"),
+            "result_outcome_summary": input_payload.get("result_outcome_summary"),
+            "evidence_snippets": input_payload.get("evidence_snippets"),
+            "classification_question": input_payload.get("classification_question"),
+            "constraints": [
+                "At most 2 finding clusters",
+                "No live test execution",
+                "No final PASS decision",
+                "redaction_check must be PASS",
+            ],
+        }
+    return {
+        "model": model,
+        "messages": [
+            {"role": "system", "content": system},
+            {"role": "user", "content": json.dumps(user_payload, ensure_ascii=False, indent=2)},
+        ],
+        "temperature": 0.0,
+        "max_tokens": 1600,
+        "response_format": {
+            "type": "json_schema",
+            "json_schema": schema,
+        },
+    }
+
+
+def build_assistive_review_telemetry_row(
+    *,
+    task_class: str,
+    workflow_id: str,
+    selected_path: str,
+    normal_target_model: str,
+    or_model: str,
+    estimated_or_cost: float,
+    cost_estimate_confidence_percent: float,
+    response_summary: dict[str, object],
+    validation_result: str,
+    final_outcome: str,
+    fallback_used: str,
+    rework_required: str,
+    latency_ms: int,
+) -> dict[str, object]:
+    usage = response_summary.get("usage")
+    usage_dict = usage if isinstance(usage, dict) else {}
+    actual_cost = actual_or_cost(response_summary)
+    estimated = float(estimated_or_cost)
+    error_percent = ((actual_cost - estimated) / estimated * 100.0) if actual_cost is not None and estimated else 0.0
+    return {
+        "workflow_id": workflow_id,
+        "skill_id": task_class,
+        "routing_mode": "assistive_or_workhorse_bounded_review",
+        "selected_path": selected_path,
+        "codex_default_model": normal_target_model,
+        "or_model": or_model,
+        "estimated_prompt_tokens": 0,
+        "estimated_completion_tokens": 0,
+        "estimated_or_cost": estimated,
+        "cost_estimate_confidence_percent": float(cost_estimate_confidence_percent),
+        "cost_estimate_sample_count": 0,
+        "cost_estimate_mean_abs_error_percent": 0.0,
+        "cost_estimate_p50_error_percent": 0.0,
+        "cost_estimate_p90_error_percent": 0.0,
+        "cost_estimate_basis": "bounded_assistive_review_dispatcher",
+        "prompt_template_hash": f"{task_class}_direct_or_v1",
+        "task_variant": task_class,
+        "price_snapshot_source": "dispatcher_runtime",
+        "price_snapshot_timestamp": datetime.now().isoformat(timespec="seconds"),
+        "actual_prompt_tokens": int(usage_dict.get("prompt_tokens", 0)),
+        "actual_completion_tokens": int(usage_dict.get("completion_tokens", 0)),
+        "actual_reasoning_tokens": int((usage_dict.get("completion_tokens_details") or {}).get("reasoning_tokens", 0))
+        if isinstance(usage_dict.get("completion_tokens_details"), dict)
+        else 0,
+        "actual_cached_tokens": int((usage_dict.get("prompt_tokens_details") or {}).get("cached_tokens", 0))
+        if isinstance(usage_dict.get("prompt_tokens_details"), dict)
+        else 0,
+        "actual_or_cost": actual_cost if actual_cost is not None else 0.0,
+        "generation_id": str(response_summary.get("generation_id") or ""),
+        "usage_source": "response_usage" if usage_dict else "fallback_estimate",
+        "estimated_codex_effort": "medium",
+        "estimation_error_percent": round(error_percent, 2),
+        "cost_delta_vs_codex_estimate": round((actual_cost or 0.0) - estimated, 8),
+        "latency_ms": latency_ms,
+        "validation_result": validation_result,
+        "fallback_used": fallback_used,
+        "rework_required": rework_required,
+        "final_outcome": final_outcome,
+        "reason_for_escalation": "",
+        "quality_notes": "Bounded assist-only OR review; Codex remains local validation and acceptance owner.",
+        "recommendation_signal": "OR_PREFERRED" if validation_result == "PASS" else "CODEX_PREFERRED",
+    }
+
+
+def invoke_assistive_or_review_via_wrapper(args: argparse.Namespace, workflow_id: str, task_class: str) -> dict:
+    input_arg = args.debug_input_package if task_class == "debug_hypothesis_review" else args.test_triage_input_package
+    if input_arg is None:
+        raise SystemExit(f"{task_class} delegated flow requires an input package")
+    if not args.selected_or_model:
+        raise SystemExit(f"{task_class} direct OR flow requires --selected-or-model")
+    if args.estimated_or_cost is None or args.cost_estimate_confidence_percent is None:
+        raise SystemExit(f"{task_class} direct OR flow requires estimated cost and confidence")
+
+    input_payload, pilot_eligibility = validate_assistive_or_workhorse_request(
+        task_class=task_class,
+        input_package_path=input_arg,
+    )
+    if pilot_eligibility["eligibility_result"] != "OR_ALLOWED":
+        return build_assistive_or_pilot_reject_result(
+            workflow_id=workflow_id,
+            task_class=task_class,
+            task_label=args.task_label,
+            input_payload=input_payload,
+            eligibility=pilot_eligibility,
+        )
+
+    run_dir = RUN_ROOT / workflow_id
+    telemetry_path = OR_TELEMETRY_DIR / (
+        f"or_healthcheck_telemetry_assistive_or_review_{datetime.now().strftime('%Y-%m-%d')}_{workflow_id}.jsonl"
+    )
+    delegated_selected_path = (
+        "delegated_assist_only_hypothesis_review"
+        if task_class == "debug_hypothesis_review"
+        else "delegated_assist_only_test_result_triage_review"
+    )
+    request_body = build_assistive_review_request_body(
+        task_class=task_class,
+        model=args.selected_or_model,
+        input_payload=input_payload,
+    )
+    request_path = run_dir / "request_body_source.json"
+    write_json(request_path, request_body)
+    write_json(run_dir / "input_package.json", input_payload)
+
+    start = time.time()
+    wrapper_result = invoke_file_first_wrapper(
+        run_dir=run_dir,
+        request_body_path=request_path,
+        use_local_fixture=args.use_local_or_fixture,
+        local_fixture_response_path=args.or_local_fixture_response_path,
+        execute_live=args.execute_direct_or,
+        title=f"Janus Bounded Assistive OR Review ({task_class})",
+    )
+    latency_ms = int(round((time.time() - start) * 1000))
+    write_text(run_dir / "wrapper_command_stdout.log", wrapper_result.stdout)
+    write_text(run_dir / "wrapper_command_stderr.log", wrapper_result.stderr)
+    if wrapper_result.returncode != 0:
+        validation_summary = {
+            "workflow_id": workflow_id,
+            "task_class": task_class,
+            "input_validation_pass": True,
+            "result_validation_pass": False,
+            "telemetry_validation_pass": False,
+            "input_issues": [],
+            "result_issues": ["wrapper capture failed before delegated response validation"],
+            "telemetry_issues": ["wrapper invocation failed"],
+            "redaction_ready": input_payload.get("redaction_ready"),
+            "redaction_check": None,
+            "accepted_for_local_codex_validation": False,
+        }
+        write_json(run_dir / "validation_summary.json", validation_summary)
+        write_single_jsonl_row(
+            telemetry_path,
+            build_assistive_review_telemetry_row(
+                task_class=task_class,
+                workflow_id=workflow_id,
+                selected_path="abort_post_wrapper",
+                normal_target_model=args.normal_target_model,
+                or_model=args.selected_or_model,
+                estimated_or_cost=float(args.estimated_or_cost),
+                cost_estimate_confidence_percent=float(args.cost_estimate_confidence_percent),
+                response_summary={},
+                validation_result="FAIL",
+                final_outcome=(
+                    "DEBUG_HYPOTHESIS_REVIEW_REJECT_AND_FALLBACK"
+                    if task_class == "debug_hypothesis_review"
+                    else "TEST_RESULT_TRIAGE_REVIEW_REJECT_AND_FALLBACK"
+                ),
+                fallback_used="YES",
+                rework_required="YES",
+                latency_ms=latency_ms,
+            ),
+        )
+        return {
+            "summary_header": "BOUNDED DELEGATION DISPATCH RESULT",
+            "workflow_id": workflow_id,
+            "task_class": task_class,
+            "task_label": args.task_label,
+            "selected_path": "abort_post_wrapper",
+            "normal_target_model": args.normal_target_model,
+            "selected_or_model": args.selected_or_model,
+            "estimated_or_cost": float(args.estimated_or_cost),
+            "cost_estimate_confidence_percent": float(args.cost_estimate_confidence_percent),
+            "validation_result": "FAIL",
+            "final_outcome": (
+                "DEBUG_HYPOTHESIS_REVIEW_REJECT_AND_FALLBACK"
+                if task_class == "debug_hypothesis_review"
+                else "TEST_RESULT_TRIAGE_REVIEW_REJECT_AND_FALLBACK"
+            ),
+            "fallback_used": "YES",
+            "rework_required": "YES",
+            "validation_summary_path": str(run_dir / "validation_summary.json"),
+            "telemetry_jsonl_path": str(telemetry_path),
+            "healthcheck_status": "SKIPPED",
+            "operator_message": "File-first capture failed before a bounded review result could be validated. Fallback to Codex-only is required.",
+        }
+
+    response_body = load_json(run_dir / "response_body.json")
+    response_summary = load_json(run_dir / "response_summary.json")
+    delegated_text = content_from_response(response_body)
+    parse_issues: list[str] = []
+    try:
+        extracted_payload = parse_json_from_text(delegated_text)
+    except Exception as exc:
+        extracted_payload = {}
+        parse_issues.append(f"response content parse failed: {exc}")
+    extracted_payload_path = run_dir / "delegated_result_payload.json"
+    write_json(extracted_payload_path, extracted_payload if extracted_payload else {"raw_content": delegated_text})
+
+    validator_module = debug_review_runner if task_class == "debug_hypothesis_review" else triage_review_runner
+    result_issues = validator_module.validate_result_payload(extracted_payload) if extracted_payload else []
+    delegated_markdown = validator_module.render_result_markdown(extracted_payload) if extracted_payload and not result_issues else (
+        delegated_text if delegated_text else "NO_DELEGATED_RESULT_CAPTURED\n"
+    )
+    write_text(run_dir / "delegated_result.md", delegated_markdown)
+
+    telemetry_issues: list[str] = []
+    if not response_summary.get("generation_id"):
+        telemetry_issues.append("generation_id missing")
+    usage = response_summary.get("usage")
+    if not isinstance(usage, dict):
+        telemetry_issues.append("usage missing")
+    if actual_or_cost(response_summary) is None:
+        telemetry_issues.append("actual OR cost missing")
+    if response_summary.get("finish_reason") == "length":
+        telemetry_issues.append("finish_reason=length")
+
+    validation_pass = not parse_issues and not result_issues and not telemetry_issues
+    validation_summary = {
+        "workflow_id": workflow_id,
+        "task_class": task_class,
+        "input_validation_pass": True,
+        "result_validation_pass": not result_issues and not parse_issues,
+        "telemetry_validation_pass": not telemetry_issues,
+        "input_issues": [],
+        "result_issues": parse_issues + result_issues,
+        "telemetry_issues": telemetry_issues,
+        "redaction_ready": input_payload.get("redaction_ready"),
+        "redaction_check": extracted_payload.get("redaction_check") if isinstance(extracted_payload, dict) else None,
+        "accepted_for_local_codex_validation": validation_pass and extracted_payload.get("status") == "PASS",
+    }
+    write_json(run_dir / "validation_summary.json", validation_summary)
+
+    final_outcome = (
+        "DEBUG_HYPOTHESIS_REVIEW_READY_FOR_CODEX_VALIDATION"
+        if task_class == "debug_hypothesis_review"
+        else "TEST_RESULT_TRIAGE_REVIEW_READY_FOR_CODEX_VALIDATION"
+    )
+    if not validation_pass:
+        final_outcome = (
+            "DEBUG_HYPOTHESIS_REVIEW_REJECT_AND_FALLBACK"
+            if task_class == "debug_hypothesis_review"
+            else "TEST_RESULT_TRIAGE_REVIEW_REJECT_AND_FALLBACK"
+        )
+    validation_result = "PASS" if validation_pass else "FAIL"
+    fallback_used = "NO" if validation_pass else "YES"
+    rework_required = "NO" if validation_pass else "YES"
+
+    telemetry_row = build_assistive_review_telemetry_row(
+        task_class=task_class,
+        workflow_id=workflow_id,
+        selected_path=delegated_selected_path,
+        normal_target_model=args.normal_target_model,
+        or_model=args.selected_or_model,
+        estimated_or_cost=float(args.estimated_or_cost),
+        cost_estimate_confidence_percent=float(args.cost_estimate_confidence_percent),
+        response_summary=response_summary,
+        validation_result=validation_result,
+        final_outcome=final_outcome,
+        fallback_used=fallback_used,
+        rework_required=rework_required,
+        latency_ms=latency_ms,
+    )
+    write_single_jsonl_row(telemetry_path, telemetry_row)
+    healthcheck_status = "SKIPPED"
+    healthcheck_summary_path = ""
+    try:
+        run_healthcheck(telemetry_path, run_dir)
+        healthcheck_status = "PASS"
+        healthcheck_summary_path = str(run_dir / "healthcheck_summary.json")
+    except Exception as exc:
+        validation_result = "FAIL"
+        fallback_used = "YES"
+        rework_required = "YES"
+        final_outcome = (
+            "DEBUG_HYPOTHESIS_REVIEW_REJECT_AND_FALLBACK"
+            if task_class == "debug_hypothesis_review"
+            else "TEST_RESULT_TRIAGE_REVIEW_REJECT_AND_FALLBACK"
+        )
+        validation_summary["telemetry_issues"].append(str(exc))
+        validation_summary["telemetry_validation_pass"] = False
+        validation_summary["accepted_for_local_codex_validation"] = False
+        write_json(run_dir / "validation_summary.json", validation_summary)
+        healthcheck_status = "FAIL"
+    finalized_telemetry_row = build_assistive_review_telemetry_row(
+        task_class=task_class,
+        workflow_id=workflow_id,
+        selected_path=delegated_selected_path if healthcheck_status == "PASS" else "abort_post_healthcheck",
+        normal_target_model=args.normal_target_model,
+        or_model=args.selected_or_model,
+        estimated_or_cost=float(args.estimated_or_cost),
+        cost_estimate_confidence_percent=float(args.cost_estimate_confidence_percent),
+        response_summary=response_summary,
+        validation_result=validation_result,
+        final_outcome=final_outcome,
+        fallback_used=fallback_used,
+        rework_required=rework_required,
+        latency_ms=latency_ms,
+    )
+    write_single_jsonl_row(telemetry_path, finalized_telemetry_row)
+
+    operator_message = (
+        "Delegated debug hypothesis review stayed bounded and file-first captured. Codex must still validate the hypotheses locally."
+        if task_class == "debug_hypothesis_review" and validation_result == "PASS"
+        else "Delegated debug hypothesis review failed bounded capture or validation gates. Fallback to Codex-only debug is required."
+        if task_class == "debug_hypothesis_review"
+        else "Delegated test-result triage review stayed bounded and file-first captured. Codex must still validate the classification locally."
+        if validation_result == "PASS"
+        else "Delegated test-result triage review failed bounded capture or validation gates. Fallback to Codex-only triage is required."
+    )
+    operator_result_lines = [
+        f"Ergebnis: {final_outcome}",
+        f"Tatsaechliche Kosten: {(actual_or_cost(response_summary) or 0.0):.9f}",
+    ]
+    return {
+        "summary_header": (
+            "DEBUG HYPOTHESIS REVIEW RESULT"
+            if task_class == "debug_hypothesis_review"
+            else "TEST RESULT TRIAGE REVIEW RESULT"
+        ),
+        "workflow_id": workflow_id,
+        "skill": "janus-debug" if task_class == "debug_hypothesis_review" else "janus-test-pipeline",
+        "task_label": args.task_label,
+        "selected_path": (
+            delegated_selected_path if healthcheck_status == "PASS" else "abort_post_healthcheck"
+        ),
+        "normal_target_model": args.normal_target_model,
+        "selected_or_model": args.selected_or_model,
+        "estimated_or_cost": float(args.estimated_or_cost),
+        "actual_or_cost": actual_or_cost(response_summary),
+        "cost_estimate_confidence_percent": float(args.cost_estimate_confidence_percent),
+        "generation_id": str(response_summary.get("generation_id") or ""),
+        "finish_reason": response_summary.get("finish_reason"),
+        "latency_ms": latency_ms,
+        "validation_result": validation_result,
+        "final_outcome": final_outcome,
+        "fallback_used": fallback_used,
+        "rework_required": rework_required,
+        "input_package_path": str(run_dir / "input_package.json"),
+        "request_body_path": str(run_dir / "request_body.json"),
+        "response_body_path": str(run_dir / "response_body.json"),
+        "response_summary_path": str(run_dir / "response_summary.json"),
+        "delegated_result_path": str(run_dir / "delegated_result.md"),
+        "validation_summary_path": str(run_dir / "validation_summary.json"),
+        "telemetry_jsonl_path": str(telemetry_path),
+        "healthcheck_status": healthcheck_status,
+        "healthcheck_summary_path": healthcheck_summary_path,
+        "operator_result_lines": operator_result_lines,
+        "operator_message": operator_message,
+    }
 
 
 def validate_write_candidate_entry(payload: dict, expected_target_task: str) -> list[str]:
@@ -284,7 +1018,7 @@ def invoke_write_candidate_entry_gate(args: argparse.Namespace, workflow_id: str
 
 
 def prompt_summary(args: argparse.Namespace, workflow_id: str) -> dict:
-    eligibility = evaluate_dispatch_task_class(task_class=args.task_class)
+    eligibility = evaluate_assistive_or_workhorse_dispatcher_eligibility(task_class=args.task_class)
     if eligibility["eligibility_result"] != "OR_ALLOWED":
         return {
             "summary_header": "BOUNDED DELEGATION DISPATCH RESULT",
@@ -341,6 +1075,7 @@ def prompt_summary(args: argparse.Namespace, workflow_id: str) -> dict:
         "execution_patch_candidate": "Delegated proposal-only execution patch candidate, but Codex still owns patch review, apply/reject, and final task completion.",
         "execution_write_apply_candidate": "Delegated bounded execution write candidate, but Codex still owns future live-write approval, diff review, validation review, and final task completion.",
     }
+    choice_2_label = PILOT_VISIBLE_GATE_LABELS.get(args.task_class, "OpenRouter")
     return {
         "summary_header": "BOUNDED DELEGATION DISPATCH GATE",
         "workflow_id": workflow_id,
@@ -354,12 +1089,14 @@ def prompt_summary(args: argparse.Namespace, workflow_id: str) -> dict:
         "estimated_or_cost": float(args.estimated_or_cost),
         "cost_estimate_confidence_percent": float(args.cost_estimate_confidence_percent),
         "choice_1": "Codex",
-        "choice_2": "OpenRouter",
+        "choice_2": choice_2_label,
         "delegated_meaning": delegated_meaning[args.task_class],
         "route_note": route_notes[args.task_class],
         "final_outcome": "AWAITING_OPERATOR_CHOICE",
         "validation_result": "PASS",
         "operator_prompt_lines": build_operator_prompt_lines(
+            choice_2_label=choice_2_label,
+            selected_or_model=str(args.selected_or_model),
             estimated_or_cost=float(args.estimated_or_cost),
             cost_estimate_confidence_percent=float(args.cost_estimate_confidence_percent),
         ),
@@ -373,7 +1110,7 @@ def prompt_summary(args: argparse.Namespace, workflow_id: str) -> dict:
 
 
 def local_summary(args: argparse.Namespace, workflow_id: str) -> dict:
-    eligibility = evaluate_dispatch_task_class(task_class=args.task_class)
+    eligibility = evaluate_assistive_or_workhorse_dispatcher_eligibility(task_class=args.task_class)
     return {
         "summary_header": "BOUNDED DELEGATION DISPATCH RESULT",
         "workflow_id": workflow_id,
@@ -588,10 +1325,24 @@ def invoke_generator_review(args: argparse.Namespace, workflow_id: str) -> dict:
 
 
 def invoke_debug_hypothesis_review(args: argparse.Namespace, workflow_id: str) -> dict:
+    if args.use_local_or_fixture or args.execute_direct_or:
+        return invoke_assistive_or_review_via_wrapper(args, workflow_id, "debug_hypothesis_review")
     if args.debug_input_package is None:
         raise SystemExit("debug_hypothesis_review delegated flow requires --debug-input-package")
     if args.debug_fixture_result is None:
         raise SystemExit("debug_hypothesis_review delegated flow requires --debug-fixture-result in local validation mode")
+    input_payload, pilot_eligibility = validate_assistive_or_workhorse_request(
+        task_class="debug_hypothesis_review",
+        input_package_path=args.debug_input_package,
+    )
+    if pilot_eligibility["eligibility_result"] != "OR_ALLOWED":
+        return build_assistive_or_pilot_reject_result(
+            workflow_id=workflow_id,
+            task_class="debug_hypothesis_review",
+            task_label=args.task_label,
+            input_payload=input_payload,
+            eligibility=pilot_eligibility,
+        )
     command = [
         "python",
         str(DEBUG_REVIEW_RUNNER),
@@ -615,10 +1366,24 @@ def invoke_debug_hypothesis_review(args: argparse.Namespace, workflow_id: str) -
 
 
 def invoke_test_result_triage_review(args: argparse.Namespace, workflow_id: str) -> dict:
+    if args.use_local_or_fixture or args.execute_direct_or:
+        return invoke_assistive_or_review_via_wrapper(args, workflow_id, "test_result_triage_review")
     if args.test_triage_input_package is None:
         raise SystemExit("test_result_triage_review delegated flow requires --test-triage-input-package")
     if args.test_triage_fixture_result is None:
         raise SystemExit("test_result_triage_review delegated flow requires --test-triage-fixture-result in local validation mode")
+    input_payload, pilot_eligibility = validate_assistive_or_workhorse_request(
+        task_class="test_result_triage_review",
+        input_package_path=args.test_triage_input_package,
+    )
+    if pilot_eligibility["eligibility_result"] != "OR_ALLOWED":
+        return build_assistive_or_pilot_reject_result(
+            workflow_id=workflow_id,
+            task_class="test_result_triage_review",
+            task_label=args.task_label,
+            input_payload=input_payload,
+            eligibility=pilot_eligibility,
+        )
     command = [
         "python",
         str(TEST_TRIAGE_RUNNER),
@@ -801,7 +1566,7 @@ def main() -> int:
     run_dir = RUN_ROOT / workflow_id
     run_dir.mkdir(parents=True, exist_ok=True)
     choice = normalize_choice(args.operator_choice)
-    eligibility = evaluate_dispatch_task_class(task_class=args.task_class)
+    eligibility = evaluate_assistive_or_workhorse_dispatcher_eligibility(task_class=args.task_class)
 
     if choice == "prompt":
         result = with_codex_owned_outcome(prompt_summary(args, workflow_id))

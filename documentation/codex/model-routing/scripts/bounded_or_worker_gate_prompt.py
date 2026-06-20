@@ -21,17 +21,24 @@ def missing_gate_fields(
 
 def build_operator_prompt_lines(
     *,
+    choice_2_label: str = "OpenRouter",
+    selected_or_model: str = "",
     estimated_or_cost: float,
     cost_estimate_confidence_percent: float,
 ) -> list[str]:
-    return [
-        "Willst du 1 Codex das machen lassen?",
-        (
-            "Oder 2 das mit OPR machen lassen "
-            f"(voraussichtliche Kosten {estimated_or_cost:.9f}, "
-            f"Genauigkeit {cost_estimate_confidence_percent:.0f}%)?"
-        ),
+    lines = [
+        "1 = Codex",
+        f"2 = {choice_2_label}",
     ]
+    if str(selected_or_model).strip():
+        lines.append(f"Ausgewaehltes OR-Modell: {selected_or_model}")
+    lines.append(
+        (
+            f"Voraussichtliche Kosten {estimated_or_cost:.9f}, "
+            f"Genauigkeit {cost_estimate_confidence_percent:.0f}%"
+        )
+    )
+    return lines
 
 
 def build_missing_gate_result(

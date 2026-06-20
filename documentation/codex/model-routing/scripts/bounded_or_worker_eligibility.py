@@ -161,3 +161,96 @@ def evaluate_dispatch_task_class(
         message=task_entry.get("message", "Task class is allowed for bounded OR worker gating."),
         evidence_status=evidence_status,
     )
+
+
+def evaluate_assistive_or_workhorse_pilot(
+    *,
+    skill_id: str,
+    task_class: str,
+    request_payload: dict[str, Any] | None = None,
+    config_path: Path = DEFAULT_ELIGIBILITY_CONFIG_PATH,
+) -> dict[str, Any]:
+    config = load_json(config_path)["assistive_or_workhorse_pilot"]
+    skill_entry = config["skills"].get(skill_id)
+    if skill_entry is None:
+        return _base_result(
+            result="OR_NOT_ELIGIBLE",
+            subject_type="assistive_or_workhorse_pilot",
+            subject_id=f"{skill_id}:{task_class}",
+            reason_code="SKILL_NOT_ALLOWED",
+            message="Skill is outside the approved assistive OR workhorse pilot scope.",
+        )
+
+    allowed_task_classes = skill_entry.get("allowed_task_classes", [])
+    if task_class not in allowed_task_classes:
+        return _base_result(
+            result="OR_NOT_ELIGIBLE",
+            subject_type="assistive_or_workhorse_pilot",
+            subject_id=f"{skill_id}:{task_class}",
+            reason_code="TASK_CLASS_NOT_ALLOWED",
+            message="Task class is outside the approved assistive OR workhorse pilot scope.",
+        )
+
+    if request_payload is None:
+        return _base_result(
+            result="OR_ALLOWED",
+            subject_type="assistive_or_workhorse_pilot",
+            subject_id=f"{skill_id}:{task_class}",
+            reason_code="ELIGIBILITY_CONFIRMED",
+            message="Assistive OR workhorse pilot eligibility confirmed for this skill and task class.",
+            evidence_status="PILOT_SCOPE_ALLOWED",
+        )
+
+    allowlist = config["request_package_allowlists"].get(task_class)
+    if allowlist is None:
+        return _base_result(
+            result="OR_NOT_ELIGIBLE",
+            subject_type="assistive_or_workhorse_pilot",
+            subject_id=f"{skill_id}:{task_class}",
+            reason_code="REQUEST_ALLOWLIST_MISSING",
+            message="No request allowlist exists for this pilot task class.",
+        )
+
+    required_fields = set(allowlist.get("required_fields", []))
+    optional_fields = set(allowlist.get("optional_fields", []))
+    allowed_fields = required_fields | optional_fields
+
+    issues: list[str] = []
+    for field in required_fields:
+        if field not in request_payload:
+            issues.append(f"missing input field: {field}")
+    for field in request_payload:
+        if field not in allowed_fields:
+            issues.append(f"forbidden input field: {field}")
+
+    snippets = request_payload.get("evidence_snippets")
+    max_evidence_snippets = allowlist.get("max_evidence_snippets")
+    if not isinstance(snippets, list) or not snippets:
+        issues.append("evidence_snippets must be a non-empty list")
+    elif isinstance(max_evidence_snippets, int) and len(snippets) > max_evidence_snippets:
+        issues.append(f"evidence_snippets must contain at most {max_evidence_snippets} items")
+
+    if request_payload.get("redaction_ready") is not True:
+        issues.append("redaction_ready must be true for delegated review")
+
+    if issues:
+        return {
+            **_base_result(
+                result="OR_CONTEXT_REDACTION_REQUIRED",
+                subject_type="assistive_or_workhorse_pilot",
+                subject_id=f"{skill_id}:{task_class}",
+                reason_code="REQUEST_PACKAGE_NOT_ALLOWLISTED",
+                message="Request package must be narrowed to the approved redacted allowlist before delegated review.",
+                evidence_status="PILOT_SCOPE_ALLOWED",
+            ),
+            "request_validation_issues": issues,
+        }
+
+    return _base_result(
+        result="OR_ALLOWED",
+        subject_type="assistive_or_workhorse_pilot",
+        subject_id=f"{skill_id}:{task_class}",
+        reason_code="ELIGIBILITY_CONFIRMED",
+        message="Assistive OR workhorse pilot eligibility and request allowlist validation passed.",
+        evidence_status="PILOT_SCOPE_ALLOWED",
+    )

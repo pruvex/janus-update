@@ -9,6 +9,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+from argparse import Namespace
 
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
@@ -209,10 +210,12 @@ def prompt_summary(
         "estimated_or_cost": float(estimated_or_cost),
         "cost_estimate_confidence_percent": float(cost_estimate_confidence_percent),
         "choice_1": "Codex",
-        "choice_2": "OpenRouter",
+        "choice_2": "OR-Arbeitspferd",
         "delegated_model_label": delegated_model_label,
         "expected_delegation_value": "bounded assist-only triage review with no live execution and no final PASS decision",
         "operator_prompt_lines": build_operator_prompt_lines(
+            choice_2_label="OR-Arbeitspferd",
+            selected_or_model=delegated_model_label,
             estimated_or_cost=float(estimated_or_cost),
             cost_estimate_confidence_percent=float(cost_estimate_confidence_percent),
         ),
@@ -240,6 +243,92 @@ def local_summary(*, workflow_id: str, task_label: str, normal_target_model: str
         "validation_result": "PASS",
         "operator_message": "Operator chose the local Codex triage path. No delegated triage review was used.",
     }
+
+
+def build_consumer_input_package(
+    *,
+    workflow_id: str,
+    bound_skill_context: str,
+    test_run_id: str,
+    result_outcome_summary: str,
+    evidence_snippets: list[str],
+    classification_question: str,
+    candidate_blocker_category: str | None = None,
+    redaction_ready: bool = True,
+) -> dict[str, Any]:
+    payload: dict[str, Any] = {
+        "workflow_id": workflow_id,
+        "bound_skill_context": bound_skill_context,
+        "test_run_id": test_run_id,
+        "result_outcome_summary": result_outcome_summary,
+        "evidence_snippets": evidence_snippets,
+        "classification_question": classification_question,
+        "redaction_ready": redaction_ready,
+    }
+    if candidate_blocker_category:
+        payload["candidate_blocker_category"] = candidate_blocker_category
+    return payload
+
+
+def _load_dispatcher_module():
+    import codex_bounded_delegation_dispatcher as dispatcher
+
+    return dispatcher
+
+
+def run_consumer_flow(
+    *,
+    workflow_id: str,
+    task_label: str,
+    normal_target_model: str,
+    operator_choice: str,
+    delegated_model_label: str,
+    estimated_or_cost: float | None = None,
+    cost_estimate_confidence_percent: float | None = None,
+    input_payload: dict[str, Any] | None = None,
+    input_package_path: Path | None = None,
+    fixture_result_json: Path | None = None,
+    use_local_or_fixture: bool = False,
+    execute_direct_or: bool = False,
+    or_local_fixture_response_path: Path | None = None,
+) -> dict[str, Any]:
+    dispatcher = _load_dispatcher_module()
+    choice = normalize_choice(operator_choice)
+    run_dir = build_run_dir(workflow_id)
+    run_dir.mkdir(parents=True, exist_ok=True)
+
+    if input_payload is not None:
+        package_path = run_dir / "consumer_input_package.json"
+        write_json(package_path, input_payload)
+        input_package_path = package_path
+
+    args = Namespace(
+        task_class="test_result_triage_review",
+        task_label=task_label,
+        normal_target_model=normal_target_model,
+        selected_or_model=delegated_model_label,
+        estimated_or_cost=estimated_or_cost,
+        cost_estimate_confidence_percent=cost_estimate_confidence_percent,
+        use_local_or_fixture=use_local_or_fixture,
+        execute_direct_or=execute_direct_or,
+        or_local_fixture_response_path=or_local_fixture_response_path,
+        debug_input_package=None,
+        debug_fixture_result=None,
+        test_triage_input_package=input_package_path,
+        test_triage_fixture_result=fixture_result_json,
+    )
+
+    if choice == "prompt":
+        result = dispatcher.with_codex_owned_outcome(dispatcher.prompt_summary(args, workflow_id))
+        write_json(run_dir / "consumer_operator_choice_prompt.json", result)
+        return result
+    if choice == "local":
+        result = dispatcher.with_codex_owned_outcome(dispatcher.local_summary(args, workflow_id))
+        write_json(run_dir / "consumer_operator_choice_local.json", result)
+        return result
+    result = dispatcher.with_codex_owned_outcome(dispatcher.invoke_test_result_triage_review(args, workflow_id))
+    write_json(run_dir / "consumer_operator_choice_delegated.json", result)
+    return result
 
 
 def main() -> int:
