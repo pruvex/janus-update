@@ -330,12 +330,12 @@ python documentation/codex/model-routing/scripts/codex_bounded_delegation_dispat
 Expected operator gate:
 
 - `1 = Codex`
-- `2 = Delegated`
+- `2 = OR-Arbeitspferd`
 
 Meaning here:
 
 - `1` keeps finding triage fully local in Codex.
-- `2` uses delegated assist-only triage review, but Codex still owns the real classification, rerun decision, Backlog routing, and final evidence interpretation.
+- `2` uses das bounded OR-Arbeitspferd fuer eine assist-only triage review, aber Codex behaelt die reale Klassifikation, die Rerun-Entscheidung, das Backlog-Routing und die finale Evidenzinterpretation.
 
 Boundaries stay strict:
 
@@ -349,8 +349,14 @@ Boundaries stay strict:
 If the user chooses the delegated path:
 
 - if the user chooses `1`, `local`, or `codex`, invoke the dispatcher with `--operator-choice local`
-- if the user chooses `2`, `delegated`, or `sidecar`, invoke the dispatcher with `--operator-choice delegated --test-triage-input-package <input.json> --test-triage-fixture-result <fixture.json>` in the current local validation path
+- if the user chooses `2`, `delegated`, or `sidecar`, enter through `codex_test_result_triage_review_runner.run_consumer_flow(...)` so the bounded package, operator gate, and dispatcher path stay aligned
 - keep triage work bound to one result bundle and one bounded classification slice
+
+Consumer integration path for everyday `janus-test-pipeline` work:
+
+- build one redacted package with `codex_test_result_triage_review_runner.build_consumer_input_package(...)`
+- enter the operator gate through `codex_test_result_triage_review_runner.run_consumer_flow(...)`
+- keep any delegated result bounded to assist-only classification review, with Codex still owning rerun choice, Backlog routing, and final evidence interpretation
 
 Important:
 

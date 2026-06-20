@@ -122,7 +122,7 @@ Offer the operator choice only when all are true:
 Operator wording:
 
 - `1 = Codex`
-- `2 = Delegated`
+- `2 = OR-Arbeitspferd`
 
 Current delegated meaning:
 
@@ -137,6 +137,12 @@ Bounded helper path:
 ```powershell
 python documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py --task-class debug_hypothesis_review ...
 ```
+
+Consumer integration path for everyday `janus-debug` work:
+
+- build one redacted package with `codex_debug_hypothesis_review_runner.build_consumer_input_package(...)`
+- enter the operator gate through `codex_debug_hypothesis_review_runner.run_consumer_flow(...)`
+- keep any delegated result bounded to hypothesis review only, with Codex still owning the next local verifier and final acceptance
 
 Do not treat this as production routing, broad sidecar debug authority, or a replacement for the normal `janus-debug` evidence chain.
 
