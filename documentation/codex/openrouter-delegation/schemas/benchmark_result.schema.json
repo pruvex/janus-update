@@ -21,6 +21,40 @@
       "type": "string",
       "format": "date-time"
     },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "run_status": {
+      "type": "string",
+      "enum": ["complete", "partial", "blocked", "failed"]
+    },
+    "completed_cases": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "expected_cases": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "missing_cases": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "failure_type": {
+      "type": "string",
+      "enum": ["none", "local_exception", "request_timeout", "provider_or_transport_error", "unknown"]
+    },
+    "failure_message": {
+      "type": ["string", "null"],
+      "maxLength": 600
+    },
     "corpus_version": {
       "type": "string"
     },

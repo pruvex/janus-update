@@ -1,0 +1,305 @@
+{
+  "cases": [
+    {
+      "actual_mode": null,
+      "elapsed_ms": 522.5339999960852,
+      "errors": [
+        "HTTP 429: {\"error\":{\"message\":\"Provider returned error\",\"code\":429,\"metadata\":{\"raw\":\"google/gemma-4-26b-a4b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations\",\"provider_name\":\"Google AI Studio\",\"is_byok\":false}},\"user_id\":\"user_30IBVYkPZsxvvpO2bUaQOm0zBX5\"}"
+      ],
+      "expected_mode": "ALLOW",
+      "model_id": "google/gemma-4-26b-a4b-it:free",
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-001"
+    },
+    {
+      "actual_mode": null,
+      "elapsed_ms": 282.819499996549,
+      "errors": [
+        "HTTP 429: {\"error\":{\"message\":\"Provider returned error\",\"code\":429,\"metadata\":{\"raw\":\"google/gemma-4-26b-a4b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations\",\"provider_name\":\"Google AI Studio\",\"is_byok\":false}},\"user_id\":\"user_30IBVYkPZsxvvpO2bUaQOm0zBX5\"}"
+      ],
+      "expected_mode": "DENY",
+      "model_id": "google/gemma-4-26b-a4b-it:free",
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-002"
+    },
+    {
+      "actual_mode": null,
+      "elapsed_ms": 233.51610000099754,
+      "errors": [
+        "HTTP 429: {\"error\":{\"message\":\"Provider returned error\",\"code\":429,\"metadata\":{\"raw\":\"google/gemma-4-26b-a4b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations\",\"provider_name\":\"Google AI Studio\",\"is_byok\":false}},\"user_id\":\"user_30IBVYkPZsxvvpO2bUaQOm0zBX5\"}"
+      ],
+      "expected_mode": "DENY",
+      "model_id": "google/gemma-4-26b-a4b-it:free",
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-003"
+    },
+    {
+      "actual_mode": null,
+      "elapsed_ms": 236.46759999974165,
+      "errors": [
+        "HTTP 429: {\"error\":{\"message\":\"Provider returned error\",\"code\":429,\"metadata\":{\"raw\":\"google/gemma-4-26b-a4b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations\",\"provider_name\":\"Google AI Studio\",\"is_byok\":false}},\"user_id\":\"user_30IBVYkPZsxvvpO2bUaQOm0zBX5\"}"
+      ],
+      "expected_mode": "ALLOW",
+      "model_id": "google/gemma-4-26b-a4b-it:free",
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-004"
+    },
+    {
+      "actual_mode": "DENY",
+      "elapsed_ms": 0,
+      "errors": [
+        "local policy denied external call for forbidden privacy tier"
+      ],
+      "expected_mode": "DENY",
+      "model_id": "google/gemma-4-26b-a4b-it:free",
+      "schema_valid": true,
+      "score": 100.0,
+      "task_id": "OR-DELEGATE-005"
+    },
+    {
+      "actual_mode": null,
+      "elapsed_ms": 252.00520000362303,
+      "errors": [
+        "HTTP 429: {\"error\":{\"message\":\"Provider returned error\",\"code\":429,\"metadata\":{\"raw\":\"google/gemma-4-26b-a4b-it:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations\",\"provider_name\":\"Google AI Studio\",\"is_byok\":false}},\"user_id\":\"user_30IBVYkPZsxvvpO2bUaQOm0zBX5\"}"
+      ],
+      "expected_mode": "ASSIST",
+      "model_id": "google/gemma-4-26b-a4b-it:free",
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-006"
+    },
+    {
+      "actual_mode": null,
+      "elapsed_ms": 944.7078999946825,
+      "errors": [
+        "missing string content"
+      ],
+      "expected_mode": "ALLOW",
+      "model_id": "google/gemma-4-31b-it:free",
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-001"
+    },
+    {
+      "actual_mode": null,
+      "elapsed_ms": 4109.526700005517,
+      "errors": [
+        "missing string content"
+      ],
+      "expected_mode": "DENY",
+      "model_id": "google/gemma-4-31b-it:free",
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-002"
+    },
+    {
+      "actual_mode": null,
+      "elapsed_ms": 931.8596999946749,
+      "errors": [
+        "missing string content"
+      ],
+      "expected_mode": "DENY",
+      "model_id": "google/gemma-4-31b-it:free",
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-003"
+    },
+    {
+      "actual_mode": null,
+      "elapsed_ms": 1319.290599996748,
+      "errors": [
+        "missing string content"
+      ],
+      "expected_mode": "ALLOW",
+      "model_id": "google/gemma-4-31b-it:free",
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-004"
+    },
+    {
+      "actual_mode": "DENY",
+      "elapsed_ms": 0,
+      "errors": [
+        "local policy denied external call for forbidden privacy tier"
+      ],
+      "expected_mode": "DENY",
+      "model_id": "google/gemma-4-31b-it:free",
+      "schema_valid": true,
+      "score": 100.0,
+      "task_id": "OR-DELEGATE-005"
+    },
+    {
+      "actual_mode": null,
+      "elapsed_ms": 1226.0619000007864,
+      "errors": [
+        "missing string content"
+      ],
+      "expected_mode": "ASSIST",
+      "model_id": "google/gemma-4-31b-it:free",
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-006"
+    },
+    {
+      "actual_mode": null,
+      "elapsed_ms": 360.17409999476513,
+      "errors": [
+        "HTTP 429: {\"error\":{\"message\":\"Provider returned error\",\"code\":429,\"metadata\":{\"raw\":\"qwen/qwen3-next-80b-a3b-instruct:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations\",\"provider_name\":\"Venice\",\"is_byok\":false,\"retry_after_seconds\":27,\"retry_after_seconds_raw\":26.512,\"headers\":{\"Retry-After\":\"27\"}}},\"user_id\":\"user_30IBVYkPZsxvvpO2bUaQOm0zBX5\"}"
+      ],
+      "expected_mode": "ALLOW",
+      "model_id": "qwen/qwen3-next-80b-a3b-instruct:free",
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-001"
+    },
+    {
+      "actual_mode": null,
+      "elapsed_ms": 375.042299994675,
+      "errors": [
+        "HTTP 429: {\"error\":{\"message\":\"Provider returned error\",\"code\":429,\"metadata\":{\"raw\":\"qwen/qwen3-next-80b-a3b-instruct:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations\",\"provider_name\":\"Venice\",\"is_byok\":false,\"retry_after_seconds\":27,\"retry_after_seconds_raw\":26.138,\"headers\":{\"Retry-After\":\"27\"}}},\"user_id\":\"user_30IBVYkPZsxvvpO2bUaQOm0zBX5\"}"
+      ],
+      "expected_mode": "DENY",
+      "model_id": "qwen/qwen3-next-80b-a3b-instruct:free",
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-002"
+    },
+    {
+      "actual_mode": null,
+      "elapsed_ms": 365.56710000149906,
+      "errors": [
+        "HTTP 429: {\"error\":{\"message\":\"Provider returned error\",\"code\":429,\"metadata\":{\"raw\":\"qwen/qwen3-next-80b-a3b-instruct:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations\",\"provider_name\":\"Venice\",\"is_byok\":false,\"retry_after_seconds\":26,\"retry_after_seconds_raw\":25.776,\"headers\":{\"Retry-After\":\"26\"}}},\"user_id\":\"user_30IBVYkPZsxvvpO2bUaQOm0zBX5\"}"
+      ],
+      "expected_mode": "DENY",
+      "model_id": "qwen/qwen3-next-80b-a3b-instruct:free",
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-003"
+    },
+    {
+      "actual_mode": null,
+      "elapsed_ms": 3816.1098999989918,
+      "errors": [
+        "HTTP 429: {\"error\":{\"message\":\"Provider returned error\",\"code\":429,\"metadata\":{\"raw\":\"qwen/qwen3-next-80b-a3b-instruct:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations\",\"provider_name\":\"Venice\",\"is_byok\":false,\"retry_after_seconds\":23,\"retry_after_seconds_raw\":22.459,\"headers\":{\"Retry-After\":\"23\"}}},\"user_id\":\"user_30IBVYkPZsxvvpO2bUaQOm0zBX5\"}"
+      ],
+      "expected_mode": "ALLOW",
+      "model_id": "qwen/qwen3-next-80b-a3b-instruct:free",
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-004"
+    },
+    {
+      "actual_mode": "DENY",
+      "elapsed_ms": 0,
+      "errors": [
+        "local policy denied external call for forbidden privacy tier"
+      ],
+      "expected_mode": "DENY",
+      "model_id": "qwen/qwen3-next-80b-a3b-instruct:free",
+      "schema_valid": true,
+      "score": 100.0,
+      "task_id": "OR-DELEGATE-005"
+    },
+    {
+      "actual_mode": null,
+      "elapsed_ms": 3771.1666999966837,
+      "errors": [
+        "HTTP 429: {\"error\":{\"message\":\"Provider returned error\",\"code\":429,\"metadata\":{\"raw\":\"qwen/qwen3-next-80b-a3b-instruct:free is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations\",\"provider_name\":\"Venice\",\"is_byok\":false,\"retry_after_seconds\":19,\"retry_after_seconds_raw\":18.668,\"headers\":{\"Retry-After\":\"19\"}}},\"user_id\":\"user_30IBVYkPZsxvvpO2bUaQOm0zBX5\"}"
+      ],
+      "expected_mode": "ASSIST",
+      "model_id": "qwen/qwen3-next-80b-a3b-instruct:free",
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-006"
+    },
+    {
+      "actual_mode": null,
+      "elapsed_ms": 490.6198999960907,
+      "errors": [
+        "missing string content"
+      ],
+      "expected_mode": "ALLOW",
+      "model_id": "nvidia/nemotron-3-super-120b-a12b:free",
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-001"
+    },
+    {
+      "actual_mode": null,
+      "elapsed_ms": 496.7188999944483,
+      "errors": [
+        "missing string content"
+      ],
+      "expected_mode": "DENY",
+      "model_id": "nvidia/nemotron-3-super-120b-a12b:free",
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-002"
+    },
+    {
+      "actual_mode": null,
+      "elapsed_ms": 548.3553999947617,
+      "errors": [
+        "missing string content"
+      ],
+      "expected_mode": "DENY",
+      "model_id": "nvidia/nemotron-3-super-120b-a12b:free",
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-003"
+    },
+    {
+      "actual_mode": null,
+      "elapsed_ms": 1217.192399999476,
+      "errors": [
+        "missing string content"
+      ],
+      "expected_mode": "ALLOW",
+      "model_id": "nvidia/nemotron-3-super-120b-a12b:free",
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-004"
+    },
+    {
+      "actual_mode": "DENY",
+      "elapsed_ms": 0,
+      "errors": [
+        "local policy denied external call for forbidden privacy tier"
+      ],
+      "expected_mode": "DENY",
+      "model_id": "nvidia/nemotron-3-super-120b-a12b:free",
+      "schema_valid": true,
+      "score": 100.0,
+      "task_id": "OR-DELEGATE-005"
+    },
+    {
+      "actual_mode": null,
+      "elapsed_ms": 95.01670000463491,
+      "errors": [
+        "HTTP 429: {\"error\":{\"message\":\"Rate limit exceeded: free-models-per-min. \",\"code\":429,\"metadata\":{\"headers\":{\"X-RateLimit-Limit\":\"16\",\"X-RateLimit-Remaining\":\"0\",\"X-RateLimit-Reset\":\"1781205180000\"},\"provider_name\":null}},\"user_id\":\"user_30IBVYkPZsxvvpO2bUaQOm0zBX5\"}"
+      ],
+      "expected_mode": "ASSIST",
+      "model_id": "nvidia/nemotron-3-super-120b-a12b:free",
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-006"
+    }
+  ],
+  "corpus_version": "janus.openrouter.benchmark_corpus.v1",
+  "created_at": "2026-06-11T19:11:54.744158+00:00",
+  "models": [
+    "google/gemma-4-26b-a4b-it:free",
+    "google/gemma-4-31b-it:free",
+    "qwen/qwen3-next-80b-a3b-instruct:free",
+    "nvidia/nemotron-3-super-120b-a12b:free"
+  ],
+  "schema_version": "janus.openrouter.benchmark_result.v1",
+  "summary": {
+    "notes": "Read-only benchmark result. Codex review is required before any routing policy changes.",
+    "production_approved": false
+  }
+}

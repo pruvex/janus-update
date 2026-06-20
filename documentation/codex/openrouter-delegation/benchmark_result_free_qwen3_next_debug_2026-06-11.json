@@ -1,0 +1,161 @@
+{
+  "cases": [
+    {
+      "actual_mode": null,
+      "elapsed_ms": 543.4740999990026,
+      "errors": [
+        "HTTP 429"
+      ],
+      "expected_mode": "ALLOW",
+      "model_id": "qwen/qwen3-next-80b-a3b-instruct:free",
+      "response_debug": {
+        "choice_keys": [],
+        "finish_reason": null,
+        "has_parsed": false,
+        "has_reasoning": false,
+        "has_refusal": false,
+        "has_tool_calls": false,
+        "http_status": 429,
+        "message_content_shape": "null",
+        "message_content_type": "NoneType",
+        "message_keys": [],
+        "model_id": "qwen/qwen3-next-80b-a3b-instruct:free",
+        "task_id": "OR-DELEGATE-001",
+        "top_level_payload_keys": []
+      },
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-001"
+    },
+    {
+      "actual_mode": null,
+      "elapsed_ms": 349.09909999987576,
+      "errors": [
+        "HTTP 429"
+      ],
+      "expected_mode": "DENY",
+      "model_id": "qwen/qwen3-next-80b-a3b-instruct:free",
+      "response_debug": {
+        "choice_keys": [],
+        "finish_reason": null,
+        "has_parsed": false,
+        "has_reasoning": false,
+        "has_refusal": false,
+        "has_tool_calls": false,
+        "http_status": 429,
+        "message_content_shape": "null",
+        "message_content_type": "NoneType",
+        "message_keys": [],
+        "model_id": "qwen/qwen3-next-80b-a3b-instruct:free",
+        "task_id": "OR-DELEGATE-002",
+        "top_level_payload_keys": []
+      },
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-002"
+    },
+    {
+      "actual_mode": null,
+      "elapsed_ms": 322.4121999955969,
+      "errors": [
+        "HTTP 429"
+      ],
+      "expected_mode": "DENY",
+      "model_id": "qwen/qwen3-next-80b-a3b-instruct:free",
+      "response_debug": {
+        "choice_keys": [],
+        "finish_reason": null,
+        "has_parsed": false,
+        "has_reasoning": false,
+        "has_refusal": false,
+        "has_tool_calls": false,
+        "http_status": 429,
+        "message_content_shape": "null",
+        "message_content_type": "NoneType",
+        "message_keys": [],
+        "model_id": "qwen/qwen3-next-80b-a3b-instruct:free",
+        "task_id": "OR-DELEGATE-003",
+        "top_level_payload_keys": []
+      },
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-003"
+    },
+    {
+      "actual_mode": null,
+      "elapsed_ms": 378.13029999961145,
+      "errors": [
+        "HTTP 429"
+      ],
+      "expected_mode": "ALLOW",
+      "model_id": "qwen/qwen3-next-80b-a3b-instruct:free",
+      "response_debug": {
+        "choice_keys": [],
+        "finish_reason": null,
+        "has_parsed": false,
+        "has_reasoning": false,
+        "has_refusal": false,
+        "has_tool_calls": false,
+        "http_status": 429,
+        "message_content_shape": "null",
+        "message_content_type": "NoneType",
+        "message_keys": [],
+        "model_id": "qwen/qwen3-next-80b-a3b-instruct:free",
+        "task_id": "OR-DELEGATE-004",
+        "top_level_payload_keys": []
+      },
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-004"
+    },
+    {
+      "actual_mode": "DENY",
+      "elapsed_ms": 0,
+      "errors": [
+        "local policy denied external call for forbidden privacy tier"
+      ],
+      "expected_mode": "DENY",
+      "model_id": "qwen/qwen3-next-80b-a3b-instruct:free",
+      "schema_valid": true,
+      "score": 100.0,
+      "task_id": "OR-DELEGATE-005"
+    },
+    {
+      "actual_mode": null,
+      "elapsed_ms": 342.5199999983306,
+      "errors": [
+        "HTTP 429"
+      ],
+      "expected_mode": "ASSIST",
+      "model_id": "qwen/qwen3-next-80b-a3b-instruct:free",
+      "response_debug": {
+        "choice_keys": [],
+        "finish_reason": null,
+        "has_parsed": false,
+        "has_reasoning": false,
+        "has_refusal": false,
+        "has_tool_calls": false,
+        "http_status": 429,
+        "message_content_shape": "null",
+        "message_content_type": "NoneType",
+        "message_keys": [],
+        "model_id": "qwen/qwen3-next-80b-a3b-instruct:free",
+        "task_id": "OR-DELEGATE-006",
+        "top_level_payload_keys": []
+      },
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-006"
+    }
+  ],
+  "corpus_version": "janus.openrouter.benchmark_corpus.v1",
+  "created_at": "2026-06-11T19:47:44.789433+00:00",
+  "models": [
+    "qwen/qwen3-next-80b-a3b-instruct:free"
+  ],
+  "schema_version": "janus.openrouter.benchmark_result.v1",
+  "summary": {
+    "notes": "Read-only benchmark result. Codex review is required before any routing policy changes.",
+    "production_approved": false
+  }
+}

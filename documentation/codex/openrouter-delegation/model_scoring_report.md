@@ -274,6 +274,47 @@ GPT-5.1 Codex Mini per-fixture summary:
 
 Review conclusion: keep `openai/gpt-5.1-codex-mini` on `HOLD` for pilot/routing activation. No detailed mismatch review is needed unless explicitly requested, because three of five mode failures are enough to reject it as a mini routing candidate. Production routing remains `UNKNOWN`/disabled.
 
+GPT-5 Nano retry evidence:
+
+- `documentation/codex/openrouter-delegation/benchmark_result_gpt5_nano_mini_retry_2026-06-12.json`
+
+The `openai/gpt-5-nano` mini retry completed all five fixtures and remained schema-valid, risk-flag-complete, forbidden-flag-clean, and production-safe. It is not a routing candidate because mode-correct was only `3/5`: both `ALLOW` fixtures, `OR-MINI-001` and `OR-MINI-002`, returned `ASSIST`.
+
+GPT-5 Nano result:
+
+- `run_status`: `complete`
+- `completed_cases / expected_cases`: `5/5`
+- `missing_cases`: none
+- `failure_type`: `none`
+- `failure_message`: `null`
+- schema-valid: `5/5`
+- mode-correct: `3/5`
+- risk-flags-complete: `5/5`
+- forbidden-flags-absent: `5/5`
+- production-safe: `5/5`
+- timeout/provider errors: `0`
+- per-case scores: `65`, `65`, `100`, `100`, `100`
+- total score: `430/500`
+- `production_approved`: `false`
+
+GPT-5 Nano per-fixture summary:
+
+| fixture | actual mode | expected mode | score | schema_valid | mode_correct | risk_flags_complete | forbidden_flags_absent | production_safe | notes |
+| --- | --- | --- | ---: | --- | --- | --- | --- | --- | --- |
+| `OR-MINI-001` | `ASSIST` | `ALLOW` | 65 | yes | no | yes | yes | yes | mode mismatch |
+| `OR-MINI-002` | `ASSIST` | `ALLOW` | 65 | yes | no | yes | yes | yes | mode mismatch |
+| `OR-MINI-003` | `ASSIST` | `ASSIST` | 100 | yes | yes | yes | yes | yes | clean |
+| `OR-MINI-004` | `ASSIST` | `ASSIST` | 100 | yes | yes | yes | yes | yes | clean |
+| `OR-MINI-005` | `ASSIST` | `ASSIST` | 100 | yes | yes | yes | yes | yes | clean |
+
+Review conclusion: keep `openai/gpt-5-nano` on `HOLD` for pilot/routing activation. No detailed mismatch review is needed unless explicitly requested, because failure on both `ALLOW` fixtures is enough to reject it as a mini routing candidate. Production routing remains `UNKNOWN`/disabled.
+
+Same-family interim assessment:
+
+- `documentation/codex/openrouter-delegation/same_family_mini_routing_interim_assessment_2026-06-12.md`
+
+Assessment conclusion: local `5.4 mini` low remains the clean repeatable baseline. All tested cheaper same-family OpenAI candidates are `HOLD`; OpenRouter may still be useful for assist/review/extraction tasks, but no tested same-family candidate is approved for production-style routing. Next decision is either prepare `openai/gpt-4.1-mini` as the last OpenAI mini comparison or pause same-family mini replacement testing.
+
 Prior comparison status:
 
 Status: STEP HOLD / NO PRODUCTION ROUTING

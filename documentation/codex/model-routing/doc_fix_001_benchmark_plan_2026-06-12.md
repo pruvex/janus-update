@@ -168,6 +168,18 @@ Local baseline evidence path:
 documentation/codex/model-routing/doc_fix_001_local_54_mini_low_baseline_2026-06-12.md
 ```
 
+Completed local baseline review artifact:
+
+```text
+documentation/codex/model-routing/doc_fix_001_local_baseline_result_2026-06-12.md
+```
+
+Local 5.4 mini low baseline result artifact:
+
+```text
+documentation/codex/model-routing/doc_fix_001_local_54_mini_low_baseline_result_2026-06-12.md
+```
+
 Future OR comparison output path:
 
 ```text

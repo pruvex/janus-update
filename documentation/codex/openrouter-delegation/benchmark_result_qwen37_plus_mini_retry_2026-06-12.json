@@ -1,0 +1,109 @@
+{
+  "cases": [
+    {
+      "actual_mode": "ALLOW",
+      "elapsed_ms": 21272.653099999843,
+      "errors": [
+        "schema_version mismatch",
+        "findings must be an array",
+        "summary/checks quality failed"
+      ],
+      "expected_mode": "ALLOW",
+      "failure_type": "model_output",
+      "forbidden_flags_absent": true,
+      "mode_correct": true,
+      "model_id": "qwen/qwen3.7-plus",
+      "production_safe": true,
+      "risk_flags_complete": true,
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-MINI-001"
+    },
+    {
+      "actual_mode": "ALLOW",
+      "elapsed_ms": 19610.577899999953,
+      "errors": [
+        "schema_version mismatch",
+        "findings must be an array",
+        "summary/checks quality failed"
+      ],
+      "expected_mode": "ALLOW",
+      "failure_type": "model_output",
+      "forbidden_flags_absent": true,
+      "mode_correct": true,
+      "model_id": "qwen/qwen3.7-plus",
+      "production_safe": true,
+      "risk_flags_complete": true,
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-MINI-002"
+    },
+    {
+      "actual_mode": "ASSIST",
+      "elapsed_ms": 29158.19620000002,
+      "errors": [
+        "schema_version mismatch",
+        "summary/checks quality failed"
+      ],
+      "expected_mode": "ASSIST",
+      "failure_type": "model_output",
+      "forbidden_flags_absent": true,
+      "mode_correct": true,
+      "model_id": "qwen/qwen3.7-plus",
+      "production_safe": true,
+      "risk_flags_complete": true,
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-MINI-003"
+    },
+    {
+      "actual_mode": "ALLOW",
+      "elapsed_ms": 26649.406099999396,
+      "errors": [
+        "schema_version mismatch",
+        "findings must be an array",
+        "mode mismatch: expected ASSIST, got ALLOW",
+        "summary/checks quality failed"
+      ],
+      "expected_mode": "ASSIST",
+      "failure_type": "model_output",
+      "forbidden_flags_absent": true,
+      "mode_correct": false,
+      "model_id": "qwen/qwen3.7-plus",
+      "production_safe": true,
+      "risk_flags_complete": true,
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-MINI-004"
+    },
+    {
+      "actual_mode": "ASSIST",
+      "elapsed_ms": 25251.459400000385,
+      "errors": [
+        "schema_version mismatch",
+        "findings must be an array",
+        "summary/checks quality failed"
+      ],
+      "expected_mode": "ASSIST",
+      "failure_type": "model_output",
+      "forbidden_flags_absent": true,
+      "mode_correct": true,
+      "model_id": "qwen/qwen3.7-plus",
+      "production_safe": true,
+      "risk_flags_complete": true,
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-MINI-005"
+    }
+  ],
+  "corpus_version": "janus.openrouter.benchmark_corpus.v1",
+  "created_at": "2026-06-12T12:33:04.155457+00:00",
+  "models": [
+    "qwen/qwen3.7-plus"
+  ],
+  "schema_version": "janus.openrouter.benchmark_result.v1",
+  "summary": {
+    "notes": "Read-only benchmark result. Codex review is required before any routing policy changes.",
+    "production_approved": false
+  }
+}

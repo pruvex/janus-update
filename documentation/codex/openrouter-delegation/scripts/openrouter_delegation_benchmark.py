@@ -15,6 +15,7 @@ import queue
 import re
 import socket
 import sys
+import tempfile
 import threading
 import time
 import urllib.error
@@ -27,6 +28,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 CORPUS_PATH = ROOT / "benchmark_corpus.json"
 RESULT_SCHEMA_PATH = ROOT / "schemas" / "delegated_task_result.schema.json"
+BENCHMARK_RESULT_SCHEMA_PATH = ROOT / "schemas" / "benchmark_result.schema.json"
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 MAX_DEBUG_ERROR_MESSAGE_CHARS = 180
 OPENROUTER_SCHEMA_STRIP_KEYS = {"$schema", "$id", "uniqueItems"}
@@ -90,6 +92,18 @@ def load_json(path: Path) -> Any:
 
 def dump_json(data: Any) -> str:
     return json.dumps(data, indent=2, sort_keys=True, ensure_ascii=False)
+
+
+def utc_now() -> str:
+    return dt.datetime.now(dt.timezone.utc).isoformat()
+
+
+def atomic_write_json(path: Path, data: Any) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    text = dump_json(data) + "\n"
+    temp_path = path.with_name(f".{path.name}.tmp")
+    temp_path.write_text(text, encoding="utf-8")
+    temp_path.replace(path)
 
 
 def content_shape(value: Any) -> str:
@@ -546,6 +560,183 @@ def call_error_case(
     return result_case
 
 
+def case_key(case: dict[str, Any], model: str) -> str:
+    return f"{model}:{case['task_id']}"
+
+
+def expected_case_keys(corpus: dict[str, Any], models: list[str]) -> list[str]:
+    return [case_key(case, model) for model in models for case in corpus["cases"]]
+
+
+def build_report(
+    *,
+    corpus: dict[str, Any],
+    models: list[str],
+    result_cases: list[dict[str, Any]],
+    started_at: str,
+    run_status: str,
+    failure_type: str,
+    failure_message: str | None,
+) -> dict[str, Any]:
+    expected_keys = expected_case_keys(corpus, models)
+    completed_keys = {
+        f"{result_case['model_id']}:{result_case['task_id']}"
+        for result_case in result_cases
+        if isinstance(result_case.get("model_id"), str) and isinstance(result_case.get("task_id"), str)
+    }
+    return {
+        "schema_version": "janus.openrouter.benchmark_result.v1",
+        "created_at": started_at,
+        "started_at": started_at,
+        "updated_at": utc_now(),
+        "run_status": run_status,
+        "completed_cases": len(result_cases),
+        "expected_cases": len(expected_keys),
+        "missing_cases": [key for key in expected_keys if key not in completed_keys],
+        "failure_type": failure_type,
+        "failure_message": failure_message,
+        "corpus_version": corpus["schema_version"],
+        "models": models,
+        "cases": result_cases,
+        "summary": {
+            "production_approved": False,
+            "notes": "Read-only benchmark result. Codex review is required before any routing policy changes.",
+        },
+    }
+
+
+def infer_run_status(report: dict[str, Any], failure_type: str) -> str:
+    completed_cases = report["completed_cases"]
+    expected_cases = report["expected_cases"]
+    if failure_type != "none":
+        return "partial" if completed_cases else "blocked"
+    if completed_cases == expected_cases:
+        return "complete"
+    return "partial" if completed_cases else "blocked"
+
+
+def write_run_report(
+    *,
+    output: Path | None,
+    corpus: dict[str, Any],
+    models: list[str],
+    result_cases: list[dict[str, Any]],
+    started_at: str,
+    failure_type: str = "none",
+    failure_message: str | None = None,
+    fallback_status: str = "partial",
+) -> dict[str, Any]:
+    draft = build_report(
+        corpus=corpus,
+        models=models,
+        result_cases=result_cases,
+        started_at=started_at,
+        run_status=fallback_status,
+        failure_type=failure_type,
+        failure_message=failure_message,
+    )
+    draft["run_status"] = infer_run_status(draft, failure_type)
+    if output:
+        atomic_write_json(output, draft)
+    return draft
+
+
+def validate_benchmark_report(report: dict[str, Any]) -> None:
+    try:
+        import jsonschema
+    except ImportError as exc:
+        raise RuntimeError("jsonschema package is required for smoke validation") from exc
+
+    jsonschema.validate(report, load_json(BENCHMARK_RESULT_SCHEMA_PATH))
+
+
+def run_partial_write_smoke_test() -> int:
+    corpus = {
+        "schema_version": "janus.openrouter.benchmark_corpus.v1",
+        "cases": [
+            {
+                "task_id": "SMOKE-001",
+                "expected": {"delegation_mode": "ALLOW", "risk_flags": [], "must_not_include_flags": []},
+            },
+            {
+                "task_id": "SMOKE-002",
+                "expected": {"delegation_mode": "ASSIST", "risk_flags": [], "must_not_include_flags": []},
+            },
+        ],
+    }
+    models = ["smoke/model"]
+    completed_case = {
+        "task_id": "SMOKE-001",
+        "model_id": "smoke/model",
+        "schema_valid": True,
+        "mode_correct": True,
+        "risk_flags_complete": True,
+        "forbidden_flags_absent": True,
+        "production_safe": True,
+        "failure_type": "model_output",
+        "expected_mode": "ALLOW",
+        "actual_mode": "ALLOW",
+        "score": 100.0,
+        "errors": [],
+        "elapsed_ms": 1,
+    }
+
+    with tempfile.TemporaryDirectory() as directory:
+        output = Path(directory) / "partial_result.json"
+        started_at = utc_now()
+
+        zero_report = write_run_report(
+            output=output,
+            corpus=corpus,
+            models=models,
+            result_cases=[],
+            started_at=started_at,
+            failure_type="local_exception",
+            failure_message="simulated zero-case failure",
+        )
+        validate_benchmark_report(zero_report)
+        validate_benchmark_report(load_json(output))
+        if zero_report["run_status"] != "blocked" or zero_report["completed_cases"] != 0:
+            raise RuntimeError("zero-case smoke status mismatch")
+
+        partial_report = write_run_report(
+            output=output,
+            corpus=corpus,
+            models=models,
+            result_cases=[completed_case],
+            started_at=started_at,
+            failure_type="local_exception",
+            failure_message="simulated failure after one case",
+        )
+        validate_benchmark_report(partial_report)
+        validate_benchmark_report(load_json(output))
+        if partial_report["run_status"] != "partial" or partial_report["completed_cases"] != 1:
+            raise RuntimeError("partial smoke status mismatch")
+
+        complete_report = write_run_report(
+            output=output,
+            corpus=corpus,
+            models=models,
+            result_cases=[
+                completed_case,
+                {
+                    **completed_case,
+                    "task_id": "SMOKE-002",
+                    "expected_mode": "ASSIST",
+                    "actual_mode": "ASSIST",
+                },
+            ],
+            started_at=started_at,
+        )
+        validate_benchmark_report(complete_report)
+        validate_benchmark_report(load_json(output))
+        if complete_report["run_status"] != "complete" or complete_report["missing_cases"]:
+            raise RuntimeError("complete smoke status mismatch")
+
+    print("PARTIAL WRITE SMOKE: PASS")
+    return 0
+
+
 def call_openrouter(
     model: str,
     case: dict[str, Any],
@@ -617,11 +808,6 @@ def run_live(
     request_timeout_seconds: float,
     corpus_path: Path,
 ) -> int:
-    api_key = os.environ.get("OPENROUTER_API_KEY")
-    if not api_key:
-        print("ERROR: OPENROUTER_API_KEY is not set", file=sys.stderr)
-        return 2
-
     corpus = load_json(corpus_path)
     schema = load_json(RESULT_SCHEMA_PATH)
     errors = validate_corpus(corpus)
@@ -631,79 +817,132 @@ def run_live(
             print(f"- {error}", file=sys.stderr)
         return 1
 
-    result_cases = []
-    for model in models:
-        for case in corpus["cases"]:
-            if case.get("privacy_tier") in FORBIDDEN_PRIVACY_TIERS:
-                progress("start", task_id=case["task_id"], model_id=model, status="local_deny")
-                result_cases.append(local_policy_deny_case(case, model))
-                progress("complete", task_id=case["task_id"], model_id=model, status="local_deny", elapsed_ms=0)
-                continue
+    started_at = utc_now()
+    result_cases: list[dict[str, Any]] = []
+    report = write_run_report(
+        output=output,
+        corpus=corpus,
+        models=models,
+        result_cases=result_cases,
+        started_at=started_at,
+        failure_type="local_exception",
+        failure_message="Run started; no cases completed yet.",
+    )
+    api_key = os.environ.get("OPENROUTER_API_KEY")
+    if not api_key:
+        write_run_report(
+            output=output,
+            corpus=corpus,
+            models=models,
+            result_cases=result_cases,
+            started_at=started_at,
+            failure_type="local_exception",
+            failure_message="OPENROUTER_API_KEY is not set.",
+        )
+        print("ERROR: OPENROUTER_API_KEY is not set", file=sys.stderr)
+        return 2
 
-            progress("start", task_id=case["task_id"], model_id=model, status="external")
-            parsed, elapsed_ms, call_error, debug_shape = call_openrouter(
-                model,
-                case,
-                schema,
-                api_key,
-                request_timeout_seconds,
-            )
-            if call_error or parsed is None:
-                progress("complete", task_id=case["task_id"], model_id=model, status="call_error", elapsed_ms=elapsed_ms)
-                result_cases.append(
-                    call_error_case(
-                        case=case,
-                        model=model,
-                        elapsed_ms=elapsed_ms,
-                        call_error=call_error or "unknown call error",
-                        debug_shape=debug_shape,
-                        debug_response_shape=debug_response_shape,
+    try:
+        for model in models:
+            for case in corpus["cases"]:
+                if case.get("privacy_tier") in FORBIDDEN_PRIVACY_TIERS:
+                    progress("start", task_id=case["task_id"], model_id=model, status="local_deny")
+                    result_cases.append(local_policy_deny_case(case, model))
+                    report = write_run_report(
+                        output=output,
+                        corpus=corpus,
+                        models=models,
+                        result_cases=result_cases,
+                        started_at=started_at,
                     )
+                    progress("complete", task_id=case["task_id"], model_id=model, status="local_deny", elapsed_ms=0)
+                    continue
+
+                progress("start", task_id=case["task_id"], model_id=model, status="external")
+                parsed, elapsed_ms, call_error, debug_shape = call_openrouter(
+                    model,
+                    case,
+                    schema,
+                    api_key,
+                    request_timeout_seconds,
                 )
-                continue
+                if call_error or parsed is None:
+                    progress("complete", task_id=case["task_id"], model_id=model, status="call_error", elapsed_ms=elapsed_ms)
+                    result_cases.append(
+                        call_error_case(
+                            case=case,
+                            model=model,
+                            elapsed_ms=elapsed_ms,
+                            call_error=call_error or "unknown call error",
+                            debug_shape=debug_shape,
+                            debug_response_shape=debug_response_shape,
+                        )
+                    )
+                    report = write_run_report(
+                        output=output,
+                        corpus=corpus,
+                        models=models,
+                        result_cases=result_cases,
+                        started_at=started_at,
+                    )
+                    continue
 
-            schema_errors = validate_delegated_result(parsed)
-            score, score_errors, diagnostics = score_result(case, parsed, schema_errors)
-            progress(
-                "complete",
-                task_id=case["task_id"],
-                model_id=model,
-                status="schema_valid" if not schema_errors else "schema_invalid",
-                elapsed_ms=elapsed_ms,
-            )
-            result_cases.append(
-                {
-                    "task_id": case["task_id"],
-                    "model_id": model,
-                    "schema_valid": diagnostics["schema_valid"],
-                    "mode_correct": diagnostics["mode_correct"],
-                    "risk_flags_complete": diagnostics["risk_flags_complete"],
-                    "forbidden_flags_absent": diagnostics["forbidden_flags_absent"],
-                    "production_safe": diagnostics["production_safe"],
-                    "failure_type": "model_output",
-                    "expected_mode": case["expected"]["delegation_mode"],
-                    "actual_mode": parsed.get("delegation_mode"),
-                    "score": score,
-                    "errors": score_errors,
-                    "elapsed_ms": elapsed_ms,
-                }
-            )
+                schema_errors = validate_delegated_result(parsed)
+                score, score_errors, diagnostics = score_result(case, parsed, schema_errors)
+                progress(
+                    "complete",
+                    task_id=case["task_id"],
+                    model_id=model,
+                    status="schema_valid" if not schema_errors else "schema_invalid",
+                    elapsed_ms=elapsed_ms,
+                )
+                result_cases.append(
+                    {
+                        "task_id": case["task_id"],
+                        "model_id": model,
+                        "schema_valid": diagnostics["schema_valid"],
+                        "mode_correct": diagnostics["mode_correct"],
+                        "risk_flags_complete": diagnostics["risk_flags_complete"],
+                        "forbidden_flags_absent": diagnostics["forbidden_flags_absent"],
+                        "production_safe": diagnostics["production_safe"],
+                        "failure_type": "model_output",
+                        "expected_mode": case["expected"]["delegation_mode"],
+                        "actual_mode": parsed.get("delegation_mode"),
+                        "score": score,
+                        "errors": score_errors,
+                        "elapsed_ms": elapsed_ms,
+                    }
+                )
+                report = write_run_report(
+                    output=output,
+                    corpus=corpus,
+                    models=models,
+                    result_cases=result_cases,
+                    started_at=started_at,
+                )
+    except Exception as exc:
+        report = write_run_report(
+            output=output,
+            corpus=corpus,
+            models=models,
+            result_cases=result_cases,
+            started_at=started_at,
+            failure_type="local_exception",
+            failure_message=sanitize_error_message(str(exc)) or type(exc).__name__,
+        )
+        print(f"ERROR: live benchmark failed: {type(exc).__name__}", file=sys.stderr)
+        return 1
 
-    report = {
-        "schema_version": "janus.openrouter.benchmark_result.v1",
-        "created_at": dt.datetime.now(dt.timezone.utc).isoformat(),
-        "corpus_version": corpus["schema_version"],
-        "models": models,
-        "cases": result_cases,
-        "summary": {
-            "production_approved": False,
-            "notes": "Read-only benchmark result. Codex review is required before any routing policy changes.",
-        },
-    }
+    report = write_run_report(
+        output=output,
+        corpus=corpus,
+        models=models,
+        result_cases=result_cases,
+        started_at=started_at,
+    )
 
     text = dump_json(report)
     if output:
-        output.write_text(text + "\n", encoding="utf-8")
         print(f"Wrote benchmark result to {output}")
     else:
         print(text)
@@ -724,6 +963,7 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--output", type=Path, help="Optional output path for live benchmark JSON.")
     parser.add_argument("--corpus", type=Path, default=CORPUS_PATH, help="Benchmark corpus path. Defaults to benchmark_corpus.json.")
     parser.add_argument("--request-timeout-seconds", type=float, default=DEFAULT_REQUEST_TIMEOUT_SECONDS, help="Per-request timeout for external OpenRouter HTTP calls.")
+    parser.add_argument("--smoke-test-partial-writes", action="store_true", help="Run local smoke tests for atomic partial benchmark result writes.")
     args = parser.parse_args(argv)
 
     corpus = load_json(args.corpus)
@@ -742,6 +982,9 @@ def main(argv: list[str]) -> int:
         print(f"Corpus cases: {len(corpus['cases'])}")
         print(f"Schema: {RESULT_SCHEMA_PATH}")
         return 0
+
+    if args.smoke_test_partial_writes:
+        return run_partial_write_smoke_test()
 
     if args.dry_run:
         if errors:

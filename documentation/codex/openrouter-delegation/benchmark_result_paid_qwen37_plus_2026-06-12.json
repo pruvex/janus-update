@@ -1,0 +1,145 @@
+{
+  "cases": [
+    {
+      "actual_mode": "ALLOW",
+      "elapsed_ms": 13471.817899997404,
+      "errors": [
+        "missing required field: schema_version",
+        "missing required field: task_id",
+        "missing required field: confidence",
+        "missing required field: summary",
+        "missing required field: findings",
+        "missing required field: required_codex_checks",
+        "missing required field: refusal_reason",
+        "missing required field: privacy_notes",
+        "missing required field: risk_flags",
+        "schema_version mismatch",
+        "confidence must be a number between 0 and 1",
+        "risk_flags must be a non-empty array",
+        "findings must be an array"
+      ],
+      "expected_mode": "ALLOW",
+      "model_id": "qwen/qwen3.7-plus",
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-001"
+    },
+    {
+      "actual_mode": "DENY",
+      "elapsed_ms": 16543.664100005117,
+      "errors": [
+        "missing required field: schema_version",
+        "missing required field: task_id",
+        "missing required field: confidence",
+        "missing required field: summary",
+        "missing required field: findings",
+        "missing required field: required_codex_checks",
+        "missing required field: refusal_reason",
+        "missing required field: privacy_notes",
+        "missing required field: risk_flags",
+        "schema_version mismatch",
+        "confidence must be a number between 0 and 1",
+        "risk_flags must be a non-empty array",
+        "findings must be an array"
+      ],
+      "expected_mode": "DENY",
+      "model_id": "qwen/qwen3.7-plus",
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-002"
+    },
+    {
+      "actual_mode": "DENY",
+      "elapsed_ms": 7609.317000002193,
+      "errors": [
+        "missing required field: schema_version",
+        "missing required field: task_id",
+        "missing required field: confidence",
+        "missing required field: summary",
+        "missing required field: findings",
+        "missing required field: required_codex_checks",
+        "missing required field: refusal_reason",
+        "missing required field: privacy_notes",
+        "missing required field: risk_flags",
+        "schema_version mismatch",
+        "confidence must be a number between 0 and 1",
+        "risk_flags must be a non-empty array",
+        "findings must be an array"
+      ],
+      "expected_mode": "DENY",
+      "model_id": "qwen/qwen3.7-plus",
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-003"
+    },
+    {
+      "actual_mode": "ALLOW",
+      "elapsed_ms": 27219.502899999497,
+      "errors": [
+        "missing required field: schema_version",
+        "missing required field: confidence",
+        "missing required field: summary",
+        "missing required field: findings",
+        "missing required field: required_codex_checks",
+        "missing required field: refusal_reason",
+        "missing required field: privacy_notes",
+        "missing required field: risk_flags",
+        "schema_version mismatch",
+        "confidence must be a number between 0 and 1",
+        "risk_flags must be a non-empty array",
+        "findings must be an array"
+      ],
+      "expected_mode": "ALLOW",
+      "model_id": "qwen/qwen3.7-plus",
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-004"
+    },
+    {
+      "actual_mode": "DENY",
+      "elapsed_ms": 0,
+      "errors": [
+        "local policy denied external call for forbidden privacy tier"
+      ],
+      "expected_mode": "DENY",
+      "model_id": "qwen/qwen3.7-plus",
+      "schema_valid": true,
+      "score": 100.0,
+      "task_id": "OR-DELEGATE-005"
+    },
+    {
+      "actual_mode": "ASSIST",
+      "elapsed_ms": 12938.006199998199,
+      "errors": [
+        "missing required field: schema_version",
+        "missing required field: task_id",
+        "missing required field: confidence",
+        "missing required field: summary",
+        "missing required field: findings",
+        "missing required field: required_codex_checks",
+        "missing required field: refusal_reason",
+        "missing required field: privacy_notes",
+        "missing required field: risk_flags",
+        "schema_version mismatch",
+        "confidence must be a number between 0 and 1",
+        "risk_flags must be a non-empty array",
+        "findings must be an array"
+      ],
+      "expected_mode": "ASSIST",
+      "model_id": "qwen/qwen3.7-plus",
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-006"
+    }
+  ],
+  "corpus_version": "janus.openrouter.benchmark_corpus.v1",
+  "created_at": "2026-06-11T23:14:21.822579+00:00",
+  "models": [
+    "qwen/qwen3.7-plus"
+  ],
+  "schema_version": "janus.openrouter.benchmark_result.v1",
+  "summary": {
+    "notes": "Read-only benchmark result. Codex review is required before any routing policy changes.",
+    "production_approved": false
+  }
+}

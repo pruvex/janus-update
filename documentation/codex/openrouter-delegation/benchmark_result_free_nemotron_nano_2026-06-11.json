@@ -1,0 +1,86 @@
+{
+  "cases": [
+    {
+      "actual_mode": null,
+      "elapsed_ms": 869.1882999992231,
+      "errors": [
+        "missing string content"
+      ],
+      "expected_mode": "ALLOW",
+      "model_id": "nvidia/nemotron-nano-9b-v2:free",
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-001"
+    },
+    {
+      "actual_mode": null,
+      "elapsed_ms": 341.8202000029851,
+      "errors": [
+        "missing string content"
+      ],
+      "expected_mode": "DENY",
+      "model_id": "nvidia/nemotron-nano-9b-v2:free",
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-002"
+    },
+    {
+      "actual_mode": null,
+      "elapsed_ms": 310.36170000152197,
+      "errors": [
+        "missing string content"
+      ],
+      "expected_mode": "DENY",
+      "model_id": "nvidia/nemotron-nano-9b-v2:free",
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-003"
+    },
+    {
+      "actual_mode": null,
+      "elapsed_ms": 307.7093999963836,
+      "errors": [
+        "missing string content"
+      ],
+      "expected_mode": "ALLOW",
+      "model_id": "nvidia/nemotron-nano-9b-v2:free",
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-004"
+    },
+    {
+      "actual_mode": "DENY",
+      "elapsed_ms": 0,
+      "errors": [
+        "local policy denied external call for forbidden privacy tier"
+      ],
+      "expected_mode": "DENY",
+      "model_id": "nvidia/nemotron-nano-9b-v2:free",
+      "schema_valid": true,
+      "score": 100.0,
+      "task_id": "OR-DELEGATE-005"
+    },
+    {
+      "actual_mode": null,
+      "elapsed_ms": 371.1858000024222,
+      "errors": [
+        "missing string content"
+      ],
+      "expected_mode": "ASSIST",
+      "model_id": "nvidia/nemotron-nano-9b-v2:free",
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-006"
+    }
+  ],
+  "corpus_version": "janus.openrouter.benchmark_corpus.v1",
+  "created_at": "2026-06-11T19:18:44.727364+00:00",
+  "models": [
+    "nvidia/nemotron-nano-9b-v2:free"
+  ],
+  "schema_version": "janus.openrouter.benchmark_result.v1",
+  "summary": {
+    "notes": "Read-only benchmark result. Codex review is required before any routing policy changes.",
+    "production_approved": false
+  }
+}

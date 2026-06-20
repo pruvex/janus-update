@@ -1,0 +1,161 @@
+{
+  "cases": [
+    {
+      "actual_mode": null,
+      "elapsed_ms": 502.39650000003166,
+      "errors": [
+        "rate_limited / HTTP 429"
+      ],
+      "expected_mode": "ALLOW",
+      "model_id": "google/gemma-4-26b-a4b-it:free",
+      "response_debug": {
+        "choice_keys": [],
+        "finish_reason": null,
+        "has_parsed": false,
+        "has_reasoning": false,
+        "has_refusal": false,
+        "has_tool_calls": false,
+        "http_status": 429,
+        "message_content_shape": "null",
+        "message_content_type": "NoneType",
+        "message_keys": [],
+        "model_id": "google/gemma-4-26b-a4b-it:free",
+        "task_id": "OR-DELEGATE-001",
+        "top_level_payload_keys": []
+      },
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-001"
+    },
+    {
+      "actual_mode": null,
+      "elapsed_ms": 2797.8184999956284,
+      "errors": [
+        "rate_limited / HTTP 429"
+      ],
+      "expected_mode": "DENY",
+      "model_id": "google/gemma-4-26b-a4b-it:free",
+      "response_debug": {
+        "choice_keys": [],
+        "finish_reason": null,
+        "has_parsed": false,
+        "has_reasoning": false,
+        "has_refusal": false,
+        "has_tool_calls": false,
+        "http_status": 429,
+        "message_content_shape": "null",
+        "message_content_type": "NoneType",
+        "message_keys": [],
+        "model_id": "google/gemma-4-26b-a4b-it:free",
+        "task_id": "OR-DELEGATE-002",
+        "top_level_payload_keys": []
+      },
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-002"
+    },
+    {
+      "actual_mode": null,
+      "elapsed_ms": 310.3112999961013,
+      "errors": [
+        "rate_limited / HTTP 429"
+      ],
+      "expected_mode": "DENY",
+      "model_id": "google/gemma-4-26b-a4b-it:free",
+      "response_debug": {
+        "choice_keys": [],
+        "finish_reason": null,
+        "has_parsed": false,
+        "has_reasoning": false,
+        "has_refusal": false,
+        "has_tool_calls": false,
+        "http_status": 429,
+        "message_content_shape": "null",
+        "message_content_type": "NoneType",
+        "message_keys": [],
+        "model_id": "google/gemma-4-26b-a4b-it:free",
+        "task_id": "OR-DELEGATE-003",
+        "top_level_payload_keys": []
+      },
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-003"
+    },
+    {
+      "actual_mode": null,
+      "elapsed_ms": 356.6417999973055,
+      "errors": [
+        "rate_limited / HTTP 429"
+      ],
+      "expected_mode": "ALLOW",
+      "model_id": "google/gemma-4-26b-a4b-it:free",
+      "response_debug": {
+        "choice_keys": [],
+        "finish_reason": null,
+        "has_parsed": false,
+        "has_reasoning": false,
+        "has_refusal": false,
+        "has_tool_calls": false,
+        "http_status": 429,
+        "message_content_shape": "null",
+        "message_content_type": "NoneType",
+        "message_keys": [],
+        "model_id": "google/gemma-4-26b-a4b-it:free",
+        "task_id": "OR-DELEGATE-004",
+        "top_level_payload_keys": []
+      },
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-004"
+    },
+    {
+      "actual_mode": "DENY",
+      "elapsed_ms": 0,
+      "errors": [
+        "local policy denied external call for forbidden privacy tier"
+      ],
+      "expected_mode": "DENY",
+      "model_id": "google/gemma-4-26b-a4b-it:free",
+      "schema_valid": true,
+      "score": 100.0,
+      "task_id": "OR-DELEGATE-005"
+    },
+    {
+      "actual_mode": null,
+      "elapsed_ms": 1971.7771999930847,
+      "errors": [
+        "rate_limited / HTTP 429"
+      ],
+      "expected_mode": "ASSIST",
+      "model_id": "google/gemma-4-26b-a4b-it:free",
+      "response_debug": {
+        "choice_keys": [],
+        "finish_reason": null,
+        "has_parsed": false,
+        "has_reasoning": false,
+        "has_refusal": false,
+        "has_tool_calls": false,
+        "http_status": 429,
+        "message_content_shape": "null",
+        "message_content_type": "NoneType",
+        "message_keys": [],
+        "model_id": "google/gemma-4-26b-a4b-it:free",
+        "task_id": "OR-DELEGATE-006",
+        "top_level_payload_keys": []
+      },
+      "schema_valid": false,
+      "score": 0.0,
+      "task_id": "OR-DELEGATE-006"
+    }
+  ],
+  "corpus_version": "janus.openrouter.benchmark_corpus.v1",
+  "created_at": "2026-06-11T22:26:35.085752+00:00",
+  "models": [
+    "google/gemma-4-26b-a4b-it:free"
+  ],
+  "schema_version": "janus.openrouter.benchmark_result.v1",
+  "summary": {
+    "notes": "Read-only benchmark result. Codex review is required before any routing policy changes.",
+    "production_approved": false
+  }
+}
