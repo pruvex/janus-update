@@ -1,0 +1,23 @@
+﻿{
+  "summary_header": "FIXED OR MINI DOC SKILL SUMMARY",
+  "workflow_id": "FIXED-OR-LIVE-BATCH7-001",
+  "skill_id": "DOC-SKILL-010",
+  "selected_path": "fixed_or_then_codex_validate",
+  "local_codex_option": "enabled",
+  "or_option": "enabled",
+  "or_model": "qwen/qwen3.5-flash-02-23",
+  "estimated_or_cost": 0.00039156,
+  "cost_estimate_confidence_percent": 55,
+  "actual_or_cost": 0.00053508,
+  "finish_reason": "stop",
+  "validation_result": "PASS",
+  "fallback_used": "NO",
+  "rework_required": "NO",
+  "operator_result_lines": [
+    "Ergebnis: OR erfolgreich (stop)",
+    "Tatsaechliche Kosten: 0.000535080"
+  ],
+  "session_jsonl_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\or_healthcheck_telemetry_fixed_or_session_2026-06-13_FIXED-OR-LIVE-BATCH7-001.jsonl",
+  "healthcheck_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\fixed-or-live-runs\\FIXED-OR-LIVE-BATCH7-001\\doc-skill-010\\healthcheck_summary.json",
+  "operator_message": "Accepted fixed-model OR row captured and ingested locally. No Auto Router used."
+}

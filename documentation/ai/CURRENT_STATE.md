@@ -4,6 +4,52 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Snapshot Update
+As of `2026-06-20 02:28 +02:00`, der kleine Fixed-OR-Live-Dokumentationsslice ist jetzt sauber von den groesseren GPT54-, Direct-OR- und Backend-Resten getrennt. Dieser Block umfasst nur die skill-native Enablement-/Validation-Doku fuer die sieben freigegebenen Mini-Doku-Skills, die zugehoerigen Fixed-OR-Validierungsartefakte, den 7-Skill-Live-Batch-Nachweis sowie den zugehoerigen Telemetrie-/Run-Ordner-Bestand. Backend-Produktarbeit, Direct-OR-/Qwen-/DeepSeek-Reste, GPT54-Vergleichsartefakte, Frontend-/Dashboard-Aenderungen und sonstige Test-/Task-Bloecke bleiben weiterhin bewusst ausserhalb dieses Slices. In diesem Snapshot ist der Block fuer einen separaten staged-only Commit/Push nach `backup/develop` vorbereitet; ein Remote muss diesen neuesten Trennstand noch nicht enthalten.
+
+## Git Governance Override
+Timestamp: `2026-06-20 02:28 +02:00`
+
+Current goal override: den bounded Fixed-OR-Live-Dokumentationsblock als eigenen, kleinen Governance-Checkpoint sichern und danach den deutlich groesseren Direct-OR-Rest separat weiter aufteilen.
+
+Active phase override: `janus-git-governance`, canonical state `HANDOFF`.
+
+Last Codex work:
+- hat den offenen Worktree erneut mit Guard, Status und Diff-Check vermessen
+- hat den kleinen Fixed-OR-Live-Doku-/Artefaktblock gegen GPT54-, Direct-OR- und Backend-Reste abgegrenzt
+- hat bestaetigt, dass die skill-native Operator-Choice-Doku jetzt den nummerierten `1 = Codex` / `2 = OpenRouter`-Pfad abbildet
+- haelt den verbleibenden Mischbestand weiterhin bewusst fuer spaetere separate Slices offen
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/codex/model-routing/doc_skill_mini_fixed_or_live_enablement_2026-06-13.md`
+- `documentation/codex/model-routing/doc_skill_mini_fixed_or_live_validation_2026-06-13.md`
+- `documentation/codex/model-routing/fixed_or_live_7skill_batch_result_2026-06-14.md`
+- `documentation/codex/model-routing/fixed_or_live_validation_missing_confidence_2026-06-13.json`
+- `documentation/codex/model-routing/fixed_or_live_validation_out_of_scope_2026-06-13.json`
+- `documentation/codex/model-routing/fixed_or_live_validation_prompt_mode_2026-06-13.json`
+- `documentation/codex/model-routing/or_healthcheck_telemetry_fixed_or_session_2026-06-13_FIXED-OR-FIXTURE-VALIDATION-001.jsonl`
+- `documentation/codex/model-routing/or_healthcheck_telemetry_fixed_or_session_2026-06-13_FIXED-OR-LIVE-BATCH7-001.jsonl`
+- `documentation/codex/model-routing/or_healthcheck_telemetry_fixed_or_session_2026-06-13_FIXED-OR-RUNNER-PARAM-VALIDATION-001.jsonl`
+- `documentation/codex/model-routing/or_healthcheck_telemetry_fixed_or_session_2026-06-13_FIXED-OR-SKILL-TEST-003.jsonl`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-*`
+
+Checks / validation performed:
+- `python C:\\Users\\pruve\\.codex\\skills\\janus-git-governance\\scripts\\git_guard.py C:\\KI\\Janus-Projekt`: PASS (`develop`, no large-file risk, staged-only slicing still required)
+- `git status --short`: PASS
+- `git diff --check`: PASS with CRLF warnings only
+- Fixed-OR validation evidence in scope confirms prompt-mode operator gate, out-of-scope fallback, missing-confidence abort, wrapper handoff validation, fixture ingestion, and accepted 7-skill bounded live evidence
+
+Open risks:
+- Der verbleibende Worktree ist weiterhin stark gemischt und darf nicht zusammen mit diesem kleinen Fixed-OR-Slice committed werden.
+- GPT54-Vergleichsartefakte im benachbarten `fixed-or-live-runs/`-Baum muessen weiterhin draussen bleiben.
+- Direct-OR-/sidecar-/manual-review-Reste brauchen danach weiterhin einen eigenen Separationslauf.
+
+Next recommended step for ChatGPT: den kleinen Fixed-OR-Live-Checkpoint nach erfolgreichem staged-only Commit/Push als gesichert behandeln und den Direct-OR-Rest weiter nur in klar getrennten Arbeitsblöcken verfolgen.
+
+Next recommended step for Codex: jetzt nur den Fixed-OR-Live-Doku-/Artefaktblock stage-validieren, committen und nach `backup/develop` pushen; danach den groesseren Direct-OR-Rest separat schneiden.
+
+## Current Snapshot Update
 As of `2026-06-20 00:08 +02:00`, der bounded write-capable Sidecar-Infrastruktur-Slice ist jetzt als eigener Commit auf `backup/develop` gesichert (`bc2759b71`). Dieser Checkpoint umfasst die write-capable Sidecar-/Structured-Action-Infrastruktur, Runner, Schema, Tests sowie die kompakten Plan- und Ergebnisnotizen. Der verbleibende Worktree ist weiterhin bewusst offen und getrennt: darunter `CURRENT_STATE.md`, `SKILL_USAGE_LOG.md`, das Dev-Runbook, Backend-Produktarbeit, GPT54-/Direct-OR-Evidenz, Frontend-/Dashboard-Reste und weitere Test-/Task-Artefakte. Es wurde nach diesem Infrastruktur-Checkpoint noch kein weiterer Commit und kein weiterer Push ausgefuehrt; `backup` enthaelt also den neuen Sidecar-Infrastruktur-Stand, aber noch nicht den anschliessenden Governance-/State-Sync.
 
 ## Git Governance Override

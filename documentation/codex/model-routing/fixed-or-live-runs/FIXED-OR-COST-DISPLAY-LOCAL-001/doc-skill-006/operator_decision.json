@@ -1,0 +1,17 @@
+﻿{
+  "workflow_id": "FIXED-OR-COST-DISPLAY-LOCAL-001",
+  "skill_id": "DOC-SKILL-006",
+  "selected_path": "codex_only_operator_choice",
+  "local_codex_option": "enabled",
+  "or_option": "enabled_but_not_used",
+  "or_model": "openai/gpt-oss-120b",
+  "validation_result": "PASS",
+  "fallback_used": "YES",
+  "rework_required": "NO",
+  "final_outcome": "LOCAL_CODEX_PATH_SELECTED",
+  "operator_result_lines": [
+    "Ergebnis: Codex lokal ausgewaehlt",
+    "Tatsaechliche Kosten: 0.000000000"
+  ],
+  "operator_message": "Operator chose local Codex path. No OR call was made."
+}

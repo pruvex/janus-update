@@ -1,0 +1,76 @@
+﻿{
+  "mode": "DAILY",
+  "repo": "C:\\KI\\Janus-Projekt",
+  "branch": "develop",
+  "dirty_total": 134,
+  "staged": 0,
+  "unstaged": 40,
+  "untracked": 94,
+  "core_artifacts": {
+    "AGENTS.md": true,
+    "documentation/CODEX_MIGRATION_PLAN.md": true,
+    "documentation/backlog/BACKLOG.md": true,
+    "documentation/pipeline/PIPELINE_CONTRACT.md": true,
+    "janus-dashboard/data/backlog.snapshot.json": true
+  },
+  "backlog": {
+    "exists": "YES",
+    "in_progress": 5,
+    "ready": 41,
+    "needs_info": 5,
+    "blocked": 9
+  },
+  "migration_gaps": [],
+  "root_suspicious": [],
+  "root_runtime_db_artifacts": [
+    "chat_history.db: legacy local split-chat DB artifact; not the intended active Janus runtime DB path",
+    "costs.db: legacy local split-cost DB artifact; not the intended active Janus runtime DB path",
+    "janus.db: stray root copy; active Janus runtime DB belongs under %APPDATA%/Janus Projekt/janus.db"
+  ],
+  "root_legacy_log_artifacts": [
+    ".codex-vite-err.log: legacy root Vite error log; current versioned dev start path writes Vite logs under debug_logs/",
+    ".codex-vite-out.log: legacy root Vite output log; current versioned dev start path writes Vite logs under debug_logs/",
+    "backend_hotfix.err.log: legacy root backend helper log; current versioned backend dev/runtime logs belong under debug_logs/",
+    "backend_hotfix.out.log: legacy root backend helper log; current versioned backend dev/runtime logs belong under debug_logs/",
+    "backend_live.err.log: legacy root backend helper log; current versioned backend dev/runtime logs belong under debug_logs/",
+    "backend_live.out.log: legacy root backend helper log; current versioned backend dev/runtime logs belong under debug_logs/",
+    "backend_persist.err.log: legacy root backend helper log; current versioned backend dev/runtime logs belong under debug_logs/",
+    "backend_persist.out.log: legacy root backend helper log; current versioned backend dev/runtime logs belong under debug_logs/",
+    "backend_restart.err.log: legacy root backend helper log; current versioned backend dev/runtime logs belong under debug_logs/",
+    "backend_restart.out.log: legacy root backend helper log; current versioned backend dev/runtime logs belong under debug_logs/",
+    "backend_start.log: legacy root backend start log; current versioned backend dev/runtime logs belong under debug_logs/",
+    "backend_start_manual.err.log: legacy root backend helper log; current versioned backend dev/runtime logs belong under debug_logs/",
+    "backend_start_manual.log: legacy root backend helper log; current versioned backend dev/runtime logs belong under debug_logs/",
+    "backend_verify.err.log: legacy root backend helper log; current versioned backend dev/runtime logs belong under debug_logs/",
+    "backend_verify.out.log: legacy root backend helper log; current versioned backend dev/runtime logs belong under debug_logs/",
+    "startdev.log: legacy root start-dev log; current versioned startup telemetry belongs under documentation/logs and dev runtime logs under debug_logs/",
+    "tmp_uv8011_err.log: legacy root temporary backend log; current versioned backend dev/runtime logs belong under debug_logs/",
+    "tmp_uv8011_out.log: legacy root temporary backend log; current versioned backend dev/runtime logs belong under debug_logs/"
+  ],
+  "skill_usage": {
+    "exists": true,
+    "entries": 279
+  },
+  "or_telemetry": {
+    "source": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\or_healthcheck_telemetry_fixed_or_session_2026-06-13_FIXED-OR-LIVE-BATCH7-001.jsonl",
+    "record_count": 3,
+    "models_seen": [
+      "openai/gpt-oss-20b"
+    ],
+    "skills_seen": [
+      "DOC-SKILL-001",
+      "DOC-SKILL-002",
+      "DOC-SKILL-003"
+    ],
+    "estimated_cost_total": 0.00060857,
+    "actual_cost_total": 0.00019066,
+    "confidence_average": 55.0,
+    "fallback_count": 0,
+    "validation_result_counts": {
+      "PASS": 3
+    },
+    "recommendation_signal_counts": {
+      "OR_PREFERRED": 3
+    }
+  }
+}

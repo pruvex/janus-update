@@ -1,0 +1,22 @@
+﻿{
+  "workflow_id": "FIXED-OR-PROMPT-CHOICE-UI-001",
+  "skill_id": "DOC-SKILL-006",
+  "local_codex_option": "handle locally with Codex",
+  "or_option": "handle with OR using fixed model openai/gpt-oss-120b",
+  "estimated_or_cost": 0.000260148,
+  "confidence_status": {
+    "cost_estimate_confidence_percent": 55,
+    "cost_estimate_sample_count": 1,
+    "cost_estimate_mean_abs_error_percent": 83.06,
+    "cost_estimate_p50_error_percent": 83.06,
+    "cost_estimate_p90_error_percent": 83.06,
+    "cost_estimate_basis": "openai/gpt-oss-120b+DOC-SKILL-006+sha256:doc-skill-006-live-batch-v1+mechanical_markdown_cleanup",
+    "prompt_template_hash": "sha256:doc-skill-006-live-batch-v1",
+    "task_variant": "mechanical_markdown_cleanup",
+    "price_snapshot_source": "documentation/codex/openrouter-delegation/model_price_inventory_2026-06-12.json",
+    "price_snapshot_timestamp": "2026-06-13T18:17:12.4063693+02:00"
+  },
+  "per_call_cap_usd": 0.002,
+  "session_cap_usd": 0.006,
+  "note": "Operator-invoked fixed OR use only. No Auto Router. Not production routing."
+}

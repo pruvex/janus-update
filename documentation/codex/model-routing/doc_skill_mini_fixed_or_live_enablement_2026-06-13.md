@@ -1,6 +1,6 @@
 # Fixed OR Live Enablement For Mini Documentation Skills - 2026-06-13
 
-Status: IMPLEMENTATION ENABLEMENT NOTE / OPERATOR-INVOKED / NO AUTO ROUTER / NO PRODUCTION ROUTING / NO CANONICAL ROUTING-TABLE UPDATE
+Status: IMPLEMENTATION ENABLEMENT NOTE / SKILL-NATIVE OPERATOR CHOICE ACTIVE / NO AUTO ROUTER / NO PRODUCTION ROUTING / NO CANONICAL ROUTING-TABLE UPDATE
 
 ## Scope
 
@@ -39,6 +39,31 @@ The operator prompt includes:
 - per-call cap
 - session cap
 - explicit note that this is operator-invoked fixed OR use only, not Auto Router and not production routing
+
+## Skill-native Integration
+
+`janus-documentation-update` now carries the bounded fixed-OR gate directly in the skill instructions.
+
+For the seven eligible `DOC-SKILL-*` rows, the skill now:
+
+- classifies the documentation request against the routing table
+- runs the fixed-OR runner in `prompt` mode
+- shows a `FIXED OR OPERATOR CHOICE` gate
+- waits for `local` or `or` unless the user already stated the choice
+- invokes the same runner for the chosen path
+
+This makes the fixed-OR choice available during ordinary documentation-skill use instead of only through a separate manual runner call.
+
+The operator-facing prompt is now phrased as a numbered choice:
+
+- `1 = Codex`
+- `2 = OpenRouter`
+
+and explicitly shows:
+
+- selected OR model
+- estimated cost
+- confidence percent
 
 ## Config
 

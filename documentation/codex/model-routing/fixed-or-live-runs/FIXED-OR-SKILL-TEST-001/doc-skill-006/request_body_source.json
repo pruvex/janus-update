@@ -1,0 +1,15 @@
+﻿{
+  "model": "openai/gpt-oss-120b",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are assisting with DOC-SKILL-006. Use only the sanitized input. Return concise Markdown only. Do not imply release readiness or any production, routing, Git, repo-write, or release authority."
+    },
+    {
+      "role": "user",
+      "content": "You are assisting with DOC-SKILL-006: Format Markdown Documentation.\n\nClean up the sanitized Markdown mechanically for local reviewer use.\n\nRequirements:\n- Use only the sanitized input.\n- Preserve the original meaning.\n- Preserve task boundaries and gate language.\n- Preserve all fixed exclusions.\n- Normalize headings, label spacing, and bullet style.\n- Do not add new requirements.\n- Do not rewrite policy meaning.\n- Do not grant implementation, Git, release, repo-write, routing, or production authority.\n- Do not approve production routing or OpenRouter production activation.\n- Do not invent or expose raw private evidence.\n- Keep the output concise and copy-safe.\n\nReturn only the cleaned Markdown.\n\nSanitized input JSON:\n{\n  \"fixture_id\": \"DOC-SKILL-006-GPT54-MINI-LIVE-EVAL-001\",\n  \"task_id\": \"DOC-SKILL-006\",\n  \"task_name\": \"Format Markdown Documentation\",\n  \"sanitized\": true,\n  \"contains_private_evidence\": false,\n  \"production_approved\": false,\n  \"routing_approved\": false,\n  \"summary_target\": \"mechanical_markdown_cleanup\",\n  \"source_markdown\": \"# Gate notes\\n\\nStatus :   NOT RUN / no production routing\\n\\n## scope\\n\\nThis note applies to DOC-SKILL-006 only.   Preserve meaning and do not add policy.\\n\\n- bound artifact: sanitized-draft.md\\n- allowed action : format markdown only\\n- stop if required evidence is missing\\n- do not run implementation git release or production routing actions\\n\\n## exclusions\\n\\n* no repo-write delegation\\n* no semantic rewrite\\n* no production approval\\n* no OpenRouter production activation\\n* no raw private evidence exposure\\n\",\n  \"formatting_goals\": [\n    \"normalize heading capitalization\",\n    \"normalize spacing around labels\",\n    \"use consistent bullet style\",\n    \"preserve all words that carry authority or scope\",\n    \"do not add new requirements\"\n  ],\n  \"constraints\": {\n    \"must_preserve\": [\n      \"NOT RUN\",\n      \"DOC-SKILL-006 only\",\n      \"sanitized-draft.md\",\n      \"format markdown only\",\n      \"stop if required evidence is missing\",\n      \"do not run implementation git release or production routing actions\",\n      \"no repo-write delegation\",\n      \"no semantic rewrite\",\n      \"no production approval\",\n      \"no OpenRouter production activation\",\n      \"no raw private evidence exposure\"\n    ],\n    \"must_not_do\": [\n      \"change policy meaning\",\n      \"add implementation authority\",\n      \"add Git authority\",\n      \"add release authority\",\n      \"approve production routing\",\n      \"activate OpenRouter production\",\n      \"invent private evidence\",\n      \"treat formatting as repo-write delegation\"\n    ]\n  }\n}"
+    }
+  ],
+  "temperature": 0,
+  "max_tokens": 1200
+}

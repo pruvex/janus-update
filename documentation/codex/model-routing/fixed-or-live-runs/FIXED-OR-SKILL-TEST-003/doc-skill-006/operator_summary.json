@@ -1,0 +1,19 @@
+﻿{
+  "summary_header": "FIXED OR MINI DOC SKILL SUMMARY",
+  "workflow_id": "FIXED-OR-SKILL-TEST-003",
+  "skill_id": "DOC-SKILL-006",
+  "selected_path": "fixed_or_then_codex_validate",
+  "local_codex_option": "enabled",
+  "or_option": "enabled",
+  "or_model": "openai/gpt-oss-120b",
+  "estimated_or_cost": 0.000260148,
+  "cost_estimate_confidence_percent": 55,
+  "actual_or_cost": 0.000143477,
+  "finish_reason": "stop",
+  "validation_result": "PASS",
+  "fallback_used": "NO",
+  "rework_required": "NO",
+  "session_jsonl_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\or_healthcheck_telemetry_fixed_or_session_2026-06-13_FIXED-OR-SKILL-TEST-003.jsonl",
+  "healthcheck_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\fixed-or-live-runs\\FIXED-OR-SKILL-TEST-003\\doc-skill-006\\healthcheck_summary.json",
+  "operator_message": "Accepted fixed-model OR row captured and ingested locally. No Auto Router used."
+}
