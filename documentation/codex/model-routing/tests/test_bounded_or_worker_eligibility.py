@@ -162,6 +162,123 @@ class BoundedOrWorkerEligibilityTests(unittest.TestCase):
         self.assertEqual(result["eligibility_result"], "OR_ALLOWED")
         self.assertEqual(result["reason_code"], "ELIGIBILITY_CONFIRMED")
 
+    def test_productive_dev_workhorse_path_allows_in_scope_task_class(self) -> None:
+        result = eligibility.evaluate_productive_dev_workhorse_path(
+            path_id="productive_dev_workhorse_path",
+            task_class="test_result_triage_review",
+            estimated_or_cost=0.02,
+        )
+
+        self.assertEqual(result["eligibility_result"], "OR_ALLOWED")
+        self.assertEqual(result["reason_code"], "ELIGIBILITY_CONFIRMED")
+        self.assertEqual(result["budget_profile"], "test_result_triage_review")
+        self.assertEqual(result["per_call_cap_usd"], 0.03)
+
+    def test_productive_dev_workhorse_path_rejects_existing_workflow_outside_path(self) -> None:
+        result = eligibility.evaluate_productive_dev_workhorse_path(
+            path_id="janus-test-pipeline",
+            task_class="test_result_triage_review",
+            estimated_or_cost=0.02,
+        )
+
+        self.assertEqual(result["eligibility_result"], "OR_NOT_ELIGIBLE")
+        self.assertEqual(result["reason_code"], "PATH_NOT_ALLOWED")
+
+    def test_productive_dev_workhorse_path_rejects_non_allowed_task_class(self) -> None:
+        result = eligibility.evaluate_productive_dev_workhorse_path(
+            path_id="productive_dev_workhorse_path",
+            task_class="documentation_draft",
+            estimated_or_cost=0.005,
+        )
+
+        self.assertEqual(result["eligibility_result"], "OR_NOT_ELIGIBLE")
+        self.assertEqual(result["reason_code"], "TASK_CLASS_NOT_ALLOWED")
+
+    def test_productive_dev_workhorse_path_rejects_missing_budget_profile(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            config_path = Path(temp_dir) / "eligibility.json"
+            payload = eligibility.load_json(eligibility.DEFAULT_ELIGIBILITY_CONFIG_PATH)
+            payload["productive_dev_workhorse_path"]["allowed_task_classes"]["test_result_triage_review"] = {
+                "budget_profile": "missing_profile"
+            }
+            config_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+            result = eligibility.evaluate_productive_dev_workhorse_path(
+                path_id="productive_dev_workhorse_path",
+                task_class="test_result_triage_review",
+                estimated_or_cost=0.02,
+                config_path=config_path,
+            )
+
+        self.assertEqual(result["eligibility_result"], "OR_NOT_ELIGIBLE")
+        self.assertEqual(result["reason_code"], "BUDGET_PROFILE_MISSING")
+
+    def test_productive_dev_workhorse_path_rejects_missing_estimated_cost(self) -> None:
+        result = eligibility.evaluate_productive_dev_workhorse_path(
+            path_id="productive_dev_workhorse_path",
+            task_class="execution_patch_candidate",
+            estimated_or_cost=None,
+        )
+
+        self.assertEqual(result["eligibility_result"], "OR_NOT_ELIGIBLE")
+        self.assertEqual(result["reason_code"], "ESTIMATED_COST_MISSING")
+        self.assertEqual(result["budget_profile"], "execution_patch_candidate")
+
+    def test_productive_dev_workhorse_path_rejects_cost_above_per_call_cap(self) -> None:
+        result = eligibility.evaluate_productive_dev_workhorse_path(
+            path_id="productive_dev_workhorse_path",
+            task_class="execution_patch_candidate",
+            estimated_or_cost=0.051,
+        )
+
+        self.assertEqual(result["eligibility_result"], "OR_NOT_ELIGIBLE")
+        self.assertEqual(result["reason_code"], "PER_CALL_CAP_EXCEEDED")
+        self.assertEqual(result["per_call_cap_usd"], 0.05)
+
+    def test_productive_dev_workhorse_path_rejects_negative_estimated_cost(self) -> None:
+        result = eligibility.evaluate_productive_dev_workhorse_path(
+            path_id="productive_dev_workhorse_path",
+            task_class="execution_patch_candidate",
+            estimated_or_cost=-0.01,
+        )
+
+        self.assertEqual(result["eligibility_result"], "OR_NOT_ELIGIBLE")
+        self.assertEqual(result["reason_code"], "ESTIMATED_COST_INVALID")
+        self.assertEqual(result["budget_profile"], "execution_patch_candidate")
+
+    def test_productive_dev_workhorse_path_rejects_nan_estimated_cost(self) -> None:
+        result = eligibility.evaluate_productive_dev_workhorse_path(
+            path_id="productive_dev_workhorse_path",
+            task_class="execution_patch_candidate",
+            estimated_or_cost=float("nan"),
+        )
+
+        self.assertEqual(result["eligibility_result"], "OR_NOT_ELIGIBLE")
+        self.assertEqual(result["reason_code"], "ESTIMATED_COST_INVALID")
+        self.assertEqual(result["budget_profile"], "execution_patch_candidate")
+
+    def test_productive_dev_workhorse_path_rejects_infinite_estimated_cost(self) -> None:
+        result = eligibility.evaluate_productive_dev_workhorse_path(
+            path_id="productive_dev_workhorse_path",
+            task_class="execution_patch_candidate",
+            estimated_or_cost=float("inf"),
+        )
+
+        self.assertEqual(result["eligibility_result"], "OR_NOT_ELIGIBLE")
+        self.assertEqual(result["reason_code"], "ESTIMATED_COST_INVALID")
+        self.assertEqual(result["budget_profile"], "execution_patch_candidate")
+
+    def test_productive_dev_workhorse_path_rejects_non_numeric_estimated_cost(self) -> None:
+        result = eligibility.evaluate_productive_dev_workhorse_path(
+            path_id="productive_dev_workhorse_path",
+            task_class="execution_patch_candidate",
+            estimated_or_cost="not-a-number",
+        )
+
+        self.assertEqual(result["eligibility_result"], "OR_NOT_ELIGIBLE")
+        self.assertEqual(result["reason_code"], "ESTIMATED_COST_INVALID")
+        self.assertEqual(result["budget_profile"], "execution_patch_candidate")
+
     def test_doc_skill_allowed_returns_or_allowed(self) -> None:
         result = eligibility.evaluate_doc_skill_fixed_or(
             skill_id="DOC-SKILL-001",

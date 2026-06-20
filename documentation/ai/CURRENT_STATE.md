@@ -1,6 +1,74 @@
 ﻿# CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-06-21`, the documentation sync for `TASK-SPEC22.1` is complete with canonical state `PASS`. The first productive Spec-22 slice is now reflected in the central task registry, the compact project-state snapshot, and the parent task artifact while Spec 22 itself remains intentionally open.
+
+Current goal: preserve the sealed `TASK-SPEC22.1` boundary contract as the new canonical documentation state and keep `TASK-SPEC22.2` through `TASK-SPEC22.4` paused until their own bound pipeline steps are explicitly released.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- classified the sync as `DOC-SKILL-011` and kept it local-only under `5.4` medium after the completed final audit
+- recorded `TASK-SPEC22.1` as the first closed Spec-22 slice in the central registry without implying operator gate, delegated runtime, acceptance, or telemetry completion
+- updated the compact project-state summary so the new dedicated `productive_dev_workhorse_path` boundary and the fail-closed malformed-cost hardening are visible as the current sealed Spec-22 baseline
+- added the parent-task closeout note while explicitly preserving that `TASK-SPEC22.2` through `TASK-SPEC22.4` remain open
+
+Changed files:
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `documentation/tasks/TASK-SPEC22_operator_gesteuerter_or_arbeitspferd_produktivmodus_fuer_dev_arbeit.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-documentation-update\scripts\validate_doc_update.py --repo C:\KI\Janus-Projekt --marker TASK-SPEC22.1 --require documentation/01_CENTRAL_TASK_REGISTRY.md --require PROJECT_STATE.md --require documentation/tasks/TASK-SPEC22_operator_gesteuerter_or_arbeitspferd_produktivmodus_fuer_dev_arbeit.md`: PASS
+- scoped `git diff --check`: PASS
+- staged-only guard: PASS
+
+Open risks:
+- `TASK-SPEC22.1` remains a contract-only foundation; it still does not expose a visible operator choice, invoke OR, delegate a change, accept a result, or record runtime telemetry
+- `TASK-SPEC22.2` through `TASK-SPEC22.4` remain intentionally not started
+- the repo worktree remains mixed outside this bounded slice and was intentionally left untouched
+- no commit or push has happened for this documentation block, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: review the task-sharp `TASK-SPEC22.1` documentation sync as a narrow foundation only and keep later productive OR slices paused.
+
+Next recommended step for Codex: use `janus-git-governance` with `5.4` medium if the user wants a scoped checkpoint commit for this sealed `TASK-SPEC22.1` sync; otherwise the next implementation step is later `janus-task-breakdown` for `TASK-SPEC22.2` only after explicit approval.
+
+Last updated: `2026-06-21 00:35:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-20`, a new feature spec for the next OR expansion stage is generated with canonical state `HANDOFF`. The new artifact defines an operator-selected productive OR workhorse mode for bounded Dev work, with bounded write capability allowed but Codex retained as the final scope, validation, and accept-or-reject owner.
+
+Current goal: move from the completed Spec-21 bounded pilot to a formally reviewed next-stage feature spec for productive operator-chosen OR Dev work.
+
+Active phase: `janus-spec-generator`, canonical state `HANDOFF`.
+
+Last Codex work:
+- routed the next major workstream away from contact-memory follow-ups and back onto productive OR Dev-workflow expansion
+- locked the product decisions for operator-controlled OR choice, Dev-only first scope, bounded write allowance, and permanent Codex final control
+- generated a new Diamantstandard feature spec under `documentation/SPEC/` for the productive OR workhorse mode rather than starting implementation directly
+
+Changed files:
+- `documentation/SPEC/22_operator_gesteuerter_or_arbeitspferd_produktivmodus_fuer_dev_arbeit.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- spec heading and routing-block structure spot-check via `rg`: PASS
+
+Open risks:
+- this is only the new feature-spec stage; no implementation, routing activation, or production enablement has started yet
+- the broad mixed worktree outside this new spec remains intentionally untouched
+- no new commit or push has happened for this spec-generation block, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: review the new productive OR Dev-workflow spec as a separate expansion stage from Spec 21 and keep the operator-choice plus Codex-final-control boundaries intact.
+
+Next recommended step for Codex: use `janus-spec-review` with `5.4` high on `documentation/SPEC/22_operator_gesteuerter_or_arbeitspferd_produktivmodus_fuer_dev_arbeit.md`.
+
+Last updated: `2026-06-20 22:58:21 +02:00`.
+
+## Current Snapshot Update
 As of `2026-06-20`, the documentation closeout for `TASK-SPEC21.4` is synchronized with canonical state `PASS`. The fourth and final bound Spec-21 slice is now reflected in the central registry, project-state snapshot, and parent task artifact, and Spec 21 is fully closed in `documentation/SPEC/Spec Done/`.
 
 Current goal: preserve the completed Spec-21 pilot closeout as the new canonical documentation state and hand off only to optional git checkpointing.

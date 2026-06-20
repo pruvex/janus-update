@@ -137,5 +137,21 @@
         "max_evidence_snippets": 3
       }
     }
+  },
+  "productive_dev_workhorse_path": {
+    "status": "CONTRACT_ONLY",
+    "scope_note": "Spec 22 boundary contract. Only one dedicated productive_dev_workhorse_path may offer bounded productive OR entry, and only for the explicitly allowed task classes with budget and estimate prerequisites satisfied.",
+    "allowed_path_id": "productive_dev_workhorse_path",
+    "allowed_task_classes": {
+      "test_result_triage_review": {
+        "budget_profile": "test_result_triage_review"
+      },
+      "execution_patch_candidate": {
+        "budget_profile": "execution_patch_candidate"
+      },
+      "execution_write_apply_candidate": {
+        "budget_profile": "execution_write_apply_candidate"
+      }
+    }
   }
 }

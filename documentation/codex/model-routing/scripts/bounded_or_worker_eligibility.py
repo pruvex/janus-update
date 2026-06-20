@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import math
 from pathlib import Path
 from typing import Any
 
@@ -13,14 +14,43 @@ MODEL_ROUTING_DIR = REPO_ROOT / "documentation" / "codex" / "model-routing"
 DEFAULT_ELIGIBILITY_CONFIG_PATH = (
     MODEL_ROUTING_DIR / "config" / "bounded_or_worker_eligibility_2026-06-17.json"
 )
+DEFAULT_BUDGET_PROFILE_CONFIG_PATH = (
+    MODEL_ROUTING_DIR / "config" / "or_task_budget_profiles_2026-06-19.json"
+)
 
 
 def load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8-sig"))
 
 
+def _load_budget_profile(profile_name: str, config_path: Path) -> dict[str, Any] | None:
+    config = load_json(config_path)
+    return (config.get("profiles") or {}).get(profile_name)
+
+
 def norm(text: str) -> str:
     return text.strip().lower()
+
+
+def _invalid_estimated_cost_result(
+    *,
+    subject_id: str,
+    budget_profile_name: str,
+    budget_profile: dict[str, Any],
+    message: str,
+) -> dict[str, Any]:
+    return {
+        **_base_result(
+            result="OR_NOT_ELIGIBLE",
+            subject_type="productive_dev_workhorse_path",
+            subject_id=subject_id,
+            reason_code="ESTIMATED_COST_INVALID",
+            message=message,
+        ),
+        "budget_profile": budget_profile_name,
+        "per_call_cap_usd": float(budget_profile["per_call_cap_usd"]),
+        "session_cap_usd": float(budget_profile["session_cap_usd"]),
+    }
 
 
 def _base_result(
@@ -254,3 +284,119 @@ def evaluate_assistive_or_workhorse_pilot(
         message="Assistive OR workhorse pilot eligibility and request allowlist validation passed.",
         evidence_status="PILOT_SCOPE_ALLOWED",
     )
+
+
+def evaluate_productive_dev_workhorse_path(
+    *,
+    path_id: str,
+    task_class: str,
+    estimated_or_cost: float | int | None,
+    config_path: Path = DEFAULT_ELIGIBILITY_CONFIG_PATH,
+    budget_config_path: Path = DEFAULT_BUDGET_PROFILE_CONFIG_PATH,
+) -> dict[str, Any]:
+    config = load_json(config_path)["productive_dev_workhorse_path"]
+    allowed_path_id = str(config["allowed_path_id"])
+    subject_id = f"{path_id}:{task_class}"
+
+    if norm(path_id) != norm(allowed_path_id):
+        return _base_result(
+            result="OR_NOT_ELIGIBLE",
+            subject_type="productive_dev_workhorse_path",
+            subject_id=subject_id,
+            reason_code="PATH_NOT_ALLOWED",
+            message="Workflow is outside the first dedicated productive Dev-workhorse path.",
+        )
+
+    task_entry = (config.get("allowed_task_classes") or {}).get(task_class)
+    if task_entry is None:
+        return _base_result(
+            result="OR_NOT_ELIGIBLE",
+            subject_type="productive_dev_workhorse_path",
+            subject_id=subject_id,
+            reason_code="TASK_CLASS_NOT_ALLOWED",
+            message="Task class is outside the approved productive Dev-workhorse boundary contract.",
+        )
+
+    budget_profile_name = str(task_entry.get("budget_profile") or "").strip()
+    if not budget_profile_name:
+        return _base_result(
+            result="OR_NOT_ELIGIBLE",
+            subject_type="productive_dev_workhorse_path",
+            subject_id=subject_id,
+            reason_code="BUDGET_PROFILE_MISSING",
+            message="No budget profile is configured for this productive Dev-workhorse task class.",
+        )
+
+    budget_profile = _load_budget_profile(budget_profile_name, budget_config_path)
+    if budget_profile is None:
+        return _base_result(
+            result="OR_NOT_ELIGIBLE",
+            subject_type="productive_dev_workhorse_path",
+            subject_id=subject_id,
+            reason_code="BUDGET_PROFILE_MISSING",
+            message="Referenced budget profile is missing for this productive Dev-workhorse task class.",
+        )
+
+    if estimated_or_cost is None:
+        return {
+            **_base_result(
+                result="OR_NOT_ELIGIBLE",
+                subject_type="productive_dev_workhorse_path",
+                subject_id=subject_id,
+                reason_code="ESTIMATED_COST_MISSING",
+                message="Estimated OR cost is required before offering the productive Dev-workhorse gate.",
+            ),
+            "budget_profile": budget_profile_name,
+            "per_call_cap_usd": float(budget_profile["per_call_cap_usd"]),
+            "session_cap_usd": float(budget_profile["session_cap_usd"]),
+        }
+
+    try:
+        estimated = float(estimated_or_cost)
+    except (TypeError, ValueError):
+        return _invalid_estimated_cost_result(
+            subject_id=subject_id,
+            budget_profile_name=budget_profile_name,
+            budget_profile=budget_profile,
+            message="Estimated OR cost must be numeric before offering the productive Dev-workhorse gate.",
+        )
+
+    if not math.isfinite(estimated) or estimated < 0:
+        return _invalid_estimated_cost_result(
+            subject_id=subject_id,
+            budget_profile_name=budget_profile_name,
+            budget_profile=budget_profile,
+            message="Estimated OR cost must be finite and non-negative before offering the productive Dev-workhorse gate.",
+        )
+
+    per_call_cap = float(budget_profile["per_call_cap_usd"])
+    session_cap = float(budget_profile["session_cap_usd"])
+    if estimated > per_call_cap:
+        return {
+            **_base_result(
+                result="OR_NOT_ELIGIBLE",
+                subject_type="productive_dev_workhorse_path",
+                subject_id=subject_id,
+                reason_code="PER_CALL_CAP_EXCEEDED",
+                message="Estimated OR cost exceeds the productive Dev-workhorse per-call cap before the gate can be offered.",
+            ),
+            "budget_profile": budget_profile_name,
+            "per_call_cap_usd": per_call_cap,
+            "session_cap_usd": session_cap,
+            "estimated_or_cost": estimated,
+        }
+
+    return {
+        **_base_result(
+            result="OR_ALLOWED",
+            subject_type="productive_dev_workhorse_path",
+            subject_id=subject_id,
+            reason_code="ELIGIBILITY_CONFIRMED",
+            message="Productive Dev-workhorse path eligibility confirmed for this task class.",
+            evidence_status="CONTRACT_ONLY_ALLOWED",
+        ),
+        "budget_profile": budget_profile_name,
+        "per_call_cap_usd": per_call_cap,
+        "session_cap_usd": session_cap,
+        "estimated_or_cost": estimated,
+    }

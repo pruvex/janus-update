@@ -4,6 +4,19 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-SPEC22.1 - Define the dedicated Dev-workhorse path contract and keep all other workflows Codex-only
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-SPEC22.1_final_audit.md` (PASS)
+- **Spec**: `documentation/SPEC/22_operator_gesteuerter_or_arbeitspferd_produktivmodus_fuer_dev_arbeit.md`
+- **Parent Task**: `documentation/tasks/TASK-SPEC22_operator_gesteuerter_or_arbeitspferd_produktivmodus_fuer_dev_arbeit.md`
+- **Task Breakdown**: `documentation/tasks/TASK-SPEC22.1_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-SPEC22.1_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-SPEC22.1_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-SPEC22.1_AUDIT_PACKAGE.md`
+- **Validation**: `TASK-SPEC22.1` schliesst den ersten eng gebundenen Spec-22-Slice als reinen Boundary-Contract fuer den neuen `productive_dev_workhorse_path` ab. Nur die drei explizit allowlisteten bounded Dev-Klassen koennen innerhalb dieses neuen Pfads ueberhaupt OR-eligible werden; alle bestehenden Janus- und Codex-Workflows ausserhalb dieses Pfads bleiben deterministisch Codex-only oder vor dem OR-Gate blockiert. Der Re-Audit-Fix haertet die Kostengrenze zusaetzlich gegen negative, nicht-finite und nicht-numerische `estimated_or_cost`-Werte, sodass fehlerhafte Kostenwerte weder den Gate-Pfad umgehen noch einen unkontrollierten Crash ausloesen. Final Audit PASS mit fokussierter Unit-, Compile-, Probe- und Validator-Evidenz. Spec 22 bleibt dabei bewusst offen, weil `TASK-SPEC22.2` bis `TASK-SPEC22.4` weiterhin ausstehen.
+- **Changed Files**: `documentation/codex/model-routing/config/bounded_or_worker_eligibility_2026-06-17.json`, `documentation/codex/model-routing/scripts/bounded_or_worker_eligibility.py`, `documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py`, `documentation/tasks/TASK-SPEC22.1_execution_result.md`, `documentation/tasks/TASK-SPEC22.1_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC22.1_final_audit.md`.
+
 ### TASK-SPEC21.4 - Integrate the bounded OR worker path into janus-debug and janus-test-pipeline without widening the pilot scope
 
 - **Status**: DONE
