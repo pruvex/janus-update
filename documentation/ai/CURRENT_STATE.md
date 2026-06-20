@@ -4,6 +4,110 @@
 Janus / Pruki Codex Diamond Workflow
 
 ## Current Snapshot Update
+As of `2026-06-20 00:08 +02:00`, der bounded write-capable Sidecar-Infrastruktur-Slice ist jetzt als eigener Commit auf `backup/develop` gesichert (`bc2759b71`). Dieser Checkpoint umfasst die write-capable Sidecar-/Structured-Action-Infrastruktur, Runner, Schema, Tests sowie die kompakten Plan- und Ergebnisnotizen. Der verbleibende Worktree ist weiterhin bewusst offen und getrennt: darunter `CURRENT_STATE.md`, `SKILL_USAGE_LOG.md`, das Dev-Runbook, Backend-Produktarbeit, GPT54-/Direct-OR-Evidenz, Frontend-/Dashboard-Reste und weitere Test-/Task-Artefakte. Es wurde nach diesem Infrastruktur-Checkpoint noch kein weiterer Commit und kein weiterer Push ausgefuehrt; `backup` enthaelt also den neuen Sidecar-Infrastruktur-Stand, aber noch nicht den anschliessenden Governance-/State-Sync.
+
+## Git Governance Override
+Timestamp: `2026-06-20 00:08 +02:00`
+
+Current goal override: nach dem erfolgreichen Sidecar-Infrastruktur-Checkpoint den kleinen Governance-/State-Sync separat nachziehen und den uebrigen Misch-Worktree weiter sauber getrennt halten.
+
+Active phase override: `janus-git-governance`, canonical state `HANDOFF`.
+
+Last Codex work:
+- hat den bounded write-capable Sidecar-Infrastruktur-Slice als separaten Commit erstellt
+- hat diesen Commit erfolgreich nach `backup/develop` gepusht
+- haelt `CURRENT_STATE`, `SKILL_USAGE_LOG` und das Dev-Runbook absichtlich fuer einen kleinen Nachzieh-Commit offen
+- laesst Backend-, GPT54-/Direct-OR-, Frontend- und sonstige Evidenzreste weiterhin ausserhalb dieses Governance-Syncs
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md`
+
+Checks / validation performed:
+- `python -m pytest -q documentation/codex/model-routing/tests/test_bounded_write_candidate_artifact_capture.py documentation/codex/model-routing/tests/test_bounded_write_candidate_entry_gate.py documentation/codex/model-routing/tests/test_bounded_write_candidate_validation_acceptance.py`: PASS (`11 passed`)
+- `git diff --cached --check` for sidecar infrastructure slice: PASS
+- `git push backup develop`: PASS (`bc2759b71`)
+
+Open risks:
+- Der verbleibende offene Worktree ist weiterhin gemischt und nicht als Sammelcommit geeignet.
+- `CURRENT_STATE`, `SKILL_USAGE_LOG` und das Runbook sind noch lokal modifiziert und noch nicht separat gesichert.
+- Backend-Produktarbeit und weitere OR-/Evidenzblöcke duerfen nicht versehentlich in den Governance-Sync rutschen.
+
+Next recommended step for ChatGPT: den gepushten Sidecar-Infrastruktur-Checkpoint als gesichert behandeln und den verbleibenden Rest weiter nur in kleinen, thematisch klaren Blöcken reviewen.
+
+Next recommended step for Codex: jetzt den kleinen Governance-/State-Sync committen und pushen; danach einen neuen separaten Slice fuer Backend oder GPT54-/Direct-OR-Reste vorbereiten.
+
+## Current Snapshot Update
+As of `2026-06-19 23:18 +02:00`, der verbliebene Dev-/OR-Mischbestand ist erstmals in einen wirklich commit-faehigen OR-Kernlogik-Teilslice zerlegt. Aktuell ist genau die shared bounded-worker/gate/dispatcher-Schicht gestaged: Eligibility-, Gate-, Outcome- und Dispatcher-Helfer plus Debug-/Triage-/Doc-Skill-Operatorrunner, die zugehoerigen Worker-Configs und der passende Eligibility-Test. Direkte OpenRouter-Transport-Runner, Qwen-/DeepSeek-spezifische Live-Runner, Write-Apply-Akzeptanzlogik, Skill-Rules, Backend-Produktarbeit und sonstige Evidenz-/Run-Ordner bleiben bewusst ungestaged. Es wurde in diesem Schritt kein Commit und kein Push ausgefuehrt; `backup` enthaelt weiterhin nur den frueheren `TASK-SPEC20.1`-Checkpoint, nicht diesen neuen OR-Kernlogik-Slice.
+
+## Git Governance Override
+Timestamp: `2026-06-19 23:18 +02:00`
+
+Current goal override: den offenen Dev-/OR-Bestand in einen ersten sauberen OR-Kernlogik-Changeset-Kandidaten schneiden, ohne wieder Produkt-, Skill- oder Live-Evidenz-Arbeit zu vermischen.
+
+Active phase override: `janus-git-governance`, canonical state `HANDOFF`.
+
+Last Codex work:
+- hat den OR-/Dev-Infrastruktur-Bereich gegen Backend-, Skill- und Evidenz-Arbeit abgegrenzt
+- hat einen schmalen shared bounded-worker/gate/dispatcher-Slice in den Index genommen
+- hat bestaetigt, dass dieser Slice `git diff --check --cached`-gruen ist
+- hat direkte OR-Runner, Write-Apply-Akzeptanz und Live-Artefakte bewusst fuer spaetere separate Slices draussen gelassen
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `git add --` scoped bounded-worker/gate/dispatcher slice: PASS
+- `git diff --check --cached -- <11 bounded-worker files>`: PASS
+- `git diff --cached --name-only`: PASS
+
+Open risks:
+- Der Index enthaelt jetzt nur den ersten OR-Kernlogik-Teilslice; der restliche OR-/Dev-Bestand bleibt weiterhin offen und gemischt.
+- Direkte OpenRouter-Transport-Runner und Write-Apply-Akzeptanzlogik muessen noch in eigenen Folgeslices getrennt werden.
+- Kein Commit und kein Push in diesem Schritt; der neue staged OR-Kernlogik-Slice existiert bisher nur lokal.
+
+Next recommended step for ChatGPT: den aktuellen staged Slice als ersten bounded OR-Kernlogik-Checkpoint behandeln und die restlichen direkten OR-Runner erst danach separat weiter aufteilen.
+
+Next recommended step for Codex: entweder diesen shared bounded-worker/gate/dispatcher-Slice commitbereit machen oder direkt den naechsten separaten Direct-OR-Runner-Slice vorbereiten, aber nicht beides mischen.
+
+## Current Snapshot Update
+As of `2026-06-19 23:12 +02:00`, der separate Dev-Governance-Home-Slice `TASK-SPEC20.1` ist jetzt lokal und auf `backup/develop` gesichert (`9af72ad1b6a2fb7adb903f4074e7739b6c630fe0`). Direkt danach wurde der verbleibende Misch-Worktree erneut formal zerlegt. Der Guard meldet weiterhin sieben Buckets bei jetzt 433 Dirty Entries; der naechste sinnvolle Arbeitsblock ist kein weiterer Janus-Produkt-Checkpoint, sondern die Trennung des verbliebenen Dev-/OR-Infrastruktur-Bestands. Besonders wichtig: `skill-rules` bleiben mit Nicht-Skill-Arbeit vermischt und duerfen nicht gemeinsam mit dem grossen OR-/manual-review-Block committed werden. Es wurde in diesem Schritt kein weiterer Stage, kein weiterer Commit und kein weiterer Push ausgefuehrt; `backup` enthaelt den neuen `TASK-SPEC20.1`-Checkpoint, aber nicht den restlichen offenen Misch-Worktree.
+
+## Git Governance Override
+Timestamp: `2026-06-19 23:12 +02:00`
+
+Current goal override: nach dem erfolgreichen `TASK-SPEC20.1`-Checkpoint den verbliebenen offenen Worktree in einen naechsten belastbaren Dev-/OR-Infrastruktur-Slice ueberfuehren.
+
+Active phase override: `janus-git-governance`, canonical state `HANDOFF`.
+
+Last Codex work:
+- hat den `TASK-SPEC20.1`-Checkpoint erfolgreich auf `backup/develop` verifiziert
+- hat den verbliebenen Worktree erneut mit `git_guard.py` und `propose_changesets.py` vermessen
+- hat bestaetigt, dass der Restzustand weiterhin sieben Buckets umfasst und nicht als Sammelcommit verantwortbar ist
+- hat den naechsten sinnvollen Fokus auf Dev-/OR-Infrastruktur-Splitting statt auf weitere Janus-Produktarbeit gesetzt
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\\Users\\pruve\\.codex\\skills\\janus-git-governance\\scripts\\git_guard.py C:\\KI\\Janus-Projekt`: HANDOFF (`Dirty entries: 433`, `Changeset buckets: 7`, `skill-rules mixed with non-skill work`)
+- `python C:\\Users\\pruve\\.codex\\skills\\janus-git-governance\\scripts\\propose_changesets.py C:\\KI\\Janus-Projekt`: PASS
+- `git status --short`: PASS
+- `git push backup develop`: PASS (`9af72ad1b6a2fb7adb903f4074e7739b6c630fe0`)
+
+Open risks:
+- Der verbleibende offene Worktree ist weiterhin stark gemischt; ein weiterer Sammelcommit waere governance-widrig.
+- `skill-rules` muessen separat bleiben und duerfen nicht mit dem grossen `manual-review`-/OR-Block vermischt werden.
+- Mehrere Produktaenderungen im `backend`-Bucket bleiben offen und duerfen nicht stillschweigend mit Dev-/OR-Infrastruktur zusammen gesichert werden.
+
+Next recommended step for ChatGPT: den naechsten Arbeitsblock als explizite Dev-/OR-Infrastruktur-Sortierung behandeln und nicht als Fortsetzung von `TASK-SPEC20.1`.
+
+Next recommended step for Codex: zuerst einen schmalen Infrastruktur-Slice fuer OR-/Runner-/model-routing-Arbeit vorbereiten oder alternativ die `skill-rules` bewusst separat herausloesen, bevor an Produkt-Backend oder Frontend weitergearbeitet wird.
+
+## Current Snapshot Update
 As of `2026-06-19 23:06 +02:00`, der nachgelagerte `janus-git-governance`-Check fuer den abgeschlossenen `TASK-SPEC20.1`-Slice ist inhaltlich fertig, aber als Checkpoint aktuell blockiert. Der Guard meldet einen stark gemischten Worktree auf `develop` mit 446 Dirty Entries in sieben Buckets (`backend`, `codex-governance`, `dashboard-backlog-sync`, `frontend`, `generated-test-artifacts`, `manual-review`, `skill-rules`). Besonders wichtig: `skill-rules` sind mit Nicht-Skill-Arbeit vermischt, daher waere ein pauschaler Commit im Moment governance-widrig. Es wurde bewusst kein Stage, kein Commit und kein Push ausgefuehrt; ein Remote wie GitHub oder `backup` muss diesen neuesten Governance-Befund noch nicht enthalten.
 
 ## Git Governance Override
