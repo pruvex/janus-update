@@ -69,7 +69,19 @@ Prefer small, coherent commits:
 - no unrelated formatting or cleanup
 - no secret files, local DBs, large binaries, build output, or private logs unless explicitly required and reviewed
 
-Lean mode for small validated Janus work is allowed:
+## Lean Delivery Mode (Default)
+
+Use Lean Delivery Mode for normal Janus work. The objective is reliable recovery with minimal Git overhead, not a commit for every intermediate artifact.
+
+- one completed delivery block gets one commit: implementation, directly related tests, required evidence, closeout documentation, `CURRENT_STATE.md`, and `SKILL_USAGE_LOG.md` belong together
+- do not create separate commits merely because code, tests, telemetry, task artifacts, or documentation live in different folders
+- do not create a checkpoint after each investigation, fixture run, planning note, or status update; checkpoint after the bounded work item has reached its intended validation boundary
+- after the requested block is committed and optionally pushed, stop by default; do not reopen old worktree debris for sorting, cleanup, or follow-up commits
+- keep unrelated pre-existing changes parked. A dirty worktree is context, not an automatic cleanup task.
+- use strict multi-commit splitting only for genuinely independent product changes, a dedicated skill-rule change, release-only work, or a risk boundary that needs independent rollback
+- a dedicated governance skill change may include its matching `CURRENT_STATE.md` and `SKILL_USAGE_LOG.md` update as one governance commit; it must not include product work
+
+Lean mode for small validated Janus work means:
 
 - one small `BACKLOG-XXX` item may stay in one commit even if it spans product code, related tests, task/precheck/execution/final-audit artifacts, backlog marker updates, dashboard sync, registry/project-state/changelog updates, `AUDIT_PACKAGE.md`, and `documentation/codex/SKILL_USAGE_LOG.md`
 - do not split only because code, audit evidence, backlog sync, and closeout docs land in different folders
@@ -113,15 +125,18 @@ For Backlog-linked work, include `BACKLOG-XXX` in the summary or body.
 
 ## Safe Commands
 
-Before a commit, run:
+For a clearly bound Lean Delivery block, run only the targeted safety checks:
 
 ```powershell
-python C:\Users\pruve\.codex\skills\janus-git-governance\scripts\git_guard.py C:\KI\Janus-Projekt
 git status --short
-git diff --check
+git add -- <bound paths>
+git diff --cached --check
+git diff --cached --name-only
 ```
 
-Then propose an explicit staging plan. Use pathspecs, not `git add .`, unless the entire dirty tree has been reviewed and belongs to one changeset.
+Use pathspecs, not `git add .`, unless the entire dirty tree has been reviewed and belongs to one changeset. State the bound paths once, then keep the operator summary short.
+
+Run the full-worktree guard and broad diff checks only when the scope is unclear, the first commit in a long-running mixed worktree is being selected, a release or independent audit is imminent, or a risky/refactoring change crosses multiple product areas. Do not run broad archaeology repeatedly for an already bound and validated work item.
 If the actor or chat boundary changes, include exactly one compact fenced `text` handoff block before any Git action plan.
 
 Treat the guard as a coherence check, not a mechanical bucket counter:

@@ -1,5 +1,37 @@
 ﻿# CURRENT_STATE
 
+## Current Snapshot Update
+As of `2026-06-20`, Janus Git governance now uses Lean Delivery Mode as the default for all normal Janus work. One completed, validated work block is committed as one coherent unit with its code, tests, required evidence, closeout documentation, `CURRENT_STATE.md`, and `SKILL_USAGE_LOG.md`. Intermediate notes, fixture runs, and folder boundaries do not create extra commits. Full-worktree guard archaeology is reserved for unclear mixed scope, release, independent audit, or cross-area risk.
+
+Current goal: make normal Janus delivery recoverable without letting Git administration dominate implementation time.
+
+Active phase: `janus-git-governance`, canonical state `PASS`.
+
+Last Codex work:
+- strengthened the versioned and installed `janus-git-governance` skill with Lean Delivery Mode
+- reduced normal pre-commit validation to targeted staged-only checks for an already bound work item
+- aligned the pre-commit guard so a governance skill change can include its own state and usage record without allowing product scope
+- retained strict full-worktree checks for mixed, release, audit, and higher-risk situations
+
+Changed files:
+- `documentation/codex/skills/janus-git-governance/SKILL.md`
+- `documentation/codex/skills/janus-git-governance/scripts/git_guard.py`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- versioned skill source read: PASS
+- installed skill copy read: PASS
+- full-worktree Git guard used once to confirm the current mixed baseline: PASS (`267` dirty entries across `5` buckets)
+
+Open risks:
+- the current worktree remains mixed and must not be converted into a catch-all commit.
+- the new Lean Delivery Mode must be used only with a declared bounded work item; it is not permission to stage unrelated changes.
+
+Next recommended step for ChatGPT: treat normal Janus work as one bounded delivery block and avoid asking for documentation-only checkpoint commits.
+
+Next recommended step for Codex: apply Lean Delivery Mode to the next selected coherent work block, then create at most one commit and one optional backup push when explicitly approved.
+
 ## Project
 Janus / Pruki Codex Diamond Workflow
 

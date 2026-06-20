@@ -26,7 +26,7 @@ def classify_bucket(path_text):
         path.startswith("scripts/git-hooks/")
         or path in {"scripts/save.ps1", "scripts/verify-codex-dev-environment.ps1"}
         or path.startswith("documentation/codex/CODEX_")
-        or path == "documentation/codex/SKILL_USAGE_LOG.md"
+        or path in {"documentation/codex/SKILL_USAGE_LOG.md", "documentation/ai/CURRENT_STATE.md"}
     ):
         return "codex-governance"
     if path.startswith("frontend/"):
@@ -58,7 +58,9 @@ def evaluate_changeset(buckets, markers):
     if not active_buckets:
         return active_buckets, active_markers, None
 
-    if "skill-rules" in active_set and len(active_set) > 1:
+    # A governance skill change needs its own state and usage record. Treat that
+    # narrow trio as one Lean Delivery block, but keep all product scope separate.
+    if "skill-rules" in active_set and not active_set <= {"skill-rules", "codex-governance"}:
         return (
             active_buckets,
             active_markers,
