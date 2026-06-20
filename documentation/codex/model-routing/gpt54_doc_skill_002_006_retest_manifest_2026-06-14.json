@@ -1,0 +1,28 @@
+{
+  "workflow_id": "GPT54-DOC-SKILL-002-006-RETEST-001",
+  "description": "Narrow four-call GPT-5.4 retest for DOC-SKILL-002 and DOC-SKILL-006 with prompt-contract repair and skill-specific max_tokens overrides.",
+  "skills": [
+    "DOC-SKILL-002",
+    "DOC-SKILL-006"
+  ],
+  "models": [
+    "deepseek/deepseek-v4-flash",
+    "qwen/qwen3.5-flash-02-23"
+  ],
+  "skill_overrides": {
+    "DOC-SKILL-002": {
+      "prompt_file": "prompt_retest_v2_2026-06-14.md",
+      "max_tokens": 1400
+    },
+    "DOC-SKILL-006": {
+      "prompt_file": "prompt_retest_v2_2026-06-14.md",
+      "max_tokens": 2200
+    }
+  },
+  "per_call_cap_usd": 0.01,
+  "total_cap_usd": 0.04,
+  "notes": {
+    "DOC-SKILL-002": "Prompt-precision retest. Budget increase is modest.",
+    "DOC-SKILL-006": "Structure plus completion-budget retest. Another finish_reason=length is not acceptable evidence."
+  }
+}

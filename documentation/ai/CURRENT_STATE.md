@@ -1,7 +1,39 @@
 ﻿# CURRENT_STATE
 
 ## Current Snapshot Update
-As of `2026-06-20`, Janus Git governance now uses Lean Delivery Mode as the default for all normal Janus work. One completed, validated work block is committed as one coherent unit with its code, tests, required evidence, closeout documentation, `CURRENT_STATE.md`, and `SKILL_USAGE_LOG.md`. Intermediate notes, fixture runs, and folder boundaries do not create extra commits. Full-worktree guard archaeology is reserved for unclear mixed scope, release, independent audit, or cross-area risk.
+As of `2026-06-20`, the untracked GPT-5.4 documentation-skill OR evaluation bundle has been checked as one Lean Delivery candidate. Its 26 compact plans, results, classifications, shortlists, CSV, and telemetry JSONL files plus three small reproducibility scripts are internally consistent; all JSONL files parse and all scripts compile. The 327 raw file-first run artifacts (`~694 KB`) remain intentionally local because the compact telemetry and result notes are sufficient commit evidence and raw request/response logs are not needed in the repository.
+
+Current goal: preserve the bounded GPT-5.4 OR evaluation evidence as one compact documentation commit without pulling raw captures or unrelated worktree changes into Git.
+
+Active phase: `janus-git-governance`, canonical state `HANDOFF`.
+
+Last Codex work:
+- verified the GPT-5.4 batch result and classification notes
+- parsed all GPT-5.4 telemetry JSONL files successfully
+- compiled the three GPT-5.4 evaluation scripts successfully
+- selected the compact evidence set and excluded raw run directories from the proposed commit
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- GPT-5.4 5-model result/classification reread: PASS
+- telemetry JSONL parse: PASS (`7` files)
+- compact artifact inventory: PASS (`29` files including `3` scripts)
+- GPT-5.4 script compile: PASS
+- raw run artifact review: PASS (`327` files intentionally excluded)
+
+Open risks:
+- the GPT-5.4 bundle remains evidence only; it does not enable production routing or change the canonical routing table.
+- raw response captures remain local and must not be staged without a specific review need.
+
+Next recommended step for ChatGPT: approve or decline the one compact GPT-5.4 evidence commit.
+
+Next recommended step for Codex: if explicitly approved, stage the 26 compact GPT-5.4 artifacts plus this state/log update, run staged-only checks, then create one backup commit and push.
+
+## Lean Delivery Policy
+One completed, validated work block is committed as one coherent unit with its code, tests, required evidence, closeout documentation, `CURRENT_STATE.md`, and `SKILL_USAGE_LOG.md`. Intermediate notes, fixture runs, and folder boundaries do not create extra commits. Full-worktree guard archaeology is reserved for unclear mixed scope, release, independent audit, or cross-area risk.
 
 Current goal: make normal Janus delivery recoverable without letting Git administration dominate implementation time.
 
