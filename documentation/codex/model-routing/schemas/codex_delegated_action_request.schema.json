@@ -1,0 +1,280 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://janus.local/schemas/codex_delegated_action_request.schema.json",
+  "title": "Codex Delegated Action Request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "workflow_id",
+    "skill_id",
+    "action_type",
+    "summary",
+    "requires_codex_review",
+    "non_goals"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "codex_delegated_action_request.v1"
+    },
+    "workflow_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "skill_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "action_type": {
+      "type": "string",
+      "enum": [
+        "draft_markdown",
+        "propose_patch",
+        "run_generator",
+        "run_validator",
+        "summarize_results"
+      ]
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "requires_codex_review": {
+      "type": "boolean",
+      "const": true
+    },
+    "non_goals": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "action_payload": {
+      "type": "object"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "action_type": {
+            "const": "draft_markdown"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "action_payload": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "format",
+              "content"
+            ],
+            "properties": {
+              "format": {
+                "type": "string",
+                "enum": [
+                  "markdown"
+                ]
+              },
+              "content": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "required": [
+          "action_payload"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "action_type": {
+            "const": "propose_patch"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "action_payload": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "patch_format",
+              "allowed_files",
+              "patch_text"
+            ],
+            "properties": {
+              "patch_format": {
+                "type": "string",
+                "enum": [
+                  "unified_diff"
+                ]
+              },
+              "allowed_files": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "patch_text": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "required": [
+          "action_payload"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "action_type": {
+            "const": "run_generator"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "action_payload": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "generator_id",
+              "inputs",
+              "declared_output_artifacts"
+            ],
+            "properties": {
+              "generator_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "inputs": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": [
+                    "string",
+                    "number",
+                    "integer",
+                    "boolean"
+                  ]
+                }
+              },
+              "declared_output_artifacts": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "action_payload"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "action_type": {
+            "const": "run_validator"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "action_payload": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "validator_id",
+              "inputs"
+            ],
+            "properties": {
+              "validator_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "inputs": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": [
+                    "string",
+                    "number",
+                    "integer",
+                    "boolean"
+                  ]
+                }
+              },
+              "declared_output_artifacts": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "action_payload"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "action_type": {
+            "const": "summarize_results"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "action_payload": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "source_artifacts",
+              "summary_format"
+            ],
+            "properties": {
+              "source_artifacts": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "summary_format": {
+                "type": "string",
+                "enum": [
+                  "markdown",
+                  "json"
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "action_payload"
+        ]
+      }
+    }
+  ]
+}

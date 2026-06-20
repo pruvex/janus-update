@@ -19,6 +19,7 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parents[4]
 MODEL_ROUTING_DIR = REPO_ROOT / "documentation" / "codex" / "model-routing"
 SIDECAR_RUNNER_PATH = MODEL_ROUTING_DIR / "scripts" / "codex_sidecar_skill_runner.ps1"
+SIDECAR_BRIDGE_PATH = MODEL_ROUTING_DIR / "scripts" / "codex_structured_action_sidecar_bridge.py"
 DEFAULT_WORKING_DIRECTORY = REPO_ROOT
 
 
@@ -95,7 +96,7 @@ def prompt_mode_summary(
         "validation_result": "PASS",
         "operator_prompt_lines": [
             "Willst du 1 Codex das machen lassen?",
-            "Oder 2 das ueber den Sidecar laufen lassen (read-only, non-binding Draft)?",
+            "Oder 2 das ueber den bounded Delegation-Dispatcher als read-only, non-binding Draft laufen lassen?",
         ],
         "boundaries": [
             "No production routing",
@@ -164,6 +165,32 @@ def invoke_sidecar(
     return run_command(command, working_directory)
 
 
+def invoke_structured_bridge(
+    *,
+    run_directory: Path,
+    workflow_id: str,
+    task_label: str,
+) -> subprocess.CompletedProcess[str]:
+    command = [
+        "python",
+        str(SIDECAR_BRIDGE_PATH),
+        "--sidecar-run-dir",
+        str(run_directory),
+        "--workflow-id",
+        f"{workflow_id}-STRUCTURED",
+        "--skill-id",
+        "janus-documentation-update",
+        "--summary",
+        f"Bridge accepted sidecar documentation draft into structured action flow for: {task_label}",
+        "--non-goal",
+        "No direct repo authority update",
+        "--non-goal",
+        "No production routing activation",
+        "--execute",
+    ]
+    return run_command(command, REPO_ROOT)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Bounded sidecar draft runner for janus-documentation-update.")
     parser.add_argument("--task-label", required=True)
@@ -175,6 +202,7 @@ def main() -> int:
     parser.add_argument("--timeout-seconds", type=int, default=180)
     parser.add_argument("--workflow-id", default=None)
     parser.add_argument("--working-directory", type=Path, default=DEFAULT_WORKING_DIRECTORY)
+    parser.add_argument("--structured-review-flow", action="store_true")
     args = parser.parse_args()
 
     choice = map_choice(args.operator_choice)
@@ -276,12 +304,47 @@ def main() -> int:
         "last_message_path": str(last_message_path),
         "operator_result_lines": [
             "Ergebnis: Sidecar-Draft erfolgreich",
+            "Route: bounded Delegation-Dispatcher -> documentation_draft",
             "Tatsaechliche Kosten: N/A (lokaler Codex CLI Sidecar-Pfad)",
         ],
         "operator_message": (
             "Read-only sidecar draft completed. Codex App must still review and perform any binding documentation writes locally."
         ),
     }
+
+    if args.structured_review_flow:
+        bridge_result = invoke_structured_bridge(
+            run_directory=run_directory,
+            workflow_id=workflow_id,
+            task_label=args.task_label,
+        )
+        write_text(run_directory / "structured_bridge_stdout.txt", bridge_result.stdout)
+        write_text(run_directory / "structured_bridge_stderr.txt", bridge_result.stderr)
+        if bridge_result.returncode != 0:
+            result["validation_result"] = "FAIL"
+            result["final_outcome"] = "SIDECAR_DRAFT_ACCEPTED_BUT_STRUCTURED_BRIDGE_FAILED"
+            result["structured_bridge_status"] = "FAIL"
+            result["operator_message"] = (
+                "Sidecar draft was accepted, but the follow-up structured review flow failed before producing a reviewed local artifact."
+            )
+            write_json(run_directory / "operator_summary.json", result)
+            output_summary(result)
+            return 1
+
+        bridge_summary = json.loads(bridge_result.stdout)
+        result["structured_bridge_status"] = "PASS"
+        result["structured_bridge_summary"] = bridge_summary
+        result["final_outcome"] = "SIDECAR_DRAFT_ACCEPTED_AND_STRUCTURED_REVIEW_READY"
+        result["operator_result_lines"] = [
+            "Ergebnis: Sidecar-Draft erfolgreich",
+            "Route: bounded Delegation-Dispatcher -> documentation_draft -> structured review",
+            "Structured Review Flow: Builder -> Executor erfolgreich",
+            "Tatsaechliche Kosten: N/A (lokaler Codex CLI Sidecar-Pfad)",
+        ]
+        result["operator_message"] = (
+            "Read-only sidecar draft completed and was converted into a structured local review artifact. Codex App still owns any binding documentation write."
+        )
+
     write_json(run_directory / "operator_summary.json", result)
     output_summary(result)
     return 0
