@@ -15,8 +15,28 @@ def validate(text):
         if "Auto-Verification:\n- Status: N/A" in text:
             errors.append("TASK COMPLETE cannot use Auto-Verification N/A.")
 
-    if "FINAL AUDIT" in text and "Auto-Verification:\n- Status: FAIL" in text:
+    final_audit_route = bool(re.search(r"Target Skill:\s*janus-final-audit\b", text)) or "FINAL AUDIT" in text
+
+    if final_audit_route and "Auto-Verification:\n- Status: FAIL" in text:
         errors.append("Cannot route to final audit after failed Auto-Verification.")
+
+    if final_audit_route:
+        manual_gate = re.search(
+            r"Manual Janus Validation Gate:\s*\n- Status:\s*(PASS|N/A WITH REASON|PENDING_USER_TEST|FAIL)",
+            text,
+        )
+        if not manual_gate:
+            errors.append("Final audit handoff requires Manual Janus Validation Gate.")
+        else:
+            status = manual_gate.group(1)
+            if status == "PENDING_USER_TEST":
+                errors.append("Cannot route to final audit while Manual Janus Validation Gate is PENDING_USER_TEST.")
+            if status == "FAIL":
+                errors.append("Cannot route to final audit after failed Manual Janus Validation Gate; route to janus-debug.")
+            if status in {"PASS", "N/A WITH REASON"}:
+                for field in ["- Test Example:", "- Expected Result:", "- If Failed: route to janus-debug", "- If Passed: route to janus-final-audit"]:
+                    if field not in text:
+                        errors.append(f"Manual Janus Validation Gate missing field: {field}")
 
     if "Provider" in text or "provider" in text:
         forbidden = ["Fallback auf GPT", "Fallback auf Gemini", "mit anderem Provider erfolgreich"]

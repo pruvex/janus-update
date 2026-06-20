@@ -168,6 +168,60 @@ Only allow live test execution when:
 
 Otherwise block instead of improvising a run.
 
+## Bounded Generator Review Gate
+
+For eligible bounded generator work inside `TEST_RUN_PRECHECK`, prefer the shared dispatcher as the operator-facing gate when the task is:
+
+- one bound TestPlan
+- one bound generated-runner target
+- one deterministic generator path
+- review-first and evidence-first
+
+This gate is for the validated delegation class `generator_review`.
+
+Binding artifacts:
+
+- `C:\KI\Janus-Projekt\documentation\codex\model-routing\scripts\codex_bounded_delegation_dispatcher.py`
+- `C:\KI\Janus-Projekt\documentation\codex\model-routing\scripts\codex_structured_action_generator_review_runner.py`
+- `C:\KI\Janus-Projekt\documentation\codex\model-routing\codex_bounded_delegation_dispatcher_canonical_entry_2026-06-14.md`
+
+Use prompt mode first:
+
+```powershell
+python documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py --task-class generator_review --task-label "<short generator review task>" --normal-target-model "<declared model/reasoning>" --operator-choice prompt --workflow-id <WORKFLOW-ID> --generator-manifest <manifest.json>
+```
+
+Expected operator gate:
+
+- `1 = Codex`
+- `2 = Delegated`
+
+Meaning here:
+
+- `1` keeps the generator preparation and review fully local in Codex.
+- `2` uses delegated intent, but execution still stays deterministic and local through builder, executor, and validator steps.
+
+Boundaries stay strict:
+
+- no production routing
+- no canonical routing-table update
+- no Git or release authority by delegated path
+- no live shell-delegated write path
+- Codex App remains final reviewer and acceptance owner
+
+If the user chooses the delegated path:
+
+- if the user chooses `1`, `local`, or `codex`, invoke the dispatcher with `--operator-choice local`
+- if the user chooses `2`, `delegated`, or `sidecar`, invoke the dispatcher with `--operator-choice delegated --generator-manifest <manifest.json>`
+- keep generator work bound to one deterministic generator family and one validator path
+
+Important:
+
+- this is not a generic sidecar execution mode
+- this is not broad test-writing authority
+- it remains bounded delegated intent with deterministic local execution
+- use it only when the active work is still a narrow generator-review problem inside this skill
+
 ## Mode: LIVE_TEST_EXECUTION
 
 Inputs:
@@ -249,6 +303,61 @@ Process:
 Do not implement fixes in this mode.
 
 Do not reread the full Backlog unless a new item number or duplicate check is actually needed.
+
+## Bounded Triage Review Gate
+
+For eligible bounded finding-triage work inside `FINDING_TRIAGE`, prefer the shared dispatcher as the operator-facing gate when the task is:
+
+- one bound `TEST_RUN_ID`
+- one existing local result bundle
+- one bounded classification question
+- review-first and evidence-first
+
+This gate is for the bounded assist-only delegation class `test_result_triage_review`.
+
+Binding artifacts:
+
+- `C:\KI\Janus-Projekt\documentation\codex\model-routing\scripts\codex_bounded_delegation_dispatcher.py`
+- `C:\KI\Janus-Projekt\documentation\codex\model-routing\scripts\codex_test_result_triage_review_runner.py`
+- `C:\KI\Janus-Projekt\documentation\codex\model-routing\codex_test_result_triage_review_plan_2026-06-14.md`
+
+Use prompt mode first:
+
+```powershell
+python documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py --task-class test_result_triage_review --task-label "<short triage review task>" --normal-target-model "<declared model/reasoning>" --operator-choice prompt --workflow-id <WORKFLOW-ID> --test-triage-input-package <input.json> --test-triage-fixture-result <fixture.json>
+```
+
+Expected operator gate:
+
+- `1 = Codex`
+- `2 = Delegated`
+
+Meaning here:
+
+- `1` keeps finding triage fully local in Codex.
+- `2` uses delegated assist-only triage review, but Codex still owns the real classification, rerun decision, Backlog routing, and final evidence interpretation.
+
+Boundaries stay strict:
+
+- no production routing
+- no canonical routing-table update
+- no delegated live test execution
+- no delegated result JSON mutation
+- no delegated final PASS or release-readiness decision
+- Codex App remains final reviewer and routing owner
+
+If the user chooses the delegated path:
+
+- if the user chooses `1`, `local`, or `codex`, invoke the dispatcher with `--operator-choice local`
+- if the user chooses `2`, `delegated`, or `sidecar`, invoke the dispatcher with `--operator-choice delegated --test-triage-input-package <input.json> --test-triage-fixture-result <fixture.json>` in the current local validation path
+- keep triage work bound to one result bundle and one bounded classification slice
+
+Important:
+
+- this is not a generic sidecar execution mode
+- this is not broad test-result authority
+- it remains bounded assist-only review with Codex-owned validation
+- use it only when the active work is still a narrow triage problem inside this skill
 
 ## Mode: DIAMOND_RETEST_AUDIT
 

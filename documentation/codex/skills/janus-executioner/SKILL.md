@@ -40,6 +40,77 @@ Default execution model is `5.4`, medium/high.
 
 Recommend `5.5` only for high-risk security/privacy/provider/memory architecture fixes or when the precheck requires strongest reasoning. Recommend `5.4 mini` only for deterministic low-risk docs/config edits when they are a separated block and still likely cheaper than staying on warm `5.4`; otherwise use `5.4` low for short mechanical edits inside an ongoing `5.4` workflow.
 
+## Bounded Delegation Gate
+
+For one prechecked execution slice that fits either the proposal-first `execution_patch_candidate` class or the later derivative `execution_write_apply_candidate` class, prefer the shared dispatcher as the operator-facing gate instead of choosing low-level helpers manually.
+
+Binding artifacts:
+
+- `C:\KI\Janus-Projekt\documentation\codex\model-routing\scripts\codex_bounded_delegation_dispatcher.py`
+- `C:\KI\Janus-Projekt\documentation\codex\model-routing\scripts\codex_execution_patch_candidate_runner.py`
+- `C:\KI\Janus-Projekt\documentation\codex\model-routing\codex_execution_patch_candidate_plan_2026-06-14.md`
+
+Use prompt mode first:
+
+```powershell
+python documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py --task-class execution_patch_candidate --task-label "<short execution slice>" --normal-target-model "<declared model/reasoning>" --operator-choice prompt --workflow-id <WORKFLOW-ID>
+```
+
+Expected operator gate:
+
+- `1 = Codex`
+- `2 = Delegated`
+
+Meaning here:
+
+- `1` keeps the execution slice fully local in Codex.
+- `2` uses the bounded delegated `execution_patch_candidate` proposal path.
+
+Boundaries stay strict:
+
+- no delegated final apply
+- no delegated test execution
+- no delegated task completion claim
+- no Git, release, or audit authority by delegated path
+- Codex App remains patch reviewer, apply/reject owner, and final execution owner
+
+If the user chooses the delegated path:
+
+- if the user chooses `1`, `local`, or `codex`, invoke the dispatcher with `--operator-choice local`
+- if the user chooses `2`, `delegated`, or `sidecar` for local fixture validation, invoke the dispatcher with `--operator-choice delegated --execution-input-package <input-json> --execution-fixture-result <result-json>`
+- if the user chooses `2`, `delegated`, or `sidecar` for the real proposal-only path, invoke the dispatcher with `--operator-choice delegated --execution-input-package <input-json> --execution-live-sidecar`; this path stays read-only and captures a bounded patch proposal only
+
+Important:
+
+- this class is proposal-first, not broad write delegation
+- it is valid only for exactly one prechecked implementation slice
+- the delegated output may suggest a bounded patch, but Codex still decides whether to apply or reject it
+- manual Janus validation remains Codex-owned even if the delegated proposal looks strong
+
+For a later derivative bounded write candidate that is backed by an already accepted proposal-first execution package, use the separate `execution_write_apply_candidate` class:
+
+```powershell
+python documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py --task-class execution_write_apply_candidate --task-label "<short execution slice>" --normal-target-model "<declared model/reasoning>" --operator-choice prompt --workflow-id <WORKFLOW-ID> --accepted-source-run-dir <accepted-execution-patch-run-dir>
+```
+
+Meaning there:
+
+- `1` keeps the execution slice fully local in Codex.
+- `2` uses the bounded delegated `execution_write_apply_candidate` path.
+
+Extra write-candidate boundaries:
+
+- delegated write candidacy must be backed by an accepted `execution_patch_candidate` package
+- this does not itself grant live write approval
+- Codex still owns any future live-write approval, diff review, validation review, and final task completion
+- manual Janus validation remains Codex-owned
+
+Use `execution_write_apply_candidate` only when:
+
+- exactly one prechecked task slice is bound
+- the accepted proposal-first source package already proves allowlist and touched-file discipline
+- the next goal is to evaluate future bounded write readiness, not to bypass Codex governance
+
 ## Golden Path
 
 1. Load bound artifacts and isolate the target task.

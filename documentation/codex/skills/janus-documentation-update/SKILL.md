@@ -114,14 +114,16 @@ For normal documentation-update workflow use, this skill may offer one bounded `
 
 Binding implementation artifacts:
 
+- `C:\KI\Janus-Projekt\documentation\codex\model-routing\scripts\codex_bounded_delegation_dispatcher.py`
 - `C:\KI\Janus-Projekt\documentation\codex\model-routing\scripts\codex_sidecar_skill_runner.ps1`
 - `C:\KI\Janus-Projekt\documentation\codex\model-routing\scripts\doc_skill_sidecar_draft_runner.py`
+- `C:\KI\Janus-Projekt\documentation\codex\model-routing\scripts\codex_structured_action_sidecar_bridge.py`
 - `C:\KI\Janus-Projekt\documentation\codex\model-routing\codex_sidecar_agent_live_pilot_result_2026-06-14.md`
 
-When the task is eligible, first run the helper in prompt mode and use its output as the operator gate:
+When the task is eligible, prefer the bounded delegation dispatcher as the operator-facing entry and use its prompt mode output as the gate:
 
 ```powershell
-python documentation/codex/model-routing/scripts/doc_skill_sidecar_draft_runner.py --task-label "<short documentation draft task>" --normal-target-model "<declared model/reasoning>" --operator-choice prompt
+python documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py --task-class documentation_draft --task-label "<short documentation draft task>" --normal-target-model "<declared model/reasoning>" --operator-choice prompt --workflow-id <WORKFLOW-ID>
 ```
 
 Then present this exact user-facing gate:
@@ -143,8 +145,10 @@ CODEX SIDECAR DELEGATION GATE
 
 Gate rules:
 
-- if the user chooses `1`, `local`, or `codex`, invoke the same helper with `--operator-choice local`
-- if the user chooses `2` or `sidecar`, invoke the same helper with `--operator-choice sidecar --prompt-path <bounded prompt path>`
+- if the user chooses `1`, `local`, or `codex`, invoke the dispatcher with `--operator-choice local`
+- if the user chooses `2` or `sidecar`, invoke the dispatcher with `--operator-choice delegated --prompt-path <bounded prompt path>`
+- if a reviewed local artifact is preferred after a successful sidecar draft, add `--structured-review-flow` so the delegated documentation-draft path chains the accepted sidecar package through the structured-action bridge and local executor
+- `doc_skill_sidecar_draft_runner.py` remains the delegated implementation helper underneath this path and may still be used directly for bounded validation work
 - keep sidecar runs `read-only` unless a later explicit validation artifact proves a write-capable path is safe
 - Codex App must review the returned draft and perform any binding documentation writes locally
 - do not treat a sidecar draft as authoritative state

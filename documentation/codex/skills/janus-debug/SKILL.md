@@ -104,6 +104,42 @@ If a secret would appear, block with:
 SKILL 5 OUTPUT BLOCKED: SECRET_REDACTION_REQUIRED
 ```
 
+## Bounded Delegation Gate
+
+This skill now has one bounded assist-only delegation class:
+
+- `debug_hypothesis_review`
+
+Use it only when the current debug slice is asking for bounded hypothesis review rather than a live fix.
+
+Offer the operator choice only when all are true:
+
+- one bounded debug package exists
+- evidence can be safely redacted
+- Codex still owns reproduction, validation, and the next debug action
+- no local command execution needs to be delegated
+
+Operator wording:
+
+- `1 = Codex`
+- `2 = Delegated`
+
+Current delegated meaning:
+
+- bounded assist-only hypothesis review
+- no delegated local command execution
+- no delegated test execution
+- no delegated final fix claim
+- Codex remains validation and acceptance owner
+
+Bounded helper path:
+
+```powershell
+python documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py --task-class debug_hypothesis_review ...
+```
+
+Do not treat this as production routing, broad sidecar debug authority, or a replacement for the normal `janus-debug` evidence chain.
+
 ## Fixed Criteria
 
 `SKILL 5 DEBUG RESULT: FIXED` requires all:
