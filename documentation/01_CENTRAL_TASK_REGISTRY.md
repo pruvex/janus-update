@@ -4,6 +4,18 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-SPEC24.1 - Codify the Lean-Dev eligibility, minimum evidence, and escalation rules
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-SPEC24.1_final_audit.md` (PASS)
+- **Spec**: `documentation/SPEC/24_lean_dev_governance_fuer_or_und_workhorse_arbeit.md`
+- **Parent Task**: `documentation/tasks/TASK-SPEC24_lean_dev_governance_fuer_or_und_workhorse_arbeit.md`
+- **Precheck**: `documentation/tasks/TASK-SPEC24.1_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-SPEC24.1_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-SPEC24.1_AUDIT_PACKAGE.md`
+- **Validation**: `TASK-SPEC24.1` schliesst den ersten eng gebundenen Spec-24-Slice als repo-owned Lean-Dev-Governance-Kodifizierung ab. `AGENTS.md`, `documentation/codex/CODEX_WORKFLOW_PLAYBOOK.md`, `development/README.md` und `development/DEV_STATE.md` verankern jetzt konsistent, dass kleine und mittlere interne Dev-/OR-/Workhorse-Slices bounded lean laufen duerfen, waehrend Validation, `CURRENT_STATE` und sinnvolle Git-Checkpoints Pflicht bleiben und Produktlogik, Security/Privacy, Release/Git-Governance, unklarer Scope sowie neue produktive Freigaben deterministisch zurueck in den strengen Modus eskalieren. Final Audit PASS mit fokussierter Governance-, Diff-, Compile- und Validator-Evidenz. Spec 24 bleibt dabei bewusst offen, weil `TASK-SPEC24.2` die operative Anwendung auf aktuelle OR-/Workhorse-Entry-Points noch umsetzen muss.
+- **Changed Files**: `AGENTS.md`, `documentation/codex/CODEX_WORKFLOW_PLAYBOOK.md`, `development/README.md`, `development/DEV_STATE.md`, `documentation/tasks/TASK-SPEC24.1_execution_result.md`, `documentation/tasks/TASK-SPEC24.1_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC24.1_final_audit.md`.
+
 ### TASK-SPEC22.4 - Add file-first telemetry, actual-cost closeout, and healthcheck visibility for the dedicated Dev-workhorse path
 
 - **Status**: DONE

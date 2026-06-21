@@ -21,6 +21,24 @@ Jeder Arbeitsblock hat genau:
 
 Wenn eines davon fehlt, wird nicht blind implementiert. Der naechste Schritt ist dann Routing, Intake, Precheck oder eine Entscheidungsfrage.
 
+## Lean Dev Mode
+
+Fuer interne Dev- und OR-Infrastrukturarbeit darf ein schlanker Modus genutzt werden, wenn der Slice:
+
+- keine Janus-Produktlogik aendert
+- klein oder mittel und klar bounded bleibt
+- keine Security-/Privacy-Eskalation beruehrt
+- keine Release-/Git-Governance-Entscheidung beruehrt
+- keine neue produktive Freigabe entscheidet
+
+Pflicht bleiben auch im Lean-Modus:
+
+- passende Validation
+- `documentation/ai/CURRENT_STATE.md` fuer substantielle Bloecke
+- ein sauberer Git-Checkpoint bei sinnvollen Lieferbloecken
+
+Sobald Produktlogik, Security/Privacy, Release/Git, unklarer Scope oder eine neue produktive Freigabe betroffen sind, endet der Lean-Modus und der strenge Janus-Modus gilt wieder.
+
 ## Standardstart
 
 Bei jeder neuen Janus-Aufgabe:
@@ -29,6 +47,8 @@ Bei jeder neuen Janus-Aufgabe:
 2. Codex empfiehlt Modell, Intelligenz, Chatstrategie und Kontextstrategie.
 3. Bei Modell-/Chatwechsel wartet Codex auf `ok`, `bleib hier` oder eine andere klare Nutzerentscheidung.
 4. Danach laeuft genau ein Skill-Pfad weiter.
+
+Bei interner Dev- und OR-Infrastrukturarbeit darf der weitere Pfad nach dem Routing im Lean-Modus kuerzer sein, solange die Lean-Dev-Regel greift. Fuer Janus-Produktarbeit bleibt der volle strenge Pfad unveraendert.
 
 Bei einer neuen Janus-Arbeitssession fuehrt Codex zuerst einen leichten `janus-health-check DAILY` aus oder empfiehlt ihn, wenn der Nutzer erkennbar nur eine kurze Status-/Antwortfrage stellt. Das gilt besonders bei Formulierungen wie `neue Session`, `weiter an Janus`, `lass uns anfangen`, `was steht an` oder aehnlich.
 

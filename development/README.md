@@ -41,3 +41,21 @@ It exists to keep Janus product governance, backlog work, and user-facing behavi
 This area does not grant broad repo authority or silent control over Janus product decisions.
 
 All product-facing Janus changes still require the normal Janus skill flow, validation, and governance gates.
+
+## Lean Dev Mode
+
+Internal Dev- and OR-infrastructure work may use a leaner delivery mode than Janus product work when all of the following are true:
+
+- the slice does not change Janus product logic
+- the slice stays small or medium and clearly bounded
+- no security or privacy escalation is involved
+- no release or Git-governance risk is involved
+- no new productive approval is being decided
+
+Minimum obligations remain:
+
+- validation
+- `documentation/ai/CURRENT_STATE.md` for substantial work blocks
+- a clean Git checkpoint at sensible delivery boundaries
+
+Lean mode ends immediately if scope drifts, Janus product logic becomes involved, security/privacy is touched, release/Git-governance is touched, or a new productive approval is being decided.

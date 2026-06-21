@@ -216,3 +216,32 @@ Jeder Abschluss nennt:
 Substantielle Skill-Laeufe werden fuer spaetere Optimierung in `documentation/codex/SKILL_USAGE_LOG.md` dokumentiert. Dafuer bevorzugt das Script `documentation/codex/scripts/record_skill_usage.py` nutzen. Reine Rueckfragen, kurze Statusantworten und reine Git-Ausfuehrung ohne neue Prozessentscheidung muessen nicht geloggt werden.
 
 `WHAT_I_LEARNED.md` ist das Langzeitgedaechtnis fuer validierte, wiederverwendbare technische Muster. Nicht vollstaendig laden. Vor Debug-, Build-/Release-, TestPipeline-Generator- und Final-Audit-Blockern gezielt suchen mit `documentation/codex/scripts/search_what_i_learned.py`. Neue Eintraege nur append-only und nur bei validierter Root Cause, Loesung, Haertung und Tripwire; bevorzugt `documentation/codex/scripts/append_learning_pattern.py` nutzen.
+
+## Lean Dev Mode
+
+Fuer interne Dev- und OR-Infrastrukturarbeit gilt zusaetzlich ein schlanker Arbeitsmodus, wenn alle folgenden Bedingungen erfuellt sind:
+
+- die Arbeit aendert keine Janus-Produktlogik
+- die Arbeit bleibt ein kleiner oder mittlerer bounded Dev-Slice
+- keine Security-/Privacy-Eskalation ist betroffen
+- kein Release-, Tag-, Publish- oder sonstiges Git-Governance-Risiko ist betroffen
+- keine neue produktive Freigabe wird in diesem Slice entschieden
+- der Scope ist klar und driftet nicht
+
+Lean Dev Mode bedeutet:
+
+- weniger Prozess-Overhead als die volle Janus-Produktpipeline
+- Validation bleibt Pflicht
+- `documentation/ai/CURRENT_STATE.md` bleibt fuer substantielle Bloecke Pflicht
+- ein sauberer Git-Checkpoint bleibt bei sinnvollen Lieferbloecken Pflicht
+- Dev-Arbeit soll bevorzugt auf die Source-of-Truth unter `development/` und die direkt betroffenen Repo-Governance-Dateien begrenzt bleiben
+
+Lean Dev Mode endet sofort und der strenge Modus gilt wieder, wenn mindestens eines davon eintritt:
+
+- Janus-Produktlogik ist betroffen
+- Security/Privacy wird beruehrt
+- Release/Git-Governance wird beruehrt
+- der Scope ist unklar oder driftet
+- eine neue produktive Freigabe oder Autoritaetsgrenze wird entschieden
+
+Diese Regel lockert nicht die Janus-Produktpipeline. Janus-Produktarbeit bleibt immer im strengen Modus.

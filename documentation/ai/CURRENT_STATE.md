@@ -1,6 +1,321 @@
 ﻿# CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-06-21`, the documentation closeout for `TASK-SPEC24.1` is complete with canonical state `PASS`. The accepted Lean-Dev governance rule is now synchronized into the central registry, compact project snapshot, and parent task artifact, while Spec 24 intentionally remains open for `TASK-SPEC24.2`.
+
+Current goal: keep Spec 24 narrow and move next into the operational application slice that marks current OR-/workhorse-entrypoints as Lean or strict.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- synchronized the task-scoped `TASK-SPEC24.1` final-audit PASS into Janus documentation without falsely closing Spec 24
+- added a task-sharp closeout line to the parent `TASK-SPEC24` artifact
+- recorded the Lean-Dev governance codification slice in the central registry and compact project-state snapshot
+
+Changed files:
+- `documentation/tasks/TASK-SPEC24_lean_dev_governance_fuer_or_und_workhorse_arbeit.md`
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-documentation-update\scripts\validate_doc_update.py --repo C:\KI\Janus-Projekt --marker TASK-SPEC24.1 --require documentation/01_CENTRAL_TASK_REGISTRY.md --require PROJECT_STATE.md --require documentation/tasks/TASK-SPEC24_lean_dev_governance_fuer_or_und_workhorse_arbeit.md`: PASS
+- scoped `git diff --check` for the documentation-update files: PASS with CRLF warning only for `documentation/ai/CURRENT_STATE.md`
+- staged-only git guard (`git diff --cached --name-only`): PASS
+
+Open risks:
+- `TASK-SPEC24.2` remains intentionally pending; it is the separate operational application of the Lean-Dev rule to current OR-/workhorse-entrypoints
+- Lean Dev mode must remain excluded from Janus product work, security/privacy, release/Git governance, unclear scope, and new productive approvals
+- no commit or push has happened for this local documentation state, so a remote such as GitHub or `backup` may not contain it
+
+Next recommended step for ChatGPT: keep `TASK-SPEC24.2` as the only next active Spec-24 slice and preserve the strict product/Dev boundary.
+
+Next recommended step for Codex: use `janus-task-breakdown` or `janus-preimplementation-check` on `TASK-SPEC24.2`, depending on whether the next slice needs refinement first.
+
+Last updated: `2026-06-21 17:01:20 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-21`, `TASK-SPEC24.1` is locally implemented with canonical state `HANDOFF`. The Lean-Dev rule is now codified in repo-owned governance artifacts: internal OR- and workhorse-infrastructure work may use a faster bounded mode, while Janus product work remains explicitly strict and the escalation triggers back to strict mode are now documented.
+
+Current goal: run the final audit for `TASK-SPEC24.1` so the Lean-Dev mode becomes the accepted working rule for our internal Dev work and we can use it on the next OR slices.
+
+Active phase: `janus-executioner`, canonical state `HANDOFF`.
+
+Last Codex work:
+- codified the Lean-Dev rule in `AGENTS.md`, `documentation/codex/CODEX_WORKFLOW_PLAYBOOK.md`, `development/README.md`, and `development/DEV_STATE.md`
+- preserved the hard separation between internal Dev work and the strict Janus product pipeline
+- created a compact execution result and audit package for the first Lean-Dev governance slice
+
+Changed files:
+- `AGENTS.md`
+- `documentation/codex/CODEX_WORKFLOW_PLAYBOOK.md`
+- `development/README.md`
+- `development/DEV_STATE.md`
+- `documentation/tasks/TASK-SPEC24.1_AUDIT_PACKAGE.md`
+- `documentation/tasks/TASK-SPEC24.1_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `git diff --check -- AGENTS.md documentation/codex/CODEX_WORKFLOW_PLAYBOOK.md development/README.md development/DEV_STATE.md documentation/tasks/TASK-SPEC24.1_preimplementation_check.md documentation/tasks/TASK-SPEC24.1_AUDIT_PACKAGE.md documentation/tasks/TASK-SPEC24.1_execution_result.md`: PASS
+- targeted consistency check across the four governance files: PASS
+- targeted negative check that Janus product work stays explicitly excluded from Lean mode: PASS
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py documentation/tasks/TASK-SPEC24.1_execution_result.md`: PASS
+
+Open risks:
+- the Lean-Dev rule is implemented locally but not yet independently audited
+- future slices must keep Lean mode out of Janus product work, release work, and security/privacy-sensitive changes
+- no commit or push has happened for this execution state, so a remote such as GitHub or `backup` may not contain this latest state
+
+Next recommended step for ChatGPT: review `TASK-SPEC24.1` only as bounded governance codification and keep product-consumer work out of this audit.
+
+Next recommended step for Codex: use `janus-final-audit` with `5.5` high on `documentation/tasks/TASK-SPEC24.1_AUDIT_PACKAGE.md`.
+
+Last updated: `2026-06-21 14:52:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-21`, the preimplementation gate for `TASK-SPEC24.1` is complete with canonical state `HANDOFF`. The first Lean-Dev governance slice is now formally ready for implementation as a repo-owned governance codification block that enables faster internal Dev work without relaxing the strict Janus product pipeline.
+
+Current goal: implement `TASK-SPEC24.1` so the Lean-Dev mode becomes active for internal OR and workhorse work and we can stop paying full Janus-process overhead on bounded Dev slices.
+
+Active phase: `janus-preimplementation-check`, canonical state `HANDOFF`.
+
+Last Codex work:
+- validated `TASK-SPEC24.1` as a single-task preimplementation slice
+- produced a validator-clean precheck artifact for the Lean-vs-strict governance codification block
+- kept the implementation scope fenced to repo-owned governance files only
+
+Changed files:
+- `documentation/tasks/TASK-SPEC24.1_preimplementation_check.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py documentation/tasks/TASK-SPEC24.1_preimplementation_check.md`: PASS
+
+Open risks:
+- the Lean-Dev rule is still not implemented yet
+- Janus product work must remain fully outside this faster mode during execution
+- no commit or push has happened for this precheck state, so a remote such as GitHub or `backup` may not contain this latest state
+
+Next recommended step for ChatGPT: keep `TASK-SPEC24.1` framed as governance codification only and do not pull product or consumer work into this implementation slice.
+
+Next recommended step for Codex: use `janus-executioner` with `5.4` medium on `documentation/tasks/TASK-SPEC24.1_preimplementation_check.md`.
+
+Last updated: `2026-06-21 14:39:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-21`, `TASK-SPEC24.1` is refined with canonical state `HANDOFF` as the next concrete slice for enabling the faster internal Dev mode. The target task now focuses only on codifying Lean-vs-strict governance in the repo-owned Dev and Janus governance documents, while keeping installed skill copies and Janus product workflow changes out of scope.
+
+Current goal: run preimplementation on `TASK-SPEC24.1` so the Lean-Dev rule can be implemented and we can start using the faster internal Dev mode for OR and workhorse work.
+
+Active phase: `janus-task-breakdown`, canonical state `HANDOFF`.
+
+Last Codex work:
+- refined `TASK-SPEC24.1` into a precheck-ready governance slice
+- tightened the scope to repo-owned governance artifacts only
+- made the acceptance and test gates explicit around Lean-vs-strict consistency and no bleed-over into Janus product work
+
+Changed files:
+- `documentation/tasks/TASK-SPEC24_lean_dev_governance_fuer_or_und_workhorse_arbeit.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-task-breakdown\scripts\validate_task_handoff.py --task documentation/tasks/TASK-SPEC24_lean_dev_governance_fuer_or_und_workhorse_arbeit.md --target TASK-SPEC24.1`: PASS
+
+Open risks:
+- the Lean-Dev rule is still not implemented yet
+- Janus product work must remain fully outside this faster mode during implementation
+- no commit or push has happened for this task-breakdown state, so a remote such as GitHub or `backup` may not contain this latest state
+
+Next recommended step for ChatGPT: keep `TASK-SPEC24.1` tightly framed as governance codification only and do not reopen consumer or product work while this slice is active.
+
+Next recommended step for Codex: use `janus-preimplementation-check` with `5.4` medium on `documentation/tasks/TASK-SPEC24_lean_dev_governance_fuer_or_und_workhorse_arbeit.md`, targeting `TASK-SPEC24.1`.
+
+Last updated: `2026-06-21 14:30:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-21`, the approved Lean-Dev governance Spec has been compiled into deterministic tasks with canonical state `HANDOFF`. The faster internal Dev mode is now split into two bounded delivery slices: first codify the eligibility, minimum evidence, and escalation rules, then apply that rule to the current OR and workhorse Dev entrypoints.
+
+Current goal: refine `TASK-SPEC24.1` so the Lean-Dev mode becomes a concrete working rule we can start using for internal OR work immediately after implementation.
+
+Active phase: `janus-spec-to-task`, canonical state `HANDOFF`.
+
+Last Codex work:
+- compiled the approved Lean-Dev governance Spec into a dedicated `TASK-SPEC24` artifact
+- kept the decomposition intentionally lean with one rule-codification slice and one immediate application slice
+- prepared the exact `@janus-task-breakdown` handoff for `TASK-SPEC24.1`
+
+Changed files:
+- `documentation/tasks/TASK-SPEC24_lean_dev_governance_fuer_or_und_workhorse_arbeit.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-spec-to-task\scripts\validate_task_artifact.py --task documentation/tasks/TASK-SPEC24_lean_dev_governance_fuer_or_und_workhorse_arbeit.md`: PASS
+
+Open risks:
+- the Lean-Dev mode is task-compiled but not yet codified in the active governance docs
+- Janus product work must remain fully outside this faster mode during implementation
+- no commit or push has happened for this task-compilation state, so a remote such as GitHub or `backup` may not contain this latest state
+
+Next recommended step for ChatGPT: keep the Lean-Dev rule tightly scoped to internal OR-/workhorse-infrastructure work and review `TASK-SPEC24.1` only as governance codification.
+
+Next recommended step for Codex: use `janus-task-breakdown` with `5.4` medium on `documentation/tasks/TASK-SPEC24_lean_dev_governance_fuer_or_und_workhorse_arbeit.md`, targeting `TASK-SPEC24.1`.
+
+Last updated: `2026-06-21 14:24:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-21`, the Lean-Dev governance Spec for internal OR- and workhorse-infrastructure work has passed spec review with canonical state `APPROVED`. Janus product work remains fully strict, while internal Dev work now has an approved bounded path for faster delivery as long as validation, `CURRENT_STATE`, and sensible Git checkpoints remain in place and escalation triggers are respected.
+
+Current goal: compile the approved Lean-Dev governance Spec so the faster internal Dev mode becomes a concrete working rule for our OR and workhorse buildout.
+
+Active phase: `janus-spec-review`, canonical state `HANDOFF`.
+
+Last Codex work:
+- reviewed the Lean-Dev governance Spec against scope separation, escalation rules, and minimum evidence requirements
+- approved the Spec as a bounded internal Dev governance rule without touching the strict Janus product pipeline
+- wrote and validated the `SPEC REVIEW METADATA` block
+
+Changed files:
+- `documentation/SPEC/24_lean_dev_governance_fuer_or_und_workhorse_arbeit.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-spec-review\scripts\validate_spec_review.py --spec documentation/SPEC/24_lean_dev_governance_fuer_or_und_workhorse_arbeit.md`: PASS
+
+Open risks:
+- the Lean-Dev rule is approved, but it still needs task compilation before it becomes a concrete governed delivery slice
+- Janus product work must remain fully outside this lean mode
+- no commit or push has happened for this review state, so a remote such as GitHub or `backup` may not contain this latest state
+
+Next recommended step for ChatGPT: keep the Lean-Dev mode strictly scoped to internal OR-/workhorse-infrastructure work and do not let it bleed into Janus product delivery.
+
+Next recommended step for Codex: use `janus-spec-to-task` with `5.4` medium on `documentation/SPEC/24_lean_dev_governance_fuer_or_und_workhorse_arbeit.md`.
+
+Last updated: `2026-06-21 14:18:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-21`, a separate Lean-Dev governance Spec has been generated for internal OR- and workhorse-infrastructure work. Janus product work remains fully strict, while the new draft defines a faster bounded flow for small and medium Dev slices with mandatory validation, `CURRENT_STATE`, and sensible Git checkpoints.
+
+Current goal: review and approve the Lean-Dev governance Spec so we can speed up internal OR work without weakening the Janus product pipeline.
+
+Active phase: `janus-spec-generator`, canonical state `HANDOFF`.
+
+Last Codex work:
+- converted the locked Lean-Dev governance decision into a dedicated Spec for internal OR-/workhorse-infrastructure work
+- kept Janus product work explicitly out of scope so the strict product pipeline stays unchanged
+- defined the automatic escalation conditions back into the strict mode
+
+Changed files:
+- `documentation/SPEC/24_lean_dev_governance_fuer_or_und_workhorse_arbeit.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- spec generated from the locked `LATEST DECISION SUMMARY`: PASS
+- scoped `git diff --check -- documentation/SPEC/24_lean_dev_governance_fuer_or_und_workhorse_arbeit.md documentation/ai/CURRENT_STATE.md`: PENDING
+
+Open risks:
+- this is still a decision artifact only; the lean mode is not yet approved or active
+- the future lean rules must stay strictly separated from Janus product work
+- no commit or push has happened for this new Spec, so a remote such as GitHub or `backup` may not contain this latest state
+
+Next recommended step for ChatGPT: review the Lean-Dev governance Spec only as an internal Dev-workflow rule and keep Janus product pipeline changes out of scope.
+
+Next recommended step for Codex: use `janus-spec-review` with `5.4` medium on `documentation/SPEC/24_lean_dev_governance_fuer_or_und_workhorse_arbeit.md`.
+
+Last updated: `2026-06-21 14:10:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-21`, the approved first productive OR-consumer Spec for `janus-debug` has been compiled into deterministic implementation tasks with canonical state `HANDOFF`. The work is now split into two bounded delivery slices: first the productive eligibility and visible gate for `janus-debug`, then the bounded OR execution plus direct Codex fallback and final Codex-owned completion.
+
+Current goal: refine `TASK-SPEC23.1` into a preimplementation-ready handoff so we can begin building the first real productive OR consumer.
+
+Active phase: `janus-spec-to-task`, canonical state `HANDOFF`.
+
+Last Codex work:
+- compiled the approved `janus-debug` OR-consumer Spec into a dedicated `TASK-SPEC23` artifact
+- kept the decomposition intentionally lean with two concrete execution slices instead of reopening infrastructure or broad rollout work
+- prepared the exact `@janus-task-breakdown` handoff for `TASK-SPEC23.1`
+
+Changed files:
+- `documentation/tasks/TASK-SPEC23_erster_produktiver_or_consumer_fuer_janus_debug.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-spec-to-task\scripts\validate_task_artifact.py --task documentation/tasks/TASK-SPEC23_erster_produktiver_or_consumer_fuer_janus_debug.md`: PASS
+
+Open risks:
+- the decomposition is ready, but `TASK-SPEC23.1` has not yet been refined against the exact runtime files and evidence contract
+- the productive consumer must remain bounded to `janus-debug` only and must not inherit broader OR rollout assumptions
+- no commit or push has happened for this task-compilation state, so a remote such as GitHub or `backup` may not contain this latest state
+
+Next recommended step for ChatGPT: keep the first productive OR consumer narrowly framed around `janus-debug` and treat the two compiled tasks as the only active delivery scope.
+
+Next recommended step for Codex: use `janus-task-breakdown` with `5.4` medium on `documentation/tasks/TASK-SPEC23_erster_produktiver_or_consumer_fuer_janus_debug.md`, targeting `TASK-SPEC23.1`.
+
+Last updated: `2026-06-21 14:02:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-21`, the first productive OR-consumer Spec for `janus-debug` has passed spec review with canonical state `APPROVED_WITH_NOTES`. The bounded consumer remains intentionally narrow: OR appears only for clearly eligible debug cases, Codex keeps final authority, and the next step is task compilation for this one consumer only.
+
+Current goal: compile the approved `janus-debug` OR-consumer Spec into deterministic implementation tasks so we can start building the first real productive consumer.
+
+Active phase: `janus-spec-review`, canonical state `HANDOFF`.
+
+Last Codex work:
+- reviewed the new `janus-debug` OR-consumer Spec against scope, fallback, authority, and rollout boundaries
+- approved the Spec with notes, keeping the consumer bounded to one existing skill and deferring exact runtime thresholds to the task phase
+- wrote and locally validated the `SPEC REVIEW METADATA` block
+
+Changed files:
+- `documentation/SPEC/23_erster_produktiver_or_consumer_fuer_janus_debug.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-spec-review\scripts\validate_spec_review.py --spec documentation/SPEC/23_erster_produktiver_or_consumer_fuer_janus_debug.md`: PASS
+
+Open risks:
+- the Spec is approved, but no task decomposition exists yet
+- exact eligibility and cost-threshold wiring must stay aligned with the existing bounded OR runtime during task compilation
+- no commit or push has happened for this review state, so a remote such as GitHub or `backup` may not contain this latest state
+
+Next recommended step for ChatGPT: review the approved `janus-debug` OR-consumer Spec only as a bounded first productive consumer and keep multi-skill rollout out of scope.
+
+Next recommended step for Codex: use `janus-spec-to-task` with `5.4` medium on `documentation/SPEC/23_erster_produktiver_or_consumer_fuer_janus_debug.md`.
+
+Last updated: `2026-06-21 13:52:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-21`, the first productive OR-consumer decision for Janus has been locked and written into a new Spec draft for `janus-debug`. The next bounded step is now spec review for a single existing-surface consumer that offers OR only for clearly eligible debug cases and falls back directly to Codex on weak OR results.
+
+Current goal: review and approve the first real productive OR-consumer Spec so we can move from infrastructure-only work into a bounded everyday Janus workflow.
+
+Active phase: `janus-spec-generator`, canonical state `HANDOFF`.
+
+Last Codex work:
+- converted the locked feature decision into a new Spec for the first productive OR-consumer on `janus-debug`
+- kept the consumer intentionally narrow: existing `janus-debug` surface only, bounded OR review plus patch-candidate help, and direct Codex fallback on weak OR output
+- prepared the workflow for `janus-spec-review` rather than reopening infrastructure or model-comparison work
+
+Changed files:
+- `documentation/SPEC/23_erster_produktiver_or_consumer_fuer_janus_debug.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- spec generated from the locked `LATEST DECISION SUMMARY`: PASS
+- scoped `git diff --check -- documentation/SPEC/23_erster_produktiver_or_consumer_fuer_janus_debug.md documentation/ai/CURRENT_STATE.md`: PASS
+
+Open risks:
+- this is still a decision artifact only; no productive consumer behavior is active yet
+- `janus-debug` consumer scope must stay bounded during review and must not drift into broad OR activation
+- no commit or push has happened for this new Spec, so a remote such as GitHub or `backup` may not contain this latest state
+
+Next recommended step for ChatGPT: review the new `janus-debug` OR-consumer Spec only as a bounded first productive consumer and keep broader multi-skill rollout out of scope.
+
+Next recommended step for Codex: use `janus-spec-review` with `5.4` medium on `documentation/SPEC/23_erster_produktiver_or_consumer_fuer_janus_debug.md`.
+
+Last updated: `2026-06-21 13:45:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-06-21`, the documentation sync for `TASK-SPEC22.4` is complete with canonical state `PASS`. Spec 22 is now canonically closed across the parent task, central registry, project snapshot, and Spec-Done artifact, while the dedicated Dev-workhorse path remains a single Dev-only, operator-invoked bounded lane with file-first telemetry, truthful actual-cost closeout, and healthcheck visibility only.
 
 Current goal: preserve the completed Spec-22 documentation state and decide whether to create a scoped checkpoint commit for the bounded Dev-workhorse slice.
