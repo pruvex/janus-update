@@ -286,6 +286,164 @@ def evaluate_assistive_or_workhorse_pilot(
     )
 
 
+def evaluate_productive_janus_debug_consumer(
+    *,
+    task_class: str,
+    estimated_or_cost: float | int | None,
+    request_payload: dict[str, Any] | None = None,
+    config_path: Path = DEFAULT_ELIGIBILITY_CONFIG_PATH,
+    budget_config_path: Path = DEFAULT_BUDGET_PROFILE_CONFIG_PATH,
+) -> dict[str, Any]:
+    subject_id = f"janus-debug:{task_class}"
+    if task_class != "debug_hypothesis_review":
+        return _base_result(
+            result="OR_NOT_ELIGIBLE",
+            subject_type="productive_janus_debug_consumer",
+            subject_id=subject_id,
+            reason_code="DEBUG_MODE_NOT_ALLOWED",
+            message="Only the bounded debug_hypothesis_review mode may expose the productive janus-debug OR gate.",
+        )
+
+    dispatcher_gate = evaluate_dispatch_task_class(
+        task_class=task_class,
+        config_path=config_path,
+    )
+    if dispatcher_gate["eligibility_result"] != "OR_ALLOWED":
+        return {
+            **_base_result(
+                result=dispatcher_gate["eligibility_result"],
+                subject_type="productive_janus_debug_consumer",
+                subject_id=subject_id,
+                reason_code=dispatcher_gate["reason_code"],
+                message=dispatcher_gate["message"],
+                evidence_status=dispatcher_gate.get("evidence_status", "UNKNOWN"),
+            ),
+        }
+
+    if request_payload is None:
+        return _base_result(
+            result="OR_NOT_ELIGIBLE",
+            subject_type="productive_janus_debug_consumer",
+            subject_id=subject_id,
+            reason_code="DEBUG_PACKAGE_REQUIRED",
+            message="A single bounded and redaction-ready debug package is required before showing the productive janus-debug OR gate.",
+            evidence_status=dispatcher_gate.get("evidence_status", "UNKNOWN"),
+        )
+
+    pilot_gate = evaluate_assistive_or_workhorse_pilot(
+        skill_id="janus-debug",
+        task_class=task_class,
+        request_payload=request_payload,
+        config_path=config_path,
+    )
+    if pilot_gate["eligibility_result"] != "OR_ALLOWED":
+        result = {
+            **_base_result(
+                result=pilot_gate["eligibility_result"],
+                subject_type="productive_janus_debug_consumer",
+                subject_id=subject_id,
+                reason_code=pilot_gate["reason_code"],
+                message=pilot_gate["message"],
+                evidence_status=dispatcher_gate.get("evidence_status", "UNKNOWN"),
+            ),
+        }
+        if "request_validation_issues" in pilot_gate:
+            result["request_validation_issues"] = pilot_gate["request_validation_issues"]
+        return result
+
+    budget_profile_name = "debug_hypothesis_review"
+    budget_profile = _load_budget_profile(budget_profile_name, budget_config_path)
+    if budget_profile is None:
+        return _base_result(
+            result="OR_NOT_ELIGIBLE",
+            subject_type="productive_janus_debug_consumer",
+            subject_id=subject_id,
+            reason_code="BUDGET_PROFILE_MISSING",
+            message="The productive janus-debug budget profile is missing.",
+            evidence_status=dispatcher_gate.get("evidence_status", "UNKNOWN"),
+        )
+
+    if estimated_or_cost is None:
+        return {
+            **_base_result(
+                result="OR_NOT_ELIGIBLE",
+                subject_type="productive_janus_debug_consumer",
+                subject_id=subject_id,
+                reason_code="ESTIMATED_COST_MISSING",
+                message="Estimated OR cost is required before showing the productive janus-debug OR gate.",
+                evidence_status=dispatcher_gate.get("evidence_status", "UNKNOWN"),
+            ),
+            "budget_profile": budget_profile_name,
+            "per_call_cap_usd": float(budget_profile["per_call_cap_usd"]),
+            "session_cap_usd": float(budget_profile["session_cap_usd"]),
+        }
+
+    try:
+        estimated = float(estimated_or_cost)
+    except (TypeError, ValueError):
+        return {
+            **_base_result(
+                result="OR_NOT_ELIGIBLE",
+                subject_type="productive_janus_debug_consumer",
+                subject_id=subject_id,
+                reason_code="ESTIMATED_COST_INVALID",
+                message="Estimated OR cost must be numeric before showing the productive janus-debug OR gate.",
+                evidence_status=dispatcher_gate.get("evidence_status", "UNKNOWN"),
+            ),
+            "budget_profile": budget_profile_name,
+            "per_call_cap_usd": float(budget_profile["per_call_cap_usd"]),
+            "session_cap_usd": float(budget_profile["session_cap_usd"]),
+        }
+
+    if not math.isfinite(estimated) or estimated < 0:
+        return {
+            **_base_result(
+                result="OR_NOT_ELIGIBLE",
+                subject_type="productive_janus_debug_consumer",
+                subject_id=subject_id,
+                reason_code="ESTIMATED_COST_INVALID",
+                message="Estimated OR cost must be finite and non-negative before showing the productive janus-debug OR gate.",
+                evidence_status=dispatcher_gate.get("evidence_status", "UNKNOWN"),
+            ),
+            "budget_profile": budget_profile_name,
+            "per_call_cap_usd": float(budget_profile["per_call_cap_usd"]),
+            "session_cap_usd": float(budget_profile["session_cap_usd"]),
+        }
+
+    per_call_cap = float(budget_profile["per_call_cap_usd"])
+    session_cap = float(budget_profile["session_cap_usd"])
+    if estimated > per_call_cap:
+        return {
+            **_base_result(
+                result="OR_NOT_ELIGIBLE",
+                subject_type="productive_janus_debug_consumer",
+                subject_id=subject_id,
+                reason_code="PER_CALL_CAP_EXCEEDED",
+                message="Estimated OR cost exceeds the productive janus-debug per-call cap before the gate can be offered.",
+                evidence_status=dispatcher_gate.get("evidence_status", "UNKNOWN"),
+            ),
+            "budget_profile": budget_profile_name,
+            "per_call_cap_usd": per_call_cap,
+            "session_cap_usd": session_cap,
+            "estimated_or_cost": estimated,
+        }
+
+    return {
+        **_base_result(
+            result="OR_ALLOWED",
+            subject_type="productive_janus_debug_consumer",
+            subject_id=subject_id,
+            reason_code="ELIGIBILITY_CONFIRMED",
+            message="Productive janus-debug OR eligibility confirmed for one bounded debug_hypothesis_review package.",
+            evidence_status=dispatcher_gate.get("evidence_status", "UNKNOWN"),
+        ),
+        "budget_profile": budget_profile_name,
+        "per_call_cap_usd": per_call_cap,
+        "session_cap_usd": session_cap,
+        "estimated_or_cost": estimated,
+    }
+
+
 def evaluate_productive_dev_workhorse_path(
     *,
     path_id: str,

@@ -1,6 +1,116 @@
 ﻿# CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-06-21`, the documentation sync for the repaired `TASK-SPEC23.1` final audit is complete with canonical state `PASS`. The first productive `janus-debug` slice is now recorded as a bounded gate-only entry seam: every visible Codex-vs-OR entry shares the same productive gate, non-eligible cases stay Codex-only, and an eligible OR selection remains explicitly non-executing until `TASK-SPEC23.2`.
+
+Current goal: keep `TASK-SPEC23.2` separate and only use future work to add its delegated runtime and fallback semantics after a fresh bounded handoff.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- synchronized the accepted `TASK-SPEC23.1` final audit into the rolling state snapshot
+- kept the bound Spec open because `TASK-SPEC23.2` remains intentionally unstarted
+- preserved the gate-only boundary that prevents delegated execution from leaking into the first productive slice
+
+Changed files:
+- `documentation/codex/skills/janus-debug/SKILL.md`
+- `documentation/codex/model-routing/scripts/codex_debug_hypothesis_review_runner.py`
+- `documentation/codex/model-routing/tests/test_assistive_or_review_consumer_integration.py`
+- `documentation/tasks/TASK-SPEC23.1_AUDIT_PACKAGE.md`
+- `documentation/tasks/TASK-SPEC23.1_execution_result.md`
+- `documentation/tasks/TASK-SPEC23.1_final_audit.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- final audit validator: PASS
+- scoped `git diff --check`: PASS with only the existing `CURRENT_STATE.md` CRLF warning
+- staged-only guard: PASS
+
+Open risks:
+- the slice is still intentionally gate-only; delegated execution, direct Codex fallback runtime, and final acceptance remain out of scope until `TASK-SPEC23.2`
+- no real OR call, Janus product runtime, UI, provider configuration, or end-user persistence was changed or exercised
+- the bound Spec is not complete yet because `TASK-SPEC23.2` remains open, so no Spec-Done move is appropriate in this audit
+- no commit or push has happened for this local audit state, so a remote such as GitHub or `backup` may not contain it yet
+
+Next recommended step for ChatGPT: keep `TASK-SPEC23.2` explicitly separate and do not infer delegated execution or fallback approval from the accepted `TASK-SPEC23.1` gate-only slice.
+
+Next recommended step for Codex: route any later work on `TASK-SPEC23.2` through a fresh bounded execution handoff.
+
+Last updated: `2026-06-21 19:23:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-21`, `TASK-SPEC23.1` is locally implemented with canonical state `HANDOFF`. The first productive `janus-debug` OR-consumer entry seam now exists as a bounded eligibility and visible operator-gate layer for clearly suitable `debug_hypothesis_review` cases, while non-eligible debug flows remain deterministically Codex-only and the later delegated execution/fallback runtime stays explicitly reserved for `TASK-SPEC23.2`.
+
+Current goal: run `janus-final-audit` for `TASK-SPEC23.1` so this first productive `janus-debug` gate slice can be independently reviewed before we touch the later execution/runtime seam.
+
+Active phase: `janus-executioner`, canonical state `HANDOFF`.
+
+Last Codex work:
+- added a dedicated productive `janus-debug` eligibility helper that requires one bounded, redaction-ready `debug_hypothesis_review` package plus an in-budget pre-call estimate before the OR gate is shown
+- wired the `janus-debug` consumer runner so eligible prompt/delegated paths expose the visible Codex-vs-OR choice, while missing-package or out-of-scope debug cases stop at a Codex-only pre-gate
+- expanded focused integration coverage for the eligible prompt path, the non-eligible no-package path, and regression protection against implicit activation in other debug modes
+
+Changed files:
+- `documentation/codex/skills/janus-debug/SKILL.md`
+- `documentation/codex/model-routing/scripts/bounded_or_worker_eligibility.py`
+- `documentation/codex/model-routing/scripts/codex_debug_hypothesis_review_runner.py`
+- `documentation/codex/model-routing/tests/test_assistive_or_review_consumer_integration.py`
+- `documentation/tasks/TASK-SPEC23.1_AUDIT_PACKAGE.md`
+- `documentation/tasks/TASK-SPEC23.1_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python -m unittest documentation.codex.model-routing.tests.test_assistive_or_review_consumer_integration`: PASS
+- `python -m unittest documentation.codex.model-routing.tests.test_bounded_or_worker_eligibility`: PASS
+- `python -m py_compile documentation/codex/model-routing/scripts/codex_debug_hypothesis_review_runner.py documentation/codex/model-routing/scripts/bounded_or_worker_eligibility.py documentation/codex/model-routing/tests/test_assistive_or_review_consumer_integration.py`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py documentation/tasks/TASK-SPEC23.1_execution_result.md`: PASS
+- scoped `git diff --check -- documentation/codex/skills/janus-debug/SKILL.md documentation/codex/model-routing/scripts/codex_debug_hypothesis_review_runner.py documentation/codex/model-routing/scripts/bounded_or_worker_eligibility.py documentation/codex/model-routing/tests/test_assistive_or_review_consumer_integration.py documentation/tasks/TASK-SPEC23.1_preimplementation_check.md documentation/tasks/TASK-SPEC23.1_execution_result.md documentation/tasks/TASK-SPEC23.1_AUDIT_PACKAGE.md`: PASS
+
+Open risks:
+- `TASK-SPEC23.1` is only the productive entry seam; delegated execution acceptance, direct Codex fallback runtime, and final completion semantics are still intentionally out of scope until `TASK-SPEC23.2`
+- the visible OR gate must remain limited to `debug_hypothesis_review` and must not be generalized to other debug modes or other Janus skills without separate approval and audit
+- no new commit or push has happened for this local execution state, so a remote such as GitHub or `backup` may not contain it yet
+
+Next recommended step for ChatGPT: audit `TASK-SPEC23.1` strictly as a bounded entry-gate slice and do not pull `TASK-SPEC23.2` runtime behavior into the same review.
+
+Next recommended step for Codex: use `janus-final-audit` with `5.5` high on `documentation/tasks/TASK-SPEC23.1_AUDIT_PACKAGE.md`.
+
+Last updated: `2026-06-21 18:52:30 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-21`, the preimplementation gate for `TASK-SPEC23.1` is complete with canonical state `HANDOFF`. The first productive OR-consumer rollout is now formally implementation-ready as one narrow `janus-debug` entry slice that adds bounded eligibility plus a visible Codex-vs-OR gate, while still leaving later execution, fallback, and final acceptance wiring for `TASK-SPEC23.2`.
+
+Current goal: implement `TASK-SPEC23.1` so the first productive `janus-debug` OR-consumer can expose a safe operator gate in clearly eligible debug cases.
+
+Active phase: `janus-preimplementation-check`, canonical state `HANDOFF`.
+
+Last Codex work:
+- converted the released `TASK-SPEC23.1` handoff into a validator-clean preimplementation artifact
+- locked the scope to `janus-debug` eligibility plus visible operator gate behavior only
+- preserved the rollout boundary that keeps later bounded execution, direct Codex fallback, and final acceptance logic out of this first slice
+
+Changed files:
+- `documentation/tasks/TASK-SPEC23.1_preimplementation_check.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py documentation/tasks/TASK-SPEC23.1_preimplementation_check.md`: PASS
+- `git diff --check -- documentation/tasks/TASK-SPEC23.1_preimplementation_check.md`: PASS
+
+Open risks:
+- `TASK-SPEC23.1` is prechecked but not yet implemented
+- the productive OR rollout must remain bounded to `janus-debug` only and must not silently activate other skills or later runtime layers
+- no new commit or push has happened for this local precheck state, so a remote such as GitHub or `backup` may not contain it yet
+
+Next recommended step for ChatGPT: keep the first productive OR-consumer rollout narrowly framed around `TASK-SPEC23.1` and do not pull `TASK-SPEC23.2` into the same implementation block.
+
+Next recommended step for Codex: use `janus-executioner` with `5.4` medium on `documentation/tasks/TASK-SPEC23.1_preimplementation_check.md`.
+
+Last updated: `2026-06-21 18:23:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-06-21`, the documentation sync for `TASK-SPEC24.2` and Spec 24 is complete with canonical state `PASS`. The Lean-Dev governance closeout is now synchronized across the task artifact, central registry, compact project snapshot, and the archived Spec, so Spec 24 is fully DONE rather than partially open.
 
 Current goal: hand off the completed Spec-24 governance slice to `janus-git-governance` for a later scoped checkpoint commit when the user wants to save this documentation state.

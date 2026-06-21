@@ -28,6 +28,7 @@ from bounded_or_worker_gate_prompt import (
     build_operator_prompt_lines,
     missing_gate_fields,
 )
+from bounded_or_worker_eligibility import evaluate_productive_janus_debug_consumer
 
 REQUIRED_INPUT_FIELDS = [
     "workflow_id",
@@ -234,6 +235,50 @@ def local_summary(*, workflow_id: str, task_label: str, normal_target_model: str
     }
 
 
+def delegated_selection_recorded_summary(
+    *,
+    workflow_id: str,
+    task_label: str,
+    normal_target_model: str,
+    delegated_model_label: str,
+    estimated_or_cost: float | None,
+    cost_estimate_confidence_percent: float | None,
+    gate_result: dict[str, Any],
+    input_package_path: Path | None,
+) -> dict[str, Any]:
+    return {
+        "summary_header": "DEBUG HYPOTHESIS REVIEW GATE",
+        "workflow_id": workflow_id,
+        "skill": "janus-debug",
+        "task_label": task_label,
+        "selected_path": "delegated_selection_recorded_pending_task_spec23_2",
+        "normal_target_model": normal_target_model,
+        "delegated_model_label": delegated_model_label,
+        "selected_or_model": delegated_model_label,
+        "estimated_or_cost": float(estimated_or_cost) if estimated_or_cost is not None else None,
+        "cost_estimate_confidence_percent": (
+            float(cost_estimate_confidence_percent)
+            if cost_estimate_confidence_percent is not None
+            else None
+        ),
+        "eligibility_result": gate_result.get("eligibility_result"),
+        "eligibility_reason_code": gate_result.get("eligibility_reason_code"),
+        "evidence_status": gate_result.get("evidence_status", "N_A"),
+        "budget_profile": gate_result.get("budget_profile", "N_A"),
+        "per_call_cap_usd": gate_result.get("per_call_cap_usd"),
+        "session_cap_usd": gate_result.get("session_cap_usd"),
+        "execution_status": "NOT_STARTED_SCOPE_BOUNDARY",
+        "task_scope_boundary": "TASK-SPEC23.2_REQUIRED_FOR_DELEGATED_EXECUTION",
+        "input_package_path": str(input_package_path) if input_package_path else None,
+        "validation_result": "PASS",
+        "final_outcome": "DELEGATED_SELECTION_RECORDED_PENDING_TASK_SPEC23_2",
+        "operator_message": (
+            "Operator chose OR-Arbeitspferd, but TASK-SPEC23.1 stays gate-only. "
+            "The bounded selection was recorded and no delegated hypothesis review executed."
+        ),
+    }
+
+
 def build_consumer_input_package(
     *,
     workflow_id: str,
@@ -261,10 +306,90 @@ def build_consumer_input_package(
     return payload
 
 
+def evaluate_productive_gate(
+    *,
+    estimated_or_cost: float | None,
+    input_payload: dict[str, Any] | None,
+    task_class: str = "debug_hypothesis_review",
+) -> dict[str, Any]:
+    return evaluate_productive_janus_debug_consumer(
+        task_class=task_class,
+        estimated_or_cost=estimated_or_cost,
+        request_payload=input_payload,
+    )
+
+
+def productive_gate_summary(
+    *,
+    workflow_id: str,
+    task_label: str,
+    normal_target_model: str,
+    delegated_model_label: str,
+    estimated_or_cost: float | None,
+    cost_estimate_confidence_percent: float | None,
+    input_payload: dict[str, Any] | None,
+) -> dict[str, Any]:
+    eligibility = evaluate_productive_gate(
+        estimated_or_cost=estimated_or_cost,
+        input_payload=input_payload,
+    )
+    if eligibility["eligibility_result"] != "OR_ALLOWED":
+        return {
+            "summary_header": "DEBUG HYPOTHESIS REVIEW GATE",
+            "workflow_id": workflow_id,
+            "skill": "janus-debug",
+            "task_label": task_label,
+            "selected_path": "codex_only_pre_gate",
+            "normal_target_model": normal_target_model,
+            "delegated_model_label": delegated_model_label,
+            "eligibility_result": eligibility["eligibility_result"],
+            "eligibility_reason_code": eligibility["reason_code"],
+            "evidence_status": eligibility.get("evidence_status", "N_A"),
+            "budget_profile": eligibility.get("budget_profile", "N_A"),
+            "per_call_cap_usd": eligibility.get("per_call_cap_usd"),
+            "session_cap_usd": eligibility.get("session_cap_usd"),
+            "validation_result": "PASS",
+            "final_outcome": "LOCAL_CODEX_PATH_SELECTED",
+            "operator_result_lines": [
+                f"Ergebnis: {eligibility['eligibility_result']}",
+                "Route: janus-debug bleibt Codex-only vor dem sichtbaren OR-Gate",
+            ],
+            "operator_message": eligibility["message"],
+        }
+    return {
+        **prompt_summary(
+            workflow_id=workflow_id,
+            task_label=task_label,
+            normal_target_model=normal_target_model,
+            delegated_model_label=delegated_model_label,
+            estimated_or_cost=estimated_or_cost,
+            cost_estimate_confidence_percent=cost_estimate_confidence_percent,
+        ),
+        "eligibility_result": eligibility["eligibility_result"],
+        "eligibility_reason_code": eligibility["reason_code"],
+        "evidence_status": eligibility.get("evidence_status", "N_A"),
+        "budget_profile": eligibility.get("budget_profile", "N_A"),
+        "per_call_cap_usd": eligibility.get("per_call_cap_usd"),
+        "session_cap_usd": eligibility.get("session_cap_usd"),
+    }
+
+
 def _load_dispatcher_module():
     import codex_bounded_delegation_dispatcher as dispatcher
 
     return dispatcher
+
+
+def _resolve_input_payload(
+    *,
+    input_payload: dict[str, Any] | None,
+    input_package_path: Path | None,
+) -> dict[str, Any] | None:
+    if input_payload is not None:
+        return input_payload
+    if input_package_path is None:
+        return None
+    return load_json(input_package_path.resolve())
 
 
 def run_consumer_flow(
@@ -310,14 +435,54 @@ def run_consumer_flow(
     )
 
     if choice == "prompt":
-        result = dispatcher.with_codex_owned_outcome(dispatcher.prompt_summary(args, workflow_id))
+        result = dispatcher.with_codex_owned_outcome(
+            productive_gate_summary(
+                workflow_id=workflow_id,
+                task_label=task_label,
+                normal_target_model=normal_target_model,
+                delegated_model_label=delegated_model_label,
+                estimated_or_cost=estimated_or_cost,
+                cost_estimate_confidence_percent=cost_estimate_confidence_percent,
+                input_payload=input_payload,
+            )
+        )
         write_json(run_dir / "consumer_operator_choice_prompt.json", result)
         return result
     if choice == "local":
         result = dispatcher.with_codex_owned_outcome(dispatcher.local_summary(args, workflow_id))
         write_json(run_dir / "consumer_operator_choice_local.json", result)
         return result
-    result = dispatcher.with_codex_owned_outcome(dispatcher.invoke_debug_hypothesis_review(args, workflow_id))
+    resolved_input_payload = _resolve_input_payload(
+        input_payload=input_payload,
+        input_package_path=input_package_path,
+    )
+    gate_result = productive_gate_summary(
+        workflow_id=workflow_id,
+        task_label=task_label,
+        normal_target_model=normal_target_model,
+        delegated_model_label=delegated_model_label,
+        estimated_or_cost=estimated_or_cost,
+        cost_estimate_confidence_percent=cost_estimate_confidence_percent,
+        input_payload=resolved_input_payload,
+    )
+    if gate_result["final_outcome"] != "AWAITING_OPERATOR_CHOICE":
+        result = dispatcher.with_codex_owned_outcome(
+            gate_result
+        )
+        write_json(run_dir / "consumer_operator_choice_delegated.json", result)
+        return result
+    result = dispatcher.with_codex_owned_outcome(
+        delegated_selection_recorded_summary(
+            workflow_id=workflow_id,
+            task_label=task_label,
+            normal_target_model=normal_target_model,
+            delegated_model_label=delegated_model_label,
+            estimated_or_cost=estimated_or_cost,
+            cost_estimate_confidence_percent=cost_estimate_confidence_percent,
+            gate_result=gate_result,
+            input_package_path=input_package_path,
+        )
+    )
     write_json(run_dir / "consumer_operator_choice_delegated.json", result)
     return result
 
@@ -340,14 +505,20 @@ def main() -> int:
     run_dir = build_run_dir(workflow_id)
     run_dir.mkdir(parents=True, exist_ok=True)
 
+    input_payload = None
+    if args.input_package_json is not None:
+        input_payload = load_json(args.input_package_json.resolve())
+        write_json(run_dir / "input_package.json", input_payload)
+
     if choice == "prompt":
-        result = prompt_summary(
+        result = productive_gate_summary(
             workflow_id=workflow_id,
             task_label=args.task_label,
             normal_target_model=args.normal_target_model,
             delegated_model_label=args.delegated_model_label,
             estimated_or_cost=args.estimated_or_cost,
             cost_estimate_confidence_percent=args.cost_estimate_confidence_percent,
+            input_payload=input_payload,
         )
         write_json(run_dir / "operator_choice_prompt.json", result)
         output(result)
@@ -366,57 +537,34 @@ def main() -> int:
 
     if args.input_package_json is None:
         raise SystemExit("--input-package-json is required for operator-choice delegated")
-    if args.fixture_result_json is None:
-        raise SystemExit("--fixture-result-json is required for operator-choice delegated in local validation mode")
 
-    input_payload = load_json(args.input_package_json.resolve())
-    input_issues = validate_input_package(input_payload)
-    write_json(run_dir / "input_package.json", input_payload)
+    gate_result = productive_gate_summary(
+        workflow_id=workflow_id,
+        task_label=args.task_label,
+        normal_target_model=args.normal_target_model,
+        delegated_model_label=args.delegated_model_label,
+        estimated_or_cost=args.estimated_or_cost,
+        cost_estimate_confidence_percent=args.cost_estimate_confidence_percent,
+        input_payload=input_payload,
+    )
+    if gate_result["final_outcome"] != "AWAITING_OPERATOR_CHOICE":
+        write_json(run_dir / "operator_choice_delegated.json", gate_result)
+        output(gate_result)
+        return 0
 
-    result_payload = load_json(args.fixture_result_json.resolve())
-    result_issues = validate_result_payload(result_payload)
-    delegated_result_markdown = render_result_markdown(result_payload)
-    write_text(run_dir / "delegated_result.md", delegated_result_markdown)
-
-    validation_pass = not input_issues and not result_issues
-    validation_summary = {
-        "workflow_id": workflow_id,
-        "input_validation_pass": not input_issues,
-        "result_validation_pass": not result_issues,
-        "input_issues": input_issues,
-        "result_issues": result_issues,
-        "redaction_ready": input_payload.get("redaction_ready"),
-        "redaction_check": result_payload.get("redaction_check"),
-        "accepted_for_local_debug": validation_pass and result_payload.get("status") == "PASS",
-    }
-    write_json(run_dir / "validation_summary.json", validation_summary)
-
-    operator_summary = {
-        "summary_header": "DEBUG HYPOTHESIS REVIEW RESULT",
-        "workflow_id": workflow_id,
-        "skill": "janus-debug",
-        "task_label": args.task_label,
-        "selected_path": "delegated_assist_only_hypothesis_review",
-        "normal_target_model": args.normal_target_model,
-        "delegated_model_label": args.delegated_model_label,
-        "validation_result": "PASS" if validation_pass else "FAIL",
-        "final_outcome": (
-            "DEBUG_HYPOTHESIS_REVIEW_READY_FOR_CODEX_VALIDATION"
-            if validation_pass
-            else "DEBUG_HYPOTHESIS_REVIEW_REJECT_AND_FALLBACK"
-        ),
-        "input_package_path": str(run_dir / "input_package.json"),
-        "delegated_result_path": str(run_dir / "delegated_result.md"),
-        "validation_summary_path": str(run_dir / "validation_summary.json"),
-        "operator_message": (
-            "Delegated debug hypothesis review stayed bounded and assist-only. Codex must still validate the hypotheses and choose the next local debug step."
-            if validation_pass
-            else "Delegated debug hypothesis review failed bounded validation. Fallback to Codex-only debug is required."
-        ),
-    }
-    write_json(run_dir / "operator_summary.json", operator_summary)
+    operator_summary = delegated_selection_recorded_summary(
+        workflow_id=workflow_id,
+        task_label=args.task_label,
+        normal_target_model=args.normal_target_model,
+        delegated_model_label=args.delegated_model_label,
+        estimated_or_cost=args.estimated_or_cost,
+        cost_estimate_confidence_percent=args.cost_estimate_confidence_percent,
+        gate_result=gate_result,
+        input_package_path=run_dir / "input_package.json",
+    )
+    write_json(run_dir / "operator_choice_delegated.json", operator_summary)
     output(operator_summary)
-    return 0 if validation_pass else 1
+    return 0
 
 
 if __name__ == "__main__":
