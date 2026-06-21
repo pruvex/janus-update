@@ -118,6 +118,7 @@ Offer the operator choice only when all are true:
 - evidence can be safely redacted
 - Codex still owns reproduction, validation, and the next debug action
 - no local command execution needs to be delegated
+- the productive gate confirms this is exactly `debug_hypothesis_review` and the pre-call estimate stays within the bounded debug budget
 
 Operator wording:
 
@@ -142,7 +143,8 @@ Consumer integration path for everyday `janus-debug` work:
 
 - build one redacted package with `codex_debug_hypothesis_review_runner.build_consumer_input_package(...)`
 - enter the operator gate through `codex_debug_hypothesis_review_runner.run_consumer_flow(...)`
-- keep any delegated result bounded to hypothesis review only, with Codex still owning the next local verifier and final acceptance
+- if the productive gate rejects the slice, do not show an OR choice; keep the step deterministically Codex-only
+- for the current `TASK-SPEC23.1` rollout, treat the OR branch as gate-only and non-executing; recording the selection is allowed, but delegated hypothesis-review execution waits for `TASK-SPEC23.2`
 
 Do not treat this as production routing, broad sidecar debug authority, or a replacement for the normal `janus-debug` evidence chain.
 
