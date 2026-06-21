@@ -4,11 +4,23 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-SPEC24.2 - Apply the Lean-Dev rule to current OR and workhorse infrastructure flow entrypoints
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-SPEC24.2_final_audit.md` (PASS)
+- **Spec**: `documentation/SPEC/Spec Done/24_lean_dev_governance_fuer_or_und_workhorse_arbeit.md`
+- **Parent Task**: `documentation/tasks/TASK-SPEC24_lean_dev_governance_fuer_or_und_workhorse_arbeit.md`
+- **Precheck**: `documentation/tasks/TASK-SPEC24.2_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-SPEC24.2_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-SPEC24.2_AUDIT_PACKAGE.md`
+- **Validation**: `TASK-SPEC24.2` schliesst den zweiten und letzten eng gebundenen Spec-24-Slice als operative Lean-vs-strict-Anwendung auf die aktuellen repo-owned OR-/Workhorse-Entry-Points ab. `development/README.md`, `development/DEV_STATE.md`, `documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md` und die repo-versionierte `documentation/codex/skills/janus-git-governance/SKILL.md` markieren jetzt konsistent, welche aktuellen Dev-Einstiege bounded Lean-Dev nutzen duerfen und wo weiterhin strikte Git-, Freigabe- und Scope-Grenzen gelten. Final Audit PASS mit fokussierter Audit-Package-, Task-Handoff-, Precheck-, Execution-Result-, scoped-diff-, Konsistenz- und Strict-Boundary-Evidenz. Spec 24 ist damit insgesamt DONE, ohne Janus-Produktworkflow-Aufweichung, installierte Skill-Kopien, Produktionsrouting oder Release-Autoritaet in den Lean-Modus zu ziehen.
+- **Changed Files**: `development/README.md`, `development/DEV_STATE.md`, `documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md`, `documentation/codex/skills/janus-git-governance/SKILL.md`, `documentation/tasks/TASK-SPEC24.2_execution_result.md`, `documentation/tasks/TASK-SPEC24.2_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC24.2_final_audit.md`, `documentation/SPEC/Spec Done/24_lean_dev_governance_fuer_or_und_workhorse_arbeit.md`.
+
 ### TASK-SPEC24.1 - Codify the Lean-Dev eligibility, minimum evidence, and escalation rules
 
 - **Status**: DONE
 - **Final Audit**: `documentation/tasks/TASK-SPEC24.1_final_audit.md` (PASS)
-- **Spec**: `documentation/SPEC/24_lean_dev_governance_fuer_or_und_workhorse_arbeit.md`
+- **Spec**: `documentation/SPEC/Spec Done/24_lean_dev_governance_fuer_or_und_workhorse_arbeit.md`
 - **Parent Task**: `documentation/tasks/TASK-SPEC24_lean_dev_governance_fuer_or_und_workhorse_arbeit.md`
 - **Precheck**: `documentation/tasks/TASK-SPEC24.1_preimplementation_check.md`
 - **Execution Result**: `documentation/tasks/TASK-SPEC24.1_execution_result.md`

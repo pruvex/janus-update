@@ -1,16 +1,16 @@
 ﻿# CURRENT_STATE
 
 ## Current Snapshot Update
-As of `2026-06-21`, the documentation closeout for `TASK-SPEC24.1` is complete with canonical state `PASS`. The accepted Lean-Dev governance rule is now synchronized into the central registry, compact project snapshot, and parent task artifact, while Spec 24 intentionally remains open for `TASK-SPEC24.2`.
+As of `2026-06-21`, the documentation sync for `TASK-SPEC24.2` and Spec 24 is complete with canonical state `PASS`. The Lean-Dev governance closeout is now synchronized across the task artifact, central registry, compact project snapshot, and the archived Spec, so Spec 24 is fully DONE rather than partially open.
 
-Current goal: keep Spec 24 narrow and move next into the operational application slice that marks current OR-/workhorse-entrypoints as Lean or strict.
+Current goal: hand off the completed Spec-24 governance slice to `janus-git-governance` for a later scoped checkpoint commit when the user wants to save this documentation state.
 
 Active phase: `janus-documentation-update`, canonical state `PASS`.
 
 Last Codex work:
-- synchronized the task-scoped `TASK-SPEC24.1` final-audit PASS into Janus documentation without falsely closing Spec 24
-- added a task-sharp closeout line to the parent `TASK-SPEC24` artifact
-- recorded the Lean-Dev governance codification slice in the central registry and compact project-state snapshot
+- synchronized the `TASK-SPEC24.2` final-audit PASS into the task artifact, central registry, and compact project-state snapshot
+- corrected the remaining partial-closeout wording that still treated Spec 24 as open after the second task had already passed final audit
+- kept the closeout explicitly Dev-governance-only, with no Janus product workflow activation, release action, or production-routing change
 
 Changed files:
 - `documentation/tasks/TASK-SPEC24_lean_dev_governance_fuer_or_und_workhorse_arbeit.md`
@@ -20,20 +20,129 @@ Changed files:
 - `documentation/codex/SKILL_USAGE_LOG.md`
 
 Checks / validation performed:
-- `python C:\Users\pruve\.codex\skills\janus-documentation-update\scripts\validate_doc_update.py --repo C:\KI\Janus-Projekt --marker TASK-SPEC24.1 --require documentation/01_CENTRAL_TASK_REGISTRY.md --require PROJECT_STATE.md --require documentation/tasks/TASK-SPEC24_lean_dev_governance_fuer_or_und_workhorse_arbeit.md`: PASS
-- scoped `git diff --check` for the documentation-update files: PASS with CRLF warning only for `documentation/ai/CURRENT_STATE.md`
-- staged-only git guard (`git diff --cached --name-only`): PASS
+- `python C:\Users\pruve\.codex\skills\janus-documentation-update\scripts\validate_doc_update.py --repo C:\KI\Janus-Projekt --marker TASK-SPEC24.2 --require documentation/tasks/TASK-SPEC24_lean_dev_governance_fuer_or_und_workhorse_arbeit.md --require documentation/01_CENTRAL_TASK_REGISTRY.md --require PROJECT_STATE.md`: PASS
+- scoped `git diff --check -- documentation/tasks/TASK-SPEC24_lean_dev_governance_fuer_or_und_workhorse_arbeit.md documentation/01_CENTRAL_TASK_REGISTRY.md PROJECT_STATE.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS with only the existing `CURRENT_STATE.md` CRLF-to-LF warning
+- staged-only guard via `git diff --cached --name-only`: PASS
 
 Open risks:
-- `TASK-SPEC24.2` remains intentionally pending; it is the separate operational application of the Lean-Dev rule to current OR-/workhorse-entrypoints
+- no documentation blocker remains inside the completed Spec-24 slice
+- no new commit or push has happened for this local documentation-sync state, so a remote such as GitHub or `backup` may not contain it yet
+
+Next recommended step for ChatGPT: treat Spec 24 as fully completed Lean-Dev governance groundwork and route any follow-up work as a new bounded Dev/OR infrastructure slice instead of reopening this closeout.
+
+Next recommended step for Codex: use `janus-git-governance` with `5.4` low to prepare a scoped checkpoint commit only if the user explicitly wants to save and push this Spec-24 documentation closeout now.
+
+Last updated: `2026-06-21 18:05:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-21`, `TASK-SPEC24.2` and Spec 24 have passed final audit with canonical state `HANDOFF`. The re-audit repaired only the missing pipeline-completion section in the compact audit package; the operational Lean-vs-strict entrypoint mapping remains unchanged and validated.
+
+Current goal: run `janus-documentation-update` to synchronize the completed Spec-24 governance closeout before any later scoped checkpoint commit.
+
+Active phase: `janus-final-audit`, canonical state `HANDOFF`.
+
+Last Codex work:
+- refreshed the existing audit package with explicit completion status for both Spec-24 tasks and a bounded blocker-delta summary
+- re-audited the same repo-owned governance slice to PASS with no scope expansion or product/runtime change
+- marked Spec 24 `DONE` and moved it to `documentation/SPEC/Spec Done/`
+
+Changed files:
+- `documentation/tasks/TASK-SPEC24.2_AUDIT_PACKAGE.md`
+- `documentation/tasks/TASK-SPEC24.2_final_audit.md`
+- `documentation/SPEC/Spec Done/24_lean_dev_governance_fuer_or_und_workhorse_arbeit.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- audit-package completeness, task-completion, no-debug-indicator, and Spec-Done target-collision checks: PASS
+- task-handoff, precheck, and execution-result validators: PASS
+- scoped `git diff --check`: PASS with only the existing `CURRENT_STATE.md` CRLF-to-LF warning
+- Lean-vs-strict consistency and strict-boundary negative checks: PASS
+- final-audit validator: PASS
+
+Open risks:
+- no implementation defect remains in the completed governance slice
+- documentation sync is still required before a later scoped checkpoint commit
+- no new commit or push has happened for this local audit state, so a remote such as GitHub or `backup` may not contain it
+
+Next recommended step for ChatGPT: treat Spec 24 as completed governance work and keep future work on a new bounded Dev/OR infrastructure slice.
+
+Next recommended step for Codex: use `janus-documentation-update` with `5.4` low on `documentation/tasks/TASK-SPEC24.2_final_audit.md` and `documentation/SPEC/Spec Done/24_lean_dev_governance_fuer_or_und_workhorse_arbeit.md`.
+
+Last updated: `2026-06-21 17:36:42 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-21`, the independent final audit for `TASK-SPEC24.2` is `BLOCKED` only by an incomplete audit-package field. The implemented Lean-vs-strict entrypoint mapping, task handoff, precheck, execution artifact, scoped diff, and boundary checks all passed; the package must now explicitly state the pipeline completion status before a valid PASS can be issued.
+
+Current goal: refresh the `TASK-SPEC24.2` audit package with its explicit pipeline completion status and re-run the same task-scoped final audit.
+
+Active phase: `janus-final-audit`, canonical state `BLOCKED`.
+
+Last Codex work:
+- independently audited the bounded repo-owned Lean-Dev governance slice without touching Janus product logic or installed skill copies
+- confirmed that the Lean-eligible/strict-only maps, stop gates, production-routing exclusions, and Git/freigabe boundaries are consistent
+- documented the sole blocker: the compact audit package lacks the required explicit pipeline completion status
+
+Changed files:
+- `documentation/tasks/TASK-SPEC24.2_final_audit.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python documentation/codex/scripts/search_what_i_learned.py --query "audit package pipeline completion status final audit"`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-task-breakdown\scripts\validate_task_handoff.py --task documentation/tasks/TASK-SPEC24_lean_dev_governance_fuer_or_und_workhorse_arbeit.md --target TASK-SPEC24.2`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py documentation/tasks/TASK-SPEC24.2_preimplementation_check.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py documentation/tasks/TASK-SPEC24.2_execution_result.md`: PASS
+- scoped `git diff --check` for the four governance files plus bound task artifacts: PASS
+- Lean-vs-strict consistency and strict-boundary negative checks: PASS
+
+Open risks:
+- no implementation defect was found, but the final-audit input contract requires the pipeline completion status to be explicit in the audit package
+- no new commit or push has happened for this local audit state, so a remote such as GitHub or `backup` may not contain it
+
+Next recommended step for ChatGPT: keep the repair task-sharp; only the missing audit-package completion/evidence section should change before re-audit.
+
+Next recommended step for Codex: use `janus-executioner` with `5.4` low to refresh `documentation/tasks/TASK-SPEC24.2_AUDIT_PACKAGE.md`, then re-run `janus-final-audit` with `5.5` high in the same chat.
+
+Last updated: `2026-06-21 17:31:52 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-21`, `TASK-SPEC24.2` is locally implemented with canonical state `HANDOFF`. The second Spec-24 slice now operationalizes which current repo-owned OR-/workhorse-entrypoints are Lean-Dev eligible versus strict-only, while keeping Janus product skills, installed skill copies, release authority, and production-routing claims explicitly outside the slice.
+
+Current goal: run final audit for `TASK-SPEC24.2` so the operational Lean-vs-strict application layer becomes an accepted working rule for the current repo-owned Dev entrypoints.
+
+Active phase: `janus-executioner`, canonical state `HANDOFF`.
+
+Last Codex work:
+- implemented the operative Lean-vs-strict entrypoint mapping across the active repo-owned Dev governance sources
+- marked the current repo-owned Dev entries, stop-gates, and Git/freigabe boundaries so Lean handling is now visible in everyday Dev workflow guidance
+- preserved the strict boundary that keeps Janus product skills, installed skill copies, release authority, and production-routing claims outside this slice
+
+Changed files:
+- `development/README.md`
+- `development/DEV_STATE.md`
+- `documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md`
+- `documentation/codex/skills/janus-git-governance/SKILL.md`
+- `documentation/tasks/TASK-SPEC24.2_AUDIT_PACKAGE.md`
+- `documentation/tasks/TASK-SPEC24.2_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `git diff --check -- development/README.md development/DEV_STATE.md documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md documentation/codex/skills/janus-git-governance/SKILL.md`: PASS
+- targeted consistency check that the same current repo-owned OR-/workhorse-entrypoints are described consistently as Lean-Dev or strict-only across the four bound files: PASS
+- targeted negative check that Janus product skills, installed skill copies, release authority, and production-routing authority remain explicitly outside this slice: PASS
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py documentation/tasks/TASK-SPEC24.2_execution_result.md`: PASS
+
+Open risks:
+- `TASK-SPEC24.2` is implemented locally but not yet independently audited
+- the slice must stay repo-owned and must not silently modify installed skill copies under `C:\Users\pruve\.codex\skills`
 - Lean Dev mode must remain excluded from Janus product work, security/privacy, release/Git governance, unclear scope, and new productive approvals
-- no commit or push has happened for this local documentation state, so a remote such as GitHub or `backup` may not contain it
+- no new commit or push has happened for this local execution state, so a remote such as GitHub or `backup` may not contain it
 
-Next recommended step for ChatGPT: keep `TASK-SPEC24.2` as the only next active Spec-24 slice and preserve the strict product/Dev boundary.
+Next recommended step for ChatGPT: review `TASK-SPEC24.2` only as an operational Dev-governance application slice and keep broader Dev migration or Janus product workflow changes out of scope.
 
-Next recommended step for Codex: use `janus-task-breakdown` or `janus-preimplementation-check` on `TASK-SPEC24.2`, depending on whether the next slice needs refinement first.
+Next recommended step for Codex: use `janus-final-audit` with `5.5` high on `documentation/tasks/TASK-SPEC24.2_AUDIT_PACKAGE.md`.
 
-Last updated: `2026-06-21 17:01:20 +02:00`.
+Last updated: `2026-06-21 17:27:20 +02:00`.
 
 ## Current Snapshot Update
 As of `2026-06-21`, `TASK-SPEC24.1` is locally implemented with canonical state `HANDOFF`. The Lean-Dev rule is now codified in repo-owned governance artifacts: internal OR- and workhorse-infrastructure work may use a faster bounded mode, while Janus product work remains explicitly strict and the escalation triggers back to strict mode are now documented.

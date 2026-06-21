@@ -59,3 +59,20 @@ Minimum obligations remain:
 - a clean Git checkpoint at sensible delivery boundaries
 
 Lean mode ends immediately if scope drifts, Janus product logic becomes involved, security/privacy is touched, release/Git-governance is touched, or a new productive approval is being decided.
+
+## Current Lean-vs-Strict Entry Map
+
+Current repo-owned internal entrypoints are classified as follows:
+
+- Lean-Dev eligible:
+  - `development/README.md`, `development/DEV_STATE.md`, and `development/DEV_BACKLOG.md` when the slice stays on internal Dev-/OR-/workhorse-governance only
+  - `documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md` when the slice only operationalizes local Dev workflow, runner, telemetry, capture, or operator support for Dev-only infrastructure
+  - `documentation/codex/model-routing/*` and adjacent repo-owned Dev-workhorse support artifacts when the slice remains explicitly Dev-only and does not claim production routing or Janus product authority
+- Strict-only:
+  - Janus product skills, product backlog work, user-facing behavior, and any Janus runtime logic that affects end users
+  - release, publish, tag, merge, and public GitHub/update actions
+  - `janus-git-governance` approval steps for commit/push/tag/merge themselves
+  - installed skill working copies under `C:\Users\pruve\.codex\skills`
+  - production routing, canonical routing-table updates, and new productive approvals
+
+If one slice touches both lists, the slice is strict-only until it is split or re-routed.

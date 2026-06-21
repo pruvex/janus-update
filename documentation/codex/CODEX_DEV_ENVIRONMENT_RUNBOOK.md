@@ -45,6 +45,20 @@ Purpose: repeatable low-token workflow for Codex work inside
   canonical routing-table update, and not a broad activation of existing Janus
   skills.
 
+## Lean-vs-Strict Entry Rules
+
+- Lean-Dev eligible:
+  - repo-owned Dev-governance artifacts under `development/`
+  - this Dev-environment runbook when the slice only changes local Dev workflow guidance
+  - the dedicated Dev-workhorse entry above and adjacent repo-owned Dev-only capture, telemetry, and operator-support artifacts when the slice stays explicitly Dev-only
+- Strict-only:
+  - any Janus product skill path or user-facing runtime flow
+  - release, publish, merge, tag, and public remote actions
+  - production routing claims, canonical routing-table changes, or new productive approvals
+  - installed skill working copies under `C:\Users\pruve\.codex\skills`
+
+If a requested slice crosses both categories, stop Lean handling and route back through the strict Janus path.
+
 ## Git Safety
 
 - Local hook path should be:
@@ -55,6 +69,7 @@ Purpose: repeatable low-token workflow for Codex work inside
   - `python documentation/codex/skills/janus-git-governance/scripts/git_guard.py C:\KI\Janus-Projekt`
   - `python documentation/codex/skills/janus-git-governance/scripts/propose_changesets.py C:\KI\Janus-Projekt`
   - `git diff --check`
+- Even in Lean-Dev mode, commit/push/tag/merge remain explicit `janus-git-governance` boundaries and require user approval.
 - Stage explicit pathspecs only.
 - Commit/push/tag/merge/release only after explicit user approval.
 - Development commits go to `backup/develop`, never `origin`.

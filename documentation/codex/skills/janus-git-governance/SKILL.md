@@ -73,6 +73,8 @@ Prefer small, coherent commits:
 
 Use Lean Delivery Mode for normal Janus work. The objective is reliable recovery with minimal Git overhead, not a commit for every intermediate artifact.
 
+For internal Dev-/OR-/workhorse-infrastructure slices, Lean Delivery may be used only after the active governance sources classify the slice as Lean-Dev eligible. This skill remains a strict boundary even then: commit, push, tag, merge, release, and remote decisions still require explicit user approval and never become automatic just because the implementation slice itself ran in Lean mode.
+
 - one completed delivery block gets one commit: implementation, directly related tests, required evidence, closeout documentation, `CURRENT_STATE.md`, and `SKILL_USAGE_LOG.md` belong together
 - do not create separate commits merely because code, tests, telemetry, task artifacts, or documentation live in different folders
 - do not create a checkpoint after each investigation, fixture run, planning note, or status update; checkpoint after the bounded work item has reached its intended validation boundary
@@ -80,6 +82,12 @@ Use Lean Delivery Mode for normal Janus work. The objective is reliable recovery
 - keep unrelated pre-existing changes parked. A dirty worktree is context, not an automatic cleanup task.
 - use strict multi-commit splitting only for genuinely independent product changes, a dedicated skill-rule change, release-only work, or a risk boundary that needs independent rollback
 - a dedicated governance skill change may include its matching `CURRENT_STATE.md` and `SKILL_USAGE_LOG.md` update as one governance commit; it must not include product work
+
+Strict-only Git boundary even during Lean Dev work:
+
+- explicit user approval is still required for `git add`, `git commit`, and `git push`
+- `backup/develop` remains the only normal remote target for development checkpoints
+- product, release, and public-remote decisions never inherit Lean authority from a Dev-only slice
 
 Lean mode for small validated Janus work means:
 

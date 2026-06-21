@@ -4,10 +4,10 @@
 Janus Dev And OR Infrastructure
 
 ## Current Goal
-Activate the first approved Lean Dev mode for internal OR- and workhorse-infrastructure work without weakening the strict Janus product pipeline.
+Activate the first approved Lean Dev mode for internal OR- and workhorse-infrastructure work by marking current repo-owned entrypoints as Lean-Dev or strict-only without weakening the strict Janus product pipeline.
 
 ## Active Phase
-Lean governance codification
+Lean governance operational application
 
 ## Current Source Of Truth
 - `development/README.md`
@@ -23,16 +23,17 @@ Lean governance codification
 - Lean Dev mode ends immediately when product logic, security/privacy, release/Git-governance, unclear scope, or new productive approval becomes involved.
 
 ## Open Work
-- Apply the approved Lean Dev rule to the current OR and workhorse entrypoints in a later bounded slice.
+- Apply the approved Lean Dev rule to the current repo-owned OR and workhorse entrypoints in the active bounded slice.
 - Migrate mixed Dev- and OR-infrastructure topics out of the Janus backlog in a later bounded slice.
 - Keep the separation between Lean Dev work and strict Janus product work explicit in future governance changes.
 
 ## Open Risks
 - Mixed Dev- and OR-infrastructure topics still exist in Janus artifacts until the migration slice is executed.
 - Lean Dev mode must not bleed into Janus product work, release work, or security/privacy-sensitive changes.
+- Installed skill working copies under `C:\Users\pruve\.codex\skills` must not become an implicit execution target for Lean-Dev governance slices.
 
 ## Next Recommended Step
-Apply the Lean Dev rule to the current OR and workhorse Dev entrypoints after the governance codification slice is validated.
+Implement the active bounded slice that marks current repo-owned OR-/workhorse-entrypoints as Lean-Dev or strict-only, then re-audit the result before any broader Dev-governance migration work.
 
 ## Last Updated
-2026-06-21 14:44 +02:00
+2026-06-21 17:11 +02:00
