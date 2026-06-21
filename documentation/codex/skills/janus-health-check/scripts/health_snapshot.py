@@ -224,20 +224,26 @@ def or_telemetry_summary(path: Path | None) -> dict[str, object] | None:
     rows = parse_jsonl(path)
     models = sorted({str(row["or_model"]) for row in rows if row.get("or_model") not in {None, "", "N_A"}})
     skills = sorted({str(row["skill_id"]) for row in rows if row.get("skill_id")})
+    routing_mode_counts = collections.Counter(str(row.get("routing_mode", "N_A")) for row in rows)
     validation_counts = collections.Counter(str(row.get("validation_result", "N_A")) for row in rows)
     recommendation_counts = collections.Counter(str(row.get("recommendation_signal", "N_A")) for row in rows)
+    final_outcome_counts = collections.Counter(str(row.get("final_outcome", "N_A")) for row in rows)
+    codex_outcome_counts = collections.Counter(str(row.get("codex_owned_outcome_status", "N_A")) for row in rows)
     fallback_count = sum(1 for row in rows if str(row.get("fallback_used", "NO")).upper() == "YES")
     summary: dict[str, object] = {
         "source": str(path),
         "record_count": len(rows),
         "models_seen": models,
         "skills_seen": skills,
+        "routing_mode_counts": dict(routing_mode_counts),
         "estimated_cost_total": round(_sum_numeric(rows, "estimated_or_cost"), 8),
         "actual_cost_total": round(_sum_numeric(rows, "actual_or_cost"), 8),
         "confidence_average": _average_numeric(rows, "cost_estimate_confidence_percent"),
         "fallback_count": fallback_count,
         "validation_result_counts": dict(validation_counts),
         "recommendation_signal_counts": dict(recommendation_counts),
+        "final_outcome_counts": dict(final_outcome_counts),
+        "codex_owned_outcome_status_counts": dict(codex_outcome_counts),
     }
     if isinstance(summary["confidence_average"], float):
         summary["confidence_average"] = round(summary["confidence_average"], 2)
