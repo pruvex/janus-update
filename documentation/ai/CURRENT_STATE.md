@@ -1,17 +1,16 @@
 ﻿# CURRENT_STATE
 
 ## Current Snapshot Update
-As of `2026-06-21`, the documentation sync for `TASK-SPEC22.1` is complete with canonical state `PASS`. The first productive Spec-22 slice is now reflected in the central task registry, the compact project-state snapshot, and the parent task artifact while Spec 22 itself remains intentionally open.
+As of `2026-06-21`, the documentation sync for `TASK-SPEC22.4` is complete with canonical state `PASS`. Spec 22 is now canonically closed across the parent task, central registry, project snapshot, and Spec-Done artifact, while the dedicated Dev-workhorse path remains a single Dev-only, operator-invoked bounded lane with file-first telemetry, truthful actual-cost closeout, and healthcheck visibility only.
 
-Current goal: preserve the sealed `TASK-SPEC22.1` boundary contract as the new canonical documentation state and keep `TASK-SPEC22.2` through `TASK-SPEC22.4` paused until their own bound pipeline steps are explicitly released.
+Current goal: preserve the completed Spec-22 documentation state and decide whether to create a scoped checkpoint commit for the bounded Dev-workhorse slice.
 
 Active phase: `janus-documentation-update`, canonical state `PASS`.
 
 Last Codex work:
-- classified the sync as `DOC-SKILL-011` and kept it local-only under `5.4` medium after the completed final audit
-- recorded `TASK-SPEC22.1` as the first closed Spec-22 slice in the central registry without implying operator gate, delegated runtime, acceptance, or telemetry completion
-- updated the compact project-state summary so the new dedicated `productive_dev_workhorse_path` boundary and the fail-closed malformed-cost hardening are visible as the current sealed Spec-22 baseline
-- added the parent-task closeout note while explicitly preserving that `TASK-SPEC22.2` through `TASK-SPEC22.4` remain open
+- recorded the `TASK-SPEC22.4` PASS closeout in the central registry and the compact project snapshot
+- synchronized the parent `TASK-SPEC22` artifact to the moved `Spec Done` path and added the missing `TASK-SPEC22.4` closeout line
+- kept `CHANGELOG.md` and `WHAT_I_LEARNED.md` untouched because this was a Dev-only documentation closeout with no new user-facing product behavior and no new validated reusable pattern beyond already captured OR worker governance rules
 
 Changed files:
 - `documentation/01_CENTRAL_TASK_REGISTRY.md`
@@ -21,21 +20,203 @@ Changed files:
 - `documentation/codex/SKILL_USAGE_LOG.md`
 
 Checks / validation performed:
-- `python C:\Users\pruve\.codex\skills\janus-documentation-update\scripts\validate_doc_update.py --repo C:\KI\Janus-Projekt --marker TASK-SPEC22.1 --require documentation/01_CENTRAL_TASK_REGISTRY.md --require PROJECT_STATE.md --require documentation/tasks/TASK-SPEC22_operator_gesteuerter_or_arbeitspferd_produktivmodus_fuer_dev_arbeit.md`: PASS
+- `python C:\\Users\\pruve\\.codex\\skills\\janus-documentation-update\\scripts\\validate_doc_update.py --repo C:\\KI\\Janus-Projekt --marker TASK-SPEC22.4 --require documentation/01_CENTRAL_TASK_REGISTRY.md --require PROJECT_STATE.md --require documentation/tasks/TASK-SPEC22_operator_gesteuerter_or_arbeitspferd_produktivmodus_fuer_dev_arbeit.md --require documentation/ai/CURRENT_STATE.md`: PASS
 - scoped `git diff --check`: PASS
+
+Open risks:
+- this closeout is documentation-only and must not be misread as broad OR activation for existing Janus skills
+- the worktree remains mixed outside this bounded slice and still needs deliberate scoping before any commit
+- no commit or push has happened, so a remote such as GitHub or `backup` may not contain this newest documentation state
+
+Next recommended step for ChatGPT: review the completed Spec-22 closeout as a bounded Dev-only documentation sync and keep broader OR rollout decisions separate.
+
+Next recommended step for Codex: use `janus-git-governance` with `5.4` medium only if the user explicitly wants a scoped checkpoint commit for the `TASK-SPEC22.4` closeout.
+
+Last updated: `2026-06-21 13:24:13 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-21`, Spec 22 and its final task `TASK-SPEC22.4` have completed the independent final audit with canonical state `PASS`. The dedicated operator-invoked Dev-workhorse path now has bounded file-first artifacts, session telemetry, truthful actual-cost or missing-usage closeout, and healthcheck visibility; it remains Dev-only and does not activate global OR or production routing.
+
+Current goal: synchronize the passed Spec-22 audit into the canonical documentation and project state, then decide whether to prepare a clean, scoped checkpoint commit.
+
+Active phase: `janus-final-audit`, canonical state `PASS`.
+
+Last Codex work:
+- independently audited `TASK-SPEC22.4` against its compact audit package, bound task, precheck, execution result, and direct code changes
+- confirmed the dedicated session telemetry, actual-cost fallback wording, and healthcheck outcome visibility without widening the sealed Spec-22 routing boundary
+- recorded `TASK-SPEC22.4_final_audit.md` and marked Spec 22 as implemented; the move to `Spec Done` is the required final-audit closeout action
+
+Changed files:
+- `documentation/tasks/TASK-SPEC22.4_final_audit.md`
+- `documentation/SPEC/Spec Done/22_operator_gesteuerter_or_arbeitspferd_produktivmodus_fuer_dev_arbeit.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m unittest documentation.codex.model-routing.tests.test_codex_dev_workhorse_runner`: PASS (`11` tests)
+- `python -m unittest documentation.codex.model-routing.tests.test_assistive_or_review_capture_dispatcher`: PASS (`4` tests)
+- targeted `py_compile`: PASS
+- scoped `git diff --check`: PASS
+- `validate_final_audit.py documentation/tasks/TASK-SPEC22.4_final_audit.md`: PASS
+
+Open risks:
+- Spec 22 remains a single Dev-only, operator-invoked path; it must not be interpreted as broad existing-skill OR activation or production routing
+- the worktree remains mixed outside this bounded slice and must be split before any commit
+- no commit or push has happened, so a remote such as GitHub or `backup` may not contain this newest audit state
+
+Next recommended step for ChatGPT: review the final audit and retain the Dev-only boundary when discussing any future OR rollout.
+
+Next recommended step for Codex: use `janus-documentation-update` with `5.4` medium to synchronize the Spec-22 PASS state, then use `janus-git-governance` only if a scoped checkpoint commit is explicitly approved.
+
+Last updated: `2026-06-21 02:20:01 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-21`, `TASK-SPEC22.4` is locally implemented with canonical state `HANDOFF`. The dedicated Dev-workhorse path now writes one bounded session telemetry row, surfaces truthful actual-cost closeout or explicit missing-usage fallback wording, and exposes the new path family in healthcheck summaries, while the sealed eligibility, gate, and delegated-runtime boundaries from `TASK-SPEC22.1` through `TASK-SPEC22.3` remain unchanged.
+
+Current goal: complete independent final audit of the last Spec-22 slice so the dedicated Dev-workhorse rollout is closed with operational visibility and truthful cost closeout, but still without production routing semantics.
+
+Active phase: `janus-executioner`, canonical state `HANDOFF`.
+
+Last Codex work:
+- extended the dedicated `codex_dev_workhorse_runner.py` with a Dev-workhorse session-closeout layer that persists one session JSONL row, one operator summary, and one healthcheck summary for non-prompt runs
+- kept the existing bounded delegated dispatcher unchanged and added only the final telemetry and cost-closeout seam above it
+- extended `health_snapshot.py` with routing-mode, final-outcome, and Codex-owned outcome summary buckets so the dedicated Dev-workhorse telemetry family is visible as its own bounded slice
+- updated focused runner regression coverage and the Dev-environment runbook to reflect truthful actual-cost display and missing-usage fallback behavior
+
+Changed files:
+- `documentation/codex/model-routing/scripts/codex_dev_workhorse_runner.py`
+- `documentation/codex/skills/janus-health-check/scripts/health_snapshot.py`
+- `documentation/codex/model-routing/tests/test_codex_dev_workhorse_runner.py`
+- `documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md`
+- `documentation/tasks/TASK-SPEC22.4_execution_result.md`
+- `documentation/tasks/TASK-SPEC22.4_AUDIT_PACKAGE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m unittest documentation.codex.model-routing.tests.test_codex_dev_workhorse_runner`: PASS (`11` tests)
+- `python -m unittest documentation.codex.model-routing.tests.test_assistive_or_review_capture_dispatcher`: PASS (`4` tests)
+- `python -m py_compile documentation/codex/model-routing/scripts/codex_dev_workhorse_runner.py documentation/codex/model-routing/scripts/bounded_or_worker_outcome.py documentation/codex/skills/janus-health-check/scripts/health_snapshot.py documentation/codex/model-routing/tests/test_codex_dev_workhorse_runner.py`: PASS
+- `python documentation/codex/skills/janus-health-check/scripts/health_snapshot.py --repo C:\KI\Janus-Projekt --or-telemetry-jsonl <temporary productive_dev_workhorse_path fixture>`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py documentation/tasks/TASK-SPEC22.4_execution_result.md`: PASS
+- scoped `git diff --check`: PASS
+
+Open risks:
+- this is still Dev-only workflow tooling and must not be reinterpreted as broad existing-skill OR activation or production routing
+- truthful actual-cost closeout still depends on fail-closed propagation when delegated usage or capture artifacts are missing
+- the repo worktree remains mixed outside this bounded slice and was intentionally left untouched
+- no commit or push has happened for this execution block, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: review `TASK-SPEC22.4` as the final bounded Spec-22 closeout slice only and keep broader OR rollout or canonical routing questions out of the audit scope.
+
+Next recommended step for Codex: use `janus-final-audit` with `5.5` high on `documentation/tasks/TASK-SPEC22.4_AUDIT_PACKAGE.md`.
+
+Last updated: `2026-06-21 02:42:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-21`, the preimplementation gate for `TASK-SPEC22.4` is complete with canonical state `HANDOFF`. The final Spec-22 slice is now formally frozen for implementation as the dedicated Dev-workhorse telemetry, actual-cost closeout, and healthcheck-visibility seam, while the sealed boundaries from `TASK-SPEC22.1` through `TASK-SPEC22.3` remain unchanged.
+
+Current goal: execute the final Spec-22 closeout slice so the dedicated Dev-workhorse path gains durable file-first telemetry, truthful actual-cost display, and healthcheck-readable outcome visibility without widening into production routing.
+
+Active phase: `janus-preimplementation-check`, canonical state `HANDOFF`.
+
+Last Codex work:
+- validated that `TASK-SPEC22.4` is atomic and bounded to operational visibility only
+- froze the implementation scope to the dedicated runner, outcome helper, file-first wrapper, healthcheck snapshot, focused runner tests, and Dev runbook
+- preserved the rule that no new workflow consumers, eligibility changes, or routing activation may enter through this final Spec-22 slice
+
+Changed files:
+- `documentation/tasks/TASK-SPEC22.4_preimplementation_check.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py documentation/tasks/TASK-SPEC22.4_preimplementation_check.md`: PASS
+- scoped `git diff --check` for the precheck slice: PASS
 - staged-only guard: PASS
 
 Open risks:
-- `TASK-SPEC22.1` remains a contract-only foundation; it still does not expose a visible operator choice, invoke OR, delegate a change, accept a result, or record runtime telemetry
-- `TASK-SPEC22.2` through `TASK-SPEC22.4` remain intentionally not started
+- `TASK-SPEC22.4` must remain the final telemetry and closeout seam only and must not reopen eligibility, operator gate, or delegated runtime semantics
+- truthful actual-cost display depends on preserving explicit fallback behavior when usage or capture artifacts are missing
+- the repo worktree remains mixed outside this bounded slice and was intentionally left untouched
+- no commit or push has happened for this precheck block, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: approve `TASK-SPEC22.4` as the final Spec-22 implementation slice only and keep broader OR rollout questions out of scope.
+
+Next recommended step for Codex: use `janus-executioner` with `5.4` medium on `documentation/tasks/TASK-SPEC22.4_preimplementation_check.md`.
+
+Last updated: `2026-06-21 02:28:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-21`, `TASK-SPEC22.4` is released as the next bound Spec-22 slice with canonical state `HANDOFF`. The dedicated Dev-workhorse path keeps the sealed boundary, visible operator gate, and bounded delegated runtime from `TASK-SPEC22.1` through `TASK-SPEC22.3`, while the newly released work is limited to file-first telemetry, actual-cost closeout, and healthcheck visibility only.
+
+Current goal: move Spec 22 from delegated runtime into truthful operational visibility so each dedicated Dev-workhorse run has durable artifacts, real or explicitly missing cost closeout, and healthcheck-readable telemetry without widening into production routing.
+
+Active phase: `janus-task-breakdown`, canonical state `HANDOFF`.
+
+Last Codex work:
+- validated the parent Spec-22 task artifact against the approved Spec and the sealed `TASK-SPEC22.3` closeout
+- released `TASK-SPEC22.4` as a task-sharp telemetry, actual-cost, and healthcheck slice instead of reopening path eligibility, operator gate semantics, or delegated runtime scope
+- preserved the rule that this slice is Dev-only and must not imply canonical routing-table changes, global OR approval, or broader workflow activation
+
+Changed files:
+- `documentation/tasks/TASK-SPEC22.4_task_breakdown.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-task-breakdown\scripts\validate_task_handoff.py --task documentation/tasks/TASK-SPEC22.4_task_breakdown.md --target TASK-SPEC22.4`: PASS
+- scoped `git diff --check` for the task-breakdown slice: PASS
+- staged-only guard: PASS
+
+Open risks:
+- `TASK-SPEC22.4` must stay limited to telemetry, actual-cost closeout, healthcheck visibility, and Dev-only operator-facing closeout
+- the sealed `TASK-SPEC22.1` to `TASK-SPEC22.3` boundaries must not be silently widened during precheck or implementation
+- the repo worktree remains mixed outside this bounded slice and was intentionally left untouched
+- no commit or push has happened for this task-design block, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: review `TASK-SPEC22.4` as the final Spec-22 telemetry-and-closeout slice only and keep production-routing or broader workflow expansion out of scope.
+
+Next recommended step for Codex: use `janus-preimplementation-check` with `5.4` medium on `documentation/tasks/TASK-SPEC22.4_task_breakdown.md`.
+
+Last updated: `2026-06-21 02:20:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-21`, the documentation sync for `TASK-SPEC22.3` is complete with canonical state `PASS`. The bounded delegated Dev-workhorse runtime slice is now reflected in the central task registry, the compact project-state snapshot, and the parent Spec-22 task artifact, while `TASK-SPEC22.4` remains explicitly open.
+
+Current goal: preserve the sealed `TASK-SPEC22.3` delegated-runtime baseline as the new canonical documentation state and keep `TASK-SPEC22.4` paused until its own bound pipeline steps are explicitly released.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- synchronized the task-level PASS for `TASK-SPEC22.3` into the central registry without implying Spec-22 completion
+- updated the compact project-state summary so the new delegated-runtime slice is represented as the current sealed productive baseline after the visible gate
+- appended the parent-task closeout note for `TASK-SPEC22.3` while explicitly preserving that actual-cost closeout, file-first telemetry, and healthcheck visibility remain future work
+- kept the documentation scope narrow and skipped changelog or Spec-Done actions because this is an internal bounded Dev-workhorse documentation sync only
+
+Changed files:
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `documentation/tasks/TASK-SPEC22_operator_gesteuerter_or_arbeitspferd_produktivmodus_fuer_dev_arbeit.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-documentation-update\scripts\validate_doc_update.py --repo C:\KI\Janus-Projekt --marker TASK-SPEC22.3 --require documentation/01_CENTRAL_TASK_REGISTRY.md --require PROJECT_STATE.md --require documentation/tasks/TASK-SPEC22_operator_gesteuerter_or_arbeitspferd_produktivmodus_fuer_dev_arbeit.md`: PASS
+- scoped `git diff --check` for the task-sharp documentation sync: PASS
+- staged-only guard: PASS
+
+Open risks:
+- `TASK-SPEC22.3` remains only the delegated-runtime slice and must not be misread as actual-cost closeout, file-first telemetry persistence, or healthcheck completion
+- `TASK-SPEC22.4` remains intentionally not started
 - the repo worktree remains mixed outside this bounded slice and was intentionally left untouched
 - no commit or push has happened for this documentation block, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`
 
-Next recommended step for ChatGPT: review the task-sharp `TASK-SPEC22.1` documentation sync as a narrow foundation only and keep later productive OR slices paused.
+Next recommended step for ChatGPT: review the `TASK-SPEC22.3` documentation sync as a narrow delegated-runtime completion only and keep `TASK-SPEC22.4` paused.
 
-Next recommended step for Codex: use `janus-git-governance` with `5.4` medium if the user wants a scoped checkpoint commit for this sealed `TASK-SPEC22.1` sync; otherwise the next implementation step is later `janus-task-breakdown` for `TASK-SPEC22.2` only after explicit approval.
+Next recommended step for Codex: use `janus-git-governance` with `5.4` medium if the user wants a scoped checkpoint commit for this sealed `TASK-SPEC22.3` sync; otherwise the next implementation step is later `janus-task-breakdown` for `TASK-SPEC22.4` only after explicit approval.
 
-Last updated: `2026-06-21 00:35:00 +02:00`.
+Last updated: `2026-06-21 02:12:00 +02:00`.
 
 ## Current Snapshot Update
 As of `2026-06-20`, a new feature spec for the next OR expansion stage is generated with canonical state `HANDOFF`. The new artifact defines an operator-selected productive OR workhorse mode for bounded Dev work, with bounded write capability allowed but Codex retained as the final scope, validation, and accept-or-reject owner.

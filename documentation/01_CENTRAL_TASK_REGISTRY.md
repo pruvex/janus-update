@@ -4,11 +4,50 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-SPEC22.4 - Add file-first telemetry, actual-cost closeout, and healthcheck visibility for the dedicated Dev-workhorse path
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-SPEC22.4_final_audit.md` (PASS)
+- **Spec**: `documentation/SPEC/Spec Done/22_operator_gesteuerter_or_arbeitspferd_produktivmodus_fuer_dev_arbeit.md`
+- **Parent Task**: `documentation/tasks/TASK-SPEC22_operator_gesteuerter_or_arbeitspferd_produktivmodus_fuer_dev_arbeit.md`
+- **Task Breakdown**: `documentation/tasks/TASK-SPEC22.4_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-SPEC22.4_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-SPEC22.4_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-SPEC22.4_AUDIT_PACKAGE.md`
+- **Validation**: `TASK-SPEC22.4` schliesst den vierten und letzten eng gebundenen Spec-22-Slice als operationalen Closeout fuer den dedizierten Dev-workhorse-Pfad ab. Der `codex_dev_workhorse_runner.py` schreibt jetzt bounded file-first Laufartefakte, eine Session-Telemetriezeile, eine wahrheitsgetreue Actual-Cost- oder Missing-Usage-Abschlussmeldung und eine lokale Healthcheck-Zusammenfassung fuer den neuen Pfad, waehrend die bereits versiegelten Eligibility-, Gate- und Delegationsgrenzen aus `TASK-SPEC22.1` bis `TASK-SPEC22.3` unveraendert bleiben. Final Audit PASS mit fokussierter Runner-, Dispatcher-, Compile- und Validator-Evidenz. Spec 22 ist damit insgesamt DONE, ohne globale OR-Freigabe, Produktionsrouting oder kanonische Routing-Tabellen-Aktivierung.
+- **Changed Files**: `documentation/codex/model-routing/scripts/codex_dev_workhorse_runner.py`, `documentation/codex/skills/janus-health-check/scripts/health_snapshot.py`, `documentation/codex/model-routing/tests/test_codex_dev_workhorse_runner.py`, `documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md`, `documentation/tasks/TASK-SPEC22.4_execution_result.md`, `documentation/tasks/TASK-SPEC22.4_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC22.4_final_audit.md`, `documentation/SPEC/Spec Done/22_operator_gesteuerter_or_arbeitspferd_produktivmodus_fuer_dev_arbeit.md`.
+
+### TASK-SPEC22.3 - Wire bounded delegated triage and write-candidate execution behind the dedicated runner with Codex-owned acceptance
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-SPEC22.3_final_audit.md` (PASS)
+- **Spec**: `documentation/SPEC/Spec Done/22_operator_gesteuerter_or_arbeitspferd_produktivmodus_fuer_dev_arbeit.md`
+- **Parent Task**: `documentation/tasks/TASK-SPEC22_operator_gesteuerter_or_arbeitspferd_produktivmodus_fuer_dev_arbeit.md`
+- **Task Breakdown**: `documentation/tasks/TASK-SPEC22.3_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-SPEC22.3_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-SPEC22.3_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-SPEC22.3_AUDIT_PACKAGE.md`
+- **Validation**: `TASK-SPEC22.3` schliesst den dritten eng gebundenen Spec-22-Slice als echten bounded Delegations-Runtime-Pfad hinter dem sichtbaren Dev-Workhorse-Gate ab. Der dedizierte `codex_dev_workhorse_runner.py` routet `2 = OR` jetzt kontrolliert in genau die drei erlaubten Klassen `test_result_triage_review`, `execution_patch_candidate` und `execution_write_apply_candidate`, ohne einen zweiten Runtime-Seam einzufuehren oder bestehende Janus-Workflows implizit zu erweitern. Final Audit PASS mit fokussierter Runner-, Compile- und Validator-Evidenz. Spec 22 bleibt dabei bewusst offen, weil Actual-Cost-Closeout, file-first Telemetrie und Healthcheck-Sichtbarkeit erst in `TASK-SPEC22.4` folgen.
+- **Changed Files**: `documentation/codex/model-routing/scripts/codex_dev_workhorse_runner.py`, `documentation/codex/model-routing/tests/test_codex_dev_workhorse_runner.py`, `documentation/tasks/TASK-SPEC22.3_execution_result.md`, `documentation/tasks/TASK-SPEC22.3_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC22.3_final_audit.md`.
+
+### TASK-SPEC22.2 - Create the operator-invoked Dev-workhorse runner with mandatory Codex-vs-OR gate
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-SPEC22.2_final_audit.md` (PASS)
+- **Spec**: `documentation/SPEC/Spec Done/22_operator_gesteuerter_or_arbeitspferd_produktivmodus_fuer_dev_arbeit.md`
+- **Parent Task**: `documentation/tasks/TASK-SPEC22_operator_gesteuerter_or_arbeitspferd_produktivmodus_fuer_dev_arbeit.md`
+- **Task Breakdown**: `documentation/tasks/TASK-SPEC22.2_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-SPEC22.2_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-SPEC22.2_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-SPEC22.2_AUDIT_PACKAGE.md`
+- **Validation**: `TASK-SPEC22.2` schliesst den zweiten eng gebundenen Spec-22-Slice als sichtbaren operator-invoked Entry-Runner fuer den neuen produktiven Dev-Workhorse-Pfad ab. Der dedizierte `codex_dev_workhorse_runner.py` zeigt fuer in-scope Aufrufe jetzt kontrolliert `1 = Codex` und `2 = OR` samt ausgewaehltem OR-Modell, Kostenschaetzung und Confidence-Hinweis; fehlen Pflichtdaten wie Estimate oder Confidence, faellt der Pfad deterministisch vor jeder Wrapper- oder Dispatcher-Invocation auf einen Codex-only Ausgang zurueck. Final Audit PASS mit fokussierter Runner-, Eligibility-, Compile- und Validator-Evidenz. Spec 22 bleibt dabei bewusst offen, weil delegierte Ausfuehrung sowie Telemetrie erst in `TASK-SPEC22.3` und `TASK-SPEC22.4` folgen.
+- **Changed Files**: `documentation/codex/model-routing/scripts/codex_dev_workhorse_runner.py`, `documentation/codex/model-routing/tests/test_codex_dev_workhorse_runner.py`, `documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md`, `documentation/tasks/TASK-SPEC22.2_execution_result.md`, `documentation/tasks/TASK-SPEC22.2_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC22.2_final_audit.md`.
+
 ### TASK-SPEC22.1 - Define the dedicated Dev-workhorse path contract and keep all other workflows Codex-only
 
 - **Status**: DONE
 - **Final Audit**: `documentation/tasks/TASK-SPEC22.1_final_audit.md` (PASS)
-- **Spec**: `documentation/SPEC/22_operator_gesteuerter_or_arbeitspferd_produktivmodus_fuer_dev_arbeit.md`
+- **Spec**: `documentation/SPEC/Spec Done/22_operator_gesteuerter_or_arbeitspferd_produktivmodus_fuer_dev_arbeit.md`
 - **Parent Task**: `documentation/tasks/TASK-SPEC22_operator_gesteuerter_or_arbeitspferd_produktivmodus_fuer_dev_arbeit.md`
 - **Task Breakdown**: `documentation/tasks/TASK-SPEC22.1_task_breakdown.md`
 - **Precheck**: `documentation/tasks/TASK-SPEC22.1_preimplementation_check.md`

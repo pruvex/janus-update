@@ -25,6 +25,26 @@ Purpose: repeatable low-token workflow for Codex work inside
 - Keep archives, old logs, and broad registries out of context unless a bound
   artifact names them.
 
+## Productive Dev-Workhorse Entry
+
+- The first productive Spec-22 entry is the dedicated runner
+  `documentation/codex/model-routing/scripts/codex_dev_workhorse_runner.py`.
+- This entry is bounded to `productive_dev_workhorse_path` only and must not be
+  treated as a broad OR activation for existing Janus skills.
+- The visible operator gate in this runner uses `1 = Codex` and `2 = OR`.
+- Missing estimated cost, missing confidence, failed eligibility, or a path
+  outside `productive_dev_workhorse_path` must abort before any wrapper or
+  dispatcher invocation.
+- Selecting `2 = OR` now routes through the sealed bounded delegated runtime
+  from `TASK-SPEC22.3` and then finalizes one dedicated Dev-workhorse session
+  telemetry row plus one healthcheck summary for that workflow id.
+- Dedicated Dev-workhorse closeout must show actual OR cost when usage exists,
+  or an explicit missing-usage / fallback note when truthful cost closeout is
+  unavailable.
+- This remains Dev-only workflow tooling. It is not production routing, not a
+  canonical routing-table update, and not a broad activation of existing Janus
+  skills.
+
 ## Git Safety
 
 - Local hook path should be:

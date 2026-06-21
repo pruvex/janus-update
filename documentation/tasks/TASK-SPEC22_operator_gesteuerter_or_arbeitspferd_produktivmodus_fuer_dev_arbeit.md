@@ -1,5 +1,5 @@
 TASK-SPEC22
-- Source Spec: documentation/SPEC/22_operator_gesteuerter_or_arbeitspferd_produktivmodus_fuer_dev_arbeit.md
+- Source Spec: documentation/SPEC/Spec Done/22_operator_gesteuerter_or_arbeitspferd_produktivmodus_fuer_dev_arbeit.md
 - Backlog Item: N/A
 - Feature: Operator-gesteuerter OR-Arbeitspferd-Produktivmodus fuer Dev-Arbeit
 - Generated At: 2026-06-20
@@ -56,6 +56,7 @@ TASK-SPEC22
   - Regressionstest fuer lokalen Codex-only Ausgang bei `1`
 - Model: 5.4
 - Reason: Erst ein sauberer operator-invoked Einstieg macht den Produktivmodus alltagstauglich; ohne diesen Gate-Slice bleibt der Pfad technisch vorhanden, aber operativ nicht kontrollierbar.
+- Closeout: Final Audit PASS ist in `documentation/tasks/TASK-SPEC22.2_final_audit.md` dokumentiert. Der dedizierte `codex_dev_workhorse_runner.py` ist damit task-scharf als sichtbarer produktiver Entry-Runner mit kontrollierter `1 = Codex` / `2 = OR`-Auswahl, Pflichtfeldern fuer Estimate und Confidence sowie fail-closed Abort vor jeder Delegations-Invocation abgeschlossen; Spec 22 insgesamt bleibt offen, weil `TASK-SPEC22.3` und `TASK-SPEC22.4` weiterhin ausstehen.
 
 ### TASK-SPEC22.3 Wire bounded delegated triage and write-candidate execution behind the dedicated runner with Codex-owned acceptance
 - Ziel: Den neuen Dev-Workhorse-Runner an die bestehenden bounded Delegationsbausteine anbinden, sodass Review-, Patch-Candidate- und Write-Apply-Candidate-Laeufe moeglich werden, ohne Codex-Autoritaet ueber Scope, Validierung und Accept-or-Reject zu verlieren.
@@ -83,6 +84,7 @@ TASK-SPEC22
   - Negativtest fuer out-of-scope oder scope-escapende Ergebnisfaelle
 - Model: 5.4
 - Reason: Das ist der eigentliche Arbeitskern des Features; hier entsteht der bounded Produktivwert, waehrend Codex die letzte Verantwortung ueber Validation und Acceptance behaelt.
+- Closeout: Final Audit PASS ist in `documentation/tasks/TASK-SPEC22.3_final_audit.md` dokumentiert. Der dedizierte `codex_dev_workhorse_runner.py` ist damit task-scharf als bounded Delegations-Runtime fuer genau `test_result_triage_review`, `execution_patch_candidate` und `execution_write_apply_candidate` abgeschlossen; Codex behaelt dabei explizit die finale Accept-or-Reject-Autoritaet. Spec 22 insgesamt bleibt offen, weil `TASK-SPEC22.4` fuer Actual-Cost-Closeout, file-first Telemetrie und Healthcheck-Sichtbarkeit weiterhin aussteht.
 
 ### TASK-SPEC22.4 Add file-first telemetry, actual-cost closeout, and healthcheck visibility for the dedicated Dev-workhorse path
 - Ziel: Fuer jeden Lauf des dedizierten Dev-Workhorse-Pfads nachvollziehbar machen, was delegiert wurde, was es gekostet hat, wie validiert wurde und wie Codex final entschieden hat.
@@ -110,9 +112,10 @@ TASK-SPEC22
   - Healthcheck-Ingestion-Test fuer den neuen Dev-Workhorse-Pfad
 - Model: 5.4
 - Reason: Ohne sichtbare echte Kosten, nachvollziehbare Artefakte und Healthcheck-Einbindung bleibt der Produktivpfad operativ blind und damit nicht dauerhaft steuerbar.
+- Closeout: Final Audit PASS ist in `documentation/tasks/TASK-SPEC22.4_final_audit.md` dokumentiert. File-first Telemetrie, wahrheitsgetreuer Actual-Cost-Closeout und die lokale Healthcheck-Sichtbarkeit fuer den dedizierten Dev-workhorse-Pfad sind damit task-scharf abgeschlossen; Spec 22 insgesamt ist DONE und bleibt weiterhin strikt auf diesen einen Dev-only, operator-invoked Pfad begrenzt.
 
 @janus-task-breakdown
-Spec: documentation/SPEC/22_operator_gesteuerter_or_arbeitspferd_produktivmodus_fuer_dev_arbeit.md
+Spec: documentation/SPEC/Spec Done/22_operator_gesteuerter_or_arbeitspferd_produktivmodus_fuer_dev_arbeit.md
 Task: documentation/tasks/TASK-SPEC22_operator_gesteuerter_or_arbeitspferd_produktivmodus_fuer_dev_arbeit.md
 Backlog Item: N/A
 Target Task: TASK-SPEC22.1
