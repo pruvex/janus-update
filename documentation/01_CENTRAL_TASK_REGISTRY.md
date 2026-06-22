@@ -4,6 +4,32 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-SPEC25.2 - Show the fixed recommended OR model and pre-call cost basis in the productive Dev-workhorse operator gate
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-SPEC25.2_final_audit.md` (PASS)
+- **Spec**: `documentation/SPEC/25_produktiver_dev_workhorse_hauptpfad_fuer_or_arbeitspferd.md`
+- **Parent Task**: `documentation/tasks/TASK-SPEC25_produktiver_dev_workhorse_hauptpfad_fuer_or_arbeitspferd.md`
+- **Task Breakdown**: `documentation/tasks/TASK-SPEC25.2_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-SPEC25.2_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-SPEC25.2_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-SPEC25.2_AUDIT_PACKAGE.md`
+- **Validation**: `TASK-SPEC25.2` schliesst den zweiten eng gebundenen Spec-25-Slice als sichtbare Gate-Schicht des produktiven Dev-Workhorse-Hauptpfads ab. Der dedizierte Operator-Block zeigt jetzt fuer die erlaubten produktiven Arbeitsklassen das feste empfohlene OR-Modell aus dem versiegelten `TASK-SPEC25.1`-Contract sowie die Pre-Call-Kostenbasis mitsamt Estimate- und Confidence-Pflichtfeldern sichtbar an; fehlen feste Modellzuordnung, Kostenbasis, Estimate oder Confidence, blockiert der Pfad weiterhin fail-closed vor jeder Wrapper- oder Dispatcher-Invocation. Final Audit PASS mit fokussierter Runner-, Eligibility-, Compile-, WHAT_I_LEARNED-, Diff- und Validator-Evidenz. Spec 25 bleibt dabei bewusst offen, weil `TASK-SPEC25.3` die produktive bounded Runtime und den explizit Codex-owned Abschluss noch separat umsetzen muss.
+- **Changed Files**: `documentation/codex/model-routing/scripts/codex_dev_workhorse_runner.py`, `documentation/codex/model-routing/scripts/bounded_or_worker_gate_prompt.py`, `documentation/codex/model-routing/tests/test_codex_dev_workhorse_runner.py`, `documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md`, `documentation/tasks/TASK-SPEC25.2_execution_result.md`, `documentation/tasks/TASK-SPEC25.2_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC25.2_final_audit.md`.
+
+### TASK-SPEC25.1 - Pin the first productive Dev-workhorse work classes and their fixed recommended OR models
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-SPEC25.1_final_audit.md` (PASS)
+- **Spec**: `documentation/SPEC/25_produktiver_dev_workhorse_hauptpfad_fuer_or_arbeitspferd.md`
+- **Parent Task**: `documentation/tasks/TASK-SPEC25_produktiver_dev_workhorse_hauptpfad_fuer_or_arbeitspferd.md`
+- **Task Breakdown**: `documentation/tasks/TASK-SPEC25.1_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-SPEC25.1_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-SPEC25.1_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-SPEC25.1_AUDIT_PACKAGE.md`
+- **Validation**: `TASK-SPEC25.1` schliesst den ersten eng gebundenen Spec-25-Slice als contract-only Haertung des produktiven Dev-Workhorse-Hauptpfads ab. Der dedizierte `productive_dev_workhorse_path` ist jetzt auf genau `execution_patch_candidate` und `execution_write_apply_candidate` verengt, beide Klassen tragen eine feste empfohlene OR-Modellzuordnung `deepseek/deepseek-v4-flash`, und fehlende `selected_or_model`-Mappings blockieren fail-closed vor jeder spaeteren sichtbaren OR-Auswahl. Final Audit PASS mit fokussierter Eligibility-, Compile-, JSON-Parse-, Direktprobe- und Validator-Evidenz. Spec 25 bleibt dabei bewusst offen, weil `TASK-SPEC25.2` die sichtbare Gate-Ausgabe und `TASK-SPEC25.3` die produktive bounded Runtime noch separat umsetzen muessen.
+- **Changed Files**: `documentation/codex/model-routing/config/bounded_or_worker_eligibility_2026-06-17.json`, `documentation/codex/model-routing/scripts/bounded_or_worker_eligibility.py`, `documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py`, `documentation/tasks/TASK-SPEC25.1_execution_result.md`, `documentation/tasks/TASK-SPEC25.1_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC25.1_final_audit.md`.
+
 ### TASK-SPEC23.2 - Wire bounded OR debug execution and direct Codex fallback into the productive `janus-debug` path
 
 - **Status**: DONE
