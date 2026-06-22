@@ -143,8 +143,10 @@ Consumer integration path for everyday `janus-debug` work:
 
 - build one redacted package with `codex_debug_hypothesis_review_runner.build_consumer_input_package(...)`
 - enter the operator gate through `codex_debug_hypothesis_review_runner.run_consumer_flow(...)`
+- keep the visible everyday operator wording aligned with the productive Dev-workhorse convention: `1 = Codex`, `2 = OR-Arbeitspferd`
 - if the productive gate rejects the slice, do not show an OR choice; keep the step deterministically Codex-only
-- for the current `TASK-SPEC23.1` rollout, treat the OR branch as gate-only and non-executing; recording the selection is allowed, but delegated hypothesis-review execution waits for `TASK-SPEC23.2`
+- for the released `TASK-SPEC23.2` rollout, the OR branch may execute exactly one bounded hypothesis-review run with file-first capture or fixture validation; the delegated branch must resolve to exactly one runtime mode before dispatch
+- if no bounded runtime mode is present, or if capture, usage, validation, or healthcheck gates fail, fall back directly to a visible Codex-only continuation
 
 Do not treat this as production routing, broad sidecar debug authority, or a replacement for the normal `janus-debug` evidence chain.
 

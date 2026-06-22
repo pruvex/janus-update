@@ -42,10 +42,11 @@ Recommend `5.5` only for high-risk security/privacy/provider/memory architecture
 
 ## Bounded Delegation Gate
 
-For one prechecked execution slice that fits either the proposal-first `execution_patch_candidate` class or the later derivative `execution_write_apply_candidate` class, prefer the shared dispatcher as the operator-facing gate instead of choosing low-level helpers manually.
+For one prechecked execution slice that fits either the proposal-first `execution_patch_candidate` class or the later derivative `execution_write_apply_candidate` class, prefer the dedicated productive Dev-workhorse runner as the visible operator-facing gate. The shared dispatcher remains the sealed downstream helper and should not be presented as the everyday first entry.
 
 Binding artifacts:
 
+- `C:\KI\Janus-Projekt\documentation\codex\model-routing\scripts\codex_dev_workhorse_runner.py`
 - `C:\KI\Janus-Projekt\documentation\codex\model-routing\scripts\codex_bounded_delegation_dispatcher.py`
 - `C:\KI\Janus-Projekt\documentation\codex\model-routing\scripts\codex_execution_patch_candidate_runner.py`
 - `C:\KI\Janus-Projekt\documentation\codex\model-routing\codex_execution_patch_candidate_plan_2026-06-14.md`
@@ -53,18 +54,18 @@ Binding artifacts:
 Use prompt mode first:
 
 ```powershell
-python documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py --task-class execution_patch_candidate --task-label "<short execution slice>" --normal-target-model "<declared model/reasoning>" --operator-choice prompt --workflow-id <WORKFLOW-ID>
+python documentation/codex/model-routing/scripts/codex_dev_workhorse_runner.py --task-class execution_patch_candidate --task-label "<short execution slice>" --normal-target-model "<declared model/reasoning>" --operator-choice prompt --workflow-id <WORKFLOW-ID> --path-id productive_dev_workhorse_path --estimated-or-cost <estimated-cost> --cost-estimate-confidence-percent <confidence>
 ```
 
 Expected operator gate:
 
 - `1 = Codex`
-- `2 = Delegated`
+- `2 = OR`
 
 Meaning here:
 
 - `1` keeps the execution slice fully local in Codex.
-- `2` uses the bounded delegated `execution_patch_candidate` proposal path.
+- `2` enters the productive Dev-workhorse OR branch, which then invokes the bounded delegated `execution_patch_candidate` proposal path behind the visible gate.
 
 Boundaries stay strict:
 
@@ -74,15 +75,16 @@ Boundaries stay strict:
 - no Git, release, or audit authority by delegated path
 - Codex App remains patch reviewer, apply/reject owner, and final execution owner
 
-If the user chooses the delegated path:
+If the user chooses the OR path:
 
 - if the user chooses `1`, `local`, or `codex`, invoke the dispatcher with `--operator-choice local`
-- if the user chooses `2`, `delegated`, or `sidecar` for local fixture validation, invoke the dispatcher with `--operator-choice delegated --execution-input-package <input-json> --execution-fixture-result <result-json>`
-- if the user chooses `2`, `delegated`, or `sidecar` for the real proposal-only path, invoke the dispatcher with `--operator-choice delegated --execution-input-package <input-json> --execution-live-sidecar`; this path stays read-only and captures a bounded patch proposal only
+- if the user chooses `2`, `or`, `openrouter`, or `opr`, invoke the productive runner first; the runner must show the fixed pre-call estimate/confidence gate and only then continue to the sealed dispatcher/runtime path
+- for local fixture validation under the OR branch, the downstream dispatcher still uses `--operator-choice delegated --execution-input-package <input-json> --execution-fixture-result <result-json>`
+- for the real proposal-only OR branch, the downstream dispatcher still uses `--operator-choice delegated --execution-input-package <input-json> --execution-live-sidecar`; this path stays read-only and captures a bounded patch proposal only
 
 Important:
 
-- this class is proposal-first, not broad write delegation
+- this visible OR gate is still proposal-first, not broad write delegation
 - it is valid only for exactly one prechecked implementation slice
 - the delegated output may suggest a bounded patch, but Codex still decides whether to apply or reject it
 - manual Janus validation remains Codex-owned even if the delegated proposal looks strong
@@ -90,13 +92,13 @@ Important:
 For a later derivative bounded write candidate that is backed by an already accepted proposal-first execution package, use the separate `execution_write_apply_candidate` class:
 
 ```powershell
-python documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py --task-class execution_write_apply_candidate --task-label "<short execution slice>" --normal-target-model "<declared model/reasoning>" --operator-choice prompt --workflow-id <WORKFLOW-ID> --accepted-source-run-dir <accepted-execution-patch-run-dir>
+python documentation/codex/model-routing/scripts/codex_dev_workhorse_runner.py --task-class execution_write_apply_candidate --task-label "<short execution slice>" --normal-target-model "<declared model/reasoning>" --operator-choice prompt --workflow-id <WORKFLOW-ID> --path-id productive_dev_workhorse_path --estimated-or-cost <estimated-cost> --cost-estimate-confidence-percent <confidence> --accepted-source-run-dir <accepted-execution-patch-run-dir>
 ```
 
 Meaning there:
 
 - `1` keeps the execution slice fully local in Codex.
-- `2` uses the bounded delegated `execution_write_apply_candidate` path.
+- `2` enters the productive Dev-workhorse OR branch and then uses the bounded delegated `execution_write_apply_candidate` path.
 
 Extra write-candidate boundaries:
 
@@ -110,6 +112,7 @@ Use `execution_write_apply_candidate` only when:
 - exactly one prechecked task slice is bound
 - the accepted proposal-first source package already proves allowlist and touched-file discipline
 - the next goal is to evaluate future bounded write readiness, not to bypass Codex governance
+- if estimate, confidence, or productive-path eligibility is missing, abort before any dispatcher or wrapper invocation
 
 ## Golden Path
 
