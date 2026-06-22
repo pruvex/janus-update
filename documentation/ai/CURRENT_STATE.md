@@ -1,43 +1,39 @@
 ﻿# CURRENT_STATE
 
 ## Current Snapshot Update
-As of `2026-06-21`, the documentation sync for the repaired `TASK-SPEC23.1` final audit is complete with canonical state `PASS`. The first productive `janus-debug` slice is now recorded as a bounded gate-only entry seam: every visible Codex-vs-OR entry shares the same productive gate, non-eligible cases stay Codex-only, and an eligible OR selection remains explicitly non-executing until `TASK-SPEC23.2`.
+As of `2026-06-21`, the compact documentation sync for `TASK-SPEC23.2` and Spec 23 is complete with canonical state `PASS`. The repaired `janus-debug` delegated runtime seam, the final audit evidence, and the Janus documentation layer are now aligned: fixture-backed delegated runs resolve into the file-first wrapper path, missing runtime mode falls back visibly to Codex, and Spec 23 is fully marked `DONE` in the archived spec, task artifact, central registry, and compact project snapshot.
 
-Current goal: keep `TASK-SPEC23.2` separate and only use future work to add its delegated runtime and fallback semantics after a fresh bounded handoff.
+Current goal: hold Spec 23 in a sealed PASS state and hand off only to a later Git checkpoint when the user wants to save this documentation closeout.
 
 Active phase: `janus-documentation-update`, canonical state `PASS`.
 
 Last Codex work:
-- synchronized the accepted `TASK-SPEC23.1` final audit into the rolling state snapshot
-- kept the bound Spec open because `TASK-SPEC23.2` remains intentionally unstarted
-- preserved the gate-only boundary that prevents delegated execution from leaking into the first productive slice
+- synchronized the `TASK-SPEC23.2` PASS state into the Spec-23 task artifact, central task registry, compact project snapshot, and rolling `CURRENT_STATE`
+- preserved the rollout boundary that keeps Spec 23 strictly limited to the first bounded `janus-debug` OR consumer on `debug_hypothesis_review`
+- kept the documentation closeout compact without reopening `TASK-SPEC23.1`, widening scope, or changing any production routing behavior
 
 Changed files:
-- `documentation/codex/skills/janus-debug/SKILL.md`
-- `documentation/codex/model-routing/scripts/codex_debug_hypothesis_review_runner.py`
-- `documentation/codex/model-routing/tests/test_assistive_or_review_consumer_integration.py`
-- `documentation/tasks/TASK-SPEC23.1_AUDIT_PACKAGE.md`
-- `documentation/tasks/TASK-SPEC23.1_execution_result.md`
-- `documentation/tasks/TASK-SPEC23.1_final_audit.md`
+- `documentation/tasks/TASK-SPEC23_erster_produktiver_or_consumer_fuer_janus_debug.md`
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
 - `documentation/ai/CURRENT_STATE.md`
 - `documentation/codex/SKILL_USAGE_LOG.md`
 
 Checks / validation performed:
-- final audit validator: PASS
-- scoped `git diff --check`: PASS with only the existing `CURRENT_STATE.md` CRLF warning
-- staged-only guard: PASS
+- `python C:\Users\pruve\.codex\skills\janus-documentation-update\scripts\validate_doc_update.py --repo C:\KI\Janus-Projekt --marker TASK-SPEC23.2 --require documentation/tasks/TASK-SPEC23_erster_produktiver_or_consumer_fuer_janus_debug.md --require documentation/01_CENTRAL_TASK_REGISTRY.md --require PROJECT_STATE.md --require documentation/ai/CURRENT_STATE.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py documentation/tasks/TASK-SPEC23.2_final_audit.md`: PASS
+- scoped `git diff --check -- documentation/tasks/TASK-SPEC23_erster_produktiver_or_consumer_fuer_janus_debug.md documentation/01_CENTRAL_TASK_REGISTRY.md PROJECT_STATE.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS with only the existing `CURRENT_STATE.md` CRLF warning
+- staged-only guard `git diff --cached --check`: PASS
 
 Open risks:
-- the slice is still intentionally gate-only; delegated execution, direct Codex fallback runtime, and final acceptance remain out of scope until `TASK-SPEC23.2`
-- no real OR call, Janus product runtime, UI, provider configuration, or end-user persistence was changed or exercised
-- the bound Spec is not complete yet because `TASK-SPEC23.2` remains open, so no Spec-Done move is appropriate in this audit
-- no commit or push has happened for this local audit state, so a remote such as GitHub or `backup` may not contain it yet
+- no commit or push has happened for this local documentation state, so a remote such as GitHub or `backup` may not contain it yet
+- the first productive `janus-debug` OR consumer remains intentionally bounded to one reviewed path and is not a general OR rollout
 
-Next recommended step for ChatGPT: keep `TASK-SPEC23.2` explicitly separate and do not infer delegated execution or fallback approval from the accepted `TASK-SPEC23.1` gate-only slice.
+Next recommended step for ChatGPT: treat Spec 23 as fully closed and do not reopen its rollout boundary unless a new backlog item or spec explicitly extends the `janus-debug` OR consumer family.
 
-Next recommended step for Codex: route any later work on `TASK-SPEC23.2` through a fresh bounded execution handoff.
+Next recommended step for Codex: use `janus-git-governance` with `5.4` low when the user wants a scoped checkpoint commit for the sealed Spec-23 documentation state.
 
-Last updated: `2026-06-21 19:23:00 +02:00`.
+Last updated: `2026-06-21 23:09:00 +02:00`.
 
 ## Current Snapshot Update
 As of `2026-06-21`, `TASK-SPEC23.1` is locally implemented with canonical state `HANDOFF`. The first productive `janus-debug` OR-consumer entry seam now exists as a bounded eligibility and visible operator-gate layer for clearly suitable `debug_hypothesis_review` cases, while non-eligible debug flows remain deterministically Codex-only and the later delegated execution/fallback runtime stays explicitly reserved for `TASK-SPEC23.2`.

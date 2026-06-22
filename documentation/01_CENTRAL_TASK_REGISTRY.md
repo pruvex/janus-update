@@ -4,6 +4,18 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-SPEC23.2 - Wire bounded OR debug execution and direct Codex fallback into the productive `janus-debug` path
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-SPEC23.2_final_audit.md` (PASS)
+- **Spec**: `documentation/SPEC/Spec Done/23_erster_produktiver_or_consumer_fuer_janus_debug.md`
+- **Parent Task**: `documentation/tasks/TASK-SPEC23_erster_produktiver_or_consumer_fuer_janus_debug.md`
+- **Precheck**: `documentation/tasks/TASK-SPEC23.2_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-SPEC23.2_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-SPEC23.2_AUDIT_PACKAGE.md`
+- **Validation**: `TASK-SPEC23.2` schliesst den zweiten und letzten eng gebundenen Spec-23-Slice als ersten alltagstauglichen produktiven OR-Consumer fuer `janus-debug` ab. Der reparierte Runtime-Seam fuehrt bounded delegierte Analyse- und Patch-Kandidaten-Arbeit jetzt sauber in den file-first Wrapper-Pfad, prueft das Ergebnis lokal weiter und faellt bei fehlendem Runtime-Modus oder schwacher Rueckgabe sichtbar auf Codex zurueck, ohne Self-Recursion, globale OR-Freigabe oder Scope-Ausweitung auf andere Debug-Modi zu erzeugen. Final Audit PASS mit fokussierter Consumer-, Dispatcher-, CLI-Fixture-, Compile-, Execution-Result- und Validator-Evidenz. Spec 23 ist damit insgesamt DONE und bleibt weiterhin strikt auf `janus-debug` plus den bounded `debug_hypothesis_review`-Pfad begrenzt.
+- **Changed Files**: `documentation/codex/skills/janus-debug/SKILL.md`, `documentation/codex/model-routing/scripts/codex_debug_hypothesis_review_runner.py`, `documentation/codex/model-routing/tests/test_assistive_or_review_consumer_integration.py`, `documentation/tasks/TASK-SPEC23.2_execution_result.md`, `documentation/tasks/TASK-SPEC23.2_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC23.2_final_audit.md`, `documentation/SPEC/Spec Done/23_erster_produktiver_or_consumer_fuer_janus_debug.md`.
+
 ### TASK-SPEC24.2 - Apply the Lean-Dev rule to current OR and workhorse infrastructure flow entrypoints
 
 - **Status**: DONE
