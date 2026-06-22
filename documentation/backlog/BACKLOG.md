@@ -164,7 +164,6 @@ Dashboard-Regeln:
 
 ## READY
 
-
 ### BACKLOG-109 - Lokale DB-Snapshots vor riskanten Debug-, Repair- und Migrationsschritten anlegen
 
 - **Typ:** IMPROVEMENT
@@ -249,6 +248,46 @@ Dashboard-Regeln:
 - **Notizen:** False Positives aus TEST-RUN-2026-05-19-007 - TestPlan-Expectations muessen verfeinert werden
 
 ## DONE
+
+### BACKLOG-113 - Installierte Skill-Arbeitskopien nutzen den produktiven Dev-Workhorse-Pfad noch nicht als kanonischen OR-Einstieg
+
+- **Typ:** IMPROVEMENT
+- **Status:** DONE
+- **Quelle:** Audit
+- **Erstellt:** 2026-06-22
+- **Aktualisiert:** 2026-06-22
+- **Kurzbeschreibung:** Der repo-versionierte produktive Dev-Workhorse-Hauptpfad ist mit Spec 25 technisch abgeschlossen, und die installierten Skill-Arbeitskopien unter `C:\Users\pruve\.codex\skills\janus-*` verweisen im Alltag nun ebenfalls konsistent auf diesen einen kanonischen produktiven Einstieg.
+- **Erwartetes Verhalten:** Fuer die passenden bounded Dev-/OR-Arbeitsslices fuehren die installierten Skill-Arbeitskopien kontrolliert in den kanonischen produktiven Dev-Workhorse-Einstieg mit sichtbarer Wahl `1 = Codex` / `2 = OR`, fixer Modellzuordnung, Kostenbasis und Codex-owned Abschlusslogik, statt aeltere Parallel-Einstiege oder nur direkte Dispatcher-Hinweise zu verwenden.
+- **Tatsaechliches Verhalten:** Der produktive Runner `documentation/codex/model-routing/scripts/codex_dev_workhorse_runner.py` und das zugehoerige Runbook sind jetzt im sichtbaren Everyday-Workflow mit den Repo- und installierten Skill-Kopien synchronisiert.
+- **Reproduktion / Kontext:** Bounded OR-/Workhorse-Cluster-Review vom 2026-06-22 nach abgeschlossenem Spec-25-Closeout. Der Review zeigte: `codex_dev_workhorse_runner.py` ist technisch gruen, und die installierten Skill-Arbeitskopien wurden auf diesen Einstieg ausgerichtet.
+- **Betroffener Bereich:** Codex-Skill-Integration / Dev-Workflow / OR-Workhorse-Einstieg / installierte Skill-Arbeitskopien
+- **Nachweise:** `documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md`; `documentation/codex/model-routing/scripts/codex_dev_workhorse_runner.py`; `documentation/codex/skills/janus-executioner/SKILL.md`; `C:\Users\pruve\.codex\skills\janus-executioner\SKILL.md`; `documentation/ai/CURRENT_STATE.md`
+- **Akzeptanzkriterien:**
+  - [x] Die betroffenen installierten Skill-Arbeitskopien verweisen konsistent auf den produktiven Dev-Workhorse-Runner als kanonischen OR-Einstieg.
+  - [x] Die betroffenen Repo-Skillquellen und installierten Kopien stimmen fuer den sichtbaren Everyday-Workflow sprachlich und strukturell ueberein.
+  - [x] Der Scope bleibt strikt auf die gebundenen Dev-/OR-Integrationspfade beschraenkt.
+  - [x] Keine Produktionsrouting-, Release- oder kanonische Routing-Tabellen-Aktivierung wird durch diesen Slice eingefuehrt.
+- **Fehlende Informationen:**
+  - Keine
+- **Wichtigkeit:** HIGH
+- **Umsetzungsrisiko:** MEDIUM
+- **Aufwand:** M
+- **Umsetzungsreife:** DONE
+- **Empfehlung:** DONE
+- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
+- **Routing reason:** Der produktive Dev-Workhorse-Pfad ist bereits fertig, und die installierten Skill-Arbeitskopien zeigen jetzt konsistent darauf.
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 2
+- **Routing decided at:** 2026-06-22
+- **Handoff:** documentation/tasks/backlog_BACKLOG-113_installierte_skill_arbeitskopien_nutzen_den_produktiven_dev_workhorse_pfad.md
+- **Recommended next skill:** SKILL 3
+- **Handoff created:** 2026-06-22
+- **Completed in version:** N/A
+- **Completed by task:** documentation/tasks/backlog_BACKLOG-113_execution_result.md
+- **Completed at:** 2026-06-22
+- **Final audit:** PASS
+- **Validation evidence:** `python C:\Users\pruve\.codex\skills\janus-backlog-handoff\scripts\validate_backlog.py documentation/backlog/BACKLOG.md` PASS WITH LEGACY WARNINGS; `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py documentation/tasks/backlog_BACKLOG-113_preimplementation_check.md` PASS; `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py documentation/tasks/backlog_BACKLOG-113_execution_result.md` PASS; `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py documentation/tasks/backlog_BACKLOG-113_final_audit.md` PASS
+- **Notizen:** Kleiner bounded Integrationsslice nach einem fertigen Runner-Block, kein neues Produktfeature.
 
 ### BACKLOG-112 - Quickchange-Delegationspfad fuehrt neuen OR-Pilot noch nur als Dry-Run statt als echten bounded Live-Execute aus
 

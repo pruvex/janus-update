@@ -27,17 +27,31 @@ Purpose: repeatable low-token workflow for Codex work inside
 
 ## Productive Dev-Workhorse Entry
 
-- The first productive Spec-22 entry is the dedicated runner
+- The dedicated productive Dev-workhorse entry is the runner
   `documentation/codex/model-routing/scripts/codex_dev_workhorse_runner.py`.
 - This entry is bounded to `productive_dev_workhorse_path` only and must not be
   treated as a broad OR activation for existing Janus skills.
 - The visible operator gate in this runner uses `1 = Codex` and `2 = OR`.
-- Missing estimated cost, missing confidence, failed eligibility, or a path
+- The visible gate must show one fixed recommended OR model from the sealed
+  class contract and one explicit pre-call cost basis derived from the bound
+  budget profile before any wrapper or dispatcher path can start.
+- Repo-versioned skill sources and installed skill working copies that expose
+  this everyday Dev entry must mirror the same visible wording:
+  `1 = Codex` and `2 = OR`.
+- Missing fixed model mapping, missing cost basis, missing estimated cost,
+  missing confidence, failed eligibility, or a path
   outside `productive_dev_workhorse_path` must abort before any wrapper or
   dispatcher invocation.
-- Selecting `2 = OR` now routes through the sealed bounded delegated runtime
-  from `TASK-SPEC22.3` and then finalizes one dedicated Dev-workhorse session
-  telemetry row plus one healthcheck summary for that workflow id.
+- The operator does not choose a free model in this path. The model remains
+  fixed per allowed task class until a later bounded review changes the
+  contract explicitly.
+- Selecting `2 = OR` continues to use the already existing sealed bounded
+  delegated runtime from `TASK-SPEC22.3` and then finalizes one dedicated
+  Dev-workhorse session telemetry row plus one healthcheck summary for that
+  workflow id.
+- `TASK-SPEC25.2` changes only the visible gate wording and fail-closed prompt
+  prerequisites. It does not create a new delegated runtime approval or a new
+  production authority seam.
 - Dedicated Dev-workhorse closeout must show actual OR cost when usage exists,
   or an explicit missing-usage / fallback note when truthful cost closeout is
   unavailable.

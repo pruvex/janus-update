@@ -1,43 +1,63 @@
 ﻿# CURRENT_STATE
 
 ## Current Snapshot Update
-As of `2026-06-22`, the completed Spec-25 productive Dev-workhorse path is now synchronized into the Janus task and registry documentation with canonical state `PASS`. The final Spec-25 closeout now consistently reflects all three passed slices, the moved `Spec Done` location, and the bounded two-class productive authority boundary.
+As of `2026-06-22`, `BACKLOG-113` is fully documented, audited, and synced: the productive Dev-workhorse runner is now also reflected in the visible everyday entry wording of the affected skill sources and installed skill working copies, and the backlog/dashboard snapshot state now matches the completed slice.
 
-Current goal: finish the Spec-25 documentation closeout checkpoint without enabling production routing, expanding OR authority, or touching unrelated mixed-worktree changes.
+Current goal: keep `BACKLOG-113` as a closed Dev-integration reference point and use the next bounded OR/workhorse hardening step only when a fresh validated slice appears.
 
-Active phase: `janus-documentation-update`, canonical state `PASS`.
+Active phase: `janus-documentation-update`, canonical state `HANDOFF`.
 
 Last Codex work:
-- synchronized `TASK-SPEC25.3` PASS into the parent `TASK-SPEC25` artifact as the final slice closeout
-- added the `TASK-SPEC25.3` DONE closure to the central registry and aligned existing `TASK-SPEC25.1` / `TASK-SPEC25.2` Spec paths to `Spec Done`
-- updated the compact project snapshot so Spec 25 now appears as fully DONE instead of still open
-- kept CHANGELOG and `WHAT_I_LEARNED` intentionally skipped because this is internal Dev/OR infrastructure closeout without new user-facing product behavior or a new reusable root-cause pattern
+- repaired the accidental `BACKLOG.md` section-heading drift so the new handoff sits under the correct backlog state again
+- created and validator-checked `documentation/tasks/backlog_BACKLOG-113_preimplementation_check.md`
+- implemented the bounded wording/integration slice for `BACKLOG-113` across repo skill sources, installed skill working copies, and the Dev runbook
+- switched the visible everyday `janus-executioner` OR entry from dispatcher-first wording to the productive Dev-workhorse runner with `1 = Codex` and `2 = OR`
+- synchronized the `janus-debug` visible OR wording and fail-closed fallback guidance between repo source and installed copy
+- captured the implementation outcome in `documentation/tasks/backlog_BACKLOG-113_execution_result.md`
+- finalized the audit in `documentation/tasks/backlog_BACKLOG-113_final_audit.md`
+- moved `BACKLOG-113` to `DONE` in `documentation/backlog/BACKLOG.md`
+- mirrored the completed state into `janus-dashboard/data/backlog.snapshot.json`
 
 Changed files:
-- `documentation/tasks/TASK-SPEC25_produktiver_dev_workhorse_hauptpfad_fuer_or_arbeitspferd.md`
-- `documentation/01_CENTRAL_TASK_REGISTRY.md`
-- `PROJECT_STATE.md`
-- `documentation/tasks/TASK-SPEC25.3_final_audit.md`
-- `documentation/SPEC/Spec Done/25_produktiver_dev_workhorse_hauptpfad_fuer_or_arbeitspferd.md`
+- `documentation/backlog/BACKLOG.md`
+- `documentation/tasks/backlog_BACKLOG-113_installierte_skill_arbeitskopien_nutzen_den_produktiven_dev_workhorse_pfad.md`
+- `documentation/tasks/backlog_BACKLOG-113_preimplementation_check.md`
+- `documentation/tasks/backlog_BACKLOG-113_execution_result.md`
+- `documentation/tasks/BACKLOG-113_AUDIT_PACKAGE.md`
+- `documentation/tasks/backlog_BACKLOG-113_final_audit.md`
+- `documentation/codex/skills/janus-executioner/SKILL.md`
+- `documentation/codex/skills/janus-debug/SKILL.md`
+- `C:\Users\pruve\.codex\skills\janus-executioner\SKILL.md`
+- `C:\Users\pruve\.codex\skills\janus-debug\SKILL.md`
+- `documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md`
+- `janus-dashboard/data/backlog.snapshot.json`
 - `documentation/ai/CURRENT_STATE.md`
 - `documentation/codex/SKILL_USAGE_LOG.md`
 
 Checks / validation performed:
-- `python C:\Users\pruve\.codex\skills\janus-documentation-update\scripts\validate_doc_update.py --repo C:\KI\Janus-Projekt --marker TASK-SPEC25.3 --require documentation/tasks/TASK-SPEC25_produktiver_dev_workhorse_hauptpfad_fuer_or_arbeitspferd.md --require documentation/01_CENTRAL_TASK_REGISTRY.md --require PROJECT_STATE.md --require documentation/ai/CURRENT_STATE.md`: PASS
-- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py documentation/tasks/TASK-SPEC25.3_final_audit.md`: PASS
-- scoped `git diff --check`: PASS with the known `CURRENT_STATE.md` CRLF warning only
+- targeted repo-vs-installed skill review for `janus-executioner` and `janus-debug`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-backlog-handoff\scripts\validate_backlog.py C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md`: PASS WITH LEGACY WARNINGS
+- backlog heading repair for `BACKLOG-113` handoff placement: PASS
+- `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py documentation/tasks/backlog_BACKLOG-113_preimplementation_check.md`: PASS
+- visible OR wording / productive runner reference scan across repo + installed copies: PASS
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py documentation/tasks/backlog_BACKLOG-113_execution_result.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py documentation/tasks/backlog_BACKLOG-113_final_audit.md`: PASS
+- `python -c "import json, pathlib; json.load(pathlib.Path('janus-dashboard/data/backlog.snapshot.json').open(encoding='utf-8')); print('JSON OK')"`: PASS
+- scoped `git diff --check`: PASS with known CRLF warning on `documentation/backlog/BACKLOG.md`
 - staged-only guard `git diff --cached --check`: PASS
 
 Open risks:
-- the worktree still contains many unrelated tracked and untracked changes, so any future commit must remain staged-only and changeset-clean
+- the docs are complete but the worktree remains heavily mixed, so any later checkpoint must stay tightly staged-only
+- the worktree remains heavily mixed, so any later implementation checkpoint must stay tightly staged-only
+- suspicious root artifacts are still present elsewhere in the repo and remain out of scope for this debug slice
 - no production routing, canonical routing-table activation, global OR approval, Git authority, or release authority is approved
-- no commit or push has happened for this documentation-sync state, so a remote such as GitHub or `backup` may not contain it yet
+- the latest health-check routing state is local only until a future explicit Git step is approved
 
-Next recommended step for ChatGPT: treat Spec 25 as fully documented DONE and preserve the bounded two-class, fixed-model, operator-invoked authority boundary.
+Next recommended step for ChatGPT: keep `BACKLOG-113` closed and only reopen the OR/workhorse topic when a new bounded validation slice appears.
 
-Next recommended step for Codex: validate this documentation closeout and then hand off to `janus-git-governance` only if the user explicitly wants a staged-only checkpoint commit.
+Next recommended step for Codex: checkpoint via `janus-git-governance` if you want to commit this documentation sync.
 
-Last updated: `2026-06-22 20:34:00 +02:00`.
+Last updated: `2026-06-22 22:34:11 +02:00`.
 
 ## Previous Snapshot Update
 As of `2026-06-22`, the bounded `TASK-SPEC25.3` blocker repair is complete with canonical state `HANDOFF`. The productive Dev-workhorse runner now binds the successful gate model once per run and reuses that exact value for dispatcher invocation and telemetry closeout.
