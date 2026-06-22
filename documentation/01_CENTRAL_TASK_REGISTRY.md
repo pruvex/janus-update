@@ -4,11 +4,24 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-SPEC25.3 - Route the productive Dev-workhorse main path only into bounded write/apply execution with explicit Codex-owned acceptance
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-SPEC25.3_final_audit.md` (PASS)
+- **Spec**: `documentation/SPEC/Spec Done/25_produktiver_dev_workhorse_hauptpfad_fuer_or_arbeitspferd.md`
+- **Parent Task**: `documentation/tasks/TASK-SPEC25_produktiver_dev_workhorse_hauptpfad_fuer_or_arbeitspferd.md`
+- **Task Breakdown**: `documentation/tasks/TASK-SPEC25.3_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-SPEC25.3_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-SPEC25.3_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-SPEC25.3_AUDIT_PACKAGE.md`
+- **Validation**: `TASK-SPEC25.3` schliesst den dritten und letzten eng gebundenen Spec-25-Slice als produktiven bounded Runtime- und Abschluss-Pfad des Dev-Workhorse-Hauptpfads ab. Der dedizierte produktive Runner bleibt auf genau `execution_patch_candidate` und `execution_write_apply_candidate` begrenzt, bindet die erfolgreiche Gate-Modellidentitaet genau einmal pro Lauf und verwendet dieselbe kanonische Modellidentitaet unveraendert fuer Dispatcher und Telemetrie weiter, waehrend alle Abschlusszustaende explizit Codex-owned und reviewbar bleiben. Final Audit PASS mit fokussierter Runner-, Eligibility-, Compile-, Trust-Seam-Probe-, Diff- und Validator-Evidenz. Spec 25 ist damit insgesamt DONE, ohne Produktionsrouting, kanonische Routing-Tabellen-Aktivierung, globale OR-Freigabe, Git- oder Release-Autoritaet zu aktivieren.
+- **Changed Files**: `documentation/codex/model-routing/scripts/codex_dev_workhorse_runner.py`, `documentation/codex/model-routing/tests/test_codex_dev_workhorse_runner.py`, `documentation/tasks/TASK-SPEC25.3_execution_result.md`, `documentation/tasks/TASK-SPEC25.3_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC25.3_final_audit.md`, `documentation/SPEC/Spec Done/25_produktiver_dev_workhorse_hauptpfad_fuer_or_arbeitspferd.md`.
+
 ### TASK-SPEC25.2 - Show the fixed recommended OR model and pre-call cost basis in the productive Dev-workhorse operator gate
 
 - **Status**: DONE
 - **Final Audit**: `documentation/tasks/TASK-SPEC25.2_final_audit.md` (PASS)
-- **Spec**: `documentation/SPEC/25_produktiver_dev_workhorse_hauptpfad_fuer_or_arbeitspferd.md`
+- **Spec**: `documentation/SPEC/Spec Done/25_produktiver_dev_workhorse_hauptpfad_fuer_or_arbeitspferd.md`
 - **Parent Task**: `documentation/tasks/TASK-SPEC25_produktiver_dev_workhorse_hauptpfad_fuer_or_arbeitspferd.md`
 - **Task Breakdown**: `documentation/tasks/TASK-SPEC25.2_task_breakdown.md`
 - **Precheck**: `documentation/tasks/TASK-SPEC25.2_preimplementation_check.md`
@@ -21,7 +34,7 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 - **Status**: DONE
 - **Final Audit**: `documentation/tasks/TASK-SPEC25.1_final_audit.md` (PASS)
-- **Spec**: `documentation/SPEC/25_produktiver_dev_workhorse_hauptpfad_fuer_or_arbeitspferd.md`
+- **Spec**: `documentation/SPEC/Spec Done/25_produktiver_dev_workhorse_hauptpfad_fuer_or_arbeitspferd.md`
 - **Parent Task**: `documentation/tasks/TASK-SPEC25_produktiver_dev_workhorse_hauptpfad_fuer_or_arbeitspferd.md`
 - **Task Breakdown**: `documentation/tasks/TASK-SPEC25.1_task_breakdown.md`
 - **Precheck**: `documentation/tasks/TASK-SPEC25.1_preimplementation_check.md`

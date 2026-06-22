@@ -1,36 +1,120 @@
 ﻿# CURRENT_STATE
 
 ## Current Snapshot Update
-As of `2026-06-22`, the `TASK-SPEC25.2` documentation sync remains complete and validated, and a follow-up `janus-git-governance` check has classified the current repository state as `WAIT` for commit. The intended Spec-25.2 closeout slice is coherent, but the surrounding worktree is heavily mixed with unrelated tracked and untracked Janus and Dev/OR changes, so no safe checkpoint commit should be made without an explicit scoped staging decision.
+As of `2026-06-22`, the completed Spec-25 productive Dev-workhorse path is now synchronized into the Janus task and registry documentation with canonical state `PASS`. The final Spec-25 closeout now consistently reflects all three passed slices, the moved `Spec Done` location, and the bounded two-class productive authority boundary.
 
-Current goal: preserve the validated `TASK-SPEC25.2` closeout while keeping commit/push blocked until the user approves a narrow staged changeset.
+Current goal: finish the Spec-25 documentation closeout checkpoint without enabling production routing, expanding OR authority, or touching unrelated mixed-worktree changes.
 
-Active phase: `janus-git-governance`, canonical state `HANDOFF`.
+Active phase: `janus-documentation-update`, canonical state `PASS`.
 
 Last Codex work:
-- inspected `janus-git-governance` policy and the live worktree after the completed `TASK-SPEC25.2` documentation sync
-- confirmed the intended Spec-25.2 files are locally consistent and validated
-- determined that the repo-wide dirty state is too mixed for an automatic Lean Delivery checkpoint without an explicit scoped staging decision
+- synchronized `TASK-SPEC25.3` PASS into the parent `TASK-SPEC25` artifact as the final slice closeout
+- added the `TASK-SPEC25.3` DONE closure to the central registry and aligned existing `TASK-SPEC25.1` / `TASK-SPEC25.2` Spec paths to `Spec Done`
+- updated the compact project snapshot so Spec 25 now appears as fully DONE instead of still open
+- kept CHANGELOG and `WHAT_I_LEARNED` intentionally skipped because this is internal Dev/OR infrastructure closeout without new user-facing product behavior or a new reusable root-cause pattern
 
 Changed files:
+- `documentation/tasks/TASK-SPEC25_produktiver_dev_workhorse_hauptpfad_fuer_or_arbeitspferd.md`
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `documentation/tasks/TASK-SPEC25.3_final_audit.md`
+- `documentation/SPEC/Spec Done/25_produktiver_dev_workhorse_hauptpfad_fuer_or_arbeitspferd.md`
 - `documentation/ai/CURRENT_STATE.md`
 - `documentation/codex/SKILL_USAGE_LOG.md`
 
 Checks / validation performed:
-- `git status --short`: PASS
-- previously validated `TASK-SPEC25.2` doc-sync markers remain PASS
+- `python C:\Users\pruve\.codex\skills\janus-documentation-update\scripts\validate_doc_update.py --repo C:\KI\Janus-Projekt --marker TASK-SPEC25.3 --require documentation/tasks/TASK-SPEC25_produktiver_dev_workhorse_hauptpfad_fuer_or_arbeitspferd.md --require documentation/01_CENTRAL_TASK_REGISTRY.md --require PROJECT_STATE.md --require documentation/ai/CURRENT_STATE.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py documentation/tasks/TASK-SPEC25.3_final_audit.md`: PASS
+- scoped `git diff --check`: PASS with the known `CURRENT_STATE.md` CRLF warning only
+- staged-only guard `git diff --cached --check`: PASS
+
+Open risks:
+- the worktree still contains many unrelated tracked and untracked changes, so any future commit must remain staged-only and changeset-clean
+- no production routing, canonical routing-table activation, global OR approval, Git authority, or release authority is approved
+- no commit or push has happened for this documentation-sync state, so a remote such as GitHub or `backup` may not contain it yet
+
+Next recommended step for ChatGPT: treat Spec 25 as fully documented DONE and preserve the bounded two-class, fixed-model, operator-invoked authority boundary.
+
+Next recommended step for Codex: validate this documentation closeout and then hand off to `janus-git-governance` only if the user explicitly wants a staged-only checkpoint commit.
+
+Last updated: `2026-06-22 20:34:00 +02:00`.
+
+## Previous Snapshot Update
+As of `2026-06-22`, the bounded `TASK-SPEC25.3` blocker repair is complete with canonical state `HANDOFF`. The productive Dev-workhorse runner now binds the successful gate model once per run and reuses that exact value for dispatcher invocation and telemetry closeout.
+
+Current goal: rerun the independent bounded final audit for `TASK-SPEC25.3` without widening into model selection, production routing, or any broader OR authority.
+
+Active phase: `janus-executioner`, canonical state `HANDOFF`.
+
+Last Codex work:
+- bound the successful visible-gate model onto the current run inside `codex_dev_workhorse_runner.py`
+- removed the post-gate eligibility re-read seam from dispatcher construction and telemetry closeout
+- added a focused regression that fails if eligibility is re-evaluated after the gate
+- refreshed the execution result and audit package so the blocker delta is compact and current
+
+Changed files:
+- `documentation/codex/model-routing/scripts/codex_dev_workhorse_runner.py`
+- `documentation/codex/model-routing/tests/test_codex_dev_workhorse_runner.py`
+- `documentation/tasks/TASK-SPEC25.3_execution_result.md`
+- `documentation/tasks/TASK-SPEC25.3_AUDIT_PACKAGE.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python -m unittest documentation.codex.model-routing.tests.test_codex_dev_workhorse_runner`: PASS (`19` tests)
+- `python -m unittest documentation.codex.model-routing.tests.test_bounded_or_worker_eligibility`: PASS (`31` tests)
+- productive runner cluster `python -m py_compile`: PASS
+- configuration-change seam probe: PASS (`gate=model/A`, `dispatcher=model/A`, `telemetry=model/A`)
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py documentation/tasks/TASK-SPEC25.3_execution_result.md`: PASS
+- scoped `git diff --check`: PASS with the known `CURRENT_STATE.md` CRLF warning only
+- staged-only guard `git diff --cached --check`: PASS
+
+Open risks:
+- `TASK-SPEC25.3` still needs the same bounded independent final audit rerun
+- no production routing or canonical routing-table activation is approved
+- no commit or push has happened for this execution state, so a remote such as GitHub or `backup` may not contain it yet
+
+Next recommended step for ChatGPT: re-audit only the repaired run-scoped identity seam and keep the review bound to the existing `TASK-SPEC25.3` package.
+
+Next recommended step for Codex: use `janus-final-audit` with `5.5` high to rerun the bounded `TASK-SPEC25.3` final audit on the refreshed package.
+
+Last updated: `2026-06-22 20:07:00 +02:00`.
+
+## Previous Snapshot Update
+As of `2026-06-22`, the execution slice for `TASK-SPEC25.3` is complete with canonical state `HANDOFF`. The dedicated productive Dev-workhorse runner now matches the sealed Spec-25 productive contract at the actual CLI/runtime entrypoint: only `execution_patch_candidate` and `execution_write_apply_candidate` can enter the productive runner, while the older assist-only `test_result_triage_review` path is rejected before any productive invocation.
+
+Current goal: move `TASK-SPEC25.3` through `janus-final-audit` without reopening the sealed gate, broadening the productive OR path, or implying any new delegated runtime authority beyond the already existing bounded execution runtime.
+
+Active phase: `janus-executioner`, canonical state `HANDOFF`.
+
+Last Codex work:
+- removed the remaining productive-runner drift so the CLI/runtime entry now exposes only the two sealed productive classes `execution_patch_candidate` and `execution_write_apply_candidate`
+- kept the shared eligibility contract, bounded dispatcher, and execution candidate runners unchanged because the existing bounded runtime already provides file-first artifacts, local validation seams, and explicit Codex-owned completion states
+- added a focused regression that proves `test_result_triage_review` is rejected directly by the productive runner parser instead of being allowed into the productive entry path
+
+Changed files:
+- `documentation/codex/model-routing/scripts/codex_dev_workhorse_runner.py`
+- `documentation/codex/model-routing/tests/test_codex_dev_workhorse_runner.py`
+- `documentation/tasks/TASK-SPEC25.3_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m unittest documentation.codex.model-routing.tests.test_codex_dev_workhorse_runner`: PASS (`14` tests)
+- `python -m py_compile documentation/codex/model-routing/scripts/codex_dev_workhorse_runner.py documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py documentation/codex/model-routing/scripts/codex_execution_patch_candidate_runner.py documentation/codex/model-routing/scripts/codex_execution_write_apply_candidate_runner.py documentation/codex/model-routing/tests/test_codex_dev_workhorse_runner.py`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py documentation/tasks/TASK-SPEC25.3_execution_result.md`: PASS
+- `git diff --check -- documentation/codex/model-routing/scripts/codex_dev_workhorse_runner.py documentation/codex/model-routing/tests/test_codex_dev_workhorse_runner.py documentation/tasks/TASK-SPEC25.3_execution_result.md`: PASS
 - `git diff --cached --check`: PASS
 
 Open risks:
-- the worktree contains many unrelated tracked and untracked product, test, spec, and OR-infrastructure changes outside the narrow `TASK-SPEC25.2` closeout slice
-- committing without a scoped staging decision risks mixing unrelated Janus and Dev/OR work into one unsafe checkpoint
-- no commit or push has happened, so a remote such as GitHub or `backup` may not contain the latest validated `CURRENT_STATE`
+- `TASK-SPEC25.3` is implemented but not yet independently final-audited
+- the slice intentionally leaves the already existing bounded execution runtime untouched, so final audit still needs to confirm that the reduced runner entrypoint is the only behavior change
+- no commit or push has happened for this execution state, so a remote such as GitHub or `backup` may not contain it yet
 
-Next recommended step for ChatGPT: either approve a narrow staged-only commit for the exact `TASK-SPEC25.2` closeout files or explicitly defer commit work and continue with the next bounded task.
+Next recommended step for ChatGPT: treat `TASK-SPEC25.3` as an execution-complete bounded runtime-hardening slice and keep the next review tightly scoped to whether the productive runner entry now matches the sealed contract without widening delegated authority.
 
-Next recommended step for Codex: stay in `janus-git-governance` only if the user wants a scoped changeset proposal; otherwise stop without staging or pushing.
+Next recommended step for Codex: use `janus-final-audit` with `5.5` high on `documentation/tasks/TASK-SPEC25.3_execution_result.md`.
 
-Last updated: `2026-06-22 17:45:11 +02:00`.
+Last updated: `2026-06-22 19:18:00 +02:00`.
 
 ## Previous Snapshot Update
 As of `2026-06-22`, the `TASK-SPEC25.2` final-audit PASS is now synchronized into the task-level Janus documentation with canonical state `PASS`. The visible productive gate slice is documented as complete, while Spec 25 intentionally remains open for the separate bounded runtime slice `TASK-SPEC25.3`.

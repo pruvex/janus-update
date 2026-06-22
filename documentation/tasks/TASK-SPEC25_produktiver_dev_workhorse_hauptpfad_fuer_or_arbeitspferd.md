@@ -1,5 +1,5 @@
 TASK-SPEC25
-- Source Spec: documentation/SPEC/25_produktiver_dev_workhorse_hauptpfad_fuer_or_arbeitspferd.md
+- Source Spec: documentation/SPEC/Spec Done/25_produktiver_dev_workhorse_hauptpfad_fuer_or_arbeitspferd.md
 - Backlog Item: N/A
 - Feature: Produktiver Dev-Workhorse-Hauptpfad fuer OR-Arbeitspferd
 - Generated At: 2026-06-22
@@ -86,9 +86,20 @@ TASK-SPEC25
   - Negativtest fuer eine nicht erlaubte Review-/Assist-only-Klasse im produktiven Hauptpfad
 - Model: 5.4
 - Reason: Diese Slice ist der eigentliche Produktivkern der neuen Hauptpfad-Architektur und sorgt dafuer, dass OR als Arbeitspferd echte bounded Schreibarbeit uebernehmen kann, waehrend Codex sichtbar die letzte Kontrolle behaelt.
+- Closeout: Final Audit PASS ist in `documentation/tasks/TASK-SPEC25.3_final_audit.md` dokumentiert. Die produktive bounded Runtime des Dev-Workhorse-Hauptpfads ist damit task-scharf abgeschlossen: der dedizierte produktive Runner bleibt auf genau `execution_patch_candidate` und `execution_write_apply_candidate` begrenzt, bindet das erfolgreiche Gate-Modell run-scoped einmal pro Lauf und verwendet dieselbe kanonische Modellidentitaet unveraendert fuer Dispatcher und Telemetrie weiter, waehrend alle Abschlusszustaende explizit Codex-owned und reviewbar bleiben. Damit ist Spec 25 insgesamt abgeschlossen und als DONE nach `documentation/SPEC/Spec Done/25_produktiver_dev_workhorse_hauptpfad_fuer_or_arbeitspferd.md` ueberfuehrt, ohne Produktionsrouting, kanonische Routing-Tabellen-Aktivierung, globale OR-Freigabe, Git- oder Release-Autoritaet zu aktivieren.
+
+## Spec 25 Closeout
+
+- Overall Status: DONE
+- Final Audit Chain:
+  - `documentation/tasks/TASK-SPEC25.1_final_audit.md` - PASS
+  - `documentation/tasks/TASK-SPEC25.2_final_audit.md` - PASS
+  - `documentation/tasks/TASK-SPEC25.3_final_audit.md` - PASS
+- Spec Location: `documentation/SPEC/Spec Done/25_produktiver_dev_workhorse_hauptpfad_fuer_or_arbeitspferd.md`
+- Completion Summary: Der produktive Dev-Workhorse-Hauptpfad ist jetzt vollstaendig als eng gebundener Zwei-Klassen-Pfad abgeschlossen. Er kombiniert den versiegelten festen Modell-Contract, die sichtbare Gate-Schicht mit Pre-Call-Kostenbasis und den bounded produktiven Runtime-Pfad mit explizit Codex-owned Accept-/Reject-/Fallback-/Manual-Review-Abschluss. Es wurde keine breite Skill-Aktivierung, kein Produktionsrouting und keine globale OR-Autoritaet freigegeben.
 
 @janus-task-breakdown
-Spec: documentation/SPEC/25_produktiver_dev_workhorse_hauptpfad_fuer_or_arbeitspferd.md
+Spec: documentation/SPEC/Spec Done/25_produktiver_dev_workhorse_hauptpfad_fuer_or_arbeitspferd.md
 Task: documentation/tasks/TASK-SPEC25_produktiver_dev_workhorse_hauptpfad_fuer_or_arbeitspferd.md
 Backlog Item: N/A
 Target Task: TASK-SPEC25.1
