@@ -1,63 +1,1569 @@
 ﻿# CURRENT_STATE
 
 ## Current Snapshot Update
-As of `2026-06-22`, `BACKLOG-113` is fully documented, audited, and synced: the productive Dev-workhorse runner is now also reflected in the visible everyday entry wording of the affected skill sources and installed skill working copies, and the backlog/dashboard snapshot state now matches the completed slice.
+As of `2026-06-23`, the bounded re-audit for `TASK-SPEC25.3` passes again in the current worktree. The stale legacy dispatcher allowance is repaired, the broader bounded OR eligibility suite is green, the dedicated productive Dev-workhorse runner suite stays green, and the refreshed re-audit result is saved.
 
-Current goal: keep `BACKLOG-113` as a closed Dev-integration reference point and use the next bounded OR/workhorse hardening step only when a fresh validated slice appears.
+Current goal: hand the repaired Spec-25 productive Dev-workhorse slice into `janus-documentation-update` so the audit result and evidence can be synchronized cleanly.
 
-Active phase: `janus-documentation-update`, canonical state `HANDOFF`.
+Active phase: `janus-final-audit`, canonical state `PASS`.
 
 Last Codex work:
-- repaired the accidental `BACKLOG.md` section-heading drift so the new handoff sits under the correct backlog state again
-- created and validator-checked `documentation/tasks/backlog_BACKLOG-113_preimplementation_check.md`
-- implemented the bounded wording/integration slice for `BACKLOG-113` across repo skill sources, installed skill working copies, and the Dev runbook
-- switched the visible everyday `janus-executioner` OR entry from dispatcher-first wording to the productive Dev-workhorse runner with `1 = Codex` and `2 = OR`
-- synchronized the `janus-debug` visible OR wording and fail-closed fallback guidance between repo source and installed copy
-- captured the implementation outcome in `documentation/tasks/backlog_BACKLOG-113_execution_result.md`
-- finalized the audit in `documentation/tasks/backlog_BACKLOG-113_final_audit.md`
-- moved `BACKLOG-113` to `DONE` in `documentation/backlog/BACKLOG.md`
-- mirrored the completed state into `janus-dashboard/data/backlog.snapshot.json`
+- reran the bounded final audit for `TASK-SPEC25.3` against the repaired evidence package
+- reconfirmed `python -m unittest documentation.codex.model-routing.tests.test_bounded_or_worker_eligibility` passes with 31 tests
+- reconfirmed `python -m unittest documentation.codex.model-routing.tests.test_codex_dev_workhorse_runner` passes with 20 tests
+- saved the passing re-audit result to `documentation/tasks/TASK-SPEC25.3_reaudit_2026-06-23.md`
+- updated the Spec-25 implementation metadata to include the fresh re-audit evidence
 
 Changed files:
-- `documentation/backlog/BACKLOG.md`
-- `documentation/tasks/backlog_BACKLOG-113_installierte_skill_arbeitskopien_nutzen_den_produktiven_dev_workhorse_pfad.md`
-- `documentation/tasks/backlog_BACKLOG-113_preimplementation_check.md`
-- `documentation/tasks/backlog_BACKLOG-113_execution_result.md`
-- `documentation/tasks/BACKLOG-113_AUDIT_PACKAGE.md`
-- `documentation/tasks/backlog_BACKLOG-113_final_audit.md`
-- `documentation/codex/skills/janus-executioner/SKILL.md`
-- `documentation/codex/skills/janus-debug/SKILL.md`
-- `C:\Users\pruve\.codex\skills\janus-executioner\SKILL.md`
-- `C:\Users\pruve\.codex\skills\janus-debug\SKILL.md`
-- `documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md`
-- `janus-dashboard/data/backlog.snapshot.json`
+- `documentation/codex/model-routing/config/bounded_or_worker_eligibility_2026-06-17.json`
+- `documentation/SPEC/Spec Done/25_produktiver_dev_workhorse_hauptpfad_fuer_or_arbeitspferd.md`
+- `documentation/tasks/TASK-SPEC25.3_execution_result.md`
+- `documentation/tasks/TASK-SPEC25.3_AUDIT_PACKAGE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/tasks/TASK-SPEC25.3_reaudit_2026-06-23.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m unittest documentation.codex.model-routing.tests.test_bounded_or_worker_eligibility`: PASS, 31 tests
+- `python -m unittest documentation.codex.model-routing.tests.test_codex_dev_workhorse_runner`: PASS, 20 tests
+- `python -m py_compile documentation/codex/model-routing/scripts/codex_dev_workhorse_runner.py documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py documentation/codex/model-routing/scripts/codex_execution_patch_candidate_runner.py documentation/codex/model-routing/scripts/codex_execution_write_apply_candidate_runner.py documentation/codex/model-routing/tests/test_codex_dev_workhorse_runner.py documentation/codex/model-routing/scripts/bounded_or_worker_eligibility.py documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py documentation/tasks/TASK-SPEC25.3_execution_result.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py documentation/tasks/TASK-SPEC25.3_reaudit_2026-06-23.md`: PASS
+- `git diff --check -- documentation/codex/model-routing/config/bounded_or_worker_eligibility_2026-06-17.json documentation/SPEC/Spec Done/25_produktiver_dev_workhorse_hauptpfad_fuer_or_arbeitspferd.md documentation/tasks/TASK-SPEC25.3_execution_result.md documentation/tasks/TASK-SPEC25.3_AUDIT_PACKAGE.md documentation/tasks/TASK-SPEC25.3_reaudit_2026-06-23.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS with the known CRLF warning on `documentation/ai/CURRENT_STATE.md` only
+- `git diff --cached --check`: PASS
+
+Open risks:
+- the repository remains heavily dirty outside this slice, so any documentation sync or later commit must stay tightly scoped to the Spec-25 productive Dev-workhorse boundary files
+- no commit or push has happened after this re-audit, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: summarize this as "Spec 25 productive runner and shared eligibility boundary are green again locally; the bounded re-audit is PASS and only documentation sync remains."
+
+Next recommended step for Codex: use `janus-documentation-update` to sync the passing re-audit result and refreshed evidence package without widening into new OR scope.
+
+Last updated: `2026-06-23 22:38:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-23`, the next live pet-context bug in the Oliver/Tasso cluster is locally hardened as well. Janus previously misclassified pet-led user statements such as `Olis Hund Tasso ist ein Podenco` as an explicit contact subject (`olis hund tasso`), which is the wrong entity class and a plausible root cause for the odd clarification behavior instead of clean pet-fact handling.
+
+Current goal: keep Janus pet/contact context binding stable for real address-book chat updates before resuming broader OR/dev work.
+
+Active phase: `janus-debug`, canonical state `FIXED`.
+
+Last Codex work:
+- identified that the explicit lead-contact subject guard falsely captured pet-led phrases like `olis hund tasso ist ...`
+- added an explicit lead-pet subject extractor for named dog/cat phrases anchored through a contact owner
+- blocked pet tokens from the explicit lead-contact subject helper so pet-led phrases no longer drift into the contact lane
+- verified that both `olis hund tasso ist ein podenco` and the typo variant `olis hund tasso ist erin podenco` now resolve to pet subject `tasso`
+
+Changed files:
+- `backend/services/memory_extractor.py`
+- `backend/tests/test_contact_manager.py`
 - `documentation/ai/CURRENT_STATE.md`
 - `documentation/codex/SKILL_USAGE_LOG.md`
 
 Checks / validation performed:
-- targeted repo-vs-installed skill review for `janus-executioner` and `janus-debug`: PASS
-- `python C:\Users\pruve\.codex\skills\janus-backlog-handoff\scripts\validate_backlog.py C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md`: PASS WITH LEGACY WARNINGS
-- backlog heading repair for `BACKLOG-113` handoff placement: PASS
-- `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py documentation/tasks/backlog_BACKLOG-113_preimplementation_check.md`: PASS
-- visible OR wording / productive runner reference scan across repo + installed copies: PASS
-- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py documentation/tasks/backlog_BACKLOG-113_execution_result.md`: PASS
-- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py documentation/tasks/backlog_BACKLOG-113_final_audit.md`: PASS
-- `python -c "import json, pathlib; json.load(pathlib.Path('janus-dashboard/data/backlog.snapshot.json').open(encoding='utf-8')); print('JSON OK')"`: PASS
-- scoped `git diff --check`: PASS with known CRLF warning on `documentation/backlog/BACKLOG.md`
-- staged-only guard `git diff --cached --check`: PASS
+- `python -m pytest backend/tests/test_contact_manager.py -k "explicit_lead_pet_subject or explicit_lead_contact_subject_ignores_pet_led_phrases or syncs_cat_name_detail_even_when_subject_role_is_missing or prefers_richest_exact_duplicate_contact or pet_name_detail_even_when_subject_role_is_missing" -vv`: PASS
+- direct helper probe: `olis hund tasso ist ein podenco` -> contact `None`, pet `tasso/dog`: PASS
+- direct helper probe: `olis hund tasso ist erin podenco` -> contact `None`, pet `tasso/dog`: PASS
 
 Open risks:
-- the docs are complete but the worktree remains heavily mixed, so any later checkpoint must stay tightly staged-only
-- the worktree remains heavily mixed, so any later implementation checkpoint must stay tightly staged-only
-- suspicious root artifacts are still present elsewhere in the repo and remain out of scope for this debug slice
-- no production routing, canonical routing-table activation, global OR approval, Git authority, or release authority is approved
-- the latest health-check routing state is local only until a future explicit Git step is approved
+- this block hardens entity binding, but the exact frontend/live assistant wording has not yet been rechecked in a full Janus UI turn after the code change
+- the local environment still emits the known Chroma degrade warning during some backend script imports, unrelated to this fix
+- no commit or push has happened after this repair block, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`
 
-Next recommended step for ChatGPT: keep `BACKLOG-113` closed and only reopen the OR/workhorse topic when a new bounded validation slice appears.
+Next recommended step for ChatGPT: summarize this as "Tasso/Podenco no longer falls into the wrong contact-subject lane; the next valuable step is one real Janus chat retest."
 
-Next recommended step for Codex: checkpoint via `janus-git-governance` if you want to commit this documentation sync.
+Next recommended step for Codex: run one real Janus UI retest with `Olis Hund Tasso ist ein Podenco` and confirm that the reply and memory/address-book behavior now stay in the pet lane.
 
-Last updated: `2026-06-22 22:34:11 +02:00`.
+Last updated: `2026-06-23 21:19:03 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-23`, the live contact-sync bug behind the Garfield report is locally repaired. The failing path was not the OR infrastructure itself, but Janus contact-memory sync under duplicate exact `Oliver Schwab` / `Oli` contacts: named cat facts could fall into `ambiguous_contact`, and real-world `hei?t` pet-name variants were not normalized into the single-sentence contact-card form.
+
+Current goal: keep Janus contact-memory sync stable for direct pet-detail updates while continuing broader OR/dev work separately.
+
+Active phase: `janus-debug`, canonical state `FIXED`.
+
+Last Codex work:
+- reproduced the Garfield failure in the contact-memory extractor/sync path
+- identified duplicate exact contact rows as the blocking live-match condition for `Oli`
+- hardened exact duplicate resolution so identical contact identities prefer the richest existing card instead of returning `ambiguous_contact`
+- added explicit cat-name regressions plus duplicate-contact coverage
+- hardened contact detail normalization so real `hei?t` pet-name variants collapse to `hat eine Katze namens ...`
+- verified the local Oliver card now resolves to `hat einen Hund namens tasso` and `hat eine Katze namens garfield`
+
+Changed files:
+- `backend/services/contact_manager.py`
+- `backend/data/crud.py`
+- `backend/tests/test_contact_manager.py`
+- `backend/tests/test_contact_card_normalization.py`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest backend/tests/test_contact_manager.py -k "pet_name_detail_even_when_subject_role_is_missing or syncs_cat_name_detail_even_when_subject_role_is_missing or prefers_richest_exact_duplicate_contact or pet_detail_memory_updates_existing_contact_personal_details or pet_detail_memory_with_besitzt_updates_existing_contact_personal_details" -vv`: PASS
+- `python -m pytest backend/tests/test_contact_card_normalization.py -k "pet" -vv`: PASS
+- local live-data verification against current contact DB: PASS after fix; duplicate `Oliver Schwab` rows no longer block direct cat-name sync and the primary card normalizes Garfield correctly
+
+Open risks:
+- duplicate `Oliver Schwab` / `Oli` contacts still exist in the local address book as separate rows; the sync path is now robust against them, but the duplicate data itself is not yet cleaned up
+- startup still logs the known Chroma degrade warning during some local scripts, which is unrelated to this contact-sync fix
+- no commit or push has happened after this repair block, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: summarize this as "Garfield now lands on the correct Oliver contact card; duplicate exact contacts no longer block the sync path."
+
+Next recommended step for Codex: run one real Janus chat turn with `Olis katze heißt garfield` or an equivalent pet-name update in the normal UI flow, then decide whether duplicate-contact cleanup should be a separate backlog item.
+
+Last updated: `2026-06-23 21:01:33 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-23`, the backend startup blocker reported by `start-backend-only` is repaired for the CLIP/torchvision failure path. `backend/services/vision/model_loader.py` and `backend/services/vision_service.py` now degrade safely when `clip` cannot be imported because of the local `torchvision` circular-import/native-ops issue, so Janus backend startup no longer dies during module import just because local vision is unavailable.
+
+Current goal: keep Janus backend startup alive without hard-failing on optional local vision dependencies, while leaving local vision analysis explicitly disabled until the underlying `clip`/`torchvision` environment is fixed.
+
+Active phase: `janus-debug`, canonical state `FIXED`.
+
+Last Codex work:
+- isolated the backend startup failure to eager `clip` imports pulled in through `vision_service`
+- hardened both CLIP import sites so import failures are captured as degraded local-vision state instead of crashing backend module import
+- added a focused regression test for model-loader and vision-service degrade behavior when `clip` is unavailable
+- verified that `backend.main` now imports successfully and that `start-backend-only` no longer exits immediately on the former `torchvision.extension` crash
+
+Changed files:
+- `backend/services/vision/model_loader.py`
+- `backend/services/vision_service.py`
+- `backend/tests/test_vision_clip_import_degrade.py`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m unittest backend.tests.test_vision_clip_import_degrade`: PASS
+- `python - <<...>> import backend.services.vision_service`: PASS
+- `python - <<...>> import backend.main`: PASS
+- `npm run start-backend-only`: no immediate crash on the former CLIP import failure path; process stayed alive until command timeout instead of exiting with code `1`
+
+Open risks:
+- local vision/CLIP features remain disabled in this environment until the underlying `clip`/`torchvision` installation problem is fixed
+- startup still logs the degraded vision warning, which is expected for now
+- no commit or push has happened after this debug fix, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: summarize this as "backend startup is unblocked; vision falls back to disabled mode instead of killing Janus."
+
+Next recommended step for Codex: if the user wants full local vision restored, debug the `clip`/`torchvision` environment mismatch as a separate bounded slice; otherwise continue normal Janus product work.
+
+Last updated: `2026-06-23 20:18:32 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-23`, `BACKLOG-108` is locally repaired and its bounded automation evidence is now green. The earlier formal blocker was not the target contact-persistence seam itself, but an unrelated Chroma/PyO3 startup panic triggered during `backend/services/vector_service.py` import; that startup path is now hardened to degrade safely for tests, and the scoped BACKLOG-108 regression bundle passes again.
+
+Current goal: finish the manual Janus live check for `BACKLOG-108`, then route to `janus-final-audit` with the now-green automation bundle.
+
+Active phase: `janus-executioner`, canonical state `NEEDS_INFO`.
+
+Last Codex work:
+- hardened module-level vector-service startup so Chroma/PyO3 panics degrade safely instead of killing test import
+- added focused regression coverage for degraded vector-service startup behavior
+- aligned one stale contact-manager test expectation to the approved normalized pet-detail representation
+- reran the scoped BACKLOG-108 regression bundle and got full PASS results
+- refreshed the execution result so it now stops correctly at the manual Janus validation gate instead of prematurely routing to final audit
+
+Changed files:
+- `backend/services/vector_service.py`
+- `backend/tests/test_contact_manager.py`
+- `backend/tests/test_vector_service_chroma_degrade.py`
+- `documentation/tasks/backlog_BACKLOG-108_execution_result_2026-06-23.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m unittest backend.tests.test_vector_service_chroma_degrade`: PASS
+- `python -m pytest backend/tests/test_contact_manager.py -q`: PASS
+- `python -m pytest backend/tests/test_memory_tools.py -q`: PASS
+- `python -m pytest backend/tests/test_memory_write_update_conflict_handling.py -q`: PASS
+- `python -m py_compile backend/services/vector_service.py backend/services/chat_orchestrator.py backend/services/contact_manager.py backend/services/memory_extractor.py backend/tools/memory_tools.py backend/data/crud.py backend/tests/test_contact_manager.py backend/tests/test_memory_tools.py backend/tests/test_memory_write_update_conflict_handling.py backend/tests/test_vector_service_chroma_degrade.py`: PASS
+
+Open risks:
+- one manual Janus live check is still required before `janus-final-audit`
+- the repo worktree remains mixed with unrelated local changes outside this slice
+- no commit or push has happened after this repair block, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: summarize this as "BACKLOG-108 automation is green again; only the manual Janus live check remains before final audit."
+
+Next recommended step for Codex: wait for one user-reported Janus live check result; if PASS, route to `janus-final-audit`, and if FAIL, route to `janus-debug`.
+
+Last updated: `2026-06-23 20:07:58 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-23`, the local Codex validation pass for `BACKLOG-108` indicates that the target product seam is already behaving correctly in scoped runtime checks, but the official task-level pytest validation is currently blocked by an unrelated Chroma/PyO3 startup panic in `backend/services/vector_service.py`. No additional product code edit was applied in this block; instead, the result was documented as an execution handoff to `janus-debug` so the broader test-startup blocker can be handled separately from the bounded contact-persistence fix.
+
+Current goal: keep `BACKLOG-108` product behavior as-is and decide whether to debug the Chroma/vector-service pytest startup blocker now or treat it as a separate follow-up while relying on bounded runtime evidence for the seam itself.
+
+Active phase: `janus-executioner`, canonical state `HANDOFF`.
+
+Last Codex work:
+- verified the bound BACKLOG-108 task artifact and current contact-memory seam
+- attempted the official scoped pytest bundle and captured that all three task tests are blocked before execution by the same Chroma/PyO3 startup panic
+- ran narrowed inline runtime validation for the key BACKLOG-108 paths, confirming:
+  - direct existing-contact preference facts can still auto-apply correctly
+  - trusted `memory_write` dietary facts can still persist onto the existing contact with `direct_context`
+- saved a validated execution result that hands off to `janus-debug` for the unrelated test-startup blocker
+
+Changed files:
+- `documentation/tasks/backlog_BACKLOG-108_execution_result_2026-06-23.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python -m pytest backend/tests/test_contact_manager.py -q`: FAIL before task tests execute due Chroma/PyO3 panic in `backend/services/vector_service.py`
+- `python -m pytest backend/tests/test_memory_tools.py -q`: FAIL before task tests execute due same blocker
+- `python -m pytest backend/tests/test_memory_write_update_conflict_handling.py -q`: FAIL before task tests execute due same blocker
+- `python -m py_compile backend/services/chat_orchestrator.py backend/services/contact_manager.py backend/services/memory_extractor.py backend/tools/memory_tools.py backend/data/crud.py backend/tests/test_contact_manager.py backend/tests/test_memory_tools.py backend/tests/test_memory_write_update_conflict_handling.py`: PASS
+- scoped inline runtime validation with vector-service stub: PASS for direct preference apply path and trusted dietary `memory_write` apply path
+- execution result validator on `documentation/tasks/backlog_BACKLOG-108_execution_result_2026-06-23.md`: PASS
+
+Open risks:
+- formal task closure is still blocked until the unrelated Chroma/vector-service pytest startup panic is debugged or otherwise isolated
+- no fresh manual Janus validation was performed in this block
+- remote/GitHub may not contain this latest execution handoff because no commit/push was done
+
+Next recommended step for ChatGPT: summarize this as “BACKLOG-108 itself looks locally correct, but the formal pytest evidence is blocked by a broader vector-service startup issue”.
+
+Next recommended step for Codex: continue with `janus-debug` on the Chroma/vector-service pytest startup blocker if the user wants full automation evidence; otherwise pause here and keep the execution handoff as the current bounded state.
+
+Last updated: `2026-06-23 19:57:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-23`, the final bounded exact-context live retry for `BACKLOG-108` has been completed and rejected. The OpenRouter call succeeded technically and stayed under the cost cap, but the response ended with `finish_reason=length`, the payload could not be accepted as valid bounded JSON output, and the direct-OR path correctly fell back instead of producing an unsafe patch candidate.
+
+Current goal: treat the `BACKLOG-108` proposal-first OR lane as evidence-complete for now and keep this patch-generation slice on the Codex-owned local path unless a materially stronger delegation design is introduced later.
+
+Active phase: `janus-debug`, canonical state `HANDOFF`.
+
+Last Codex work:
+- ran one final exact-context live proposal-first OR retry for `BACKLOG-108`
+- confirmed response capture, usage capture, telemetry, and healthcheck ingestion all passed
+- confirmed the returned candidate still failed bounded acceptance because the run hit completion length and the payload could not be accepted safely
+- recorded the lane as evidence-complete rather than spending another immediate retry
+
+Changed files:
+- `documentation/codex/model-routing/execution_patch_candidate_final_exact_context_live_retry_result_2026-06-23.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- one live proposal-first OR run under `EXEC-PATCH-EXACT-CONTEXT-LIVE-005`: transport PASS / bounded acceptance FAIL
+- response capture: PASS
+- finish_reason: `length`
+- actual cost capture: PASS (`0.000977417`)
+- healthcheck ingestion: PASS
+- `git diff --check`: PASS with pre-existing CRLF warnings only
+
+Open risks:
+- `BACKLOG-108` still has no trustworthy apply-reviewable OR patch candidate
+- `execution_write_apply_candidate` remains blocked for this slice
+- any future retry would need a materially stronger prompt or delegation design, not just another same-shape rerun
+
+Next recommended step for ChatGPT: summarize this as “the OR lane proved useful for bounded review evidence and telemetry, but not yet for apply-ready patch generation on BACKLOG-108”.
+
+Next recommended step for Codex: stop this OR lane here and continue the actual patch work locally in Codex when the user wants to move the product task forward.
+
+Last updated: `2026-06-23 17:48:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-23`, the signature-aware live retry for `BACKLOG-108` produced the strongest proposal-first OR result so far. The model stayed on the correct current seam family and used the correct current local function names and signature shapes, while also remaining cheaper than estimated. However, the patch still appears to be written against a simplified, non-real local body/context for `backend/services/contact_manager.py`, so it remains review-only rather than a trustworthy apply-ready candidate.
+
+Current goal: treat the signature-aware retry as strong runtime and semantic alignment evidence, but not yet as a directly applyable local patch. Any further tightening would need exact current local code excerpts around the target functions.
+
+Active phase: `janus-executioner`, canonical state `HANDOFF`.
+
+Last Codex work:
+- ran one real live proposal-first OR retry using the signature-aware `BACKLOG-108` package
+- confirmed the retry stayed on the correct seam family and current signature shapes
+- confirmed the patch still does not align tightly enough with the real current local body/context to be applied directly
+- recorded the result as the best OR proposal so far, but still review-only
+
+Changed files:
+- `documentation/codex/model-routing/execution_patch_candidate_signature_aware_live_retry_result_2026-06-23.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- one live proposal-first OR run under `EXEC-PATCH-SIGNATURE-AWARE-LIVE-003`: PASS
+- response capture: PASS
+- finish_reason: `stop`
+- actual cost capture: PASS (`0.00037287`)
+- healthcheck ingestion: PASS
+- local seam-family and signature-shape review: PASS
+- exact local body/context alignment review: FAIL
+
+Open risks:
+- the next improvement would require exact local code excerpts in the OR contract, increasing prompt specificity and maintenance cost
+- `execution_write_apply_candidate` remains blocked until a truly apply-ready proposal exists
+- the worktree remains mixed, so any later delegated live write still needs explicit approval and hardened delta-aware validation
+
+Next recommended step for ChatGPT: summarize this as “OR now understands the right seam and signatures for BACKLOG-108, but still doesn’t mirror the exact current local body closely enough for direct apply”.
+
+Next recommended step for Codex: either stop the `BACKLOG-108` OR lane here as strong review-only evidence, or add exact local code excerpts around the target functions before any later retry.
+
+Last updated: `2026-06-23 17:02:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-23`, the `BACKLOG-108` proposal-first OR contract has been tightened one level deeper again: the direct execution patch runner and current-shape input package now include explicit local function signatures and call-shape examples, not just seam-family guidance and forbidden legacy anchors. Local tests passed, and the fixture smoke still rejected the stale fixture under the stricter signature-aware contract, which is the intended behavior.
+
+Current goal: use the signature-aware `BACKLOG-108` contract for the next real proposal-first OR retry so the model is constrained by the real local signatures as well as the real seam family.
+
+Active phase: `janus-executioner`, canonical state `PASS`.
+
+Last Codex work:
+- extended the direct execution patch runner with signature-aware guidance fields
+- updated the current-shape `BACKLOG-108` package with real local signatures and call-shape examples
+- confirmed the stricter contract still rejects stale fixture behavior instead of silently accepting it
+
+Changed files:
+- `documentation/codex/model-routing/scripts/openrouter_direct_execution_patch_candidate_runner.py`
+- `documentation/codex/model-routing/tests/test_openrouter_direct_execution_patch_candidate_runner.py`
+- `documentation/codex/model-routing/execution-review-fixtures/backlog_108_execution_patch_candidate_input_package_current_shape_2026-06-23.json`
+- `documentation/codex/model-routing/execution_patch_candidate_signature_contract_hardening_2026-06-23.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python -m unittest documentation.codex.model-routing.tests.test_openrouter_direct_execution_patch_candidate_runner`: PASS
+- fixture contract smoke `EXEC-PATCH-CURRENT-SHAPE-SIGNATURE-CONTRACT-001`: expected FAIL
+- `git diff --check`: PASS with pre-existing CRLF warnings only
+
+Open risks:
+- one more real live proposal-first retry is still needed to verify whether the stronger signature-aware contract finally yields a locally review-ready patch
+- `execution_write_apply_candidate` remains blocked until such a proposal exists
+- the worktree remains mixed, so any later delegated live write still needs explicit approval and hardened delta-aware validation
+
+Next recommended step for ChatGPT: summarize this as “the OR contract is now signature-aware, so the next live retry will be the fairest test of whether proposal-first OR can match the real local implementation”.
+
+Next recommended step for Codex: run one fresh live `execution_patch_candidate` attempt for `BACKLOG-108` using the updated signature-aware current-shape package when the user wants to continue.
+
+Last updated: `2026-06-23 16:52:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-23`, the hardened current-shape live retry for `BACKLOG-108` improved the OR proposal substantially: the model no longer drifted into the obsolete `ContactManager` class architecture and instead targeted the correct seam family around `stage_contact_update_from_memory`, `handle_memory_write`, and `_apply_contact_memory_update_directly`. However, the returned patch still invents the wrong local function signatures and call shapes, so it remains runtime-evidence-positive but not locally apply-ready.
+
+Current goal: keep the improved current-shape retry as accepted runtime evidence, but tighten the bounded contract one level deeper around the real function signatures and call patterns before any later proposal-first retry.
+
+Active phase: `janus-executioner`, canonical state `HANDOFF`.
+
+Last Codex work:
+- ran one real live proposal-first OR retry using the new current-shape `BACKLOG-108` input package
+- confirmed the retry no longer used the obsolete `ContactManager` class seam
+- confirmed the retry still mis-modeled the actual local function signatures and parameter flow
+- recorded the result as improved but still not apply-ready
+
+Changed files:
+- `documentation/codex/model-routing/execution_patch_candidate_current_shape_live_retry_result_2026-06-23.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- one live proposal-first OR run under `EXEC-PATCH-CURRENT-SHAPE-LIVE-002`: PASS
+- response capture: PASS
+- finish_reason: `stop`
+- actual cost capture: PASS (`0.0010171`)
+- healthcheck ingestion: PASS
+- local seam-family review: PASS
+- local function-signature applicability review: FAIL
+
+Open risks:
+- the next OR retry still needs deeper contract shaping around real local signatures, not just seam names
+- `execution_write_apply_candidate` remains blocked until a truly apply-ready current-shape proposal exists
+- the worktree remains mixed, so any later delegated live write still needs explicit approval and hardened delta-aware validation
+
+Next recommended step for ChatGPT: summarize this as “the OR proposal now hits the right seam family, but still gets the local call signatures wrong”.
+
+Next recommended step for Codex: extend the `BACKLOG-108` bounded input with explicit current local signatures/call-shape examples for `_apply_contact_memory_update_directly`, `stage_contact_update_from_memory`, and `handle_memory_write`, then run another single proposal-first retry only if the user wants to continue.
+
+Last updated: `2026-06-23 16:45:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-23`, the `BACKLOG-108` proposal-first OR path has been tightened at the contract level. The direct execution patch runner now accepts explicit current-seam guidance plus forbidden/required anchor lists, and a new current-shape input package was created for `BACKLOG-108`. Local validation passed, and a fixture smoke with the new package failed for the right reason: the old fixture patch escaped the allowlist, so the sharpened contract is actively rejecting stale or unrelated patch shapes instead of silently tolerating them.
+
+Current goal: use the hardened current-shape `BACKLOG-108` input package for the next real proposal-first OR attempt so the model is forced closer to the actual `stage_contact_update_from_memory` / `handle_memory_write` seam.
+
+Active phase: `janus-executioner`, canonical state `PASS`.
+
+Last Codex work:
+- extended the direct execution patch runner with explicit current-shape guidance fields
+- created a new `BACKLOG-108` current-shape execution input package
+- proved via fixture smoke that the hardened contract now rejects an out-of-scope stale patch instead of letting it pass
+
+Changed files:
+- `documentation/codex/model-routing/scripts/openrouter_direct_execution_patch_candidate_runner.py`
+- `documentation/codex/model-routing/tests/test_openrouter_direct_execution_patch_candidate_runner.py`
+- `documentation/codex/model-routing/execution-review-fixtures/backlog_108_execution_patch_candidate_input_package_current_shape_2026-06-23.json`
+- `documentation/codex/model-routing/execution_patch_candidate_current_shape_contract_hardening_2026-06-23.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python -m unittest documentation.codex.model-routing.tests.test_openrouter_direct_execution_patch_candidate_runner`: PASS
+- fixture contract smoke `EXEC-PATCH-CURRENT-SHAPE-CONTRACT-001`: expected FAIL (`changed file escapes allowlist: scripts/dev-log-utils.cjs`)
+- `git diff --check`: PASS with pre-existing CRLF warnings only
+
+Open risks:
+- we still need one real live proposal-first OR attempt using the new current-shape package
+- the old accepted `BACKLOG-108` patch artifacts remain structurally stale and should not feed later write-apply retries
+- the worktree remains mixed, so any later delegated live write still needs explicit approval and hardened delta-aware validation
+
+Next recommended step for ChatGPT: summarize this as “the OR contract for BACKLOG-108 is now narrowed to the real seam, and the first smoke proves stale/out-of-scope patches are rejected”.
+
+Next recommended step for Codex: run one fresh live `execution_patch_candidate` attempt for `BACKLOG-108` using `backlog_108_execution_patch_candidate_input_package_current_shape_2026-06-23.json`.
+
+Last updated: `2026-06-23 16:38:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-23`, a fresh bounded proposal-first OpenRouter retry for `BACKLOG-108` was completed under `EXEC-PATCH-CURRENT-SHAPE-001`. Transport, usage capture, telemetry, and healthcheck all passed cleanly on `deepseek/deepseek-v4-flash`, and the retry was cheaper than estimated. However, the returned patch is still not locally usable because it again targets an obsolete `ContactManager`/`get_or_resolve_contact`/`persist_contact_updates` structure instead of the current function-oriented `stage_contact_update_from_memory(...)` and `handle_memory_write(...)` seam.
+
+Current goal: keep the fresh retry as accepted runtime evidence but tighten the bounded execution prompt/input contract before any next proposal-first attempt for `BACKLOG-108`.
+
+Active phase: `janus-executioner`, canonical state `HANDOFF`.
+
+Last Codex work:
+- ran one fresh bounded proposal-first OR execution patch candidate for `BACKLOG-108`
+- captured clean live telemetry, generation id, actual cost, and healthcheck output
+- verified that the returned patch still hallucinates an outdated local architecture seam
+- recorded the retry result as runtime-evidence-only rather than locally review-ready patch evidence
+
+Changed files:
+- `documentation/codex/model-routing/execution_patch_candidate_current_shape_retry_result_2026-06-23.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- one live proposal-first OR run under `EXEC-PATCH-CURRENT-SHAPE-001`: PASS
+- response capture: PASS
+- finish_reason: `stop`
+- actual cost capture: PASS (`0.0004150784`)
+- healthcheck ingestion: PASS
+- local code-shape review of returned patch: FAIL for local applicability
+
+Open risks:
+- the current `BACKLOG-108` proposal-first prompt/input still leaves too much room for outdated code-shape hallucination
+- a direct write-apply retry remains unjustified until a genuinely current-shape accepted patch exists
+- the worktree remains mixed, so later live delegated writes still need explicit approval and hardened delta-aware validation
+
+Next recommended step for ChatGPT: summarize this as “the fresh OR retry proved runtime reliability again, but the patch still targets the wrong code shape, so the next move is stricter prompt/input shaping”.
+
+Next recommended step for Codex: tighten the bounded `execution_patch_candidate` contract for `BACKLOG-108` around the actual `stage_contact_update_from_memory` and `handle_memory_write` seam before the next OR proposal attempt.
+
+Last updated: `2026-06-23 16:28:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-23`, the first `execution_write_apply_candidate` live pilot blocker is now root-caused as a stale accepted patch artifact rather than a transport or allowlist failure. The accepted source patch expects an older `ContactManager`/`store_memory_facts` seam that no longer matches the current `stage_contact_update_from_memory(...)` and `handle_memory_write(...)` code paths, so the write pilot correctly refused to apply it. A validator-compatible debug artifact now records this as `RUNNER_ARTIFACT_MISMATCH`.
+
+Current goal: stop retrying the stale write-apply source package and move back one step to a fresh bounded `execution_patch_candidate` aligned to the current repository shape.
+
+Active phase: `janus-debug`, canonical state `HANDOFF`.
+
+Last Codex work:
+- compared the accepted source patch against the current `contact_manager.py` and `memory_tools.py` structure
+- confirmed the accepted patch targets an obsolete architecture seam
+- saved and validated a proper Janus debug artifact for the mismatch
+
+Changed files:
+- `documentation/codex/model-routing/execution_write_apply_candidate_live_pilot_mismatch_debug_2026-06-23.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- targeted `WHAT_I_LEARNED` lookup: PASS
+- accepted patch versus current target-file structure review: PASS
+- `python C:\\Users\\pruve\\.codex\\skills\\janus-debug\\scripts\\validate_debug_result.py documentation/codex/model-routing/execution_write_apply_candidate_live_pilot_mismatch_debug_2026-06-23.md`: PASS
+
+Open risks:
+- a second live write retry from the same accepted source package would likely fail again for the same structural reason
+- `BACKLOG-108` still lacks a current-shape accepted proposal-first patch that can feed a later write-apply retry
+- the worktree remains mixed, so future live delegated writes still need explicit approval and delta-aware validation
+
+Next recommended step for ChatGPT: summarize this simply as “the write pilot exposed a stale accepted patch, so the next step is a fresh proposal-first candidate, not another write retry”.
+
+Next recommended step for Codex: prepare a new bounded `execution_patch_candidate` run for `BACKLOG-108` against the current `stage_contact_update_from_memory` / `handle_memory_write` seam, then only later revisit `execution_write_apply_candidate`.
+
+Last updated: `2026-06-23 16:20:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-23`, the first real bounded `execution_write_apply_candidate` live pilot was executed once under `EXEC-WRITE-APPLY-LIVE-PILOT-001`, but it does not count as accepted live-write evidence. The sidecar stayed within the exact expected file scope, yet its final message reported that the accepted patch did not apply cleanly and no new changes were written. This also exposed a validator weakness on mixed worktrees, which has now been hardened locally so that identical pre/post status, `artifact_success=false`, or explicit apply-failure messaging will fail future runs instead of falsely passing.
+
+Current goal: keep the first live-write attempt as debug/review evidence only and shift the next step to patch/source mismatch analysis rather than pretending the live-write lane is already proven.
+
+Active phase: `janus-executioner`, canonical state `HANDOFF`.
+
+Last Codex work:
+- executed exactly one real bounded delegated `execution_write_apply_candidate` live pilot against the normalized accepted `BACKLOG-108` source package
+- confirmed the sidecar remained within the exact expected file scope
+- detected that the patch did not apply cleanly and that no new write delta was produced
+- hardened the live-write validator so this false-positive shape now fails locally
+- documented the pilot as debug/review evidence only
+
+Changed files:
+- `documentation/codex/model-routing/scripts/codex_execution_write_apply_candidate_runner.py`
+- `documentation/codex/model-routing/tests/test_execution_write_apply_candidate_live_operator_path.py`
+- `documentation/codex/model-routing/execution_write_apply_candidate_first_live_pilot_result_2026-06-23.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- real bounded delegated live pilot under `EXEC-WRITE-APPLY-LIVE-PILOT-001`: executed once
+- sidecar scope guards (`allowlist_ok`, `touched_file_cap_ok`, `delete_rename_move_ok`): PASS
+- sidecar final message review: FAIL for operational acceptance (`Apply succeeded: no`)
+- local hardening validation:
+  - `python -m unittest documentation.codex.model-routing.tests.test_execution_write_apply_candidate_live_operator_path documentation.codex.model-routing.tests.test_bounded_write_candidate_validation_acceptance documentation.codex.model-routing.tests.test_bounded_write_candidate_entry_gate documentation.codex.model-routing.tests.test_codex_dev_workhorse_runner`: PASS
+- `git diff --check`: PASS with pre-existing CRLF warnings only
+- `git diff --cached --name-only`: empty
+
+Open risks:
+- `execution_write_apply_candidate` still lacks accepted live-write evidence
+- the accepted proposal-first source patch appears structurally stale relative to the current local target files
+- the worktree remains mixed, so any future live-write retry still needs explicit operator approval and strict delta-aware validation
+
+Next recommended step for ChatGPT: summarize this narrowly as “one real live-write pilot was run, but it stayed debug-only because the patch did not apply and the validator needed a mixed-worktree hardening fix”.
+
+Next recommended step for Codex: inspect the accepted `BACKLOG-108` proposal patch versus the current `contact_manager.py` and `memory_tools.py` structure, then decide whether a fresh proposal-first execution candidate is needed before any later write-apply retry.
+
+Last updated: `2026-06-23 16:12:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-23`, the bounded `execution_write_apply_candidate` lane is no longer limited to source-package validation only. A real delegated `workspace-write` sidecar path is now implemented and locally validated, so the next missing evidence step is no longer infrastructure work but one explicitly approved first live write pilot. No live delegated write was executed in this block.
+
+Current goal: move the execution write-apply class from pilot-gate-proven plus source-bridge-proven to first real bounded delegated live-write evidence when explicitly approved.
+
+Active phase: `janus-executioner`, canonical state `PASS`.
+
+Last Codex work:
+- extended the dedicated `execution_write_apply_candidate` runner with an optional live sidecar write mode
+- bound the live prompt to the exact accepted-source package, exact changed-file allowlist, and exact touched-file cap
+- added live-path validation requiring sidecar `PASS`, allowlist/file-cap/delete guards, exact touched-file match, and non-empty diff capture
+- forwarded the new execution live-sidecar flags through the dispatcher and productive Dev-workhorse runner
+- added focused local tests for the new live sidecar path
+
+Changed files:
+- `documentation/codex/model-routing/scripts/codex_execution_write_apply_candidate_runner.py`
+- `documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py`
+- `documentation/codex/model-routing/scripts/codex_dev_workhorse_runner.py`
+- `documentation/codex/model-routing/tests/test_execution_write_apply_candidate_live_operator_path.py`
+- `documentation/codex/model-routing/tests/test_codex_dev_workhorse_runner.py`
+- `documentation/codex/model-routing/execution_write_apply_candidate_live_sidecar_enablement_2026-06-23.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python -m unittest documentation.codex.model-routing.tests.test_execution_write_apply_candidate_live_operator_path documentation.codex.model-routing.tests.test_bounded_write_candidate_validation_acceptance documentation.codex.model-routing.tests.test_bounded_write_candidate_entry_gate documentation.codex.model-routing.tests.test_codex_dev_workhorse_runner`: PASS
+- `git diff --check`: PASS with pre-existing CRLF warnings only
+- `git diff --cached --name-only`: empty
+
+Open risks:
+- no real delegated live write evidence exists yet for this class
+- the first real live write still needs explicit operator approval because it touches the mixed worktree
+- even after a live write succeeds, Codex still has to own final diff review and task acceptance
+
+Next recommended step for ChatGPT: summarize this as “the write-apply class now has a real bounded live-write runner, but it still needs one explicitly approved first live pilot”.
+
+Next recommended step for Codex: prepare the first true bounded `execution_write_apply_candidate` live pilot gate against the normalized accepted `BACKLOG-108` source package and wait for operator approval before execution.
+
+Last updated: `2026-06-23 16:02:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-23`, the first bounded `execution_write_apply_candidate` pilot gate has passed. The normalized accepted source package was consumed successfully by the derivative write-apply candidate runner under `EXEC-WRITE-APPLY-PILOT-001`, producing `EXECUTION_WRITE_APPLY_CANDIDATE_READY_FOR_CODEX_ACCEPT_REJECT`. This proves the operator gate and source-package plumbing for the class, but it still does not count as a real delegated live write execution.
+
+Current goal: decide whether to keep the write-apply class at locally workflow-ready / pilot-gate-proven status or to approve the first real delegated write attempt later.
+
+Active phase: `janus-executioner`, canonical state `PASS`.
+
+Last Codex work:
+- ran the first bounded `execution_write_apply_candidate` pilot on the normalized accepted execution source package
+- confirmed the derivative class passes its operator gate and source validation on real accepted source evidence
+- documented the important boundary that no live delegated write runtime was executed yet
+
+Changed files:
+- `documentation/codex/model-routing/execution_write_apply_candidate_first_pilot_result_2026-06-23.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- first `execution_write_apply_candidate` pilot gate under `EXEC-WRITE-APPLY-PILOT-001`: PASS
+- source validation against normalized real accepted source: PASS
+
+Open risks:
+- we still do not have real delegated live-write evidence for this class
+- the next evidence tier would require one explicitly approved true delegated write attempt
+- the worktree remains heavily mixed, so any later commit must stay strictly staged-only
+
+Next recommended step for ChatGPT: summarize this narrowly as “write-apply is now pilot-gate-proven, but not yet live-write-proven”.
+
+Next recommended step for Codex: if the user wants to push faster, prepare the first true delegated live-write candidate approval package; otherwise keep moving through other missing OR classes.
+
+Last updated: `2026-06-23 15:40:12 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-23`, the first bounded `execution_write_apply_candidate` pilot is now fully prepared as an operator gate. The accepted-source bridge is done, the normalized real source package passes local write-apply validation, and a concrete first pilot identity plus operator prompt now exist. No live delegated write has been run yet in this block.
+
+Current goal: hold the first explicitly approvable bounded write-apply pilot at the gate so the next step can be a real operator decision instead of more infrastructure work.
+
+Active phase: `janus-executioner`, canonical state `PASS`.
+
+Last Codex work:
+- created the first concrete write-apply pilot plan for `BACKLOG-108`
+- generated the visible operator gate for `EXEC-WRITE-APPLY-PILOT-001`
+- kept the pilot bounded to the normalized accepted source package and Codex-owned final review
+
+Changed files:
+- `documentation/codex/model-routing/execution_write_apply_candidate_first_pilot_plan_2026-06-23.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- write-apply pilot plan creation: PASS
+- prompt gate generation for `EXEC-WRITE-APPLY-PILOT-001`: PASS
+
+Open risks:
+- no live delegated write evidence exists yet for this class
+- the first pilot still needs explicit approval before any real delegated write attempt
+- the worktree remains heavily mixed, so any later commit must stay strictly staged-only
+
+Next recommended step for ChatGPT: summarize this as “the first write-apply pilot is now waiting only on an explicit operator go/no-go decision”.
+
+Next recommended step for Codex: if approved, run the first bounded `execution_write_apply_candidate` pilot using `EXEC-WRITE-APPLY-PILOT-001`; otherwise keep the class in locally workflow-ready status.
+
+Last updated: `2026-06-23 15:38:05 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-23`, the accepted-source bridge for `execution_write_apply_candidate` is complete and locally validated against a real accepted `execution_patch_candidate` run. The previously missing source-package seam is now closed: `DEV-WORKHORSE-EXECUTION-GATE-003` can be normalized into a write-apply-source bundle that passes the dedicated `execution_write_apply_candidate` validator path.
+
+Current goal: move from locally workflow-ready write-apply scaffolding to the first explicitly approved bounded write-apply pilot on a very small accepted execution slice.
+
+Active phase: `janus-executioner`, canonical state `PASS`.
+
+Last Codex work:
+- implemented a normalizer that converts one accepted execution patch-candidate run into the derivative write-apply source-package format
+- validated the bridge with a new focused unittest
+- validated the bridge against the real accepted `DEV-WORKHORSE-EXECUTION-GATE-003` run
+- confirmed the dedicated write-apply runner now accepts the normalized real source package locally
+
+Changed files:
+- `documentation/codex/model-routing/scripts/normalize_execution_patch_candidate_for_write_apply.py`
+- `documentation/codex/model-routing/tests/test_normalize_execution_patch_candidate_for_write_apply.py`
+- `documentation/codex/model-routing/tests/test_codex_dev_workhorse_runner.py`
+- `documentation/codex/model-routing/execution_write_apply_candidate_source_bridge_result_2026-06-23.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m unittest documentation.codex.model-routing.tests.test_normalize_execution_patch_candidate_for_write_apply documentation.codex.model-routing.tests.test_bounded_write_candidate_validation_acceptance documentation.codex.model-routing.tests.test_bounded_write_candidate_entry_gate documentation.codex.model-routing.tests.test_codex_dev_workhorse_runner`: PASS
+- bridge script against real accepted `DEV-WORKHORSE-EXECUTION-GATE-003`: PASS
+- local `execution_write_apply_candidate` validation against the normalized real source package: PASS
+
+Open risks:
+- no live delegated write activation has been run yet
+- the next step still requires an explicitly approved very small bounded write-apply pilot
+- the worktree remains heavily mixed, so any later commit must stay strictly staged-only
+
+Next recommended step for ChatGPT: summarize this as “the write-apply class is no longer blocked by missing source-package plumbing; the next gate is the first real bounded write pilot”.
+
+Next recommended step for Codex: prepare the first tiny `execution_write_apply_candidate` pilot gate on an accepted execution source package, but do not run it without explicit approval.
+
+Last updated: `2026-06-23 15:36:31 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-23`, the next OR rollout blocker has been narrowed further: `execution_write_apply_candidate` is technically present and its local validator/tests pass, but a real accepted `execution_patch_candidate` run directory still does not yet satisfy the derivative write-apply source-package contract. The missing gap is now an artifact-bridge problem, not a missing runner problem.
+
+Current goal: close the artifact-shape seam from accepted proposal-first execution evidence into a write-apply-candidate-ready source package.
+
+Active phase: `janus-debug`, canonical state `PASS`.
+
+Last Codex work:
+- verified that `execution_write_apply_candidate` already exists in the productive runner, dispatcher, and dedicated validator path
+- fixed a small prompt-line drift in the productive runner unittest
+- validated that the local write-apply fixture path passes
+- confirmed that the real accepted `DEV-WORKHORSE-EXECUTION-GATE-003` source still fails write-apply validation because required bridge artifacts are missing
+
+Changed files:
+- `documentation/codex/model-routing/tests/test_codex_dev_workhorse_runner.py`
+- `documentation/codex/model-routing/execution_write_apply_candidate_readiness_gap_2026-06-23.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m unittest documentation.codex.model-routing.tests.test_bounded_write_candidate_validation_acceptance documentation.codex.model-routing.tests.test_bounded_write_candidate_entry_gate documentation.codex.model-routing.tests.test_codex_dev_workhorse_runner`: PASS
+- local accepted-source validation against real `DEV-WORKHORSE-EXECUTION-GATE-003`: FAIL as expected, documenting the missing bridge artifacts
+
+Open risks:
+- no live write activation is justified yet
+- the blocker is specifically the missing normalized bridge artifacts (`summary.json`, `git_diff.patch`, `changed_files.txt`, `delegated_result.md`, accepted-for-review normalization)
+- the worktree remains heavily mixed, so any later commit must stay strictly staged-only
+
+Next recommended step for ChatGPT: summarize the new blocker simply as “write-apply exists, but accepted execution runs are not yet bridgeable into its source contract”.
+
+Next recommended step for Codex: build the accepted-source bridge for `execution_write_apply_candidate` and validate it locally against `DEV-WORKHORSE-EXECUTION-GATE-003`.
+
+Last updated: `2026-06-23 15:32:40 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-23`, the current bounded OpenRouter everyday state is now compressed into one operator recommendation matrix across mini documentation, quickchange, and execution lanes. The main new distinction is explicit: mini-doc lanes and quickchange are now operator-preferred OR lanes, while `execution_patch_candidate` is upgraded to a real `OR_REVIEW_FIRST` lane after accepted higher-budget live evidence, but still not a blind-apply lane.
+
+Current goal: finish the OR everyday workhorse rollout by closing the remaining gap between accepted execution-class candidate evidence and a broader set of safely reusable review-first execution lanes.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- created one compact operator recommendation matrix across the currently proven OR workhorse lanes
+- recorded `execution_patch_candidate` as a real bounded OR option with review-first semantics
+- separated the already operator-preferred lanes from the still stricter Codex-review-required lane
+
+Changed files:
+- `documentation/codex/model-routing/productive_dev_workhorse_operator_recommendation_matrix_2026-06-23.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- live-evidence source reread: PASS
+- compact operator matrix creation: PASS
+
+Open risks:
+- `execution_patch_candidate` still needs case-by-case Codex repo-contract review even after accepted telemetry
+- `execution_write_apply_candidate` remains out of scope until more accepted proposal-first execution evidence exists
+- the worktree remains heavily mixed, so any later commit must stay strictly staged-only
+
+Next recommended step for ChatGPT: describe the current OR everyday state in one sentence as “docs and quickchange are operator-ready; execution is now real but review-first”.
+
+Next recommended step for Codex: either document the next candidate family for `execution_patch_candidate` or move on to the next missing bounded OR class instead of reopening already-proven mini-doc lanes.
+
+Last updated: `2026-06-23 15:31:43 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-23`, the controlled higher-budget `janus-executioner` OpenRouter retry for the prechecked `BACKLOG-108` execution patch candidate succeeded as accepted bounded proposal evidence. The same DeepSeek model that previously failed on truncation returned a complete non-truncated JSON result with `finish_reason=stop`, passed bounded validation, stayed well below the displayed cost estimate, and produced a two-file patch candidate for Codex-owned local review.
+
+Current goal: review the accepted bounded OR patch candidate for `BACKLOG-108` locally and decide whether to apply, refine, or reject it under normal Codex ownership.
+
+Active phase: `janus-executioner`, canonical state `PASS`.
+
+Last Codex work:
+- ran one higher-budget live retry for `DEV-WORKHORSE-EXECUTION-GATE-003`
+- captured accepted live telemetry with `generation_id=gen-1782222003-dF0CzLAQ5JP0BbhIcsHh`
+- confirmed the larger completion budget removed the prior `finish_reason=length` failure shape
+- recovered a bounded two-file patch candidate touching `backend/services/contact_manager.py` and `backend/tools/memory_tools.py`
+
+Changed files:
+- `documentation/codex/model-routing/execution-direct-or-runs/DEV-WORKHORSE-EXECUTION-GATE-003/request_body.json`
+- `documentation/codex/model-routing/execution-direct-or-runs/DEV-WORKHORSE-EXECUTION-GATE-003/response_body.json`
+- `documentation/codex/model-routing/execution-direct-or-runs/DEV-WORKHORSE-EXECUTION-GATE-003/response_headers.txt`
+- `documentation/codex/model-routing/execution-direct-or-runs/DEV-WORKHORSE-EXECUTION-GATE-003/response_summary.json`
+- `documentation/codex/model-routing/execution-direct-or-runs/DEV-WORKHORSE-EXECUTION-GATE-003/patch_candidate_result.json`
+- `documentation/codex/model-routing/execution-direct-or-runs/DEV-WORKHORSE-EXECUTION-GATE-003/validation_summary.json`
+- `documentation/codex/model-routing/execution-direct-or-runs/DEV-WORKHORSE-EXECUTION-GATE-003/healthcheck_summary.json`
+- `documentation/codex/model-routing/or_healthcheck_telemetry_direct_or_execution_patch_2026-06-23_DEV-WORKHORSE-EXECUTION-GATE-003.jsonl`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- higher-budget direct OR execution patch retry: PASS
+- response capture: PASS (`http_status=200`, `generation_id` present, `finish_reason=stop`)
+- actual cost captured from response usage: PASS (`0.00047768`)
+- bounded validation: PASS
+- local healthcheck ingestion: PASS
+
+Open risks:
+- accepted proposal evidence is not the same as accepted local implementation; Codex still has to review whether the suggested patch fits the real repository contracts
+- the returned patch references CRUD helper names that may not match the true local implementation details, so local diff review remains mandatory
+- the worktree remains heavily mixed, so any later commit must stay strictly staged-only
+
+Next recommended step for ChatGPT: summarize this as “execution-class OR is now proven as accepted bounded patch-candidate evidence on the higher-budget retry, but local apply judgment remains with Codex”.
+
+Next recommended step for Codex: review the accepted patch candidate against the real `BACKLOG-108` code paths and decide whether to apply it, adapt it, or reject it before any further OR-family conclusions are made.
+
+Last updated: `2026-06-23 15:31:43 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-23`, the next execution-class step has been reduced to one explicit higher-budget retry plan for the prechecked `BACKLOG-108` `execution_patch_candidate` lane. No new live OR call was made in this block; instead, the retry was bounded to one additional DeepSeek run with a materially larger completion budget so we can test whether the remaining failure mode is simple truncation versus a deeper patch-quality mismatch.
+
+Current goal: prepare one controlled higher-budget execution OR retry without reopening transport, telemetry, routing, or broader model-family experimentation.
+
+Active phase: `janus-debug`, canonical state `PASS`.
+
+Last Codex work:
+- created a one-shot higher-budget retry plan for the existing `BACKLOG-108` execution patch lane
+- fixed the next recommended retry shape to the same model family with `max_tokens=3600`
+- kept the class bounded to one live call, same input package, same file-first capture, and same healthcheck ingestion gates
+
+Changed files:
+- `documentation/codex/model-routing/execution_patch_candidate_higher_budget_retry_plan_2026-06-23.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- prior retry evidence reread: PASS
+- bounded higher-budget retry plan created: PASS
+
+Open risks:
+- no new live evidence was added in this block, so the execution-class lane remains transport-proven but content-unproven for accepted bounded patch output
+- the proposed larger completion budget may remove truncation but still might not produce a valid unified diff patch candidate
+- the worktree remains heavily mixed, so any later commit must stay strictly staged-only
+
+Next recommended step for ChatGPT: summarize the next live question narrowly as “does a single higher-budget retry convert truncation into a valid bounded result”.
+
+Next recommended step for Codex: if approved, run exactly one higher-budget live retry using the new plan and keep the post-run classification limited to this one DeepSeek execution lane.
+
+Last updated: `2026-06-23 15:30:54 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-23`, the second real bounded `janus-executioner` OpenRouter retry for the prechecked `BACKLOG-108` execution patch candidate has completed through the productive Dev-workhorse gate. Transport, file-first capture, usage accounting, and local healthcheck ingestion all passed again, but the model output hit `finish_reason=length`, could not be parsed into a complete bounded JSON result, and was therefore rejected cleanly with fallback to Codex-only review.
+
+Current goal: decide whether the execution-class OR path should next be hardened for larger completion budgets or kept limited to smaller proposal classes while Codex remains the acceptance owner for bigger implementation slices.
+
+Active phase: `janus-executioner`, canonical state `PASS`.
+
+Last Codex work:
+- ran one additional real productive Dev-workhorse `execution_patch_candidate` OR retry for `BACKLOG-108`
+- captured accepted live telemetry with `generation_id=gen-1782221413-LPYoFCvGayNl9PiWOpmJ`
+- confirmed that the remaining failure mode is still content truncation (`finish_reason=length`) rather than transport, capture, cost, or healthcheck ingestion
+
+Changed files:
+- `documentation/codex/model-routing/execution-direct-or-runs/DEV-WORKHORSE-EXECUTION-GATE-002/request_body.json`
+- `documentation/codex/model-routing/execution-direct-or-runs/DEV-WORKHORSE-EXECUTION-GATE-002/response_body.json`
+- `documentation/codex/model-routing/execution-direct-or-runs/DEV-WORKHORSE-EXECUTION-GATE-002/response_headers.txt`
+- `documentation/codex/model-routing/execution-direct-or-runs/DEV-WORKHORSE-EXECUTION-GATE-002/response_summary.json`
+- `documentation/codex/model-routing/execution-direct-or-runs/DEV-WORKHORSE-EXECUTION-GATE-002/patch_candidate_result.json`
+- `documentation/codex/model-routing/execution-direct-or-runs/DEV-WORKHORSE-EXECUTION-GATE-002/validation_summary.json`
+- `documentation/codex/model-routing/execution-direct-or-runs/DEV-WORKHORSE-EXECUTION-GATE-002/healthcheck_summary.json`
+- `documentation/codex/model-routing/or_healthcheck_telemetry_direct_or_execution_patch_2026-06-23_DEV-WORKHORSE-EXECUTION-GATE-002.jsonl`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- real productive Dev-workhorse prompt gate for `execution_patch_candidate`: PASS
+- real direct OR execution patch retry: PASS on transport and usage capture
+- response capture: PASS (`http_status=200`, `generation_id` present, `finish_reason=length`)
+- actual cost captured from response usage: PASS (`0.00075572`)
+- local healthcheck ingestion: PASS
+- bounded patch validation: FAIL (`finish_reason=length`)
+
+Open risks:
+- the execution-class OR path still lacks accepted bounded patch evidence for this larger slice
+- the retry cost stayed comfortably below the configured cap, but larger completion budgets would increase spend and still might not yield a valid unified diff
+- the worktree remains heavily mixed, so any later commit must stay strictly staged-only
+
+Next recommended step for ChatGPT: summarize this as “execution-class transport is proven, but larger patch-candidate quality is still truncation-limited and remains a bounded experiment”.
+
+Next recommended step for Codex: decide whether to run one controlled higher-budget execution retry later or pivot to the next safer OR workhorse surface instead of treating `execution_patch_candidate` as production-ready.
+
+Last updated: `2026-06-23 15:30:54 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-23`, the first execution-class hardening slice after the real `BACKLOG-108` OR attempt is complete: the direct execution patch runner now accepts a contract-valid bounded `BLOCKED` result without a unified diff instead of misclassifying it as a malformed patch candidate. This isolates the remaining larger-class question to actual patch quality versus honest no-patch assessment, instead of conflating it with validator shape failure.
+
+Current goal: make the `janus-executioner` OR path decisive by separating three outcomes cleanly: accepted bounded patch, bounded no-patch `BLOCKED`, or true contract failure.
+
+Active phase: `janus-executioner`, canonical state `PASS`.
+
+Last Codex work:
+- hardened the direct execution patch candidate validator so `status=BLOCKED` may legally return empty `patch_text` and empty `changed_files`
+- preserved stricter unified-diff requirements for `PASS` and `WEAK_SIGNAL`
+- added a focused regression test for the bounded no-patch case
+
+Changed files:
+- `documentation/codex/model-routing/scripts/openrouter_direct_execution_patch_candidate_runner.py`
+- `documentation/codex/model-routing/tests/test_openrouter_direct_execution_patch_candidate_runner.py`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m unittest documentation.codex.model-routing.tests.test_openrouter_direct_execution_patch_candidate_runner`: PASS
+- scoped `git diff --check` for the touched execution hardening files: PASS with known CRLF warning only on `documentation/ai/CURRENT_STATE.md`
+
+Open risks:
+- this hardening improves reject semantics only; it does not yet prove that the next live execution retry will return an accepted unified diff patch
+- the worktree remains heavily mixed, so any later commit must stay strictly staged-only
+
+Next recommended step for ChatGPT: summarize the execution-class state as “transport and telemetry proven, contract semantics hardened, next question is real patch quality”.
+
+Next recommended step for Codex: rerun one bounded `execution_patch_candidate` slice only when you want the next real evidence point; the next run can now distinguish a valid bounded no-patch block from a malformed patch output.
+
+Last updated: `2026-06-23 00:34:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-23`, the first real bounded `janus-executioner` OpenRouter everyday run has been executed through the productive Dev-workhorse gate on the prechecked `BACKLOG-108` slice. The run succeeded on transport, capture, usage accounting, and local healthcheck ingestion, but it was correctly rejected by the bounded validation gate because the returned result contained no unified diff patch text and therefore fell back to Codex-only review.
+
+Current goal: finish the main everyday OR workhorse surfaces quickly by separating transport success from content-contract success, so the next execution-class hardening step can focus only on patch-candidate contract quality.
+
+Active phase: `janus-executioner`, canonical state `PASS`.
+
+Last Codex work:
+- ran one real productive Dev-workhorse `execution_patch_candidate` OR attempt for the prechecked `BACKLOG-108` slice
+- captured accepted transport/usage telemetry with `generation_id=gen-1782167593-Ug7sOQplUHqkvPNFlXsS`
+- confirmed that the content failed only on the bounded patch contract (`patch_text` missing / not unified diff), which triggered the intended Codex fallback
+
+Changed files:
+- `documentation/codex/model-routing/execution-direct-or-runs/DEV-WORKHORSE-EXECUTION-GATE-001/request_body.json`
+- `documentation/codex/model-routing/execution-direct-or-runs/DEV-WORKHORSE-EXECUTION-GATE-001/response_body.json`
+- `documentation/codex/model-routing/execution-direct-or-runs/DEV-WORKHORSE-EXECUTION-GATE-001/response_headers.txt`
+- `documentation/codex/model-routing/execution-direct-or-runs/DEV-WORKHORSE-EXECUTION-GATE-001/response_summary.json`
+- `documentation/codex/model-routing/execution-direct-or-runs/DEV-WORKHORSE-EXECUTION-GATE-001/patch_candidate_result.json`
+- `documentation/codex/model-routing/execution-direct-or-runs/DEV-WORKHORSE-EXECUTION-GATE-001/validation_summary.json`
+- `documentation/codex/model-routing/execution-direct-or-runs/DEV-WORKHORSE-EXECUTION-GATE-001/healthcheck_summary.json`
+- `documentation/codex/model-routing/or_healthcheck_telemetry_direct_or_execution_patch_2026-06-23_DEV-WORKHORSE-EXECUTION-GATE-001.jsonl`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- real productive Dev-workhorse prompt gate for `execution_patch_candidate`: PASS
+- real direct OR execution patch candidate call: PASS on transport and usage capture
+- response capture: PASS (`http_status=200`, `generation_id` present, `finish_reason=stop`)
+- actual cost captured from response usage: PASS (`0.000168672`)
+- local healthcheck ingestion: PASS
+- bounded patch validation: FAIL (`patch_text must be unified diff text`)
+
+Open risks:
+- the current execution-class blocker is no longer transport or cost; it is the patch-candidate contract quality for larger code slices
+- this run remains valuable bounded failure evidence, but not accepted execution patch evidence
+- the worktree remains heavily mixed, so any later commit must stay strictly staged-only
+
+Next recommended step for ChatGPT: treat `janus-executioner` as the next contract-hardening target rather than reopening Doku or Quickchange.
+
+Next recommended step for Codex: harden the execution patch prompt/validator contract so the model is pushed toward either a real unified diff or a clearer bounded rejection classification before the next live execution retry.
+
+Last updated: `2026-06-23 00:33:06 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-23`, the first real bounded `janus-quickchange` OpenRouter everyday run has completed through the dispatcher-backed `quickchange_patch_review` gate. The direct OR path returned an accepted bounded patch proposal with file-first capture, local healthcheck ingestion, and actual OR cost visibility; Codex review confirmed the proposal matched the two intended placeholder lines in `frontend/index.html`.
+
+Current goal: expand the real everyday OpenRouter workhorse layer quickly across the safest Janus skill surfaces while keeping Codex as the final reviewer and acceptance owner.
+
+Active phase: `janus-quickchange`, canonical state `PASS`.
+
+Last Codex work:
+- ran one real dispatcher-backed `quickchange_patch_review` OpenRouter call for the tiny chat-placeholder wording change
+- captured accepted direct-OR telemetry with `generation_id=gen-1782167369-beEbfLipWiEIiAbTHNCF`
+- reviewed the proposed diff locally and confirmed the two target placeholder lines already match the intended final wording in the current worktree
+
+Changed files:
+- `documentation/codex/model-routing/direct-or-runs/BOUNDED-QUICKCHANGE-OR-LIVE-001/request_body.json`
+- `documentation/codex/model-routing/direct-or-runs/BOUNDED-QUICKCHANGE-OR-LIVE-001/response_body.json`
+- `documentation/codex/model-routing/direct-or-runs/BOUNDED-QUICKCHANGE-OR-LIVE-001/response_headers.txt`
+- `documentation/codex/model-routing/direct-or-runs/BOUNDED-QUICKCHANGE-OR-LIVE-001/response_summary.json`
+- `documentation/codex/model-routing/direct-or-runs/BOUNDED-QUICKCHANGE-OR-LIVE-001/patch_proposal.json`
+- `documentation/codex/model-routing/direct-or-runs/BOUNDED-QUICKCHANGE-OR-LIVE-001/validation_summary.json`
+- `documentation/codex/model-routing/direct-or-runs/BOUNDED-QUICKCHANGE-OR-LIVE-001/healthcheck_summary.json`
+- `documentation/codex/model-routing/or_healthcheck_telemetry_direct_or_quickchange_2026-06-23_BOUNDED-QUICKCHANGE-OR-LIVE-001.jsonl`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- real dispatcher-backed prompt gate for `quickchange_patch_review`: PASS
+- real direct OR quickchange patch-review call: PASS
+- response capture: PASS (`http_status=200`, `generation_id` present, `finish_reason=stop`)
+- actual cost captured from response usage: PASS (`0.00011984`)
+- local healthcheck ingestion: PASS
+- local diff review against allowlist: PASS for the two intended placeholder lines
+
+Open risks:
+- the current worktree for `frontend/index.html` also contains an unrelated pre-existing diff in the same file (`API-Schlüssel` placeholder), so this run should be treated as accepted bounded OR patch evidence plus local line-level review, not as a clean single-purpose commit candidate yet
+- this path is still review-first: Codex remains the acceptance owner and no broad write authority is granted
+- the worktree remains heavily mixed, so any later commit must stay strictly staged-only
+
+Next recommended step for ChatGPT: treat `janus-quickchange` as the next real everyday OR workhorse path after documentation and reuse the same operator-choice pattern on similarly tiny one-file changes.
+
+Next recommended step for Codex: if the user wants maximum speed, move next to one more tiny quickchange or start the first bounded `janus-executioner` operator-gate enablement slice.
+
+Last updated: `2026-06-23 00:29:24 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-23`, the next fast-path OpenRouter workhorse surface has been unblocked at the operator gate layer: `quickchange_patch_review` now passes the shared dispatcher eligibility gate and presents a real everyday `1 = Codex` / `2 = OpenRouter` choice instead of falling back locally before the gate. The installed `janus-quickchange` wording and the canonical dispatcher entry were aligned to the same operator language.
+
+Current goal: finish the highest-value everyday bounded OR workhorse surfaces one by one, with `janus-documentation-update` already live and `janus-quickchange` now promoted to a real dispatcher-backed operator gate.
+
+Active phase: `janus-quickchange`, canonical state `PASS`.
+
+Last Codex work:
+- synchronized the installed `janus-quickchange` skill wording from legacy `Delegated` phrasing to explicit `OpenRouter` wording
+- fixed the shared dispatcher so `quickchange_patch_review` uses dispatcher eligibility instead of being blocked by the narrow assistive-pilot scope
+- validated the real prompt-mode gate for `quickchange_patch_review`
+
+Changed files:
+- `C:\Users\pruve\.codex\skills\janus-quickchange\SKILL.md`
+- `documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py`
+- `documentation/codex/model-routing/tests/test_bounded_or_worker_gate_prompt.py`
+- `documentation/codex/model-routing/codex_bounded_delegation_dispatcher_canonical_entry_2026-06-14.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- real dispatcher prompt-mode gate for `quickchange_patch_review`: PASS
+- `python -m unittest documentation.codex.model-routing.tests.test_bounded_or_worker_gate_prompt`: PASS
+- scoped `git diff --check` for the touched dispatcher/prompt files: PASS with known CRLF warning only on `documentation/ai/CURRENT_STATE.md`
+
+Open risks:
+- this currently proves the operator gate only; it does not yet add a fresh accepted live quickchange OR write row
+- the prompt currently shows cost and model cleanly, but unlike the mini documentation lane it does not yet inject an additional recommendation tier such as `PREFER_OR`
+- the worktree remains heavily mixed, so any later commit must stay strictly staged-only
+
+Next recommended step for ChatGPT: when the user wants speed, use `janus-quickchange` as the next real bounded OR workhorse candidate before widening into larger execution classes.
+
+Next recommended step for Codex: run one real tiny `quickchange_patch_review` or `quickchange_write_apply` workflow through the now-open dispatcher gate and capture actual OR cost plus acceptance behavior.
+
+Last updated: `2026-06-23 00:18:40 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-23`, one real everyday mini-documentation OR run has now been executed through the live installed workflow surface after the wording sync. `DOC-SKILL-002` completed through the bounded fixed-model OR path with accepted file-first capture, `generation_id` present, local healthcheck ingestion passing, and actual OR cost shown back to the operator.
+
+Current goal: treat the eligible mini documentation path as a real bounded everyday operator choice where the user can decide between spending `Codex` quota locally or spending bounded OR money with post-run actual cost visibility.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- executed the real bounded fixed-OR branch for `DOC-SKILL-002` after the prompt-layer and installed-skill sync
+- captured accepted telemetry with `generation_id=gen-1782166645-PfdDHFR8aaZxbk47WSIr`
+- confirmed local healthcheck ingestion and returned the actual OR cost to the operator
+
+Changed files:
+- `documentation/codex/model-routing/or_healthcheck_telemetry_fixed_or_session_2026-06-23_FIXED-OR-20260623-001611-DOC-SKILL-002.jsonl`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260623-001611-DOC-SKILL-002/doc-skill-002/request_body_source.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260623-001611-DOC-SKILL-002/doc-skill-002/request_body.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260623-001611-DOC-SKILL-002/doc-skill-002/response_body.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260623-001611-DOC-SKILL-002/doc-skill-002/response_headers.txt`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260623-001611-DOC-SKILL-002/doc-skill-002/response_summary.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260623-001611-DOC-SKILL-002/doc-skill-002/stdout.log`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260623-001611-DOC-SKILL-002/doc-skill-002/stderr.log`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260623-001611-DOC-SKILL-002/doc-skill-002/exit_code.txt`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260623-001611-DOC-SKILL-002/doc-skill-002/healthcheck_summary.json`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- real prompt-mode gate for `DOC-SKILL-002`: PASS
+- real fixed-model OR run for `DOC-SKILL-002`: PASS
+- response capture: PASS (`http_status=200`, `generation_id` present, `finish_reason=stop`)
+- actual cost captured from response usage: PASS (`0.00007844`)
+- local healthcheck ingestion: PASS
+
+Open risks:
+- this is still bounded mini-documentation workflow evidence only, not production routing and not global OR approval
+- the current confidence values still come from very small sample counts, so the displayed percentages remain directional rather than highly stable
+- the worktree remains heavily mixed, so any later commit must stay strictly staged-only
+
+Next recommended step for ChatGPT: for future eligible mini documentation tasks, continue presenting the same gate and report the actual OR cost after completion whenever the operator chooses `2`.
+
+Next recommended step for Codex: if the user wants more real-world confidence, run additional everyday mini documentation tasks through the same live gate and compare estimated versus actual OR cost over time.
+
+Last updated: `2026-06-23 00:17:19 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-23`, the installed `janus-documentation-update` skill copy has been synchronized with the new mini-documentation OR gate wording, and the real prompt-mode everyday path has been smoke-tested successfully for an eligible skill. The installed skill contract and the actual runner output now both present OR as the bounded external option to preserve `Codex` quota, with live-evidence guidance and estimated OR cost visible before any OR call.
+
+Current goal: keep the live everyday documentation-skill surface aligned with the validated bounded fixed-OR runner so operators see one consistent `1 = Codex` / `2 = OpenRouter` decision gate in actual use.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- synchronized the installed `C:\Users\pruve\.codex\skills\janus-documentation-update\SKILL.md` copy to the new quota-first OR gate wording
+- smoke-tested the real eligible prompt-mode runner with `DOC-SKILL-002`
+- confirmed that the installed skill wording and the runner output now match on the operator-facing gate
+
+Changed files:
+- `C:\Users\pruve\.codex\skills\janus-documentation-update\SKILL.md`
+- `documentation/codex/skills/janus-documentation-update/SKILL.md`
+- `documentation/codex/model-routing/tests/test_bounded_or_worker_gate_prompt.py`
+- `documentation/codex/model-routing/scripts/bounded_or_worker_gate_prompt.py`
+- `documentation/codex/model-routing/scripts/doc_skill_mini_fixed_or_live_runner.py`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- installed skill gate wording review: PASS
+- `python documentation/codex/model-routing/scripts/doc_skill_mini_fixed_or_live_runner.py --skill-id DOC-SKILL-002 --normal-target-model "5.4 mini" --task-intent documentation_skill --operator-choice prompt`: PASS
+- scoped `git diff --check` for the touched prompt/skill files: PASS with known CRLF warning only on `documentation/ai/CURRENT_STATE.md`
+
+Open risks:
+- this confirms the prompt-mode everyday gate only; it does not itself execute a fresh live OR call
+- the current confidence values still come from very small sample counts, so the displayed percentages remain directional rather than highly stable
+- the worktree remains heavily mixed, so any later commit must stay strictly staged-only
+
+Next recommended step for ChatGPT: when the user starts an eligible mini documentation task, present the visible choice exactly as the live gate now outputs it and let the user decide between spending `Codex` quota or bounded OR money.
+
+Next recommended step for Codex: if the user wants end-to-end proof next, run one real bounded documentation-skill task through the installed workflow and then report the actual OR cost after completion.
+
+Last updated: `2026-06-23 00:14:50 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-23`, the repo-side `janus-documentation-update` skill contract has been aligned with the new mini-documentation OR prompt wording. The documented visible gate now matches the real runner output: OR is presented as the bounded external option to preserve `Codex` quota, with live-evidence guidance and estimated OR cost shown as operator decision support.
+
+Current goal: keep the visible documentation-skill contract and the real mini fixed-OR runner in sync so the everyday workflow does not drift between documented wording and actual operator prompts.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- updated the repo `janus-documentation-update` skill contract for the bounded fixed OR gate wording
+- extended the prompt-layer unit test so it checks quota-saving language plus recommendation fields
+- reran the focused prompt-layer test suite successfully
+
+Changed files:
+- `documentation/codex/skills/janus-documentation-update/SKILL.md`
+- `documentation/codex/model-routing/tests/test_bounded_or_worker_gate_prompt.py`
+- `documentation/codex/model-routing/scripts/bounded_or_worker_gate_prompt.py`
+- `documentation/codex/model-routing/scripts/doc_skill_mini_fixed_or_live_runner.py`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m unittest documentation.codex.model-routing.tests.test_bounded_or_worker_gate_prompt`: PASS
+- scoped `git diff --check` for the touched prompt/skill files: PASS with known CRLF warning only on `documentation/ai/CURRENT_STATE.md`
+
+Open risks:
+- the installed working-copy skill under `C:\Users\pruve\.codex\skills\janus-documentation-update\SKILL.md` was intentionally not changed in this slice, so the repo contract is now ahead of the installed copy
+- the current confidence values still come from very small sample counts, so the displayed percentages remain directional rather than highly stable
+- the worktree remains heavily mixed, so any later commit must stay strictly staged-only
+
+Next recommended step for ChatGPT: if the user wants the live workflow immediately, explicitly approve syncing the installed `janus-documentation-update` skill copy to the repo wording.
+
+Next recommended step for Codex: update the installed documentation skill copy and then do one real workflow smoke test so the visible gate is proven end-to-end inside the actual skill entrypoint.
+
+Last updated: `2026-06-23 00:12:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-23`, the bounded mini-documentation OR operator prompt has been reframed around the actual priority order: preserving `Codex` quota first, then showing live evidence quality and estimated OR cost as decision support. The visible `1 = Codex` / `2 = OpenRouter` gate now distinguishes stronger `PREFER_OR` lanes from merely valid `OR_OPTIONAL` lanes instead of sounding purely cost-first.
+
+Current goal: make the everyday mini-documentation operator choice match the intended real workflow, where the operator decides between spending `Codex` quota or spending bounded OR money with live evidence visible.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- updated the shared bounded OR gate prompt text so it explicitly frames OpenRouter as the external option for saving Codex quota
+- wired the seven-skill operator recommendation mapping into the mini fixed-OR runner
+- locally validated the new prompt output for both a `PREFER_OR` lane (`DOC-SKILL-001`) and an `OR_OPTIONAL` lane (`DOC-SKILL-010`) without making any OR call
+
+Changed files:
+- `documentation/codex/model-routing/scripts/bounded_or_worker_gate_prompt.py`
+- `documentation/codex/model-routing/scripts/doc_skill_mini_fixed_or_live_runner.py`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- local prompt-mode validation for `DOC-SKILL-001`: PASS
+- local prompt-mode validation for `DOC-SKILL-010`: PASS
+- scoped `git diff --check` for prompt-layer scripts: PASS
+
+Open risks:
+- the current confidence values still come from very small sample counts, so the displayed percentages remain directional rather than highly stable
+- this updates operator wording only; it does not widen scope, activate production routing, or change canonical fixed-model baselines
+- the worktree remains heavily mixed, so any later commit must stay strictly staged-only
+
+Next recommended step for ChatGPT: if the user now starts an eligible mini documentation skill, present the visible choice as quota-vs-money with live evidence context instead of as a pure savings pitch.
+
+Next recommended step for Codex: wire the same wording into any remaining user-facing mini documentation skill surfaces that still use older prompt phrasing.
+
+Last updated: `2026-06-23 00:10:20 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-23`, the seven-skill mini-documentation live evidence has been converted into an operator recommendation matrix for bounded everyday use. The new guidance keeps fixed-model `Auto-sparsam` canonical, but now explicitly separates the cheapest `PREFER_OR` lanes from the merely valid `OR_OPTIONAL` lanes.
+
+Current goal: use the live-evidenced mini-documentation OR path with clearer operator guidance, without widening it into production routing or global approval.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- converted the completed seven-skill mini-documentation live evidence set into a simple operator recommendation matrix
+- marked `DOC-SKILL-001`, `002`, `003`, and `006` as the strongest `PREFER_OR` lanes
+- marked `DOC-SKILL-008`, `009`, and `010` as valid but merely `OR_OPTIONAL`
+
+Changed files:
+- `documentation/codex/model-routing/gpt54_mini_live_evidence_operator_recommendation_matrix_2026-06-23.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- operator recommendation matrix created: PASS
+- live evidence scope preserved: PASS
+- no production routing language introduced: PASS
+
+Open risks:
+- the worktree remains heavily mixed, so any later commit must stay strictly staged-only
+- this matrix is guidance derived from already-validated evidence and does not add new approval
+
+Next recommended step for ChatGPT: use the operator recommendation matrix when presenting `1 = Codex` / `2 = OpenRouter` for these mini documentation skills.
+
+Next recommended step for Codex: if the user wants implementation work next, wire this recommendation language into the visible operator prompt layer instead of reopening evidence collection.
+
+Last updated: `2026-06-23 00:18:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-23`, the live `5.4 mini` documentation-workhorse evidence has been condensed into a short management summary after the full seven-skill live series completed on `2026-06-22`. The summary reinforces the same core result: the bounded OR path is useful for the smallest deterministic documentation tasks, but fixed-model `Auto-sparsam` remains canonical and there is no production routing or global OR approval.
+
+Current goal: keep the mini-documentation OR evidence as a bounded support layer and use the management summary for quick human-readable decisions without reopening the detailed live series.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- created the management summary for the accepted `5.4 mini` documentation live evidence
+- preserved the key decision that the cheapest summary and handoff tasks are the strongest OR candidates
+- kept fixed-model `Auto-sparsam` as the canonical path and bounded OpenRouter as support only
+
+Changed files:
+- `documentation/codex/model-routing/gpt54_mini_live_evidence_workhorse_management_summary_2026-06-22.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- management summary created: PASS
+- live evidence scope preserved: PASS
+- no production routing language introduced: PASS
+
+Open risks:
+- the worktree remains heavily mixed, so any later commit must stay strictly staged-only
+- this summary is derived from already-validated evidence and does not add new model approval
+
+Next recommended step for ChatGPT: use the short management summary for the next high-level decision instead of rereading the full detail note.
+
+Next recommended step for Codex: if more OR evidence is needed, continue with the next eligible documentation slice rather than reopening the completed seven-skill set.
+
+Last updated: `2026-06-23 00:12:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-22`, the seventh real operator-invoked documentation OR run is complete with canonical state `PASS`: `DOC-SKILL-009` now joins the earlier accepted live evidence for `DOC-SKILL-001`, `DOC-SKILL-002`, `DOC-SKILL-003`, `DOC-SKILL-006`, `DOC-SKILL-008`, and `DOC-SKILL-010`. The full eligible mini-documentation fixed-choice set now has accepted bounded live evidence under the productive `1 = Codex` / `2 = OpenRouter` workflow, with file-first capture, accepted telemetry, and local healthcheck ingestion on every accepted run.
+
+Current goal: treat the eligible mini documentation OR path as fully live-evidenced bounded workflow support, while keeping it strictly non-production and non-global-approval.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- invoked the productive fixed-choice mini documentation runner in prompt mode for `DOC-SKILL-009`
+- presented the real operator choice gate with `1 = Codex` and `2 = OpenRouter`
+- executed the approved live OR branch for `DOC-SKILL-009` using the fixed model `qwen/qwen3.5-flash-02-23`
+- captured accepted live file-first artifacts and wrote accepted telemetry to `documentation/codex/model-routing/or_healthcheck_telemetry_fixed_or_session_2026-06-22_FIXED-OR-20260622-235313-DOC-SKILL-009.jsonl`
+- validated local ingestion through `documentation/codex/skills/janus-health-check/scripts/health_snapshot.py`
+
+Changed files:
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-235313-DOC-SKILL-009/doc-skill-009/request_body_source.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-235313-DOC-SKILL-009/doc-skill-009/request_body.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-235313-DOC-SKILL-009/doc-skill-009/response_body.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-235313-DOC-SKILL-009/doc-skill-009/response_headers.txt`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-235313-DOC-SKILL-009/doc-skill-009/response_summary.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-235313-DOC-SKILL-009/doc-skill-009/stdout.log`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-235313-DOC-SKILL-009/doc-skill-009/stderr.log`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-235313-DOC-SKILL-009/doc-skill-009/exit_code.txt`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-235313-DOC-SKILL-009/doc-skill-009/healthcheck_summary.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-235313-DOC-SKILL-009/doc-skill-009/operator_choice_prompt.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-235313-DOC-SKILL-009/doc-skill-009/operator_summary.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-235313-DOC-SKILL-009/doc-skill-009/wrapper_command_stdout.txt`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-235313-DOC-SKILL-009/doc-skill-009/wrapper_command_stderr.txt`
+- `documentation/codex/model-routing/or_healthcheck_telemetry_fixed_or_session_2026-06-22_FIXED-OR-20260622-235313-DOC-SKILL-009.jsonl`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- productive operator gate for `DOC-SKILL-009`: PASS
+- live fixed-model OR invocation for `DOC-SKILL-009`: PASS
+- per-call cap check `0.0020`: PASS (`actual_or_cost=0.000444210`)
+- response capture: PASS (`generation_id`, `usage`, `finish_reason=stop`)
+- telemetry JSONL write: PASS
+- `python documentation/codex/skills/janus-health-check/scripts/health_snapshot.py --repo C:\KI\Janus-Projekt --or-telemetry-jsonl documentation/codex/model-routing/or_healthcheck_telemetry_fixed_or_session_2026-06-22_FIXED-OR-20260622-235313-DOC-SKILL-009.jsonl`: PASS
+
+Open risks:
+- this remains bounded local evidence for eligible mini documentation slices only, not production routing and not global OR approval
+- the eligible mini documentation OR set is now live-evidenced, but stateful or policy-sensitive documentation authority still remains local-Codex only
+- the repository worktree remains heavily mixed, so any later commit must stay strictly staged-only
+- no canonical routing-table activation, no release authority, and no Git authority is implied by this run
+
+Next recommended step for ChatGPT: summarize the seven accepted mini-documentation live evidence rows into one compact decision note if the user wants a clean closeout artifact.
+
+Next recommended step for Codex: keep offering `1 = Codex` / `2 = OpenRouter` for these eligible mini documentation tasks in the bounded workflow and always report actual OR cost after completion.
+
+Last updated: `2026-06-22 23:53:45 +02:00`.
+As of `2026-06-22`, the sixth real operator-invoked documentation OR run is complete with canonical state `PASS`: `DOC-SKILL-002` now joins the earlier accepted live evidence for `DOC-SKILL-001`, `DOC-SKILL-003`, `DOC-SKILL-006`, `DOC-SKILL-008`, and `DOC-SKILL-010`. The bounded `1 = Codex` / `2 = OpenRouter` operator flow again stayed inside the cap, captured file-first artifacts, wrote accepted telemetry, and passed local healthcheck ingestion.
+
+Current goal: keep extending the same real bounded documentation workflow only across eligible mini documentation slices and only when the user explicitly wants another live run.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- invoked the productive fixed-choice mini documentation runner in prompt mode for `DOC-SKILL-002`
+- presented the real operator choice gate with `1 = Codex` and `2 = OpenRouter`
+- executed the approved live OR branch for `DOC-SKILL-002` using the fixed model `openai/gpt-oss-20b`
+- captured accepted live file-first artifacts and wrote accepted telemetry to `documentation/codex/model-routing/or_healthcheck_telemetry_fixed_or_session_2026-06-22_FIXED-OR-20260622-235121-DOC-SKILL-002.jsonl`
+- validated local ingestion through `documentation/codex/skills/janus-health-check/scripts/health_snapshot.py`
+
+Changed files:
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-235121-DOC-SKILL-002/doc-skill-002/request_body_source.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-235121-DOC-SKILL-002/doc-skill-002/request_body.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-235121-DOC-SKILL-002/doc-skill-002/response_body.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-235121-DOC-SKILL-002/doc-skill-002/response_headers.txt`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-235121-DOC-SKILL-002/doc-skill-002/response_summary.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-235121-DOC-SKILL-002/doc-skill-002/stdout.log`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-235121-DOC-SKILL-002/doc-skill-002/stderr.log`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-235121-DOC-SKILL-002/doc-skill-002/exit_code.txt`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-235121-DOC-SKILL-002/doc-skill-002/healthcheck_summary.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-235121-DOC-SKILL-002/doc-skill-002/operator_choice_prompt.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-235121-DOC-SKILL-002/doc-skill-002/operator_summary.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-235121-DOC-SKILL-002/doc-skill-002/wrapper_command_stdout.txt`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-235121-DOC-SKILL-002/doc-skill-002/wrapper_command_stderr.txt`
+- `documentation/codex/model-routing/or_healthcheck_telemetry_fixed_or_session_2026-06-22_FIXED-OR-20260622-235121-DOC-SKILL-002.jsonl`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- productive operator gate for `DOC-SKILL-002`: PASS
+- live fixed-model OR invocation for `DOC-SKILL-002`: PASS
+- per-call cap check `0.0020`: PASS (`actual_or_cost=0.000098740`)
+- response capture: PASS (`generation_id`, `usage`, `finish_reason=stop`)
+- telemetry JSONL write: PASS
+- `python documentation/codex/skills/janus-health-check/scripts/health_snapshot.py --repo C:\KI\Janus-Projekt --or-telemetry-jsonl documentation/codex/model-routing/or_healthcheck_telemetry_fixed_or_session_2026-06-22_FIXED-OR-20260622-235121-DOC-SKILL-002.jsonl`: PASS
+
+Open risks:
+- this remains bounded local evidence for eligible mini documentation slices only, not production routing and not global OR approval
+- accepted real-work live evidence now covers `DOC-SKILL-001`, `DOC-SKILL-002`, `DOC-SKILL-003`, `DOC-SKILL-006`, `DOC-SKILL-008`, and `DOC-SKILL-010`; `DOC-SKILL-009` is the main remaining eligible mini documentation skill if we want one more explicit live proof
+- the repository worktree remains heavily mixed, so any later commit must stay strictly staged-only
+- no canonical routing-table activation, no release authority, and no Git authority is implied by this run
+
+Next recommended step for ChatGPT: continue with `DOC-SKILL-009` through the same fixed operator-choice gate if the user wants the next real mini documentation live run.
+
+Next recommended step for Codex: offer `1 = Codex` / `2 = OpenRouter` again for the next eligible documentation task and keep reporting actual OR cost after completion.
+
+Last updated: `2026-06-22 23:51:45 +02:00`.
+As of `2026-06-22`, the fifth real operator-invoked documentation OR run is complete with canonical state `PASS`: `DOC-SKILL-001` now joins the earlier accepted live evidence for `DOC-SKILL-003`, `DOC-SKILL-006`, `DOC-SKILL-008`, and `DOC-SKILL-010`. The bounded `1 = Codex` / `2 = OpenRouter` operator flow again stayed inside the cap, captured file-first artifacts, wrote accepted telemetry, and passed local healthcheck ingestion.
+
+Current goal: keep extending the same real bounded documentation workflow only across eligible mini documentation slices and only when the user explicitly wants another live run.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- invoked the productive fixed-choice mini documentation runner in prompt mode for `DOC-SKILL-001`
+- presented the real operator choice gate with `1 = Codex` and `2 = OpenRouter`
+- executed the approved live OR branch for `DOC-SKILL-001` using the fixed model `openai/gpt-oss-20b`
+- captured accepted live file-first artifacts and wrote accepted telemetry to `documentation/codex/model-routing/or_healthcheck_telemetry_fixed_or_session_2026-06-22_FIXED-OR-20260622-234243-DOC-SKILL-001.jsonl`
+- validated local ingestion through `documentation/codex/skills/janus-health-check/scripts/health_snapshot.py`
+
+Changed files:
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-234243-DOC-SKILL-001/doc-skill-001/request_body_source.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-234243-DOC-SKILL-001/doc-skill-001/request_body.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-234243-DOC-SKILL-001/doc-skill-001/response_body.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-234243-DOC-SKILL-001/doc-skill-001/response_headers.txt`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-234243-DOC-SKILL-001/doc-skill-001/response_summary.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-234243-DOC-SKILL-001/doc-skill-001/stdout.log`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-234243-DOC-SKILL-001/doc-skill-001/stderr.log`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-234243-DOC-SKILL-001/doc-skill-001/exit_code.txt`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-234243-DOC-SKILL-001/doc-skill-001/healthcheck_summary.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-234243-DOC-SKILL-001/doc-skill-001/operator_choice_prompt.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-234243-DOC-SKILL-001/doc-skill-001/operator_summary.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-234243-DOC-SKILL-001/doc-skill-001/wrapper_command_stdout.txt`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-234243-DOC-SKILL-001/doc-skill-001/wrapper_command_stderr.txt`
+- `documentation/codex/model-routing/or_healthcheck_telemetry_fixed_or_session_2026-06-22_FIXED-OR-20260622-234243-DOC-SKILL-001.jsonl`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- productive operator gate for `DOC-SKILL-001`: PASS
+- live fixed-model OR invocation for `DOC-SKILL-001`: PASS
+- per-call cap check `0.0020`: PASS (`actual_or_cost=0.000087240`)
+- response capture: PASS (`generation_id`, `usage`, `finish_reason=stop`)
+- telemetry JSONL write: PASS
+- `python documentation/codex/skills/janus-health-check/scripts/health_snapshot.py --repo C:\KI\Janus-Projekt --or-telemetry-jsonl documentation/codex/model-routing/or_healthcheck_telemetry_fixed_or_session_2026-06-22_FIXED-OR-20260622-234243-DOC-SKILL-001.jsonl`: PASS
+
+Open risks:
+- this remains bounded local evidence for eligible mini documentation slices only, not production routing and not global OR approval
+- accepted real-work live evidence now covers `DOC-SKILL-001`, `DOC-SKILL-003`, `DOC-SKILL-006`, `DOC-SKILL-008`, and `DOC-SKILL-010`; the remaining eligible mini documentation skills still need their own explicit live proofs if we want the same confidence level there
+- the repository worktree remains heavily mixed, so any later commit must stay strictly staged-only
+- no canonical routing-table activation, no release authority, and no Git authority is implied by this run
+
+Next recommended step for ChatGPT: continue with the next eligible real mini documentation slice through the same fixed operator-choice gate when the user wants another live run.
+
+Next recommended step for Codex: offer `1 = Codex` / `2 = OpenRouter` again for the next eligible documentation task and keep reporting actual OR cost after completion.
+
+Last updated: `2026-06-22 23:42:45 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-22`, the fourth real operator-invoked documentation OR run is complete with canonical state `PASS`: `DOC-SKILL-003` now joins the earlier accepted live evidence for `DOC-SKILL-006`, `DOC-SKILL-008`, and `DOC-SKILL-010`. The bounded `1 = Codex` / `2 = OpenRouter` operator flow again stayed inside the cap, captured file-first artifacts, wrote accepted telemetry, and passed local healthcheck ingestion.
+
+Current goal: keep extending the same real bounded documentation workflow only across eligible mini documentation slices and only when the user explicitly wants another live run.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- invoked the productive fixed-choice mini documentation runner in prompt mode for `DOC-SKILL-003`
+- presented the real operator choice gate with `1 = Codex` and `2 = OpenRouter`
+- executed the approved live OR branch for `DOC-SKILL-003` using the fixed model `openai/gpt-oss-20b`
+- captured accepted live file-first artifacts and wrote accepted telemetry to `documentation/codex/model-routing/or_healthcheck_telemetry_fixed_or_session_2026-06-22_FIXED-OR-20260622-233612-DOC-SKILL-003.jsonl`
+- validated local ingestion through `documentation/codex/skills/janus-health-check/scripts/health_snapshot.py`
+
+Changed files:
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-233612-DOC-SKILL-003/doc-skill-003/request_body_source.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-233612-DOC-SKILL-003/doc-skill-003/request_body.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-233612-DOC-SKILL-003/doc-skill-003/response_body.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-233612-DOC-SKILL-003/doc-skill-003/response_headers.txt`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-233612-DOC-SKILL-003/doc-skill-003/response_summary.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-233612-DOC-SKILL-003/doc-skill-003/stdout.log`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-233612-DOC-SKILL-003/doc-skill-003/stderr.log`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-233612-DOC-SKILL-003/doc-skill-003/exit_code.txt`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-233612-DOC-SKILL-003/doc-skill-003/healthcheck_summary.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-233612-DOC-SKILL-003/doc-skill-003/operator_choice_prompt.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-233612-DOC-SKILL-003/doc-skill-003/operator_summary.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-233612-DOC-SKILL-003/doc-skill-003/wrapper_command_stdout.txt`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-233612-DOC-SKILL-003/doc-skill-003/wrapper_command_stderr.txt`
+- `documentation/codex/model-routing/or_healthcheck_telemetry_fixed_or_session_2026-06-22_FIXED-OR-20260622-233612-DOC-SKILL-003.jsonl`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- productive operator gate for `DOC-SKILL-003`: PASS
+- live fixed-model OR invocation for `DOC-SKILL-003`: PASS
+- per-call cap check `0.0020`: PASS (`actual_or_cost=0.000084080`)
+- response capture: PASS (`generation_id`, `usage`, `finish_reason=stop`)
+- telemetry JSONL write: PASS
+- `python documentation/codex/skills/janus-health-check/scripts/health_snapshot.py --repo C:\KI\Janus-Projekt --or-telemetry-jsonl documentation/codex/model-routing/or_healthcheck_telemetry_fixed_or_session_2026-06-22_FIXED-OR-20260622-233612-DOC-SKILL-003.jsonl`: PASS
+
+Open risks:
+- this remains bounded local evidence for eligible mini documentation slices only, not production routing and not global OR approval
+- accepted real-work live evidence now covers `DOC-SKILL-003`, `DOC-SKILL-006`, `DOC-SKILL-008`, and `DOC-SKILL-010`; the remaining eligible mini documentation skills still need their own explicit live proofs if we want the same confidence level there
+- the repository worktree remains heavily mixed, so any later commit must stay strictly staged-only
+- no canonical routing-table activation, no release authority, and no Git authority is implied by this run
+
+Next recommended step for ChatGPT: continue with the next eligible real mini documentation slice through the same fixed operator-choice gate when the user wants another live run.
+
+Next recommended step for Codex: offer `1 = Codex` / `2 = OpenRouter` again for the next eligible documentation task and keep reporting actual OR cost after completion.
+
+Last updated: `2026-06-22 23:36:30 +02:00`.
+As of `2026-06-22`, the third real operator-invoked documentation OR run is complete with canonical state `PASS`: `DOC-SKILL-006` now joins the earlier accepted live evidence for `DOC-SKILL-008` and `DOC-SKILL-010`. The bounded `1 = Codex` / `2 = OpenRouter` operator flow again stayed inside the cap, captured file-first artifacts, wrote accepted telemetry, and passed local healthcheck ingestion.
+
+Current goal: keep extending the same real bounded documentation workflow only across eligible mini documentation slices and only when the user explicitly wants another live run.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- invoked the productive fixed-choice mini documentation runner in prompt mode for `DOC-SKILL-006`
+- presented the real operator choice gate with `1 = Codex` and `2 = OpenRouter`
+- executed the approved live OR branch for `DOC-SKILL-006` using the fixed model `openai/gpt-oss-120b`
+- captured accepted live file-first artifacts and wrote accepted telemetry to `documentation/codex/model-routing/or_healthcheck_telemetry_fixed_or_session_2026-06-22_FIXED-OR-20260622-233031-DOC-SKILL-006.jsonl`
+- validated local ingestion through `documentation/codex/skills/janus-health-check/scripts/health_snapshot.py`
+
+Changed files:
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-233031-DOC-SKILL-006/doc-skill-006/request_body_source.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-233031-DOC-SKILL-006/doc-skill-006/request_body.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-233031-DOC-SKILL-006/doc-skill-006/response_body.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-233031-DOC-SKILL-006/doc-skill-006/response_headers.txt`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-233031-DOC-SKILL-006/doc-skill-006/response_summary.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-233031-DOC-SKILL-006/doc-skill-006/stdout.log`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-233031-DOC-SKILL-006/doc-skill-006/stderr.log`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-233031-DOC-SKILL-006/doc-skill-006/exit_code.txt`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-233031-DOC-SKILL-006/doc-skill-006/healthcheck_summary.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-233031-DOC-SKILL-006/doc-skill-006/operator_choice_prompt.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-233031-DOC-SKILL-006/doc-skill-006/operator_summary.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-233031-DOC-SKILL-006/doc-skill-006/wrapper_command_stdout.txt`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-233031-DOC-SKILL-006/doc-skill-006/wrapper_command_stderr.txt`
+- `documentation/codex/model-routing/or_healthcheck_telemetry_fixed_or_session_2026-06-22_FIXED-OR-20260622-233031-DOC-SKILL-006.jsonl`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- productive operator gate for `DOC-SKILL-006`: PASS
+- live fixed-model OR invocation for `DOC-SKILL-006`: PASS
+- per-call cap check `0.0020`: PASS (`actual_or_cost=0.000090940`)
+- response capture: PASS (`generation_id`, `usage`, `finish_reason=stop`)
+- telemetry JSONL write: PASS
+- `python documentation/codex/skills/janus-health-check/scripts/health_snapshot.py --repo C:\KI\Janus-Projekt --or-telemetry-jsonl documentation/codex/model-routing/or_healthcheck_telemetry_fixed_or_session_2026-06-22_FIXED-OR-20260622-233031-DOC-SKILL-006.jsonl`: PASS
+
+Open risks:
+- this remains bounded local evidence for eligible mini documentation slices only, not production routing and not global OR approval
+- accepted real-work live evidence now covers `DOC-SKILL-006`, `DOC-SKILL-008`, and `DOC-SKILL-010`; the remaining eligible mini documentation skills still need their own explicit live proofs if we want the same confidence level there
+- the repository worktree remains heavily mixed, so any later commit must stay strictly staged-only
+- no canonical routing-table activation, no release authority, and no Git authority is implied by this run
+
+Next recommended step for ChatGPT: continue with the next eligible real mini documentation slice through the same fixed operator-choice gate when the user wants another live run.
+
+Next recommended step for Codex: offer `1 = Codex` / `2 = OpenRouter` again for the next eligible documentation task and keep reporting actual OR cost after completion.
+
+Last updated: `2026-06-22 23:33:00 +02:00`.
+As of `2026-06-22`, the second real operator-invoked documentation OR run is also complete with canonical state `PASS`: `DOC-SKILL-010` now joins `DOC-SKILL-008` as accepted live everyday-workflow evidence under the productive fixed-choice documentation path. The bounded `1 = Codex` / `2 = OpenRouter` operator flow again completed under the active per-call cap, captured file-first artifacts, wrote accepted telemetry, and passed local healthcheck ingestion.
+
+Current goal: keep extending the same real bounded documentation workflow one eligible mini skill at a time, using the fixed operator-choice path and reporting actual OR cost after each accepted run.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- invoked the productive fixed-choice mini documentation runner in prompt mode for `DOC-SKILL-010`
+- presented the real operator choice gate with `1 = Codex` and `2 = OpenRouter`
+- executed the approved live OR branch for `DOC-SKILL-010` using the fixed model `qwen/qwen3.5-flash-02-23`
+- captured accepted live file-first artifacts and wrote accepted telemetry to `documentation/codex/model-routing/or_healthcheck_telemetry_fixed_or_session_2026-06-22_FIXED-OR-20260622-232845-DOC-SKILL-010.jsonl`
+- validated local ingestion through `documentation/codex/skills/janus-health-check/scripts/health_snapshot.py`
+
+Changed files:
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-232845-DOC-SKILL-010/doc-skill-010/request_body_source.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-232845-DOC-SKILL-010/doc-skill-010/request_body.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-232845-DOC-SKILL-010/doc-skill-010/response_body.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-232845-DOC-SKILL-010/doc-skill-010/response_headers.txt`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-232845-DOC-SKILL-010/doc-skill-010/response_summary.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-232845-DOC-SKILL-010/doc-skill-010/stdout.log`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-232845-DOC-SKILL-010/doc-skill-010/stderr.log`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-232845-DOC-SKILL-010/doc-skill-010/exit_code.txt`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-232845-DOC-SKILL-010/doc-skill-010/healthcheck_summary.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-232845-DOC-SKILL-010/doc-skill-010/operator_choice_prompt.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-232845-DOC-SKILL-010/doc-skill-010/operator_summary.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-232845-DOC-SKILL-010/doc-skill-010/wrapper_command_stdout.txt`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-232845-DOC-SKILL-010/doc-skill-010/wrapper_command_stderr.txt`
+- `documentation/codex/model-routing/or_healthcheck_telemetry_fixed_or_session_2026-06-22_FIXED-OR-20260622-232845-DOC-SKILL-010.jsonl`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- productive operator gate for `DOC-SKILL-010`: PASS
+- live fixed-model OR invocation for `DOC-SKILL-010`: PASS
+- per-call cap check `0.0020`: PASS (`actual_or_cost=0.000525460`)
+- response capture: PASS (`generation_id`, `usage`, `finish_reason=stop`)
+- telemetry JSONL write: PASS
+- `python documentation/codex/skills/janus-health-check/scripts/health_snapshot.py --repo C:\KI\Janus-Projekt --or-telemetry-jsonl documentation/codex/model-routing/or_healthcheck_telemetry_fixed_or_session_2026-06-22_FIXED-OR-20260622-232845-DOC-SKILL-010.jsonl`: PASS
+
+Open risks:
+- this remains bounded local evidence for eligible mini documentation slices only, not production routing and not global OR approval
+- accepted real-work live evidence now covers `DOC-SKILL-008` and `DOC-SKILL-010`; the remaining eligible mini documentation skills still need their own explicit live proofs if we want the same confidence level there
+- the repository worktree remains heavily mixed, so any later commit must stay strictly staged-only
+- no canonical routing-table activation, no release authority, and no Git authority is implied by this run
+
+Next recommended step for ChatGPT: continue with the next eligible real mini documentation slice through the same fixed operator-choice gate when the user wants another live run.
+
+Next recommended step for Codex: offer `1 = Codex` / `2 = OpenRouter` again for the next eligible documentation task and keep reporting actual OR cost after completion.
+
+Last updated: `2026-06-22 23:31:00 +02:00`.
+
+## Previous Snapshot Update
+As of `2026-06-22`, the first real operator-invoked documentation OR run is complete for `DOC-SKILL-008` with canonical state `PASS`. The productive fixed-choice documentation path now has one fresh live everyday-workflow proof on the current date: `1 = Codex` or `2 = OpenRouter`, with the accepted OR branch completing under cap, capturing file-first artifacts, writing accepted telemetry, and passing local healthcheck ingestion.
+
+Current goal: use this successful `DOC-SKILL-008` live documentation run as the first real bounded workflow reference, then continue only with similarly controlled everyday OR tests or broader operator-path hardening as explicitly approved.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- invoked the productive fixed-choice mini documentation runner in prompt mode for `DOC-SKILL-008`
+- presented the real operator choice gate with `1 = Codex` and `2 = OpenRouter`
+- executed the approved live OR branch for `DOC-SKILL-008` using the fixed model `qwen/qwen3.5-flash-02-23`
+- captured accepted live file-first artifacts and wrote accepted telemetry to `documentation/codex/model-routing/or_healthcheck_telemetry_fixed_or_session_2026-06-22_FIXED-OR-20260622-230526-DOC-SKILL-008.jsonl`
+- validated local ingestion through `documentation/codex/skills/janus-health-check/scripts/health_snapshot.py`
+
+Changed files:
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-230526-DOC-SKILL-008/doc-skill-008/request_body_source.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-230526-DOC-SKILL-008/doc-skill-008/request_body.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-230526-DOC-SKILL-008/doc-skill-008/response_body.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-230526-DOC-SKILL-008/doc-skill-008/response_headers.txt`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-230526-DOC-SKILL-008/doc-skill-008/response_summary.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-230526-DOC-SKILL-008/doc-skill-008/stdout.log`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-230526-DOC-SKILL-008/doc-skill-008/stderr.log`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-230526-DOC-SKILL-008/doc-skill-008/exit_code.txt`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-230526-DOC-SKILL-008/doc-skill-008/healthcheck_summary.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-230526-DOC-SKILL-008/doc-skill-008/operator_choice_prompt.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-230526-DOC-SKILL-008/doc-skill-008/operator_summary.json`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-230526-DOC-SKILL-008/doc-skill-008/wrapper_command_stdout.txt`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-20260622-230526-DOC-SKILL-008/doc-skill-008/wrapper_command_stderr.txt`
+- `documentation/codex/model-routing/or_healthcheck_telemetry_fixed_or_session_2026-06-22_FIXED-OR-20260622-230526-DOC-SKILL-008.jsonl`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- productive operator gate for `DOC-SKILL-008`: PASS
+- live fixed-model OR invocation for `DOC-SKILL-008`: PASS
+- per-call cap check `0.0020`: PASS (`actual_or_cost=0.000641095`)
+- response capture: PASS (`generation_id`, `usage`, `finish_reason=stop`)
+- telemetry JSONL write: PASS
+- `python documentation/codex/skills/janus-health-check/scripts/health_snapshot.py --repo C:\KI\Janus-Projekt --or-telemetry-jsonl documentation/codex/model-routing/or_healthcheck_telemetry_fixed_or_session_2026-06-22_FIXED-OR-20260622-230526-DOC-SKILL-008.jsonl`: PASS
+
+Open risks:
+- this is accepted bounded local evidence for one real documentation lane, not production routing and not global OR approval
+- the live proof currently covers `DOC-SKILL-008`; other documentation skills still need their own explicit real-work evidence if we want the same confidence level everywhere
+- the repository worktree remains heavily mixed, so any later commit must stay strictly staged-only
+- no canonical routing-table activation, no release authority, and no Git authority is implied by this run
+
+Next recommended step for ChatGPT: use the same fixed operator-choice pattern for the next real documentation skill only when the user explicitly wants another live everyday test.
+
+Next recommended step for Codex: if the user now runs the documentation skill in everyday work, offer the same `1 = Codex` / `2 = OpenRouter` gate for eligible mini documentation slices and report actual OR cost after completion.
+
+Last updated: `2026-06-22 23:07:00 +02:00`.
 
 ## Previous Snapshot Update
 As of `2026-06-22`, the bounded `TASK-SPEC25.3` blocker repair is complete with canonical state `HANDOFF`. The productive Dev-workhorse runner now binds the successful gate model once per run and reuses that exact value for dispatcher invocation and telemetry closeout.
@@ -6714,9 +8220,6 @@ Next recommended step for ChatGPT: rerun the bounded `TASK-SPEC21.3` final audit
 Next recommended step for Codex: use `janus-final-audit` with `5.5` high in this same chat, bound to `TASK-SPEC21.3` only.
 
 Last updated: `2026-06-20 18:03:31 +02:00`.
-# CURRENT_STATE
-
-## Current Snapshot Update
 As of `2026-06-22`, `TASK-SPEC25.1` is locally implemented with canonical state `HANDOFF`. The productive OR effort now has its first hardened main-path contract: the dedicated productive Dev-workhorse path is restricted to exactly two bounded write/apply classes, each class carries a fixed recommended OR model, and the eligibility layer fails closed if that mapping is missing.
 
 Current goal: run `janus-final-audit` for `TASK-SPEC25.1` without widening into the visible operator gate (`TASK-SPEC25.2`) or productive runtime wiring (`TASK-SPEC25.3`).

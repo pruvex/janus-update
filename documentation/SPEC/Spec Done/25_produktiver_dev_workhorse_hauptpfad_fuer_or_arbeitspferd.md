@@ -141,6 +141,7 @@ Direkte breite Einhaengung in bestehende Janus-Produktskills, globale OR-Freigab
   - `documentation/tasks/TASK-SPEC25.1_final_audit.md`
   - `documentation/tasks/TASK-SPEC25.2_final_audit.md`
   - `documentation/tasks/TASK-SPEC25.3_final_audit.md`
-  - `python -m unittest documentation.codex.model-routing.tests.test_codex_dev_workhorse_runner` - PASS (`19` tests)
+  - `documentation/tasks/TASK-SPEC25.3_reaudit_2026-06-23.md`
+  - `python -m unittest documentation.codex.model-routing.tests.test_codex_dev_workhorse_runner` - PASS (`20` tests)
   - `python -m unittest documentation.codex.model-routing.tests.test_bounded_or_worker_eligibility` - PASS (`31` tests)
   - configuration-change seam probe - PASS (`gate=model/A`, `dispatcher=model/A`, `telemetry=model/A`)

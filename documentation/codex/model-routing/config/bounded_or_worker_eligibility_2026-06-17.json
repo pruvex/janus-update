@@ -47,10 +47,10 @@
       "message": "Bounded documentation draft delegation is already workflow-ready."
     },
     "quickchange_patch_review": {
-      "eligibility_result": "OR_ALLOWED",
-      "evidence_status": "BOUNDED_WORKFLOW_READY",
-      "reason_code": "ELIGIBILITY_CONFIRMED",
-      "message": "Bounded quickchange patch review is already workflow-ready."
+      "eligibility_result": "OR_NOT_ELIGIBLE",
+      "evidence_status": "LEGACY_DIRECT_ENTRY_DISABLED",
+      "reason_code": "SKILL_NOT_ALLOWED",
+      "message": "Legacy quickchange patch review is no longer OR-eligible at the shared dispatcher entry."
     },
     "quickchange_write_apply": {
       "eligibility_result": "OR_ALLOWED",
@@ -143,14 +143,13 @@
     "scope_note": "Spec 22 boundary contract. Only one dedicated productive_dev_workhorse_path may offer bounded productive OR entry, and only for the explicitly allowed task classes with budget and estimate prerequisites satisfied.",
     "allowed_path_id": "productive_dev_workhorse_path",
     "allowed_task_classes": {
-      "test_result_triage_review": {
-        "budget_profile": "test_result_triage_review"
-      },
       "execution_patch_candidate": {
-        "budget_profile": "execution_patch_candidate"
+        "budget_profile": "execution_patch_candidate",
+        "selected_or_model": "deepseek/deepseek-v4-flash"
       },
       "execution_write_apply_candidate": {
-        "budget_profile": "execution_write_apply_candidate"
+        "budget_profile": "execution_write_apply_candidate",
+        "selected_or_model": "deepseek/deepseek-v4-flash"
       }
     }
   }
