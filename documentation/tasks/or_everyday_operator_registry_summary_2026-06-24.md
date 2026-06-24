@@ -1,0 +1,37 @@
+# OR Everyday Operator Registry Summary Task
+
+- **Task ID:** OR-REGISTRY-001
+- **Status:** READY
+- **Created:** 2026-06-24
+- **Updated:** 2026-06-24
+- **Related Backlog Item:** N/A WITH REASON - bounded Lean Dev documentation slice based on already validated OR lane inventory
+- **Spec:** N/A WITH REASON - no Janus product feature change; this is a bounded operator-facing documentation/registry layer
+- **Short Description:** Build a thin user-facing registry/summary layer on top of the now-green everyday OR lane inventory so the operator can quickly see which bounded Janus skills currently support `Codex / OR`.
+- **Goal:** Convert the internal evidence-backed lane inventory into one compact operator-facing summary artifact without changing routing behavior, production activation, or lane evidence itself.
+- **In Scope:**
+  - one compact operator-facing summary/registry document for the current everyday OR lanes
+  - summary of skill, lane, visible choice surface, selected OR model/label, and key boundary note
+  - state-document synchronization tied directly to the new registry layer
+- **Out of Scope:**
+  - Janus product logic
+  - production routing
+  - canonical routing-table updates
+  - new live OR calls
+  - new lane validation work
+  - UI/dashboard implementation
+- **Affected Files:**
+  - `documentation/codex/model-routing/or_everyday_lane_inventory_2026-06-24.md`
+  - `documentation/codex/model-routing/`
+  - `documentation/ai/CURRENT_STATE.md`
+  - `documentation/codex/SKILL_USAGE_LOG.md`
+- **Acceptance Criteria:**
+  - A compact operator-facing registry/summary artifact exists.
+  - The summary references only currently validated lane states from the central inventory.
+  - The summary makes clear that this is bounded operator guidance, not production routing.
+  - CURRENT_STATE and SKILL_USAGE_LOG are updated consistently.
+- **Required Evidence:**
+  - source cross-check against `or_everyday_lane_inventory_2026-06-24.md`
+  - markdown sanity
+  - scoped `git diff --check`
+- **Risk:** LOW
+- **Notes:** This slice is intentionally documentation-only and should not reopen any lane-validation or routing-governance scope.
