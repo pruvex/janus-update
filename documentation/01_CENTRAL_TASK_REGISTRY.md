@@ -4,6 +4,43 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-SPEC27.1 - Execute one bounded manual Aider/OpenRouter POC on a harmless docs-only target
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-SPEC27.1_final_audit.md` (PASS WITH FIXES)
+- **Spec**: `documentation/SPEC/Spec Done/27_aider_openrouter_worker_poc_fuer_codex_delegation.md`
+- **Parent Task**: `documentation/tasks/TASK-SPEC27_aider_openrouter_worker_poc_fuer_codex_delegation.md`
+- **Task Breakdown**: `documentation/tasks/TASK-SPEC27.1_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-SPEC27.1_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-SPEC27.1_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-SPEC27.1_AUDIT_PACKAGE.md`
+- **Validation**: `TASK-SPEC27.1` schliesst den ersten bounded Aider/OpenRouter-Worker-POC fuer Janus mit einem echten docs-only Lauf ab. Aider 0.86.2 konnte die eng gebundene Ziel-Datei ueber OpenRouter sinnvoll verbessern und verwertbare Report-/Log-Evidenz erzeugen. Final Audit `PASS WITH FIXES`: der POC ist als Conditional Go freigegeben, aber direkte Repo-Root-Nutzung bleibt explizit nicht fuer den Alltag freigegeben, weil der Lauf das volle Repo scannte und out-of-scope `.gitignore`-/`.aider`-Seiteneffekte erzeugte, die vor Audit wieder entfernt wurden. Der naechste echte Worker-Versuch soll daher nur in einem isolierten Worktree, Subtree oder gleichwertigen Sandbox-Surface stattfinden.
+- **Changed Files**: `development/openrouter-skill-tests/janus-worker-aider-poc/README.md`, `development/openrouter-skill-tests/janus-worker-aider-poc/allowed_files.txt`, `development/openrouter-skill-tests/janus-worker-aider-poc/target_doc.md`, `development/openrouter-skill-tests/janus-worker-aider-poc/worker_task.md`, `development/openrouter-skill-tests/janus-worker-aider-poc/worker_report.md`, `development/openrouter-skill-tests/janus-worker-aider-poc/test_output.log`, `documentation/tasks/TASK-SPEC27.1_execution_result.md`, `documentation/tasks/TASK-SPEC27.1_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC27.1_final_audit.md`, `documentation/SPEC/Spec Done/27_aider_openrouter_worker_poc_fuer_codex_delegation.md`.
+
+### TASK-SPEC26.2 - Wire the automatic Codex-vs-OR choice into the already approved existing skill entries
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-SPEC26.2_final_audit.md` (PASS)
+- **Spec**: `documentation/SPEC/26_operator_facing_codex_oder_or_wahl_in_bestehenden_janus_skills.md`
+- **Parent Task**: `documentation/tasks/TASK-SPEC26_operator_facing_codex_oder_or_wahl_in_bestehenden_janus_skills.md`
+- **Precheck**: `documentation/tasks/TASK-SPEC26.2_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-SPEC26.2_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-SPEC26.2_AUDIT_PACKAGE.md`
+- **Validation**: `TASK-SPEC26.2` schliesst den zweiten eng gebundenen Spec-26-Slice als bestehende-Skill-Integrationsschicht fuer die sichtbare Alltagswahl `1 = Codex` / `2 = OR` ab. Die bereits freigegebenen Skill-Einstiege zeigen die normale Operator-Wahl jetzt konsistent nur fuer wirklich sichtbare approved Lanes; das blocker-fokussierte Re-Audit bestaetigt zusaetzlich, dass `generator_review` und `execution_write_apply_candidate` sichtbar lokal bleiben und keine normale OR-Wahl mehr emittieren. Final Audit PASS mit fokussierter Dispatcher-, Entry-Point-, Direktprobe-, Diff- und Validator-Evidenz. Spec 26 bleibt dabei bewusst offen, weil `TASK-SPEC26.3` die cross-skill Regression sowie den Registry-Sync noch separat absichern muss.
+- **Changed Files**: `documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py`, `documentation/codex/skills/janus-test-pipeline/SKILL.md`, `documentation/codex/model-routing/tests/test_bounded_or_worker_gate_prompt.py`, `documentation/tasks/TASK-SPEC26.2_execution_result.md`, `documentation/tasks/TASK-SPEC26.2_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC26.2_final_audit.md`.
+
+### TASK-SPEC26.1 - Create one shared visibility contract for existing-skill Codex-vs-OR gates
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-SPEC26.1_final_audit.md` (PASS)
+- **Spec**: `documentation/SPEC/26_operator_facing_codex_oder_or_wahl_in_bestehenden_janus_skills.md`
+- **Parent Task**: `documentation/tasks/TASK-SPEC26_operator_facing_codex_oder_or_wahl_in_bestehenden_janus_skills.md`
+- **Precheck**: `documentation/tasks/TASK-SPEC26.1_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-SPEC26.1_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-SPEC26.1_AUDIT_PACKAGE.md`
+- **Validation**: `TASK-SPEC26.1` schliesst den ersten eng gebundenen Spec-26-Slice als shared fail-closed Visibility-Contract fuer bestehende Skill-Einstiege ab. Die gemeinsame bounded OR-Contract-Schicht traegt jetzt explizite `operator_gate_visibility_status`-Metadaten fuer Dokumentationsskills, Dispatcher-Taskklassen und den produktiven Dev-Workhorse-Pfad; bereits freigegebene Everyday-Lanes koennen dadurch spaeter sichtbar `1 = Codex` / `2 = OR` anbieten, waehrend partielle oder interne Kandidaten weiterhin verborgen bleiben. Final Audit PASS mit fokussierter Eligibility-, Gate-Prompt-, Direktprobe-, Diff- und Validator-Evidenz. Spec 26 bleibt dabei bewusst offen, weil `TASK-SPEC26.2` die Skill-Einstiege erst noch anbinden und `TASK-SPEC26.3` die cross-skill Regression sowie den Registry-Sync noch separat absichern muss.
+- **Changed Files**: `documentation/codex/model-routing/config/bounded_or_worker_eligibility_2026-06-17.json`, `documentation/codex/model-routing/scripts/bounded_or_worker_eligibility.py`, `documentation/codex/model-routing/scripts/bounded_or_worker_gate_prompt.py`, `documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py`, `documentation/codex/model-routing/tests/test_bounded_or_worker_gate_prompt.py`, `documentation/tasks/TASK-SPEC26.1_execution_result.md`, `documentation/tasks/TASK-SPEC26.1_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC26.1_final_audit.md`.
+
 ### TASK-SPEC25.3 - Route the productive Dev-workhorse main path only into bounded write/apply execution with explicit Codex-owned acceptance
 
 - **Status**: DONE

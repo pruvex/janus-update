@@ -197,3 +197,26 @@
 - **Epic:** TASK-SPEC20.1
 - **Confidence:** High
 - **Tags:** Validators,Precheck,FinalAudit,DocumentationUpdate,Governance,Tripwire,CodexNativeFormat
+
+## [PATTERN] #SharedDispatcherAuditNeedsProbeAndCliFallback "Shared delegation entry seams should be audited with both direct eligibility probes and one real CLI fallback check"
+- **Kontext:** TASK-SPEC21.1 / first assistive OR workhorse pilot eligibility and redaction slice (2026-06-20).
+- **Problem:** A bounded delegation change can look correct in narrow unit tests around the allowed invoke paths while the shared dispatcher entry seam still silently routes legacy task classes as OR-eligible.
+- **Loesung:** When auditing a shared dispatcher or eligibility boundary, pair focused unit coverage with two explicit seam checks: one direct helper probe against an out-of-scope task class, and one real CLI invocation that proves the operator-facing delegated path falls back to a local Codex-only outcome without invoking any delegated helper.
+- **Haertung:** Focused unit suite passed 19 tests; direct probe confirmed `quickchange_patch_review=OR_NOT_ELIGIBLE`; the real dispatcher CLI check returned `selected_path=codex_only_pre_dispatch` and invoked no delegated helper; final audit then passed on the repaired slice.
+- **Tripwire:** If a bounded OR or sidecar audit has only positive pilot-path tests but no direct legacy-class probe and no CLI fallback evidence, the shared entry seam may still be broader than the intended rollout boundary.
+- **Location:** `documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py`, `documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py`, `documentation/tasks/TASK-SPEC21.1_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC21.1_final_audit.md`
+- **Epic:** TASK-SPEC21.1
+- **Confidence:** High
+- **Tags:** SharedDispatcher, EligibilityGate, AuditHardening, CLIFallback, PilotScope, Delegation, Tripwire
+
+
+## [PATTERN] #AiderRootRepoRunsNeedIsolatedSandbox "Aider OpenRouter worker POCs should run in an isolated sandbox instead of the repo root"
+- **Kontext:** TASK-SPEC27.1 final-audited docs-only Aider/OpenRouter worker POC (2026-06-30). (2026-06-30).
+- **Problem:** A direct repo-root Aider run on a tiny docs-only task still scanned the full repository, attempted an out-of-scope .gitignore change, and created local .aider side artifacts, which weakened the first worker signal and required cleanup.
+- **Loesung:** Keep the first worker experiments inside a dedicated sandbox, subtree, or worktree with a tiny allowlist and task file. Treat any side effect outside the allowlisted area as a failed run, even when the edited target file itself looks good.
+- **Haertung:** TASK-SPEC27.1 final audit passed only after Codex removed the .gitignore/.aider side effects, kept the evidence inside development/openrouter-skill-tests/janus-worker-aider-poc/, and recorded a conditional-go verdict instead of approving root-repo use.
+- **Tripwire:** If a future Aider worker run scans the full repo, proposes repo-root hygiene edits, or leaves .aider side artifacts outside the bounded sandbox, the execution surface is still too broad for casual Janus worker use.
+- **Location:** development/openrouter-skill-tests/janus-worker-aider-poc/, documentation/tasks/TASK-SPEC27.1_AUDIT_PACKAGE.md, documentation/tasks/TASK-SPEC27.1_final_audit.md
+- **Epic:** TASK-SPEC27
+- **Confidence:** High
+- **Tags:** aider,openrouter,worker,poc,sandbox,allowlist,repo-hygiene

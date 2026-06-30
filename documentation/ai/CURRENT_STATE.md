@@ -1,6 +1,345 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-06-30`, the audited Aider/OpenRouter worker POC has now been fully synchronized through `janus-documentation-update`. Spec 27 is in `Spec Done`, the central registry and `PROJECT_STATE` both reflect `TASK-SPEC27.1` as a sealed conditional-go POC, and `WHAT_I_LEARNED.md` now records the key reusable lesson: early Aider worker experiments should not run casually from the repo root, but from an isolated sandbox/worktree/subtree with a strict allowlist. The next sensible step is no longer more documentation; it is a Git checkpoint decision via `janus-git-governance`.
+
+Current goal: decide whether to checkpoint the completed worker-POC package in Git before any second isolated experiment starts.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- synced the final-audited `TASK-SPEC27.1` result into `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- added a compact `PROJECT_STATE.md` session-delta entry for the conditional-go worker POC
+- appended one reusable learning pattern for root-repo Aider noisiness and the need for isolated execution surfaces
+- wrote `documentation/tasks/TASK-SPEC27.1_documentation_update.md`
+- validated the required documentation marker set for `TASK-SPEC27.1`
+
+Changed files:
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `WHAT_I_LEARNED.md`
+- `documentation/tasks/TASK-SPEC27.1_documentation_update.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-documentation-update\scripts\validate_doc_update.py --repo C:\KI\Janus-Projekt --marker TASK-SPEC27.1 --require documentation/01_CENTRAL_TASK_REGISTRY.md --require PROJECT_STATE.md --require WHAT_I_LEARNED.md`: PASS
+- `git diff --check -- documentation/01_CENTRAL_TASK_REGISTRY.md PROJECT_STATE.md WHAT_I_LEARNED.md documentation/ai/CURRENT_STATE.md documentation/tasks/TASK-SPEC27.1_AUDIT_PACKAGE.md documentation/tasks/TASK-SPEC27.1_final_audit.md documentation/tasks/TASK-SPEC27.1_documentation_update.md "documentation/SPEC/Spec Done/27_aider_openrouter_worker_poc_fuer_codex_delegation.md"`: PASS
+
+Open risks:
+- the worker pattern is still only conditionally approved; a second experiment should use an isolated worktree/subtree/sandbox rather than the repo root
+- no commit or push has happened after this block, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: present the POC as fully documented and closed, then recommend a Git checkpoint or a next isolated worker experiment depending on the user's appetite.
+
+Next recommended step for Codex: run `janus-git-governance` on `5.4` medium and prepare a clean checkpoint recommendation for the completed POC package.
+
+Last updated: `2026-06-30 17:03:07 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-30`, `TASK-SPEC27.1` has passed final audit as `PASS WITH FIXES`. The bounded Aider/OpenRouter worker POC met its practical evaluation goal: Aider 0.86.2 ran through OpenRouter, edited the docs-only sandbox target, produced reviewable evidence, and no Commit/Push/Release action occurred. The audit result is intentionally conditional: direct repo-root Aider use is not approved for casual everyday work because the run scanned the full repo and produced out-of-scope local side effects that Codex removed. The next recommended gate is `janus-documentation-update`.
+
+Current goal: sync Janus documentation and registry state for the audited conditional-go Aider/OpenRouter worker POC.
+
+Active phase: `janus-final-audit`, canonical state `HANDOFF`.
+
+Last Codex work:
+- refreshed `TASK-SPEC27.1_AUDIT_PACKAGE.md` with explicit manual-evidence, pipeline-completion, validation, and diff-summary sections
+- audited the bound Spec 27 / TASK-SPEC27.1 POC evidence package
+- marked the Spec implementation as done with `Final Audit: PASS WITH FIXES`
+- moved the Spec to `documentation/SPEC/Spec Done/27_aider_openrouter_worker_poc_fuer_codex_delegation.md`
+- wrote and validated `documentation/tasks/TASK-SPEC27.1_final_audit.md`
+
+Changed files:
+- `documentation/tasks/TASK-SPEC27.1_AUDIT_PACKAGE.md`
+- `documentation/tasks/TASK-SPEC27.1_final_audit.md`
+- `documentation/SPEC/Spec Done/27_aider_openrouter_worker_poc_fuer_codex_delegation.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py documentation\tasks\TASK-SPEC27.1_final_audit.md`: PASS
+- `git diff --check -- documentation\tasks\TASK-SPEC27.1_final_audit.md "documentation\SPEC\Spec Done\27_aider_openrouter_worker_poc_fuer_codex_delegation.md" documentation\tasks\TASK-SPEC27.1_AUDIT_PACKAGE.md`: PASS
+
+Open risks:
+- the final audit decision is a conditional go, not a broad worker rollout
+- the next worker experiment should run in an isolated worktree/subtree or equivalent sandbox rather than direct repo-root Aider execution
+- no commit or push has happened after this block, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: treat the Aider/OpenRouter POC as final-audited `PASS WITH FIXES`; document the conditional-go result and avoid presenting root-repo Aider execution as approved.
+
+Next recommended step for Codex: run `janus-documentation-update` on `5.4` medium to sync registry/project docs for Spec 27 and the conditional-go worker POC result.
+
+Last updated: `2026-06-30 17:03:07 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-30`, the first bounded Aider/OpenRouter worker POC has been executed locally inside a docs-only sandbox and is now ready for a formal final-audit Go/No-Go decision. The run was practically useful: Aider 0.86.2 executed one real edit against `target_doc.md` through OpenRouter and improved the target document. The key caveat is equally clear now: direct repo-root execution is too noisy, because Aider scanned the full repo, attempted an out-of-scope `.gitignore` change, and generated `.aider` side artifacts that Codex had to remove. The current recommendation is therefore a conditional go only for a more isolated next experiment, not for casual root-repo use as-is.
+
+Current goal: close the bounded worker POC with a formal Go/No-Go final audit based on the now-complete sandbox evidence package.
+
+Active phase: `janus-executioner`, canonical state `HANDOFF`.
+
+Last Codex work:
+- compiled Spec 27 into one single execution-ready task and one target-task breakdown
+- produced and validated a preimplementation check for `TASK-SPEC27.1`
+- installed `aider-chat 0.86.2` locally in user scope and confirmed OpenRouter env presence
+- created a self-contained sandbox at `development/openrouter-skill-tests/janus-worker-aider-poc/`
+- executed one manual Aider/OpenRouter docs-only run against `target_doc.md`
+- removed the out-of-scope `.gitignore` suggestion and `.aider` side artifacts produced by the worker
+- wrote a worker report, audit package, and execution result for the POC
+
+Changed files:
+- `development/openrouter-skill-tests/janus-worker-aider-poc/README.md`
+- `development/openrouter-skill-tests/janus-worker-aider-poc/allowed_files.txt`
+- `development/openrouter-skill-tests/janus-worker-aider-poc/target_doc.md`
+- `development/openrouter-skill-tests/janus-worker-aider-poc/worker_task.md`
+- `development/openrouter-skill-tests/janus-worker-aider-poc/worker_report.md`
+- `development/openrouter-skill-tests/janus-worker-aider-poc/test_output.log`
+- `documentation/tasks/TASK-SPEC27_aider_openrouter_worker_poc_fuer_codex_delegation.md`
+- `documentation/tasks/TASK-SPEC27.1_task_breakdown.md`
+- `documentation/tasks/TASK-SPEC27.1_preimplementation_check.md`
+- `documentation/tasks/TASK-SPEC27.1_AUDIT_PACKAGE.md`
+- `documentation/tasks/TASK-SPEC27.1_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-spec-to-task\scripts\validate_task_artifact.py --task documentation\tasks\TASK-SPEC27_aider_openrouter_worker_poc_fuer_codex_delegation.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-task-breakdown\scripts\validate_task_handoff.py --task documentation\tasks\TASK-SPEC27_aider_openrouter_worker_poc_fuer_codex_delegation.md --target TASK-SPEC27.1`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py documentation\tasks\TASK-SPEC27.1_preimplementation_check.md`: PASS
+- `aider --version` via user script: PASS (`aider 0.86.2`)
+- OpenRouter env presence check: PASS
+- manual Aider/OpenRouter run against `development/openrouter-skill-tests/janus-worker-aider-poc/target_doc.md`: PASS with bounded cleanup notes
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py documentation\tasks\TASK-SPEC27.1_execution_result.md`: PASS
+- `git diff --check` on the sandbox files plus audit/execution artifacts: PASS
+
+Open risks:
+- the current direct root-repo invocation is too noisy for casual reuse; the next real worker experiment should use a more isolated execution surface
+- `aider-chat` is now installed locally in user scope, which is helpful for follow-up work but also means future tests should be explicit about tool version and path
+- no commit or push has happened after this block, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: judge the POC as a conditional go/no-go question, not as a full worker rollout; focus on whether an isolated next experiment is justified.
+
+Next recommended step for Codex: run `janus-final-audit` on `5.5` high against `documentation/tasks/TASK-SPEC27.1_AUDIT_PACKAGE.md` and decide whether the worker path earns one more isolated real-task trial.
+
+Last updated: `2026-06-30 16:38:30 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-30`, the bounded Aider/OpenRouter worker POC Spec has passed `janus-spec-review` as `APPROVED_WITH_NOTES`. The review confirmed that the slice stays intentionally narrow: one manual bounded POC, docs/unit-test only, no custom wrapper in phase 1, no Git actions, and no implicit rollout beyond a single practical Go/No-Go evaluation. The next gate is `janus-spec-to-task`.
+
+Current goal: compile the approved worker-POC Spec into one small execution-ready task package without expanding it into a larger OR rebuild.
+
+Active phase: `janus-spec-review`, canonical state `HANDOFF`.
+
+Last Codex work:
+- reviewed the new Aider/OpenRouter worker POC Spec against Janus readiness gates
+- confirmed the Spec is bounded, testable, non-production, and task-compilation ready
+- wrote `APPROVED_WITH_NOTES` review metadata into the Spec
+- validated the metadata block with the Janus spec-review validator
+
+Changed files:
+- `documentation/SPEC/27_aider_openrouter_worker_poc_fuer_codex_delegation.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- manual spec review against scope, determinism, governance, and testability gates: PASS
+- `python C:\Users\pruve\.codex\skills\janus-spec-review\scripts\validate_spec_review.py --spec documentation\SPEC\27_aider_openrouter_worker_poc_fuer_codex_delegation.md`: PASS
+- `git diff --check -- documentation\SPEC\27_aider_openrouter_worker_poc_fuer_codex_delegation.md`: PASS
+
+Open risks:
+- `aider` is still not installed locally, so later execution remains blocked until local setup exists
+- the repo worktree is still broadly dirty, so future task compilation and execution should keep the allowlisted file scope very small
+- no commit or push has happened after this block, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: treat the worker direction as approved for a small POC only; keep later task compilation focused on one manual harmless docs/test run and do not widen the scope.
+
+Next recommended step for Codex: run `janus-spec-to-task` on `5.4` medium and produce exactly one small execution-ready task for the first manual Aider/OpenRouter POC.
+
+Last updated: `2026-06-30 16:38:30 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-30`, the Aider/OpenRouter worker direction has been narrowed into a formal bounded POC Spec instead of drifting into another broad OR infrastructure project. The locked decision is: one timeboxed manual POC, no custom wrapper in the first step, only a harmless docs/unit-test task, and success is practical rather than merely technical. The next gate is `janus-spec-review`, not implementation yet.
+
+Current goal: review and approve the bounded Aider/OpenRouter worker POC Spec so the first experiment stays small, governance-safe, and fast.
+
+Active phase: `janus-spec-generator`, canonical state `HANDOFF`.
+
+Last Codex work:
+- converted the locked decision summary for the Aider/OpenRouter worker idea into a compact Janus Feature Spec
+- kept the scope intentionally narrow: one manual bounded POC, docs/test only, no Git actions, no product logic, no general worker rollout
+- avoided expanding into task breakdown, implementation details, or broad documentation work
+
+Changed files:
+- `documentation/SPEC/27_aider_openrouter_worker_poc_fuer_codex_delegation.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- structural sanity check of the generated Spec headings and routing block: PASS
+- `git diff --check -- documentation/SPEC/27_aider_openrouter_worker_poc_fuer_codex_delegation.md`: PASS
+
+Open risks:
+- `aider` is still not installed locally, so the future POC remains execution-blocked until local setup exists
+- the repo worktree is still broadly dirty, so any future POC run should stay inside a very small allowlisted file area
+- no commit or push has happened after this block, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: review the POC Spec for scope discipline, success criteria, and governance tightness; do not widen it into a general worker framework.
+
+Next recommended step for Codex: run `janus-spec-review` on the new Spec with `5.4` medium before any installation or implementation work starts.
+
+Last updated: `2026-06-30 16:38:30 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-30`, `BACKLOG-115` had a second red manual live validation finding after the previous contact-card retest: the prompt `was weißt du über olis haustiere?` returned incomplete pet details and surfaced a memory-only Garfield/Thunfisch statement that is not present in the address book. The bounded debug slice is now fixed locally: `memory.read` resolves possessive `olis` to the `Oli` / `Oliver Schwab` contact, treats contact pet details as authoritative for pet-overview recall, and returns exactly the four clean contact-backed facts for Tasso/Garfield. The next gate is a fresh `janus-test-pipeline` live retest in the actual app, not `janus-final-audit` yet.
+
+Current goal: retest `BACKLOG-115` through the exact live chat prompt so Oli's pet answer shows only clean address-book-backed Tasso/Garfield facts.
+
+Active phase: `janus-debug`, canonical state `HANDOFF`.
+
+Last Codex work:
+- reproduced the manual live failure against the local AppData `memory.read` path
+- confirmed the root cause was the pet-overview recall/contact-alias seam, not the already-fixed raw duplicate contact-card row alone
+- hardened contact subject extraction for possessive `olis` and pet context words such as `haustiere`
+- made contact-backed pet details authoritative for matched contact pet-overview reads
+- added a runtime-shaped regression that includes a stale Garfield/Thunfisch memory fact and verifies only `contact-*` facts are returned
+- updated the chat-path pet recall fixture to use the four contact-backed facts and assert no Garfield preference/dislike wording appears
+- wrote and validated `documentation/test-runs/BACKLOG-115_pet_overview_debug_result_2026-06-30.md`
+
+Changed files:
+- `backend/tools/memory_tools.py`
+- `backend/tests/test_memory_tools.py`
+- `backend/tests/integration/test_pet_recall_chat_path.py`
+- `documentation/test-runs/BACKLOG-115_pet_overview_debug_result_2026-06-30.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python -m pytest backend/tests/test_memory_tools.py -q -k "pet_overview"`: PASS (`1 passed, 26 deselected`)
+- `python -m pytest backend/tests/test_provider_auth_fallback.py -q -k "pet_overview"`: PASS (`2 passed, 7 deselected`)
+- `python -m pytest backend/tests/integration/test_pet_recall_chat_path.py -q`: PASS (`1 passed`)
+- `python -m py_compile backend/tools/memory_tools.py backend/tests/test_memory_tools.py backend/tests/integration/test_pet_recall_chat_path.py`: PASS
+- direct live AppData `memory.read` probe for `was weißt du über olis haustiere?`: PASS, returns exactly four `contact-*` facts and `HAS_GARFIELD_THUNFISCH=False`
+- `python C:\Users\pruve\.codex\skills\janus-debug\scripts\validate_debug_result.py documentation\test-runs\BACKLOG-115_pet_overview_debug_result_2026-06-30.md`: PASS
+
+Open risks:
+- the actual user-facing app process may need restart/reload before it picks up the local code changes
+- the direct probe shows Chroma startup panic noise before fallback, but the bounded fix path still returns the correct SQLite/contact-backed result; this was not debugged in this slice
+- no commit or push has happened after this block, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: treat `BACKLOG-115` as debug-fixed but not audit-ready; ask for a fresh live app retest of `was weißt du über olis haustiere?` and route to `janus-final-audit` only if the answer contains the four contact-backed facts and no Garfield/Thunfisch preference/dislike.
+
+Next recommended step for Codex: run `janus-test-pipeline` on `5.4` medium for the exact live prompt; if green, prepare the `janus-final-audit` gate, otherwise route back to `janus-debug` with the new live answer.
+
+Last updated: `2026-06-30 16:20:43 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-30`, `BACKLOG-115` has passed its bounded retest gate. The remaining live defect after the first validation block was the stale malformed pet-detail variant `Hund Tasso frisst gerne hunfisch`; after the narrow normalization fix in `backend/data/crud.py`, the visible AppData reader path now returns exactly one `Oliver Schwab` contact with one clean `Hund Tasso frisst gerne thunfisch` line and no duplicate/tautological Garfield drift. Two empty historical Oliver rows still exist in the raw DB, but the user-visible path suppresses them and the primary contact row is clean, which satisfies the bounded acceptance criteria. The next gate is `janus-final-audit`.
+
+Current goal: close `BACKLOG-115` with a formal final audit on the now-green visible Oliver/Tasso/Garfield contact-card slice.
+
+Active phase: `janus-test-pipeline`, canonical state `PASS`.
+
+Last Codex work:
+- reran the bounded `BACKLOG-115` validation gate after the typo-normalization debug fix
+- confirmed the full focused backend suites are green
+- rechecked the real AppData reader path and confirmed one visible `Oliver Schwab` contact with clean Tasso/Garfield details
+- confirmed the stale `hunfisch` variant is gone from the primary AppData contact row
+- wrote the passing retest artifact `documentation/test-runs/BACKLOG-115_retest_validation_2026-06-30.md`
+
+Changed files:
+- `documentation/test-runs/BACKLOG-115_retest_validation_2026-06-30.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python -m pytest backend/tests/test_contact_manager.py -q`: PASS (`46 passed`)
+- `python -m pytest backend/tests/test_contact_card_normalization.py -q`: PASS (`8 passed`)
+- `python -m py_compile backend/services/contact_manager.py backend/data/crud.py backend/tests/test_contact_manager.py backend/tests/test_contact_card_normalization.py`: PASS
+- live reader-path check via `crud.search_contacts_by_name(db, "Oliver Schwab")`: PASS, one visible contact with one clean `Hund Tasso frisst gerne thunfisch`
+- direct AppData DB read after WAL checkpoint: PASS, primary contact row clean; empty historical duplicates remain raw-only and are suppressed from the visible path
+
+Open risks:
+- the raw AppData DB still contains two empty historical `Oliver Schwab` rows, so future work should avoid treating raw row count alone as the visibility oracle for this seam
+- no commit or push has happened after this block, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: treat `BACKLOG-115` as test-pipeline green and route immediately to `janus-final-audit` with the compact bounded evidence bundle.
+
+Next recommended step for Codex: run `janus-final-audit` on `5.5` high for the visible Oliver/Tasso/Garfield contact-card cleanup package.
+
+Last updated: `2026-06-30 16:02:20 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-30`, the `BACKLOG-115` follow-up debug slice is now locally and live-reader-path fixed. The remaining defect was narrower than the original duplicate-card issue: after duplicate `Oliver Schwab` rows were already collapsed on read, the real AppData contact still exposed both `Hund Tasso frisst gerne thunfisch` and `Hund Tasso frisst gerne hunfisch`. The root cause was a missing typo normalization seam in `backend/data/crud.py`; dedupe already worked, but it never collapsed the live malformed `hunfisch` variant into the canonical `thunfisch`. A bounded pet-detail tail normalizer plus a runtime-shaped regression now close that gap, and the AppData contact readback is clean again. The next gate is back to `janus-test-pipeline`, not `janus-final-audit` yet.
+
+Current goal: rerun the bounded `BACKLOG-115` validation gate now that the visible Tasso detail typo variant is normalized away.
+
+Active phase: `janus-debug`, canonical state `HANDOFF`.
+
+Last Codex work:
+- used `janus-debug` on the exact `BACKLOG-115` live defect slice after the blocked retest
+- confirmed the real visible path bug was no longer duplicate Oliver selection but one stale malformed pet-detail variant on the surviving primary contact
+- added a bounded pet-detail tail normalizer in `backend/data/crud.py` for the proven live typo `hunfisch` -> `thunfisch`
+- added one normalization regression and one live-runtime-shaped reader-path regression
+- rechecked the visible AppData reader path and confirmed only one clean `Hund Tasso frisst gerne thunfisch` remains
+- wrote the bound debug result artifact `documentation/test-runs/BACKLOG-115_debug_result_2026-06-30.md`
+
+Changed files:
+- `backend/data/crud.py`
+- `backend/tests/test_contact_card_normalization.py`
+- `backend/tests/test_contact_manager.py`
+- `documentation/test-runs/BACKLOG-115_debug_result_2026-06-30.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python -m pytest backend/tests/test_contact_card_normalization.py -q`: PASS (`8 passed`)
+- `python -m pytest backend/tests/test_contact_manager.py -q -k "visible_contact"`: PASS (`2 passed`)
+- `python -m pytest backend/tests/test_contact_manager.py -q`: PASS (`46 passed`)
+- `python -m py_compile backend/data/crud.py backend/tests/test_contact_card_normalization.py backend/tests/test_contact_manager.py`: PASS
+- live reader-path check via `crud.search_contacts_by_name(db, "Oliver Schwab")`: PASS, one visible contact with one clean `Hund Tasso frisst gerne thunfisch`
+- direct AppData DB read after checkpoint: PASS, `contacts.id=1.personal_details` no longer contains `hunfisch`
+
+Open risks:
+- the actual user-facing app/backend process was not HTTP-health-verified in this debug slice, so the next bounded retest should still confirm the same clean result through the normal validation gate
+- no commit or push has happened after this block, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: treat `BACKLOG-115` as debug-fixed and reroute immediately to `janus-test-pipeline` for a fresh bounded validation pass; do not jump straight to `janus-final-audit` yet.
+
+Next recommended step for Codex: run `janus-test-pipeline` on `5.4` medium with the bound `BACKLOG-115` artifacts and confirm that the visible Oliver/Tasso/Garfield contact-card result is now fully green.
+
+Last updated: `2026-06-30 15:58:01 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-30`, the targeted `janus-test-pipeline` retest for `BACKLOG-115` is not green yet. The visible duplicate-contact seam is improved in the real reader path, but the live AppData contact still surfaces one dirty pet-detail variant: the collapsed `Oliver Schwab` contact now hides the empty duplicate rows in the visible path, yet it still shows both `Hund Tasso frisst gerne thunfisch` and `Hund Tasso frisst gerne hunfisch`. That means the bounded implementation is only partially validated and must route to `janus-debug` instead of `janus-final-audit`.
+
+Current goal: close `BACKLOG-115` by removing the last live visible Tasso detail duplication/typo from the real Oliver contact-card path.
+
+Active phase: `janus-test-pipeline`, canonical state `BLOCKED`.
+
+Last Codex work:
+- loaded the bound `BACKLOG-115` task and preimplementation-check artifacts plus the current project snapshot
+- validated the real AppData runtime contact state in `C:\Users\pruve\AppData\Roaming\Janus Projekt\janus.db`
+- confirmed that raw duplicate `Oliver Schwab` rows still exist in the DB, but the visible read path now collapses them to one contact
+- confirmed that the visible collapsed contact still contains both `Hund Tasso frisst gerne thunfisch` and `Hund Tasso frisst gerne hunfisch`
+- wrote the bounded retest artifact `documentation/test-runs/BACKLOG-115_live_validation_2026-06-30.md`
+
+Changed files:
+- `documentation/test-runs/BACKLOG-115_live_validation_2026-06-30.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python -m pytest backend/tests/test_contact_manager.py -q`: PASS (`45 passed`)
+- `python -m pytest backend/tests/test_contact_card_normalization.py -q`: PASS (`8 passed`)
+- `python -m py_compile backend/services/contact_manager.py backend/data/crud.py backend/tests/test_contact_manager.py backend/tests/test_contact_card_normalization.py`: PASS
+- live targeted AppData DB read of `contacts` for `Oliver Schwab`: FAIL for gate readiness, because duplicate visible Tasso wording remains in the primary contact row
+- live reader-path check via `crud.search_contacts_by_name(db, "Oliver Schwab")`: FAIL for gate readiness, because the visible collapsed contact still returns both `... thunfisch` and `... hunfisch`
+- `GET http://127.0.0.1:8001/health`: unavailable during validation
+
+Open risks:
+- the duplicate-row suppression in the visible path is not sufficient on its own because stale or malformed pet-detail variants can still survive on the primary contact
+- the current automated regression suite does not yet cover the live-data-shaped `hunfisch` variant that remains in AppData
+- no commit or push has happened after this block, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: report `BACKLOG-115` as red, not audit-ready: the visible Oliver duplicate rows are collapsed, but the real contact card still contains a duplicated/incorrect Tasso food detail variant and therefore must go back to `janus-debug`.
+
+Next recommended step for Codex: run `janus-debug` on `5.4` medium against the exact live seam between stored `personal_details` normalization and the visible contact-card reader path, then add a regression that reproduces the surviving `hunfisch` runtime shape before retrying `janus-test-pipeline`.
+
+Last updated: `2026-06-30 15:55:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-06-30`, the Debug and Test-Pipeline OR lanes now share the same net Codex-token ROI guard that was introduced for the Executioner lane. The shared gate helper can compute estimated Codex savings versus Codex OR overhead and suppress the `2 = OR` operator choice when the result is negative or required ROI estimates are missing. `janus-debug` and `janus-test-pipeline` now also document OR as a bounded productive assistant: OR may shape hypotheses, local verifier suggestions, triage clusters, classification hints, and next-skill handoffs, but it still may not run commands, apply fixes, mutate test results, claim final PASS, or decide release readiness.
 
 Current goal: make all meaningful Janus OR lanes productive without wasting Codex tokens on tiny or negative-ROI work.
@@ -12787,6 +13126,56 @@ Next recommended step for ChatGPT: audit `TASK-SPEC25.1` strictly as a contract-
 Next recommended step for Codex: use `janus-final-audit` with `5.5` high on `documentation/tasks/TASK-SPEC25.1_AUDIT_PACKAGE.md`.
 
 Last updated: `2026-06-22 16:38:21 +02:00`.
+## Current Snapshot Update
+As of `2026-06-30`, the bounded Aider/OpenRouter worker POC (`TASK-SPEC27.1`) is fully documented, final-audited, and governance-scoped into one coherent local checkpoint candidate. The repo worktree is still broadly dirty from unrelated ongoing work, but the POC package itself is cleanly separable and should be committed, if at all, as one isolated delivery block without any push yet.
+
+Current goal: close the completed Spec-27 worker POC with a safe local Git checkpoint decision, without mixing unrelated Janus product or OR-infrastructure changes into the same changeset.
+
+Active phase: `janus-git-governance`, canonical state `HANDOFF`.
+
+Last Codex work:
+- inspected the current branch and confirmed work remains on `develop`
+- separated the SPEC27 POC files from the much larger unrelated dirty worktree
+- confirmed the relevant POC payload is one coherent documentation-plus-sandbox delivery block
+- prepared the checkpoint recommendation to keep this slice local and avoid any automatic push
+
+Changed files:
+- `development/openrouter-skill-tests/janus-worker-aider-poc/README.md`
+- `development/openrouter-skill-tests/janus-worker-aider-poc/allowed_files.txt`
+- `development/openrouter-skill-tests/janus-worker-aider-poc/target_doc.md`
+- `development/openrouter-skill-tests/janus-worker-aider-poc/test_output.log`
+- `development/openrouter-skill-tests/janus-worker-aider-poc/worker_report.md`
+- `development/openrouter-skill-tests/janus-worker-aider-poc/worker_task.md`
+- `documentation/SPEC/Spec Done/27_aider_openrouter_worker_poc_fuer_codex_delegation.md`
+- `documentation/tasks/TASK-SPEC27_aider_openrouter_worker_poc_fuer_codex_delegation.md`
+- `documentation/tasks/TASK-SPEC27.1_task_breakdown.md`
+- `documentation/tasks/TASK-SPEC27.1_preimplementation_check.md`
+- `documentation/tasks/TASK-SPEC27.1_execution_result.md`
+- `documentation/tasks/TASK-SPEC27.1_AUDIT_PACKAGE.md`
+- `documentation/tasks/TASK-SPEC27.1_final_audit.md`
+- `documentation/tasks/TASK-SPEC27.1_documentation_update.md`
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `WHAT_I_LEARNED.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `git branch --show-current`: PASS (`develop`)
+- `git status --short -- <SPEC27 paths>`: PASS; relevant slice is separable from unrelated dirt
+- `Get-ChildItem -Recurse development/openrouter-skill-tests/janus-worker-aider-poc | Select-Object FullName,Length`: PASS; bounded sandbox payload confirmed
+- prior bound validators remain green for this slice: task artifact PASS, task handoff PASS, precheck PASS, execution result PASS, final audit PASS, documentation update PASS
+
+Open risks:
+- the repository still contains a large amount of unrelated modified and untracked work, so any stage/commit must be path-scoped and must not use blanket adds
+- no Git checkpoint exists yet for the completed SPEC27 slice, so neither `backup` nor any other remote can be assumed to contain the latest worker POC or `CURRENT_STATE`
+- the final audit remains a conditional go only; future Aider experiments still must move to an isolated worktree/subtree/sandbox instead of repo-root execution
+
+Next recommended step for ChatGPT: summarize this slice as "ready for one local checkpoint commit only; no push yet; future Aider follow-up must be isolated from repo root."
+
+Next recommended step for Codex: use `janus-git-governance` to stage only the SPEC27 paths and create one local checkpoint commit after explicit user approval.
+
+Last updated: `2026-06-30 16:30:00 +02:00`.
 ## Current Snapshot Update
 As of `2026-06-24`, `TASK-SPEC26.1` is now implemented and validator-clean. The first Spec-26 slice added one shared fail-closed visibility contract that decides whether future existing-skill `1 = Codex / 2 = OR` gates may appear at all, while keeping partial, internal-only, and otherwise non-approved lanes hidden.
 
