@@ -13177,6 +13177,166 @@ Next recommended step for Codex: use `janus-git-governance` to stage only the SP
 
 Last updated: `2026-06-30 16:30:00 +02:00`.
 ## Current Snapshot Update
+As of `2026-06-30`, the next Aider follow-up was continued as a Lean-Dev slice only under `development/openrouter-skill-tests/`, without creating any Janus Backlog item. A new isolated worker POC now runs Aider inside a temporary workspace outside the repository root, and the rerun showed a bounded docs-only edit with no new repo-root `.aider*` artifacts and no `.gitignore` hash change during the run.
+
+Current goal: validate whether the Aider/OpenRouter path can stay useful once the execution surface is isolated from the real repo root.
+
+Active phase: `janus-executioner`, canonical state `PASS`.
+
+Last Codex work:
+- created `development/openrouter-skill-tests/janus-worker-aider-isolated-poc/` as a Lean-Dev-only follow-up to the first root-noisy POC
+- added a PowerShell runner that materializes a temporary external workspace, runs Aider there, captures the log, copies back the single edited target, and checks repo-root side effects via `.aider*` scan plus `.gitignore` hash comparison
+- reran the bounded docs-only worker slice after fixing the runner's own false-positive side-effect detection
+- confirmed the isolated rerun still produced a useful edit while leaving the actual repo root free of new `.aider*` artifacts and without changing the real `.gitignore`
+
+Changed files:
+- `development/openrouter-skill-tests/janus-worker-aider-isolated-poc/README.md`
+- `development/openrouter-skill-tests/janus-worker-aider-isolated-poc/allowed_files.txt`
+- `development/openrouter-skill-tests/janus-worker-aider-isolated-poc/target_doc.md`
+- `development/openrouter-skill-tests/janus-worker-aider-isolated-poc/worker_task.md`
+- `development/openrouter-skill-tests/janus-worker-aider-isolated-poc/run_isolated_worker.ps1`
+- `development/openrouter-skill-tests/janus-worker-aider-isolated-poc/worker_report.md`
+- `development/openrouter-skill-tests/janus-worker-aider-isolated-poc/test_output.log`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `powershell -ExecutionPolicy Bypass -File development/openrouter-skill-tests/janus-worker-aider-isolated-poc/run_isolated_worker.ps1`: PASS on rerun
+- repo-root `.aider*` check before/after rerun: PASS (`0 -> 0`)
+- `.gitignore` file-hash comparison before/after rerun: PASS (`no` change during run)
+- `git status --short -- .gitignore development/openrouter-skill-tests/janus-worker-aider-isolated-poc`: PASS for scope review; `.gitignore` remains dirty from outside this slice, the new POC directory is the only new local artifact set from this run
+
+Open risks:
+- the worker still prints `Added .aider* to .gitignore`, but this now happens only inside the disposable temp workspace rather than the real repo root
+- this is still a docs-only worker proof, not yet a stronger code/test follow-up
+- no push happened after this Lean-Dev slice, so a remote such as GitHub may not contain it
+
+Next recommended step for ChatGPT: summarize this as "the isolation shape works; the remaining question is not root leakage anymore, but whether the same pattern stays good enough on a slightly more realistic bounded docs/test task."
+
+Next recommended step for Codex: keep Lean-Dev mode and either harden the runner a little more for repeatability or run one slightly more realistic isolated docs/test worker experiment on the same temp-workspace pattern.
+
+Last updated: `2026-06-30 17:05:00 +02:00`.
+## Current Snapshot Update
+As of `2026-06-30`, the isolated Aider follow-up has now crossed from docs-only proof into a tiny bounded code/test proof without touching Janus product code or the Janus Backlog. A second Lean-Dev sandbox under `development/openrouter-skill-tests/janus-worker-aider-isolated-code-poc/` ran a one-function Python fix in a disposable temp workspace, showed a failing pretest and a passing posttest, changed only the allowed file, and again left the real repo root free of new `.aider*` artifacts and without changing the real `.gitignore`.
+
+Current goal: decide whether the isolated Aider temp-workspace pattern is now strong enough to justify one slightly more realistic Janus-adjacent docs/test helper slice, while still staying outside product-code delegation.
+
+Active phase: `janus-executioner`, canonical state `PASS`.
+
+Last Codex work:
+- created `development/openrouter-skill-tests/janus-worker-aider-isolated-code-poc/` as a stronger Lean-Dev follow-up to the isolated docs-only worker proof
+- added a bounded Python helper plus pytest test and a temp-workspace runner that records pretest/posttest, changed files, and repo-root side-effect checks
+- ran the isolated worker slice end-to-end through Aider on `openrouter/qwen/qwen3-coder-30b-a3b-instruct`
+- confirmed the worker fixed the tiny bug, moved the test from failing to passing, touched only `text_utils.py`, and produced a clean isolation report
+
+Changed files:
+- `development/openrouter-skill-tests/janus-worker-aider-isolated-code-poc/README.md`
+- `development/openrouter-skill-tests/janus-worker-aider-isolated-code-poc/allowed_files.txt`
+- `development/openrouter-skill-tests/janus-worker-aider-isolated-code-poc/text_utils.py`
+- `development/openrouter-skill-tests/janus-worker-aider-isolated-code-poc/test_text_utils.py`
+- `development/openrouter-skill-tests/janus-worker-aider-isolated-code-poc/worker_task.md`
+- `development/openrouter-skill-tests/janus-worker-aider-isolated-code-poc/run_isolated_code_worker.ps1`
+- `development/openrouter-skill-tests/janus-worker-aider-isolated-code-poc/worker_report.md`
+- `development/openrouter-skill-tests/janus-worker-aider-isolated-code-poc/test_output.log`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `powershell -ExecutionPolicy Bypass -File development/openrouter-skill-tests/janus-worker-aider-isolated-code-poc/run_isolated_code_worker.ps1`: PASS
+- pretest inside temp workspace: PASS as intended failure (`exit 1`)
+- posttest inside temp workspace: PASS (`1 passed`)
+- changed-files check inside temp workspace: PASS (`text_utils.py` only)
+- repo-root `.aider*` check before/after run: PASS (`0 -> 0`)
+- `.gitignore` file-hash comparison before/after run: PASS (`no` change during run)
+
+Open risks:
+- this is still a synthetic Lean-Dev code/test sandbox, not yet a real Janus repo helper or product-adjacent file cluster
+- Aider still emits `Added .aider* to .gitignore`, but only inside the disposable temp workspace git repo
+- no push happened after this Lean-Dev slice, so a remote such as GitHub may not contain it
+
+Next recommended step for ChatGPT: summarize this as "the isolated temp-workspace pattern now has both docs-only and tiny code/test proof; the remaining question is where to place the first real Janus-adjacent non-product helper slice."
+
+Next recommended step for Codex: stay in Lean-Dev mode and pick one small repo-owned helper/docs/test artifact under `development/` or similar non-product surface as the first quasi-real worker experiment on the same isolation pattern.
+
+Last updated: `2026-06-30 17:33:00 +02:00`.
+## Current Snapshot Update
+As of `2026-06-30`, the isolated Aider path has now succeeded on the first real repo-owned Lean-Dev helper file, still without using Janus Backlog or touching product code. The temp-workspace worker fixed a real inconsistency in `development/openrouter-skill-tests/janus-preimplementation-check/lean_precheck_eval.py`: the prompt contract now uses the same `NEEDS_CODEX_REVIEW` token that the validator already required.
+
+Current goal: decide whether the isolated temp-workspace pattern is mature enough to become the default shape for future small Dev-/OR-helper worker experiments.
+
+Active phase: `janus-executioner`, canonical state `PASS`.
+
+Last Codex work:
+- identified a real small helper bug in the repo-owned Lean-Dev precheck evaluator: prompt text used `NEEDS_CODEx_REVIEW` while validation expected `NEEDS_CODEX_REVIEW`
+- created an isolated worker POC under `development/openrouter-skill-tests/janus-worker-aider-real-helper-poc/` that copies the real helper into a disposable temp workspace, runs a focused failing pytest, lets Aider patch only the helper, reruns the test, and copies the accepted result back to the real helper path
+- ran the slice end-to-end through Aider and confirmed the red-to-green helper fix with no repo-root side effects
+
+Changed files:
+- `development/openrouter-skill-tests/janus-preimplementation-check/lean_precheck_eval.py`
+- `development/openrouter-skill-tests/janus-worker-aider-real-helper-poc/README.md`
+- `development/openrouter-skill-tests/janus-worker-aider-real-helper-poc/test_real_helper.py`
+- `development/openrouter-skill-tests/janus-worker-aider-real-helper-poc/worker_task.md`
+- `development/openrouter-skill-tests/janus-worker-aider-real-helper-poc/run_real_helper_worker.ps1`
+- `development/openrouter-skill-tests/janus-worker-aider-real-helper-poc/worker_report.md`
+- `development/openrouter-skill-tests/janus-worker-aider-real-helper-poc/test_output.log`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `powershell -ExecutionPolicy Bypass -File development/openrouter-skill-tests/janus-worker-aider-real-helper-poc/run_real_helper_worker.ps1`: PASS
+- pretest inside temp workspace: PASS as intended failure (`exit 1`)
+- posttest inside temp workspace: PASS (`1 passed`)
+- changed-files check inside temp workspace: PASS (`lean_precheck_eval.py` only)
+- repo-root `.aider*` check before/after run: PASS (`0 -> 0`)
+- `.gitignore` file-hash comparison before/after run: PASS (`no` change during run)
+- direct token confirmation in real helper file: PASS (`NEEDS_CODEX_REVIEW` present in prompt and validator path)
+
+Open risks:
+- the target helper file still lives in an untracked Dev-eval surface, so this is strong local evidence but not yet a governed shared baseline
+- Aider still emits `Added .aider* to .gitignore`, but only inside the disposable temp workspace
+- no push happened after this Lean-Dev slice, so a remote such as GitHub may not contain it
+
+Next recommended step for ChatGPT: summarize this as "the isolated worker pattern now succeeded on docs-only, synthetic code/test, and a real repo-owned Lean-Dev helper file; the remaining decision is governance, not core feasibility."
+
+Next recommended step for Codex: either prepare a small local checkpoint for the isolated worker evidence set, or run one more bounded real-helper slice before deciding whether to bless this temp-workspace pattern as the standard Dev-side Aider route.
+
+Last updated: `2026-06-30 17:40:00 +02:00`.
+## Current Snapshot Update
+As of `2026-06-30`, the isolated Aider pattern has now been exercised on a second real repo-owned Lean-Dev helper seam. This time the target was `development/openrouter-skill-tests/janus-backlog-prioritization/lean_backlog_prioritization_eval.py`, where validation had been brittle because `recommended_item_id` was effectively tied to a hardcoded tiny ID set. The isolated worker found the seam, but its first patch over-relaxed the rule; Codex then tightened the real helper locally so the validator now accepts dynamic candidate ids while still requiring that `recommended_item_id` match one of the provided `candidate_assessments`.
+
+Current goal: consolidate whether the temp-workspace Aider pattern is now proven enough for future small Dev-helper work, with Codex still acting as acceptance and hardening owner.
+
+Active phase: `janus-executioner`, canonical state `PASS`.
+
+Last Codex work:
+- created `development/openrouter-skill-tests/janus-worker-aider-real-helper-poc-2/` for a second real-helper slice against the backlog-prioritization evaluator
+- ran the isolated worker on the brittle hardcoded `recommended_item_id` validation seam
+- observed that Aider fixed the obvious hardcoding bug but initially weakened the invariant too far
+- tightened the real helper locally so `recommended_item_id` must match a candidate id from `candidate_assessments`, then verified both the positive and negative tests
+
+Changed files:
+- `development/openrouter-skill-tests/janus-backlog-prioritization/lean_backlog_prioritization_eval.py`
+- `development/openrouter-skill-tests/janus-worker-aider-real-helper-poc-2/README.md`
+- `development/openrouter-skill-tests/janus-worker-aider-real-helper-poc-2/test_real_helper_2.py`
+- `development/openrouter-skill-tests/janus-worker-aider-real-helper-poc-2/worker_task.md`
+- `development/openrouter-skill-tests/janus-worker-aider-real-helper-poc-2/run_real_helper_worker_2.ps1`
+- `development/openrouter-skill-tests/janus-worker-aider-real-helper-poc-2/worker_report.md`
+- `development/openrouter-skill-tests/janus-worker-aider-real-helper-poc-2/test_output.log`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `powershell -ExecutionPolicy Bypass -File development/openrouter-skill-tests/janus-worker-aider-real-helper-poc-2/run_real_helper_worker_2.ps1`: mixed signal; pretest FAIL as intended, first Aider patch removed hardcoding but failed the stronger negative test
+- `$env:PYTHONPATH='C:\KI\Janus-Projekt\development\openrouter-skill-tests\janus-backlog-prioritization'; python -m pytest -q development/openrouter-skill-tests/janus-worker-aider-real-helper-poc-2/test_real_helper_2.py`: PASS (`2 passed`)
+- repo-root side-effect check from the isolated worker run: PASS (`.aider*` 0 -> 0, `.gitignore` unchanged during run)
+
+Open risks:
+- this second seam confirms the useful pattern but also confirms that Codex still needs to review and sometimes harden Aider output before accepting it
+- the helper and POC artifacts remain local Lean-Dev work and are not yet checkpointed
+- no push happened after this Lean-Dev slice, so a remote such as GitHub may not contain it
+
+Next recommended step for ChatGPT: summarize this as "the isolated worker pattern is now proven across docs, synthetic code/test, and two real Lean-Dev helper seams; Aider is useful, but Codex must remain acceptance and hardening owner."
+
+Next recommended step for Codex: use `janus-git-governance` for a clean local checkpoint decision that captures the isolated Aider evidence set without mixing unrelated repo dirt.
+
+Last updated: `2026-06-30 17:52:00 +02:00`.
+## Current Snapshot Update
 As of `2026-06-24`, `TASK-SPEC26.1` is now implemented and validator-clean. The first Spec-26 slice added one shared fail-closed visibility contract that decides whether future existing-skill `1 = Codex / 2 = OR` gates may appear at all, while keeping partial, internal-only, and otherwise non-approved lanes hidden.
 
 Current goal: finish Spec 26 cleanly by integrating the new shared visibility contract into the already approved existing skill entries without widening scope.
