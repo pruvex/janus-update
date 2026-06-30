@@ -15,6 +15,7 @@ REPO_ROOT = Path(__file__).resolve().parents[4]
 MODEL_ROUTING_DIR = REPO_ROOT / "documentation" / "codex" / "model-routing"
 SIDECAR_RUNNER_PATH = MODEL_ROUTING_DIR / "scripts" / "codex_sidecar_skill_runner.ps1"
 SIDECAR_BRIDGE_PATH = MODEL_ROUTING_DIR / "scripts" / "codex_structured_action_sidecar_bridge.py"
+ISOLATED_AIDER_RUNNER_PATH = MODEL_ROUTING_DIR / "scripts" / "isolated_aider_workspace_runner.py"
 
 
 def write_text(path: Path, content: str) -> None:
@@ -51,6 +52,15 @@ def run_command(command: list[str], cwd: Path) -> subprocess.CompletedProcess[st
 
 def load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8-sig"))
+
+
+def parse_json_output(stdout: str, *, fallback_path: Path | None = None) -> dict[str, Any]:
+    text = stdout.strip()
+    if text:
+        return json.loads(text)
+    if fallback_path is not None and fallback_path.exists():
+        return load_json(fallback_path)
+    raise SystemExit("Expected JSON output was missing.")
 
 
 def prompt_summary(
@@ -204,6 +214,39 @@ def invoke_structured_bridge(*, run_directory: Path, workflow_id: str, task_labe
     return run_command(command, REPO_ROOT)
 
 
+def invoke_isolated_aider_runner(
+    *,
+    workflow_id: str,
+    task_label: str,
+    normal_target_model: str,
+    or_model: str,
+    estimated_or_cost: float,
+    confidence_percent: int,
+    input_package_json: Path,
+) -> subprocess.CompletedProcess[str]:
+    command = [
+        "python",
+        str(ISOLATED_AIDER_RUNNER_PATH),
+        "--task-label",
+        task_label,
+        "--normal-target-model",
+        normal_target_model,
+        "--operator-choice",
+        "delegated",
+        "--workflow-id",
+        workflow_id,
+        "--input-package-json",
+        str(input_package_json),
+        "--or-model",
+        or_model,
+        "--estimated-or-cost",
+        str(estimated_or_cost),
+        "--cost-estimate-confidence-percent",
+        str(confidence_percent),
+    ]
+    return run_command(command, REPO_ROOT)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Quickchange workspace-write sidecar pilot helper.")
     parser.add_argument("--task-label", required=True)
@@ -217,6 +260,9 @@ def main() -> int:
     parser.add_argument("--workflow-id", default=None)
     parser.add_argument("--structured-review-flow", action="store_true")
     parser.add_argument("--structured-review-source-run-dir", type=Path, default=None)
+    parser.add_argument("--isolated-aider-package-json", type=Path, default=None)
+    parser.add_argument("--estimated-or-cost", type=float, default=0.00080)
+    parser.add_argument("--cost-estimate-confidence-percent", type=int, default=70)
     parser.add_argument("--execute-live", action="store_true")
     args = parser.parse_args()
 
@@ -249,6 +295,30 @@ def main() -> int:
         write_json(run_dir / "operator_choice_local.json", result)
         output(result)
         return 0
+
+    isolated_package_path = args.isolated_aider_package_json.resolve() if args.isolated_aider_package_json else None
+    if isolated_package_path is not None and not isolated_package_path.exists():
+        raise SystemExit(f"Isolated Aider package path does not exist: {isolated_package_path}")
+
+    if isolated_package_path is not None:
+        completed = invoke_isolated_aider_runner(
+            workflow_id=workflow_id,
+            task_label=args.task_label,
+            normal_target_model=args.normal_target_model,
+            or_model=args.sidecar_model,
+            estimated_or_cost=args.estimated_or_cost,
+            confidence_percent=args.cost_estimate_confidence_percent,
+            input_package_json=isolated_package_path,
+        )
+        write_text(run_dir / "runner_stdout.txt", completed.stdout)
+        write_text(run_dir / "runner_stderr.txt", completed.stderr)
+        result = parse_json_output(completed.stdout)
+        result["skill"] = "janus-quickchange"
+        result["delegation_mode"] = "isolated_aider_workspace"
+        result["forwarded_runner"] = str(ISOLATED_AIDER_RUNNER_PATH)
+        write_json(run_dir / "operator_summary.json", result)
+        output(result)
+        return 0 if result.get("validation_result") == "PASS" else 1
 
     if args.prompt_path is None:
         raise SystemExit("--prompt-path is required for operator-choice sidecar")

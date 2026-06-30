@@ -1,6 +1,52 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-06-30`, the first existing Dev-side gate has been wired to the generic isolated Aider worker path without reopening Janus product/backlog flow. `quickchange_sidecar_write_pilot_runner.py` now preserves the visible operator choice while allowing the `2 = OR` branch to delegate through `isolated_aider_workspace_runner.py` when an isolated worker package is provided. Prompt/local behavior stayed green, and the forwarded OR smoke path also passed against the bounded tiny code package.
+
+Current goal: turn the reusable isolated Aider worker from a standalone proof into callable everyday Dev gates while keeping `1 = Codex` / `2 = OR` explicit and reviewable.
+
+Active phase: Lean Dev via `janus-executioner`, canonical state `PASS`.
+
+Last Codex work:
+- added an optional isolated-worker package route to `documentation/codex/model-routing/scripts/quickchange_sidecar_write_pilot_runner.py`
+- kept prompt/local output behavior intact for the existing quickchange gate
+- forwarded the OR branch to the generic isolated temp-workspace runner when a package is supplied
+- added focused regression coverage in `documentation/codex/model-routing/tests/test_quickchange_sidecar_write_pilot_runner.py` for the new isolated-package path
+- mirrored the same optional isolated-worker package route into `documentation/codex/model-routing/scripts/test_pipeline_sidecar_write_pilot_runner.py`
+- added focused regression coverage in `documentation/codex/model-routing/tests/test_test_pipeline_sidecar_write_pilot_runner.py` for the new test-pipeline isolated-package path
+- validated the updated runner with prompt, local, live isolated OR smoke, and focused unittest coverage
+
+Changed files:
+- `documentation/codex/model-routing/scripts/quickchange_sidecar_write_pilot_runner.py`
+- `documentation/codex/model-routing/tests/test_quickchange_sidecar_write_pilot_runner.py`
+- `documentation/codex/model-routing/scripts/test_pipeline_sidecar_write_pilot_runner.py`
+- `documentation/codex/model-routing/tests/test_test_pipeline_sidecar_write_pilot_runner.py`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python -m py_compile documentation/codex/model-routing/scripts/quickchange_sidecar_write_pilot_runner.py`: PASS
+- `python documentation/codex/model-routing/scripts/quickchange_sidecar_write_pilot_runner.py --task-label "Quickchange gate prompt smoke" --normal-target-model "5.4 medium" --operator-choice prompt --workflow-id QC-ISOLATED-GATE-PROMPT-001`: PASS
+- `python documentation/codex/model-routing/scripts/quickchange_sidecar_write_pilot_runner.py --task-label "Quickchange gate local smoke" --normal-target-model "5.4 medium" --operator-choice local --workflow-id QC-ISOLATED-GATE-LOCAL-001`: PASS
+- `python documentation/codex/model-routing/scripts/quickchange_sidecar_write_pilot_runner.py --task-label "Quickchange isolated OR smoke" --normal-target-model "5.4 medium" --operator-choice 2 --workflow-id QC-ISOLATED-GATE-OR-001 --sidecar-model "openrouter/qwen/qwen3-coder-30b-a3b-instruct" --isolated-aider-package-json development/openrouter-skill-tests/janus-worker-aider-isolated-code-poc/worker_package.json`: PASS
+- `python -m unittest documentation.codex.model-routing.tests.test_quickchange_sidecar_write_pilot_runner`: PASS (`4 tests`)
+- `python -m unittest documentation.codex.model-routing.tests.test_quickchange_live_operator_path`: PASS (`4 tests`)
+- `python -m py_compile documentation/codex/model-routing/tests/test_quickchange_sidecar_write_pilot_runner.py documentation/codex/model-routing/scripts/quickchange_sidecar_write_pilot_runner.py`: PASS
+- `python -m unittest documentation.codex.model-routing.tests.test_test_pipeline_sidecar_write_pilot_runner`: PASS (`9 tests`)
+- AST parse of `test_pipeline_sidecar_write_pilot_runner.py` and `test_test_pipeline_sidecar_write_pilot_runner.py`: PASS
+
+Open risks:
+- only two Dev-side gates are wired so far; other lanes still use their older bounded OR paths
+- the quickchange prompt wording still says `OpenRouter` rather than the shorter `OR`, even though the visible operator choice remains preserved
+- the separate `py_compile` attempt on the new test-pipeline pair hit a local Windows `__pycache__` access-denied seam, so syntax was verified with a write-free AST parse instead
+- no commit or push has happened after this block, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: treat the isolated worker path as technically proven and test-backed for two existing Dev gates; the next decision is whether to checkpoint now or continue to a third lane only if the ROI still looks good.
+
+Next recommended step for Codex: checkpoint this two-lane pattern or, if continued, choose one more runner with the closest shape to avoid growing a parallel integration style.
+
+Last updated: `2026-06-30 18:10:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-06-30`, the audited Aider/OpenRouter worker POC has now been fully synchronized through `janus-documentation-update`. Spec 27 is in `Spec Done`, the central registry and `PROJECT_STATE` both reflect `TASK-SPEC27.1` as a sealed conditional-go POC, and `WHAT_I_LEARNED.md` now records the key reusable lesson: early Aider worker experiments should not run casually from the repo root, but from an isolated sandbox/worktree/subtree with a strict allowlist. The next sensible step is no longer more documentation; it is a Git checkpoint decision via `janus-git-governance`.
 
 Current goal: decide whether to checkpoint the completed worker-POC package in Git before any second isolated experiment starts.
@@ -13336,6 +13382,44 @@ Next recommended step for ChatGPT: summarize this as "the isolated worker patter
 Next recommended step for Codex: use `janus-git-governance` for a clean local checkpoint decision that captures the isolated Aider evidence set without mixing unrelated repo dirt.
 
 Last updated: `2026-06-30 17:52:00 +02:00`.
+## Current Snapshot Update
+As of `2026-06-30`, the isolated Aider work is no longer only a set of ad-hoc POCs. A reusable standard runner now exists at `documentation/codex/model-routing/scripts/isolated_aider_workspace_runner.py` and preserves the explicit operator gate shape `1 = Codex / 2 = OR`. The runner reads a bounded input package, shows the prompt gate, runs the OR branch only inside a disposable temp workspace outside the repo root, executes declared pre/post checks, rejects repo-root side effects or scope drift, and copies back only the declared editable files.
+
+Current goal: turn the validated isolated Aider pattern into a repeatable Dev-side worker lane that keeps Codex as final reviewer while preserving the visible Codex-vs-OR choice.
+
+Active phase: `janus-executioner`, canonical state `PASS`.
+
+Last Codex work:
+- implemented `isolated_aider_workspace_runner.py` as a reusable prompt/local/delegated helper for bounded temp-workspace Aider runs
+- added standard worker packages for real-helper and synthetic helper slices
+- verified prompt mode and local mode on the new runner
+- verified one green OR live path through the standard runner on the tiny code/test sample package
+- verified one strict real-helper OR path falls back cleanly when the worker output does not satisfy the stronger acceptance bar
+
+Changed files:
+- `documentation/codex/model-routing/scripts/isolated_aider_workspace_runner.py`
+- `development/openrouter-skill-tests/isolated_aider_worker_standard.md`
+- `development/openrouter-skill-tests/janus-worker-aider-real-helper-poc/worker_package.json`
+- `development/openrouter-skill-tests/janus-worker-aider-real-helper-poc-2/worker_package.json`
+- `development/openrouter-skill-tests/janus-worker-aider-isolated-code-poc/worker_package.json`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- prompt gate check: `python documentation/codex/model-routing/scripts/isolated_aider_workspace_runner.py --operator-choice prompt ...`: PASS
+- local gate check: `python documentation/codex/model-routing/scripts/isolated_aider_workspace_runner.py --operator-choice local ...`: PASS
+- strict real-helper OR branch: `ISO-AIDER-BACKLOG-PRIO-001`: expected clean fallback (`validation_result FAIL`, no root side effects, no silent acceptance)
+- green OR branch: `ISO-AIDER-CODE-SMOKE-001`: PASS (`validation_result PASS`, pre/post tests PASS, no repo-root `.aider*`, no `.gitignore` change)
+
+Open risks:
+- the standard runner is implemented, but it is not yet wired into the existing higher-level Janus skill runners automatically
+- the OR branch can still produce over-broad or under-hardened first-pass patches, so Codex review remains mandatory
+- no push happened after this standardization step, so a remote such as GitHub may not contain it
+
+Next recommended step for ChatGPT: summarize this as "the visible Codex/OR choice is preserved, and the OR branch now has one reusable isolated worker runner instead of bespoke POC scripts."
+
+Next recommended step for Codex: decide whether to checkpoint this runner standardization now or wire one existing Dev-side lane to call this generic runner instead of bespoke isolated scripts.
+
+Last updated: `2026-06-30 18:08:00 +02:00`.
 ## Current Snapshot Update
 As of `2026-06-24`, `TASK-SPEC26.1` is now implemented and validator-clean. The first Spec-26 slice added one shared fail-closed visibility contract that decides whether future existing-skill `1 = Codex / 2 = OR` gates may appear at all, while keeping partial, internal-only, and otherwise non-approved lanes hidden.
 
