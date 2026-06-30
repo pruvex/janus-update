@@ -165,19 +165,78 @@ class BoundedOrWorkerEligibilityTests(unittest.TestCase):
     def test_productive_dev_workhorse_path_allows_in_scope_task_class(self) -> None:
         result = eligibility.evaluate_productive_dev_workhorse_path(
             path_id="productive_dev_workhorse_path",
-            task_class="test_result_triage_review",
+            task_class="execution_patch_candidate",
             estimated_or_cost=0.02,
         )
 
         self.assertEqual(result["eligibility_result"], "OR_ALLOWED")
         self.assertEqual(result["reason_code"], "ELIGIBILITY_CONFIRMED")
-        self.assertEqual(result["budget_profile"], "test_result_triage_review")
-        self.assertEqual(result["per_call_cap_usd"], 0.03)
+        self.assertEqual(result["budget_profile"], "execution_patch_candidate")
+        self.assertEqual(result["per_call_cap_usd"], 0.05)
+        self.assertEqual(result["selected_or_model"], "qwen/qwen3-coder-30b-a3b-instruct")
+
+    def test_productive_dev_workhorse_path_allows_write_apply_candidate_with_fixed_model(self) -> None:
+        result = eligibility.evaluate_productive_dev_workhorse_path(
+            path_id="productive_dev_workhorse_path",
+            task_class="execution_write_apply_candidate",
+            estimated_or_cost=0.05,
+        )
+
+        self.assertEqual(result["eligibility_result"], "OR_ALLOWED")
+        self.assertEqual(result["reason_code"], "ELIGIBILITY_CONFIRMED")
+        self.assertEqual(result["budget_profile"], "execution_write_apply_candidate")
+        self.assertEqual(result["selected_or_model"], "deepseek/deepseek-v4-flash")
+
+    def test_shared_visibility_contract_allows_live_doc_skill_gate(self) -> None:
+        result = eligibility.evaluate_existing_skill_operator_gate_visibility(
+            subject_type="doc_skill_fixed_or",
+            subject_id="DOC-SKILL-001",
+        )
+
+        self.assertEqual(result["operator_gate_visibility"], "VISIBLE")
+        self.assertEqual(result["visibility_status"], "VISIBLE_APPROVED")
+        self.assertEqual(result["reason_code"], "VISIBILITY_CONFIRMED")
+        self.assertEqual(result["selected_or_model"], "openai/gpt-oss-20b")
+
+    def test_shared_visibility_contract_allows_execution_write_candidate(self) -> None:
+        result = eligibility.evaluate_existing_skill_operator_gate_visibility(
+            subject_type="productive_dev_workhorse_task_class",
+            subject_id="execution_write_apply_candidate",
+        )
+
+        self.assertEqual(result["operator_gate_visibility"], "VISIBLE")
+        self.assertEqual(result["visibility_status"], "VISIBLE_APPROVED")
+        self.assertEqual(result["reason_code"], "VISIBILITY_CONFIRMED")
+
+    def test_shared_visibility_contract_allows_generator_review_task(self) -> None:
+        result = eligibility.evaluate_existing_skill_operator_gate_visibility(
+            subject_type="dispatcher_task_class",
+            subject_id="generator_review",
+        )
+
+        self.assertEqual(result["operator_gate_visibility"], "VISIBLE")
+        self.assertEqual(result["visibility_status"], "VISIBLE_APPROVED")
+        self.assertEqual(result["reason_code"], "VISIBILITY_CONFIRMED")
+
+    def test_dispatch_task_class_exposes_fixed_quickchange_model(self) -> None:
+        result = eligibility.evaluate_dispatch_task_class(task_class="quickchange_patch_review")
+
+        self.assertEqual(result["eligibility_result"], "OR_ALLOWED")
+        self.assertEqual(result["selected_or_model"], "qwen/qwen3-coder-30b-a3b-instruct")
+
+    def test_shared_visibility_contract_hides_unknown_subject_fail_closed(self) -> None:
+        result = eligibility.evaluate_existing_skill_operator_gate_visibility(
+            subject_type="dispatcher_task_class",
+            subject_id="not_a_real_task",
+        )
+
+        self.assertEqual(result["operator_gate_visibility"], "HIDDEN")
+        self.assertEqual(result["reason_code"], "TASK_CLASS_NOT_ALLOWED")
 
     def test_productive_dev_workhorse_path_rejects_existing_workflow_outside_path(self) -> None:
         result = eligibility.evaluate_productive_dev_workhorse_path(
             path_id="janus-test-pipeline",
-            task_class="test_result_triage_review",
+            task_class="execution_patch_candidate",
             estimated_or_cost=0.02,
         )
 
@@ -187,7 +246,7 @@ class BoundedOrWorkerEligibilityTests(unittest.TestCase):
     def test_productive_dev_workhorse_path_rejects_non_allowed_task_class(self) -> None:
         result = eligibility.evaluate_productive_dev_workhorse_path(
             path_id="productive_dev_workhorse_path",
-            task_class="documentation_draft",
+            task_class="test_result_triage_review",
             estimated_or_cost=0.005,
         )
 
@@ -198,20 +257,40 @@ class BoundedOrWorkerEligibilityTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp_dir:
             config_path = Path(temp_dir) / "eligibility.json"
             payload = eligibility.load_json(eligibility.DEFAULT_ELIGIBILITY_CONFIG_PATH)
-            payload["productive_dev_workhorse_path"]["allowed_task_classes"]["test_result_triage_review"] = {
-                "budget_profile": "missing_profile"
+            payload["productive_dev_workhorse_path"]["allowed_task_classes"]["execution_patch_candidate"] = {
+                "budget_profile": "missing_profile",
+                "selected_or_model": "deepseek/deepseek-v4-flash",
             }
             config_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
             result = eligibility.evaluate_productive_dev_workhorse_path(
                 path_id="productive_dev_workhorse_path",
-                task_class="test_result_triage_review",
+                task_class="execution_patch_candidate",
                 estimated_or_cost=0.02,
                 config_path=config_path,
             )
 
         self.assertEqual(result["eligibility_result"], "OR_NOT_ELIGIBLE")
         self.assertEqual(result["reason_code"], "BUDGET_PROFILE_MISSING")
+
+    def test_productive_dev_workhorse_path_rejects_missing_fixed_model_mapping(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            config_path = Path(temp_dir) / "eligibility.json"
+            payload = eligibility.load_json(eligibility.DEFAULT_ELIGIBILITY_CONFIG_PATH)
+            payload["productive_dev_workhorse_path"]["allowed_task_classes"]["execution_patch_candidate"].pop(
+                "selected_or_model", None
+            )
+            config_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+            result = eligibility.evaluate_productive_dev_workhorse_path(
+                path_id="productive_dev_workhorse_path",
+                task_class="execution_patch_candidate",
+                estimated_or_cost=0.02,
+                config_path=config_path,
+            )
+
+        self.assertEqual(result["eligibility_result"], "OR_NOT_ELIGIBLE")
+        self.assertEqual(result["reason_code"], "SELECTED_OR_MODEL_MISSING")
 
     def test_productive_dev_workhorse_path_rejects_missing_estimated_cost(self) -> None:
         result = eligibility.evaluate_productive_dev_workhorse_path(
@@ -333,8 +412,8 @@ class BoundedOrWorkerEligibilityTests(unittest.TestCase):
 
         self.assertEqual(result["eligibility_result"], "OR_ALLOWED")
         self.assertEqual(result["final_outcome"], "AWAITING_OPERATOR_CHOICE")
-        self.assertEqual(result["choice_2"], "OR-Arbeitspferd")
-        self.assertIn("2 = OR-Arbeitspferd", result["operator_prompt_lines"])
+        self.assertEqual(result["choice_2"], "OR")
+        self.assertIn("2 = OR", result["operator_prompt_lines"])
 
     def test_dispatcher_entry_gate_allows_triage_review_class(self) -> None:
         result = dispatcher.evaluate_assistive_or_workhorse_dispatcher_eligibility(
@@ -344,13 +423,13 @@ class BoundedOrWorkerEligibilityTests(unittest.TestCase):
         self.assertEqual(result["eligibility_result"], "OR_ALLOWED")
         self.assertEqual(result["reason_code"], "ELIGIBILITY_CONFIRMED")
 
-    def test_dispatcher_entry_gate_rejects_legacy_task_class(self) -> None:
+    def test_dispatcher_entry_gate_rejects_unknown_task_class(self) -> None:
         result = dispatcher.evaluate_assistive_or_workhorse_dispatcher_eligibility(
-            task_class="quickchange_patch_review"
+            task_class="legacy_patch_runner"
         )
 
         self.assertEqual(result["eligibility_result"], "OR_NOT_ELIGIBLE")
-        self.assertEqual(result["reason_code"], "SKILL_NOT_ALLOWED")
+        self.assertEqual(result["reason_code"], "TASK_CLASS_NOT_ALLOWED")
 
     def test_dispatcher_prompt_summary_suppresses_gate_without_cost(self) -> None:
         args = Namespace(
@@ -408,7 +487,7 @@ class BoundedOrWorkerEligibilityTests(unittest.TestCase):
         )
 
         self.assertEqual(result["final_outcome"], "AWAITING_OPERATOR_CHOICE")
-        self.assertEqual(result["choice_2"], "OR-Arbeitspferd")
+        self.assertEqual(result["choice_2"], "OR")
 
     def test_triage_prompt_summary_suppresses_gate_without_confidence(self) -> None:
         result = triage_runner.prompt_summary(

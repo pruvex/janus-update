@@ -130,6 +130,34 @@ class AssistiveOrReviewCaptureDispatcherTests(unittest.TestCase):
             test_triage_input_package=input_path,
         )
 
+    def _execution_args(self, input_path: Path, *, selected_or_model: str) -> Namespace:
+        return Namespace(
+            task_label="Execution patch",
+            normal_target_model="5.4 medium",
+            selected_or_model=selected_or_model,
+            task_class="execution_patch_candidate",
+            execution_input_package=input_path,
+            execution_fixture_result=None,
+            execution_live_sidecar=False,
+            execution_sidecar_model="gpt-5.4",
+            execution_sidecar_timeout_seconds=180,
+            estimated_or_cost=0.00064,
+            cost_estimate_confidence_percent=78.0,
+            estimated_prompt_tokens=1000,
+            estimated_completion_tokens=600,
+            cost_estimate_sample_count=1,
+            cost_estimate_mean_abs_error_percent=0.0,
+            cost_estimate_p50_error_percent=0.0,
+            cost_estimate_p90_error_percent=0.0,
+            cost_estimate_basis="fixture",
+            prompt_template_hash="test",
+            price_snapshot_source="manual",
+            price_snapshot_timestamp="2026-06-30T00:00:00+02:00",
+            use_local_or_fixture=True,
+            execute_direct_or=False,
+            or_local_fixture_response_path=self.temp_path / "fixture_response.json",
+        )
+
     def test_debug_review_direct_or_fixture_creates_capture_and_telemetry(self) -> None:
         input_path = self._write_json(self.temp_path / "debug_input.json", self._debug_input_payload())
         fixture_path = self._write_json(
@@ -162,6 +190,62 @@ class AssistiveOrReviewCaptureDispatcherTests(unittest.TestCase):
         telemetry_row = json.loads(Path(result["telemetry_jsonl_path"]).read_text(encoding="utf-8").strip())
         self.assertEqual(telemetry_row["skill_id"], "debug_hypothesis_review")
         self.assertEqual(telemetry_row["validation_result"], "PASS")
+
+    def test_execution_patch_candidate_uses_qwen_apply_patch_runner_for_qwen_models(self) -> None:
+        input_path = self._write_json(
+            self.temp_path / "execution_input.json",
+            {
+                "workflow_id": "WF-EXEC-QWEN-001",
+                "bound_skill_context": "janus-executioner",
+                "target_task": "BACKLOG-999",
+                "spec_path": "N/A",
+                "precheck_status": "PRE-CHECK PASSED",
+                "allowed_files": ["backend/services/contact_manager.py"],
+                "max_touched_files": 1,
+                "mini_test_plan": ["python -m py_compile backend/services/contact_manager.py"],
+                "manual_validation_gate": "Codex-owned validation",
+                "delegation_question": "Make one bounded patch.",
+            },
+        )
+        captured_commands: list[list[str]] = []
+
+        def fake_run_command(command: list[str]):
+            captured_commands.append(command)
+            return subprocess.CompletedProcess(
+                args=command,
+                returncode=0,
+                stdout=json.dumps({"validation_result": "PASS", "final_outcome": "OK"}),
+                stderr="",
+            )
+
+        with mock.patch.object(dispatcher, "run_command", side_effect=fake_run_command):
+            dispatcher.invoke_execution_patch_candidate(
+                self._execution_args(input_path, selected_or_model="qwen/qwen3-coder-flash"),
+                "WF-EXEC-QWEN-001",
+            )
+
+        self.assertEqual(Path(captured_commands[0][1]).name, "openrouter_qwen_execution_patch_candidate_runner.py")
+
+    def test_execution_patch_candidate_keeps_json_runner_for_non_qwen_models(self) -> None:
+        input_path = self._write_json(self.temp_path / "execution_input_non_qwen.json", {"precheck_status": "PRE-CHECK PASSED"})
+        captured_commands: list[list[str]] = []
+
+        def fake_run_command(command: list[str]):
+            captured_commands.append(command)
+            return subprocess.CompletedProcess(
+                args=command,
+                returncode=0,
+                stdout=json.dumps({"validation_result": "PASS", "final_outcome": "OK"}),
+                stderr="",
+            )
+
+        with mock.patch.object(dispatcher, "run_command", side_effect=fake_run_command):
+            dispatcher.invoke_execution_patch_candidate(
+                self._execution_args(input_path, selected_or_model="deepseek/deepseek-v4-flash"),
+                "WF-EXEC-DEEPSEEK-001",
+            )
+
+        self.assertEqual(Path(captured_commands[0][1]).name, "openrouter_direct_execution_patch_candidate_runner.py")
 
     def test_triage_review_direct_or_missing_usage_rejects_but_still_ingests_healthcheck(self) -> None:
         input_path = self._write_json(self.temp_path / "triage_input.json", self._triage_input_payload())

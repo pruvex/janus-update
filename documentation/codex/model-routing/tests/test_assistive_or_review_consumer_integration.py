@@ -32,6 +32,10 @@ triage_runner = _load_module(
     "codex_test_result_triage_review_runner",
     SCRIPTS_DIR / "codex_test_result_triage_review_runner.py",
 )
+dispatcher = _load_module(
+    "codex_bounded_delegation_dispatcher",
+    SCRIPTS_DIR / "codex_bounded_delegation_dispatcher.py",
+)
 
 
 class AssistiveOrReviewConsumerIntegrationTests(unittest.TestCase):
@@ -41,18 +45,58 @@ class AssistiveOrReviewConsumerIntegrationTests(unittest.TestCase):
         self.temp_path = Path(self.temp_dir.name)
         self.original_debug_run_root = debug_runner.RUN_ROOT
         self.original_triage_run_root = triage_runner.RUN_ROOT
+        self.original_dispatcher_run_root = dispatcher.RUN_ROOT
+        self.original_dispatcher_telemetry_dir = dispatcher.OR_TELEMETRY_DIR
         debug_runner.RUN_ROOT = self.temp_path / "debug-runs"
         triage_runner.RUN_ROOT = self.temp_path / "triage-runs"
+        dispatcher.RUN_ROOT = self.temp_path / "dispatcher-runs"
+        dispatcher.OR_TELEMETRY_DIR = self.temp_path / "dispatcher-telemetry"
         self.addCleanup(self._restore_run_roots)
 
     def _restore_run_roots(self) -> None:
         debug_runner.RUN_ROOT = self.original_debug_run_root
         triage_runner.RUN_ROOT = self.original_triage_run_root
+        dispatcher.RUN_ROOT = self.original_dispatcher_run_root
+        dispatcher.OR_TELEMETRY_DIR = self.original_dispatcher_telemetry_dir
 
     def _write_json(self, path: Path, payload: dict[str, object]) -> Path:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
         return path
+
+    def _debug_fixture_response(
+        self,
+        *,
+        finish_reason: str = "stop",
+        include_usage: bool = True,
+    ) -> dict[str, object]:
+        model_result = json.loads(
+            (
+                Path(__file__).resolve().parents[1]
+                / "debug-review-fixtures"
+                / "debug_hypothesis_fixture_result_2026-06-14.json"
+            ).read_text(encoding="utf-8")
+        )
+        payload: dict[str, object] = {
+            "id": "gen_assistive_fixture_consumer_001",
+            "model": "qwen/qwen3.5-flash-02-23",
+            "choices": [
+                {
+                    "message": {
+                        "content": json.dumps(model_result, ensure_ascii=False),
+                    },
+                    "finish_reason": finish_reason,
+                }
+            ],
+        }
+        if include_usage:
+            payload["usage"] = {
+                "prompt_tokens": 123,
+                "completion_tokens": 345,
+                "total_tokens": 468,
+                "cost": 0.00045678,
+            }
+        return payload
 
     def test_debug_consumer_input_package_matches_allowlist_shape(self) -> None:
         payload = debug_runner.build_consumer_input_package(
@@ -112,7 +156,7 @@ class AssistiveOrReviewConsumerIntegrationTests(unittest.TestCase):
                 ),
             )
 
-        self.assertEqual(result["choice_2"], "OR-Arbeitspferd")
+        self.assertEqual(result["choice_2"], "OR")
         self.assertEqual(result["eligibility_result"], "OR_ALLOWED")
         self.assertEqual(result["codex_owned_outcome_status"], "AWAITING_OPERATOR_CHOICE")
         prompt_path = debug_runner.build_run_dir("WF-DEBUG-PROMPT-001") / "consumer_operator_choice_prompt.json"
@@ -165,17 +209,91 @@ class AssistiveOrReviewConsumerIntegrationTests(unittest.TestCase):
         local_path = triage_runner.build_run_dir("WF-TRIAGE-LOCAL-001") / "consumer_operator_choice_local.json"
         self.assertTrue(local_path.exists())
 
-    def test_debug_delegated_consumer_records_selection_without_dispatcher_invocation(self) -> None:
-        fixture_path = self._write_json(self.temp_path / "debug_fixture.json", {"status": "PASS"})
-        invoke_called = {"value": False}
+    def test_triage_prompt_consumer_blocks_or_when_roi_is_negative(self) -> None:
+        fake_dispatcher = types.SimpleNamespace(
+            with_codex_owned_outcome=lambda result: {**result, "codex_owned_outcome_status": "CODEX_LOCAL_PATH"},
+        )
 
-        def fake_invoke(*_args, **_kwargs):
-            invoke_called["value"] = True
-            raise AssertionError("dispatcher invocation must stay out of scope for TASK-SPEC23.1")
+        with mock.patch.object(triage_runner, "_load_dispatcher_module", return_value=fake_dispatcher):
+            result = triage_runner.run_consumer_flow(
+                workflow_id="WF-TRIAGE-ROI-NEG-001",
+                task_label="Triage ROI negative",
+                normal_target_model="5.4 medium",
+                operator_choice="prompt",
+                delegated_model_label="qwen/qwen3-coder-30b-a3b-instruct",
+                estimated_or_cost=0.0003,
+                cost_estimate_confidence_percent=80.0,
+                estimated_codex_saved_tokens=800,
+                estimated_codex_or_overhead_tokens=1200,
+                minimum_net_codex_saved_tokens=250,
+                input_payload=triage_runner.build_consumer_input_package(
+                    workflow_id="WF-TRIAGE-ROI-NEG-001",
+                    bound_skill_context="janus-test-pipeline",
+                    test_run_id="TEST-RUN-ROI-NEG",
+                    result_outcome_summary="One bounded triage slice only.",
+                    evidence_snippets=["snippet one"],
+                    classification_question="Infra or product bug?",
+                ),
+            )
+
+        self.assertEqual(result["selected_path"], "codex_only_or_roi_gate")
+        self.assertEqual(result["final_outcome"], "LOCAL_CODEX_PATH_SELECTED")
+        self.assertEqual(result["or_roi"]["status"], "NEGATIVE")
+        self.assertEqual(result["codex_owned_outcome_status"], "CODEX_LOCAL_PATH")
+
+    def test_triage_prompt_consumer_shows_or_when_roi_is_positive(self) -> None:
+        fake_dispatcher = types.SimpleNamespace(
+            with_codex_owned_outcome=lambda result: {**result, "codex_owned_outcome_status": "AWAITING_OPERATOR_CHOICE"},
+        )
+
+        with mock.patch.object(triage_runner, "_load_dispatcher_module", return_value=fake_dispatcher):
+            result = triage_runner.run_consumer_flow(
+                workflow_id="WF-TRIAGE-ROI-POS-001",
+                task_label="Triage ROI positive",
+                normal_target_model="5.4 medium",
+                operator_choice="prompt",
+                delegated_model_label="qwen/qwen3-coder-30b-a3b-instruct",
+                estimated_or_cost=0.0003,
+                cost_estimate_confidence_percent=80.0,
+                estimated_codex_saved_tokens=3000,
+                estimated_codex_or_overhead_tokens=900,
+                minimum_net_codex_saved_tokens=500,
+                input_payload=triage_runner.build_consumer_input_package(
+                    workflow_id="WF-TRIAGE-ROI-POS-001",
+                    bound_skill_context="janus-test-pipeline",
+                    test_run_id="TEST-RUN-ROI-POS",
+                    result_outcome_summary="One bounded triage slice only.",
+                    evidence_snippets=["snippet one"],
+                    classification_question="Infra or product bug?",
+                ),
+            )
+
+        self.assertEqual(result["final_outcome"], "AWAITING_OPERATOR_CHOICE")
+        self.assertEqual(result["choice_2"], "OR")
+        self.assertEqual(result["or_roi"]["status"], "POSITIVE")
+        self.assertEqual(result["codex_owned_outcome_status"], "AWAITING_OPERATOR_CHOICE")
+
+    def test_debug_delegated_consumer_writes_package_before_dispatcher_invocation(self) -> None:
+        fixture_path = self._write_json(self.temp_path / "debug_fixture.json", {"status": "PASS"})
+        captured: dict[str, object] = {}
+
+        def fake_invoke(args, workflow_id):
+            captured["workflow_id"] = workflow_id
+            captured["task_class"] = args.task_class
+            captured["debug_input_package"] = str(args.debug_input_package)
+            captured["debug_fixture_result"] = str(args.debug_fixture_result)
+            return {
+                "workflow_id": workflow_id,
+                "selected_path": "delegated_assist_only_hypothesis_review",
+                "final_outcome": "DEBUG_HYPOTHESIS_REVIEW_READY_FOR_CODEX_VALIDATION",
+                "validation_result": "PASS",
+                "fallback_used": "NO",
+                "rework_required": "NO",
+            }
 
         fake_dispatcher = types.SimpleNamespace(
             invoke_debug_hypothesis_review=fake_invoke,
-            with_codex_owned_outcome=lambda result: {**result, "codex_owned_outcome_status": "CODEX_REVIEW_REQUIRED"},
+            with_codex_owned_outcome=lambda result: {**result, "codex_owned_outcome_status": "DELEGATED_REVIEW_PENDING_CODEX_DECISION"},
         )
 
         with mock.patch.object(debug_runner, "_load_dispatcher_module", return_value=fake_dispatcher):
@@ -197,18 +315,133 @@ class AssistiveOrReviewConsumerIntegrationTests(unittest.TestCase):
                     explicit_question="What verifier next?",
                 ),
                 fixture_result_json=fixture_path,
-                use_local_or_fixture=True,
             )
 
-        self.assertEqual(result["codex_owned_outcome_status"], "CODEX_REVIEW_REQUIRED")
-        self.assertEqual(result["selected_path"], "delegated_selection_recorded_pending_task_spec23_2")
-        self.assertEqual(result["execution_status"], "NOT_STARTED_SCOPE_BOUNDARY")
-        self.assertEqual(result["final_outcome"], "DELEGATED_SELECTION_RECORDED_PENDING_TASK_SPEC23_2")
-        self.assertFalse(invoke_called["value"])
-        package_path = Path(str(result["input_package_path"]))
+        self.assertEqual(result["codex_owned_outcome_status"], "DELEGATED_REVIEW_PENDING_CODEX_DECISION")
+        self.assertEqual(result["selected_path"], "delegated_assist_only_hypothesis_review")
+        self.assertEqual(result["final_outcome"], "DEBUG_HYPOTHESIS_REVIEW_READY_FOR_CODEX_VALIDATION")
+        self.assertEqual(captured["task_class"], "debug_hypothesis_review")
+        package_path = Path(str(captured["debug_input_package"]))
         self.assertTrue(package_path.exists())
         package_payload = json.loads(package_path.read_text(encoding="utf-8"))
         self.assertEqual(package_payload["workflow_id"], "WF-DEBUG-DELEGATED-001")
+        self.assertEqual(captured["debug_fixture_result"], str(fixture_path))
+
+    def test_debug_delegated_consumer_surfaces_visible_codex_fallback_on_failed_review(self) -> None:
+        fixture_path = self._write_json(self.temp_path / "debug_failed_fixture.json", {"status": "WEAK_SIGNAL"})
+
+        fake_dispatcher = types.SimpleNamespace(
+            invoke_debug_hypothesis_review=lambda args, workflow_id: {
+                "workflow_id": workflow_id,
+                "selected_path": "abort_post_healthcheck",
+                "final_outcome": "DEBUG_HYPOTHESIS_REVIEW_REJECT_AND_FALLBACK",
+                "validation_result": "FAIL",
+                "fallback_used": "YES",
+                "rework_required": "YES",
+                "operator_message": "Fallback to Codex-only debug is required.",
+            },
+            with_codex_owned_outcome=lambda result: {**result, "codex_owned_outcome_status": "DELEGATED_REJECT_AND_FALLBACK"},
+        )
+
+        with mock.patch.object(debug_runner, "_load_dispatcher_module", return_value=fake_dispatcher):
+            result = debug_runner.run_consumer_flow(
+                workflow_id="WF-DEBUG-DELEGATED-FAIL-001",
+                task_label="Debug delegated fallback",
+                normal_target_model="5.4 medium",
+                operator_choice="delegated",
+                delegated_model_label="qwen/qwen3.5-flash-02-23",
+                estimated_or_cost=0.0004,
+                cost_estimate_confidence_percent=81.0,
+                input_payload=debug_runner.build_consumer_input_package(
+                    workflow_id="WF-DEBUG-DELEGATED-FAIL-001",
+                    bound_skill_context="janus-debug",
+                    expected_behavior="One bounded hypothesis review only.",
+                    actual_behavior="Failed delegated review must fall back visibly to Codex.",
+                    evidence_snippets=["snippet one"],
+                    iteration_number=2,
+                    explicit_question="What verifier next?",
+                ),
+                fixture_result_json=fixture_path,
+            )
+
+        self.assertEqual(result["validation_result"], "FAIL")
+        self.assertEqual(result["final_outcome"], "DEBUG_HYPOTHESIS_REVIEW_REJECT_AND_FALLBACK")
+        self.assertEqual(result["fallback_used"], "YES")
+        self.assertEqual(result["codex_owned_outcome_status"], "DELEGATED_REJECT_AND_FALLBACK")
+
+    def test_debug_delegated_consumer_without_runtime_mode_falls_back_before_dispatch(self) -> None:
+        fake_dispatcher = types.SimpleNamespace(
+            invoke_debug_hypothesis_review=lambda args, workflow_id: self.fail("delegated dispatcher should not be invoked"),
+            with_codex_owned_outcome=lambda result: {**result, "codex_owned_outcome_status": "DELEGATED_REJECT_AND_FALLBACK"},
+        )
+
+        with mock.patch.object(debug_runner, "_load_dispatcher_module", return_value=fake_dispatcher):
+            result = debug_runner.run_consumer_flow(
+                workflow_id="WF-DEBUG-DELEGATED-NO-MODE-001",
+                task_label="Debug delegated no mode",
+                normal_target_model="5.4 medium",
+                operator_choice="delegated",
+                delegated_model_label="qwen/qwen3.5-flash-02-23",
+                estimated_or_cost=0.0004,
+                cost_estimate_confidence_percent=81.0,
+                input_payload=debug_runner.build_consumer_input_package(
+                    workflow_id="WF-DEBUG-DELEGATED-NO-MODE-001",
+                    bound_skill_context="janus-debug",
+                    expected_behavior="Delegated flow should require one explicit runtime mode.",
+                    actual_behavior="No fixture or live mode should fall back locally before dispatch.",
+                    evidence_snippets=["snippet one"],
+                    iteration_number=1,
+                    explicit_question="What verifier next?",
+                ),
+            )
+
+        self.assertEqual(result["selected_path"], "codex_local_fallback_missing_delegated_runtime_mode")
+        self.assertEqual(result["delegated_runtime_reason_code"], "DELEGATED_RUNTIME_MODE_REQUIRED")
+        self.assertEqual(result["final_outcome"], "DEBUG_HYPOTHESIS_REVIEW_REJECT_AND_FALLBACK")
+        self.assertEqual(result["codex_owned_outcome_status"], "DELEGATED_REJECT_AND_FALLBACK")
+
+    def test_debug_delegated_consumer_fixture_uses_real_dispatcher_without_self_spawn(self) -> None:
+        fixture_path = self._write_json(
+            self.temp_path / "debug_real_dispatcher_fixture.json",
+            self._debug_fixture_response(),
+        )
+        original_run_command = dispatcher.run_command
+        commands: list[list[str]] = []
+
+        def recording_run_command(command: list[str]):
+            commands.append(command)
+            if len(command) > 1 and Path(command[1]).resolve() == dispatcher.DEBUG_REVIEW_RUNNER.resolve():
+                self.fail("consumer fixture path must not spawn the debug runner as a child process")
+            return original_run_command(command)
+
+        with mock.patch.object(debug_runner, "_load_dispatcher_module", return_value=dispatcher):
+            with mock.patch.object(dispatcher, "run_command", side_effect=recording_run_command):
+                result = debug_runner.run_consumer_flow(
+                    workflow_id="WF-DEBUG-DELEGATED-REAL-001",
+                    task_label="Debug delegated real dispatcher",
+                    normal_target_model="5.4 medium",
+                    operator_choice="delegated",
+                    delegated_model_label="qwen/qwen3.5-flash-02-23",
+                    estimated_or_cost=0.0004,
+                    cost_estimate_confidence_percent=81.0,
+                    input_payload=debug_runner.build_consumer_input_package(
+                        workflow_id="WF-DEBUG-DELEGATED-REAL-001",
+                        bound_skill_context="janus-debug",
+                        expected_behavior="Exactly one bounded fixture-backed review should run through the shared dispatcher.",
+                        actual_behavior="The consumer should resolve fixture mode and avoid self-recursion.",
+                        evidence_snippets=["snippet one"],
+                        iteration_number=1,
+                        explicit_question="What verifier next?",
+                    ),
+                    fixture_result_json=fixture_path,
+                )
+
+        self.assertEqual(result["selected_path"], "delegated_assist_only_hypothesis_review")
+        self.assertEqual(result["validation_result"], "PASS")
+        self.assertEqual(result["final_outcome"], "DEBUG_HYPOTHESIS_REVIEW_READY_FOR_CODEX_VALIDATION")
+        self.assertTrue(Path(result["response_summary_path"]).exists())
+        self.assertTrue(Path(result["telemetry_jsonl_path"]).exists())
+        self.assertGreaterEqual(len(commands), 2)
 
     def test_debug_productive_gate_rejects_other_debug_modes(self) -> None:
         result = debug_runner.evaluate_productive_gate(
@@ -256,6 +489,11 @@ class AssistiveOrReviewConsumerIntegrationTests(unittest.TestCase):
                 normal_target_model="5.4 medium",
                 operator_choice="2",
                 delegated_model_label="openai/gpt-oss-20b",
+                estimated_or_cost=0.0003,
+                cost_estimate_confidence_percent=80.0,
+                estimated_codex_saved_tokens=2500,
+                estimated_codex_or_overhead_tokens=900,
+                minimum_net_codex_saved_tokens=500,
                 input_payload=triage_runner.build_consumer_input_package(
                     workflow_id="WF-TRIAGE-DELEGATED-001",
                     bound_skill_context="janus-test-pipeline",
@@ -303,20 +541,33 @@ class AssistiveOrReviewConsumerIntegrationTests(unittest.TestCase):
         self.assertEqual(payload["selected_path"], "codex_only_pre_gate")
         self.assertEqual(payload["eligibility_reason_code"], "DEBUG_PACKAGE_REQUIRED")
 
-    def test_debug_cli_delegated_records_selection_without_fixture_execution(self) -> None:
+    def test_debug_cli_delegated_fixture_executes_bounded_review_path_without_self_spawn(self) -> None:
         input_path = self._write_json(
             self.temp_path / "debug_input.json",
             debug_runner.build_consumer_input_package(
                 workflow_id="WF-DEBUG-CLI-DELEGATED-001",
                 bound_skill_context="janus-debug",
                 expected_behavior="One bounded hypothesis review only.",
-                actual_behavior="CLI delegated selection should stay gate-only in TASK-SPEC23.1.",
+                actual_behavior="CLI delegated selection should execute the bounded review path.",
                 evidence_snippets=["snippet one"],
                 iteration_number=1,
                 explicit_question="What verifier next?",
             ),
         )
+        fixture_path = self._write_json(
+            self.temp_path / "debug_cli_fixture_response.json",
+            self._debug_fixture_response(),
+        )
         stdout = io.StringIO()
+        original_run_command = dispatcher.run_command
+        commands: list[list[str]] = []
+
+        def recording_run_command(command: list[str]):
+            commands.append(command)
+            if len(command) > 1 and Path(command[1]).resolve() == dispatcher.DEBUG_REVIEW_RUNNER.resolve():
+                self.fail("CLI delegated fixture path must not spawn the debug runner as a child process")
+            return original_run_command(command)
+
         argv = [
             "codex_debug_hypothesis_review_runner.py",
             "--task-label",
@@ -335,17 +586,23 @@ class AssistiveOrReviewConsumerIntegrationTests(unittest.TestCase):
             "81",
             "--input-package-json",
             str(input_path),
+            "--fixture-result-json",
+            str(fixture_path),
         ]
 
-        with mock.patch.object(sys, "argv", argv):
-            with redirect_stdout(stdout):
-                exit_code = debug_runner.main()
+        with mock.patch.object(debug_runner, "_load_dispatcher_module", return_value=dispatcher):
+            with mock.patch.object(dispatcher, "run_command", side_effect=recording_run_command):
+                with mock.patch.object(sys, "argv", argv):
+                    with redirect_stdout(stdout):
+                        exit_code = debug_runner.main()
 
         self.assertEqual(exit_code, 0)
         payload = json.loads(stdout.getvalue())
-        self.assertEqual(payload["selected_path"], "delegated_selection_recorded_pending_task_spec23_2")
-        self.assertEqual(payload["execution_status"], "NOT_STARTED_SCOPE_BOUNDARY")
-        self.assertEqual(payload["task_scope_boundary"], "TASK-SPEC23.2_REQUIRED_FOR_DELEGATED_EXECUTION")
+        self.assertEqual(payload["selected_path"], "delegated_assist_only_hypothesis_review")
+        self.assertEqual(payload["final_outcome"], "DEBUG_HYPOTHESIS_REVIEW_READY_FOR_CODEX_VALIDATION")
+        self.assertEqual(payload["codex_owned_outcome_status"], "DELEGATED_REVIEW_PENDING_CODEX_DECISION")
+        self.assertTrue(Path(payload["response_summary_path"]).exists())
+        self.assertGreaterEqual(len(commands), 2)
 
 
 if __name__ == "__main__":

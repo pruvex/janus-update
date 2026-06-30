@@ -24,6 +24,7 @@ DEBUG_REVIEW_RUNNER = MODEL_ROUTING_DIR / "scripts" / "codex_debug_hypothesis_re
 TEST_TRIAGE_RUNNER = MODEL_ROUTING_DIR / "scripts" / "codex_test_result_triage_review_runner.py"
 EXECUTION_PATCH_RUNNER = MODEL_ROUTING_DIR / "scripts" / "codex_execution_patch_candidate_runner.py"
 DIRECT_OR_EXECUTION_PATCH_RUNNER = MODEL_ROUTING_DIR / "scripts" / "openrouter_direct_execution_patch_candidate_runner.py"
+QWEN_OR_EXECUTION_PATCH_RUNNER = MODEL_ROUTING_DIR / "scripts" / "openrouter_qwen_execution_patch_candidate_runner.py"
 EXECUTION_WRITE_APPLY_RUNNER = MODEL_ROUTING_DIR / "scripts" / "codex_execution_write_apply_candidate_runner.py"
 RUN_ROOT = MODEL_ROUTING_DIR / "bounded-dispatch-runs"
 OR_TELEMETRY_DIR = MODEL_ROUTING_DIR
@@ -43,12 +44,18 @@ if str(MODEL_ROUTING_DIR / "scripts") not in sys.path:
 import codex_debug_hypothesis_review_runner as debug_review_runner
 import codex_test_result_triage_review_runner as triage_review_runner
 from bounded_or_worker_eligibility import (
+    evaluate_dispatch_task_class,
     evaluate_assistive_or_workhorse_pilot,
+    evaluate_existing_skill_operator_gate_visibility,
 )
 from bounded_or_worker_gate_prompt import (
     build_missing_gate_result,
     build_operator_prompt_lines,
+    build_or_roi,
+    build_or_roi_gate_result,
+    build_visibility_suppressed_result,
     missing_gate_fields,
+    should_enforce_or_roi,
 )
 from bounded_or_worker_outcome import normalize_codex_owned_outcome
 from codex_structured_action_request_builder import validate_bounded_review_payload
@@ -177,6 +184,19 @@ def parse_json_from_text(text: str) -> dict[str, object]:
     raise ValueError("response content is not a JSON object")
 
 
+def resolve_selected_or_model(args: argparse.Namespace, eligibility: dict[str, object] | None = None) -> str:
+    selected = str(getattr(args, "selected_or_model", "") or "").strip()
+    if selected:
+        return selected
+    if str(getattr(args, "task_class", "") or "").strip() == "documentation_draft":
+        return "codex-cli/gpt-5.4-read-only-sidecar"
+    if eligibility is not None:
+        selected = str(eligibility.get("selected_or_model") or "").strip()
+        if selected:
+            return selected
+    return ""
+
+
 def invoke_file_first_wrapper(
     *,
     run_dir: Path,
@@ -249,8 +269,8 @@ PILOT_TASK_CLASS_SKILL_MAP = {
 }
 
 PILOT_VISIBLE_GATE_LABELS = {
-    "debug_hypothesis_review": "OR-Arbeitspferd",
-    "test_result_triage_review": "OR-Arbeitspferd",
+    "debug_hypothesis_review": "OR",
+    "test_result_triage_review": "OR",
 }
 
 PILOT_REQUEST_ALLOWLISTS = {
@@ -357,11 +377,13 @@ TRIAGE_REVIEW_RESULT_SCHEMA = {
 
 
 def evaluate_assistive_or_workhorse_dispatcher_eligibility(*, task_class: str) -> dict:
-    skill_id = PILOT_TASK_CLASS_SKILL_MAP.get(task_class, "__non_pilot_dispatcher_task__")
-    return evaluate_assistive_or_workhorse_pilot(
-        skill_id=skill_id,
-        task_class=task_class,
-    )
+    if task_class in PILOT_TASK_CLASS_SKILL_MAP:
+        skill_id = PILOT_TASK_CLASS_SKILL_MAP[task_class]
+        return evaluate_assistive_or_workhorse_pilot(
+            skill_id=skill_id,
+            task_class=task_class,
+        )
+    return evaluate_dispatch_task_class(task_class=task_class)
 
 
 def validate_assistive_or_workhorse_request(
@@ -1019,6 +1041,7 @@ def invoke_write_candidate_entry_gate(args: argparse.Namespace, workflow_id: str
 
 def prompt_summary(args: argparse.Namespace, workflow_id: str) -> dict:
     eligibility = evaluate_assistive_or_workhorse_dispatcher_eligibility(task_class=args.task_class)
+    resolved_selected_or_model = resolve_selected_or_model(args, eligibility)
     if eligibility["eligibility_result"] != "OR_ALLOWED":
         return {
             "summary_header": "BOUNDED DELEGATION DISPATCH RESULT",
@@ -1037,8 +1060,30 @@ def prompt_summary(args: argparse.Namespace, workflow_id: str) -> dict:
             ],
             "operator_message": eligibility["message"],
         }
+    visibility = evaluate_existing_skill_operator_gate_visibility(
+        subject_type="dispatcher_task_class",
+        subject_id=args.task_class,
+    )
+    if visibility["operator_gate_visibility"] != "VISIBLE":
+        return {
+            **build_visibility_suppressed_result(
+                workflow_id=workflow_id,
+                task_label=args.task_label,
+                selected_path="codex_only_visibility_hidden",
+                final_outcome="LOCAL_CODEX_PATH_SELECTED",
+                normal_target_model=args.normal_target_model,
+                visibility_status=visibility["visibility_status"],
+                suppression_reason=visibility["reason_code"],
+                selected_or_model=resolved_selected_or_model or None,
+                task_class=args.task_class,
+                evidence_status=eligibility["evidence_status"],
+            ),
+            "eligibility_result": eligibility["eligibility_result"],
+            "eligibility_reason_code": eligibility["reason_code"],
+            "evidence_status": eligibility["evidence_status"],
+        }
     missing_fields = missing_gate_fields(
-        selected_or_model=getattr(args, "selected_or_model", None),
+        selected_or_model=resolved_selected_or_model or None,
         estimated_or_cost=getattr(args, "estimated_or_cost", None),
         cost_estimate_confidence_percent=getattr(args, "cost_estimate_confidence_percent", None),
     )
@@ -1055,8 +1100,29 @@ def prompt_summary(args: argparse.Namespace, workflow_id: str) -> dict:
             eligibility_reason_code=eligibility["reason_code"],
             evidence_status=eligibility["evidence_status"],
         )
+    roi = build_or_roi(
+        estimated_codex_saved_tokens=getattr(args, "estimated_codex_saved_tokens", None),
+        estimated_codex_or_overhead_tokens=getattr(args, "estimated_codex_or_overhead_tokens", None),
+        minimum_net_codex_saved_tokens=getattr(args, "minimum_net_codex_saved_tokens", 0),
+    )
+    if should_enforce_or_roi(
+        estimated_codex_saved_tokens=getattr(args, "estimated_codex_saved_tokens", None),
+        estimated_codex_or_overhead_tokens=getattr(args, "estimated_codex_or_overhead_tokens", None),
+        require_positive_or_roi=bool(getattr(args, "require_positive_or_roi", False)),
+    ) and roi["status"] != "POSITIVE":
+        return build_or_roi_gate_result(
+            workflow_id=workflow_id,
+            task_label=args.task_label,
+            selected_path="codex_only_or_roi_gate",
+            normal_target_model=args.normal_target_model,
+            task_class=args.task_class,
+            eligibility_result=eligibility["eligibility_result"],
+            eligibility_reason_code=eligibility["reason_code"],
+            evidence_status=eligibility["evidence_status"],
+            roi=roi,
+        )
     route_notes = {
-        "documentation_draft": "Uses the read-only documentation sidecar draft runner.",
+        "documentation_draft": "Uses the bounded external read-only documentation draft helper.",
         "quickchange_patch_review": "Uses the bounded quickchange patch-review helper and optional structured patch capture.",
         "quickchange_write_apply": "Uses the bounded quickchange write-apply helper backed by accepted workspace-write evidence.",
         "generator_review": "Uses the local structured generator-review helper with deterministic executor validation.",
@@ -1066,7 +1132,7 @@ def prompt_summary(args: argparse.Namespace, workflow_id: str) -> dict:
         "execution_write_apply_candidate": "Uses the bounded execution write-apply candidate helper backed by an accepted proposal-first execution package and Codex-owned future live-write approval.",
     }
     delegated_meaning = {
-        "documentation_draft": "Sidecar read-only draft, then Codex review.",
+        "documentation_draft": "External read-only draft helper, then Codex review and binding local writes.",
         "quickchange_patch_review": "OpenRouter patch proposal flow, still bounded and review-first.",
         "quickchange_write_apply": "OpenRouter bounded workspace-write quickchange, but Codex still owns diff validation and final acceptance.",
         "generator_review": "Delegated intent, but local deterministic builder/executor path instead of sidecar write execution.",
@@ -1075,31 +1141,43 @@ def prompt_summary(args: argparse.Namespace, workflow_id: str) -> dict:
         "execution_patch_candidate": "Delegated proposal-only execution patch candidate, but Codex still owns patch review, apply/reject, and final task completion.",
         "execution_write_apply_candidate": "Delegated bounded execution write candidate, but Codex still owns future live-write approval, diff review, validation review, and final task completion.",
     }
-    choice_2_label = PILOT_VISIBLE_GATE_LABELS.get(args.task_class, "OpenRouter")
+    choice_2_label = PILOT_VISIBLE_GATE_LABELS.get(args.task_class, "OR")
+    operator_prompt_lines = build_operator_prompt_lines(
+        choice_2_label=choice_2_label,
+        selected_or_model=resolved_selected_or_model,
+        estimated_or_cost=float(args.estimated_or_cost),
+        cost_estimate_confidence_percent=float(args.cost_estimate_confidence_percent),
+    )
+    if roi["status"] in {"POSITIVE", "NEGATIVE"}:
+        operator_prompt_lines.append(
+            "OR ROI Gate: "
+            f"{roi['status']} (geschaetzte Codex-Ersparnis {roi['estimated_codex_saved_tokens']} Tokens, "
+            f"OR-Overhead {roi['estimated_codex_or_overhead_tokens']} Tokens, "
+            f"netto {roi['net_codex_saved_tokens']} Tokens)"
+        )
+
     return {
         "summary_header": "BOUNDED DELEGATION DISPATCH GATE",
         "workflow_id": workflow_id,
         "task_class": args.task_class,
         "task_label": args.task_label,
+        "operator_gate_visibility": visibility["operator_gate_visibility"],
+        "visibility_status": visibility["visibility_status"],
         "eligibility_result": eligibility["eligibility_result"],
         "eligibility_reason_code": eligibility["reason_code"],
         "evidence_status": eligibility["evidence_status"],
         "normal_target_model": args.normal_target_model,
-        "selected_or_model": args.selected_or_model,
+        "selected_or_model": resolved_selected_or_model,
         "estimated_or_cost": float(args.estimated_or_cost),
         "cost_estimate_confidence_percent": float(args.cost_estimate_confidence_percent),
+        "or_roi": roi,
         "choice_1": "Codex",
         "choice_2": choice_2_label,
         "delegated_meaning": delegated_meaning[args.task_class],
         "route_note": route_notes[args.task_class],
         "final_outcome": "AWAITING_OPERATOR_CHOICE",
         "validation_result": "PASS",
-        "operator_prompt_lines": build_operator_prompt_lines(
-            choice_2_label=choice_2_label,
-            selected_or_model=str(args.selected_or_model),
-            estimated_or_cost=float(args.estimated_or_cost),
-            cost_estimate_confidence_percent=float(args.cost_estimate_confidence_percent),
-        ),
+        "operator_prompt_lines": operator_prompt_lines,
         "boundaries": [
             "No production routing",
             "No canonical routing-table update",
@@ -1117,6 +1195,7 @@ def local_summary(args: argparse.Namespace, workflow_id: str) -> dict:
         "task_class": args.task_class,
         "task_label": args.task_label,
         "selected_path": "codex_only_operator_choice",
+        "selected_or_model": resolve_selected_or_model(args, eligibility),
         "eligibility_result": eligibility["eligibility_result"],
         "eligibility_reason_code": eligibility["reason_code"],
         "evidence_status": eligibility["evidence_status"],
@@ -1160,7 +1239,7 @@ def invoke_quickchange_patch_review(args: argparse.Namespace, workflow_id: str) 
         raise SystemExit("quickchange_patch_review delegated flow requires --prompt-path")
     if not args.editable_path:
         raise SystemExit("quickchange_patch_review delegated flow requires at least one --editable-path")
-    selected_model = args.selected_or_model or "gpt-5.4"
+    selected_model = str(getattr(args, "selected_or_model", "") or "").strip() or "gpt-5.4"
     if "/" in selected_model:
         command = [
             "python",
@@ -1410,15 +1489,21 @@ def invoke_execution_patch_candidate(args: argparse.Namespace, workflow_id: str)
     if args.execution_input_package is None:
         raise SystemExit("execution_patch_candidate delegated flow requires --execution-input-package")
     if (args.selected_or_model and "/" in args.selected_or_model) or args.execute_direct_or or args.use_local_or_fixture:
+        selected_model = args.selected_or_model or "openai/gpt-oss-20b"
+        direct_runner = (
+            QWEN_OR_EXECUTION_PATCH_RUNNER
+            if str(selected_model).strip().lower().startswith("qwen/")
+            else DIRECT_OR_EXECUTION_PATCH_RUNNER
+        )
         command = [
             "python",
-            str(DIRECT_OR_EXECUTION_PATCH_RUNNER),
+            str(direct_runner),
             "--task-label",
             args.task_label,
             "--normal-target-model",
             args.normal_target_model,
             "--model",
-            args.selected_or_model or "openai/gpt-oss-20b",
+            selected_model,
             "--task-class",
             args.task_class,
             "--workflow-id",
@@ -1511,6 +1596,18 @@ def invoke_execution_write_apply_candidate(args: argparse.Namespace, workflow_id
         "--accepted-source-run-dir",
         str(args.accepted_source_run_dir.resolve()),
     ]
+    if getattr(args, "execution_live_sidecar", False):
+        command.extend(
+            [
+                "--sidecar-model",
+                args.execution_sidecar_model,
+                "--sidecar-timeout-seconds",
+                str(args.execution_sidecar_timeout_seconds),
+                "--working-directory",
+                str(REPO_ROOT),
+                "--execute-live-sidecar",
+            ]
+        )
     completed = run_command(command)
     if completed.returncode != 0:
         raise SystemExit(f"execution_write_apply_candidate flow failed:\nSTDOUT:\n{completed.stdout}\nSTDERR:\n{completed.stderr}")
@@ -1560,6 +1657,10 @@ def main() -> int:
     parser.add_argument("--execution-sidecar-timeout-seconds", type=int, default=180)
     parser.add_argument("--execution-live-sidecar", action="store_true")
     parser.add_argument("--accepted-source-run-dir", type=Path, default=None)
+    parser.add_argument("--estimated-codex-saved-tokens", type=int, default=None)
+    parser.add_argument("--estimated-codex-or-overhead-tokens", type=int, default=None)
+    parser.add_argument("--minimum-net-codex-saved-tokens", type=int, default=0)
+    parser.add_argument("--require-positive-or-roi", action="store_true")
     args = parser.parse_args()
 
     workflow_id = args.workflow_id
@@ -1567,6 +1668,10 @@ def main() -> int:
     run_dir.mkdir(parents=True, exist_ok=True)
     choice = normalize_choice(args.operator_choice)
     eligibility = evaluate_assistive_or_workhorse_dispatcher_eligibility(task_class=args.task_class)
+    if not args.selected_or_model:
+        resolved_selected_or_model = resolve_selected_or_model(args, eligibility)
+        if resolved_selected_or_model:
+            args.selected_or_model = resolved_selected_or_model
 
     if choice == "prompt":
         result = with_codex_owned_outcome(prompt_summary(args, workflow_id))

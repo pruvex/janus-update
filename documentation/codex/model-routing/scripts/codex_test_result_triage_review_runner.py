@@ -15,14 +15,19 @@ from argparse import Namespace
 REPO_ROOT = Path(__file__).resolve().parents[4]
 MODEL_ROUTING_DIR = REPO_ROOT / "documentation" / "codex" / "model-routing"
 RUN_ROOT = MODEL_ROUTING_DIR / "test-triage-runs"
+DEFAULT_TEST_TRIAGE_OR_MODEL = "qwen/qwen3-coder-30b-a3b-instruct"
 if str(MODEL_ROUTING_DIR / "scripts") not in sys.path:
     sys.path.insert(0, str(MODEL_ROUTING_DIR / "scripts"))
 
 from bounded_or_worker_gate_prompt import (
     build_missing_gate_result,
     build_operator_prompt_lines,
+    build_or_roi,
+    build_or_roi_gate_result,
     missing_gate_fields,
+    should_enforce_or_roi,
 )
+from bounded_or_worker_eligibility import evaluate_assistive_or_workhorse_pilot
 
 REQUIRED_INPUT_FIELDS = [
     "workflow_id",
@@ -183,6 +188,10 @@ def prompt_summary(
     delegated_model_label: str,
     estimated_or_cost: float | None,
     cost_estimate_confidence_percent: float | None,
+    estimated_codex_saved_tokens: int | None = None,
+    estimated_codex_or_overhead_tokens: int | None = None,
+    minimum_net_codex_saved_tokens: int = 0,
+    require_positive_or_roi: bool = False,
 ) -> dict[str, Any]:
     missing_fields = missing_gate_fields(
         selected_or_model=delegated_model_label,
@@ -199,6 +208,38 @@ def prompt_summary(
             normal_target_model=normal_target_model,
             skill="janus-test-pipeline",
         )
+    roi = build_or_roi(
+        estimated_codex_saved_tokens=estimated_codex_saved_tokens,
+        estimated_codex_or_overhead_tokens=estimated_codex_or_overhead_tokens,
+        minimum_net_codex_saved_tokens=minimum_net_codex_saved_tokens,
+    )
+    if should_enforce_or_roi(
+        estimated_codex_saved_tokens=estimated_codex_saved_tokens,
+        estimated_codex_or_overhead_tokens=estimated_codex_or_overhead_tokens,
+        require_positive_or_roi=require_positive_or_roi,
+    ) and roi["status"] != "POSITIVE":
+        return build_or_roi_gate_result(
+            workflow_id=workflow_id,
+            task_label=task_label,
+            selected_path="codex_only_or_roi_gate",
+            normal_target_model=normal_target_model,
+            skill="janus-test-pipeline",
+            task_class="test_result_triage_review",
+            roi=roi,
+        )
+    operator_prompt_lines = build_operator_prompt_lines(
+        choice_2_label="OR",
+        selected_or_model=delegated_model_label,
+        estimated_or_cost=float(estimated_or_cost),
+        cost_estimate_confidence_percent=float(cost_estimate_confidence_percent),
+    )
+    if roi["status"] in {"POSITIVE", "NEGATIVE"}:
+        operator_prompt_lines.append(
+            "OR ROI Gate: "
+            f"{roi['status']} (geschaetzte Codex-Ersparnis {roi['estimated_codex_saved_tokens']} Tokens, "
+            f"OR-Overhead {roi['estimated_codex_or_overhead_tokens']} Tokens, "
+            f"netto {roi['net_codex_saved_tokens']} Tokens)"
+        )
     return {
         "summary_header": "TEST RESULT TRIAGE REVIEW GATE",
         "workflow_id": workflow_id,
@@ -209,16 +250,12 @@ def prompt_summary(
         "selected_or_model": delegated_model_label,
         "estimated_or_cost": float(estimated_or_cost),
         "cost_estimate_confidence_percent": float(cost_estimate_confidence_percent),
+        "or_roi": roi,
         "choice_1": "Codex",
-        "choice_2": "OR-Arbeitspferd",
+        "choice_2": "OR",
         "delegated_model_label": delegated_model_label,
         "expected_delegation_value": "bounded assist-only triage review with no live execution and no final PASS decision",
-        "operator_prompt_lines": build_operator_prompt_lines(
-            choice_2_label="OR-Arbeitspferd",
-            selected_or_model=delegated_model_label,
-            estimated_or_cost=float(estimated_or_cost),
-            cost_estimate_confidence_percent=float(cost_estimate_confidence_percent),
-        ),
+        "operator_prompt_lines": operator_prompt_lines,
         "boundaries": [
             "No delegated live test execution",
             "No delegated runner generation",
@@ -270,10 +307,88 @@ def build_consumer_input_package(
     return payload
 
 
+def evaluate_productive_gate(
+    *,
+    input_payload: dict[str, Any] | None,
+    task_class: str = "test_result_triage_review",
+) -> dict[str, Any]:
+    return evaluate_assistive_or_workhorse_pilot(
+        skill_id="janus-test-pipeline",
+        task_class=task_class,
+        request_payload=input_payload,
+    )
+
+
+def productive_gate_summary(
+    *,
+    workflow_id: str,
+    task_label: str,
+    normal_target_model: str,
+    delegated_model_label: str,
+    estimated_or_cost: float | None,
+    cost_estimate_confidence_percent: float | None,
+    input_payload: dict[str, Any] | None,
+    estimated_codex_saved_tokens: int | None = None,
+    estimated_codex_or_overhead_tokens: int | None = None,
+    minimum_net_codex_saved_tokens: int = 0,
+    require_positive_or_roi: bool = False,
+) -> dict[str, Any]:
+    eligibility = evaluate_productive_gate(input_payload=input_payload)
+    if eligibility["eligibility_result"] != "OR_ALLOWED":
+        return {
+            "summary_header": "TEST RESULT TRIAGE REVIEW GATE",
+            "workflow_id": workflow_id,
+            "skill": "janus-test-pipeline",
+            "task_label": task_label,
+            "selected_path": "codex_only_pre_gate",
+            "normal_target_model": normal_target_model,
+            "delegated_model_label": delegated_model_label,
+            "eligibility_result": eligibility["eligibility_result"],
+            "eligibility_reason_code": eligibility["reason_code"],
+            "evidence_status": eligibility.get("evidence_status", "N_A"),
+            "validation_result": "PASS",
+            "final_outcome": "LOCAL_CODEX_PATH_SELECTED",
+            "operator_result_lines": [
+                f"Ergebnis: {eligibility['eligibility_result']}",
+                "Route: janus-test-pipeline bleibt Codex-only vor dem sichtbaren OR-Gate",
+            ],
+            "operator_message": eligibility["message"],
+        }
+    return {
+        **prompt_summary(
+            workflow_id=workflow_id,
+            task_label=task_label,
+            normal_target_model=normal_target_model,
+            delegated_model_label=delegated_model_label,
+            estimated_or_cost=estimated_or_cost,
+            cost_estimate_confidence_percent=cost_estimate_confidence_percent,
+            estimated_codex_saved_tokens=estimated_codex_saved_tokens,
+            estimated_codex_or_overhead_tokens=estimated_codex_or_overhead_tokens,
+            minimum_net_codex_saved_tokens=minimum_net_codex_saved_tokens,
+            require_positive_or_roi=require_positive_or_roi,
+        ),
+        "eligibility_result": eligibility["eligibility_result"],
+        "eligibility_reason_code": eligibility["reason_code"],
+        "evidence_status": eligibility.get("evidence_status", "N_A"),
+    }
+
+
 def _load_dispatcher_module():
     import codex_bounded_delegation_dispatcher as dispatcher
 
     return dispatcher
+
+
+def _resolve_input_payload(
+    *,
+    input_payload: dict[str, Any] | None,
+    input_package_path: Path | None,
+) -> dict[str, Any] | None:
+    if input_payload is not None:
+        return input_payload
+    if input_package_path is None:
+        return None
+    return load_json(input_package_path.resolve())
 
 
 def run_consumer_flow(
@@ -291,6 +406,10 @@ def run_consumer_flow(
     use_local_or_fixture: bool = False,
     execute_direct_or: bool = False,
     or_local_fixture_response_path: Path | None = None,
+    estimated_codex_saved_tokens: int | None = None,
+    estimated_codex_or_overhead_tokens: int | None = None,
+    minimum_net_codex_saved_tokens: int = 0,
+    require_positive_or_roi: bool = False,
 ) -> dict[str, Any]:
     dispatcher = _load_dispatcher_module()
     choice = normalize_choice(operator_choice)
@@ -301,6 +420,10 @@ def run_consumer_flow(
         package_path = run_dir / "consumer_input_package.json"
         write_json(package_path, input_payload)
         input_package_path = package_path
+    resolved_input_payload = _resolve_input_payload(
+        input_payload=input_payload,
+        input_package_path=input_package_path,
+    )
 
     args = Namespace(
         task_class="test_result_triage_review",
@@ -319,12 +442,43 @@ def run_consumer_flow(
     )
 
     if choice == "prompt":
-        result = dispatcher.with_codex_owned_outcome(dispatcher.prompt_summary(args, workflow_id))
+        result = dispatcher.with_codex_owned_outcome(
+            productive_gate_summary(
+                workflow_id=workflow_id,
+                task_label=task_label,
+                normal_target_model=normal_target_model,
+                delegated_model_label=delegated_model_label,
+                estimated_or_cost=estimated_or_cost,
+                cost_estimate_confidence_percent=cost_estimate_confidence_percent,
+                input_payload=resolved_input_payload,
+                estimated_codex_saved_tokens=estimated_codex_saved_tokens,
+                estimated_codex_or_overhead_tokens=estimated_codex_or_overhead_tokens,
+                minimum_net_codex_saved_tokens=minimum_net_codex_saved_tokens,
+                require_positive_or_roi=require_positive_or_roi,
+            )
+        )
         write_json(run_dir / "consumer_operator_choice_prompt.json", result)
         return result
     if choice == "local":
         result = dispatcher.with_codex_owned_outcome(dispatcher.local_summary(args, workflow_id))
         write_json(run_dir / "consumer_operator_choice_local.json", result)
+        return result
+    gate_result = productive_gate_summary(
+        workflow_id=workflow_id,
+        task_label=task_label,
+        normal_target_model=normal_target_model,
+        delegated_model_label=delegated_model_label,
+        estimated_or_cost=estimated_or_cost,
+        cost_estimate_confidence_percent=cost_estimate_confidence_percent,
+        input_payload=resolved_input_payload,
+        estimated_codex_saved_tokens=estimated_codex_saved_tokens,
+        estimated_codex_or_overhead_tokens=estimated_codex_or_overhead_tokens,
+        minimum_net_codex_saved_tokens=minimum_net_codex_saved_tokens,
+        require_positive_or_roi=require_positive_or_roi,
+    )
+    if gate_result["final_outcome"] != "AWAITING_OPERATOR_CHOICE":
+        result = dispatcher.with_codex_owned_outcome(gate_result)
+        write_json(run_dir / "consumer_operator_choice_delegated.json", result)
         return result
     result = dispatcher.with_codex_owned_outcome(dispatcher.invoke_test_result_triage_review(args, workflow_id))
     write_json(run_dir / "consumer_operator_choice_delegated.json", result)
@@ -337,11 +491,18 @@ def main() -> int:
     parser.add_argument("--normal-target-model", required=True)
     parser.add_argument("--operator-choice", required=True)
     parser.add_argument("--workflow-id", default=None)
-    parser.add_argument("--delegated-model-label", default="bounded delegated review / fixture mode")
+    parser.add_argument("--delegated-model-label", default=DEFAULT_TEST_TRIAGE_OR_MODEL)
     parser.add_argument("--estimated-or-cost", type=float, default=None)
     parser.add_argument("--cost-estimate-confidence-percent", type=float, default=None)
     parser.add_argument("--input-package-json", type=Path, default=None)
     parser.add_argument("--fixture-result-json", type=Path, default=None)
+    parser.add_argument("--use-local-or-fixture", action="store_true")
+    parser.add_argument("--execute-direct-or", action="store_true")
+    parser.add_argument("--or-local-fixture-response-path", type=Path, default=None)
+    parser.add_argument("--estimated-codex-saved-tokens", type=int, default=None)
+    parser.add_argument("--estimated-codex-or-overhead-tokens", type=int, default=None)
+    parser.add_argument("--minimum-net-codex-saved-tokens", type=int, default=0)
+    parser.add_argument("--require-positive-or-roi", action="store_true")
     args = parser.parse_args()
 
     choice = normalize_choice(args.operator_choice)
@@ -349,14 +510,24 @@ def main() -> int:
     run_dir = build_run_dir(workflow_id)
     run_dir.mkdir(parents=True, exist_ok=True)
 
+    input_payload = None
+    if args.input_package_json is not None:
+        input_payload = load_json(args.input_package_json.resolve())
+        write_json(run_dir / "input_package.json", input_payload)
+
     if choice == "prompt":
-        result = prompt_summary(
+        result = productive_gate_summary(
             workflow_id=workflow_id,
             task_label=args.task_label,
             normal_target_model=args.normal_target_model,
             delegated_model_label=args.delegated_model_label,
             estimated_or_cost=args.estimated_or_cost,
             cost_estimate_confidence_percent=args.cost_estimate_confidence_percent,
+            input_payload=input_payload,
+            estimated_codex_saved_tokens=args.estimated_codex_saved_tokens,
+            estimated_codex_or_overhead_tokens=args.estimated_codex_or_overhead_tokens,
+            minimum_net_codex_saved_tokens=args.minimum_net_codex_saved_tokens,
+            require_positive_or_roi=args.require_positive_or_roi,
         )
         write_json(run_dir / "operator_choice_prompt.json", result)
         output(result)
@@ -375,57 +546,28 @@ def main() -> int:
 
     if args.input_package_json is None:
         raise SystemExit("--input-package-json is required for operator-choice delegated")
-    if args.fixture_result_json is None:
-        raise SystemExit("--fixture-result-json is required for operator-choice delegated in local validation mode")
-
-    input_payload = load_json(args.input_package_json.resolve())
-    input_issues = validate_input_package(input_payload)
-    write_json(run_dir / "input_package.json", input_payload)
-
-    result_payload = load_json(args.fixture_result_json.resolve())
-    result_issues = validate_result_payload(result_payload)
-    delegated_result_markdown = render_result_markdown(result_payload)
-    write_text(run_dir / "delegated_result.md", delegated_result_markdown)
-
-    validation_pass = not input_issues and not result_issues
-    validation_summary = {
-        "workflow_id": workflow_id,
-        "input_validation_pass": not input_issues,
-        "result_validation_pass": not result_issues,
-        "input_issues": input_issues,
-        "result_issues": result_issues,
-        "redaction_ready": input_payload.get("redaction_ready"),
-        "redaction_check": result_payload.get("redaction_check"),
-        "accepted_for_local_triage": validation_pass and result_payload.get("status") == "PASS",
-    }
-    write_json(run_dir / "validation_summary.json", validation_summary)
-
-    operator_summary = {
-        "summary_header": "TEST RESULT TRIAGE REVIEW RESULT",
-        "workflow_id": workflow_id,
-        "skill": "janus-test-pipeline",
-        "task_label": args.task_label,
-        "selected_path": "delegated_assist_only_test_result_triage_review",
-        "normal_target_model": args.normal_target_model,
-        "delegated_model_label": args.delegated_model_label,
-        "validation_result": "PASS" if validation_pass else "FAIL",
-        "final_outcome": (
-            "TEST_RESULT_TRIAGE_REVIEW_READY_FOR_CODEX_VALIDATION"
-            if validation_pass
-            else "TEST_RESULT_TRIAGE_REVIEW_REJECT_AND_FALLBACK"
-        ),
-        "input_package_path": str(run_dir / "input_package.json"),
-        "delegated_result_path": str(run_dir / "delegated_result.md"),
-        "validation_summary_path": str(run_dir / "validation_summary.json"),
-        "operator_message": (
-            "Delegated test-result triage review stayed bounded and assist-only. Codex must still validate the classification and choose the next rerun or routing step."
-            if validation_pass
-            else "Delegated test-result triage review failed bounded validation. Fallback to Codex-only triage is required."
-        ),
-    }
-    write_json(run_dir / "operator_summary.json", operator_summary)
-    output(operator_summary)
-    return 0 if validation_pass else 1
+    result = run_consumer_flow(
+        workflow_id=workflow_id,
+        task_label=args.task_label,
+        normal_target_model=args.normal_target_model,
+        operator_choice="delegated",
+        delegated_model_label=args.delegated_model_label,
+        estimated_or_cost=args.estimated_or_cost,
+        cost_estimate_confidence_percent=args.cost_estimate_confidence_percent,
+        input_payload=input_payload,
+        input_package_path=run_dir / "input_package.json",
+        fixture_result_json=args.fixture_result_json,
+        use_local_or_fixture=args.use_local_or_fixture,
+        execute_direct_or=args.execute_direct_or,
+        or_local_fixture_response_path=args.or_local_fixture_response_path,
+        estimated_codex_saved_tokens=args.estimated_codex_saved_tokens,
+        estimated_codex_or_overhead_tokens=args.estimated_codex_or_overhead_tokens,
+        minimum_net_codex_saved_tokens=args.minimum_net_codex_saved_tokens,
+        require_positive_or_roi=args.require_positive_or_roi,
+    )
+    write_json(run_dir / "operator_choice_delegated.json", result)
+    output(result)
+    return 0 if result.get("validation_result") == "PASS" else 1
 
 
 if __name__ == "__main__":

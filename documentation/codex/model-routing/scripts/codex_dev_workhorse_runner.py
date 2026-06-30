@@ -21,6 +21,7 @@ HEALTH_SNAPSHOT_PATH = (
 if str(MODEL_ROUTING_DIR / "scripts") not in __import__("sys").path:
     __import__("sys").path.insert(0, str(MODEL_ROUTING_DIR / "scripts"))
 DISPATCHER_PATH = MODEL_ROUTING_DIR / "scripts" / "codex_bounded_delegation_dispatcher.py"
+BUDGET_PROFILE_CONFIG_PATH = MODEL_ROUTING_DIR / "config" / "or_task_budget_profiles_2026-06-19.json"
 
 from bounded_or_worker_eligibility import evaluate_productive_dev_workhorse_path
 from bounded_or_worker_gate_prompt import (
@@ -31,10 +32,69 @@ from bounded_or_worker_gate_prompt import (
 
 
 ALLOWED_TASK_CLASSES = {
-    "test_result_triage_review",
     "execution_patch_candidate",
     "execution_write_apply_candidate",
 }
+
+
+def _roi_number(args: argparse.Namespace, name: str) -> int | None:
+    value = getattr(args, name, None)
+    if value is None:
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _build_or_roi(args: argparse.Namespace) -> dict[str, Any]:
+    saved_tokens = _roi_number(args, "estimated_codex_saved_tokens")
+    overhead_tokens = _roi_number(args, "estimated_codex_or_overhead_tokens")
+    minimum_net_saved = _roi_number(args, "minimum_net_codex_saved_tokens")
+    if minimum_net_saved is None:
+        minimum_net_saved = 0
+
+    missing: list[str] = []
+    if saved_tokens is None:
+        missing.append("estimated_codex_saved_tokens")
+    if overhead_tokens is None:
+        missing.append("estimated_codex_or_overhead_tokens")
+
+    if missing:
+        return {
+            "status": "UNKNOWN",
+            "missing_fields": missing,
+            "estimated_codex_saved_tokens": saved_tokens,
+            "estimated_codex_or_overhead_tokens": overhead_tokens,
+            "minimum_net_codex_saved_tokens": minimum_net_saved,
+            "net_codex_saved_tokens": None,
+            "message": "OR ROI cannot be evaluated because Codex token estimates are missing.",
+        }
+
+    net_saved = int(saved_tokens) - int(overhead_tokens)
+    status = "POSITIVE" if net_saved >= int(minimum_net_saved) else "NEGATIVE"
+    return {
+        "status": status,
+        "missing_fields": [],
+        "estimated_codex_saved_tokens": int(saved_tokens),
+        "estimated_codex_or_overhead_tokens": int(overhead_tokens),
+        "minimum_net_codex_saved_tokens": int(minimum_net_saved),
+        "net_codex_saved_tokens": net_saved,
+        "message": (
+            f"OR ROI {status}: estimated saved Codex tokens {saved_tokens}, "
+            f"OR orchestration/review overhead {overhead_tokens}, net {net_saved}, "
+            f"minimum required {minimum_net_saved}."
+        ),
+    }
+
+
+def _should_enforce_roi(args: argparse.Namespace) -> bool:
+    if bool(getattr(args, "require_positive_or_roi", False)):
+        return True
+    return (
+        getattr(args, "estimated_codex_saved_tokens", None) is not None
+        or getattr(args, "estimated_codex_or_overhead_tokens", None) is not None
+    )
 
 
 def _run_command(command: list[str]) -> subprocess.CompletedProcess[str]:
@@ -53,6 +113,54 @@ def _parse_json_output(text: str, label: str) -> dict[str, Any]:
 
 def _load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8-sig"))
+
+
+def _resolve_selected_or_model(args: argparse.Namespace, eligibility: dict[str, Any]) -> str:
+    return str(eligibility.get("selected_or_model") or args.selected_or_model or "").strip()
+
+
+def _bind_canonical_selected_or_model(args: argparse.Namespace, selected_or_model: str) -> str:
+    canonical_selected_or_model = str(selected_or_model or "").strip()
+    setattr(args, "_canonical_selected_or_model", canonical_selected_or_model)
+    return canonical_selected_or_model
+
+
+def _resolve_canonical_selected_or_model(args: argparse.Namespace) -> str:
+    bound_selected_or_model = str(getattr(args, "_canonical_selected_or_model", "") or "").strip()
+    if bound_selected_or_model:
+        return bound_selected_or_model
+    eligibility = evaluate_productive_dev_workhorse_path(
+        path_id=args.path_id,
+        task_class=args.task_class,
+        estimated_or_cost=args.estimated_or_cost,
+    )
+    return _bind_canonical_selected_or_model(args, _resolve_selected_or_model(args, eligibility))
+
+
+def _build_pre_call_cost_basis(eligibility: dict[str, Any]) -> dict[str, Any] | None:
+    budget_profile_name = str(eligibility.get("budget_profile") or "").strip()
+    per_call_cap = eligibility.get("per_call_cap_usd")
+    session_cap = eligibility.get("session_cap_usd")
+    if not budget_profile_name:
+        return None
+    if not isinstance(per_call_cap, (int, float)) or not isinstance(session_cap, (int, float)):
+        return None
+    config = _load_json(BUDGET_PROFILE_CONFIG_PATH)
+    profile = ((config.get("profiles") or {}).get(budget_profile_name)) if isinstance(config, dict) else None
+    description = str((profile or {}).get("description") or "").strip()
+    if not description:
+        return None
+    display_text = (
+        f"Budgetprofil {budget_profile_name}: per-call cap {float(per_call_cap):.9f}, "
+        f"session cap {float(session_cap):.9f}, {description}"
+    )
+    return {
+        "budget_profile": budget_profile_name,
+        "per_call_cap_usd": float(per_call_cap),
+        "session_cap_usd": float(session_cap),
+        "description": description,
+        "display_text": display_text,
+    }
 
 
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
@@ -93,6 +201,7 @@ def _actual_cost_from_response_summary(response_summary: dict[str, Any]) -> floa
 
 
 def _build_session_telemetry_row(args: argparse.Namespace, result: dict[str, Any]) -> dict[str, Any]:
+    canonical_selected_or_model = _resolve_canonical_selected_or_model(args)
     response_summary_path = result.get("response_summary_path")
     response_summary: dict[str, Any] = {}
     if isinstance(response_summary_path, str) and response_summary_path and Path(response_summary_path).exists():
@@ -131,7 +240,7 @@ def _build_session_telemetry_row(args: argparse.Namespace, result: dict[str, Any
         "routing_mode": "productive_dev_workhorse_path",
         "selected_path": selected_path,
         "codex_default_model": args.normal_target_model,
-        "or_model": args.selected_or_model or "N_A",
+        "or_model": canonical_selected_or_model or "N_A",
         "estimated_prompt_tokens": 0,
         "estimated_completion_tokens": 0,
         "estimated_or_cost": estimated_cost,
@@ -231,6 +340,7 @@ def finalize_productive_dev_workhorse_result(
 
 
 def _build_dispatcher_command(args: argparse.Namespace) -> list[str]:
+    canonical_selected_or_model = _resolve_canonical_selected_or_model(args)
     command = [
         sys.executable,
         str(DISPATCHER_PATH),
@@ -245,19 +355,13 @@ def _build_dispatcher_command(args: argparse.Namespace) -> list[str]:
         "--workflow-id",
         args.workflow_id,
         "--selected-or-model",
-        str(args.selected_or_model),
+        canonical_selected_or_model,
         "--estimated-or-cost",
         str(args.estimated_or_cost),
         "--cost-estimate-confidence-percent",
         str(args.cost_estimate_confidence_percent),
     ]
-    if args.task_class == "test_result_triage_review":
-        if args.test_triage_input_package is None:
-            raise SystemExit("test_result_triage_review requires --test-triage-input-package")
-        command.extend(["--test-triage-input-package", str(args.test_triage_input_package.resolve())])
-        if args.test_triage_fixture_result is not None:
-            command.extend(["--test-triage-fixture-result", str(args.test_triage_fixture_result.resolve())])
-    elif args.task_class == "execution_patch_candidate":
+    if args.task_class == "execution_patch_candidate":
         if args.execution_input_package is None:
             raise SystemExit("execution_patch_candidate requires --execution-input-package")
         command.extend(["--execution-input-package", str(args.execution_input_package.resolve())])
@@ -271,6 +375,16 @@ def _build_dispatcher_command(args: argparse.Namespace) -> list[str]:
         else:
             raise SystemExit(
                 "execution_write_apply_candidate requires --execution-input-package or --accepted-source-run-dir"
+            )
+        if getattr(args, "execution_live_sidecar", False):
+            command.extend(
+                [
+                    "--execution-sidecar-model",
+                    args.execution_sidecar_model,
+                    "--execution-sidecar-timeout-seconds",
+                    str(args.execution_sidecar_timeout_seconds),
+                    "--execution-live-sidecar",
+                ]
             )
     if args.use_local_or_fixture:
         command.append("--use-local-or-fixture")
@@ -339,11 +453,36 @@ def prompt_summary(args: argparse.Namespace) -> dict[str, Any]:
             "session_cap_usd": eligibility.get("session_cap_usd"),
         }
 
+    roi = _build_or_roi(args)
+    if _should_enforce_roi(args) and roi["status"] != "POSITIVE":
+        return {
+            **base,
+            "selected_path": "codex_only_or_roi_gate",
+            "final_outcome": "LOCAL_CODEX_PATH_SELECTED",
+            "or_roi": roi,
+            "operator_result_lines": [
+                "Ergebnis: OR ROI Gate negativ oder unvollstaendig",
+                "Route: Codex direkt, weil OR voraussichtlich keine Netto-Codex-Ersparnis bringt",
+                roi["message"],
+            ],
+            "operator_message": (
+                "The task stays on Codex because the estimated Codex savings do not clearly exceed "
+                "the Codex overhead for OR briefing, orchestration, and review."
+            ),
+            "budget_profile": eligibility.get("budget_profile", "N_A"),
+            "per_call_cap_usd": eligibility.get("per_call_cap_usd"),
+            "session_cap_usd": eligibility.get("session_cap_usd"),
+        }
+
+    selected_or_model = _bind_canonical_selected_or_model(args, _resolve_selected_or_model(args, eligibility))
+    pre_call_cost_basis = _build_pre_call_cost_basis(eligibility)
     missing_fields = missing_gate_fields(
-        selected_or_model=args.selected_or_model,
+        selected_or_model=selected_or_model,
         estimated_or_cost=args.estimated_or_cost,
         cost_estimate_confidence_percent=args.cost_estimate_confidence_percent,
     )
+    if pre_call_cost_basis is None:
+        missing_fields.append("pre_call_cost_basis")
     if missing_fields:
         return {
             **build_missing_gate_result(
@@ -364,10 +503,28 @@ def prompt_summary(args: argparse.Namespace) -> dict[str, Any]:
             "session_cap_usd": eligibility.get("session_cap_usd"),
         }
 
+    operator_prompt_lines = build_operator_prompt_lines(
+        choice_2_label="OR",
+        selected_or_model=selected_or_model,
+        pre_call_cost_basis=pre_call_cost_basis["display_text"],
+        estimated_or_cost=float(args.estimated_or_cost),
+        cost_estimate_confidence_percent=float(args.cost_estimate_confidence_percent),
+    )
+    if roi["status"] in {"POSITIVE", "NEGATIVE"}:
+        operator_prompt_lines.append(
+            "OR ROI Gate: "
+            f"{roi['status']} (geschaetzte Codex-Ersparnis {roi['estimated_codex_saved_tokens']} Tokens, "
+            f"OR-Overhead {roi['estimated_codex_or_overhead_tokens']} Tokens, "
+            f"netto {roi['net_codex_saved_tokens']} Tokens)"
+        )
+
     return {
         **base,
         "selected_path": "awaiting_operator_choice",
-        "selected_or_model": args.selected_or_model,
+        "selected_or_model": selected_or_model,
+        "or_roi": roi,
+        "pre_call_cost_basis": pre_call_cost_basis["display_text"],
+        "budget_profile_description": pre_call_cost_basis["description"],
         "estimated_or_cost": float(args.estimated_or_cost),
         "cost_estimate_confidence_percent": float(args.cost_estimate_confidence_percent),
         "budget_profile": eligibility.get("budget_profile", "N_A"),
@@ -376,21 +533,18 @@ def prompt_summary(args: argparse.Namespace) -> dict[str, Any]:
         "choice_1": "Codex",
         "choice_2": "OR",
         "final_outcome": "AWAITING_OPERATOR_CHOICE",
-        "operator_prompt_lines": build_operator_prompt_lines(
-            choice_2_label="OR",
-            selected_or_model=str(args.selected_or_model),
-            estimated_or_cost=float(args.estimated_or_cost),
-            cost_estimate_confidence_percent=float(args.cost_estimate_confidence_percent),
-        ),
+        "operator_prompt_lines": operator_prompt_lines,
         "boundaries": [
-            "Delegated runtime is bounded to the three allowlisted Dev-workhorse classes only",
+            "This slice grants no new delegated runtime approval; any existing delegated runtime stays bounded to the sealed productive contract",
             "No production routing",
             "No canonical routing-table update",
             "Codex remains final owner",
         ],
         "operator_message": (
-            "The visible Dev-workhorse gate is available. Choosing OR here starts the bounded delegated runtime path, "
-            "but Codex remains the final reviewer and owner of accept, reject, fallback, or manual review."
+            "The visible Dev-workhorse gate is available with one fixed recommended OR model and one explicit pre-call "
+            "cost basis from the sealed productive contract. Codex remains the final owner. If the operator selects "
+            "`2 = OR`, the runner uses the already existing bounded delegated runtime path, while this slice itself "
+            "grants no new runtime approval."
         ),
     }
 
@@ -454,9 +608,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--execution-input-package", type=Path, default=None)
     parser.add_argument("--execution-fixture-result", type=Path, default=None)
     parser.add_argument("--accepted-source-run-dir", type=Path, default=None)
+    parser.add_argument("--execution-sidecar-model", default="gpt-5.4")
+    parser.add_argument("--execution-sidecar-timeout-seconds", type=int, default=180)
+    parser.add_argument("--execution-live-sidecar", action="store_true")
     parser.add_argument("--use-local-or-fixture", action="store_true")
     parser.add_argument("--or-local-fixture-response-path", type=Path, default=None)
     parser.add_argument("--execute-direct-or", action="store_true")
+    parser.add_argument("--estimated-codex-saved-tokens", type=int, default=None)
+    parser.add_argument("--estimated-codex-or-overhead-tokens", type=int, default=None)
+    parser.add_argument("--minimum-net-codex-saved-tokens", type=int, default=0)
+    parser.add_argument("--require-positive-or-roi", action="store_true")
     return parser.parse_args()
 
 

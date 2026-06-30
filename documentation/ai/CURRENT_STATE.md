@@ -1,6 +1,307 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-06-30`, the Debug and Test-Pipeline OR lanes now share the same net Codex-token ROI guard that was introduced for the Executioner lane. The shared gate helper can compute estimated Codex savings versus Codex OR overhead and suppress the `2 = OR` operator choice when the result is negative or required ROI estimates are missing. `janus-debug` and `janus-test-pipeline` now also document OR as a bounded productive assistant: OR may shape hypotheses, local verifier suggestions, triage clusters, classification hints, and next-skill handoffs, but it still may not run commands, apply fixes, mutate test results, claim final PASS, or decide release readiness.
+
+Current goal: make all meaningful Janus OR lanes productive without wasting Codex tokens on tiny or negative-ROI work.
+
+Active phase: `janus-debug` / `janus-test-pipeline` OR infrastructure in Lean Dev Mode, canonical state `PASS`.
+
+Last Codex work:
+- added shared ROI helpers to `bounded_or_worker_gate_prompt.py`
+- wired ROI gating into the shared bounded dispatcher for assistive lanes
+- wired ROI gating into `codex_debug_hypothesis_review_runner.py`
+- added a productive gate to `codex_test_result_triage_review_runner.py`, including package validation before showing OR and CLI/consumer parity
+- updated repo and installed `janus-debug` and `janus-test-pipeline` skill instructions with the productive assist-only role and ROI requirements
+- updated regression tests for negative/positive ROI behavior and current visible gate expectations
+
+Changed files:
+- `documentation/codex/model-routing/scripts/bounded_or_worker_gate_prompt.py`
+- `documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py`
+- `documentation/codex/model-routing/scripts/codex_debug_hypothesis_review_runner.py`
+- `documentation/codex/model-routing/scripts/codex_test_result_triage_review_runner.py`
+- `documentation/codex/model-routing/tests/test_bounded_or_worker_gate_prompt.py`
+- `documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py`
+- `documentation/codex/model-routing/tests/test_codex_debug_hypothesis_review_runner.py`
+- `documentation/codex/model-routing/tests/test_assistive_or_review_consumer_integration.py`
+- `documentation/codex/skills/janus-debug/SKILL.md`
+- `documentation/codex/skills/janus-test-pipeline/SKILL.md`
+- `C:/Users/pruve/.codex/skills/janus-debug/SKILL.md`
+- `C:/Users/pruve/.codex/skills/janus-test-pipeline/SKILL.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- focused combined unittest suite for ROI gate, eligibility, debug runner, and assistive consumer integration: PASS (`69 tests`)
+- `python -m py_compile documentation/codex/model-routing/scripts/bounded_or_worker_gate_prompt.py documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py documentation/codex/model-routing/scripts/codex_debug_hypothesis_review_runner.py documentation/codex/model-routing/scripts/codex_test_result_triage_review_runner.py`: PASS
+- debug negative ROI smoke: PASS, returned `selected_path: codex_only_or_roi_gate` and `LOCAL_CODEX_PATH_SELECTED`
+- test-triage positive ROI smoke: PASS, returned `AWAITING_OPERATOR_CHOICE` with `1 = Codex`, `2 = OR`, positive ROI details, and `OR_ALLOWED`
+- `git diff --check` on touched ROI/debug/test/governance files: PASS with existing CRLF warnings only for `CURRENT_STATE.md` and `SKILL_USAGE_LOG.md`
+
+Open risks:
+- Debug and Test-Pipeline OR lanes remain assist-only by design; they do not run local commands, apply fixes, mutate generated results, or claim final validation
+- Code changes suggested by debug/triage OR must still route through `janus-executioner`, where positive-ROI write-capable OR can be used if the task is prechecked and bounded
+- the next real product task still needs live/manual Janus validation where product behavior is affected
+- manual Janus validation for `BACKLOG-115` remains pending from the previous product slice
+- no commit or push has happened after this block, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: treat Debug/Test OR as productive bounded assistant lanes, not as free executors: use them for non-trivial evidence review, root-cause/triage shaping, and compact handoffs only when net Codex-token ROI is positive.
+
+Next recommended step for Codex: use ROI-aware OR gates in `janus-debug`, `janus-test-pipeline`, and `janus-executioner`; keep tiny or obvious steps local, and route any code-writing follow-up from Debug/Test into the Executioner write-capable OR path when safe.
+
+Last updated: `2026-06-30 02:52:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-30`, the Janus OR Executioner path has moved beyond proposal-only output for eligible Qwen execution slices. The productive dispatcher now routes `qwen/...` `execution_patch_candidate` runs through the Responses API `openrouter:apply_patch` runner instead of the older prose/JSON patch runner. A new bridge converts accepted OpenRouter apply_patch tool-call artifacts into the existing `execution_write_apply_candidate` accepted-source package format, including unified `git_diff.patch`, changed-file list, and source-file hash snapshots. The existing write-apply runner can then deterministically apply the normalized OR patch inside the exact allowlist, while Codex remains reviewer, validator, and final acceptance owner.
+
+Current goal: make OpenRouter productive for Janus code work by letting safe OR lanes produce write-apply-ready patch artifacts instead of forcing Codex to rewrite accepted work.
+
+Active phase: `janus-executioner` / Lean Dev Mode, canonical state `PASS`.
+
+Last Codex work:
+- added `normalize_openrouter_apply_patch_for_write_apply.py` to bridge accepted Qwen `openrouter:apply_patch` runs into `execution_write_apply_candidate` source packages
+- made the bounded dispatcher select `openrouter_qwen_execution_patch_candidate_runner.py` whenever the selected execution OR model starts with `qwen/`
+- added regression tests proving Qwen runner selection, OpenRouter apply_patch normalization, accepted-source validation, and deterministic local write-apply
+- updated repo and installed `janus-executioner` skill instructions so future accepted Qwen OR patches should be normalized and applied through the write-apply path instead of being rewritten from scratch by Codex
+
+Changed files:
+- `documentation/codex/model-routing/scripts/normalize_openrouter_apply_patch_for_write_apply.py`
+- `documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py`
+- `documentation/codex/model-routing/tests/test_normalize_openrouter_apply_patch_for_write_apply.py`
+- `documentation/codex/model-routing/tests/test_assistive_or_review_capture_dispatcher.py`
+- `documentation/codex/skills/janus-executioner/SKILL.md`
+- `C:/Users/pruve/.codex/skills/janus-executioner/SKILL.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python -m unittest documentation.codex.model-routing.tests.test_normalize_openrouter_apply_patch_for_write_apply`: PASS (`3 tests`)
+- `python -m unittest documentation.codex.model-routing.tests.test_assistive_or_review_capture_dispatcher`: PASS (`6 tests`)
+- combined runner suite covering bridge, dispatcher, Qwen execution runner, write-apply live path, and Dev-workhorse runner: PASS (`41 tests`)
+- `python -m py_compile documentation/codex/model-routing/scripts/normalize_openrouter_apply_patch_for_write_apply.py documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py documentation/codex/model-routing/scripts/codex_execution_write_apply_candidate_runner.py documentation/codex/model-routing/scripts/openrouter_qwen_execution_patch_candidate_runner.py`: PASS
+- `git diff --check` on the touched OR infra and governance files: PASS with existing CRLF warnings only for `CURRENT_STATE.md` and `SKILL_USAGE_LOG.md`
+
+Open risks:
+- this grants no broad autonomous repo authority; it is a bounded write-apply bridge for already accepted OR patch artifacts only
+- Codex still owns diff review, validation commands, manual Janus validation, final audit routing, and any local repair after rejected OR output
+- the next real product task still needs a positive ROI estimate before offering OR, otherwise Codex should work locally
+- manual Janus validation for `BACKLOG-115` remains pending from the previous product slice
+- no commit or push has happened after this block, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: treat the productive OR direction as upgraded: for meaningful safe execution slices, prefer Qwen apply_patch artifacts plus write-apply normalization when ROI is positive; keep tiny/negative-ROI work on Codex.
+
+Next recommended step for Codex: on the next suitable prechecked execution task, run the ROI-aware `1 = Codex` / `2 = OR` gate; if `2 = OR` with Qwen produces a PASS apply_patch run and Codex accepts the patch, normalize it with `normalize_openrouter_apply_patch_for_write_apply.py`, then feed the output into `execution_write_apply_candidate` for deterministic local apply before validation.
+
+Last updated: `2026-06-30 02:24:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-30`, the productive Janus Executioner OR gate has been upgraded with a concrete net-value guard. The runner now supports estimated Codex-token savings versus estimated Codex overhead for OR briefing/orchestration/review, and automatically keeps work local when OR would be net-negative. The Executioner skill text in both the repo source and the installed working copy now also states the target clearly: OR should not remain a pure chatbot/proposal lane for eligible code work; meaningful bounded execution slices should move toward write-capable, allowlisted OR work while Codex remains validator and acceptance owner.
+
+Current goal: make OpenRouter productive for Janus code work without wasting Codex tokens on tiny or negative-ROI delegations.
+
+Active phase: `janus-executioner` / Lean Dev Mode, canonical state `PASS`.
+
+Last Codex work:
+- added ROI fields to `codex_dev_workhorse_runner.py`: `--estimated-codex-saved-tokens`, `--estimated-codex-or-overhead-tokens`, `--minimum-net-codex-saved-tokens`, and `--require-positive-or-roi`
+- made the productive OR prompt gate return `LOCAL_CODEX_PATH_SELECTED` when the ROI is negative or required estimates are missing
+- kept the operator choice visible when ROI is positive, including an `OR ROI Gate` line in `operator_prompt_lines`
+- updated repo and installed `janus-executioner` skill instructions to prefer bounded write-capable OR for meaningful safe slices and keep tiny tasks on Codex
+
+Changed files:
+- `documentation/codex/model-routing/scripts/codex_dev_workhorse_runner.py`
+- `documentation/codex/model-routing/tests/test_codex_dev_workhorse_runner.py`
+- `documentation/codex/skills/janus-executioner/SKILL.md`
+- `C:/Users/pruve/.codex/skills/janus-executioner/SKILL.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python -m unittest documentation.codex.model-routing.tests.test_codex_dev_workhorse_runner`: PASS (`22 tests`)
+- ROI negative smoke: PASS, returned `selected_path: codex_only_or_roi_gate` and `LOCAL_CODEX_PATH_SELECTED`
+- ROI positive smoke: PASS, returned `AWAITING_OPERATOR_CHOICE` with `1 = Codex`, `2 = OR`, and positive net token line
+- `python -m py_compile documentation/codex/model-routing/scripts/codex_dev_workhorse_runner.py documentation/codex/model-routing/tests/test_codex_dev_workhorse_runner.py`: PASS
+
+Open risks:
+- this is a gate/skill upgrade, not yet a full SWE-style OR agent loop with iterative read/write/test cycles
+- `execution_write_apply_candidate` still requires a bounded accepted patch/source package and Codex-owned validation; it is not broad autonomous repo authority
+- manual Janus validation for `BACKLOG-115` remains pending from the previous product slice
+- no commit or push has happened after this block, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: treat the OR optimization direction as locked: use OR only when net Codex-token ROI is positive, and prioritize bounded write-capable OR worker slices over more proposal-only demos.
+
+Next recommended step for Codex: for the next suitable prechecked execution task, show the ROI-aware `1 = Codex` / `2 = OR` gate; use OR only for positive-ROI work and prefer `execution_write_apply_candidate` when the accepted-source and allowlist gates are satisfied.
+
+Last updated: `2026-06-30 01:45:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-30`, `BACKLOG-115` has now been executed through the real visible `janus-executioner` `2 = OR` workflow and then completed locally after Codex review. The productive Dev-workhorse OR gate passed live with real OpenRouter usage and bounded patch-candidate capture, but the delegated proposal itself was rejected because it relied on placeholder logic and a hard-coded `Oliver Schwab` special case. Codex then finished the bounded slice in the real code path: visible exact duplicates now collapse to the richest contact in list/search presentation, and noisy Tasso/Garfield detail variants normalize down to clean owner-facing entries without reopening broader contact-model work.
+
+Current goal: close the visible Oliver/Tasso/Garfield contact-card cleanup and hand the result to manual Janus validation.
+
+Active phase: `janus-executioner`, canonical state `NEEDS_INFO`.
+
+Last Codex work:
+- ran the real productive `2 = OR` executioner lane for `BACKLOG-115` with live OpenRouter evidence and telemetry
+- reviewed the delegated patch candidate and rejected it locally because it was not acceptable for the actual workspace seam
+- implemented the bounded fix locally in `crud.py` by collapsing exact visible duplicates on the read path and strengthening pet-detail normalization for `gern`/`gerne` variants plus redundant Garfield relation/tautology lines
+- added focused regression coverage for both visible duplicate suppression and normalized Oliver/Tasso/Garfield contact-card output
+
+Changed files:
+- `documentation/codex/model-routing/execution-review-fixtures/backlog_115_execution_patch_candidate_input_package_2026-06-30.json`
+- `backend/data/crud.py`
+- `backend/tests/test_contact_manager.py`
+- `backend/tests/test_contact_card_normalization.py`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python documentation/codex/model-routing/scripts/codex_dev_workhorse_runner.py --task-class execution_patch_candidate --task-label "BACKLOG-115 visible Oliver contact-card cleanup" --normal-target-model "5.4 medium" --operator-choice or --workflow-id WF-BACKLOG-115-EXEC-GATE-2026-06-30-001 --path-id productive_dev_workhorse_path --estimated-or-cost 0.00064 --cost-estimate-confidence-percent 78 --execution-input-package documentation/codex/model-routing/execution-review-fixtures/backlog_115_execution_patch_candidate_input_package_2026-06-30.json --execute-direct-or`: PASS
+- delegated patch candidate review: REJECTED LOCALLY (proposal not acceptable for apply)
+- `python -m pytest backend/tests/test_contact_manager.py -q`: PASS (`45 passed`)
+- `python -m pytest backend/tests/test_contact_card_normalization.py -q`: PASS (`8 passed`)
+- `python -m py_compile backend/services/contact_manager.py backend/data/crud.py backend/tests/test_contact_manager.py backend/tests/test_contact_card_normalization.py`: PASS
+
+Open risks:
+- manual Janus product validation is still pending, so the visible address-book behavior is not yet confirmed in the running app by a user-facing check
+- no final audit or documentation-closeout handoff has been run yet
+- no commit or push has happened after this block, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: treat `BACKLOG-115` as implemented with green local evidence, note that the real OR lane worked but the delegated patch was intentionally rejected, and ask only for the concrete manual Janus validation result next.
+
+Next recommended step for Codex: request the Manual Janus Validation Gate for the visible address-book path, then route to `janus-final-audit` only if the user confirms the test passed.
+
+Last updated: `2026-06-30 01:22:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-30`, `BACKLOG-115` is now formally prechecked and implementation-ready. The precheck freezes the visible Oliver/Tasso/Garfield cleanup to one bounded backend-first slice: keep one relevant `Oliver Schwab` contact in the visible selection path, dedupe near-identical pet-detail wording, and suppress tautological Garfield detail lines without reopening broader contact-model or memory-architecture work. The validator-backed precheck format also re-confirmed a small governance nuance: the installed skill prose still mentions copy markers, but the repo validator truth is the Codex-native precheck format without them.
+
+Current goal: execute the bounded visible Oliver contact-card cleanup without widening into broader contact-system redesign.
+
+Active phase: `janus-preimplementation-check`, canonical state `PASS`.
+
+Last Codex work:
+- validated the new `BACKLOG-115` handoff as one atomic implementation slice
+- froze the affected file cluster to `contact_manager.py`, `crud.py`, and the two directly relevant contact normalization test files
+- kept frontend edits explicitly optional and only as a fallback if backend cleanup alone does not remove the visible duplicate-card issue
+- aligned the saved precheck artifact to the repo validator truth instead of the stale copy-marker prose in the installed skill text
+
+Changed files:
+- `documentation/tasks/backlog_BACKLOG-115_preimplementation_check.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py documentation/tasks/backlog_BACKLOG-115_preimplementation_check.md`: PASS
+- `git diff --check -- documentation/tasks/backlog_BACKLOG-115_preimplementation_check.md documentation/tasks/backlog_BACKLOG-115_oliver_kontaktkarte_zeigt_duplikate_und_unsaubere_haustierdetails.md documentation/backlog/BACKLOG.md janus-dashboard/data/backlog.snapshot.json documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS
+
+Open risks:
+- `BACKLOG-115` is prechecked but not yet implemented or live-retested
+- the visible Oliver duplicates and noisy pet-detail variants likely still remain in the running app data until execution completes
+- no commit or push has happened after this block, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: treat `BACKLOG-115` as fully implementation-ready and keep the ask strictly on visible contact-card dedupe plus pet-detail normalization.
+
+Next recommended step for Codex: run `janus-executioner` for `BACKLOG-115` on `5.4` medium with the bound backend-first evidence gate.
+
+Last updated: `2026-06-30 01:06:05 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-30`, `BACKLOG-115` has now been handed off as a concrete preimplementation-ready address-book cleanup slice. The new task artifact binds the visible Oliver/Tasso/Garfield problem to the smallest intended seam: suppress empty historical Oliver duplicates in the user-visible contact path and normalize duplicate or tautological pet details without reopening broader contact-model or memory-design work. The backlog item is now `IN PROGRESS`, and the dashboard snapshot has been resynced.
+
+Current goal: move the visible Oliver/Tasso/Garfield contact-card cleanup from prioritized backlog into a bounded precheck target.
+
+Active phase: `janus-backlog-handoff`, canonical state `PASS`.
+
+Last Codex work:
+- created the dedicated `BACKLOG-115` handoff artifact for the visible Oliver contact-card cleanup
+- moved `BACKLOG-115` from `READY` to `IN PROGRESS` with `PRE_IMPLEMENTATION_VERIFICATION` routing metadata
+- kept the scope narrow to one visible contact-card bug slice: duplicate Oliver rows in view plus duplicated or low-quality pet-detail wording
+- resynced the dashboard snapshot after the backlog status change
+
+Changed files:
+- `documentation/tasks/backlog_BACKLOG-115_oliver_kontaktkarte_zeigt_duplikate_und_unsaubere_haustierdetails.md`
+- `documentation/backlog/BACKLOG.md`
+- `janus-dashboard/data/backlog.snapshot.json`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-backlog-handoff\scripts\validate_backlog.py C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md`: PASS WITH LEGACY WARNINGS
+- `npm run sync:backlog` in `janus-dashboard`: PASS
+
+Open risks:
+- `BACKLOG-115` is handed off but not yet prechecked, implemented, or live-retested
+- the running app data likely still shows the visible Oliver duplicates and noisy pet-detail variants until the next implementation slice executes
+- no commit or push has happened after this block, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: treat `BACKLOG-115` as a small bounded implementation slice and keep the request framed as visible contact-card dedupe plus pet-detail normalization only.
+
+Next recommended step for Codex: run `janus-preimplementation-check` for `BACKLOG-115` using the new handoff artifact and freeze the exact touched files plus validation surface before any code change.
+
+Last updated: `2026-06-30 01:03:55 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-30`, `BACKLOG-115` has now been delta-prioritized as the next best small address-book cleanup slice. The new item is clearly implementation-worthy without more product discovery: it is a high-value visible bug with low expected implementation risk, small scope, and direct continuity with the earlier Oliver/Tasso/Garfield repair work. The prioritization keeps the framing narrow: one relevant Oliver contact in view, no duplicate pet details, and no tautological Garfield wording.
+
+Current goal: move the remaining visible Oliver/Tasso/Garfield address-book cleanup from intake into the next bounded handoff-ready backlog slice.
+
+Active phase: `janus-backlog-prioritization`, canonical state `PASS`.
+
+Last Codex work:
+- reviewed `BACKLOG-115` in DELTA mode instead of reopening a broad backlog pass
+- set the missing prioritization cache fields for the new Oliver contact-card cleanup item
+- confirmed the item is the next best small product bug slice because it is user-visible, tightly bounded, and directly connected to the most recent live contact-card defects
+
+Changed files:
+- `documentation/backlog/BACKLOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-backlog-handoff\scripts\validate_backlog.py C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md`: PASS WITH LEGACY WARNINGS
+
+Open risks:
+- `BACKLOG-115` is prioritized but not yet handed off, prechecked, implemented, or live-retested
+- the current running app data likely still contains the visible Oliver duplicates and noisy pet-detail variants until the next implementation slice executes
+- no commit or push has happened after this block, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: treat `BACKLOG-115` as the next sensible small product fix and keep the ask framed as address-book dedupe plus pet-detail normalization, not as a broader contact-system redesign.
+
+Next recommended step for Codex: run `janus-backlog-handoff` for `BACKLOG-115` and release the smallest preimplementation-ready slice for the visible Oliver contact-card cleanup.
+
+Last updated: `2026-06-30 01:00:36 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-30`, the new visible Oliver address-book duplication report has been captured as its own bounded follow-up item instead of being left as loose chat context. `BACKLOG-115` now records the concrete user-facing defect: multiple visible `Oliver Schwab` entries plus duplicated or linguistically rough Tasso/Garfield pet details that still make the contact card look unclean even after the earlier writeback and recall fixes.
+
+Current goal: bind the remaining visible Oliver/Tasso/Garfield address-book cleanup as one small, explicit backlog slice before any further implementation.
+
+Active phase: `janus-backlog-intake`, canonical state `PASS`.
+
+Last Codex work:
+- reviewed the existing `BACKLOG-108` follow-up history and current `CURRENT_STATE` risks around historical Oliver duplicates
+- captured the new user-reported visible address-book problem as a bounded follow-up item instead of widening the old closed marker
+- kept the intake narrow to one product bug slice: duplicate Oliver contacts plus duplicated or low-quality pet-detail wording
+
+Changed files:
+- `documentation/backlog/BACKLOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-backlog-handoff\scripts\validate_backlog.py C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md`: PASS WITH LEGACY WARNINGS
+- `git diff --check -- documentation/backlog/BACKLOG.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS
+
+Open risks:
+- `BACKLOG-115` is only intake so far; no prioritization, handoff, implementation, or live retest has happened yet
+- the existing live Oliver duplicates and noisy pet-detail variants likely still remain in the running app data until the new follow-up slice is executed
+- no commit or push has happened after this block, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: prioritize `BACKLOG-115` as the next small address-book cleanup slice and keep the problem framed as visible dedupe/normalization, not as a new product feature.
+
+Next recommended step for Codex: run `janus-backlog-prioritization` for `BACKLOG-115`, then hand it off into the smallest preimplementation-ready address-book cleanup task if it stays high-value.
+
+Last updated: `2026-06-30 00:56:32 +02:00`.
+
+## Current Snapshot Update
 As of `2026-06-30`, the ChatGPT-side Janus project rules have been tightened into one explicit repo-owned template so ChatGPT and Codex can share the same artifact-first operating contract instead of relying on ad hoc chat-level wording. The new template keeps `CURRENT_STATE.md` as the primary sync source, formalizes the `CODEX_HANDOFF` block, clarifies ChatGPT/Codex/OR ownership boundaries, and makes the remote-state caveat explicit so ChatGPT does not overtrust GitHub when Codex has not pushed.
 
 Current goal: turn the ChatGPT project prompt from a good informal rule set into a small official Janus template that is easy to reuse and harder to drift.
