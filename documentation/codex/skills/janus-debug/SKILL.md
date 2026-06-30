@@ -119,32 +119,46 @@ Offer the operator choice only when all are true:
 - Codex still owns reproduction, validation, and the next debug action
 - no local command execution needs to be delegated
 - the productive gate confirms this is exactly `debug_hypothesis_review` and the pre-call estimate stays within the bounded debug budget
+- the net Codex-token ROI is positive after counting Codex briefing, orchestration, review, and handoff overhead
 
 Operator wording:
 
 - `1 = Codex`
-- `2 = OR-Arbeitspferd`
+- `2 = OR`
 
 Current delegated meaning:
 
-- bounded assist-only hypothesis review
+- bounded assist-only hypothesis review and next-action shaping
 - no delegated local command execution
 - no delegated test execution
 - no delegated final fix claim
 - Codex remains validation and acceptance owner
 
-Bounded helper path:
+Productive role:
+
+- Use OR when the debug package is large enough that outside hypothesis review will save meaningful Codex work.
+- OR may identify likely root cause, rank hypotheses, suggest local verifiers, and prepare a compact `janus-executioner` or `janus-test-pipeline` handoff.
+- OR must not apply a fix inside `janus-debug`; if code should change, route the bounded fix through `janus-executioner` and its write-capable OR path when eligible.
+- Keep tiny or obvious debug steps on Codex when OR briefing/review would cost more than solving the failure locally.
+
+Current preferred OR candidate for this bounded lane:
+
+- `qwen/qwen3-coder-30b-a3b-instruct`
+
+Use the real operator-facing helper for this lane first:
 
 ```powershell
-python documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py --task-class debug_hypothesis_review ...
+python documentation/codex/model-routing/scripts/codex_debug_hypothesis_review_runner.py --task-label "<short bounded debug review task>" --normal-target-model "5.4 medium" --operator-choice prompt --workflow-id <WORKFLOW-ID> --estimated-or-cost 0.0004 --cost-estimate-confidence-percent 81 --estimated-codex-saved-tokens <n> --estimated-codex-or-overhead-tokens <n> --minimum-net-codex-saved-tokens <n> --input-package-json <bounded-package.json>
 ```
 
 Consumer integration path for everyday `janus-debug` work:
 
 - build one redacted package with `codex_debug_hypothesis_review_runner.build_consumer_input_package(...)`
 - enter the operator gate through `codex_debug_hypothesis_review_runner.run_consumer_flow(...)`
-- keep the visible everyday operator wording aligned with the productive Dev-workhorse convention: `1 = Codex`, `2 = OR-Arbeitspferd`
-- if the productive gate rejects the slice, do not show an OR choice; keep the step deterministically Codex-only
+- keep the visible everyday operator wording aligned with the productive Dev-workhorse convention: `1 = Codex`, `2 = OR`
+- if the user chooses `1`, `local`, or `codex`, invoke the helper with `--operator-choice local`
+- if the user chooses `2`, `or`, `delegated`, or `sidecar`, invoke the helper with `--operator-choice delegated --input-package-json <bounded-package.json> --fixture-result-json <fixture.json> --use-local-or-fixture` for the bounded fixture-backed path, or with the explicitly approved live runtime mode when that path is intended
+- if the productive gate or ROI gate rejects the slice, do not show an OR choice; keep the step deterministically Codex-only
 - for the released `TASK-SPEC23.2` rollout, the OR branch may execute exactly one bounded hypothesis-review run with file-first capture or fixture validation; the delegated branch must resolve to exactly one runtime mode before dispatch
 - if no bounded runtime mode is present, or if capture, usage, validation, or healthcheck gates fail, fall back directly to a visible Codex-only continuation
 

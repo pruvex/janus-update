@@ -179,27 +179,28 @@ For eligible bounded generator work inside `TEST_RUN_PRECHECK`, prefer the share
 
 This gate is for the validated delegation class `generator_review`.
 
+Current visibility state:
+
+- `generator_review` is now `VISIBLE_APPROVED` under the shared existing-skill visibility contract for this bounded lane.
+- the normal everyday `1 = Codex / 2 = OR` operator gate may be shown from `janus-test-pipeline` for this lane, while Codex remains final reviewer and acceptance owner.
+
 Binding artifacts:
 
 - `C:\KI\Janus-Projekt\documentation\codex\model-routing\scripts\codex_bounded_delegation_dispatcher.py`
 - `C:\KI\Janus-Projekt\documentation\codex\model-routing\scripts\codex_structured_action_generator_review_runner.py`
 - `C:\KI\Janus-Projekt\documentation\codex\model-routing\codex_bounded_delegation_dispatcher_canonical_entry_2026-06-14.md`
 
-Use prompt mode first:
+Use the real operator-facing helper for this lane first:
 
 ```powershell
-python documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py --task-class generator_review --task-label "<short generator review task>" --normal-target-model "<declared model/reasoning>" --operator-choice prompt --workflow-id <WORKFLOW-ID> --generator-manifest <manifest.json>
+python documentation/codex/model-routing/scripts/test_pipeline_sidecar_write_pilot_runner.py --testspec-path <TestSpec> --test-run-id <TEST_RUN_ID> --normal-target-model "5.4 medium" --operator-choice prompt --workflow-id <WORKFLOW-ID>
 ```
 
-Expected operator gate:
+Internal delegated meaning:
 
-- `1 = Codex`
-- `2 = Delegated`
-
-Meaning here:
-
-- `1` keeps the generator preparation and review fully local in Codex.
-- `2` uses delegated intent, but execution still stays deterministic and local through builder, executor, and validator steps.
+- generator preparation and review stay deterministic and local through the structured local executor plus validator steps.
+- even with visible operator choice, this remains a bounded review-first lane rather than broad delegated test-authoring authority.
+- the visible gate should read `1 = Codex` and `2 = OR`, but the current technical delegated path is the bounded structured local executor surface, not broad free-form repo authority.
 
 Boundaries stay strict:
 
@@ -211,9 +212,10 @@ Boundaries stay strict:
 
 If the user chooses the delegated path:
 
-- if the user chooses `1`, `local`, or `codex`, invoke the dispatcher with `--operator-choice local`
-- if the user chooses `2`, `delegated`, or `sidecar`, invoke the dispatcher with `--operator-choice delegated --generator-manifest <manifest.json>`
+- if the user chooses `1`, `local`, or `codex`, invoke the helper with `--operator-choice local`
+- if the user chooses `2`, `or`, `delegated`, or `sidecar`, invoke the helper with `--operator-choice 2 --execute-live`
 - keep generator work bound to one deterministic generator family and one validator path
+- use the helper's generated `operator_choice_prompt.json`, `summary.json`, `validation_summary.json`, and post-validation artifacts as the review bundle for this lane
 
 Important:
 
@@ -312,6 +314,7 @@ For eligible bounded finding-triage work inside `FINDING_TRIAGE`, prefer the sha
 - one existing local result bundle
 - one bounded classification question
 - review-first and evidence-first
+- net Codex-token ROI is positive after counting Codex briefing, orchestration, review, and handoff overhead
 
 This gate is for the bounded assist-only delegation class `test_result_triage_review`.
 
@@ -324,18 +327,29 @@ Binding artifacts:
 Use prompt mode first:
 
 ```powershell
-python documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py --task-class test_result_triage_review --task-label "<short triage review task>" --normal-target-model "<declared model/reasoning>" --operator-choice prompt --workflow-id <WORKFLOW-ID> --test-triage-input-package <input.json> --test-triage-fixture-result <fixture.json>
+python documentation/codex/model-routing/scripts/codex_test_result_triage_review_runner.py --task-label "<short triage review task>" --normal-target-model "<declared model/reasoning>" --operator-choice prompt --workflow-id <WORKFLOW-ID> --estimated-or-cost <estimated-cost> --cost-estimate-confidence-percent <confidence> --estimated-codex-saved-tokens <n> --estimated-codex-or-overhead-tokens <n> --minimum-net-codex-saved-tokens <n> --input-package-json <input.json>
 ```
 
 Expected operator gate:
 
 - `1 = Codex`
-- `2 = OR-Arbeitspferd`
+- `2 = OR`
 
 Meaning here:
 
 - `1` keeps finding triage fully local in Codex.
-- `2` uses das bounded OR-Arbeitspferd fuer eine assist-only triage review, aber Codex behaelt die reale Klassifikation, die Rerun-Entscheidung, das Backlog-Routing und die finale Evidenzinterpretation.
+- `2` uses the bounded OR lane for an assist-only triage review, but Codex behaelt die reale Klassifikation, die Rerun-Entscheidung, das Backlog-Routing und die finale Evidenzinterpretation.
+
+Productive role:
+
+- Use OR when the result bundle and evidence snippets are large enough that external triage review will save meaningful Codex work.
+- OR may cluster failures, suggest likely classification, identify next local verifier/retest, and prepare compact `janus-debug`, `janus-backlog-intake`, or `janus-executioner` handoff language.
+- OR must not run Playwright, mutate result JSON, declare final PASS, or decide release readiness.
+- Keep tiny or obvious triage steps on Codex when OR briefing/review would cost more than classifying the result locally.
+
+Current preferred OR candidate for this bounded lane:
+
+- `qwen/qwen3-coder-30b-a3b-instruct`
 
 Boundaries stay strict:
 
@@ -349,7 +363,8 @@ Boundaries stay strict:
 If the user chooses the delegated path:
 
 - if the user chooses `1`, `local`, or `codex`, invoke the dispatcher with `--operator-choice local`
-- if the user chooses `2`, `delegated`, or `sidecar`, enter through `codex_test_result_triage_review_runner.run_consumer_flow(...)` so the bounded package, operator gate, and dispatcher path stay aligned
+- if the user chooses `2`, `delegated`, or `sidecar`, enter through `codex_test_result_triage_review_runner.run_consumer_flow(...)` so the bounded package, ROI gate, operator gate, and dispatcher path stay aligned
+- if the productive gate or ROI gate rejects the slice, do not show an OR choice; keep the step deterministically Codex-only
 - keep triage work bound to one result bundle and one bounded classification slice
 
 Consumer integration path for everyday `janus-test-pipeline` work:

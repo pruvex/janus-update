@@ -44,6 +44,23 @@ Recommend `5.5` only for high-risk security/privacy/provider/memory architecture
 
 For one prechecked execution slice that fits either the proposal-first `execution_patch_candidate` class or the later derivative `execution_write_apply_candidate` class, prefer the dedicated productive Dev-workhorse runner as the visible operator-facing gate. The shared dispatcher remains the sealed downstream helper and should not be presented as the everyday first entry.
 
+Before offering OR, run the net-value check. OR is useful only when expected Codex savings clearly exceed the Codex overhead for creating the OR handoff, running the lane, reviewing the result, and documenting the outcome. Tiny tasks should stay local even if OR itself is cheap.
+
+Net-value rule:
+
+- if estimated Codex tokens saved <= estimated Codex OR orchestration/review overhead, choose Codex directly
+- if estimates are close or uncertain, choose Codex directly unless the task is a deliberate OR lane validation
+- if ROI is positive and the task is prechecked, bounded, and low/medium risk, show the `1 = Codex` / `2 = OR` gate
+- prefer write-capable bounded OR only when apply authority is constrained by allowlist, max touched files, no Git/release authority, and Codex-owned validation
+
+Runner ROI fields:
+
+```powershell
+--estimated-codex-saved-tokens <n> --estimated-codex-or-overhead-tokens <n> --minimum-net-codex-saved-tokens <n>
+```
+
+Use `--require-positive-or-roi` when estimates must be present before showing the OR choice. If the gate is negative or incomplete, the runner returns `LOCAL_CODEX_PATH_SELECTED`.
+
 Binding artifacts:
 
 - `C:\KI\Janus-Projekt\documentation\codex\model-routing\scripts\codex_dev_workhorse_runner.py`
@@ -66,6 +83,22 @@ Meaning here:
 
 - `1` keeps the execution slice fully local in Codex.
 - `2` enters the productive Dev-workhorse OR branch, which then invokes the bounded delegated `execution_patch_candidate` proposal path behind the visible gate.
+
+Current preferred OR candidate for this bounded lane:
+
+- `qwen/qwen3-coder-30b-a3b-instruct`
+
+When the selected OR model starts with `qwen/`, the dispatcher routes `execution_patch_candidate` through the Responses API `openrouter:apply_patch` runner:
+
+- `C:\KI\Janus-Projekt\documentation\codex\model-routing\scripts\openrouter_qwen_execution_patch_candidate_runner.py`
+
+This produces tool-call patch artifacts instead of prose-only JSON patches. After Codex accepts a bounded Qwen apply_patch proposal, normalize it for write-apply with:
+
+```powershell
+python documentation/codex/model-routing/scripts/normalize_openrouter_apply_patch_for_write_apply.py --source-run-dir <qwen-execution-run-dir> --workflow-id <WORKFLOW-ID>-WRITE-SOURCE
+```
+
+Then feed the normalized output directory into `execution_write_apply_candidate` as `--accepted-source-run-dir`. This is the preferred productive path when the OR patch is accepted: OR writes the concrete patch artifact, the harness applies it deterministically inside the allowlist, and Codex reviews the resulting diff and runs validation instead of rewriting the change from scratch.
 
 Boundaries stay strict:
 
@@ -98,14 +131,24 @@ python documentation/codex/model-routing/scripts/codex_dev_workhorse_runner.py -
 Meaning there:
 
 - `1` keeps the execution slice fully local in Codex.
-- `2` enters the productive Dev-workhorse OR branch and then uses the bounded delegated `execution_write_apply_candidate` path.
+- `2` enters the productive Dev-workhorse OR branch and then uses the bounded delegated `execution_write_apply_candidate` path backed by an already accepted OR patch package plus deterministic local patch apply.
+- accepted Qwen `openrouter:apply_patch` runs must first be normalized with `normalize_openrouter_apply_patch_for_write_apply.py`; accepted JSON `patch_text` runs use `normalize_execution_patch_candidate_for_write_apply.py`.
 
 Extra write-candidate boundaries:
 
 - delegated write candidacy must be backed by an accepted `execution_patch_candidate` package
-- this does not itself grant live write approval
+- the live apply step is deterministic local patch application inside the exact accepted allowlist, not a second open-ended model writing pass
+- this does not itself grant broad live write approval
 - Codex still owns any future live-write approval, diff review, validation review, and final task completion
 - manual Janus validation remains Codex-owned
+
+Goal state for OR productivity:
+
+- OR should not remain a pure chatbot or prose reviewer for eligible code work.
+- For meaningful bounded execution slices, OR should produce or apply concrete code artifacts inside rails.
+- Codex should avoid rewriting accepted OR work from scratch; Codex should review, validate, and only repair locally when the delegated result is rejected or fails evidence gates.
+- Proposal-first is a safety fallback, not the target for every eligible execution task.
+- For Qwen execution tasks, prefer the apply_patch tool-call path over prose JSON when ROI and risk gates pass.
 
 Use `execution_write_apply_candidate` only when:
 
