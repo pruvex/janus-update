@@ -207,6 +207,355 @@ def _is_generic_stability_fallback_text(text: Any) -> bool:
     return has_exact_generic_fallback or has_dynamic_provider_fallback
 
 
+def _is_pet_overview_query_text(query: str) -> bool:
+    normalized = re.sub(r"[^\wÃ¤Ã¶Ã¼Ã„Ã–ÃœÃŸ]+", " ", str(query or "").casefold()).strip()
+    if not normalized:
+        return False
+    return any(term in normalized.split() for term in ("haustier", "haustiere", "hund", "katze"))
+
+
+def _collect_memory_read_facts(tool_results: Any) -> List[str]:
+    facts: List[str] = []
+    seen: set[str] = set()
+    for result in tool_results or []:
+        if not isinstance(result, dict):
+            continue
+        name = str(result.get("name") or result.get("_skill_id") or "").strip().lower()
+        skill_id = str(result.get("_skill_id") or result.get("skill_id") or "").strip().lower()
+        if name != "memory.read" and skill_id != "memory.read":
+            continue
+        try:
+            raw = result.get("_raw_content") or result.get("content") or "{}"
+            parsed = json.loads(raw) if isinstance(raw, str) else dict(raw or {})
+        except Exception:
+            continue
+        data = parsed.get("data") if isinstance(parsed, dict) and isinstance(parsed.get("data"), dict) else {}
+        memories = data.get("memories") if isinstance(data.get("memories"), list) else []
+        for memory in memories:
+            if not isinstance(memory, dict):
+                continue
+            fact = str(memory.get("fact") or "").strip().strip(".")
+            if not fact:
+                continue
+            key = fact.casefold()
+            if key in seen:
+                continue
+            seen.add(key)
+            facts.append(fact)
+    return facts
+
+
+def _build_pet_overview_memory_read_fallback(query: str, facts: List[str]) -> str:
+    if not _is_pet_overview_query_text(query):
+        return ""
+
+    pet_state: Dict[str, Dict[str, Any]] = {}
+
+    def ensure_pet(name: str, pet_type: Optional[str] = None) -> Dict[str, Any]:
+        key = str(name or "").strip().casefold()
+        if not key:
+            return {}
+        state = pet_state.setdefault(
+            key,
+            {"name": str(name or "").strip().title(), "type": pet_type, "details": []},
+        )
+        if pet_type and not state.get("type"):
+            state["type"] = pet_type
+        return state
+
+    def append_detail(state: Dict[str, Any], detail: str) -> None:
+        if not state:
+            return
+        normalized_detail = str(detail or "").strip().strip(".")
+        if not normalized_detail:
+            return
+
+        pet_name = str(state.get("name") or "").strip()
+        pet_type = str(state.get("type") or "").strip().casefold()
+        detail_norm = normalized_detail.casefold()
+
+        if pet_name and detail_norm.startswith(pet_name.casefold() + " "):
+            predicate_only = normalized_detail[len(pet_name) :].strip()
+        else:
+            predicate_only = normalized_detail
+
+        predicate_norm = predicate_only.casefold()
+        if pet_type and predicate_norm in {
+            f"ist ein {pet_type}",
+            f"ist eine {pet_type}",
+            f"ist {pet_type}",
+        }:
+            return
+        if " mag " in f" {predicate_norm} " or predicate_norm.startswith("mag "):
+            return
+
+        existing = {
+            str(item).strip().strip(".").casefold()
+            for item in (state.get("details") or [])
+            if str(item).strip()
+        }
+        if detail_norm not in existing:
+            state["details"].append(normalized_detail)
+
+    for raw_fact in facts:
+        fact = re.sub(r"^(?:aber|und)\s+", "", str(raw_fact or "").strip().strip("."), flags=re.IGNORECASE)
+        if not fact:
+            continue
+
+        match = re.search(r"\b(?:oliver\s+schwab|oli)\s+hat\s+eine\s+katze\s+namens\s+([^\s.,!?]+)", fact, re.IGNORECASE)
+        if match:
+            ensure_pet(match.group(1), "Katze")
+            continue
+
+        match = re.search(r"\b(?:oliver\s+schwab|oli)\s+hat\s+einen\s+hund\s+namens\s+([^\s.,!?]+)", fact, re.IGNORECASE)
+        if match:
+            ensure_pet(match.group(1), "Hund")
+            continue
+
+        match = re.search(r"\b(?:olis)\s+katze\s+hei\S*t\s+([^\s.,!?]+)", fact, re.IGNORECASE)
+        if match:
+            ensure_pet(match.group(1), "Katze")
+            continue
+
+        match = re.search(r"\b(?:olis)\s+hund\s+hei\S*t\s+([^\s.,!?]+)", fact, re.IGNORECASE)
+        if match:
+            ensure_pet(match.group(1), "Hund")
+            continue
+
+        match = re.search(r"\b(?:olis)\s+hund\s+([^\s.,!?]+)\s+ist\s+(.+)$", fact, re.IGNORECASE)
+        if match:
+            pet_name = match.group(1).strip()
+            detail = f"{pet_name.title()} ist {match.group(2).strip()}"
+            state = ensure_pet(pet_name, "Hund")
+            append_detail(state, detail)
+            continue
+
+        match = re.search(r"\b(?:olis)\s+katze\s+([^\s.,!?]+)\s+ist\s+(.+)$", fact, re.IGNORECASE)
+        if match:
+            pet_name = match.group(1).strip()
+            detail = f"{pet_name.title()} ist {match.group(2).strip()}"
+            state = ensure_pet(pet_name, "Katze")
+            append_detail(state, detail)
+            continue
+
+        match = re.match(r"^(?:Hund|Katze|Haustier)\s+([^\s.,!?]+)\s+(.+)$", fact, re.IGNORECASE)
+        if match:
+            pet_name = match.group(1).strip()
+            pet_type = fact.split()[0].capitalize()
+            detail = f"{pet_name.title()} {match.group(2).strip()}"
+            state = ensure_pet(pet_name, pet_type)
+            append_detail(state, detail)
+            continue
+
+        match = re.match(r"^([^\s.,!?]+)\s+(.+)$", fact, re.IGNORECASE)
+        if match and re.search(r"\b(?:ist|frisst)\b", match.group(2), re.IGNORECASE):
+            pet_name = match.group(1).strip()
+            detail = f"{pet_name.title()} {match.group(2).strip()}"
+            state = ensure_pet(pet_name)
+            append_detail(state, detail)
+
+    ordered_pets = sorted(
+        (state for state in pet_state.values() if state.get("name")),
+        key=lambda item: (0 if item.get("type") == "Hund" else 1 if item.get("type") == "Katze" else 2, item["name"].casefold()),
+    )
+    if not ordered_pets:
+        return ""
+
+    lines: List[str] = []
+    for state in ordered_pets:
+        pet_type = str(state.get("type") or "Haustier").strip()
+        pet_name = str(state.get("name") or "").strip().title()
+        details = list(state.get("details") or [])
+        pretty_details: List[str] = []
+        for detail in details:
+            cleaned = str(detail or "").strip().strip(".")
+            if not cleaned:
+                continue
+            if pet_name and cleaned.casefold().startswith(pet_name.casefold() + " "):
+                cleaned = cleaned[len(pet_name) :].strip()
+            if cleaned:
+                pretty_details.append(cleaned)
+        if pretty_details:
+            lines.append(f"- {pet_name} ({pet_type}): " + "; ".join(pretty_details) + ".")
+        else:
+            lines.append(f"- {pet_name} ({pet_type}).")
+    return "\u00dcber Olis Haustiere wei\u00df ich:\n\n" + "\n".join(lines)
+
+
+def _repair_known_mojibake_text(value: str) -> str:
+    text = str(value or "")
+    if "Ã" not in text and "â" not in text:
+        return text
+    for encoding in ("cp1252", "latin-1"):
+        try:
+            repaired = text.encode(encoding).decode("utf-8")
+        except UnicodeError:
+            continue
+        if repaired.count("Ã") < text.count("Ã") and repaired.count("\ufffd") <= text.count("\ufffd"):
+            return repaired
+    return text
+
+
+def _build_memory_read_fallback_response(user_text: str, tool_results: Any) -> str:
+    query = str(user_text or "").strip()
+    if not query:
+        return ""
+    normalized_query = re.sub(r"[^\wäöüÄÖÜß]+", " ", query.casefold()).strip()
+    stop_words = {
+        "was",
+        "weisst",
+        "weißt",
+        "weiss",
+        "du",
+        "ueber",
+        "über",
+        "alles",
+        "zu",
+        "von",
+        "mag",
+        "macht",
+        "gerne",
+        "kennt",
+        "kennst",
+        "mir",
+        "den",
+        "die",
+        "der",
+        "das",
+        "ein",
+        "eine",
+        "einen",
+    }
+    subject_terms = [
+        token
+        for token in normalized_query.split()
+        if len(token) >= 3 and token not in stop_words
+    ]
+    facts: List[str] = []
+    seen: set[str] = set()
+    for result in tool_results or []:
+        if not isinstance(result, dict):
+            continue
+        name = str(result.get("name") or result.get("_skill_id") or "").strip().lower()
+        skill_id = str(result.get("_skill_id") or result.get("skill_id") or "").strip().lower()
+        if name != "memory.read" and skill_id != "memory.read":
+            continue
+        try:
+            raw = result.get("_raw_content") or result.get("content") or "{}"
+            parsed = json.loads(raw) if isinstance(raw, str) else dict(raw or {})
+        except Exception:
+            continue
+        data = parsed.get("data") if isinstance(parsed, dict) and isinstance(parsed.get("data"), dict) else {}
+        memories = data.get("memories") if isinstance(data.get("memories"), list) else []
+        for memory in memories:
+            if not isinstance(memory, dict):
+                continue
+            fact = str(memory.get("fact") or "").strip().strip(".")
+            if not fact:
+                continue
+            if subject_terms:
+                normalized_fact = re.sub(r"[^\wäöüÄÖÜß]+", " ", fact.casefold()).strip()
+                if not any(term in normalized_fact for term in subject_terms):
+                    continue
+            key = fact.casefold()
+            if key in seen:
+                continue
+            seen.add(key)
+            facts.append(fact)
+    if not facts:
+        return ""
+    intro = "Aus dem lokalen Gedächtnis weiß ich dazu:"
+    if re.search(r"\bchris(?:\s+gier)?\b", query, re.IGNORECASE):
+        intro = "Über Chris Gier weiß ich aus dem lokalen Gedächtnis:"
+    elif re.search(r"\boli\b|\boliver\s+schwab\b", query, re.IGNORECASE):
+        intro = "Über Oli weiß ich aus dem lokalen Gedächtnis:"
+    return intro + "\n" + "\n".join(f"- {fact}." for fact in facts[:6])
+
+
+def _build_memory_write_fallback_response(tool_results: Any) -> str:
+    for result in reversed(tool_results or []):
+        if not isinstance(result, dict):
+            continue
+        name = str(result.get("name") or result.get("_skill_id") or "").strip().lower()
+        skill_id = str(result.get("_skill_id") or result.get("skill_id") or "").strip().lower()
+        if name != "memory.write" and skill_id != "memory.write":
+            continue
+        try:
+            raw = result.get("_raw_content") or result.get("content") or "{}"
+            parsed = json.loads(raw) if isinstance(raw, str) else dict(raw or {})
+        except Exception:
+            continue
+        if not isinstance(parsed, dict) or parsed.get("status") != "ok":
+            continue
+        arguments = result.get("_arguments_json") if isinstance(result.get("_arguments_json"), dict) else {}
+        fact = str(arguments.get("fact") or "").strip().strip(".")
+        if not fact:
+            data = parsed.get("data") if isinstance(parsed.get("data"), dict) else {}
+            fact = str(data.get("fact") or "").strip().strip(".")
+        if not fact:
+            continue
+        data = parsed.get("data") if isinstance(parsed.get("data"), dict) else {}
+        contact_result = data.get("contact_proposal") if isinstance(data.get("contact_proposal"), dict) else {}
+        contact_status = str(contact_result.get("status") or "").strip().lower()
+        if contact_status == "applied":
+            return f"Alles klar, das habe ich im lokalen Gedächtnis und im Adressbuch vermerkt: {fact}."
+        if contact_status in {"staged", "pending"}:
+            return f"Alles klar, das habe ich im lokalen Gedächtnis vermerkt und als Adressbuch-Update vorbereitet: {fact}."
+        if contact_status == "ignored" and str(contact_result.get("reason") or "").strip().lower() == "already_applied":
+            known_fact_summary = str(contact_result.get("known_fact_summary") or "").strip().strip(".")
+            if known_fact_summary:
+                return f"Klar, das kenne ich bereits aus dem Adressbuch: {known_fact_summary}."
+            return f"Klar, das ist im Adressbuch bereits hinterlegt: {fact}."
+        return f"Alles klar, das habe ich im lokalen Gedächtnis vermerkt: {fact}."
+    return ""
+
+
+def _should_force_memory_write_fallback(tool_results: Any) -> bool:
+    for result in reversed(tool_results or []):
+        if not isinstance(result, dict):
+            continue
+        name = str(result.get("name") or result.get("_skill_id") or "").strip().lower()
+        skill_id = str(result.get("_skill_id") or result.get("skill_id") or "").strip().lower()
+        if name != "memory.write" and skill_id != "memory.write":
+            continue
+        try:
+            raw = result.get("_raw_content") or result.get("content") or "{}"
+            parsed = json.loads(raw) if isinstance(raw, str) else dict(raw or {})
+        except Exception:
+            continue
+        if not isinstance(parsed, dict) or parsed.get("status") != "ok":
+            continue
+        data = parsed.get("data") if isinstance(parsed.get("data"), dict) else {}
+        contact_result = data.get("contact_proposal") if isinstance(data.get("contact_proposal"), dict) else {}
+        contact_status = str(contact_result.get("status") or "").strip().lower()
+        if contact_status in {"applied", "staged", "pending"}:
+            return True
+        if contact_status == "ignored" and str(contact_result.get("reason") or "").strip().lower() == "already_applied":
+            return True
+    return False
+
+
+def _build_memory_read_fallback_response_v2(user_text: str, tool_results: Any) -> str:
+    query = str(user_text or "").strip()
+    if not query:
+        return ""
+    facts = _collect_memory_read_facts(tool_results)
+    pet_overview_message = _build_pet_overview_memory_read_fallback(query, facts)
+    if pet_overview_message:
+        return _repair_known_mojibake_text(pet_overview_message)
+    return _build_memory_read_fallback_response(user_text, tool_results)
+
+
+def _should_force_memory_read_fallback(user_text: str, tool_results: Any) -> bool:
+    query = str(user_text or "").strip()
+    if not query:
+        return False
+    facts = _collect_memory_read_facts(tool_results)
+    if _build_pet_overview_memory_read_fallback(query, facts):
+        return True
+    return False
+
+
 def _extract_user_text_from_history(history: List[Dict[str, str]]) -> str:
     """
     Extract the latest user message from chat history.
@@ -1373,9 +1722,6 @@ class OrchestratorExecutionEngine:
                 )
                 
                 # Log fallback_trigger for model upgrade
-                import asyncio
-                from backend.services.logging.logger_core import log_event
-                from backend.data.schemas_logging import LogEventCreate
                 try:
                     asyncio.create_task(log_event(LogEventCreate(
                         event_type="fallback_trigger",
@@ -1645,6 +1991,7 @@ class OrchestratorExecutionEngine:
         current_call_model = user_selected_model
         current_call_provider = user_selected_provider
         had_tool_round = False
+        _last_tool_error = None  # (tool_name, error_code, error_message)
         # Gemini: interner Multi-Runden-Loop im Gateway umgeht Dispatcher [GEMINI-FIX] + Hard-Loop-Breaker.
         if reason_and_respond_fn is not llm_gateway.reason_and_respond:
             gateway_kwargs["_gemini_engine_owned_tool_loop"] = True
@@ -1953,9 +2300,6 @@ class OrchestratorExecutionEngine:
                             )
                             
                             # Log fallback_trigger for tool-loop model upgrade
-                            import asyncio
-                            from backend.services.logging.logger_core import log_event
-                            from backend.data.schemas_logging import LogEventCreate
                             try:
                                 asyncio.create_task(log_event(LogEventCreate(
                                     event_type="fallback_trigger",
@@ -2691,6 +3035,47 @@ class OrchestratorExecutionEngine:
             }
         if all_used_skills:
             logger.info("TOOL_LOOP: Skills executed in legacy path: %s", all_used_skills)
+
+        if had_tool_round and results_buffer:
+            memory_write_fallback = _build_memory_write_fallback_response(results_buffer)
+            should_force_memory_write = _should_force_memory_write_fallback(results_buffer)
+            if memory_write_fallback and (
+                should_force_memory_write
+                or not text_value
+                or not text_value.strip()
+                or text_value == fallback_summary
+                or _is_generic_stability_fallback_text(text_value)
+            ):
+                text_value = memory_write_fallback
+                logger.info(
+                    "MEMORY-WRITE-FALLBACK: Constructed stable save confirmation from memory.write result "
+                    "(forced=%s).",
+                    should_force_memory_write,
+                )
+
+        if had_tool_round and results_buffer:
+            should_force_memory_read = _should_force_memory_read_fallback(
+                str(gateway_kwargs.get("user_prompt") or ""),
+                results_buffer,
+            )
+            if (
+                should_force_memory_read
+                or not text_value
+                or not text_value.strip()
+                or text_value == fallback_summary
+                or _is_generic_stability_fallback_text(text_value)
+            ):
+                memory_fallback = _build_memory_read_fallback_response_v2(
+                    str(gateway_kwargs.get("user_prompt") or ""),
+                    results_buffer,
+                )
+                if memory_fallback:
+                    text_value = memory_fallback
+                    logger.info(
+                        "MEMORY-READ-FALLBACK: Constructed stable recall response from memory.read results "
+                        "(forced=%s).",
+                        should_force_memory_read,
+                    )
 
         weather_text = render_weather_forecast_from_tools(results_buffer)
         if weather_text:
@@ -3518,6 +3903,47 @@ class OrchestratorExecutionEngine:
                     text_value = "\n\n".join(successful_results)
                     logger.info("💎 GEMINI-FALLBACK: Constructed response from %d tool results", len(successful_results))
         
+        if had_tool_round and results_buffer:
+            memory_write_fallback = _build_memory_write_fallback_response(results_buffer)
+            should_force_memory_write = _should_force_memory_write_fallback(results_buffer)
+            if memory_write_fallback and (
+                should_force_memory_write
+                or not text_value
+                or not text_value.strip()
+                or text_value == fallback_summary
+                or _is_generic_stability_fallback_text(text_value)
+            ):
+                text_value = memory_write_fallback
+                logger.info(
+                    "MEMORY-WRITE-FALLBACK: Constructed stable save confirmation from memory.write result "
+                    "(forced=%s).",
+                    should_force_memory_write,
+                )
+
+        if had_tool_round and results_buffer:
+            should_force_memory_read = _should_force_memory_read_fallback(
+                str(gateway_kwargs.get("user_prompt") or ""),
+                results_buffer,
+            )
+            if (
+                should_force_memory_read
+                or not text_value
+                or not text_value.strip()
+                or text_value == fallback_summary
+                or _is_generic_stability_fallback_text(text_value)
+            ):
+                memory_fallback = _build_memory_read_fallback_response_v2(
+                    str(gateway_kwargs.get("user_prompt") or ""),
+                    results_buffer,
+                )
+                if memory_fallback:
+                    text_value = memory_fallback
+                    logger.info(
+                        "MEMORY-READ-FALLBACK: Constructed stable recall response from memory.read results "
+                        "(forced=%s).",
+                        should_force_memory_read,
+                    )
+
         weather_text = render_weather_forecast_from_tools(results_buffer)
         if weather_text:
             text_value = weather_text

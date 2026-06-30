@@ -1,6 +1,226 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-06-30`, `BACKLOG-115` is now documentation-closed after final audit `PASS`. The backlog item sits in `DONE`, the central registry, project snapshot, changelog, learned-pattern log, pipeline documentation note, and dashboard snapshot all reflect the same Oliver/Tasso/Garfield closeout, and no further Janus product work remains on this marker.
+
+Current goal: no active `BACKLOG-115` implementation work remains; next optional step is a Git checkpoint decision via `janus-git-governance`.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- moved `BACKLOG-115` to `DONE` in `documentation/backlog/BACKLOG.md`
+- synced the closeout into `documentation/01_CENTRAL_TASK_REGISTRY.md`, `PROJECT_STATE.md`, `CHANGELOG.md`, `WHAT_I_LEARNED.md`, and `documentation/pipeline/TEST_PIPELINE_RUN_LOG.md`
+- rebuilt the dashboard snapshot via `npm run sync:backlog`
+- validated the documentation marker sync for `BACKLOG-115`
+
+Changed files:
+- `documentation/backlog/BACKLOG.md`
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `CHANGELOG.md`
+- `WHAT_I_LEARNED.md`
+- `documentation/pipeline/TEST_PIPELINE_RUN_LOG.md`
+- `janus-dashboard/data/backlog.snapshot.json`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `npm run sync:backlog` in `janus-dashboard`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-backlog-handoff\scripts\validate_backlog.py C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md`: PASS WITH LEGACY WARNINGS
+- `python C:\Users\pruve\.codex\skills\janus-documentation-update\scripts\validate_doc_update.py --repo C:\KI\Janus-Projekt --marker BACKLOG-115`: PASS
+
+Open risks:
+- backlog validation still reports pre-existing legacy warnings on older markers and one older `BACKLOG-110` section placement; `BACKLOG-115` itself now passes the documentation-update validator cleanly
+- no commit or push has happened after this documentation block, so a remote such as GitHub or `backup` may not contain the latest CURRENT_STATE or closeout artifacts
+
+Next recommended step for ChatGPT: present `BACKLOG-115` as fully closed and, only if desired, offer a Git checkpoint via `janus-git-governance`.
+
+Next recommended step for Codex: stop product work on `BACKLOG-115`; if the user wants persistence, route next to `janus-git-governance`.
+
+Last updated: `2026-06-30 22:58:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-30`, `BACKLOG-115` has passed `janus-final-audit`. The bounded Oliver/Tasso/Garfield cleanup now has compact audit packaging, validated final-audit evidence, and a green decision across both the visible address-book cleanup path and the pet-overview recall/fallback path. The next required Janus step is documentation synchronization, not more debugging.
+
+Current goal: run `janus-documentation-update` for the passed `BACKLOG-115` package.
+
+Active phase: `janus-final-audit`, canonical state `HANDOFF`.
+
+Last Codex work:
+- built `documentation/test-runs/BACKLOG-115_AUDIT_PACKAGE.md` with scoped backlog, precheck, diff, validation, risk, and re-audit delta sections
+- wrote `documentation/tasks/backlog_BACKLOG-115_final_audit.md`
+- validated the final-audit artifact with the Janus final-audit validator
+
+Changed files:
+- `documentation/test-runs/BACKLOG-115_AUDIT_PACKAGE.md`
+- `documentation/test-runs/BACKLOG-115_audit_validation_summary_2026-06-30.md`
+- `documentation/tasks/backlog_BACKLOG-115_final_audit.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\codex-audit-package-builder\scripts\build_audit_package.py ... --out documentation\test-runs\BACKLOG-115_AUDIT_PACKAGE.md`: PASS
+- package completeness spot-check on required sections: PASS
+- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py documentation\tasks\backlog_BACKLOG-115_final_audit.md`: PASS
+
+Open risks:
+- no commit or push has happened after this audit block, so a remote such as GitHub or `backup` may not contain the latest CURRENT_STATE or audit artifacts
+- the final mojibake repair is audit-green on targeted runtime/test evidence, but no fresh browser screenshot evidence was added after that last patch
+
+Next recommended step for ChatGPT: present `BACKLOG-115` as final-audit PASS and move directly to documentation synchronization.
+
+Next recommended step for Codex: route to `janus-documentation-update` on `5.4 mini` low using the passed audit package and final-audit artifact.
+
+Last updated: `2026-06-30 22:43:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-30`, the second bounded `BACKLOG-115` debug slice on the pet-overview answer path is green. The earlier fix had already made `memory.read` return the four clean contact-backed pet facts for `was weißt du über olis haustiere?`; this follow-up slice fixed the later response fallback in `backend/services/orchestrator/execution_engine.py`, which had still allowed stale Garfield/Thunfisch preference wording and a mojibake intro line to leak into the visible answer path. The fallback now suppresses `mag ...` drift for this pet-overview surface, renders the compact contact-backed per-pet summary, and repairs the affected Unicode intro string on this path.
+
+Current goal: prepare `BACKLOG-115` for `janus-final-audit` with the updated pet-overview fallback evidence.
+
+Active phase: `janus-debug`, canonical state `HANDOFF`.
+
+Last Codex work:
+- traced the remaining live mismatch beyond `memory.read` into the pet-overview response fallback in `backend/services/orchestrator/execution_engine.py`
+- hardened the fallback so it no longer reintroduces stale Garfield/Thunfisch preference wording into the visible pet summary
+- added a bounded mojibake repair on the pet-overview fallback return path so the intro renders as `Über Olis Haustiere weiß ich:`
+- updated `backend/tests/test_provider_auth_fallback.py` to assert the exact Unicode intro and the clean contact-backed Tasso/Garfield summary
+- refreshed `documentation/test-runs/BACKLOG-115_pet_overview_response_fallback_debug_result_2026-06-30.md`
+
+Changed files:
+- `backend/services/orchestrator/execution_engine.py`
+- `backend/tests/test_provider_auth_fallback.py`
+- `documentation/test-runs/BACKLOG-115_pet_overview_response_fallback_debug_result_2026-06-30.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest backend/tests/test_provider_auth_fallback.py -q -k "pet_overview or memory_read_fallback_v2"`: PASS (`2 passed, 7 deselected`)
+- `python -m pytest backend/tests/test_memory_tools.py -q -k "pet_overview"`: PASS (`1 passed, 26 deselected`)
+- `python -m pytest backend/tests/integration/test_pet_recall_chat_path.py -q`: PASS (`1 passed`)
+- `python -m py_compile backend/services/orchestrator/execution_engine.py backend/tests/test_provider_auth_fallback.py backend/tests/test_memory_tools.py backend/tests/integration/test_pet_recall_chat_path.py`: PASS
+- direct fallback render probe with contact-backed facts plus stale Garfield preference fact: PASS, output now renders:
+  - `Über Olis Haustiere weiß ich:`
+  - `- Tasso (Hund): ist ein podenco; frisst gerne thunfisch.`
+  - `- Garfield (Katze).`
+- `python C:\Users\pruve\.codex\skills\janus-debug\scripts\validate_debug_result.py documentation\test-runs\BACKLOG-115_pet_overview_response_fallback_debug_result_2026-06-30.md`: pending rerun after artifact refresh
+
+Open risks:
+- the user-visible app may still need a backend/app restart or reload before the newest fallback code is reflected in the running process
+- no commit or push has happened after this block, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: treat the pet-overview fallback slice as debug-green and prepare the final-audit gate while noting that an optional fresh visual app spot-check is still reasonable.
+
+Next recommended step for Codex: route to `janus-final-audit` on `5.4` medium with the bound backlog/precheck/debug evidence for `BACKLOG-115`.
+
+Last updated: `2026-06-30 19:08:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-30`, `BACKLOG-115` received a second bounded debug slice on the pet-overview answer path itself. The earlier fix had already made `memory.read` return only the four clean contact-backed pet facts for `was weißt du über olis haustiere?`, but the later response fallback in `backend/services/orchestrator/execution_engine.py` still allowed stale pet-preference wording such as `Garfield mag keinen thunfisch` to leak back into the visible answer. That fallback is now hardened to suppress `mag ...` drift for this pet-overview surface and to render a compact contact-backed summary instead.
+
+Current goal: rerun the exact live app prompt for Oli's pets and confirm that the visible answer now stays aligned with the clean contact-backed pet summary.
+
+Active phase: `janus-debug`, canonical state `HANDOFF`.
+
+Last Codex work:
+- traced the new live mismatch beyond `memory.read` into the pet-overview fallback formatter in `backend/services/orchestrator/execution_engine.py`
+- hardened the fallback so it no longer reintroduces stale Garfield/Thunfisch preference wording into the visible pet summary
+- updated the fallback regression in `backend/tests/test_provider_auth_fallback.py` to expect the clean contact-backed Tasso/Garfield summary
+- wrote and validated `documentation/test-runs/BACKLOG-115_pet_overview_response_fallback_debug_result_2026-06-30.md`
+
+Changed files:
+- `backend/services/orchestrator/execution_engine.py`
+- `backend/tests/test_provider_auth_fallback.py`
+- `documentation/test-runs/BACKLOG-115_pet_overview_response_fallback_debug_result_2026-06-30.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python -m pytest backend/tests/test_provider_auth_fallback.py -q -k "pet_overview or memory_read_fallback_v2"`: PASS (`2 passed, 7 deselected`)
+- `python -m pytest backend/tests/test_memory_tools.py -q -k "pet_overview"`: PASS (`1 passed, 26 deselected`)
+- `python -m pytest backend/tests/integration/test_pet_recall_chat_path.py -q`: PASS (`1 passed`)
+- `python -m py_compile backend/services/orchestrator/execution_engine.py backend/tests/test_provider_auth_fallback.py backend/tests/test_memory_tools.py backend/tests/integration/test_pet_recall_chat_path.py`: PASS
+- direct fallback render probe with contact-backed facts plus stale Garfield preference fact: PASS, output now renders:
+  - `Über Olis Haustiere weiß ich:`
+  - `- Tasso (Hund): ist ein podenco; frisst gerne thunfisch.`
+  - `- Garfield (Katze).`
+- `python C:\Users\pruve\.codex\skills\janus-debug\scripts\validate_debug_result.py documentation\test-runs\BACKLOG-115_pet_overview_response_fallback_debug_result_2026-06-30.md`: PASS
+
+Open risks:
+- the bug was observed in the real running app, so the backend/app may still need restart or reload before the user sees the fallback fix
+- live manual retest is still pending; `janus-final-audit` remains blocked until the visible answer is green
+- no commit or push has happened after this block, so a remote such as GitHub or `backup` may not contain this latest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: ask for one fresh live retest of `was weißt du über olis haustiere?` and compare the visible answer against the clean contact-backed pet summary instead of the old Garfield/Thunfisch drift.
+
+Next recommended step for Codex: route to `janus-test-pipeline` on `5.4` medium for the exact live prompt; if the user confirms the visible answer is green, prepare the `janus-final-audit` gate, otherwise continue `janus-debug`.
+
+Last updated: `2026-06-30 19:02:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-30`, the isolated worker gate pattern has now been exercised on real repo-owned helper packages, not just the synthetic green smoke package. The first real-helper package correctly failed the acceptance gate because its `PRETEST` still expected an old red state that is already fixed in the repository. The second real-helper package passed cleanly through the integrated quickchange gate and returned `ISOLATED_AIDER_READY_FOR_CODEX_REVIEW`; after review, the resulting helper file content was effectively identical to `HEAD`, so the run counts as a clean real-package no-op proof rather than a meaningful new repo delta.
+
+Current goal: decide whether the current evidence is already enough to treat the isolated worker gate as everyday-usable for bounded Dev helpers, or whether one future fresh real delta should still be staged specifically to measure true net productivity.
+
+Active phase: Lean Dev via `janus-executioner`, canonical state `PASS`.
+
+Last Codex work:
+- ran the first real-helper package through the integrated quickchange gate and confirmed the gate rejects stale red-precondition packages without side effects
+- ran the second real-helper package through the same gate and got a clean review-ready PASS result
+- verified that the second package's copied-back helper content matches `HEAD`, so the real-helper success was operational proof without a meaningful code delta
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python documentation/codex/model-routing/scripts/quickchange_sidecar_write_pilot_runner.py --task-label "Quickchange real helper isolated worker live" --normal-target-model "5.4 medium" --operator-choice 2 --workflow-id QC-ISOLATED-REAL-HELPER-001 --sidecar-model "openrouter/qwen/qwen3-coder-30b-a3b-instruct" --isolated-aider-package-json development/openrouter-skill-tests/janus-worker-aider-real-helper-poc/worker_package.json`: FAIL as designed (`ISOLATED_AIDER_REJECT_AND_FALLBACK`, stale pretest expectation)
+- `python documentation/codex/model-routing/scripts/quickchange_sidecar_write_pilot_runner.py --task-label "Quickchange second real helper isolated worker live" --normal-target-model "5.4 medium" --operator-choice 2 --workflow-id QC-ISOLATED-REAL-HELPER-002 --sidecar-model "openrouter/qwen/qwen3-coder-30b-a3b-instruct" --isolated-aider-package-json development/openrouter-skill-tests/janus-worker-aider-real-helper-poc-2/worker_package.json`: PASS
+- equality check of `development/openrouter-skill-tests/janus-backlog-prioritization/lean_backlog_prioritization_eval.py` against `HEAD`: PASS (`EQUAL`)
+- repo-root side-effect checks inside both run results: PASS (`repo_root_new_aider_artifacts=[]`, `gitignore_changed_during_run=false`)
+
+Open risks:
+- we still do not have a fresh real-helper package that is both currently red and intentionally worth patching today, so true live productivity gain on a new real delta is not yet measured
+- run artifacts under `development/openrouter-skill-tests/isolated-aider-worker-runs/` remain local and uncommitted unless we explicitly checkpoint them later
+- no push has happened after the latest local checkpoint or this validation block, so a remote such as GitHub or `backup` may not contain this newest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: treat the isolated worker gate as operationally proven across synthetic and real-package shapes, but be honest that the first real package was stale-red and the second was a no-op confirmation, not a new productivity win.
+
+Next recommended step for Codex: stop infrastructure expansion for now unless a genuinely fresh bounded real-helper delta appears; the next best evidence would be one real new issue, not another proof-of-proof run.
+
+Last updated: `2026-06-30 18:31:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-06-30`, the generic isolated Aider worker is no longer only wired and unit-tested; it has now also passed one real small live bounded worker slice through both integrated Dev gates. The `quickchange` and `test-pipeline` sidecar helpers each forwarded `2 = OR` into the same isolated temp-workspace worker package and both returned `ISOLATED_AIDER_READY_FOR_CODEX_REVIEW` with no repo-root `.aider*` artifacts and no `.gitignore` drift. That gives us the first everyday proof that the reusable gate pattern works not just syntactically, but in actual bounded operator flow.
+
+Current goal: prove that the new isolated-worker gate pattern is operational in everyday Dev flow before deciding whether to expand it further or stop at the current two-gate checkpoint.
+
+Active phase: Lean Dev via `janus-executioner`, canonical state `PASS`.
+
+Last Codex work:
+- ran the quickchange integrated gate against the bounded isolated code/test worker package
+- ran the test-pipeline integrated gate against the same bounded isolated code/test worker package
+- confirmed both gates forward into the generic isolated temp-workspace runner and return review-ready PASS results
+- kept the result bounded to the existing isolated worker run artifacts under `development/openrouter-skill-tests/isolated-aider-worker-runs/`
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python documentation/codex/model-routing/scripts/quickchange_sidecar_write_pilot_runner.py --task-label "Quickchange live isolated worker smoke" --normal-target-model "5.4 medium" --operator-choice 2 --workflow-id QC-ISOLATED-LIVE-REAL-001 --sidecar-model "openrouter/qwen/qwen3-coder-30b-a3b-instruct" --isolated-aider-package-json development/openrouter-skill-tests/janus-worker-aider-isolated-code-poc/worker_package.json`: PASS
+- `python documentation/codex/model-routing/scripts/test_pipeline_sidecar_write_pilot_runner.py --testspec-path documentation/TEST_SPEC/example.md --test-run-id TEST-RUN-ISOLATED-GATE-001 --normal-target-model "5.4 medium" --operator-choice 2 --workflow-id TP-ISOLATED-LIVE-REAL-001 --sidecar-model "openrouter/qwen/qwen3-coder-30b-a3b-instruct" --isolated-aider-package-json development/openrouter-skill-tests/janus-worker-aider-isolated-code-poc/worker_package.json`: PASS
+- repo-root side-effect checks inside both run results: PASS (`repo_root_new_aider_artifacts=[]`, `gitignore_changed_during_run=false`)
+
+Open risks:
+- the productive live proof is still on the green synthetic code/test package, not yet on a fresh real helper delta
+- run artifacts under `development/openrouter-skill-tests/isolated-aider-worker-runs/` remain local and uncommitted unless we explicitly checkpoint them later
+- no push has happened after the latest local checkpoint or this validation block, so a remote such as GitHub or `backup` may not contain this newest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: treat the isolated gate pattern as live-proven for two Dev gates and decide whether one fresh real-helper slice is worth it before any broader rollout.
+
+Next recommended step for Codex: either stop here with the two-gate pattern as sufficient proof, or use one of the existing real-helper packages for one more bounded live run if stronger everyday evidence is still wanted.
+
+Last updated: `2026-06-30 18:22:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-06-30`, the first existing Dev-side gate has been wired to the generic isolated Aider worker path without reopening Janus product/backlog flow. `quickchange_sidecar_write_pilot_runner.py` now preserves the visible operator choice while allowing the `2 = OR` branch to delegate through `isolated_aider_workspace_runner.py` when an isolated worker package is provided. Prompt/local behavior stayed green, and the forwarded OR smoke path also passed against the bounded tiny code package.
 
 Current goal: turn the reusable isolated Aider worker from a standalone proof into callable everyday Dev gates while keeping `1 = Codex` / `2 = OR` explicit and reviewable.

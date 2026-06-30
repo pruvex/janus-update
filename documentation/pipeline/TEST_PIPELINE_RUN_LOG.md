@@ -1885,6 +1885,62 @@ Dieser Bereich wird nach mehreren echten TestRuns gepflegt, z. B. nach 5-10 Runs
   - Production Confidence: 93%
   - Gesamtergebnis: PASS
 
+### BACKLOG-110 - Kontakt-Wohnort und Pet-Detail-Normalisierung - Documentation Sync Note
+
+- **Datum**: 2026-06-15
+- **Quelle**: Live Janus Retest / Documentation Update
+- **Artefakte**: `documentation/backlog/BACKLOG.md`, `documentation/01_CENTRAL_TASK_REGISTRY.md`, `PROJECT_STATE.md`, `CHANGELOG.md`, `WHAT_I_LEARNED.md`, `backend/data/crud.py`, `backend/tests/test_contact_card_normalization.py`
+- **Getestete Faehigkeit**: BACKLOG-110 Kontaktkarte zeigt Wohnort im Adressblock und Pet-Details in kompakter Ein-Satz-Form
+- **Pipeline-Route**: live retest -> documentation update
+- **Status**: PASS
+- **Summary**: Die Live-Pruefung fuer `Oliver Schwab` bestaetigt jetzt den sauberen Adressblock und die normalisierten Pet-Details. Dies ist ein Dokumentations-/Statussync nach erfolgreichem Retest, kein eigener TestRun.
+- **Security Gate**: PASS - keine neuen sensiblen Inhalte, nur bestehende Kontaktfakten und Normalisierungsdoku.
+- **Provider-/Model-Matrix**:
+  - GPT Smallest Viable: N/A
+  - Gemini Smallest Viable: N/A
+- **UX-Ergebnis**: Die Kontaktkarte zeigt Wohnort sauber im Adressblock und Pet-Details in kompakten, nicht-fragmentierten Sätzen.
+- **Intent-/Skill-Routing-Ergebnis**: N/A
+- **Kosten-/Token-Ergebnis**: N/A
+- **Capability-Erklaerfaehigkeit**: PASS
+- **Findings**:
+  - Keine
+- **Sofortfixes**:
+  - `documentation/backlog/BACKLOG.md`, `documentation/01_CENTRAL_TASK_REGISTRY.md`, `PROJECT_STATE.md`, `CHANGELOG.md`, `WHAT_I_LEARNED.md`: BACKLOG-110 Abschlussmarker und Lern-/Statussync ergaenzt.
+- **Backlog-Follow-ups**:
+  - Keine
+- **Nebenbefunde ausserhalb TestScope**:
+  - Keine
+- **Optimierungspotential fuer Testpipeline**:
+  - Wenn eine Kontakt-/Adressbuchkorrektur live verifiziert ist, reicht ein kleiner Documentation-Sync-Note, um die Statusquelle mit dem Backlog- und Changelog-Stand zu synchronisieren.
+- **Abschluss**:
+  - Diamond Confidence Score: 9.5/10
+  - Production Confidence: 96%
+  - Gesamtergebnis: PASS
+
+### BACKLOG-115 - Oliver-Kontaktkarte und Pet-Overview-Closeout - Documentation Sync Note
+
+- **Datum**: 2026-06-30
+- **Quelle**: Final Audit / Documentation Update
+- **Artefakte**: `documentation/backlog/BACKLOG.md`, `janus-dashboard/data/backlog.snapshot.json`, `documentation/01_CENTRAL_TASK_REGISTRY.md`, `PROJECT_STATE.md`, `CHANGELOG.md`, `WHAT_I_LEARNED.md`, `documentation/tasks/backlog_BACKLOG-115_oliver_kontaktkarte_zeigt_duplikate_und_unsaubere_haustierdetails.md`, `documentation/tasks/backlog_BACKLOG-115_preimplementation_check.md`, `documentation/tasks/backlog_BACKLOG-115_final_audit.md`, `documentation/test-runs/BACKLOG-115_AUDIT_PACKAGE.md`, `documentation/test-runs/BACKLOG-115_live_validation_2026-06-30.md`, `documentation/test-runs/BACKLOG-115_debug_result_2026-06-30.md`, `documentation/test-runs/BACKLOG-115_retest_validation_2026-06-30.md`, `documentation/test-runs/BACKLOG-115_pet_overview_debug_result_2026-06-30.md`, `documentation/test-runs/BACKLOG-115_pet_overview_response_fallback_debug_result_2026-06-30.md`
+- **Getestete Faehigkeit**: sichtbare Oliver-Kontaktkarte bleibt dedupliziert und sauber; pet-overview recall/fallback bleibt bei den kontaktbasierten Tasso/Garfield-Fakten
+- **Pipeline-Route**: final audit -> documentation update -> backlog sync
+- **Status**: PASS
+- **Summary**: BACKLOG-115 wurde in DONE ueberfuehrt. Die relevante Reader-Ansicht unterdrueckt leere historische Oliver-Dubletten, die Kontaktkarte zeigt nur noch einen sichtbaren `Oliver Schwab` mit bereinigten Pet-Details, und der nachgelagerte Pet-Overview-Recall-/Fallback-Pfad bleibt auf den kontaktbasierten Fakten statt wieder stale Garfield-Thunfisch-Memory oder kaputtes Mojibake-Intro auszugeben.
+- **Security Gate**: PASS - keine Scope-Ausweitung ueber den gebundenen Kontakt-/Recall-Seam hinaus, keine neue Provider- oder Routing-Autoritaet, keine Release- oder Git-Aktion.
+- **Provider-/Model-Matrix**:
+  - GPT Smallest Viable: N/A
+  - Gemini Smallest Viable: N/A
+- **Findings**:
+  - Keine
+- **Sofortfixes**:
+  - Abschlussmarker in Backlog, Registry, Project State, Changelog, WHAT_I_LEARNED, Pipeline-Log und Dashboard-Snapshot nachgezogen.
+- **Backlog-Follow-ups**:
+  - Keine
+- **Abschluss**:
+  - Diamond Confidence Score: 9.3/10
+  - Production Confidence: 95%
+  - Gesamtergebnis: PASS
+
 ### BACKLOG-108 - Bestaetigtes Kontaktwissen aus Chat landet nicht im bestehenden Adressbuchkontakt
 
 - **Datum**: 2026-06-07

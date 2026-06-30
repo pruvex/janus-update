@@ -122,7 +122,6 @@ Dashboard-Regeln:
 - **Recommended next skill:** SKILL 3
 - **Handoff created:** 2026-06-10
 
-
 ### BACKLOG-110 - Kontakt-Wohnort landet als Besonderheit statt im Adressblock
 
 - **Typ:** BUG
@@ -248,6 +247,89 @@ Dashboard-Regeln:
 - **Notizen:** False Positives aus TEST-RUN-2026-05-19-007 - TestPlan-Expectations muessen verfeinert werden
 
 ## DONE
+
+### BACKLOG-115 - Oliver-Kontaktkarte zeigt Duplikate und unsaubere Haustierdetails
+
+- **Typ:** BUG
+- **Status:** DONE
+- **Quelle:** User Intake
+- **Erstellt:** 2026-06-30
+- **Aktualisiert:** 2026-06-30
+- **Follow-up zu:** BACKLOG-108 - Bestaetigtes Kontaktwissen aus Chat landet nicht im bestehenden Adressbuchkontakt
+- **Kurzbeschreibung:** In der aktuellen Adressbuchansicht zu `Oliver Schwab` gibt es weiterhin sichtbare Dubletten und sprachlich unsaubere Haustierdetails. Der Nutzer meldet drei Oliver-Eintraege sowie gedoppelte oder unnoetig rohe Pet-Details wie `Hund Tasso frisst gerne thunfisch` neben `Hund Tasso frisst gern thunfisch` und generische Garfield-Saetze, die nicht wie eine aufgeraeumte Kontaktkarte wirken.
+- **Erwartetes Verhalten:** Im Adressbuch gibt es fuer `Oliver Schwab` genau einen sichtbaren relevanten Kontakt, und die Haustierdetails erscheinen genau einmal in sauber normalisierter, owner-bezogener Form.
+- **Tatsaechliches Verhalten:** Der Nutzer sieht aktuell mehrere Oliver-Eintraege sowie doppelte oder unsauber normalisierte Haustierdetails wie `hat einen Hund namens tasso`, `hat eine Katze namens garfield`, `Hund Tasso ist ein podenco`, `Hund Tasso frisst gerne thunfisch`, `Hund Tasso frisst gern thunfisch`, `Katze Garfield ist die katze von oli` und `Katze Garfield ist eine katze`.
+- **Reproduktion / Kontext:** User-Live-Sichtung vom 2026-06-30 in der Adressbuchansicht nach dem frueheren Oli/Tasso/Garfield-Debugstrang. Trotz der bereits geschlossenen Writeback-/Recall-Fixes wirkt die sichtbare Kontaktkarte noch nicht dedupliziert und nicht sprachlich sauber genug.
+- **Betroffener Bereich:** Adressbuch / Kontaktpersistenz / Kontakt-Normalisierung / UI-Darstellung
+- **Nachweise:** User-Live-Befund vom 2026-06-30 mit drei Oliver-Eintraegen und den genannten Haustierdetail-Beispielen; verwandte offene CURRENT_STATE-Risiken zu historischen Oliver-Dubletten und Pet-Detail-Normalisierung.
+- **Akzeptanzkriterien:**
+  - [ ] Fuer `Oliver Schwab` bleibt in der relevanten Kontaktansicht nur ein fachlich gueltiger Kontakt sichtbar oder es gibt einen klar bounded Dedupe-/Read-Pfad, der leere historische Dubletten nicht mehr als normale Oliver-Kontakte zeigt.
+  - [ ] Haustierdetails fuer `Tasso` und `Garfield` erscheinen nicht mehrfach in nur leicht abweichender Form wie `gerne` versus `gern`.
+  - [ ] Generische oder tautologische Sätze wie `Katze Garfield ist eine katze` werden nicht als sichtbare Kontakt-Details behalten, wenn bereits die sauberere owner- oder pet-bezogene Form vorhanden ist.
+  - [ ] Die Bereinigung erzeugt keine regressiven Verluste bei bereits korrekten owner-bezogenen Pet-Details oder Recall-Antworten.
+- **Fehlende Informationen:**
+  - Keine
+- **Wichtigkeit:** HIGH
+- **Umsetzungsrisiko:** LOW
+- **Aufwand:** S
+- **Umsetzungsreife:** READY
+- **Empfehlung:** DO NOW
+- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
+- **Routing reason:** Kleiner sichtbarer Adressbuch-Bug auf einem bekannten Oliver/Tasso/Garfield-Pfad mit klarer Akzeptanz und bounded Normalisierungs-/Dedupe-Umfang.
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-06-30
+- **Handoff:** documentation/tasks/backlog_BACKLOG-115_oliver_kontaktkarte_zeigt_duplikate_und_unsaubere_haustierdetails.md
+- **Recommended next skill:** DONE
+- **Handoff created:** 2026-06-30
+- **Notizen:** Enger sichtbarer Follow-up zu `BACKLOG-108` und dem frueheren Oliver-/Haustier-Normalisierungsstrang. Der Slice wirkt weiter wie ein kleiner bestehender Produktbug, nicht wie ein neues Feature.
+- **Precheck artifact:** documentation/tasks/backlog_BACKLOG-115_preimplementation_check.md
+- **Target Task:** BACKLOG-115
+- **Completed by task:** `documentation/tasks/backlog_BACKLOG-115_oliver_kontaktkarte_zeigt_duplikate_und_unsaubere_haustierdetails.md`
+- **Completed at:** 2026-06-30
+- **Final audit:** PASS
+- **Validation evidence:** `python -m pytest backend/tests/test_contact_manager.py -q` PASS; `python -m pytest backend/tests/test_contact_card_normalization.py -q` PASS; `python -m py_compile backend/services/contact_manager.py backend/data/crud.py backend/tests/test_contact_manager.py backend/tests/test_contact_card_normalization.py` PASS; `python -m pytest backend/tests/test_memory_tools.py -q -k "pet_overview"` PASS; `python -m pytest backend/tests/integration/test_pet_recall_chat_path.py -q` PASS; `python -m pytest backend/tests/test_provider_auth_fallback.py -q -k "pet_overview or memory_read_fallback_v2"` PASS; targeted live reader-path and pet-overview retests PASS via `documentation/test-runs/BACKLOG-115_retest_validation_2026-06-30.md`, `documentation/test-runs/BACKLOG-115_pet_overview_debug_result_2026-06-30.md`, `documentation/test-runs/BACKLOG-115_pet_overview_response_fallback_debug_result_2026-06-30.md`, and Final Audit PASS via `documentation/tasks/backlog_BACKLOG-115_final_audit.md`.
+
+### BACKLOG-114 - Installierte Janus-Skill-Arbeitskopien uebernehmen die neuen bestehenden Codex-vs-OR Alltagsgates aus Spec 26 noch nicht nachweisbar
+
+- **Typ:** IMPROVEMENT
+- **Status:** DONE
+- **Quelle:** Audit
+- **Erstellt:** 2026-06-25
+- **Aktualisiert:** 2026-06-25
+- **Follow-up zu:** BACKLOG-113 - Installierte Skill-Arbeitskopien nutzen den produktiven Dev-Workhorse-Pfad noch nicht als kanonischen OR-Einstieg
+- **Kurzbeschreibung:** Die repo-versionierten bestehenden Spec-26-Skill-Gates sind jetzt auch in den installierten `C:\Users\pruve\.codex\skills\janus-*`-Arbeitskopien nachgezogen und ueber einen kleinen echten Workflow-Nachweis fuer sichtbare sowie verborgen bleibende Lanes abgesichert.
+- **Erwartetes Verhalten:** Die installierten Skill-Arbeitskopien fuer die betroffenen bestehenden Janus-Skills spiegeln die repo-versionierten Spec-26-Gates konsistent, sodass im echten Alltag genau die freigegebenen sichtbaren Lanes die normale Wahl `1 = Codex` / `2 = OR` zeigen, waehrend `generator_review` und `execution_write_apply_candidate` weiterhin sichtbar lokal bleiben.
+- **Tatsaechliches Verhalten:** Alle fuenf installierten Skill-Arbeitskopien sind jetzt bitgenau auf Repo-Stand, der sichtbare Einstieg zeigt weiter `1 = Codex` / `2 = OR`, und die versteckten Lanes bleiben im installierten Workflow klar ausserhalb der normalen Alltagswahl.
+- **Reproduktion / Kontext:** Nach dem lean-close von Spec 26 am 2026-06-25 ist der naechste praktische Nutzenblock, die neuen bestehenden Skill-Gates auch in den installierten `C:\Users\pruve\.codex\skills\janus-*`-Arbeitskopien sichtbar und alltagstauglich nachzuweisen, statt nur repo-seitig korrekt zu sein.
+- **Betroffener Bereich:** Codex-Skill-Integration / installierte Skill-Arbeitskopien / bestehende Janus-Skill-Gates / OR-Alltagsworkflow
+- **Nachweise:** `documentation/SPEC/26_operator_facing_codex_oder_or_wahl_in_bestehenden_janus_skills.md`; `documentation/tasks/TASK-SPEC26.3_execution_result.md`; `documentation/tasks/backlog_BACKLOG-114_execution_result.md`; `documentation/codex/model-routing/or_everyday_lane_inventory_2026-06-24.md`; `documentation/codex/model-routing/or_everyday_operator_registry_summary_2026-06-24.md`; `C:\Users\pruve\.codex\skills\janus-*`
+- **Akzeptanzkriterien:**
+  - [x] Die betroffenen installierten Skill-Arbeitskopien spiegeln die repo-versionierten bestehenden Spec-26-Gates fuer die sichtbare Alltagswahl konsistent.
+  - [x] Sichtbare freigegebene Lanes zeigen im echten Skill-Workflow `1 = Codex` und `2 = OR`.
+  - [x] `generator_review` und `execution_write_apply_candidate` bleiben im echten Skill-Workflow sichtbar lokal und erscheinen nicht als normale Alltagswahl.
+  - [x] Der Rollout bleibt strikt auf installierte Skill-Arbeitskopien und gebundene Workflow-Verifikation begrenzt, ohne Produktionsrouting oder neue Lane-Freigaben.
+- **Fehlende Informationen:**
+  - Keine
+- **Wichtigkeit:** HIGH
+- **Umsetzungsrisiko:** MEDIUM
+- **Aufwand:** M
+- **Umsetzungsreife:** DONE
+- **Empfehlung:** DONE
+- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
+- **Routing reason:** Klare Folgearbeit nach Spec 26: installierte Skill-Arbeitskopien plus echter Workflow-Nachweis fuer die neuen bestehenden OR-Alltagsgates.
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-06-25
+- **Handoff:** documentation/tasks/backlog_BACKLOG-114_installierte_janus_skill_arbeitskopien_uebernehmen_spec26_alltagsgates.md
+- **Recommended next skill:** SKILL 3
+- **Handoff created:** 2026-06-25
+- **Completed in version:** N/A
+- **Completed by task:** documentation/tasks/backlog_BACKLOG-114_execution_result.md
+- **Completed at:** 2026-06-25
+- **Final audit:** N/A - Lean Dev execution slice
+- **Validation evidence:** `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py documentation/tasks/backlog_BACKLOG-114_preimplementation_check.md` PASS; repo-vs-installed SHA256 parity check PASS for all five bound skill copies; direct installed-skill workflow probe PASS for visible `1 = Codex` / `2 = OR` lane and hidden-lane guard wording; `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py documentation/tasks/backlog_BACKLOG-114_execution_result.md` PASS
+- **Notizen:** Lean Dev rollout-/Verifikationsslice nach dem repo-seitig fertig umgesetzten bestehenden-Skill-Gate-Block; keine neue Lane-Freigabe und keine Production-Routing-Aussage.
 
 ### BACKLOG-113 - Installierte Skill-Arbeitskopien nutzen den produktiven Dev-Workhorse-Pfad noch nicht als kanonischen OR-Einstieg
 

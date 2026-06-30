@@ -19,6 +19,7 @@ from backend.data import contact_schemas, crud, models
 from backend.data.database import Base
 from backend.data.schemas_tools import ToolResultV1
 from backend.services import contact_manager
+from backend.services.memory.retrieval_service import get_last_subject_from_chat
 from backend.tools.memory_tools import (
     _build_canonical_key,
     _parse_snippet,
@@ -40,6 +41,45 @@ def _db_gen(db_session):
         yield db_session
 
     return _factory
+
+
+def test_get_last_subject_from_chat_skips_unknown_or_unscoped_recent_memory(db_session):
+    chat_id = db_session.query(models.Chat).first().id
+    anchored = models.Memory(
+        chat_id=chat_id,
+        snippet=json.dumps({
+            "fact": "Oliver Schwab wohnt in K\u00f6ln-Stammheim",
+            "subject_name": "oliver schwab",
+            "subject_role": "contact",
+        }),
+        category="Allgemein",
+        user_editable=True,
+        priority=0.8,
+        memory_type="GENERAL",
+        change_history=[],
+    )
+    unknown = models.Memory(
+        chat_id=chat_id,
+        snippet=json.dumps({
+            "fact": "Die genannte Person hat einen Hund",
+            "subject_name": "unbekannt",
+            "subject_role": "contact",
+        }),
+        category="Allgemein",
+        user_editable=True,
+        priority=0.5,
+        memory_type="GENERAL",
+        change_history=[],
+    )
+    db_session.add(anchored)
+    db_session.commit()
+    db_session.add(unknown)
+    db_session.commit()
+
+    assert get_last_subject_from_chat(db_session, chat_id) == {
+        "subject_name": "oliver schwab",
+        "subject_role": "contact",
+    }
 
 
 # Test-Datenbank Setup
@@ -405,6 +445,78 @@ async def test_read_include_expired(db_session):
 
 
 @pytest.mark.asyncio
+async def test_memory_read_pet_overview_supplements_contact_pet_details(db_session):
+    contact = crud.create_contact(
+        db_session,
+        contact_schemas.ContactCreate(
+            name="Oliver Schwab",
+            nickname="Oli",
+            category="Privat",
+            contact_type="private_person",
+            personal_details=[
+                "hat einen Hund namens tasso",
+                "hat eine Katze namens garfield",
+                "Hund Tasso ist ein podenco",
+                "Hund Tasso frisst gerne thunfisch",
+            ],
+        ),
+    )
+    assert contact is not None
+
+    chat_id = db_session.query(models.Chat).first().id
+    write_result = _md(
+        await handle_memory_write(
+            params={
+                "fact": "Oli hat einen Hund namens Tasso.",
+                "category": "Haustier-Details",
+                "subject_name": "Oli",
+                "tags": ["pet"],
+            },
+            db=db_session,
+            chat_id=chat_id,
+        )
+    )
+    assert write_result["status"] == "ok"
+
+    stale_write_result = _md(
+        await handle_memory_write(
+            params={
+                "fact": "Aber Garfield mag gar keinen Thunfisch.",
+                "category": "Haustier-Details",
+                "subject_name": "Oli",
+                "tags": ["pet", "preference"],
+            },
+            db=db_session,
+            chat_id=chat_id,
+        )
+    )
+    assert stale_write_result["status"] == "ok"
+
+    result = _md(
+        await handle_memory_read(
+            params={"query": "was weißt du über olis haustiere?", "limit": 10},
+            db=db_session,
+            chat_id=chat_id,
+        )
+    )
+    result = _md(
+        await handle_memory_read(
+            params={"query": "was wei?t du ?ber olis haustiere?", "limit": 10},
+            db=db_session,
+            chat_id=chat_id,
+        )
+    )
+
+    facts = [mem["fact"] for mem in result["data"]["memories"]]
+    assert any("Oliver Schwab hat einen Hund namens tasso" in fact for fact in facts)
+    assert any("Oliver Schwab hat eine Katze namens garfield" in fact for fact in facts)
+    assert any("Hund Tasso ist ein podenco" in fact for fact in facts)
+    assert any("Hund Tasso frisst gerne thunfisch" in fact for fact in facts)
+    assert not any("Garfield" in fact and "Thunfisch" in fact for fact in facts)
+    assert all(str(mem["memory_id"]).startswith("contact-") for mem in result["data"]["memories"])
+
+
+@pytest.mark.asyncio
 async def test_memory_not_found(db_session):
     """Test operations on non-existent memory."""
     # Update non-existent
@@ -484,7 +596,7 @@ async def test_write_with_ttl(db_session):
 
 
 @pytest.mark.asyncio
-async def test_confirmed_memory_write_can_stage_contact_update_suggestion(db_session):
+async def test_untrusted_memory_write_stages_contact_update_suggestion(db_session):
     chat_id = db_session.query(models.Chat).first().id
     contact = crud.create_contact(
         db_session,
@@ -518,6 +630,361 @@ async def test_confirmed_memory_write_can_stage_contact_update_suggestion(db_ses
     assert proposals[0]["payload_json"]["payload"]["preferences"] == ["espresso"]
     assert refreshed.proposal_status == "pending"
     assert refreshed.proposal_source_context == "memory_sync"
+
+
+@pytest.mark.asyncio
+async def test_user_confirmed_memory_write_auto_applies_safe_contact_fact(db_session):
+    chat_id = db_session.query(models.Chat).first().id
+    contact = crud.create_contact(
+        db_session,
+        contact_schemas.ContactCreate(
+            name="Anna Erinnerung",
+            category="Privat",
+            contact_type="private_person",
+        ),
+    )
+    assert contact is not None
+
+    result = _md(
+        await handle_memory_write(
+            params={
+                "fact": "Anna Erinnerung mag Espresso",
+                "subject_name": "Anna Erinnerung",
+                "category": "Vorlieben",
+            },
+            db=db_session,
+            chat_id=chat_id,
+            original_user_text="Anna Erinnerung mag Espresso",
+        )
+    )
+
+    proposals = crud.list_contact_proposals(db_session, contact_id=contact.id)
+    refreshed = crud.get_contact(db_session, contact.id)
+
+    assert result["status"] == "ok"
+    assert result["data"]["contact_proposal"]["status"] == "applied"
+    assert result["data"]["contact_proposal"]["proposals_staged"] == 0
+    assert refreshed is not None
+    assert refreshed.preferences == ["espresso"]
+    assert refreshed.proposal_status == "confirmed"
+    assert refreshed.proposal_source_context == "direct_context"
+    assert proposals == []
+
+
+@pytest.mark.asyncio
+async def test_user_confirmed_memory_write_stores_dietary_fact_under_personal_details(db_session):
+    chat_id = db_session.query(models.Chat).first().id
+    contact = models.Contact(
+        name="Chris Gier",
+        category="Privat",
+        contact_type="private_person",
+        preferences=["vegetarier", "star wars"],
+        personal_details=[],
+    )
+    db_session.add(contact)
+    db_session.commit()
+    db_session.refresh(contact)
+
+    result = _md(
+        await handle_memory_write(
+            params={
+                "fact": "Chris Gier ist Vegetarier",
+                "subject_name": "Chris Gier",
+                "category": "Vorlieben",
+            },
+            db=db_session,
+            chat_id=chat_id,
+            original_user_text="Chris ist Vegetarier",
+        )
+    )
+
+    refreshed = crud.get_contact(db_session, contact.id)
+
+    assert result["status"] == "ok"
+    assert result["data"]["contact_proposal"]["status"] == "applied"
+    assert refreshed is not None
+    assert refreshed.preferences == ["star wars"]
+    assert refreshed.personal_details == ["vegetarier"]
+
+
+@pytest.mark.asyncio
+async def test_memory_write_rebinds_explicit_lead_contact_subject_from_original_user_text(db_session):
+    chat_id = db_session.query(models.Chat).first().id
+    crud.create_contact(
+        db_session,
+        contact_schemas.ContactCreate(
+            name="Oliver Schwab",
+            nickname="Oli",
+            category="Privat",
+            contact_type="private_person",
+        ),
+    )
+
+    result = _md(
+        await handle_memory_write(
+            params={
+                "fact": "Oli liebt Big Bang Theory.",
+                "category": "Vorlieben",
+            },
+            db=db_session,
+            chat_id=chat_id,
+            original_user_text="Olix liebt Big Bang Theory",
+        )
+    )
+
+    memory_id = result["data"]["memory_id"]
+    saved = db_session.query(models.Memory).filter(models.Memory.id == memory_id).first()
+    parsed = contact_manager._parse_memory_snippet_payload(saved.snippet)
+
+    assert result["status"] == "ok"
+    assert parsed["subject_name"] == "Olix"
+    assert parsed["fact"].startswith("Olix liebt")
+    assert "olix" in str(saved.canonical_key).lower()
+
+
+@pytest.mark.asyncio
+async def test_memory_read_filters_contact_recall_to_matching_subject(db_session):
+    chat_id = db_session.query(models.Chat).first().id
+    oli = crud.create_contact(
+        db_session,
+        contact_schemas.ContactCreate(
+            name="Oliver Schwab",
+            nickname="Oli",
+            category="Privat",
+            contact_type="private_person",
+        ),
+    )
+    chris = crud.create_contact(
+        db_session,
+        contact_schemas.ContactCreate(
+            name="Chris Gier",
+            nickname="Cris",
+            category="Privat",
+            contact_type="private_person",
+        ),
+    )
+    assert oli is not None
+    assert chris is not None
+
+    await handle_memory_write(
+        params={
+            "fact": "Oli liebt Big Bang Theory",
+            "subject_name": "Oli",
+            "category": "Vorlieben",
+        },
+        db=db_session,
+        chat_id=chat_id,
+        original_user_text="Oli liebt Big Bang Theory",
+    )
+    await handle_memory_write(
+        params={
+            "fact": "Chris Gier liebt Kimchi",
+            "subject_name": "Chris Gier",
+            "category": "Vorlieben",
+        },
+        db=db_session,
+        chat_id=chat_id,
+        original_user_text="Chris Gier liebt Kimchi",
+    )
+
+    result = _md(
+        await handle_memory_read(
+            params={"query": "Oli Vorlieben Hobbys Interessen", "limit": 10},
+            db=db_session,
+            chat_id=chat_id,
+        )
+    )
+
+    facts = [mem["fact"] for mem in result["data"]["memories"]]
+
+    assert result["status"] == "ok"
+    assert any(fact.casefold() == "oli liebt big bang theory" for fact in facts)
+    assert all("chris gier" not in fact.casefold() for fact in facts)
+
+
+@pytest.mark.asyncio
+async def test_memory_read_filters_contact_recall_for_unknown_subject_alias_without_address_book_match(
+    db_session,
+):
+    chat_id = db_session.query(models.Chat).first().id
+    contact = crud.create_contact(
+        db_session,
+        contact_schemas.ContactCreate(
+            name="Oliver Schwab",
+            nickname="Oli",
+            category="Privat",
+            contact_type="private_person",
+        ),
+    )
+    assert contact is not None
+
+    await handle_memory_write(
+        params={
+            "fact": "Oli liebt Kimchi",
+            "subject_name": "Oli",
+            "category": "Vorlieben",
+        },
+        db=db_session,
+        chat_id=chat_id,
+        original_user_text="Oli liebt Kimchi",
+    )
+    await handle_memory_write(
+        params={
+            "fact": "Olix Quarz liebt Big Bang Theory",
+            "subject_name": "Olix Quarz",
+            "category": "Vorlieben",
+        },
+        db=db_session,
+        chat_id=chat_id,
+        original_user_text="Olix Quarz liebt Big Bang Theory",
+    )
+
+    result = _md(
+        await handle_memory_read(
+            params={"query": "was mag olix?", "limit": 10},
+            db=db_session,
+            chat_id=chat_id,
+        )
+    )
+
+    facts = [mem["fact"] for mem in result["data"]["memories"]]
+
+    assert result["status"] == "ok"
+    assert any("olix quarz" in fact.casefold() for fact in facts)
+    assert all("oli liebt kimchi" != fact.casefold() for fact in facts)
+
+
+@pytest.mark.asyncio
+async def test_memory_read_keeps_both_subjects_for_multi_contact_query(db_session):
+    chat_id = db_session.query(models.Chat).first().id
+    crud.create_contact(
+        db_session,
+        contact_schemas.ContactCreate(
+            name="Chris Gier",
+            nickname="Chris",
+            category="Privat",
+            contact_type="private_person",
+        ),
+    )
+    crud.create_contact(
+        db_session,
+        contact_schemas.ContactCreate(
+            name="Oliver Schwab",
+            nickname="Oli",
+            category="Privat",
+            contact_type="private_person",
+        ),
+    )
+
+    await handle_memory_write(
+        params={
+            "fact": "Chris Gier liebt Kimchi",
+            "subject_name": "Chris Gier",
+            "category": "Vorlieben",
+        },
+        db=db_session,
+        chat_id=chat_id,
+        original_user_text="Chris Gier liebt Kimchi",
+    )
+    await handle_memory_write(
+        params={
+            "fact": "Oli liebt Big Bang Theory",
+            "subject_name": "Oli",
+            "category": "Vorlieben",
+        },
+        db=db_session,
+        chat_id=chat_id,
+        original_user_text="Oli liebt Big Bang Theory",
+    )
+    await handle_memory_write(
+        params={
+            "fact": "Petra liebt Espresso",
+            "subject_name": "Petra",
+            "category": "Vorlieben",
+        },
+        db=db_session,
+        chat_id=chat_id,
+        original_user_text="Petra liebt Espresso",
+    )
+
+    result = _md(
+        await handle_memory_read(
+            params={"query": "was mögen chris und oli?", "limit": 10},
+            db=db_session,
+            chat_id=chat_id,
+        )
+    )
+
+    facts = [mem["fact"].casefold() for mem in result["data"]["memories"]]
+
+    assert result["status"] == "ok"
+    assert any("chris gier liebt kimchi" == fact for fact in facts)
+    assert any("oli liebt big bang theory" == fact for fact in facts)
+    assert all("petra liebt espresso" != fact for fact in facts)
+
+
+@pytest.mark.asyncio
+async def test_memory_read_prefers_primary_subject_frame_over_later_alias_noise(db_session):
+    chat_id = db_session.query(models.Chat).first().id
+    contact = crud.create_contact(
+        db_session,
+        contact_schemas.ContactCreate(
+            name="Oliver Schwab",
+            nickname="Oli",
+            category="Privat",
+            contact_type="private_person",
+        ),
+    )
+    assert contact is not None
+
+    await handle_memory_write(
+        params={
+            "fact": "Oli liebt Kimchi",
+            "subject_name": "Oli",
+            "category": "Vorlieben",
+        },
+        db=db_session,
+        chat_id=chat_id,
+        original_user_text="Oli liebt Kimchi",
+    )
+    await handle_memory_write(
+        params={
+            "fact": "Olix Quarz liebt Big Bang Theory",
+            "subject_name": "Olix Quarz",
+            "category": "Vorlieben",
+        },
+        db=db_session,
+        chat_id=chat_id,
+        original_user_text="Olix Quarz liebt Big Bang Theory",
+    )
+
+    result = _md(
+        await handle_memory_read(
+            params={"query": "Was mag Olix? Vorlieben von Olix Oli", "limit": 25},
+            db=db_session,
+            chat_id=chat_id,
+        )
+    )
+
+    facts = [mem["fact"] for mem in result["data"]["memories"]]
+
+    assert result["status"] == "ok"
+    assert any("olix quarz" in fact.casefold() for fact in facts)
+    assert all("oli liebt kimchi" != fact.casefold() for fact in facts)
+
+    variant = _md(
+        await handle_memory_read(
+            params={"query": "Präferenzen von Olix oder Oli oder Olix Quarz", "limit": 25},
+            db=db_session,
+            chat_id=chat_id,
+        )
+    )
+
+    variant_facts = [mem["fact"] for mem in variant["data"]["memories"]]
+
+    assert variant["status"] == "ok"
+    assert any("olix quarz" in fact.casefold() for fact in variant_facts)
+    assert all("oli liebt kimchi" != fact.casefold() for fact in variant_facts)
 
 
 @pytest.mark.asyncio

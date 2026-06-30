@@ -325,6 +325,16 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Backlog Closures
 
+### BACKLOG-115 - Oliver-Kontaktkarte zeigt Duplikate und unsaubere Haustierdetails
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/backlog_BACKLOG-115_final_audit.md` (PASS)
+- **Task**: `documentation/tasks/backlog_BACKLOG-115_oliver_kontaktkarte_zeigt_duplikate_und_unsaubere_haustierdetails.md`
+- **Precheck**: `documentation/tasks/backlog_BACKLOG-115_preimplementation_check.md`
+- **Audit Package**: `documentation/test-runs/BACKLOG-115_AUDIT_PACKAGE.md`
+- **Validation**: Der sichtbare Oliver/Tasso/Garfield-Kontaktpfad ist jetzt sauber geschlossen. Die relevante Reader-Ansicht unterdrueckt leere historische Oliver-Dubletten, die Kontaktkarte zeigt nur noch einen sichtbaren `Oliver Schwab` mit bereinigten Pet-Details, und die nachgelagerte Pet-Overview-Recall-/Fallback-Kette bleibt bei den kontaktbasierten Fakten statt wieder auf stale Garfield-Thunfisch-Memory zu driften. Final Audit PASS mit fokussierter Pytest-, py_compile-, Runtime-Probe- und Debug-Artefakt-Evidenz.
+- **Changed Files**: `backend/data/crud.py`, `backend/services/contact_manager.py`, `backend/tools/memory_tools.py`, `backend/services/orchestrator/execution_engine.py`, `backend/tests/test_contact_manager.py`, `backend/tests/test_contact_card_normalization.py`, `backend/tests/test_memory_tools.py`, `backend/tests/integration/test_pet_recall_chat_path.py`, `backend/tests/test_provider_auth_fallback.py`, `documentation/test-runs/BACKLOG-115_AUDIT_PACKAGE.md`, `documentation/tasks/backlog_BACKLOG-115_final_audit.md`.
+
 ### BACKLOG-112 - Quickchange-Delegationspfad fuehrt neuen OR-Pilot noch nur als Dry-Run statt als echten bounded Live-Execute aus
 
 - **Status**: DONE

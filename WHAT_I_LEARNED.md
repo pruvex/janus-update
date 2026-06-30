@@ -60,6 +60,17 @@
 - **Epic:** BACKLOG-110
 - **Confidence:** High
 - **Tags:** Contacts, Normalization, Deduplication, PetFacts, UX, Regression
+
+## [PATTERN] #ContactBackedPetOverviewMustOverrideStaleMemory "Contact-backed pet overview answers should override stale memory-only pet facts on recall and fallback paths"
+- **Kontext:** BACKLOG-115 / Oliver-Kontaktkarte zeigt Duplikate und unsaubere Haustierdetails (2026-06-30).
+- **Problem:** Even after the visible contact card is cleaned up, a user-facing pet overview answer can still drift if `memory.read` or a later response fallback mixes authoritative contact-backed pet facts with older free-form memory snippets such as `Garfield mag keinen Thunfisch`.
+- **Loesung:** Treat the contact-backed pet facts as the authority for this query class. Normalize possessive aliases like `olis`, stop subject extraction at pet-context words, and let the response fallback render one compact per-pet summary while filtering out weak preference/dislike drift and tautological pet-type lines.
+- **Haertung:** Focused recall and fallback suites PASS; direct AppData `memory.read` probe returns only the four contact-backed pet facts; direct fallback render probe returns `Über Olis Haustiere weiß ich:` plus the compact Tasso/Garfield summary; Final Audit PASS.
+- **Tripwire:** If a future `was weißt du über olis haustiere?` answer again drops the cat/dog identity, revives `Garfield mag keinen Thunfisch`, or shows mojibake like `Ã...`, the contact-backed pet-overview authority chain has drifted.
+- **Location:** `backend/tools/memory_tools.py`, `backend/services/orchestrator/execution_engine.py`, `backend/tests/test_memory_tools.py`, `backend/tests/integration/test_pet_recall_chat_path.py`, `backend/tests/test_provider_auth_fallback.py`
+- **Epic:** BACKLOG-115
+- **Confidence:** High
+- **Tags:** Contacts, Recall, Memory, Fallback, PetFacts, Deduplication, Unicode, Regression
 ## [PATTERN] #BACKLOG-098_MailAiMustFailVisibleNotSilent "Mail-AI errors must surface as degraded state and log redaction must keep sensitive mail content out of technical traces"
 - **Kontext:** BACKLOG-098 / Janus Mail bundle final audit hardening.
 - **Problem:** AI thread-assist could silently fall back to heuristic outputs when provider payloads failed, and technical debug logs could expose sensitive mail details (subject/body/attachment names).
