@@ -53,6 +53,11 @@ RESULT_SCHEMA: dict[str, Any] = {
             "status",
             "target_task",
             "patch_text",
+            "changed_files",
+            "risk_list",
+            "suggested_validation_steps",
+            "manual_validation_note",
+            "codex_acceptance_rule",
             "notes",
         ],
         "properties": {
@@ -60,26 +65,35 @@ RESULT_SCHEMA: dict[str, Any] = {
                 "type": "string",
                 "enum": ["PASS", "WEAK_SIGNAL", "BLOCKED"],
             },
-            "target_task": {"type": "string"},
-            "patch_text": {"type": "string"},
+            "target_task": {"type": "string", "maxLength": 160},
+            "patch_text": {"type": "string", "maxLength": 5000},
             "changed_files": {
                 "type": "array",
+                "maxItems": 5,
                 "items": {"type": "string"},
             },
             "risk_list": {
                 "type": "array",
-                "items": {"type": "string"},
+                "maxItems": 4,
+                "items": {"type": "string", "maxLength": 220},
             },
             "suggested_validation_steps": {
                 "type": "array",
-                "items": {"type": "string"},
+                "maxItems": 4,
+                "items": {"type": "string", "maxLength": 220},
             },
-            "manual_validation_note": {"type": "string"},
-            "codex_acceptance_rule": {"type": "string"},
-            "notes": {"type": "string"},
+            "manual_validation_note": {"type": "string", "maxLength": 160},
+            "codex_acceptance_rule": {"type": "string", "maxLength": 120},
+            "notes": {"type": "string", "maxLength": 320},
         },
     },
 }
+
+PLACEHOLDER_PATCH_MARKERS = (
+    "# existing header",
+    "existing artifact-oriented summary logic",
+    "existing prompt logic",
+)
 
 
 def write_text(path: Path, content: str) -> None:
@@ -222,6 +236,24 @@ def validate_input_package(payload: dict[str, Any]) -> list[str]:
         issues.append("mini_test_plan must be a non-empty list")
     if not payload.get("manual_validation_gate"):
         issues.append("manual_validation_gate must be present")
+    forbidden_anchors = payload.get("forbidden_anchors")
+    if forbidden_anchors is not None and not isinstance(forbidden_anchors, list):
+        issues.append("forbidden_anchors must be a list when present")
+    required_current_anchors = payload.get("required_current_anchors")
+    if required_current_anchors is not None and not isinstance(required_current_anchors, list):
+        issues.append("required_current_anchors must be a list when present")
+    current_seam_context = payload.get("current_seam_context")
+    if current_seam_context is not None and not isinstance(current_seam_context, str):
+        issues.append("current_seam_context must be a string when present")
+    signature_context = payload.get("signature_context")
+    if signature_context is not None and not isinstance(signature_context, str):
+        issues.append("signature_context must be a string when present")
+    call_shape_examples = payload.get("call_shape_examples")
+    if call_shape_examples is not None and not isinstance(call_shape_examples, list):
+        issues.append("call_shape_examples must be a list when present")
+    exact_code_context_blocks = payload.get("exact_code_context_blocks")
+    if exact_code_context_blocks is not None and not isinstance(exact_code_context_blocks, list):
+        issues.append("exact_code_context_blocks must be a list when present")
     return issues
 
 
@@ -251,6 +283,10 @@ def make_request_body(args: argparse.Namespace, input_payload: dict[str, Any]) -
                     "This is proposal-only work. Do not claim completion, release readiness, routing authority, "
                     "git authority, or final validation authority. Codex will review and decide whether to apply or reject. "
                     "Return the smallest viable unified diff for the smallest viable subset of the allowlist. "
+                    "If you cannot anchor a real unified diff against exact current file context, return BLOCKED with empty patch_text. "
+                    "Preserve patch_text as newline-separated unified diff lines; never compress the diff into one line. "
+                    "Do not invent simplified file structure, placeholder headers, ellipses, or fake helper skeletons. "
+                    "Keep the JSON compact: short notes, short risk bullets, no repeated restatement of the task. "
                     "Do not include explanatory prose outside the JSON object. "
                     "Prefer backend-first minimal change shape over broad test or cleanup expansion."
                 ),
@@ -264,12 +300,34 @@ def make_request_body(args: argparse.Namespace, input_payload: dict[str, Any]) -
                         "max_touched_files": input_payload["max_touched_files"],
                         "manual_validation_gate": input_payload["manual_validation_gate"],
                         "delegation_question": input_payload["delegation_question"],
+                        "current_seam_context": str(input_payload.get("current_seam_context") or ""),
+                        "signature_context": str(input_payload.get("signature_context") or ""),
+                        "call_shape_examples": list(input_payload.get("call_shape_examples") or []),
+                        "exact_code_context_blocks": list(input_payload.get("exact_code_context_blocks") or []),
+                        "forbidden_anchors": list(input_payload.get("forbidden_anchors") or []),
+                        "required_current_anchors": list(input_payload.get("required_current_anchors") or []),
                         "task_contract": compact_contract,
                         "validation_bundle": validation_bundle,
                         "return_contract": {
-                            "required_fields": ["status", "target_task", "patch_text", "notes"],
-                            "optional_fields": ["changed_files", "risk_list"],
+                            "required_fields": [
+                                "status",
+                                "target_task",
+                                "patch_text",
+                                "changed_files",
+                                "risk_list",
+                                "suggested_validation_steps",
+                                "manual_validation_note",
+                                "codex_acceptance_rule",
+                                "notes",
+                            ],
+                            "empty_allowed_fields": ["changed_files", "risk_list", "suggested_validation_steps"],
                             "patch_rule": "patch_text must be unified diff text touching only the smallest necessary subset of the allowlist",
+                            "newline_rule": "patch_text must preserve newline-separated unified diff headers and hunk lines; never collapse the diff into one line",
+                            "anchor_rule": "do not target forbidden_anchors; prefer required_current_anchors when present",
+                            "signature_rule": "preserve real local function signatures and call shapes when signature_context or call_shape_examples are provided",
+                            "context_rule": "when exact_code_context_blocks are provided, keep imports, surrounding control flow, and local helper usage aligned to those real excerpts instead of inventing simplified file structure",
+                            "blocked_rule": "if you cannot produce a real hunk anchored to current local code, return status BLOCKED with empty patch_text and explain why in notes/risk_list",
+                            "placeholder_rule": "never use placeholder context like '# existing header', '...', or 'existing artifact-oriented summary logic'",
                         },
                         "full_spec_excerpt_for_reference_only": spec_excerpt[:1200].rstrip(),
                     },
@@ -363,6 +421,96 @@ def parse_json_from_text(text: str) -> dict[str, Any]:
         raise
 
 
+def strip_diff_fence(diff_text: str) -> str:
+    stripped = diff_text.strip()
+    if stripped.startswith("```"):
+        lines = stripped.splitlines()
+        if lines:
+            lines = lines[1:]
+        if lines and lines[-1].strip() == "```":
+            lines = lines[:-1]
+        stripped = "\n".join(lines).strip()
+    return stripped
+
+
+def sequence_exists(lines: list[str], needle: list[str], start_index: int) -> tuple[bool, int]:
+    if not needle:
+        return False, start_index
+    max_index = len(lines) - len(needle)
+    for index in range(start_index, max_index + 1):
+        if lines[index : index + len(needle)] == needle:
+            return True, index + len(needle)
+    return False, start_index
+
+
+def parse_unified_hunks(diff_text: str) -> tuple[list[list[str]], list[str]]:
+    lines = strip_diff_fence(diff_text).splitlines()
+    issues: list[str] = []
+    hunks: list[list[str]] = []
+    current_hunk: list[str] | None = None
+
+    for line in lines:
+        if line.startswith("@@"):
+            if current_hunk:
+                hunks.append(current_hunk)
+            current_hunk = []
+            continue
+        if current_hunk is None:
+            if line.startswith(("diff --git ", "--- a/", "+++ b/")) or not line.strip():
+                continue
+            issues.append("diff content before hunk marker")
+            continue
+        current_hunk.append(line)
+
+    if current_hunk:
+        hunks.append(current_hunk)
+    if not hunks:
+        issues.append("diff has no hunks")
+    return hunks, issues
+
+
+def unified_diff_applicability_issues(diff_text: str, repo_path: str) -> list[str]:
+    issues: list[str] = []
+    normalized_path = normalize_repo_path(repo_path)
+    resolved_path = resolve_repo_path(normalized_path)
+    if not resolved_path.exists():
+        return [f"diff path not found in repo: {normalized_path}"]
+
+    hunks, hunk_issues = parse_unified_hunks(diff_text)
+    if hunk_issues:
+        return hunk_issues
+
+    file_lines = resolved_path.read_text(encoding="utf-8-sig").splitlines()
+    search_from = 0
+    for hunk in hunks:
+        old_sequence_exact = [line[1:] if line.startswith("-") else line for line in hunk if not line.startswith("+")]
+        old_sequence_stripped = [line[1:] if line.startswith((" ", "-")) else line for line in hunk if not line.startswith("+")]
+        if not old_sequence_exact:
+            issues.append(f"hunk has no removable/context lines for applicability check: {normalized_path}")
+            continue
+        found, next_search_from = sequence_exists(file_lines, old_sequence_exact, search_from)
+        if not found and old_sequence_stripped != old_sequence_exact:
+            found, next_search_from = sequence_exists(file_lines, old_sequence_stripped, search_from)
+        if not found:
+            issues.append(f"hunk context not found in current file: {normalized_path}")
+            continue
+        search_from = next_search_from
+    return issues
+
+
+def placeholder_patch_issues(patch_text: str) -> list[str]:
+    issues: list[str] = []
+    lowered = patch_text.lower()
+    for marker in PLACEHOLDER_PATCH_MARKERS:
+        if marker in lowered:
+            issues.append(f"placeholder patch marker detected: {marker}")
+    for line in strip_diff_fence(patch_text).splitlines():
+        if line.startswith(("+", "-", " ")) and line[1:].strip() == "...":
+            issues.append("placeholder patch marker detected: line-level ellipsis")
+            break
+    return issues
+
+
 def extract_patch_files(patch_text: str) -> list[str]:
     files: list[str] = []
     for line in patch_text.splitlines():
@@ -375,6 +523,8 @@ def postprocess_result_payload(result_payload: dict[str, Any], input_payload: di
     normalized = dict(result_payload)
     patch_text = normalized.get("patch_text")
     patch_files = extract_patch_files(patch_text if isinstance(patch_text, str) else "")
+    if normalized.get("status") == "BLOCKED" and patch_files and isinstance(patch_text, str) and "@@" in patch_text:
+        normalized["status"] = "WEAK_SIGNAL"
     if not isinstance(normalized.get("changed_files"), list) or not normalized.get("changed_files"):
         normalized["changed_files"] = patch_files
     else:
@@ -396,11 +546,17 @@ def validate_result_payload(result_payload: dict[str, Any], input_payload: dict[
     for field in required_fields:
         if field not in result_payload:
             issues.append(f"missing result field: {field}")
-    if result_payload.get("status") not in {"PASS", "WEAK_SIGNAL", "BLOCKED"}:
+    status = result_payload.get("status")
+    if status not in {"PASS", "WEAK_SIGNAL", "BLOCKED"}:
         issues.append("status must be PASS, WEAK_SIGNAL, or BLOCKED")
     patch_text = result_payload.get("patch_text")
-    if not isinstance(patch_text, str) or ("--- a/" not in patch_text or "+++ b/" not in patch_text):
+    if status == "BLOCKED":
+        if not isinstance(patch_text, str):
+            issues.append("patch_text must be a string")
+    elif not isinstance(patch_text, str) or ("--- a/" not in patch_text or "+++ b/" not in patch_text):
         issues.append("patch_text must be unified diff text")
+    elif "\n" not in patch_text:
+        issues.append("patch_text must preserve newline-separated diff lines")
     changed_files = result_payload.get("changed_files")
     if not isinstance(changed_files, list):
         issues.append("changed_files must be a list")
@@ -408,8 +564,17 @@ def validate_result_payload(result_payload: dict[str, Any], input_payload: dict[
     changed_files = [normalize_repo_path(str(item)) for item in changed_files]
     allowed_files = {normalize_repo_path(item) for item in input_payload.get("allowed_files", [])}
     patch_files = extract_patch_files(patch_text or "")
-    if patch_files and changed_files != patch_files:
+    if status == "BLOCKED":
+        if patch_text.strip():
+            issues.append("BLOCKED result must not include patch_text content")
+        if changed_files:
+            issues.append("BLOCKED result must not declare changed_files")
+    elif patch_files and changed_files != patch_files:
         issues.append("changed_files must match the files declared in patch_text")
+    elif status != "BLOCKED":
+        issues.extend(placeholder_patch_issues(patch_text or ""))
+        for patch_file in patch_files:
+            issues.extend(unified_diff_applicability_issues(patch_text or "", patch_file))
     if len(changed_files) > int(input_payload.get("max_touched_files", 0)):
         issues.append("changed_files exceeds max_touched_files")
     for item in changed_files:
@@ -556,7 +721,7 @@ def main() -> int:
     parser.add_argument("--price-snapshot-timestamp", default="")
     parser.add_argument("--estimated-codex-effort", default="medium")
     parser.add_argument("--temperature", type=float, default=0.0)
-    parser.add_argument("--max-tokens", type=int, default=2200)
+    parser.add_argument("--max-tokens", type=int, default=3200)
     parser.add_argument("--use-local-fixture", action="store_true")
     parser.add_argument("--local-fixture-response-path", type=Path, default=None)
     parser.add_argument("--execute-live", action="store_true")
@@ -652,12 +817,15 @@ def main() -> int:
     if finish_reason == "length":
         issues.append("finish_reason=length")
     validation_result = "PASS" if not issues else "FAIL"
-    final_outcome = (
-        "DIRECT_OR_EXECUTION_PATCH_READY_FOR_CODEX_REVIEW"
-        if validation_result == "PASS"
-        else "DIRECT_OR_REJECT_AND_FALLBACK"
-    )
-    recommendation = "OR_PREFERRED" if validation_result == "PASS" else "CODEX_PREFERRED"
+    if validation_result == "PASS" and result_payload.get("status") == "BLOCKED":
+        final_outcome = "DIRECT_OR_BOUNDED_BLOCKED_NO_PATCH"
+        recommendation = "CODEX_PREFERRED"
+    elif validation_result == "PASS":
+        final_outcome = "DIRECT_OR_EXECUTION_PATCH_READY_FOR_CODEX_REVIEW"
+        recommendation = "OR_PREFERRED"
+    else:
+        final_outcome = "DIRECT_OR_REJECT_AND_FALLBACK"
+        recommendation = "CODEX_PREFERRED"
     validation_summary = {
         "workflow_id": workflow_id,
         "validation_result": validation_result,
@@ -719,6 +887,8 @@ def main() -> int:
         "healthcheck_summary_path": healthcheck_summary_path,
         "operator_message": (
             "Direct OR produced a bounded execution patch candidate. Codex must review and decide whether to apply or reject locally."
+            if validation_result == "PASS" and result_payload.get("status") != "BLOCKED"
+            else "Direct OR returned a bounded no-patch BLOCKED assessment. Codex must continue locally."
             if validation_result == "PASS"
             else "Direct OR execution patch candidate failed bounded gates. Fallback to Codex-only."
         ),

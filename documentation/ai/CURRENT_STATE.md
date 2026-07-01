@@ -1,6 +1,690 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-01 22:12 +02:00`, `BACKLOG-118` has passed `janus-preimplementation-check` for the first released slice `TASK-SPEC28.1`. The new precheck artifact now freezes the first live-retest OR rollout to one strict scope only: fail-closed eligibility plus the visible `1 = Codex / 2 = OR` gate for eligible local `LIVE_TEST_EXECUTION` retests. `BACKLOG.md` now points to `EXECUTION_READY`, `Recommended next skill: SKILL 4`, and the precheck artifact path.
+
+Current goal: implement `TASK-SPEC28.1` through `janus-executioner` without widening into `TASK-SPEC28.2` or `TASK-SPEC28.3`.
+
+Active phase: `janus-preimplementation-check`, canonical state `HANDOFF`.
+
+Last Codex work:
+- validated `documentation/tasks/TASK-SPEC28.1_preimplementation_check.md` against the repo validator
+- confirmed that the first slice stays bounded to visible eligibility and operator-gate behavior only
+- updated `BACKLOG-118` routing metadata to `EXECUTION_READY`
+- resynced the dashboard snapshot after the routing update
+
+Changed files:
+- `documentation/tasks/TASK-SPEC28.1_preimplementation_check.md`
+- `documentation/backlog/BACKLOG.md`
+- `janus-dashboard/data/backlog.snapshot.json`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py documentation\tasks\TASK-SPEC28.1_preimplementation_check.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-backlog-handoff\scripts\validate_backlog.py C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md`: PASS WITH LEGACY WARNINGS
+- `npm run sync:backlog` in `janus-dashboard`: PASS, snapshot synced with `total=78 active=7 done=71 routing_missing=1`
+
+Open risks:
+- no implementation result exists yet for `TASK-SPEC28.1`
+- the later slices `TASK-SPEC28.2` and `TASK-SPEC28.3` must remain explicitly out of scope during the first execution pass
+- no commit, push, or `origin/codex-sync` CURRENT_STATE sync has happened after this block, so remote consumers may not know the precheck-ready execution state yet
+
+Next recommended step for ChatGPT: treat `documentation/tasks/TASK-SPEC28.1_preimplementation_check.md` as the canonical execution gate for `BACKLOG-118`.
+
+Next recommended step for Codex: run `janus-executioner` on `TASK-SPEC28.1`.
+
+Last updated: `2026-07-01 22:12:25 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-01 21:44 +02:00`, `BACKLOG-118` has completed `janus-task-breakdown` for exactly one released target: `TASK-SPEC28.1`. The first implementation slice is now narrowed to the fail-closed eligibility and visible operator gate for local `LIVE_TEST_EXECUTION` retests, and is ready for preimplementation check.
+
+Current goal: run `janus-preimplementation-check` on `TASK-SPEC28.1`.
+
+Active phase: `janus-task-breakdown`, canonical state `HANDOFF`.
+
+Last Codex work:
+- released only `TASK-SPEC28.1` for the first implementation slice
+- wrote the focused refinement artifact `documentation/tasks/TASK-SPEC28.1_task_breakdown.md`
+- explicitly kept local auth/header handling, worker contract details, and final Codex-owned accept/reject closeout out of the first slice
+- updated `BACKLOG-118` routing metadata to `PRE_IMPLEMENTATION_VERIFICATION`
+- resynced the dashboard snapshot after the routing update
+
+Changed files:
+- `documentation/tasks/TASK-SPEC28.1_task_breakdown.md`
+- `documentation/backlog/BACKLOG.md`
+- `janus-dashboard/data/backlog.snapshot.json`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-task-breakdown\scripts\validate_task_handoff.py --task documentation\tasks\TASK-SPEC28_bounded_or_lane_fuer_live_test_execution.md --target TASK-SPEC28.1`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-backlog-handoff\scripts\validate_backlog.py C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md`: PASS WITH LEGACY WARNINGS
+- `npm run sync:backlog` in `janus-dashboard`: PASS, snapshot synced with `total=78 active=7 done=71 routing_missing=1`
+
+Open risks:
+- No preimplementation check or execution result exists yet for `TASK-SPEC28.1`.
+- The later slices `TASK-SPEC28.2` and `TASK-SPEC28.3` must remain out of scope until the first slice is implemented or explicitly reselected.
+- No commit, push, or `origin/codex-sync` CURRENT_STATE sync has happened after this block, so remote consumers may not know the released target-task handoff yet.
+
+Next recommended step for ChatGPT: treat `documentation/tasks/TASK-SPEC28.1_task_breakdown.md` as the canonical precheck entry for `BACKLOG-118`.
+
+Next recommended step for Codex: run `janus-preimplementation-check` on `TASK-SPEC28.1`.
+
+Last updated: `2026-07-01 21:44:06 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-01 21:33 +02:00`, `BACKLOG-118` has completed `janus-spec-to-task`. Spec 28 is now compiled into a deterministic task artifact, and the backlog routing metadata points to `TASK_BREAKDOWN` with `SKILL 2` as the next bounded step.
+
+Current goal: refine `TASK-SPEC28.1` into a precheck-ready single execution slice.
+
+Active phase: `janus-spec-to-task`, canonical state `HANDOFF`.
+
+Last Codex work:
+- compiled `documentation/SPEC/28_bounded_or_lane_fuer_live_test_execution.md` into `documentation/tasks/TASK-SPEC28_bounded_or_lane_fuer_live_test_execution.md`
+- split the feature into three bounded implementation tasks covering gate visibility, worker/auth/evidence contract, and regression plus Codex-owned accept/reject flow
+- updated `BACKLOG-118` routing metadata from Spec entry to task-refinement entry
+- resynced the dashboard snapshot after the backlog routing update
+
+Changed files:
+- `documentation/tasks/TASK-SPEC28_bounded_or_lane_fuer_live_test_execution.md`
+- `documentation/backlog/BACKLOG.md`
+- `janus-dashboard/data/backlog.snapshot.json`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-spec-to-task\scripts\validate_task_artifact.py --task documentation\tasks\TASK-SPEC28_bounded_or_lane_fuer_live_test_execution.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-backlog-handoff\scripts\validate_backlog.py C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md`: PASS WITH LEGACY WARNINGS
+- `npm run sync:backlog` in `janus-dashboard`: PASS, snapshot synced with `total=78 active=7 done=71 routing_missing=1`
+
+Open risks:
+- No task refinement or preimplementation check exists yet for `TASK-SPEC28.1`.
+- Task 28.2 and 28.3 remain intentionally downstream and should not be widened into the first refinement slice.
+- No commit, push, or `origin/codex-sync` CURRENT_STATE sync has happened after this block, so remote consumers may not know the new task artifact yet.
+
+Next recommended step for ChatGPT: treat `documentation/tasks/TASK-SPEC28_bounded_or_lane_fuer_live_test_execution.md` as the canonical task source for `BACKLOG-118`.
+
+Next recommended step for Codex: run `janus-task-breakdown` on `TASK-SPEC28.1`.
+
+Last updated: `2026-07-01 21:33:55 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-01 21:26 +02:00`, `BACKLOG-118` has completed `janus-spec-review`. Spec `28_bounded_or_lane_fuer_live_test_execution.md` is now marked `APPROVED_WITH_NOTES` and is ready for task compilation.
+
+Current goal: compile the approved `BACKLOG-118` spec into bounded execution tasks.
+
+Active phase: `janus-spec-review`, canonical state `HANDOFF`.
+
+Last Codex work:
+- reviewed only `documentation/SPEC/28_bounded_or_lane_fuer_live_test_execution.md`
+- wrote the `SPEC REVIEW METADATA` block with `APPROVED_WITH_NOTES`
+- validated the review metadata with the spec-review validator
+
+Changed files:
+- `documentation/SPEC/28_bounded_or_lane_fuer_live_test_execution.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-spec-review\scripts\validate_spec_review.py --spec documentation\SPEC\28_bounded_or_lane_fuer_live_test_execution.md`: PASS
+
+Open risks:
+- The spec is approved but not yet compiled into tasks.
+- The review notes are non-blocking, but implementation should still reuse existing OR/worker helpers instead of creating parallel helper sprawl.
+- No commit, push, or `origin/codex-sync` CURRENT_STATE sync has happened after this block, so remote consumers may not know the approved review result yet.
+
+Next recommended step for ChatGPT: treat Spec 28 as approved and ready for `janus-spec-to-task`.
+
+Next recommended step for Codex: run `janus-spec-to-task` on `documentation/SPEC/28_bounded_or_lane_fuer_live_test_execution.md`.
+
+Last updated: `2026-07-01 21:26:39 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-01 19:39 +02:00`, `BACKLOG-118` has completed `janus-spec-generator`. The bounded OR lane for `janus-test-pipeline` `LIVE_TEST_EXECUTION` is now captured as a formal Janus Feature Spec under `documentation/SPEC/28_bounded_or_lane_fuer_live_test_execution.md`.
+
+Current goal: move the new `BACKLOG-118` spec into `janus-spec-review`.
+
+Active phase: `janus-spec-generator`, canonical state `HANDOFF`.
+
+Last Codex work:
+- bound the Skill-1 source to the `BACKLOG-118` selected handoff artifact only
+- generated the formal v4.4.3 Janus Feature Spec for the bounded OR lane in `LIVE_TEST_EXECUTION`
+- kept the scope at spec-contract level and did not create tasks or implementation details
+
+Changed files:
+- `documentation/SPEC/28_bounded_or_lane_fuer_live_test_execution.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- required section order check on `documentation/SPEC/28_bounded_or_lane_fuer_live_test_execution.md`: PASS
+- routing block / complexity consistency spot-check: PASS
+
+Open risks:
+- The spec is generated but not yet reviewed, normalized, or compiled to tasks.
+- No implementation artifact exists yet for `BACKLOG-118`.
+- No commit, push, or `origin/codex-sync` CURRENT_STATE sync has happened after this block, so remote consumers may not know the new spec yet.
+
+Next recommended step for ChatGPT: treat `documentation/SPEC/28_bounded_or_lane_fuer_live_test_execution.md` as the canonical spec candidate for the new OR live-retest lane.
+
+Next recommended step for Codex: route directly to `janus-spec-review`.
+
+Last updated: `2026-07-01 19:39:11 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-01 19:15 +02:00`, `BACKLOG-118` has completed `janus-backlog-handoff` in `SELECTED_HANDOFF` mode. The item is now moved to `IN PROGRESS`, carries a `SPEC_PIPELINE_START` entry point, and has a ready Skill-1 handoff artifact for the bounded OR lane in `janus-test-pipeline` `LIVE_TEST_EXECUTION`.
+
+Current goal: hand `BACKLOG-118` into Skill 1 for spec compilation, not implementation yet.
+
+Active phase: `janus-backlog-handoff`, canonical state `HANDOFF`.
+
+Last Codex work:
+- selected `BACKLOG-118` as the active Lean-Dev item
+- moved it from `READY` to `IN PROGRESS`
+- added routing metadata for `SPEC_PIPELINE_START`
+- created the handoff artifact `documentation/Planned Features/backlog_BACKLOG-118_bounded_or_lane_live_test_execution.md`
+- resynced the dashboard snapshot after the backlog move
+
+Changed files:
+- `documentation/backlog/BACKLOG.md`
+- `documentation/Planned Features/backlog_BACKLOG-118_bounded_or_lane_live_test_execution.md`
+- `janus-dashboard/data/backlog.snapshot.json`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-backlog-handoff\scripts\validate_backlog.py C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md`: PASS WITH LEGACY WARNINGS
+- `npm run sync:backlog` in `janus-dashboard`: PASS, snapshot synced with `total=78 active=7 done=71 routing_missing=1`
+
+Open risks:
+- `BACKLOG-118` has only the Skill-1 handoff so far; no compiled spec or execution task exists yet.
+- `LIVE_TEST_EXECUTION` remains Codex-owned until the forthcoming spec and implementation actually land.
+- No commit, push, or `origin/codex-sync` CURRENT_STATE sync has happened after this block, so remote consumers may not know the selected handoff yet.
+
+Next recommended step for ChatGPT: treat `documentation/Planned Features/backlog_BACKLOG-118_bounded_or_lane_live_test_execution.md` as the canonical entry artifact for this lane.
+
+Next recommended step for Codex: run Skill 1 / `janus-spec-generator` on `BACKLOG-118`.
+
+Last updated: `2026-07-01 19:15:17 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-01 19:06 +02:00`, `BACKLOG-118` has completed `janus-backlog-prioritization` in DELTA mode. The new OR live-retest lane is now explicitly prioritized as `HIGH` importance, `MEDIUM` implementation risk, `M` effort, `READY`, and `DO NOW`.
+
+Current goal: hand `BACKLOG-118` into a narrow Lean-Dev execution handoff.
+
+Active phase: `janus-backlog-prioritization`, canonical state `HANDOFF`.
+
+Last Codex work:
+- deep-reviewed `BACKLOG-118` only, without reopening a full backlog review
+- persisted the evaluation cache fields on the new live-retest OR-lane item
+- revalidated `BACKLOG.md` and resynced the dashboard snapshot
+
+Changed files:
+- `documentation/backlog/BACKLOG.md`
+- `janus-dashboard/data/backlog.snapshot.json`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- READY/NEEDS/BLOCKED count pass: `READY=4 NEEDS=0 BLOCKED=0`
+- `python C:\Users\pruve\.codex\skills\janus-backlog-handoff\scripts\validate_backlog.py C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md`: PASS WITH LEGACY WARNINGS
+- `npm run sync:backlog` in `janus-dashboard`: PASS, snapshot synced with `total=78 active=7 done=71 routing_missing=2`
+
+Open risks:
+- No selected handoff artifact exists yet for `BACKLOG-118`.
+- `LIVE_TEST_EXECUTION` remains Codex-owned until the new lane is actually implemented.
+- No commit, push, or `origin/codex-sync` CURRENT_STATE sync has happened after this block, so remote consumers may not know the prioritization result yet.
+
+Next recommended step for ChatGPT: treat `BACKLOG-118` as the current top Lean-Dev OR-lane follow-up and route it into handoff, not directly into implementation.
+
+Next recommended step for Codex: run `janus-backlog-handoff` with `Mode: SELECTED_HANDOFF` and `Backlog Item: BACKLOG-118`.
+
+Last updated: `2026-07-01 19:06:02 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-01 18:49 +02:00`, a new Lean-Dev follow-up item `BACKLOG-118` has been added for a bounded OR lane in `janus-test-pipeline` `LIVE_TEST_EXECUTION`. This captures the missing operator-facing OR path for local live retests like the just-passed `BACKLOG-116` verification run.
+
+Current goal: route the new OR live-retest lane through the normal Backlog pipeline before implementation.
+
+Active phase: `janus-backlog-intake`, canonical state `HANDOFF`.
+
+Last Codex work:
+- routed the request as bounded Dev-/OR-infrastructure work, not as a direct product change
+- created `BACKLOG-118` as a follow-up to `BACKLOG-117`
+- documented the missing OR lane for local live API retests, including governance, local auth/header handling, and evidence-contract constraints
+- synced the dashboard backlog snapshot
+
+Changed files:
+- `documentation/backlog/BACKLOG.md`
+- `janus-dashboard/data/backlog.snapshot.json`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-backlog-handoff\scripts\validate_backlog.py C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md`: PASS WITH LEGACY WARNINGS
+- `npm run sync:backlog` in `janus-dashboard`: PASS, snapshot synced with `total=78 active=7 done=71 routing_missing=2`
+
+Open risks:
+- No prioritization, execution handoff, or implementation artifact exists yet for `BACKLOG-118`.
+- The OR lane is still only a Backlog item; `LIVE_TEST_EXECUTION` remains Codex-owned in the current productive setup.
+- No commit, push, or `origin/codex-sync` CURRENT_STATE sync has happened after this block, so remote consumers may not know `BACKLOG-118` yet.
+
+Next recommended step for ChatGPT: understand `BACKLOG-118` as the canonical follow-up for making live local Janus retests OR-delegatable.
+
+Next recommended step for Codex: run `janus-backlog-prioritization` for `BACKLOG-118`, then prepare a narrow Lean-Dev handoff if it stays `DO NOW`.
+
+Last updated: `2026-07-01 18:49:01 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-01 18:14 +02:00`, `BACKLOG-116` has passed the approved live Janus retest after the debug recovery fix. The exact prompt `was weisst du alles ueber olis haustiere?` now returns Garfield's tuna dislike as a Garfield fact, while Tasso remains present with the expected dog details.
+
+Current goal: move `BACKLOG-116` from green live retest evidence into final audit.
+
+Active phase: `janus-test-pipeline`, canonical state `PASS`.
+
+Last Codex work:
+- restarted or verified the local Janus backend API path and confirmed `api/health`
+- created live test chat `4158` using the local internal dev API key flow
+- reran the exact failing Oli pet-overview prompt through `/api/chat`
+- captured the passing response and fresh contact evidence under a new retest bundle
+- wrote `documentation/test-runs/BACKLOG-116_live_retest_after_debug_2026-07-01.md`
+
+Changed files:
+- `documentation/test-runs/BACKLOG-116_live_retest_after_debug_2026-07-01.md`
+- `documentation/test-results/BACKLOG-116-live-retest-after-debug-2026-07-01/BACKLOG-116_live_retest_after_debug_api_evidence.json`
+- `documentation/test-results/BACKLOG-116-live-retest-after-debug-2026-07-01/BACKLOG-116_live_retest_after_debug_api_summary.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `GET http://localhost:8001/api/health`: PASS
+- `POST http://localhost:8001/api/chats`: PASS, created chat `4158`
+- `POST http://localhost:8001/api/chat` with `was weisst du alles ueber olis haustiere?`: PASS
+- Live assertions: Tasso present PASS; Garfield present PASS; Garfield tuna dislike present PASS; no Oli tuna-dislike misattribution PASS
+
+Open risks:
+- No final audit has been run yet, so `BACKLOG-116` is evidence-green but not yet audit-closed.
+- The pre-existing vector-service degrade warning remains in backend startup logs, but it did not block this passing live retest.
+- No commit, push, or `origin/codex-sync` CURRENT_STATE sync has happened after this block, so remote consumers may not know the live PASS yet.
+
+Next recommended step for ChatGPT: treat `BACKLOG-116` as live-retest PASS and hand it to Codex for `janus-final-audit`.
+
+Next recommended step for Codex: route directly to `janus-final-audit` with the prior FAIL bundle, the debug-result artifact, and the new passing live retest bundle.
+
+Last updated: `2026-07-01 18:14:48 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-01 16:13 +02:00`, `BACKLOG-116` has completed a bounded `janus-debug` fix pass for the failed live Oli/Garfield pet-overview retest. The local root cause is now narrowed to stale live-style contact-card state: Garfield's tuna dislike existed in trusted pet memories, but the contact-backed pet overview still omitted it because the contact row kept that fact under Oli's generic `preferences` instead of pet-specific `personal_details`.
+
+Current goal: rerun the live Janus retest and confirm that `was weisst du alles ueber olis haustiere?` now includes Garfield's tuna dislike as a Garfield fact.
+
+Active phase: `janus-debug`, canonical state `HANDOFF`.
+
+Last Codex work:
+- inspected the live AppData sqlite evidence for `Oliver Schwab` and confirmed that the Garfield dislike memory existed while the contact card stayed stale
+- extended contact normalization with DB-aware read-time recovery for missing named-pet details misfiled under owner preferences
+- updated contact-backed pet-overview memory building so it runs through the same DB-aware normalization path
+- added focused regression coverage for stale live-style contact state in both contact normalization and `memory.read`
+- wrote `documentation/test-runs/BACKLOG-116_debug_live_pet_detail_recovery_2026-07-01.md`
+
+Changed files:
+- `backend/data/crud.py`
+- `backend/tools/memory_tools.py`
+- `backend/tests/test_contact_card_normalization.py`
+- `backend/tests/test_memory_tools.py`
+- `documentation/test-runs/BACKLOG-116_debug_live_pet_detail_recovery_2026-07-01.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-debug\scripts\validate_debug_result.py documentation\test-runs\BACKLOG-116_debug_live_pet_detail_recovery_2026-07-01.md`: PASS
+- `python -m py_compile backend\data\crud.py backend\tools\memory_tools.py backend\tests\test_contact_card_normalization.py backend\tests\test_memory_tools.py`: PASS
+- `python -m pytest backend\tests\test_contact_card_normalization.py -q`: PASS, 9 passed
+- `python -m pytest backend\tests\test_memory_tools.py -q -k "live_style_contact_state or pet_overview"`: PASS, 2 passed, 26 deselected
+- `python -m pytest backend\tests\integration\test_pet_recall_chat_path.py -q`: PASS, 1 passed
+- `python -m pytest backend\tests\test_provider_auth_fallback.py -q -k "pet_overview or memory_read_fallback_v2"`: PASS, 2 passed, 7 deselected
+- `python -m pytest backend\tests\test_contact_manager.py -q -k "pet_dislike_memory_for_named_pet or pet_preference_memory_for_named_pet"`: PASS, 2 passed, 45 deselected
+
+Open risks:
+- The bug is only locally fixed and regression-covered so far; no fresh live Janus app/provider retest has been run after this debug patch.
+- The pre-existing vector dependency warning remains (`tokenizers>=0.21,<0.22` vs installed `0.22.2`), but it is not the root cause of this Garfield issue.
+- No commit, push, or `origin/codex-sync` CURRENT_STATE sync has happened after this block, so remote consumers may still only know the earlier failed live retest.
+
+Next recommended step for ChatGPT: treat `BACKLOG-116` as locally debug-fixed but still awaiting one fresh live retest before any audit discussion.
+
+Next recommended step for Codex: route back to `janus-test-pipeline` and, after exact approval `OK START LIVE TEST`, rerun the live Oli pet-overview prompt against the local Janus app.
+
+Last updated: `2026-07-01 16:13:50 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-01 15:56 +02:00`, `BACKLOG-116` has completed the approved live Janus retest after the user provided exact approval `OK START LIVE TEST`. The live backend API run reproduced the visible issue: the answer to `was weißt du alles über olis haustiere?` includes Tasso and Garfield, but still omits Garfield's tuna dislike.
+
+Current goal: debug why live Janus data still omits Garfield's tuna dislike from the aggregated Oli pet overview.
+
+Active phase: `janus-test-pipeline`, canonical state `FAIL`.
+
+Last Codex work:
+- started the Janus backend dev server after approval
+- created live test chat `4157`
+- sent the live prompt through `/api/chat` using local Janus configuration (`openai` / `gpt-5.4-nano`)
+- captured response and contact-card evidence under `documentation/test-results/BACKLOG-116-live-retest-2026-07-01/`
+- updated `documentation/test-runs/BACKLOG-116_live_retest_preflight_2026-07-01.md` from `NEEDS_INFO` to `FAIL`
+
+Changed files:
+- `documentation/test-runs/BACKLOG-116_live_retest_preflight_2026-07-01.md`
+- `documentation/test-results/BACKLOG-116-live-retest-2026-07-01/BACKLOG-116_live_retest_api_evidence.json`
+- `documentation/test-results/BACKLOG-116-live-retest-2026-07-01/BACKLOG-116_live_retest_api_summary.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `GET http://localhost:8001/api/health`: PASS
+- `POST http://localhost:8001/api/chats`: PASS, created chat `4157`
+- `POST http://localhost:8001/api/chat` with `was weißt du alles über olis haustiere?`: FAIL against BACKLOG-116 oracle
+- Live assertions: Tasso present PASS; Garfield present PASS; Garfield tuna dislike present FAIL; no direct Oli tuna-dislike answer misattribution PASS
+
+Open risks:
+- Existing live contact data still places `thunfisch überhaupt nicht` under Oli's generic `preferences` instead of pet-specific `personal_details`, so the implementation may need live-data normalization, migration, or a read-time recovery path in addition to the local code fix.
+- The local vector dependency warning remains from earlier preflight: `tokenizers>=0.21,<0.22 ... found tokenizers==0.22.2`; this was not the live failure driver.
+- No commit, push, or `origin/codex-sync` CURRENT_STATE sync has happened after this block, so remote consumers may not know this state.
+
+Next recommended step for ChatGPT: treat BACKLOG-116 as live-retest FAILED and ask Codex to run `janus-debug` on the existing live-data normalization gap.
+
+Next recommended step for Codex: route to `janus-debug` with bound evidence `documentation/test-results/BACKLOG-116-live-retest-2026-07-01/BACKLOG-116_live_retest_api_evidence.json` and test-run artifact `documentation/test-runs/BACKLOG-116_live_retest_preflight_2026-07-01.md`.
+
+Last updated: `2026-07-01 15:56:28 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-01 15:50 +02:00`, `BACKLOG-116` has completed a `janus-test-pipeline` preflight for the live Janus retest gate. Local regression evidence is green, but the actual live Janus app/provider retest has not started because the Test Pipeline requires exact approval `OK START LIVE TEST` before live external/provider execution.
+
+Current goal: confirm the visible Janus answer for `was weisst du alles ueber olis haustiere?` after the Garfield tuna-dislike fix.
+
+Active phase: `janus-test-pipeline`, canonical state `NEEDS_INFO`.
+
+Last Codex work:
+- checked for existing TestSpec/TestRun coverage around Oli/Tasso/Garfield pet recall
+- determined that existing local tests cover the regression surface and the remaining evidence gap is the live Janus app prompt
+- reran focused local preflight tests
+- wrote `documentation/test-runs/BACKLOG-116_live_retest_preflight_2026-07-01.md`
+- did not use Strong OR Test Worker because no test-authoring or repeated-run worker package was needed for this step
+
+Changed files:
+- `documentation/test-runs/BACKLOG-116_live_retest_preflight_2026-07-01.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\codex-start-of-work-check\scripts\due_healthchecks.py`: CLEAR
+- `python -m pytest backend\tests\integration\test_pet_recall_chat_path.py -q`: PASS, 1 passed
+- `python -m pytest backend\tests\test_contact_manager.py -q -k "pet_dislike_memory_for_named_pet or pet_preference_memory_for_named_pet"`: PASS, 2 passed, 45 deselected
+- `python -m pytest backend\tests\test_contact_card_normalization.py -q -k "pet"`: PASS, 4 passed, 4 deselected
+
+Open risks:
+- Live Janus app behavior is still not retested after the code fix.
+- The local vector dependency warning remains: `tokenizers>=0.21,<0.22 ... found tokenizers==0.22.2`; tests pass through fallback paths.
+- No commit, push, or `origin/codex-sync` CURRENT_STATE sync has happened after this block, so remote consumers may not know this state.
+
+Next recommended step for ChatGPT: ask the user for exact approval `OK START LIVE TEST` if live app/provider execution should proceed.
+
+Next recommended step for Codex: after exact approval, run or guide the live Janus prompt `was weisst du alles ueber olis haustiere?`; route PASS to `janus-final-audit`, otherwise route FAIL/FLAKY/INCONCLUSIVE to `janus-debug`.
+
+Last updated: `2026-07-01 15:50:30 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-01 15:41 +02:00`, `BACKLOG-117` has implemented the first Strong OR Agent Lane infrastructure slice for real delegated test work. The change is Dev-/OR-infrastructure only: no Janus product runtime logic was changed.
+
+Current goal: make OR useful for real bounded work, especially test authoring, repeated command execution, and result summarization, instead of only small review/proposal tasks.
+
+Active phase: Lean Dev / `janus-executioner`, canonical state `HANDOFF`.
+
+Last Codex work:
+- created `BACKLOG-117` and bound `documentation/tasks/backlog_BACKLOG-117_strong_or_agent_lane.md`
+- changed the productive execution-patch OR default from `qwen/qwen3-coder-30b-a3b-instruct` to stronger `moonshotai/kimi-k2.5`
+- extended `test_pipeline_sidecar_write_pilot_runner.py` so `--isolated-aider-package-json` now routes prompt/local/delegated choices through the isolated worker path as `STRONG_OR_TEST_WORKER`
+- documented the Strong OR Test Worker Gate in both repo and installed `janus-test-pipeline` skill copies
+- documented the stronger execution-patch default in both repo and installed `janus-executioner` skill copies
+- added a minimal Strong OR fixture package with three explicit repeated post-command specs
+- wrote `documentation/tasks/backlog_BACKLOG-117_execution_result.md`
+
+Changed files:
+- `documentation/backlog/BACKLOG.md`
+- `documentation/tasks/backlog_BACKLOG-117_strong_or_agent_lane.md`
+- `documentation/tasks/backlog_BACKLOG-117_execution_result.md`
+- `documentation/codex/model-routing/config/bounded_or_worker_eligibility_2026-06-17.json`
+- `documentation/codex/model-routing/config/or_task_budget_profiles_2026-06-19.json`
+- `documentation/codex/model-routing/scripts/test_pipeline_sidecar_write_pilot_runner.py`
+- `documentation/codex/model-routing/tests/test_codex_dev_workhorse_runner.py`
+- `documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py`
+- `documentation/codex/model-routing/tests/test_test_pipeline_sidecar_write_pilot_runner.py`
+- `documentation/codex/model-routing/strong-or-fixtures/strong_test_worker_minimal_package_2026-07-01.json`
+- `documentation/codex/skills/janus-executioner/SKILL.md`
+- `documentation/codex/skills/janus-test-pipeline/SKILL.md`
+- `C:\Users\pruve\.codex\skills\janus-executioner\SKILL.md`
+- `C:\Users\pruve\.codex\skills\janus-test-pipeline\SKILL.md`
+- `janus-dashboard/data/backlog.snapshot.json`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python -m pytest documentation\codex\model-routing\tests\test_codex_dev_workhorse_runner.py -q`: PASS, 22 passed
+- `python -m pytest documentation\codex\model-routing\tests\test_bounded_or_worker_eligibility.py -q`: PASS, 36 passed
+- `python -m pytest documentation\codex\model-routing\tests\test_test_pipeline_sidecar_write_pilot_runner.py -q`: PASS, 11 passed
+- `python -m py_compile documentation\codex\model-routing\scripts\test_pipeline_sidecar_write_pilot_runner.py documentation\codex\model-routing\scripts\bounded_or_worker_eligibility.py documentation\codex\model-routing\scripts\codex_dev_workhorse_runner.py`: PASS
+- Strong OR prompt gate fixture: PASS; emitted visible `1 = Codex / 2 = OR`, `moonshotai/kimi-k2.5`, and `mode: STRONG_OR_TEST_WORKER`
+- `python -m json.tool` on updated JSON config/fixture files: PASS
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py documentation\tasks\backlog_BACKLOG-117_execution_result.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-backlog-handoff\scripts\validate_backlog.py C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md`: PASS WITH LEGACY WARNINGS
+- scoped `git diff --check`: PASS with only existing CRLF/LF warning on `BACKLOG.md`
+- `npm run sync:backlog` in `janus-dashboard`: PASS, total=77 active=6 done=71 routing_missing=1
+
+Open risks:
+- This slice proves the gate/contract and prompt path, but it did not run a fresh live `moonshotai/kimi-k2.5` OR worker on a real test-authoring task.
+- Future OR telemetry must verify whether Kimi improves acceptance rate and net Codex-token savings versus the smaller Qwen lane.
+- The worktree remains broadly dirty with pre-existing unrelated changes; any commit must be scoped through `janus-git-governance`.
+- No commit, push, or `origin/codex-sync` CURRENT_STATE sync has happened after this block, so remote consumers may not know this state.
+
+Next recommended step for ChatGPT: understand that OR now has a Strong Test Worker lane, but treat live OR execution as still operator-gated and Codex-reviewed.
+
+Next recommended step for Codex: return to `janus-test-pipeline` for the pending `BACKLOG-116` live retest; if a bounded test-writing/repeated-run package is useful, offer the new Strong OR Test Worker Gate.
+
+Last updated: `2026-07-01 15:41:52 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-01`, `BACKLOG-116` has been implemented locally after the visible OR execution gate was correctly offered and the user selected `2 = OR`. The OR run used `qwen/qwen3-coder-30b-a3b-instruct`, cost `0.00097661`, and was rejected by the bounded validator because the returned apply_patch diff was malformed/repetitive. Codex then completed the bounded fallback implementation locally: pet dislike predicates are recognized as pet-targeting hints, typed pet details are not moved into generic owner preferences, and the pet-overview fallback now includes contact-backed Garfield dislike details while still filtering stale untyped Garfield/Thunfisch drift.
+
+Current goal: run a live Janus retest for `BACKLOG-116` before final audit.
+
+Active phase: `janus-executioner`, canonical state `HANDOFF`.
+
+Last Codex work:
+- created the OR execution input package for `BACKLOG-116`
+- ran the productive Dev-workhorse OR gate and delegated OR patch candidate path
+- rejected the malformed OR patch candidate and continued through the Codex-owned fallback path
+- implemented the bounded backend/test fix for Garfield's pet-specific tuna dislike
+- wrote `documentation/tasks/backlog_BACKLOG-116_execution_result.md`
+- updated Backlog evidence and resynced the dashboard snapshot
+
+Changed files:
+- `backend/services/contact_manager.py`
+- `backend/data/crud.py`
+- `backend/services/orchestrator/execution_engine.py`
+- `backend/tests/test_contact_manager.py`
+- `backend/tests/test_contact_card_normalization.py`
+- `backend/tests/test_provider_auth_fallback.py`
+- `backend/tests/test_memory_tools.py`
+- `backend/tests/integration/test_pet_recall_chat_path.py`
+- `documentation/codex/model-routing/execution-review-fixtures/backlog_116_execution_patch_candidate_input_package_2026-07-01.json`
+- `documentation/tasks/backlog_BACKLOG-116_execution_result.md`
+- `documentation/backlog/BACKLOG.md`
+- `janus-dashboard/data/backlog.snapshot.json`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- OR gate prompt run: PASS, OR_ALLOWED with positive ROI
+- OR delegated patch candidate run: REJECT_AND_FALLBACK, malformed repeated diff; artifacts under `documentation/codex/model-routing/execution-direct-or-runs/BACKLOG-116-EXECUTION-OR-001/`
+- `python -m pytest backend/tests/test_contact_manager.py -q -k "pet"`: PASS
+- `python -m pytest backend/tests/test_contact_card_normalization.py -q`: PASS
+- `python -m pytest backend/tests/test_provider_auth_fallback.py -q -k "pet_overview or memory_read_fallback_v2"`: PASS
+- `python -m pytest backend/tests/test_memory_tools.py -q -k "pet_overview"`: PASS
+- `python -m pytest backend/tests/integration/test_pet_recall_chat_path.py -q`: PASS
+- `python -m py_compile backend/services/contact_manager.py backend/data/crud.py backend/services/orchestrator/execution_engine.py backend/tests/test_contact_manager.py backend/tests/test_contact_card_normalization.py backend/tests/test_provider_auth_fallback.py backend/tests/test_memory_tools.py backend/tests/integration/test_pet_recall_chat_path.py`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py documentation\tasks\backlog_BACKLOG-116_execution_result.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-backlog-handoff\scripts\validate_backlog.py C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md`: PASS WITH LEGACY WARNINGS, no new `BACKLOG-116` issue reported
+- `npm run sync:backlog` in `janus-dashboard`: PASS
+
+Open risks:
+- the exact live Janus app flow has not been retested yet after the code fix
+- local tests still log the pre-existing vector dependency issue `tokenizers>=0.21,<0.22 ... found tokenizers==0.22.2`, but the tested memory paths fall back and pass
+- the worktree contains broader pre-existing dirty changes in the same address-book files, so future Git checkpointing must be scoped carefully
+- no commit or push has happened after this execution block, so a remote such as GitHub or `origin/codex-sync` may not contain the latest CURRENT_STATE, Backlog, dashboard snapshot, execution result, or code changes yet
+
+Next recommended step for ChatGPT: ask for or guide one live Janus retest of `was weisst du alles ueber olis haustiere?` with Garfield's tuna dislike present.
+
+Next recommended step for Codex: run `janus-test-pipeline` for the `BACKLOG-116` live retest gate; route to `janus-final-audit` only if live behavior is green, otherwise route to `janus-debug`.
+
+Last updated: `2026-07-01 15:58:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-01`, `BACKLOG-116` has passed `janus-preimplementation-check` and is now execution-ready. The new precheck artifact binds the Garfield/Tuna address-book pet-detail bug to a bounded backend/test slice across contact writeback/normalization and pet-overview fallback rendering. `BACKLOG.md` now points to `EXECUTION_READY`, `Recommended next skill: SKILL 4`, and the precheck artifact path.
+
+Current goal: implement `BACKLOG-116` through `janus-executioner` using the validated precheck artifact.
+
+Active phase: `janus-preimplementation-check`, canonical state `HANDOFF`.
+
+Last Codex work:
+- created `documentation/tasks/backlog_BACKLOG-116_preimplementation_check.md`
+- validated artifact identity for `BACKLOG-116`
+- derived the affected code/test cluster from existing pet-overview and contact-normalization seams
+- updated Backlog routing to `EXECUTION_READY`
+- resynced the dashboard backlog snapshot
+
+Changed files:
+- `documentation/backlog/BACKLOG.md`
+- `documentation/tasks/backlog_BACKLOG-116_preimplementation_check.md`
+- `janus-dashboard/data/backlog.snapshot.json`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py documentation\tasks\backlog_BACKLOG-116_preimplementation_check.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-backlog-handoff\scripts\validate_backlog.py C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md`: PASS WITH LEGACY WARNINGS, no new `BACKLOG-116` issue reported
+- `npm run sync:backlog` in `janus-dashboard`: PASS, snapshot synced with `total=76 active=5 done=71 routing_missing=1`
+
+Open risks:
+- no product code has been changed yet
+- implementation must preserve stale generic Garfield/Thunfisch drift protection while allowing a deliberately pet-specific Garfield dislike fact in the aggregated pet overview
+- no commit or push has happened after this precheck block, so a remote such as GitHub or `origin/codex-sync` may not contain the latest CURRENT_STATE, Backlog, dashboard snapshot, or precheck artifact yet
+
+Next recommended step for ChatGPT: ask Codex to run `janus-executioner` for `BACKLOG-116` using the precheck artifact.
+
+Next recommended step for Codex: run `janus-executioner` with target task `BACKLOG-116`, task artifact `documentation/tasks/backlog_BACKLOG-116_garfield_thunfisch_fakt_haustieruebersicht.md`, and precheck artifact `documentation/tasks/backlog_BACKLOG-116_preimplementation_check.md`.
+
+Last updated: `2026-07-01 15:41:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-01`, `BACKLOG-116` has been selected for Diamond pipeline handoff. The Backlog item moved from `READY` to `IN PROGRESS`, routing metadata now points to `PRE_IMPLEMENTATION_VERIFICATION`, and the handoff artifact `documentation/tasks/backlog_BACKLOG-116_garfield_thunfisch_fakt_haustieruebersicht.md` contains the bounded task scope, reproduction context, acceptance criteria, and next-skill copy prompt.
+
+Current goal: run the preimplementation check for `BACKLOG-116` before any code changes.
+
+Active phase: `janus-backlog-handoff`, canonical state `HANDOFF`.
+
+Last Codex work:
+- created the selected handoff artifact for `BACKLOG-116`
+- moved `BACKLOG-116` to `IN PROGRESS`
+- added routing fields for `PRE_IMPLEMENTATION_VERIFICATION`
+- synced the dashboard backlog snapshot
+
+Changed files:
+- `documentation/backlog/BACKLOG.md`
+- `documentation/tasks/backlog_BACKLOG-116_garfield_thunfisch_fakt_haustieruebersicht.md`
+- `janus-dashboard/data/backlog.snapshot.json`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-backlog-handoff\scripts\validate_backlog.py C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md`: PASS WITH LEGACY WARNINGS, no new `BACKLOG-116` issue reported
+- `npm run sync:backlog` in `janus-dashboard`: PASS, snapshot synced with `total=76 active=5 done=71 routing_missing=1`
+
+Open risks:
+- no preimplementation check has been run yet, so source files, exact test targets, and implementation constraints are not bound
+- no code fix or product validation has been run for `BACKLOG-116` yet
+- no commit or push has happened after this handoff block, so a remote such as GitHub or `origin/codex-sync` may not contain the latest CURRENT_STATE, Backlog, dashboard snapshot, or handoff artifact yet
+
+Next recommended step for ChatGPT: use the `BACKLOG-116` handoff artifact and ask Codex to run `janus-preimplementation-check`.
+
+Next recommended step for Codex: run `janus-preimplementation-check` with target task `BACKLOG-116` and task artifact `documentation/tasks/backlog_BACKLOG-116_garfield_thunfisch_fakt_haustieruebersicht.md`.
+
+Last updated: `2026-07-01 15:32:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-01`, `BACKLOG-116` has been prioritized after intake. The Garfield/Tuna pet-fact aggregation bug is rated `HIGH` importance, `LOW` implementation risk, `S` effort, `READY` maturity, and `DO NOW` recommendation. No implementation handoff has been created yet.
+
+Current goal: move `BACKLOG-116` from prioritized Backlog item to selected handoff if the user wants to implement it next.
+
+Active phase: `janus-backlog-prioritization`, canonical state `HANDOFF`.
+
+Last Codex work:
+- added missing prioritization cache fields to `BACKLOG-116`
+- kept review in DELTA mode and did not re-review unrelated open items
+- did not inspect or change product code
+
+Changed files:
+- `documentation/backlog/BACKLOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- focused read of `BACKLOG-116`: PASS
+- Backlog prioritization field update: PASS
+- `python C:\Users\pruve\.codex\skills\janus-backlog-handoff\scripts\validate_backlog.py C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md`: PASS WITH LEGACY WARNINGS, no new `BACKLOG-116` issue reported
+- `git diff --check -- documentation\backlog\BACKLOG.md documentation\ai\CURRENT_STATE.md documentation\codex\SKILL_USAGE_LOG.md`: PASS with Git CRLF/LF warnings only
+
+Open risks:
+- no implementation handoff, preimplementation check, code fix, or product validation has been run for `BACKLOG-116` yet
+- no commit or push has happened after this prioritization block, so a remote such as GitHub or `origin/codex-sync` may not contain the latest CURRENT_STATE or Backlog update yet
+
+Next recommended step for ChatGPT: present `BACKLOG-116` as the highest-priority next address-book follow-up and ask whether to hand it off.
+
+Next recommended step for Codex: run `janus-backlog-handoff` with `Mode: SELECTED_HANDOFF` and `Backlog Item: BACKLOG-116` if the user says `ok`.
+
+Last updated: `2026-07-01 15:25:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-01`, a new follow-up bug for the Janus address-book pet detail path has been captured as `BACKLOG-116`. The user reproduced that Janus remembers `Garfield mag Thunfisch ueberhaupt nicht` on direct question, but the aggregated `was weisst du alles ueber olis haustiere?` answer still lists only `Garfield (Katze)` and omits the negative tuna preference. The user also observed that the fact appears under Oli's general address-book information instead of under the pet details.
+
+Current goal: route the new Garfield/Tuna pet-fact placement and pet-overview recall bug through the Backlog pipeline.
+
+Active phase: `janus-backlog-intake`, canonical state `HANDOFF`.
+
+Last Codex work:
+- created `BACKLOG-116` as a READY follow-up to `BACKLOG-115`
+- documented the live reproduction, expected behavior, actual behavior, and focused acceptance criteria
+- did not inspect or change product code in this intake slice
+
+Changed files:
+- `documentation/backlog/BACKLOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python documentation/codex/skills/codex-start-of-work-check/scripts/due_healthchecks.py`: PASS, no due reminders
+- `rg "^### BACKLOG-[0-9]+" documentation/backlog/BACKLOG.md`: PASS, next free ID selected as `BACKLOG-116`
+- `python C:\Users\pruve\.codex\skills\janus-backlog-handoff\scripts\validate_backlog.py C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md`: PASS WITH LEGACY WARNINGS, no new `BACKLOG-116` issue reported
+- `git diff --check -- documentation\backlog\BACKLOG.md documentation\ai\CURRENT_STATE.md documentation\codex\SKILL_USAGE_LOG.md`: PASS with Git CRLF/LF warnings only
+
+Open risks:
+- no implementation or product validation has been run for `BACKLOG-116` yet
+- the exact root cause is still unconfirmed and may sit in contact fact extraction, pet-detail normalization, contact-card persistence, or pet-overview aggregation
+- no commit or push has happened after this intake block, so a remote such as GitHub or `origin/codex-sync` may not contain the latest CURRENT_STATE or Backlog update yet
+
+Next recommended step for ChatGPT: treat `BACKLOG-116` as the active follow-up for the Garfield/Tuna pet-fact bug and recommend prioritization before implementation.
+
+Next recommended step for Codex: run `janus-backlog-prioritization` for `BACKLOG-116`, then create the dashboard/handoff path if prioritized.
+
+Last updated: `2026-07-01 15:20:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-01`, the repo now has both the committed governance checkpoint for the ChatGPT remote-sync contract and a live dedicated sync branch on `origin/codex-sync` for `documentation/ai/CURRENT_STATE.md`. The local governance commits `c968e983f` and `e2e3d7ef6` pin the rule and prepare the snapshot, while the isolated sync worktree on top of `origin/master` was used to publish `CURRENT_STATE.md` to `origin/codex-sync` without sweeping the broader dirty development worktree into the public remote.
 
 Current goal: the explicit ChatGPT-readable remote truth for `CURRENT_STATE.md` is now active on `origin/codex-sync`; the next goal is to use this path consistently after future substantial Janus work blocks.
@@ -4729,6 +5413,101 @@ Next recommended step for ChatGPT: summarize this as "quickchange is no longer a
 Next recommended step for Codex: run `janus-executioner` for `QC-OR-ENTRY-001`, re-enable the shared quickchange prompt gate, rerun the focused gate test, and refresh the blocker/inventory state.
 
 Last updated: `2026-06-24 18:05:00 +02:00`.
+## Current Snapshot Update
+As of `2026-07-01`, the direct OpenRouter `execution_patch_candidate` lane is materially harder and finally has a fresh live green proof on a bounded repo-local Dev harness. The lane now rejects invented or non-applicable diffs mechanically, asks the model to return `BLOCKED` instead of fake patches when real anchors are missing, keeps newline-shaped unified diffs explicit, and successfully produced one valid Kimi patch candidate that Codex applied locally to turn a red harness test green.
+
+Current goal: make bounded OR code-patch delegation behave honestly and usefully on future execution slices instead of drifting into fake seams or truncation noise.
+
+Active phase: `janus-executioner`, canonical state `PASS`.
+
+Last Codex work:
+- hardened `openrouter_direct_execution_patch_candidate_runner.py` with placeholder-marker rejection, current-file hunk applicability checks, compact-output guidance, newline-preserving diff guidance, and status normalization for real diff payloads mislabeled as `BLOCKED`
+- added focused regression coverage for the new direct-runner hardening rules
+- created a tiny repo-local live harness with one intentional `clamp` bug and one red pytest assertion
+- ran the productive Dev-workhorse OR lane live against that harness with `moonshotai/kimi-k2.5`
+- rejected earlier live attempts that ended in `finish_reason=length` or malformed `BLOCKED`+patch hybrids, then reran after hardening until the lane returned `DIRECT_OR_EXECUTION_PATCH_READY_FOR_CODEX_REVIEW`
+- applied the accepted bounded OR patch locally to the harness and verified the previously red test turned green
+
+Changed files:
+- `documentation/codex/model-routing/scripts/openrouter_direct_execution_patch_candidate_runner.py`
+- `documentation/codex/model-routing/tests/test_openrouter_direct_execution_patch_candidate_runner.py`
+- `development/openrouter-skill-tests/execution_patch_candidate_live_harness/math_utils.py`
+- `development/openrouter-skill-tests/execution_patch_candidate_live_harness/test_math_utils.py`
+- `documentation/codex/model-routing/execution-review-fixtures/execution_patch_candidate_live_harness_input_package_2026-07-01.json`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_openrouter_direct_execution_patch_candidate_runner.py -q`: PASS, 9 passed
+- `python -m py_compile documentation/codex/model-routing/scripts/openrouter_direct_execution_patch_candidate_runner.py documentation/codex/model-routing/tests/test_openrouter_direct_execution_patch_candidate_runner.py`: PASS
+- pre-harness red check `python -m pytest development/openrouter-skill-tests/execution_patch_candidate_live_harness/test_math_utils.py -q`: FAIL as expected, `test_clamp_returns_high_bound`
+- live OR attempt `LIVE-HARNESS-EXECUTION-OR-001`: FAIL, `finish_reason=length`
+- live OR attempt `LIVE-HARNESS-EXECUTION-OR-002`: FAIL, real patch content but invalid `BLOCKED`+patch hybrid
+- live OR attempt `LIVE-HARNESS-EXECUTION-OR-003`: FAIL, same hybrid confirmed the need for newline/semantic hardening
+- live OR attempt `LIVE-HARNESS-EXECUTION-OR-004`: PASS, `DIRECT_OR_EXECUTION_PATCH_READY_FOR_CODEX_REVIEW`, healthcheck PASS, actual cost `0.005778`
+- post-apply harness check `python -m pytest development/openrouter-skill-tests/execution_patch_candidate_live_harness/test_math_utils.py -q`: PASS, 3 passed
+- `python -m py_compile documentation/codex/model-routing/scripts/openrouter_direct_execution_patch_candidate_runner.py documentation/codex/model-routing/tests/test_openrouter_direct_execution_patch_candidate_runner.py development/openrouter-skill-tests/execution_patch_candidate_live_harness/math_utils.py development/openrouter-skill-tests/execution_patch_candidate_live_harness/test_math_utils.py`: PASS
+- `git diff --check -- documentation/codex/model-routing/scripts/openrouter_direct_execution_patch_candidate_runner.py documentation/codex/model-routing/tests/test_openrouter_direct_execution_patch_candidate_runner.py development/openrouter-skill-tests/execution_patch_candidate_live_harness/math_utils.py development/openrouter-skill-tests/execution_patch_candidate_live_harness/test_math_utils.py documentation/codex/model-routing/execution-review-fixtures/execution_patch_candidate_live_harness_input_package_2026-07-01.json`: PASS
+
+Open risks:
+- this proof is on a tiny bounded Dev harness; larger multi-file slices can still fail and should continue to be gated by Codex review
+- the direct Kimi lane now behaves much better, but future telemetry should still watch for `finish_reason=length`, malformed status labels, and anchor drift on wider tasks
+- no commit or push happened after this Dev-hardening block, so a remote such as GitHub, `backup`, or `origin/codex-sync` may not contain this latest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: summarize this as "the direct OR execution patch lane now catches fake seams mechanically and has one fresh live green proof on a bounded code harness."
+
+Next recommended step for Codex: either checkpoint this Lean-Dev hardening via `janus-git-governance`, or re-run the next real bounded execution slice through the hardened lane before making any further model-strategy changes.
+
+Last updated: `2026-07-01 23:15:45 +02:00`.
+## Current Snapshot Update
+As of `2026-07-01`, `TASK-SPEC28.1` is now implemented as the first bounded visibility slice for the new `LIVE_TEST_EXECUTION` OR lane. The actual delegated live worker contract still does not exist here, but the entry seam now behaves correctly: eligible local bounded retests can show `1 = Codex` / `2 = OR`, and broader or non-local live slices stay fail-closed and Codex-only.
+
+Current goal: finish the first Spec-28 slice cleanly and hand it to audit without drifting into the later auth, worker, or evidence-contract work.
+
+Active phase: `janus-executioner`, canonical state `HANDOFF`.
+
+Last Codex work:
+- attempted the productive OR execution-patch lane for `TASK-SPEC28.1` and captured bounded artifacts, then rejected the OR patch because its diff structure did not match the real files
+- added a dedicated `LIVE_TEST_EXECUTION` fail-closed eligibility helper with one allowed positive case: `local_bounded_retest`
+- extended `test_pipeline_sidecar_write_pilot_runner.py` so the live entry can render either a visible `1 = Codex` / `2 = OR` gate or a Codex-only fallback with no normal OR choice
+- updated the repo-owned `janus-test-pipeline` skill text so the operator wording matches the technical gate and clearly keeps worker/auth/evidence behavior out of `TASK-SPEC28.1`
+- wrote `documentation/tasks/TASK-SPEC28.1_execution_result.md`
+
+Changed files:
+- `documentation/codex/skills/janus-test-pipeline/SKILL.md`
+- `documentation/codex/model-routing/scripts/bounded_or_worker_eligibility.py`
+- `documentation/codex/model-routing/scripts/test_pipeline_sidecar_write_pilot_runner.py`
+- `documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py`
+- `documentation/codex/model-routing/tests/test_test_pipeline_sidecar_write_pilot_runner.py`
+- `documentation/codex/model-routing/execution-review-fixtures/task_spec28_1_execution_patch_candidate_input_package_2026-07-01.json`
+- `documentation/codex/model-routing/execution-review-fixtures/task_spec28_1_execution_patch_candidate_input_package_compact_2026-07-01.json`
+- `documentation/codex/model-routing/sidecar-runs/TP-LIVE-GATE-PROMPT-001/operator_choice_prompt.json`
+- `documentation/codex/model-routing/sidecar-runs/TP-LIVE-GATE-PROMPT-001/editable_paths.txt`
+- `documentation/codex/model-routing/sidecar-runs/TP-LIVE-GATE-PROMPT-002/operator_choice_prompt.json`
+- `documentation/codex/model-routing/sidecar-runs/TP-LIVE-GATE-PROMPT-002/editable_paths.txt`
+- `documentation/tasks/TASK-SPEC28.1_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py -q`: PASS, 39 passed
+- `python -m pytest documentation/codex/model-routing/tests/test_test_pipeline_sidecar_write_pilot_runner.py -q -k "live or gate or eligibility"`: PASS, 7 passed, 7 deselected
+- `python -m py_compile documentation/codex/model-routing/scripts/bounded_or_worker_eligibility.py documentation/codex/model-routing/scripts/test_pipeline_sidecar_write_pilot_runner.py`: PASS
+- live gate prompt smoke `TP-LIVE-GATE-PROMPT-001`: PASS, emitted visible `choice_2 = OR` for `local_bounded_retest`
+- live gate prompt smoke `TP-LIVE-GATE-PROMPT-002`: PASS, stayed Codex-only with no visible `choice_2` for `non_local_live_test`
+- `git diff --check -- documentation/codex/skills/janus-test-pipeline/SKILL.md documentation/codex/model-routing/scripts/bounded_or_worker_eligibility.py documentation/codex/model-routing/scripts/test_pipeline_sidecar_write_pilot_runner.py documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py documentation/codex/model-routing/tests/test_test_pipeline_sidecar_write_pilot_runner.py documentation/tasks/TASK-SPEC28.1_preimplementation_check.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py documentation/tasks/TASK-SPEC28.1_execution_result.md`: PASS
+
+Open risks:
+- `TASK-SPEC28.1` is intentionally only the visibility slice; delegated auth/header handling, worker package details, evidence-write semantics, and Codex-owned accept/reject wiring remain unimplemented until `TASK-SPEC28.2` and `TASK-SPEC28.3`
+- the successful compact OR patch-candidate run proved the stronger model can understand the intent, but its proposed patch still drifted from the real file structure; Codex review remains mandatory
+- no commit or push happened after this execution slice, so a remote such as GitHub, `backup`, or `origin/codex-sync` may not contain this latest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: summarize this as "Spec 28 slice 1 is done: the OR option is now visible only for local bounded live retests, while everything broader stays fail-closed and Codex-only."
+
+Next recommended step for Codex: run `janus-final-audit` for `TASK-SPEC28.1` with `5.5` high; after a pass, move to `janus-preimplementation-check` for `TASK-SPEC28.2`.
+
+Last updated: `2026-07-01 22:49:40 +02:00`.
 ## Current Snapshot Update
 As of `2026-06-27`, the central bounded-OR visibility contract for `janus-test-pipeline` `generator_review` is now resynced to its already proven everyday evidence. The lane no longer sits hidden in the shared eligibility config or the test-pipeline skill text: the real prompt now again shows visible `1 = Codex` and `2 = OR` with fixed model `openai/gpt-oss-20b`, while execution still stays bounded through deterministic local builder/executor/validator steps and Codex-owned final acceptance.
 
