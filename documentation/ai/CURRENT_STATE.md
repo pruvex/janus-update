@@ -1,16 +1,16 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
-As of `2026-07-01`, the repo now has a committed governance checkpoint for the ChatGPT remote-sync contract, and the active next move is to create and exercise the dedicated `origin/codex-sync` readpoint for `documentation/ai/CURRENT_STATE.md` without mixing in the broader dirty development worktree. The local governance checkpoint commit `c968e983f` pins the rule in `AGENTS.md` and `documentation/codex/CODEX_WORKFLOW_PLAYBOOK.md`, while this snapshot records that the sync branch setup itself is the current bounded Git task.
+As of `2026-07-01`, the repo now has both the committed governance checkpoint for the ChatGPT remote-sync contract and a live dedicated sync branch on `origin/codex-sync` for `documentation/ai/CURRENT_STATE.md`. The local governance commits `c968e983f` and `e2e3d7ef6` pin the rule and prepare the snapshot, while the isolated sync worktree on top of `origin/master` was used to publish `CURRENT_STATE.md` to `origin/codex-sync` without sweeping the broader dirty development worktree into the public remote.
 
-Current goal: create the dedicated `origin/codex-sync` branch as the explicit ChatGPT-readable remote truth for `CURRENT_STATE.md` and verify that this can be done without sweeping unrelated dirty worktree changes into `origin`.
+Current goal: the explicit ChatGPT-readable remote truth for `CURRENT_STATE.md` is now active on `origin/codex-sync`; the next goal is to use this path consistently after future substantial Janus work blocks.
 
-Active phase: `janus-git-governance`, canonical state `HANDOFF`.
+Active phase: `janus-git-governance`, canonical state `PASS`.
 
 Last Codex work:
 - created the local governance checkpoint commit `c968e983f` for the CURRENT_STATE sync rule
 - confirmed that the normal worktree is heavily dirty and therefore unsuitable for any broad `origin` push
-- selected an isolated sync-branch setup as the safest next step
+- created one isolated sync worktree from `origin/master`, published `documentation/ai/CURRENT_STATE.md` on branch `codex-sync`, and pushed it to `origin/codex-sync`
 
 Changed files:
 - `documentation/ai/CURRENT_STATE.md`
@@ -20,18 +20,18 @@ Checks / validation performed:
 - scoped `git diff --check`: PASS before the checkpoint commit
 - `python documentation/codex/scripts/summarize_or_operator_usage.py`: PASS
 - scoped post-commit `git status` for the governance files: clean
-- `git ls-remote --heads origin codex-sync`: branch not present yet
+- `git ls-remote --heads origin codex-sync`: PASS after push
+- isolated sync-branch push to `origin/codex-sync`: PASS
 
 Open risks:
-- `origin/codex-sync` does not exist yet at this snapshot point
 - the main local worktree remains broadly dirty, so any sync-to-origin action must stay tightly isolated from unrelated development changes
-- GitHub still may not contain the latest `CURRENT_STATE.md` until the dedicated sync branch is actually pushed
+- ChatGPT must read `CURRENT_STATE.md` from `origin/codex-sync`, not infer freshness from `origin/develop`, `origin/master`, or `backup/develop`
 
-Next recommended step for ChatGPT: once `origin/codex-sync` exists, read `documentation/ai/CURRENT_STATE.md` from that branch instead of inferring freshness from `origin/develop`, `origin/master`, or `backup/develop`.
+Next recommended step for ChatGPT: read `documentation/ai/CURRENT_STATE.md` from `origin/codex-sync` as the authoritative remote snapshot unless Codex explicitly says no sync has happened after a newer substantial block.
 
-Next recommended step for Codex: finish `janus-git-governance` by creating and pushing the isolated `origin/codex-sync` branch with the newest `CURRENT_STATE.md`, then report that GitHub has a reliable readpoint again.
+Next recommended step for Codex: after each future substantial Janus block, decide whether a fresh `CURRENT_STATE` sync to `origin/codex-sync` is needed and keep that action isolated from unrelated dirty worktree changes.
 
-Last updated: `2026-07-01 14:45:00 +02:00`.
+Last updated: `2026-07-01 15:05:00 +02:00`.
 
 ## Current Snapshot Update
 As of `2026-07-01`, the ChatGPT sync rule for `CURRENT_STATE.md` is now operationalized in the repo’s binding and day-to-day governance text. `AGENTS.md` now states that the authoritative ChatGPT-readable remote truth for `documentation/ai/CURRENT_STATE.md` is `origin/codex-sync`, that Codex should recommend a dedicated sync to that branch after each substantial block, and that ChatGPT must not assume any other remote or branch is current without that sync. `documentation/codex/CODEX_WORKFLOW_PLAYBOOK.md` mirrors the same rule in the compact daily workflow guidance so the behavior is not left to chat memory.
