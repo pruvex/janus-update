@@ -1,6 +1,80 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-01`, the preferred isolated Aider/OR worker path now writes a compact central operator-usage log in addition to the per-run artifacts. `documentation/codex/model-routing/scripts/isolated_aider_workspace_runner.py` appends one JSONL row per operator decision (`prompt`, `1 = Codex`, `2 = OR`) to `documentation/codex/model-routing/or_operator_usage_log.jsonl`, and the new helper `documentation/codex/scripts/summarize_or_operator_usage.py` turns that log into healthcheck-friendly counts. A local smoke and a delegated smoke both landed in the central log, so the weekly Codex healthcheck now has one simple place to read operator-choice and fallback patterns without re-walking every run directory manually.
+
+Current goal: the logging baseline for the isolated worker path is in place; the next decision is whether to checkpoint this Lean-Dev logging hardening now or expand the same central log shape to additional non-isolated OR runners later.
+
+Active phase: `janus-executioner` (Lean-Dev), canonical state `PASS`.
+
+Last Codex work:
+- added central JSONL logging to the isolated Aider runner for prompt, local, and delegated paths
+- added a small summary script that aggregates operator choice, final outcome, follow-up state, and side-effect counts
+- validated the log path with one local smoke entry and one delegated smoke entry
+
+Changed files:
+- `documentation/codex/model-routing/scripts/isolated_aider_workspace_runner.py`
+- `documentation/codex/scripts/summarize_or_operator_usage.py`
+- `documentation/codex/model-routing/or_operator_usage_log.jsonl`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m py_compile documentation/codex/model-routing/scripts/isolated_aider_workspace_runner.py documentation/codex/scripts/summarize_or_operator_usage.py`: PASS
+- `python documentation/codex/model-routing/scripts/isolated_aider_workspace_runner.py --task-label "Logging smoke" --normal-target-model "5.4 medium" --operator-choice local --workflow-id ISO-AIDER-LOGGING-SMOKE-001 --input-package-json development/openrouter-skill-tests/janus-worker-aider-real-helper-poc-3/worker_package.json`: PASS, central log wrote one `1 = Codex` row
+- `python documentation/codex/model-routing/scripts/isolated_aider_workspace_runner.py --task-label "Logging delegated smoke" --normal-target-model "5.4 medium" --operator-choice 2 --workflow-id ISO-AIDER-LOGGING-SMOKE-002 --input-package-json development/openrouter-skill-tests/janus-worker-aider-real-helper-poc-3/worker_package.json`: bounded reject/fallback recorded, central log wrote one `2 = OR` row
+- `python documentation/codex/scripts/summarize_or_operator_usage.py`: PASS, current aggregate shows `entry_count=2`, `operator_choice_counts={"1":1,"2":1}`, `codex_fallback_required_count=1`, `repo_side_effect_runs=0`
+
+Open risks:
+- the new central log currently covers the preferred isolated worker runner only; older direct-OR or sidecar-specific paths still rely on their own existing telemetry until we choose to normalize them too
+- the delegated logging smoke used a package whose helper target was already green locally, so the recorded reject/fallback is valid for logging-shape proof but not a fresh productivity benchmark
+- no commit or push has happened after this block, so a remote such as GitHub or `backup` may not contain the newest logging helper, central log, or CURRENT_STATE yet
+
+Next recommended step for ChatGPT: describe the logging as good enough for weekly optimization of the isolated worker path and be explicit that this central log is the new primary source for operator-choice review on that lane.
+
+Next recommended step for Codex: route next to `janus-git-governance` for an optional checkpoint, or later extend the same central logging contract to additional OR runners only if the user wants broader telemetry normalization.
+
+Last updated: `2026-07-01 14:09:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-01`, the isolated Aider/OpenRouter worker path has now produced the missing fresh real-delta proof on a third repo-owned Lean-Dev helper seam. We targeted `development/openrouter-skill-tests/janus-backlog-intake/lean_backlog_intake_eval.py` with one bounded regression around response-content extraction and JSON parsing. The isolated OR worker correctly improved the list-content extraction path but failed the full acceptance gate because it did not complete the surrounding-text JSON fallback. Codex then hardened the same bounded helper locally, and the new regression suite now passes cleanly. This is the strongest evidence so far that the isolated worker is practically useful for first-pass bounded Dev-helper patches while Codex remains review and hardening owner.
+
+Current goal: decide whether to checkpoint this fresh isolated-worker productivity proof or continue to the next bounded Lean-Dev adoption step.
+
+Active phase: `janus-executioner` (Lean-Dev), canonical state `PASS`.
+
+Last Codex work:
+- created a fresh bounded worker package under `development/openrouter-skill-tests/janus-worker-aider-real-helper-poc-3/`
+- proved the new backlog-intake helper regression starts red with focused tests
+- ran the isolated OR/Aider worker via `ISO-AIDER-BACKLOG-INTAKE-001`
+- reviewed the rejected worker result, kept the useful half, and completed the JSON fallback hardening locally in `lean_backlog_intake_eval.py`
+
+Changed files:
+- `development/openrouter-skill-tests/janus-backlog-intake/lean_backlog_intake_eval.py`
+- `development/openrouter-skill-tests/janus-worker-aider-real-helper-poc-3/test_real_helper_3.py`
+- `development/openrouter-skill-tests/janus-worker-aider-real-helper-poc-3/worker_task.md`
+- `development/openrouter-skill-tests/janus-worker-aider-real-helper-poc-3/worker_package.json`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest -q development/openrouter-skill-tests/janus-worker-aider-real-helper-poc-3/test_real_helper_3.py` with `PYTHONPATH=development/openrouter-skill-tests/janus-backlog-intake`: PRETEST FAIL (`2 failed`) before worker run
+- `python documentation/codex/model-routing/scripts/isolated_aider_workspace_runner.py --task-label "Harden backlog intake response parsing" --normal-target-model "5.4 medium" --operator-choice 2 --workflow-id ISO-AIDER-BACKLOG-INTAKE-001 --input-package-json development/openrouter-skill-tests/janus-worker-aider-real-helper-poc-3/worker_package.json`: bounded worker run completed with `ISOLATED_AIDER_REJECT_AND_FALLBACK`
+- run artifact review: worker improved `extract_text()` but missed the surrounding-text JSON fallback; repo-root `.aider*` side-effect check PASS, `.gitignore` drift check PASS
+- `python -m pytest -q development/openrouter-skill-tests/janus-worker-aider-real-helper-poc-3/test_real_helper_3.py` with `PYTHONPATH=development/openrouter-skill-tests/janus-backlog-intake`: PASS (`2 passed`)
+- `python -m py_compile development/openrouter-skill-tests/janus-backlog-intake/lean_backlog_intake_eval.py development/openrouter-skill-tests/janus-worker-aider-real-helper-poc-3/test_real_helper_3.py`: PASS
+
+Open risks:
+- the fresh proof is strong, but this helper/result pair is still a Lean-Dev validation slice rather than a broad everyday rollout declaration
+- no commit or push has happened after this block, so a remote such as GitHub or `backup` may not contain this latest CURRENT_STATE or the new worker-package artifacts yet
+
+Next recommended step for ChatGPT: present this as the missing fresh real-delta productivity proof for the isolated worker path and recommend either a small checkpoint or one narrow rollout decision, not more generic infra work.
+
+Next recommended step for Codex: route next to `janus-git-governance` for an optional scoped checkpoint, or keep the next Lean-Dev step equally bounded if the user wants one more adoption slice before checkpointing.
+
+Last updated: `2026-07-01 00:20:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-06-30`, `BACKLOG-115` is now documentation-closed after final audit `PASS`. The backlog item sits in `DONE`, the central registry, project snapshot, changelog, learned-pattern log, pipeline documentation note, and dashboard snapshot all reflect the same Oliver/Tasso/Garfield closeout, and no further Janus product work remains on this marker.
 
 Current goal: no active `BACKLOG-115` implementation work remains; next optional step is a Git checkpoint decision via `janus-git-governance`.
