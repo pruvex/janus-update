@@ -59,6 +59,39 @@ Purpose: repeatable low-token workflow for Codex work inside
   canonical routing-table update, and not a broad activation of existing Janus
   skills.
 
+## Weekly OR Healthcheck Read
+
+- The preferred isolated worker lane writes one central operator-usage row per
+  decision to
+  `documentation/codex/model-routing/or_operator_usage_log.jsonl`.
+- The weekly Codex healthcheck should read this file through:
+  - `python documentation/codex/scripts/summarize_or_operator_usage.py`
+- This OR summary is the primary weekly optimization source for the isolated
+  worker lane. The healthcheck should not re-walk individual run directories
+  first when this summary is available.
+- Minimum signals to review each week:
+  - `entry_count`
+  - `operator_choice_counts`
+  - `final_outcome_counts`
+  - `codex_followup_state_counts`
+  - `repo_side_effect_runs`
+  - `ready_for_codex_review_count`
+  - `codex_fallback_required_count`
+- Weekly interpretation rule:
+  - rising `LOCAL_CODEX_PATH_SELECTED` means OR is being offered but usually
+    not chosen
+  - rising `ISOLATED_AIDER_REJECT_AND_FALLBACK` or
+    `CODEX_FALLBACK_REQUIRED` means the lane is still useful, but prompt
+    shape, task selection, or acceptance gates need tightening
+  - any non-zero `repo_side_effect_runs` is a tripwire and should be treated
+    as a hard warning
+  - repeated `READY_FOR_CODEX_REVIEW` with low hardening need is the main
+    signal that the lane is paying off
+- Governance rule:
+  - Codex may recommend `2 = OR`, but the operator choice remains user-owned
+  - weekly optimization may tune offer quality, task selection, and model
+    preference, but must not turn OR into an automatic escalation path
+
 ## Lean-vs-Strict Entry Rules
 
 - Lean-Dev eligible:

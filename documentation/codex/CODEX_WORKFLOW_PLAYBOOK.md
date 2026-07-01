@@ -237,6 +237,13 @@ Git-Governance bleibt unveraendert:
 - Commit/Push weiter nur ueber `janus-git-governance` und mit expliziter User-Freigabe
 - wenn kein Push erfolgt oder ein Push scheitert, muss der Abschluss klar sagen, dass ein Remote wie GitHub noch nicht aktuell ist
 
+Wenn ChatGPT den aktuellen Rolling Snapshot verlaesslich lesen koennen soll, gilt fuer `CURRENT_STATE.md` zusaetzlich:
+
+- verbindlicher Remote-Lesepunkt: `origin/codex-sync`
+- nach jedem substantielle Block soll Codex den Sync dieses einen Artefakts nach `origin/codex-sync` empfehlen
+- ohne diesen Sync gilt jeder GitHub-Stand fuer ChatGPT als potenziell veraltet, auch wenn andere Remotes oder Branches neuer sind
+- `backup/develop` bleibt der Entwicklungs-Backup-Stand; `origin/codex-sync` ist nur der klare ChatGPT-Sync-Punkt
+
 ## Versionierung Und Auto-Update Release
 
 Codex fuehrt Versionierung und Electron Auto-Update Release ueber Skills, nicht per Ad-hoc-Kommandos:

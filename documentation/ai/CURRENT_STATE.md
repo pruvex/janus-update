@@ -1,6 +1,68 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-01`, the ChatGPT sync rule for `CURRENT_STATE.md` is now operationalized in the repo’s binding and day-to-day governance text. `AGENTS.md` now states that the authoritative ChatGPT-readable remote truth for `documentation/ai/CURRENT_STATE.md` is `origin/codex-sync`, that Codex should recommend a dedicated sync to that branch after each substantial block, and that ChatGPT must not assume any other remote or branch is current without that sync. `documentation/codex/CODEX_WORKFLOW_PLAYBOOK.md` mirrors the same rule in the compact daily workflow guidance so the behavior is not left to chat memory.
+
+Current goal: the CURRENT_STATE remote-sync contract is now documented in both binding rules and the compact playbook; the next step is either a small checkpoint for this governance clarification or a return to productive bounded work.
+
+Active phase: `janus-executioner` (Lean-Dev), canonical state `PASS`.
+
+Last Codex work:
+- added a binding CURRENT_STATE sync rule to `AGENTS.md`
+- added the same practical remote-sync rule to `documentation/codex/CODEX_WORKFLOW_PLAYBOOK.md`
+- kept the rule explicit that `backup/develop` remains the working backup while `origin/codex-sync` is the ChatGPT-readable sync point
+
+Changed files:
+- `AGENTS.md`
+- `documentation/codex/CODEX_WORKFLOW_PLAYBOOK.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `git diff --check -- AGENTS.md documentation/codex/CODEX_WORKFLOW_PLAYBOOK.md documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS
+
+Open risks:
+- the rule is documented, but `origin/codex-sync` itself has not yet been created or exercised in this slice
+- no commit or push has happened after this governance clarification, so a remote such as GitHub or `backup` may not contain these newest sync-rule updates yet
+
+Next recommended step for ChatGPT: treat `origin/codex-sync` as the only trustworthy remote readpoint for `CURRENT_STATE.md` once it exists and has been explicitly synced; otherwise treat GitHub CURRENT_STATE as potentially stale.
+
+Next recommended step for Codex: route next to `janus-git-governance` only if the user wants this governance clarification checkpointed now; otherwise return to the next productive bounded slice and apply the new sync rule from then on.
+
+Last updated: `2026-07-01 14:20:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-01`, the weekly evaluation rule for the new isolated OR operator log is now explicitly fixed in the repo runbook. `documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md` now states that the weekly Codex healthcheck should read `documentation/codex/model-routing/or_operator_usage_log.jsonl` through `python documentation/codex/scripts/summarize_or_operator_usage.py`, treat that summary as the primary optimization source for the isolated worker lane, and review specific signals such as operator-choice counts, fallback counts, and repo-side-effect tripwires. The user-owned `1 = Codex / 2 = OR` decision rule is also preserved explicitly in the same section.
+
+Current goal: the isolated worker lane now has a concrete weekly healthcheck read rule; the next step is either to checkpoint this tiny governance clarification or return to productive bounded work.
+
+Active phase: `janus-executioner` (Lean-Dev), canonical state `PASS`.
+
+Last Codex work:
+- added one repo-owned weekly healthcheck interpretation section to `documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md`
+- bound the weekly read path to `summarize_or_operator_usage.py` plus the central JSONL log
+- fixed the interpretation rules for offer rate, fallback rate, side-effect tripwires, and the non-automatic OR governance boundary
+
+Changed files:
+- `documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python documentation/codex/scripts/summarize_or_operator_usage.py`: PASS; current aggregate remains readable with `entry_count=2`, `operator_choice_counts={"1":1,"2":1}`, `repo_side_effect_runs=0`
+- `git diff --check -- documentation/codex/CODEX_DEV_ENVIRONMENT_RUNBOOK.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS
+
+Open risks:
+- this weekly rule is fixed for the preferred isolated worker lane only; older direct-OR and sidecar telemetry paths remain on their existing healthcheck surfaces until we normalize them intentionally
+- no commit or push has happened after this mini governance note, so a remote such as GitHub or `backup` may not contain this newest runbook clarification yet
+
+Next recommended step for ChatGPT: tell the user the weekly healthcheck should treat the OR summary script output as the first review surface for the isolated lane and preserve the explicit user-owned OR choice boundary.
+
+Next recommended step for Codex: route next to `janus-git-governance` only if the user wants this small runbook clarification checkpointed; otherwise return to the next productive bounded slice.
+
+Last updated: `2026-07-01 14:15:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-01`, the preferred isolated Aider/OR worker path now writes a compact central operator-usage log in addition to the per-run artifacts. `documentation/codex/model-routing/scripts/isolated_aider_workspace_runner.py` appends one JSONL row per operator decision (`prompt`, `1 = Codex`, `2 = OR`) to `documentation/codex/model-routing/or_operator_usage_log.jsonl`, and the new helper `documentation/codex/scripts/summarize_or_operator_usage.py` turns that log into healthcheck-friendly counts. A local smoke and a delegated smoke both landed in the central log, so the weekly Codex healthcheck now has one simple place to read operator-choice and fallback patterns without re-walking every run directory manually.
 
 Current goal: the logging baseline for the isolated worker path is in place; the next decision is whether to checkpoint this Lean-Dev logging hardening now or expand the same central log shape to additional non-isolated OR runners later.

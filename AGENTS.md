@@ -201,6 +201,13 @@ Commit und Push bleiben an `janus-git-governance` und explizite User-Freigabe ge
 
 Wenn kein Push erfolgt oder der Push fehlschlaegt, muss der Abschluss explizit sagen, dass ein Remote-Stand wie GitHub den neuesten CURRENT_STATE noch nicht enthalten muss. ChatGPT darf dann keinen aktuellen Remote-Stand annehmen.
 
+Wenn ChatGPT den aktuellen CURRENT_STATE-Stand jederzeit zuverlaessig kennen soll, gilt zusaetzlich diese Sync-Regel:
+
+- die verbindliche ChatGPT-Remote-Wahrheit fuer `documentation/ai/CURRENT_STATE.md` ist `origin/codex-sync`
+- nach jedem substantielle Janus-Arbeitsblock soll Codex einen zusaetzlichen CURRENT_STATE-Sync zu `origin/codex-sync` empfehlen
+- ohne diesen Sync darf ChatGPT keinen aktuellen Remote-Stand annehmen, selbst wenn `backup/develop` oder andere Branches neuer sind
+- diese Regel betrifft nur den ChatGPT-Sync-Punkt fuer `CURRENT_STATE.md`; sie ersetzt nicht die normale Git-Governance fuer Entwicklungs-, Release- oder Produkt-Branches
+
 ## Completion Rules
 
 Ein Schritt ist erst fertig, wenn es echte Evidenz gibt oder ein Blocker dokumentiert ist.
