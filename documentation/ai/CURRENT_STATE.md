@@ -1,6 +1,765 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-02 20:22 +02:00`, `TASK-SPEC29.3` is fully final-audited and documentation-synced, and Spec 29 is now overall DONE. The Janus Worker Gateway MVP is locally sealed: Codex has a fail-closed worker contract, isolated Aider/OpenRouter backend wiring, broader regression coverage, operator profile guidance, and one bounded docs-only live-dev pilot that produced a normalized reviewable result package without scope drift or repo-root side effects.
+
+Current goal: close the implementation block with an optional Git checkpoint via `janus-git-governance`; no further implementation work is required for Spec 29 itself.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- final-audited `TASK-SPEC29.3`
+- documented the completed live-pilot slice in the central registry and `PROJECT_STATE.md`
+- updated the parent task artifact with full Spec-29 closeout metadata
+- added `SPEC IMPLEMENTATION METADATA` and moved Spec 29 into `documentation/SPEC/Spec Done/`
+- recorded the final Spec-29 skill usage entries
+
+Changed files:
+- `documentation/codex/model-routing/tests/test_janus_worker_contract.py`
+- `documentation/codex/model-routing/tests/test_janus_worker_gateway.py`
+- `documentation/codex/model-routing/tests/test_isolated_aider_workspace_runner.py`
+- `documentation/codex/model-routing/janus_worker_gateway_profiles.md`
+- `development/openrouter-skill-tests/janus-worker-gateway-live/worker_task_package.json`
+- `development/openrouter-skill-tests/janus-worker-gateway-live/runs/WF-JANUS-WORKER-GATEWAY-LIVE-001/`
+- `development/openrouter-skill-tests/janus-worker-aider-poc/target_doc.md`
+- `documentation/tasks/TASK-SPEC29.3_execution_result.md`
+- `documentation/tasks/TASK-SPEC29.3_AUDIT_PACKAGE.md`
+- `documentation/tasks/TASK-SPEC29.3_final_audit.md`
+- `documentation/tasks/TASK-SPEC29.3_documentation_update.md`
+- `documentation/tasks/TASK-SPEC29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md`
+- `documentation/SPEC/Spec Done/29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md`
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests -q -k "janus_worker or isolated_aider"`: PASS, `27` tests
+- `python -m py_compile documentation/codex/model-routing/scripts/janus_worker_contract.py documentation/codex/model-routing/scripts/janus_worker_gateway.py documentation/codex/model-routing/scripts/isolated_aider_workspace_runner.py`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py documentation\tasks\TASK-SPEC29.3_execution_result.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py documentation\tasks\TASK-SPEC29.3_final_audit.md`: PASS
+- `python documentation\codex\scripts\search_what_i_learned.py --query "worker gateway normalized result artifact fail closed delegated review surface"`: PASS, duplicate patterns found so append skipped
+- `python C:\Users\pruve\.codex\skills\janus-documentation-update\scripts\validate_doc_update.py --repo C:\KI\Janus-Projekt --marker TASK-SPEC29.3 --require documentation/tasks/TASK-SPEC29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md --require documentation/01_CENTRAL_TASK_REGISTRY.md --require PROJECT_STATE.md --require documentation/ai/CURRENT_STATE.md`: PASS
+- `python documentation\codex\model-routing\scripts\isolated_aider_workspace_runner.py --task-label "Janus worker gateway docs-only live pilot" --normal-target-model "5.4 high" --operator-choice delegated --input-package-json development\openrouter-skill-tests\janus-worker-gateway-live\worker_task_package.json --workflow-id WF-JANUS-WORKER-GATEWAY-LIVE-001 --or-model openrouter/qwen/qwen3-coder-30b-a3b-instruct --estimated-or-cost 0.0012 --cost-estimate-confidence-percent 75 --run-root development\openrouter-skill-tests\janus-worker-gateway-live\runs`: PASS
+- `git diff --check` on Spec-29 closeout artifacts: PASS with CRLF warning only for `development/openrouter-skill-tests/janus-worker-aider-poc/target_doc.md`
+
+Open risks:
+- The live pilot is intentionally tiny and docs-only; larger real coding slices still need future evidence before we treat the worker gateway as broadly proven.
+- Only the Aider/OpenRouter backend is in the MVP. Additional backends such as OpenCode or OpenHands remain out of scope and unvalidated.
+- No commit, push, or `origin/codex-sync` CURRENT_STATE sync has happened after this block, so remote consumers may not know the newest sealed Spec-29 state yet.
+
+Next recommended step for ChatGPT: treat Spec 29 as sealed and review only whether a Git checkpoint or the next worker-gateway follow-up spec is the better next move.
+
+Next recommended step for Codex: run `janus-git-governance` for a clean checkpoint recommendation if the user wants to preserve the completed MVP locally.
+
+Last updated: `2026-07-02 20:22:47 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-02 18:23 +02:00`, `TASK-SPEC29.2` is fully implemented, final-audited, and documentation-synced. The Janus Worker Gateway now has both its contract-only foundation and its first real isolated Aider/OpenRouter backend wiring slice sealed locally: isolated runs emit normalized task/result artifacts for success, local, and blocked outcomes, but the first bounded live-dev pilot is still intentionally pending in `TASK-SPEC29.3`.
+
+Current goal: start `TASK-SPEC29.3` to add broader regression coverage, operator guidance, and the first bounded live-dev pilot for the worker gateway.
+
+Active phase: `janus-documentation-update`, canonical state `HANDOFF`.
+
+Last Codex work:
+- implemented `TASK-SPEC29.2` in `isolated_aider_workspace_runner.py`
+- added focused tests for success, missing-key blocked behavior, and invalid-profile blocked behavior
+- final-audited `TASK-SPEC29.2`
+- synchronized the completed slice into `documentation/01_CENTRAL_TASK_REGISTRY.md` and `PROJECT_STATE.md`
+
+Changed files:
+- `documentation/SPEC/29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md`
+- `documentation/tasks/TASK-SPEC29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md`
+- `documentation/tasks/TASK-SPEC29.1_task_breakdown.md`
+- `documentation/tasks/TASK-SPEC29.1_preimplementation_check.md`
+- `documentation/tasks/TASK-SPEC29.1_execution_result.md`
+- `documentation/tasks/TASK-SPEC29.1_AUDIT_PACKAGE.md`
+- `documentation/tasks/TASK-SPEC29.1_final_audit.md`
+- `documentation/tasks/TASK-SPEC29.1_documentation_update.md`
+- `documentation/tasks/TASK-SPEC29.2_task_breakdown.md`
+- `documentation/tasks/TASK-SPEC29.2_preimplementation_check.md`
+- `documentation/tasks/TASK-SPEC29.2_execution_result.md`
+- `documentation/tasks/TASK-SPEC29.2_AUDIT_PACKAGE.md`
+- `documentation/tasks/TASK-SPEC29.2_final_audit.md`
+- `documentation/tasks/TASK-SPEC29.2_documentation_update.md`
+- `documentation/codex/model-routing/scripts/isolated_aider_workspace_runner.py`
+- `documentation/codex/model-routing/scripts/janus_worker_contract.py`
+- `documentation/codex/model-routing/scripts/janus_worker_gateway.py`
+- `documentation/codex/model-routing/tests/test_isolated_aider_workspace_runner.py`
+- `documentation/codex/model-routing/tests/test_janus_worker_contract.py`
+- `documentation/codex/model-routing/tests/test_janus_worker_gateway.py`
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_isolated_aider_workspace_runner.py -q`: PASS, 3 tests
+- `python -m pytest documentation/codex/model-routing/tests/test_janus_worker_gateway.py -q`: PASS, 5 tests
+- `python -m py_compile documentation/codex/model-routing/scripts/isolated_aider_workspace_runner.py documentation/codex/model-routing/scripts/janus_worker_contract.py documentation/codex/model-routing/scripts/janus_worker_gateway.py`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py documentation\tasks\TASK-SPEC29.2_execution_result.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py documentation\tasks\TASK-SPEC29.2_final_audit.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-documentation-update\scripts\validate_doc_update.py --repo C:\KI\Janus-Projekt --marker TASK-SPEC29.2 --require documentation/01_CENTRAL_TASK_REGISTRY.md --require PROJECT_STATE.md --require documentation/ai/CURRENT_STATE.md`: PASS
+- `git diff --check` on touched execution/audit/doc-sync artifacts: PASS with CRLF warning only for `documentation/ai/CURRENT_STATE.md`
+
+Open risks:
+- `TASK-SPEC29.3` remains pending, so the gateway is still not yet proven in a bounded live-dev pilot
+- malformed input-package handling before run-directory setup remains narrower than the normalized post-run contract and can be hardened later if this becomes a real pain point
+- no commit, push, or `origin/codex-sync` CURRENT_STATE sync has happened after this block, so remote consumers may not know the newest sealed state yet
+
+Next recommended step for ChatGPT: treat TASK-SPEC29.1 and TASK-SPEC29.2 as sealed and load only the bound TASK-SPEC29.3 artifacts next.
+
+Next recommended step for Codex: run `janus-task-breakdown` for `TASK-SPEC29.3`, then `janus-preimplementation-check`, then implement regression hardening, operator guidance, and one bounded live-dev pilot.
+
+Last updated: `2026-07-02 18:23:54 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-02 18:17 +02:00`, `TASK-SPEC29.1` is sealed and `TASK-SPEC29.2` is now formally released for implementation. The next worker-gateway slice is prechecked and bounded to wiring the existing isolated Aider/OpenRouter runner into the new normalized contract; operator guidance and the first live-dev pilot remain explicitly deferred to `TASK-SPEC29.3`.
+
+Current goal: implement `TASK-SPEC29.2` so isolated Aider/OpenRouter runs emit the normalized result package and remain fail-closed on missing key, invalid profile, scope drift, or repo-root side effects.
+
+Active phase: `janus-preimplementation-check`, canonical state `HANDOFF`.
+
+Last Codex work:
+- final-audited and documentation-synced `TASK-SPEC29.1`
+- released `TASK-SPEC29.2` through task breakdown
+- wrote and validated `documentation/tasks/TASK-SPEC29.2_preimplementation_check.md`
+- kept the new slice bounded to isolated runner integration plus normalized artifact emission only
+
+Changed files:
+- `documentation/SPEC/29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md`
+- `documentation/tasks/TASK-SPEC29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md`
+- `documentation/tasks/TASK-SPEC29.1_task_breakdown.md`
+- `documentation/tasks/TASK-SPEC29.1_preimplementation_check.md`
+- `documentation/tasks/TASK-SPEC29.1_execution_result.md`
+- `documentation/tasks/TASK-SPEC29.1_AUDIT_PACKAGE.md`
+- `documentation/tasks/TASK-SPEC29.1_final_audit.md`
+- `documentation/tasks/TASK-SPEC29.1_documentation_update.md`
+- `documentation/tasks/TASK-SPEC29.2_task_breakdown.md`
+- `documentation/tasks/TASK-SPEC29.2_preimplementation_check.md`
+- `documentation/codex/model-routing/scripts/janus_worker_contract.py`
+- `documentation/codex/model-routing/scripts/janus_worker_gateway.py`
+- `documentation/codex/model-routing/tests/test_janus_worker_contract.py`
+- `documentation/codex/model-routing/tests/test_janus_worker_gateway.py`
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py documentation\tasks\TASK-SPEC29.1_final_audit.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-documentation-update\scripts\validate_doc_update.py --repo C:\KI\Janus-Projekt --marker TASK-SPEC29.1 --require documentation/01_CENTRAL_TASK_REGISTRY.md --require PROJECT_STATE.md --require documentation/ai/CURRENT_STATE.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-task-breakdown\scripts\validate_task_handoff.py --task documentation\tasks\TASK-SPEC29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md --target TASK-SPEC29.2`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py documentation\tasks\TASK-SPEC29.2_preimplementation_check.md`: PASS
+- `git diff --check` on touched audit/doc-sync/task-breakdown/precheck artifacts: PASS with CRLF warning only for `documentation/ai/CURRENT_STATE.md`
+
+Open risks:
+- `TASK-SPEC29.2` is execution-ready but not yet implemented
+- the gateway still cannot do real delegated Aider/OpenRouter work until `TASK-SPEC29.2` lands
+- `TASK-SPEC29.3` remains required for regression hardening, operator guidance, and the first bounded live-dev pilot
+- no commit, push, or `origin/codex-sync` CURRENT_STATE sync has happened after this block, so remote consumers may not know the newest audit/precheck state yet
+
+Next recommended step for ChatGPT: load only the bound TASK-SPEC29.2 artifacts if reviewing next, and ignore the already sealed TASK-SPEC29.1 closure except as contract context.
+
+Next recommended step for Codex: run `janus-executioner` on `TASK-SPEC29.2` with `5.4` high and keep the slice limited to isolated runner integration plus normalized result emission.
+
+Last updated: `2026-07-02 18:17:16 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-02 18:17 +02:00`, `TASK-SPEC29.1` is fully final-audited and documentation-synced. The first Janus Worker Gateway slice is now sealed as a contract-only hardening step: task/result packages are validated fail-closed locally, while real Aider/OpenRouter execution remains intentionally deferred to `TASK-SPEC29.2`.
+
+Current goal: continue with `TASK-SPEC29.2` so the isolated Aider/OpenRouter runner writes the normalized result package required by the new gateway contract.
+
+Active phase: `janus-documentation-update`, canonical state `HANDOFF`.
+
+Last Codex work:
+- ran `janus-final-audit` for `TASK-SPEC29.1` against the compact audit package and passed it
+- wrote `documentation/tasks/TASK-SPEC29.1_final_audit.md`
+- synchronized the completed slice into `documentation/01_CENTRAL_TASK_REGISTRY.md` and `PROJECT_STATE.md`
+- kept Spec 29 open on purpose because `TASK-SPEC29.2` and `TASK-SPEC29.3` are still pending
+
+Changed files:
+- `documentation/SPEC/29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md`
+- `documentation/tasks/TASK-SPEC29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md`
+- `documentation/tasks/TASK-SPEC29.1_task_breakdown.md`
+- `documentation/tasks/TASK-SPEC29.1_preimplementation_check.md`
+- `documentation/tasks/TASK-SPEC29.1_execution_result.md`
+- `documentation/tasks/TASK-SPEC29.1_AUDIT_PACKAGE.md`
+- `documentation/tasks/TASK-SPEC29.1_final_audit.md`
+- `documentation/codex/model-routing/scripts/janus_worker_contract.py`
+- `documentation/codex/model-routing/scripts/janus_worker_gateway.py`
+- `documentation/codex/model-routing/tests/test_janus_worker_contract.py`
+- `documentation/codex/model-routing/tests/test_janus_worker_gateway.py`
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\codex-start-of-work-check\scripts\due_healthchecks.py`: PASS, no reminders due
+- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py documentation\tasks\TASK-SPEC29.1_final_audit.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py documentation\tasks\TASK-SPEC29.1_execution_result.md`: PASS
+- `python -m pytest documentation/codex/model-routing/tests/test_janus_worker_contract.py -q`: PASS, 10 tests
+- `python -m pytest documentation/codex/model-routing/tests/test_janus_worker_gateway.py -q -k "contract or result or fail_closed"`: PASS, 5 tests
+- `python -m py_compile documentation/codex/model-routing/scripts/janus_worker_contract.py documentation/codex/model-routing/scripts/janus_worker_gateway.py`: PASS
+- `git diff --check` on touched final-audit and documentation-sync artifacts: PASS
+
+Open risks:
+- `TASK-SPEC29.2` and `TASK-SPEC29.3` remain pending, so the gateway still cannot perform real delegated Aider/OpenRouter work yet
+- the precheck skill text and repo validator still disagree about Skill-4 copyblock literals; local validator behavior remains the practical source of truth until separately harmonized
+- no commit, push, or `origin/codex-sync` CURRENT_STATE sync has happened after this block, so remote consumers may not know the newest audit/documentation state yet
+
+Next recommended step for ChatGPT: treat `TASK-SPEC29.1` as sealed and review only the next `TASK-SPEC29.2` bound artifacts, not the already closed contract slice.
+
+Next recommended step for Codex: run `janus-task-breakdown` for `TASK-SPEC29.2`, then `janus-preimplementation-check`, then wire the isolated Aider/OpenRouter runner into the contract.
+
+Last updated: `2026-07-02 18:17:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-02 18:08 +02:00`, `TASK-SPEC29.1` is locally implemented and auto-verified. The first Janus Worker Gateway slice now provides a validation-only task/result contract for future Aider/OpenRouter worker runs; no live worker call, Aider execution, OpenRouter call, copy-back path, OpenCode/OpenHands backend, or product-runtime behavior was added in this slice.
+
+Current goal: run final audit for `TASK-SPEC29.1`, then continue to `TASK-SPEC29.2` to wire the isolated Aider/OpenRouter backend into the validated gateway contract.
+
+Active phase: `janus-executioner`, canonical state `HANDOFF`.
+
+Last Codex work:
+- released `TASK-SPEC29.1` through task breakdown and preimplementation check
+- implemented `documentation/codex/model-routing/scripts/janus_worker_contract.py`
+- implemented `documentation/codex/model-routing/scripts/janus_worker_gateway.py`
+- added focused tests for task package validation, result package validation, gateway fail-closed behavior, blocked-result reviewability, scope drift, red checks, and missing artifacts
+- wrote `documentation/tasks/TASK-SPEC29.1_execution_result.md`
+- built `documentation/tasks/TASK-SPEC29.1_AUDIT_PACKAGE.md`
+
+Changed files:
+- `documentation/SPEC/29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md`
+- `documentation/tasks/TASK-SPEC29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md`
+- `documentation/tasks/TASK-SPEC29.1_task_breakdown.md`
+- `documentation/tasks/TASK-SPEC29.1_preimplementation_check.md`
+- `documentation/tasks/TASK-SPEC29.1_execution_result.md`
+- `documentation/tasks/TASK-SPEC29.1_AUDIT_PACKAGE.md`
+- `documentation/codex/model-routing/scripts/janus_worker_contract.py`
+- `documentation/codex/model-routing/scripts/janus_worker_gateway.py`
+- `documentation/codex/model-routing/tests/test_janus_worker_contract.py`
+- `documentation/codex/model-routing/tests/test_janus_worker_gateway.py`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-spec-review\scripts\validate_spec_review.py --spec documentation\SPEC\29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md`: PASS
+- `python documentation\codex\skills\janus-spec-normalizer\scripts\validate_feature_spec.py documentation\SPEC\29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-spec-to-task\scripts\validate_task_artifact.py --task documentation\tasks\TASK-SPEC29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-task-breakdown\scripts\validate_task_handoff.py --task documentation\tasks\TASK-SPEC29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md --target TASK-SPEC29.1`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py documentation\tasks\TASK-SPEC29.1_preimplementation_check.md`: PASS
+- `python -m pytest documentation/codex/model-routing/tests/test_janus_worker_contract.py -q`: PASS, 10 tests
+- `python -m pytest documentation/codex/model-routing/tests/test_janus_worker_gateway.py -q -k "contract or result or fail_closed"`: PASS, 5 tests
+- `python -m py_compile documentation/codex/model-routing/scripts/janus_worker_contract.py documentation/codex/model-routing/scripts/janus_worker_gateway.py`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py documentation\tasks\TASK-SPEC29.1_execution_result.md`: PASS
+- `python C:\Users\pruve\.codex\skills\codex-audit-package-builder\scripts\build_audit_package.py ...`: PASS, wrote `documentation/tasks/TASK-SPEC29.1_AUDIT_PACKAGE.md`
+- `git diff --check` on touched Spec/Task/script/test artifacts: PASS
+
+Open risks:
+- `TASK-SPEC29.1` is implemented but not yet final-audited
+- `TASK-SPEC29.2` and `TASK-SPEC29.3` remain pending, so the worker gateway cannot yet run real Aider/OpenRouter work through the new contract
+- the precheck skill text and validator disagree about copy-paste Skill-4 blocks; the repo-local validator currently forbids those blocks and was treated as authoritative
+- no commit, push, or `origin/codex-sync` CURRENT_STATE sync has happened after this block, so remote consumers may not know the newest implementation state yet
+
+Next recommended step for ChatGPT: review only `documentation/tasks/TASK-SPEC29.1_AUDIT_PACKAGE.md` for the final audit of the first worker-gateway contract slice.
+
+Next recommended step for Codex: run `janus-final-audit` on `TASK-SPEC29.1` with `documentation/tasks/TASK-SPEC29.1_AUDIT_PACKAGE.md`, then continue to `TASK-SPEC29.2` if the audit passes.
+
+Last updated: `2026-07-02 18:08:44 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-02 18:01 +02:00`, Spec 29 has been compiled into a deterministic task artifact. The first implementation slice is `TASK-SPEC29.1`, which locks the normalized worker task/result contract before any live Aider/OpenRouter backend work happens.
+
+Current goal: refine and precheck `TASK-SPEC29.1` so implementation can start on the `janus-worker` contract without widening into live backend execution yet.
+
+Active phase: `janus-spec-to-task`, canonical state `HANDOFF`.
+
+Last Codex work:
+- created `documentation/tasks/TASK-SPEC29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md`
+- decomposed Spec 29 into three tasks: normalized contract, isolated Aider/OpenRouter gateway wiring, and regression/operator guidance/live-dev pilot
+- validated the task artifact and ensured the new task file is ASCII-only
+- preserved the generated handoff to `janus-task-breakdown` for `TASK-SPEC29.1`
+
+Changed files:
+- `documentation/SPEC/29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md`
+- `documentation/tasks/TASK-SPEC29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-spec-to-task\scripts\validate_task_artifact.py --task documentation\tasks\TASK-SPEC29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md`: PASS
+- `git diff --check -- documentation/tasks/TASK-SPEC29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md`: PASS
+- ASCII check for the new TASK-SPEC29 artifact: PASS
+
+Open risks:
+- `TASK-SPEC29.1` is generated but not yet refined, prechecked, or implemented
+- the actual `janus-worker` gateway files do not exist yet
+- live Aider/OpenRouter validation is intentionally deferred until after the contract and gateway slices pass local validation
+- no commit, push, or `origin/codex-sync` CURRENT_STATE sync has happened after this block, so remote consumers may not know the newest task-compilation state yet
+
+Next recommended step for ChatGPT: treat TASK-SPEC29 as generated and route to task breakdown for `TASK-SPEC29.1`; do not jump directly to live OpenRouter execution.
+
+Next recommended step for Codex: run `janus-task-breakdown` on `TASK-SPEC29.1` with `5.4` high, then route to `janus-preimplementation-check` if the slice remains bounded.
+
+Last updated: `2026-07-02 18:01:37 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-02 17:59 +02:00`, Spec 29 has completed `janus-spec-review` and is ready for task compilation. The review approves the Aider/OpenRouter-only MVP direction with non-blocking notes: task compilation must make the normalized result artifact schema, allowlist behavior, fail-closed semantics, and first live-dev validation slice explicit.
+
+Current goal: compile `documentation/SPEC/29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md` into bounded implementation tasks for a first `janus-worker` gateway MVP.
+
+Active phase: `janus-spec-review`, canonical state `HANDOFF`.
+
+Last Codex work:
+- reviewed Spec 29 for scope, determinism, testability, security/privacy boundaries, data effects, and split readiness
+- wrote `SPEC REVIEW METADATA` with `APPROVED_WITH_NOTES`, complexity `66`, risk `HIGH`, model `5.4`, and `Skill-1 Ready: YES`
+- validated both the spec-review metadata and the full Feature Spec contract
+
+Changed files:
+- `documentation/SPEC/29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-spec-review\scripts\validate_spec_review.py --spec documentation\SPEC\29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md`: PASS
+- `python documentation\codex\skills\janus-spec-normalizer\scripts\validate_feature_spec.py documentation\SPEC\29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md`: PASS
+- `git diff --check -- documentation/SPEC/29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md`: PASS
+
+Open risks:
+- no task breakdown, precheck, or implementation artifacts exist yet for the `janus-worker` MVP
+- exact normalized artifact filenames and schema still need to be locked during `janus-spec-to-task`
+- OpenRouter model/profile behavior remains variable and must be validated during implementation, not assumed from docs
+- no commit, push, or `origin/codex-sync` CURRENT_STATE sync has happened after this block, so remote consumers may not know the newest review state yet
+
+Next recommended step for ChatGPT: treat Spec 29 as reviewed and ready for task compilation; keep the MVP bounded to Aider/OpenRouter only.
+
+Next recommended step for Codex: run `janus-spec-to-task` on `documentation/SPEC/29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md` with `5.4` high.
+
+Last updated: `2026-07-02 17:59:17 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-02 17:55 +02:00`, the locked Janus Worker Gateway decision has been converted into a formal Feature Spec. The new Spec keeps the MVP deliberately scoped to Aider/OpenRouter only, with Codex as planner/reviewer and normalized worker result artifacts as the trust boundary.
+
+Current goal: review and approve `documentation/SPEC/29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md`, then compile it into bounded tasks for a first `janus-worker` MVP and live-dev test.
+
+Active phase: `janus-spec-generator`, canonical state `HANDOFF`.
+
+Last Codex work:
+- generated `documentation/SPEC/29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md`
+- set spec review routing to `janus-spec-review`, model `5.4`, reasoning `high`, same chat
+- validated the spec with the existing feature-spec validator
+- confirmed the routing reason stays within the 180-character contract
+
+Changed files:
+- `documentation/SPEC/29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python documentation\codex\skills\janus-spec-normalizer\scripts\validate_feature_spec.py documentation\SPEC\29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md`: PASS
+- `git diff --check -- documentation/SPEC/29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md`: PASS
+- PowerShell check for routing reason length: PASS, 147 characters
+
+Open risks:
+- the Spec is generated but not yet reviewed or approved
+- no task breakdown or implementation artifacts exist yet for the `janus-worker` MVP
+- OpenRouter model/profile choices remain intentionally deferred to task/spec review and implementation validation
+- no commit, push, or `origin/codex-sync` CURRENT_STATE sync has happened after this block, so remote consumers may not know the newest Spec state yet
+
+Next recommended step for ChatGPT: review the new Spec and keep the MVP bounded to Aider/OpenRouter only; do not widen the first implementation to OpenCode or OpenHands.
+
+Next recommended step for Codex: run `janus-spec-review` on `documentation/SPEC/29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md`.
+
+Last updated: `2026-07-02 17:55:50 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-02 17:49 +02:00`, the Janus Worker Gateway direction is locked at feature-design level after current web research and local artifact review. The first MVP should deliberately stabilize the existing isolated Aider/OpenRouter path only; OpenCode remains a later optional second backend after a successful live-dev test.
+
+Current goal: turn the locked worker-gateway decision into a formal Spec for a small, auditable MVP that lets Codex delegate bounded Fleißarbeit to Aider/OpenRouter and review normalized result artifacts instead of raw agent chat.
+
+Active phase: `janus-feature-design`, canonical state `HANDOFF`.
+
+Last Codex work:
+- researched current OpenRouter-capable coding agents and agent patterns
+- compared Aider, OpenCode, OpenHands, Kilo/Cline, and OpenRouter Agent SDK/Subagent against the Janus delegation goal
+- locked the MVP decision: `A) zuerst Aider/OpenRouter stabilisieren`
+- recommended `janus-spec-generator` for `Janus Worker Gateway fuer isolierte Aider/OpenRouter Delegation`
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- web research review: PASS
+- local artifact review of prior Spec-27/Aider worker context: PASS
+- `record_skill_usage.py`: PASS
+- `git diff --check -- documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS with Git CRLF/LF warnings only
+- no code validation run; planning-only handoff
+
+Open risks:
+- no `janus-worker` CLI exists yet; the next step must specify it before implementation
+- current isolated Aider runner is promising but not yet normalized to `RESULT.json`, `DIFF.patch`, `TESTS.log`, `FILES_CHANGED.txt`, and `COST.json`
+- OpenRouter model availability/pricing can change and must be verified during implementation
+- no commit, push, or `origin/codex-sync` CURRENT_STATE sync has happened after this block, so remote consumers may not know the newest planning state yet
+
+Next recommended step for ChatGPT: use the locked decision summary and route to Spec generation for an Aider/OpenRouter-only MVP; do not broaden the first slice to OpenCode/OpenHands.
+
+Next recommended step for Codex: run `janus-spec-generator` for `Janus Worker Gateway fuer isolierte Aider/OpenRouter Delegation` with the locked decision summary from this chat, then normalize/review before task breakdown.
+
+Last updated: `2026-07-02 17:49:57 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-02 17:20 +02:00`, `BACKLOG-120` has completed a bounded `janus-executioner` implementation slice and is now waiting on one live Janus retest. The local product fix is in place: clear hobby/preference statements like `Nathan spielt gerne League of Legends` now pass the contact-fact and explicit-subject gates that were previously dropping the request into unverifiable external knowledge mode.
+
+Current goal: validate the `BACKLOG-120` live Janus behavior, then route either to final audit or back into debug without reopening broader contact-memory scope.
+
+Active phase: `janus-executioner`, canonical state `NEEDS_INFO`.
+
+Last Codex work:
+- extended contact fact-telling coverage in `intent_engine.py` for `spielt gerne` / `spielt gern`
+- extended explicit lead-contact subject extraction in `memory_extractor.py` for `Nathan spielt ...` style statements
+- added focused regressions for the Nathan/League routing seam, subject-anchor seam, and existing-contact preference apply seam
+- wrote `documentation/tasks/backlog_BACKLOG-120_execution_result.md` with the manual Janus validation gate
+
+Changed files:
+- `backend/services/orchestrator/intent_engine.py`
+- `backend/services/memory_extractor.py`
+- `backend/tests/test_calendar_routing_fix.py`
+- `backend/tests/test_contact_manager.py`
+- `documentation/tasks/backlog_BACKLOG-120_execution_result.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python -m pytest backend/tests/test_calendar_routing_fix.py -q`: PASS
+- `python -m pytest backend/tests/test_contact_manager.py -q`: PASS
+- `python -m py_compile backend/services/orchestrator/intent_engine.py backend/services/memory_extractor.py backend/tests/test_calendar_routing_fix.py backend/tests/test_contact_manager.py`: PASS
+
+Open risks:
+- live Janus provider/chat behavior is still unverified after the local fix; one real app retest is required before final audit
+- the known optional embedding warning in the contact-manager suite (`tokenizers` version mismatch during vector model load) is still visible, but the tested memory persistence and contact-sync path stayed functional
+- no commit, push, or `origin/codex-sync` CURRENT_STATE sync has happened after this block, so remote consumers may not know the newest execution state yet
+
+Next recommended step for ChatGPT: treat `documentation/tasks/backlog_BACKLOG-120_execution_result.md` as the current source of truth and ask for the live Nathan/League Janus result if it has not yet been run.
+
+Next recommended step for Codex: if the live test passes, route to `janus-final-audit`; if it fails, route to `janus-debug` with the exact Janus response.
+
+Last updated: `2026-07-02 17:20:03 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-02 17:24 +02:00`, `BACKLOG-120` has passed `janus-preimplementation-check` and is now formally execution-ready. The new precheck artifact validates cleanly, the backlog entry now points to `EXECUTION_READY`, and the dashboard snapshot exposes the exact precheck artifact plus `Target Task` for Skill 4.
+
+Current goal: move `BACKLOG-120` from routed contact-memory bug into bounded implementation without reopening the already separated `BACKLOG-119` audit slice.
+
+Active phase: `janus-preimplementation-check`, canonical state `HANDOFF`.
+
+Last Codex work:
+- verified artifact identity across `BACKLOG-120`, its selected handoff, and the new task artifact
+- wrote `documentation/tasks/backlog_BACKLOG-120_preimplementation_check.md`
+- updated `BACKLOG-120` routing metadata from `PRE_IMPLEMENTATION_VERIFICATION` to `EXECUTION_READY`
+- resynced the dashboard snapshot so `BACKLOG-120` now exposes the precheck artifact and `Target Task`
+
+Changed files:
+- `documentation/tasks/backlog_BACKLOG-120_preimplementation_check.md`
+- `documentation/backlog/BACKLOG.md`
+- `janus-dashboard/data/backlog.snapshot.json`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py documentation/tasks/backlog_BACKLOG-120_preimplementation_check.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-backlog-handoff\scripts\validate_backlog.py documentation/backlog/BACKLOG.md`: PASS WITH LEGACY WARNINGS
+- `npm run sync:backlog` in `janus-dashboard`: PASS
+- `git diff --check -- documentation/tasks/backlog_BACKLOG-120_preimplementation_check.md documentation/backlog/BACKLOG.md janus-dashboard/data/backlog.snapshot.json`: PASS with Git CRLF/LF warnings only
+
+Open risks:
+- implementation has not started yet; the current state is execution-ready, not implementation-complete
+- the likely fix surface still spans both contact fact detection and contact-subject extraction, so Skill 4 must stay bounded and avoid broad routing rewrites
+- no commit, push, or `origin/codex-sync` CURRENT_STATE sync has happened after this block, so remote consumers may not know the execution-ready state yet
+
+Next recommended step for ChatGPT: treat `BACKLOG-120` as execution-ready on the existing contact-/memory seam, not merely as a routed precheck candidate.
+
+Next recommended step for Codex: run `janus-executioner` on `BACKLOG-120` with the validated precheck artifact and bounded evidence gate.
+
+Last updated: `2026-07-02 17:24:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-02 17:16 +02:00`, `BACKLOG-120` has completed `janus-backlog-handoff` in `SELECTED_HANDOFF` mode and is now formally moved from `READY` to `IN PROGRESS`. The new Nathan hobby/preference bug is no longer just prioritized; it now has a bound Skill-3 handoff artifact and is routed into pre-implementation verification on the same contact-memory seam as the recent `BACKLOG-119` work.
+
+Current goal: keep `BACKLOG-119` audit-ready while moving `BACKLOG-120` through `janus-preimplementation-check` as the next small contact-fact fix.
+
+Active phase: `janus-backlog-handoff`, canonical state `HANDOFF`.
+
+Last Codex work:
+- created the selected handoff artifact for `BACKLOG-120`
+- moved `BACKLOG-120` from `READY` to `IN PROGRESS`
+- enriched the backlog item with concrete routing metadata for `PRE_IMPLEMENTATION_VERIFICATION`
+- resynced the dashboard snapshot so the new handoff is visible in Janus tooling
+
+Changed files:
+- `documentation/backlog/BACKLOG.md`
+- `documentation/tasks/backlog_BACKLOG-120_kontakt_hobbyfakten_fallen_in_wissensmodus.md`
+- `janus-dashboard/data/backlog.snapshot.json`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-backlog-handoff\scripts\validate_backlog.py documentation/backlog/BACKLOG.md`: PASS WITH LEGACY WARNINGS
+- `npm run sync:backlog` in `janus-dashboard`: PASS
+- `git diff --check -- documentation/backlog/BACKLOG.md documentation/tasks/backlog_BACKLOG-120_kontakt_hobbyfakten_fallen_in_wissensmodus.md janus-dashboard/data/backlog.snapshot.json`: PASS with Git CRLF/LF warnings only
+
+Open risks:
+- `BACKLOG-120` is routed but not yet prechecked; the exact touched-file set and narrowest validator bundle still need Skill 3
+- `BACKLOG-119` remains separately near the audit gate, so `BACKLOG-120` must stay bounded to hobby/preference fact ingestion and not silently widen back into relationship recall
+- no commit, push, or `origin/codex-sync` CURRENT_STATE sync has happened after this block, so remote consumers may not know the new selected-handoff state yet
+
+Next recommended step for ChatGPT: treat `BACKLOG-120` as active routed work with an existing Skill-3 handoff artifact, not just a prioritized backlog candidate.
+
+Next recommended step for Codex: run `janus-preimplementation-check` on `documentation/tasks/backlog_BACKLOG-120_kontakt_hobbyfakten_fallen_in_wissensmodus.md`.
+
+Last updated: `2026-07-02 17:16:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-02 17:10 +02:00`, `BACKLOG-120` has completed `janus-backlog-prioritization` in DELTA mode and is now explicitly ranked as a direct next product bug on the active contact-memory seam. The new Nathan hobby/preference fact failure is not parked as a vague follow-up anymore: it is now marked `HIGH` importance, `MEDIUM` implementation risk, `S` effort, `READY`, `DO NOW`.
+
+Current goal: keep `BACKLOG-119` audit-ready while moving `BACKLOG-120` into the next handoff slot as the next small product bug on the same contact-fact path.
+
+Active phase: `janus-backlog-prioritization`, canonical state `HANDOFF`.
+
+Last Codex work:
+- deep-reviewed the newly added `BACKLOG-120` entry in DELTA mode
+- classified the bug as a small but high-value product fix instead of a broad architecture concern
+- persisted the missing evaluation cache fields in `BACKLOG.md`
+- resynced the dashboard snapshot so `BACKLOG-120` is visible with its new priority fields
+
+Changed files:
+- `documentation/backlog/BACKLOG.md`
+- `janus-dashboard/data/backlog.snapshot.json`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-backlog-handoff\scripts\validate_backlog.py documentation/backlog/BACKLOG.md`: PASS WITH LEGACY WARNINGS
+- `npm run sync:backlog` in `janus-dashboard`: PASS
+- `git diff --check -- documentation/backlog/BACKLOG.md janus-dashboard/data/backlog.snapshot.json`: PASS with Git CRLF/LF warnings only
+
+Open risks:
+- `BACKLOG-120` is now prioritized, but no selected handoff or implementation artifact exists yet
+- the likely root cause spans at least fact-telling detection and contact-subject extraction coverage for verbs like `spielt gerne`, but this is still an analysis-backed prioritization rather than a proven code fix
+- no commit, push, or `origin/codex-sync` CURRENT_STATE sync has happened after this block, so remote consumers may not know the new priority state yet
+
+Next recommended step for ChatGPT: summarize this as "BACKLOG-120 is now the next small but urgent contact-memory bug: clear hobby/preference statements for existing contacts are still falling into an external knowledge mode."
+
+Next recommended step for Codex: run `janus-backlog-handoff` with `Mode: SELECTED_HANDOFF` and `Backlog Item: BACKLOG-120`.
+
+Last updated: `2026-07-02 17:10:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-02 17:02 +02:00`, the next live Janus contact-memory finding is now captured as its own new backlog bug instead of being folded unsafely into `BACKLOG-119`. The new issue is narrower and different: relationship recall for Nathan/Elena is now green, but a fresh new hobby/preference fact for an already known contact still falls into an external-verification style response instead of the local contact-fact write path.
+
+Current goal: keep `BACKLOG-119` audit-ready, but route the new Nathan hobby-fact failure as a separate item for prioritization.
+
+Active phase: `janus-backlog-intake`, canonical state `HANDOFF`.
+
+Last Codex work:
+- reviewed the fresh user repro against the just-finished `BACKLOG-119` evidence bundle
+- decided this is a new bounded bug slice, not a safe scope extension of `BACKLOG-119`
+- created `BACKLOG-120` for the new contact-hobby fact ingestion failure
+- resynced the dashboard backlog snapshot so the new item is visible in Janus tooling
+
+Changed files:
+- `documentation/backlog/BACKLOG.md`
+- `janus-dashboard/data/backlog.snapshot.json`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-backlog-handoff\scripts\validate_backlog.py documentation/backlog/BACKLOG.md`: PASS WITH LEGACY WARNINGS
+- `npm run sync:backlog` in `janus-dashboard`: PASS
+- `git diff --check -- documentation/backlog/BACKLOG.md janus-dashboard/data/backlog.snapshot.json`: PASS with Git CRLF/LF warnings only
+
+Open risks:
+- the new bug is only captured, not yet prioritized or implemented
+- `BACKLOG-119` remains separately ready for `janus-final-audit`; the new intake must not silently widen that already validated bug scope
+- no commit, push, or `origin/codex-sync` CURRENT_STATE sync has happened after this block, so remote consumers may not know `BACKLOG-120` yet
+
+Next recommended step for ChatGPT: summarize this as "new live Janus bug: a clear new hobby/preference fact for an existing contact like `Nathan spielt gerne League of Legends` is treated as an unverifiable knowledge request instead of local contact memory."
+
+Next recommended step for Codex: run `janus-backlog-prioritization` for `BACKLOG-120` with `5.4` and medium reasoning, then decide whether it should move straight to selected handoff beside `BACKLOG-119`.
+
+Last updated: `2026-07-02 17:02:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-02 16:01 +02:00`, `BACKLOG-119` has completed a bounded `janus-debug` routing slice and a fresh live cross-provider retest now passes end to end. The remaining recall failure is resolved: a fresh GPT chat can answer the partner relationship from local Janus knowledge, and the contact card plus synced contact-memory path both contain the same relationship detail.
+
+Current goal: move `BACKLOG-119` to `janus-final-audit` with the new routing-fix debug artifact and the fresh live PASS bundle.
+
+Active phase: `janus-debug`, canonical state `HANDOFF`.
+
+Last Codex work:
+- extended relationship-recall intent detection and deterministic `memory.read` forcing for possessive prompts like `wer ist nathans freundin?`
+- hardened legacy `memory.write` normalization and possessive subject filtering so cross-provider relationship writes and reads stay bound to the correct contact
+- added focused regressions for routing, legacy write normalization, and possessive recall filtering
+- reran the narrowed regression suite and executed a fresh live API retest with new names across GPT -> Gemini -> fresh GPT
+- captured the green live result bundle under `documentation/test-results/BACKLOG-119-live-retest-after-routing-fix-2026-07-02/`
+- wrote and validated the new debug handoff `documentation/test-runs/BACKLOG-119_debug_relationship_recall_routing_2026-07-02.md`
+
+Changed files:
+- `backend/services/orchestrator/intent_engine.py`
+- `backend/services/orchestrator/execution_dispatcher.py`
+- `backend/services/tool_executor.py`
+- `backend/tools/memory_tools.py`
+- `backend/tests/test_calendar_routing_fix.py`
+- `backend/tests/test_memory_tools.py`
+- `backend/tests/test_tool_executor_memory_write_normalization.py`
+- `documentation/test-runs/BACKLOG-119_debug_relationship_recall_routing_2026-07-02.md`
+- `documentation/test-results/BACKLOG-119-live-retest-after-routing-fix-2026-07-02/BACKLOG-119_live_retest_after_routing_fix_api_evidence.json`
+- `documentation/test-results/BACKLOG-119-live-retest-after-routing-fix-2026-07-02/BACKLOG-119_live_retest_after_routing_fix_api_summary.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python -m pytest backend/tests/test_calendar_routing_fix.py -q -k "relationship_contact or contact_knowledge_question_bypasses_external_and_ambiguity"`: PASS
+- `python -m pytest backend/tests/test_tool_executor_memory_write_normalization.py -q`: PASS
+- `python -m pytest backend/tests/test_memory_tools.py -q -k "filters_relationship_recall_to_matching_possessive_subject or filters_contact_recall_to_matching_subject"`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-debug\scripts\validate_debug_result.py documentation\test-runs\BACKLOG-119_debug_relationship_recall_routing_2026-07-02.md`: PASS
+- `GET http://localhost:8001/api/health`: PASS
+- `POST /api/chats`: PASS for chats `4188`, `4189`, `4190`
+- `POST /api/chat` GPT write: PASS
+- `POST /api/chat` Gemini write: PASS
+- `POST /api/chat` fresh GPT recall: PASS
+- Live AppData DB inspection: PASS, contact `Korbinian Elstorf` now has `address=berlin` and `personal_details=["Freundin heisst Ylvie Nordmann"]`
+- Live backend log inspection: PASS, fresh recall chat `4190` executed via `memory.read`
+
+Open risks:
+- the live PASS used fresh coverage names (`Korbinian Elstorf` / `Ylvie Nordmann`) instead of replaying the original Nathan/Elena literals, so final audit should explicitly judge whether this generalized pass plus the earlier Nathan persistence pass is sufficient
+- backend logs still show the known non-blocking embedding degradation warnings during memory save, but the product path remains functional because the sqlite memory path persists and recalls the facts correctly
+- no commit, push, or `origin/codex-sync` CURRENT_STATE sync has happened after this block, so remote consumers may not know the new live PASS state yet
+
+Next recommended step for ChatGPT: treat `documentation/test-runs/BACKLOG-119_debug_relationship_recall_routing_2026-07-02.md` and `documentation/test-results/BACKLOG-119-live-retest-after-routing-fix-2026-07-02/BACKLOG-119_live_retest_after_routing_fix_api_evidence.json` as the canonical routing-fix evidence bundle and route to `janus-final-audit`.
+
+Next recommended step for Codex: run `janus-final-audit` on the combined execution, debug, and live PASS evidence for `BACKLOG-119`.
+
+Last updated: `2026-07-02 16:01:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-02 14:52 +02:00`, `BACKLOG-119` has completed the approved live `janus-test-pipeline` retest after the relationship-persistence debug fix. The result is mixed but clear: the live Nathan contact card is now correct and contains `Freundin heisst Elena`, but a fresh GPT recall still fails because the request is routed into `system.wikipedia_summary` instead of the corrected contact/memory path.
+
+Current goal: run one narrower `janus-debug` slice for relationship-recall routing after live persistence already passed.
+
+Active phase: `janus-test-pipeline`, canonical state `FAIL`.
+
+Last Codex work:
+- restarted and verified the local Janus backend API path
+- executed the bounded live three-step API retest for GPT write, Gemini write, and fresh GPT recall
+- captured the result bundle under `documentation/test-results/BACKLOG-119-live-retest-2026-07-02/`
+- confirmed from the live AppData DB that Nathan's contact card now stores `Freundin heisst Elena`
+- confirmed from backend logs that the failing recall chat was forced into `system.wikipedia_summary`
+
+Changed files:
+- `documentation/test-runs/BACKLOG-119_live_retest_preflight_2026-07-02.md`
+- `documentation/test-results/BACKLOG-119-live-retest-2026-07-02/BACKLOG-119_live_retest_api_evidence.json`
+- `documentation/test-results/BACKLOG-119-live-retest-2026-07-02/BACKLOG-119_live_retest_api_summary.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `GET http://localhost:8001/api/health`: PASS
+- `POST /api/chats`: PASS for chats `4164`, `4165`, `4166`
+- `POST /api/chat` GPT write: PASS
+- `POST /api/chat` Gemini write: PASS
+- `POST /api/chat` fresh GPT recall: FAIL
+- Live AppData DB inspection: PASS, Nathan contact row now has `address=berlin` and `personal_details=["Freundin heisst Elena"]`
+- Live backend log inspection: PASS, chat `4166` selected `system.wikipedia_summary` and failed there with `No module named 'wikipedia'`
+
+Open risks:
+- the original product promise is still not met because a fresh GPT chat cannot yet answer the relationship despite correct persistence
+- the remaining failure is now a routing/runtime seam, not a persistence seam, so a final audit would be premature
+- no commit, push, or `origin/codex-sync` CURRENT_STATE sync has happened after this block, so remote consumers may not know the new split-state evidence yet
+
+Next recommended step for ChatGPT: treat `documentation/test-results/BACKLOG-119-live-retest-2026-07-02/BACKLOG-119_live_retest_api_evidence.json` as the canonical live failure evidence and route to `janus-debug`.
+
+Next recommended step for Codex: run `janus-debug` on the narrowed live failure slice `relationship recall routed to wikipedia_summary instead of contact/memory`.
+
+Last updated: `2026-07-02 14:52:22 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-02 14:48 +02:00`, `BACKLOG-119` has completed `janus-test-pipeline` preflight for the pending live Nathan/Elena retest. The local regression surface is green and the local Janus backend API path is reachable again, but the real provider/chat execution has not started because this skill requires the exact approval phrase `OK START LIVE TEST`.
+
+Current goal: run one fresh live `BACKLOG-119` provider/chat retest after exact user approval.
+
+Active phase: `janus-test-pipeline`, canonical state `NEEDS_INFO`.
+
+Last Codex work:
+- restarted or verified the local Janus backend API path and confirmed `GET /api/health`
+- reran the focused relationship persistence regressions under the live-retest preflight
+- wrote `documentation/test-runs/BACKLOG-119_live_retest_preflight_2026-07-02.md`
+- bound the live retest steps to one GPT write, one Gemini write, one fresh GPT recall, and one contact-card inspection
+
+Changed files:
+- `documentation/test-runs/BACKLOG-119_live_retest_preflight_2026-07-02.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `GET http://localhost:8001/api/health`: PASS
+- `python -m pytest backend/tests/test_contact_manager.py -q -k "relationship_name_fact_updates_existing_contact_by_unique_first_name or relationship_named_owner_fact_updates_existing_contact_by_unique_first_name or skips_contact_recall_turn_to_avoid_self_poisoning or skips_relationship_recall_turn_to_avoid_self_poisoning"`: PASS
+- `python -m pytest backend/tests/test_memory_tools.py -q -k "relationship_name_fact_applies_to_existing_contact_card or relationship_named_owner_fact_applies_to_existing_contact_card"`: PASS
+
+Open risks:
+- the live Janus provider/chat boundary is still unverified after the latest debug fix because no fresh approved live run has happened yet
+- the local backend startup path logs known non-blocking vision/vector degrade warnings, but `/api/health` is green and the retest-relevant API path is available
+- no commit, push, or `origin/codex-sync` CURRENT_STATE sync has happened after this block, so remote consumers may not know the current preflight-ready state yet
+
+Next recommended step for ChatGPT: ask for the exact approval string `OK START LIVE TEST` if the bounded live `BACKLOG-119` retest should proceed now.
+
+Next recommended step for Codex: on exact approval, run the bounded live `BACKLOG-119` API retest and capture evidence under `documentation/test-results/`.
+
+Last updated: `2026-07-02 14:48:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-02 14:38 +02:00`, `BACKLOG-119` has completed a bounded `janus-debug` slice after the live Nathan/Elena cross-provider repro still behaved like before. The local root causes are now fixed and validator-backed: owner-style relationship facts like `Nathan hat eine Freundin namens Elena` now normalize into Nathan's contact card, and relationship recall prompts like `wer ist nathans freundin?` are no longer re-extracted as junk memories.
+
+Current goal: run one fresh live `BACKLOG-119` retest through `janus-test-pipeline` before any final audit claim.
+
+Active phase: `janus-debug`, canonical state `HANDOFF`.
+
+Last Codex work:
+- inspected the live logs and AppData DB to isolate the actual failure chain instead of assuming generic missing memory
+- extended `backend/services/contact_manager.py` so owner-style relationship facts with `namens` auto-apply to the existing contact card
+- hardened `backend/services/memory_extractor.py` so relationship recall prompts are skipped as recall turns
+- added focused regressions for contact-manager apply, `memory.write` apply, and relationship recall self-poisoning
+- wrote and validated `documentation/test-runs/BACKLOG-119_debug_relationship_persistence_2026-07-02.md`
+
+Changed files:
+- `backend/services/contact_manager.py`
+- `backend/services/memory_extractor.py`
+- `backend/tests/test_contact_manager.py`
+- `backend/tests/test_memory_tools.py`
+- `documentation/test-runs/BACKLOG-119_debug_relationship_persistence_2026-07-02.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python -m py_compile backend/services/contact_manager.py backend/services/memory_extractor.py backend/tests/test_contact_manager.py backend/tests/test_memory_tools.py`: PASS
+- `python -m pytest backend/tests/test_contact_manager.py -q -k "relationship_name_fact_updates_existing_contact_by_unique_first_name or relationship_named_owner_fact_updates_existing_contact_by_unique_first_name or skips_contact_recall_turn_to_avoid_self_poisoning or skips_relationship_recall_turn_to_avoid_self_poisoning"`: PASS
+- `python -m pytest backend/tests/test_memory_tools.py -q -k "relationship_name_fact_applies_to_existing_contact_card or relationship_named_owner_fact_applies_to_existing_contact_card"`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-debug\scripts\validate_debug_result.py documentation\test-runs\BACKLOG-119_debug_relationship_persistence_2026-07-02.md`: PASS
+
+Open risks:
+- no fresh live Janus retest has been run after this debug slice yet, so the provider/chat boundary is not cleared in product evidence
+- the local test environment still logs the existing `tokenizers>=0.21,<0.22` vector-model mismatch, but the affected tests pass because memory persistence degrades without embeddings instead of failing hard
+- no commit, push, or `origin/codex-sync` CURRENT_STATE sync has happened after this block, so remote consumers may not know the current debug-ready retest state yet
+
+Next recommended step for ChatGPT: treat `documentation/test-runs/BACKLOG-119_debug_relationship_persistence_2026-07-02.md` as the canonical debug result for the Nathan/Elena persistence bug.
+
+Next recommended step for Codex: run `janus-test-pipeline` for one fresh live cross-chat retest of `BACKLOG-119`.
+
+Last updated: `2026-07-02 14:38:18 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-01 22:12 +02:00`, `BACKLOG-118` has passed `janus-preimplementation-check` for the first released slice `TASK-SPEC28.1`. The new precheck artifact now freezes the first live-retest OR rollout to one strict scope only: fail-closed eligibility plus the visible `1 = Codex / 2 = OR` gate for eligible local `LIVE_TEST_EXECUTION` retests. `BACKLOG.md` now points to `EXECUTION_READY`, `Recommended next skill: SKILL 4`, and the precheck artifact path.
 
 Current goal: implement `TASK-SPEC28.1` through `janus-executioner` without widening into `TASK-SPEC28.2` or `TASK-SPEC28.3`.
@@ -5413,6 +6172,258 @@ Next recommended step for ChatGPT: summarize this as "quickchange is no longer a
 Next recommended step for Codex: run `janus-executioner` for `QC-OR-ENTRY-001`, re-enable the shared quickchange prompt gate, rerun the focused gate test, and refresh the blocker/inventory state.
 
 Last updated: `2026-06-24 18:05:00 +02:00`.
+## Current Snapshot Update
+As of `2026-07-02`, the next live Janus productivity finding is now captured as a new backlog bug instead of being left as chat-only repro. The issue is not the earlier Oliver/Garfield pet path, but a contact-relationship persistence gap: GPT can create `Nathan Raimann`, Gemini can later claim it remembered `Nathans Freundin heisst Elena`, yet the relationship fact does not land in a durable address-book/contact path and GPT in another chat cannot recall it.
+
+Current goal: keep the live product repro visible and canonical so the contact-/memory pipeline can prioritize and route the relationship-persistence bug cleanly before implementation.
+
+Active phase: `janus-backlog-intake`, canonical state `HANDOFF`.
+
+Last Codex work:
+- routed the new live repro through `janus-skill-router` and classified it as a bounded product bug on the existing contact-/memory path
+- created `BACKLOG-119` as a new `READY` follow-up under the `BACKLOG-108` contact-persistence lineage
+- validated the backlog file with the canonical validator and synced the dashboard snapshot from the `janus-dashboard` workspace
+- updated the skill usage log so the intake reflects the real validator/sync path rather than the earlier root-script confusion
+
+Changed files:
+- `documentation/backlog/BACKLOG.md`
+- `janus-dashboard/data/backlog.snapshot.json`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `rg -n "BACKLOG-119|## READY" documentation/backlog/BACKLOG.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-backlog-handoff\scripts\validate_backlog.py C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md`: PASS WITH LEGACY WARNINGS
+- `npm run sync:backlog` in `C:\KI\Janus-Projekt\janus-dashboard`: PASS (`total=79 active=8 done=71 routing_missing=2`)
+- `git diff --check -- documentation/backlog/BACKLOG.md`: PASS
+
+Open risks:
+- the bug is only captured and prioritized for routing; no implementation or live root-cause analysis exists yet for the Nathan/Elena relationship path
+- backlog validation still reports the known legacy warnings unrelated to `BACKLOG-119`
+- no commit or push happened after this intake block, so a remote such as GitHub or `backup` may not contain this newest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: summarize this as "new live Janus bug: cross-chat/provider relationship facts like `Nathans Freundin heisst Elena` are claimed as remembered but are not durably persisted or globally recallable."
+
+Next recommended step for Codex: run `janus-backlog-prioritization` for `BACKLOG-119` with `5.4` and medium reasoning, then decide whether it should move straight to selected handoff or sit behind the current in-progress contact/memory work.
+
+Last updated: `2026-07-02 00:11:59 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-02`, `BACKLOG-119` is now locally implemented and regression-green. The Nathan/Elena relationship bug was not just a vague recall miss: the contact-memory sync dropped a direct fact like `nathans freundin heisst elena` because `Nathan` did not resolve cleanly to the existing `Nathan Raimann` contact and no normalized relationship detail was written onto the contact card or synced back into durable contact memory.
+
+Current goal: verify in live Janus that cross-provider/chat relationship facts now land on the right contact card and become recallable across chats before final audit.
+
+Active phase: `janus-executioner`, canonical state `HANDOFF`.
+
+Last Codex work:
+- implemented a bounded contact-manager fix for `BACKLOG-119`
+- added a unique first-name contact match path so `Nathan` can bind to `Nathan Raimann` when the match is unambiguous
+- derived normalized relationship contact details like `Freundin heisst Elena` from direct confirmed relationship facts
+- allowed direct confirmed relationship details on an exact matched contact to auto-apply and sync back into contact memory
+- added focused regressions for both `stage_contact_update_from_memory(...)` and the `memory.write` integration path
+- wrote the execution result artifact for the implementation slice
+
+Changed files:
+- `backend/services/contact_manager.py`
+- `backend/tests/test_contact_manager.py`
+- `backend/tests/test_memory_tools.py`
+- `documentation/tasks/backlog_BACKLOG-119_execution_result.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python -m pytest backend/tests/test_contact_manager.py -q`: PASS
+- `python -m pytest backend/tests/test_memory_tools.py -q`: PASS
+- `python -m pytest backend/tests/test_memory_write_update_conflict_handling.py -q`: PASS
+- `python -m py_compile backend/services/chat_orchestrator.py backend/services/contact_manager.py backend/services/memory_extractor.py backend/tools/memory_tools.py backend/data/crud.py backend/tests/test_contact_manager.py backend/tests/test_memory_tools.py backend/tests/test_memory_write_update_conflict_handling.py`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py documentation/tasks/backlog_BACKLOG-119_execution_result.md`: PASS
+
+Open risks:
+- live Janus provider/chat behavior is not yet revalidated; the original bug was observed in a real multi-chat repro, not only in local unit/integration tests
+- the repo still shows the unrelated environment warning around the local vector stack (`tokenizers` / sentence-transformers mismatch), though the guarded tests passed without embeddings
+- no commit or push happened after this execution block, so a remote such as GitHub or `backup` may not contain this newest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: summarize this as "BACKLOG-119 is locally fixed and green; the next meaningful step is one live Janus repro for Nathan/Elena before final audit."
+
+Next recommended step for Codex: run `janus-test-pipeline` / live retest handling for the Nathan/Elena repro after the user tests Janus, then route PASS to `janus-final-audit` or FAIL to `janus-debug`.
+
+Last updated: `2026-07-02 01:00:00 +02:00`.
+## Current Snapshot Update
+As of `2026-07-02`, `BACKLOG-119` has moved from prioritized `READY` item into a concrete selected handoff. The contact-relationship persistence bug for `Nathan Raimann` and `Elena` is now routed as `PRE_IMPLEMENTATION_VERIFICATION`, with a dedicated task artifact under `documentation/tasks/` and the backlog item moved to `IN PROGRESS`.
+
+Current goal: hand the new relationship-persistence bug into Skill 3 cleanly so the next block can bind the exact persistence/recall seam before any code changes.
+
+Active phase: `janus-backlog-handoff`, canonical state `HANDOFF`.
+
+Last Codex work:
+- created the selected handoff artifact for `BACKLOG-119`
+- moved `BACKLOG-119` from `READY` to `IN PROGRESS`
+- added the routing metadata for `PRE_IMPLEMENTATION_VERIFICATION`
+- resynced the dashboard snapshot and confirmed the item now appears as routed active work with `routing_missing=1`
+
+Changed files:
+- `documentation/backlog/BACKLOG.md`
+- `documentation/tasks/backlog_BACKLOG-119_kontakt_beziehungsfakten_provider_und_chatuebergreifend_persistieren.md`
+- `janus-dashboard/data/backlog.snapshot.json`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-backlog-handoff\scripts\validate_backlog.py C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md`: PASS WITH LEGACY WARNINGS
+- `npm run sync:backlog` in `C:\KI\Janus-Projekt\janus-dashboard`: PASS (`total=79 active=8 done=71 routing_missing=1`)
+- `git diff --check -- documentation/backlog/BACKLOG.md documentation/tasks/backlog_BACKLOG-119_kontakt_beziehungsfakten_provider_und_chatuebergreifend_persistieren.md janus-dashboard/data/backlog.snapshot.json`: PASS
+
+Open risks:
+- the bug is now properly routed, but no Skill-3 precheck exists yet for the exact relationship-persistence seam
+- backlog validation still reports the same unrelated historical legacy warnings
+- no commit or push happened after this handoff block, so a remote such as GitHub or `backup` may not contain this newest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: treat `BACKLOG-119` as active routed work with an existing Skill-3 handoff artifact, not just a prioritized backlog candidate.
+
+Next recommended step for Codex: run `janus-preimplementation-check` on `documentation/tasks/backlog_BACKLOG-119_kontakt_beziehungsfakten_provider_und_chatuebergreifend_persistieren.md`.
+
+Last updated: `2026-07-02 00:38:46 +02:00`.
+## Current Snapshot Update
+As of `2026-07-02`, `BACKLOG-119` has passed Skill 3 and is now formally execution-ready. The new precheck artifact validates cleanly, the backlog entry now points to `EXECUTION_READY`, and the dashboard snapshot exposes the exact `precheck_artifact` plus `Target Task` for Skill 4.
+
+Current goal: start bounded implementation on the relationship-persistence seam without reopening broader contact-model or social-graph questions.
+
+Active phase: `janus-preimplementation-check`, canonical state `HANDOFF`.
+
+Last Codex work:
+- wrote `documentation/tasks/backlog_BACKLOG-119_preimplementation_check.md`
+- validated the precheck artifact with the canonical Skill-3 validator
+- updated `BACKLOG-119` routing metadata from `PRE_IMPLEMENTATION_VERIFICATION` to `EXECUTION_READY`
+- resynced the dashboard snapshot so `BACKLOG-119` now exposes `precheck_artifact` and `Target Task`
+
+Changed files:
+- `documentation/tasks/backlog_BACKLOG-119_preimplementation_check.md`
+- `documentation/backlog/BACKLOG.md`
+- `janus-dashboard/data/backlog.snapshot.json`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py documentation/tasks/backlog_BACKLOG-119_preimplementation_check.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-backlog-handoff\scripts\validate_backlog.py C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md`: PASS WITH LEGACY WARNINGS
+- `npm run sync:backlog` in `C:\KI\Janus-Projekt\janus-dashboard`: PASS (`total=79 active=8 done=71 routing_missing=1`)
+- `git diff --check -- documentation/tasks/backlog_BACKLOG-119_preimplementation_check.md documentation/backlog/BACKLOG.md janus-dashboard/data/backlog.snapshot.json`: PASS
+
+Open risks:
+- the task is execution-ready, but no implementation has started yet on the exact relationship-persistence seam
+- backlog validation still reports the same unrelated historical legacy warnings
+- no commit or push happened after this precheck block, so a remote such as GitHub or `backup` may not contain this newest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: treat `BACKLOG-119` as execution-ready on the existing contact-/memory seam, not merely as a routed precheck candidate.
+
+Next recommended step for Codex: run `janus-executioner` on `BACKLOG-119` with the validated precheck artifact and bounded evidence gate.
+
+Last updated: `2026-07-02 00:46:02 +02:00`.
+## Current Snapshot Update
+As of `2026-07-02`, `BACKLOG-119` has moved from prioritized `READY` item into a concrete selected handoff. The contact-relationship persistence bug for `Nathan Raimann` and `Elena` is now routed as `PRE_IMPLEMENTATION_VERIFICATION`, with a dedicated task artifact under `documentation/tasks/` and the backlog item moved to `IN PROGRESS`.
+
+Current goal: hand the new relationship-persistence bug into Skill 3 cleanly so the next block can bind the exact persistence/recall seam before any code changes.
+
+Active phase: `janus-backlog-handoff`, canonical state `HANDOFF`.
+
+Last Codex work:
+- created the selected handoff artifact for `BACKLOG-119`
+- moved `BACKLOG-119` from `READY` to `IN PROGRESS`
+- added the routing metadata for `PRE_IMPLEMENTATION_VERIFICATION`
+- resynced the dashboard snapshot and confirmed the item now appears as routed active work with `routing_missing=1`
+
+Changed files:
+- `documentation/backlog/BACKLOG.md`
+- `documentation/tasks/backlog_BACKLOG-119_kontakt_beziehungsfakten_provider_und_chatuebergreifend_persistieren.md`
+- `janus-dashboard/data/backlog.snapshot.json`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-backlog-handoff\scripts\validate_backlog.py C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md`: PASS WITH LEGACY WARNINGS
+- `npm run sync:backlog` in `C:\KI\Janus-Projekt\janus-dashboard`: PASS (`total=79 active=8 done=71 routing_missing=1`)
+- `git diff --check -- documentation/backlog/BACKLOG.md documentation/tasks/backlog_BACKLOG-119_kontakt_beziehungsfakten_provider_und_chatuebergreifend_persistieren.md janus-dashboard/data/backlog.snapshot.json`: PASS
+
+Open risks:
+- the bug is now properly routed, but no Skill-3 precheck exists yet for the exact relationship-persistence seam
+- backlog validation still reports the same unrelated historical legacy warnings
+- no commit or push happened after this handoff block, so a remote such as GitHub or `backup` may not contain this newest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: treat `BACKLOG-119` as active routed work with an existing Skill-3 handoff artifact, not just a prioritized backlog candidate.
+
+Next recommended step for Codex: run `janus-preimplementation-check` on `documentation/tasks/backlog_BACKLOG-119_kontakt_beziehungsfakten_provider_und_chatuebergreifend_persistieren.md`.
+
+Last updated: `2026-07-02 00:38:46 +02:00`.
+## Current Snapshot Update
+As of `2026-07-02`, `BACKLOG-119` is no longer just captured; it is now prioritized as a real `READY` product bug on the contact-/memory line. The new live finding about `Nathan Raimann` and `Elena` has been deep-reviewed in DELTA mode and marked `HIGH` importance, `MEDIUM` implementation risk, `M` effort, `READY`, `DO NOW`.
+
+Current goal: turn the fresh cross-provider relationship-persistence repro into the next bounded Janus product handoff instead of letting it drift behind unrelated infrastructure work.
+
+Active phase: `janus-backlog-prioritization`, canonical state `HANDOFF`.
+
+Last Codex work:
+- deep-reviewed the newly added `BACKLOG-119` entry in DELTA mode
+- persisted the missing prioritization cache fields directly into `documentation/backlog/BACKLOG.md`
+- confirmed the backlog still validates with only the known historical warnings
+- resynced the dashboard snapshot so `BACKLOG-119` is reflected in the active backlog state
+
+Changed files:
+- `documentation/backlog/BACKLOG.md`
+- `janus-dashboard/data/backlog.snapshot.json`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- open-section count check on `documentation/backlog/BACKLOG.md`: `NEEDS INFO=0`, `IN PROGRESS=5`, `READY=74`, `BLOCKED=0`
+- `python C:\Users\pruve\.codex\skills\janus-backlog-handoff\scripts\validate_backlog.py C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md`: PASS WITH LEGACY WARNINGS
+- `npm run sync:backlog` in `C:\KI\Janus-Projekt\janus-dashboard`: PASS (`total=79 active=8 done=71 routing_missing=2`)
+- `git diff --check -- documentation/backlog/BACKLOG.md janus-dashboard/data/backlog.snapshot.json`: PASS
+
+Open risks:
+- the prioritization is clear, but no selected handoff exists yet for `BACKLOG-119`
+- backlog validation still reports the known legacy warnings on older unrelated items
+- no commit or push happened after this prioritization block, so a remote such as GitHub or `backup` may not contain this newest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: treat `BACKLOG-119` as the next meaningful product bug on the contact-/memory path, not as a vague note or low-priority cleanup.
+
+Next recommended step for Codex: run `janus-backlog-handoff` with `Mode: SELECTED_HANDOFF` and `Backlog Item: BACKLOG-119`.
+
+Last updated: `2026-07-02 00:27:17 +02:00`.
+## Current Snapshot Update
+As of `2026-07-02`, the next live Janus productivity finding is now captured as a new backlog bug instead of being left as chat-only repro. The issue is not the earlier Oliver/Garfield pet path, but a contact-relationship persistence gap: GPT can create `Nathan Raimann`, Gemini can later claim it remembered `Nathans Freundin heisst Elena`, yet the relationship fact does not land in a durable address-book/contact path and GPT in another chat cannot recall it.
+
+Current goal: keep the live product repro visible and canonical so the contact-/memory pipeline can prioritize and route the relationship-persistence bug cleanly before implementation.
+
+Active phase: `janus-backlog-intake`, canonical state `HANDOFF`.
+
+Last Codex work:
+- routed the new live repro through `janus-skill-router` and classified it as a bounded product bug on the existing contact-/memory path
+- created `BACKLOG-119` as a new `READY` follow-up under the `BACKLOG-108` contact-persistence lineage
+- validated the backlog file with the canonical validator and synced the dashboard snapshot from the `janus-dashboard` workspace
+- updated the skill usage log so the intake reflects the real validator/sync path rather than the earlier root-script confusion
+
+Changed files:
+- `documentation/backlog/BACKLOG.md`
+- `janus-dashboard/data/backlog.snapshot.json`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `rg -n "BACKLOG-119|## READY" documentation/backlog/BACKLOG.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-backlog-handoff\scripts\validate_backlog.py C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md`: PASS WITH LEGACY WARNINGS
+- `npm run sync:backlog` in `C:\KI\Janus-Projekt\janus-dashboard`: PASS (`total=79 active=8 done=71 routing_missing=2`)
+- `git diff --check -- documentation/backlog/BACKLOG.md`: PASS
+
+Open risks:
+- the bug is only captured and prioritized for routing; no implementation or live root-cause analysis exists yet for the Nathan/Elena relationship path
+- backlog validation still reports the known legacy warnings unrelated to `BACKLOG-119`
+- no commit or push happened after this intake block, so a remote such as GitHub or `backup` may not contain this newest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: summarize this as "new live Janus bug: cross-chat/provider relationship facts like `Nathans Freundin heisst Elena` are claimed as remembered but are not durably persisted or globally recallable."
+
+Next recommended step for Codex: run `janus-backlog-prioritization` for `BACKLOG-119` with `5.4` and medium reasoning, then decide whether it should move straight to selected handoff or sit behind the current in-progress contact/memory work.
+
+Last updated: `2026-07-02 00:11:59 +02:00`.
 ## Current Snapshot Update
 As of `2026-07-01`, the direct OpenRouter `execution_patch_candidate` lane is materially harder and finally has a fresh live green proof on a bounded repo-local Dev harness. The lane now rejects invented or non-applicable diffs mechanically, asks the model to return `BLOCKED` instead of fake patches when real anchors are missing, keeps newline-shaped unified diffs explicit, and successfully produced one valid Kimi patch candidate that Codex applied locally to turn a red harness test green.
 
@@ -14630,3 +15641,38 @@ Next recommended step for ChatGPT: summarize this as "Spec 26 slice 1 is done; t
 Next recommended step for Codex: run `janus-final-audit` for `TASK-SPEC26.1` with `5.5` high, or move straight to `janus-preimplementation-check` for `TASK-SPEC26.2` if you want implementation momentum first.
 
 Last updated: `2026-06-24 18:05:00 +02:00`.
+## Current Snapshot Update
+As of `2026-07-02`, the next live Janus productivity finding is now captured as a new backlog bug instead of being left as chat-only repro. The issue is not the earlier Oliver/Garfield pet path, but a contact-relationship persistence gap: GPT can create `Nathan Raimann`, Gemini can later claim it remembered `Nathans Freundin heisst Elena`, yet the relationship fact does not land in a durable address-book/contact path and GPT in another chat cannot recall it.
+
+Current goal: keep the live product repro visible and canonical so the contact-/memory pipeline can prioritize and route the relationship-persistence bug cleanly before implementation.
+
+Active phase: `janus-backlog-intake`, canonical state `HANDOFF`.
+
+Last Codex work:
+- routed the new live repro through `janus-skill-router` and classified it as a bounded product bug on the existing contact-/memory path
+- created `BACKLOG-119` as a new `READY` follow-up under the `BACKLOG-108` contact-persistence lineage
+- validated the backlog file with the canonical validator and synced the dashboard snapshot from the `janus-dashboard` workspace
+- updated the skill usage log so the intake reflects the real validator/sync path rather than the earlier root-script confusion
+
+Changed files:
+- `documentation/backlog/BACKLOG.md`
+- `janus-dashboard/data/backlog.snapshot.json`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `rg -n "BACKLOG-119|## READY" documentation/backlog/BACKLOG.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-backlog-handoff\scripts\validate_backlog.py C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md`: PASS WITH LEGACY WARNINGS
+- `npm run sync:backlog` in `C:\KI\Janus-Projekt\janus-dashboard`: PASS (`total=79 active=8 done=71 routing_missing=2`)
+- `git diff --check -- documentation/backlog/BACKLOG.md`: PASS
+
+Open risks:
+- the bug is only captured and prioritized for routing; no implementation or live root-cause analysis exists yet for the Nathan/Elena relationship path
+- backlog validation still reports the known legacy warnings unrelated to `BACKLOG-119`
+- no commit or push happened after this intake block, so a remote such as GitHub or `backup` may not contain this newest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: summarize this as "new live Janus bug: cross-chat/provider relationship facts like `Nathans Freundin heisst Elena` are claimed as remembered but are not durably persisted or globally recallable."
+
+Next recommended step for Codex: run `janus-backlog-prioritization` for `BACKLOG-119` with `5.4` and medium reasoning, then decide whether it should move straight to selected handoff or sit behind the current in-progress contact/memory work.
+
+Last updated: `2026-07-02 00:11:59 +02:00`.

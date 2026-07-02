@@ -1,0 +1,9 @@
+{
+  "status": "success",
+  "checks_status": "pass",
+  "changed_files_count": 1,
+  "generated_at": "2026-07-02T20:18:01+02:00",
+  "workflow_id": "WF-JANUS-WORKER-GATEWAY-LIVE-001",
+  "selected_path": "isolated_aider_temp_workspace_live",
+  "final_outcome": "ISOLATED_AIDER_READY_FOR_CODEX_REVIEW"
+}

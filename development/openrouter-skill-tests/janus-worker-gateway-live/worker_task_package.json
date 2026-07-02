@@ -1,0 +1,36 @@
+{
+  "task_label": "Janus worker gateway docs-only live pilot",
+  "worker_profile": "aider-openrouter-qwen",
+  "task_prompt": "Improve docs/target_doc.md for clarity and grouping while staying bounded to this file only. Keep the scope tiny and do not introduce new sections beyond what helps the existing note. Do not change any other file.",
+  "workspace_files": [
+    {
+      "repo_path": "development/openrouter-skill-tests/janus-worker-aider-poc/target_doc.md",
+      "workspace_path": "docs/target_doc.md",
+      "allow_edit": true,
+      "copy_back": true
+    }
+  ],
+  "pre_commands": [
+    {
+      "label": "python_version",
+      "command": ["python", "--version"],
+      "expected_exit_codes": [0]
+    }
+  ],
+  "post_commands": [
+    {
+      "label": "markdown_file_exists",
+      "command": ["python", "-c", "from pathlib import Path; raise SystemExit(0 if Path('docs/target_doc.md').exists() else 1)"],
+      "expected_exit_codes": [0]
+    }
+  ],
+  "acceptance_criteria": [
+    "Only docs/target_doc.md changes are allowed.",
+    "The document should become clearer without widening scope."
+  ],
+  "requested_actions": ["edit"],
+  "notes": [
+    "Bounded live-dev pilot for TASK-SPEC29.3",
+    "Docs-only harmless target"
+  ]
+}

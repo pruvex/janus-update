@@ -4,6 +4,45 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-SPEC29.3 - Add regression coverage, operator guidance, and the first bounded live-dev pilot
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-SPEC29.3_final_audit.md` (PASS)
+- **Spec**: `documentation/SPEC/Spec Done/29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md`
+- **Parent Task**: `documentation/tasks/TASK-SPEC29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md`
+- **Task Breakdown**: `documentation/tasks/TASK-SPEC29.3_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-SPEC29.3_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-SPEC29.3_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-SPEC29.3_AUDIT_PACKAGE.md`
+- **Validation**: `TASK-SPEC29.3` schliesst den dritten und letzten eng gebundenen Spec-29-Slice mitsamt Regressionserweiterung, Operator-Guidance und dem ersten bounded Live-Dev-Pilot ab. Die Worker-Gateway-Regressionen decken jetzt success-, blocked- und local-reviewable-Pfade enger ab, `documentation/codex/model-routing/janus_worker_gateway_profiles.md` dokumentiert das Aider/OpenRouter-MVP-Profil sauber, und der docs-only Pilot `WF-JANUS-WORKER-GATEWAY-LIVE-001` lieferte ein vollstaendiges reviewbares Ergebnispaket ohne Scope-Drift, Repo-Root-`.aider*`-Artefakte oder `.gitignore`-Mutation. Final Audit PASS mit fokussierter Regression-, Pilot-, Compile-, Precheck-, Execution-Result- und Validator-Evidenz. Spec 29 ist damit insgesamt DONE und nach `documentation/SPEC/Spec Done/29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md` ueberfuehrt.
+- **Changed Files**: `documentation/codex/model-routing/tests/test_janus_worker_contract.py`, `documentation/codex/model-routing/tests/test_janus_worker_gateway.py`, `documentation/codex/model-routing/tests/test_isolated_aider_workspace_runner.py`, `documentation/codex/model-routing/janus_worker_gateway_profiles.md`, `development/openrouter-skill-tests/janus-worker-gateway-live/worker_task_package.json`, `development/openrouter-skill-tests/janus-worker-gateway-live/runs/WF-JANUS-WORKER-GATEWAY-LIVE-001/`, `development/openrouter-skill-tests/janus-worker-aider-poc/target_doc.md`, `documentation/tasks/TASK-SPEC29.3_execution_result.md`, `documentation/tasks/TASK-SPEC29.3_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC29.3_final_audit.md`, `documentation/SPEC/Spec Done/29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md`.
+
+### TASK-SPEC29.2 - Wire the isolated Aider/OpenRouter backend into the worker gateway
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-SPEC29.2_final_audit.md` (PASS)
+- **Spec**: `documentation/SPEC/Spec Done/29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md`
+- **Parent Task**: `documentation/tasks/TASK-SPEC29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md`
+- **Task Breakdown**: `documentation/tasks/TASK-SPEC29.2_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-SPEC29.2_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-SPEC29.2_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-SPEC29.2_AUDIT_PACKAGE.md`
+- **Validation**: `TASK-SPEC29.2` schliesst den zweiten eng gebundenen Spec-29-Slice als erste reale Aider/OpenRouter-Backend-Integration des Janus Worker Gateway ab. Der bestehende isolierte Runner schreibt jetzt das normierte Worker-Task-Paket sowie die normierten Ergebnisartefakte fuer Success-, Local- und Blocked-Pfade und laesst diese immer noch einmal durch denselben Gateway-Contract pruefen, bevor Codex weiterreviewt. Final Audit PASS mit fokussierter Runner-, Gateway-, Compile-, Precheck-, Execution-Result- und Validator-Evidenz. Der Slice liess Spec 29 zu diesem Zeitpunkt noch bewusst offen; mit `TASK-SPEC29.3` ist die Gesamt-Spec jetzt DONE und nach `documentation/SPEC/Spec Done/29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md` ueberfuehrt.
+- **Changed Files**: `documentation/codex/model-routing/scripts/isolated_aider_workspace_runner.py`, `documentation/codex/model-routing/scripts/janus_worker_contract.py`, `documentation/codex/model-routing/scripts/janus_worker_gateway.py`, `documentation/codex/model-routing/tests/test_isolated_aider_workspace_runner.py`, `documentation/codex/model-routing/tests/test_janus_worker_gateway.py`, `documentation/tasks/TASK-SPEC29.2_execution_result.md`, `documentation/tasks/TASK-SPEC29.2_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC29.2_final_audit.md`, `documentation/SPEC/Spec Done/29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md`.
+
+### TASK-SPEC29.1 - Define the normalized worker task and result contract
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-SPEC29.1_final_audit.md` (PASS)
+- **Spec**: `documentation/SPEC/Spec Done/29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md`
+- **Parent Task**: `documentation/tasks/TASK-SPEC29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md`
+- **Task Breakdown**: `documentation/tasks/TASK-SPEC29.1_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-SPEC29.1_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-SPEC29.1_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-SPEC29.1_AUDIT_PACKAGE.md`
+- **Validation**: `TASK-SPEC29.1` schliesst den ersten eng gebundenen Spec-29-Slice als contract-only Haertung des Janus Worker Gateway ab. Die neue lokale Contract-Schicht validiert jetzt bounded Worker-Task-Pakete, verpflichtende verbotene Aktionen und normierte Ergebnisartefakte fail-closed, bevor spaetere Slices reale Aider/OpenRouter-Ausfuehrung anbinden duerfen. Final Audit PASS mit fokussierter Contract-, Gateway-, Compile-, Precheck-, Execution-Result- und Validator-Evidenz. Der Slice liess Spec 29 zu diesem Zeitpunkt noch bewusst offen; mit `TASK-SPEC29.3` ist die Gesamt-Spec jetzt DONE und nach `documentation/SPEC/Spec Done/29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md` ueberfuehrt.
+- **Changed Files**: `documentation/codex/model-routing/scripts/janus_worker_contract.py`, `documentation/codex/model-routing/scripts/janus_worker_gateway.py`, `documentation/codex/model-routing/tests/test_janus_worker_contract.py`, `documentation/codex/model-routing/tests/test_janus_worker_gateway.py`, `documentation/tasks/TASK-SPEC29.1_execution_result.md`, `documentation/tasks/TASK-SPEC29.1_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC29.1_final_audit.md`, `documentation/SPEC/Spec Done/29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md`.
+
 ### TASK-SPEC27.1 - Execute one bounded manual Aider/OpenRouter POC on a harmless docs-only target
 
 - **Status**: DONE

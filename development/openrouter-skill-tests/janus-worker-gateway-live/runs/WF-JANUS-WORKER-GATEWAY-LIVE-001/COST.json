@@ -1,0 +1,6 @@
+{
+  "usage_available": false,
+  "estimated_or_cost_usd": 0.0012,
+  "cost_estimate_confidence_percent": 75,
+  "or_model_provider": "OpenRouter / openrouter/qwen/qwen3-coder-30b-a3b-instruct"
+}

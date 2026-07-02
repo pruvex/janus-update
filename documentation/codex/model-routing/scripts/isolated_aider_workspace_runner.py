@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import difflib
 import hashlib
 import json
 import os
@@ -14,10 +15,18 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from janus_worker_contract import (
+    REQUIRED_FORBIDDEN_ACTIONS,
+    write_worker_result_dir,
+    write_worker_task_package,
+)
+from janus_worker_gateway import validate_gateway_contract
+
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 DEFAULT_RUN_ROOT = REPO_ROOT / "development" / "openrouter-skill-tests" / "isolated-aider-worker-runs"
 CENTRAL_USAGE_LOG_PATH = REPO_ROOT / "documentation" / "codex" / "model-routing" / "or_operator_usage_log.jsonl"
+TASK_PACKAGE_FILENAME = "worker_task_package.json"
 
 
 def write_text(path: Path, content: str) -> None:
@@ -194,6 +203,9 @@ def validate_package(package: dict[str, Any], package_path: Path) -> dict[str, A
     return {
         "task_label": task_label,
         "task_prompt": package_prompt_text(package, package_path),
+        "worker_profile": str(package.get("worker_profile") or "").strip() or "aider-openrouter",
+        "acceptance_criteria": package.get("acceptance_criteria") or ["Produce reviewable bounded worker artifacts only."],
+        "requested_actions": package.get("requested_actions") or ["edit"],
         "workspace_files": workspace_files,
         "allowed_edit_paths": allowed_edit_paths,
         "copy_back_paths": copy_back_paths,
@@ -258,6 +270,84 @@ def local_summary(*, workflow_id: str, task_label: str, normal_target_model: str
         "validation_result": "PASS",
         "operator_message": "Operator chose the local Codex path. No isolated OR worker run was made.",
     }
+
+
+def build_gateway_task_package(validated_package: dict[str, Any], package_path: Path, or_model: str) -> dict[str, Any]:
+    checks: list[dict[str, Any]] = []
+    for item in validated_package.get("post_commands", []):
+        if not isinstance(item, dict):
+            continue
+        checks.append(
+            {
+                "label": str(item.get("label") or "post_check"),
+                "command": item.get("command") or [],
+                "expected_exit_codes": item.get("expected_exit_codes", [0]),
+            }
+        )
+
+    return {
+        "task_label": validated_package["task_label"],
+        "worker_profile": str(validated_package.get("worker_profile") or or_model or "aider-openrouter"),
+        "allowed_edit_paths": validated_package["allowed_edit_paths"],
+        "forbidden_actions": sorted(REQUIRED_FORBIDDEN_ACTIONS),
+        "acceptance_criteria": list(validated_package.get("acceptance_criteria") or []),
+        "checks": checks,
+        "checks_not_required_reason": (
+            "No post_commands were defined in the isolated aider package."
+            if not checks
+            else ""
+        ),
+        "requested_actions": list(validated_package.get("requested_actions") or ["edit"]),
+        "task_prompt_path": str(package_path),
+    }
+
+
+def build_unified_diff(original_text: str, updated_text: str, relative_path: str) -> str:
+    if original_text == updated_text:
+        return ""
+    diff = difflib.unified_diff(
+        original_text.splitlines(keepends=True),
+        updated_text.splitlines(keepends=True),
+        fromfile=f"a/{relative_path}",
+        tofile=f"b/{relative_path}",
+    )
+    return "".join(diff)
+
+
+def finalize_gateway_result(
+    *,
+    run_dir: Path,
+    task_package_path: Path,
+    result_payload: dict[str, Any],
+    status: str,
+    summary: str,
+    changed_files: list[str],
+    checks_status: str,
+    checks_log: str,
+    diff_patch: str,
+    cost_payload: dict[str, Any],
+) -> dict[str, Any]:
+    write_worker_result_dir(
+        run_dir,
+        status=status,
+        summary=summary,
+        changed_files=changed_files,
+        checks_status=checks_status,
+        checks_log=checks_log,
+        diff_patch=diff_patch,
+        cost_payload=cost_payload,
+        metadata={
+            "workflow_id": result_payload.get("workflow_id", "N_A"),
+            "selected_path": result_payload.get("selected_path", "N_A"),
+            "final_outcome": result_payload.get("final_outcome", "N_A"),
+        },
+    )
+    gateway_result = validate_gateway_contract(task_package_path, run_dir)
+    result_payload["gateway_status"] = gateway_result["gateway_status"]
+    result_payload["task_package_validation"] = gateway_result["task_package"]
+    result_payload["result_package_validation"] = gateway_result["result_package"]
+    result_payload["validation_result"] = gateway_result["validation_result"]
+    return result_payload
 
 
 def repo_root_aider_artifacts() -> list[str]:
@@ -328,11 +418,15 @@ def delegated_run(
 
     log_path = run_dir / "test_output.log"
     report_path = run_dir / "worker_report.md"
+    task_package_path = run_dir / TASK_PACKAGE_FILENAME
     write_text(log_path, "")
 
     workspace = Path(tempfile.mkdtemp(prefix="janus-aider-worker-"))
     worker_task_path = workspace / "worker_task.md"
     baseline_hashes: dict[str, str] = {}
+    baseline_texts: dict[str, str] = {}
+    gateway_task_package = build_gateway_task_package(validated_package, package_path, or_model)
+    write_worker_task_package(task_package_path, gateway_task_package)
 
     try:
         for item in validated_package["workspace_files"]:
@@ -341,13 +435,16 @@ def delegated_run(
             target_path.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(source_path, target_path)
             baseline_hashes[item["workspace_path"]] = sha256_file(target_path)
+            baseline_texts[item["workspace_path"]] = target_path.read_text(encoding="utf-8")
 
         write_text(worker_task_path, validated_package["task_prompt"])
 
         env = os.environ.copy()
         api_key = env.get("OPENROUTER_API_KEY", "").strip()
         if not api_key:
-            raise SystemExit("OPENROUTER_API_KEY is not set.")
+            raise RuntimeError("OPENROUTER_API_KEY is not set.")
+        if "/" not in or_model.strip():
+            raise RuntimeError("or-model must be a provider/model identifier.")
         env["OPENAI_API_KEY"] = api_key
         env["OPENAI_API_BASE"] = "https://openrouter.ai/api/v1"
 
@@ -389,11 +486,21 @@ def delegated_run(
         )
 
         changed_files: list[str] = []
+        diff_chunks: list[str] = []
         for item in validated_package["workspace_files"]:
-            current_hash = sha256_file(workspace / item["workspace_path"])
+            workspace_path = workspace / item["workspace_path"]
+            current_hash = sha256_file(workspace_path)
             if current_hash != baseline_hashes[item["workspace_path"]]:
                 changed_files.append(item["workspace_path"])
+                diff_chunks.append(
+                    build_unified_diff(
+                        baseline_texts[item["workspace_path"]],
+                        workspace_path.read_text(encoding="utf-8"),
+                        item["workspace_path"],
+                    )
+                )
         changed_files = sorted(set(changed_files))
+        diff_patch = "".join(chunk for chunk in diff_chunks if chunk)
 
         scope_drift = sorted(path for path in changed_files if path not in validated_package["allowed_edit_paths"])
 
@@ -492,6 +599,29 @@ def delegated_run(
                 else "Isolated OR worker failed bounded acceptance checks. Fallback to Codex-only."
             ),
         }
+        summary = (
+            "Worker run completed inside an isolated temp workspace. "
+            + ("The result is structurally reviewable by Codex." if passed else "The result failed bounded acceptance and should fall back to Codex.")
+        )
+        checks_status = "pass" if passed else "fail"
+        cost_payload = {
+            "usage_available": False,
+            "estimated_or_cost_usd": estimated_or_cost,
+            "cost_estimate_confidence_percent": confidence_percent,
+            "or_model_provider": f"OpenRouter / {or_model}",
+        }
+        result = finalize_gateway_result(
+            run_dir=run_dir,
+            task_package_path=task_package_path,
+            result_payload=result,
+            status="success" if passed else "failed",
+            summary=summary,
+            changed_files=changed_files,
+            checks_status=checks_status,
+            checks_log=log_path.read_text(encoding="utf-8"),
+            diff_patch=diff_patch,
+            cost_payload=cost_payload,
+        )
         write_json(run_dir / "operator_choice_delegated.json", result)
         write_central_usage_log(
             workflow_id=workflow_id,
@@ -507,6 +637,68 @@ def delegated_run(
             result=result,
             notes=list(validated_package["notes"]) if isinstance(validated_package["notes"], list) else [],
             codex_followup_state="READY_FOR_CODEX_REVIEW" if passed else "CODEX_FALLBACK_REQUIRED",
+            actual_or_cost=None,
+        )
+        return result
+    except Exception as exc:
+        result = {
+            "summary_header": "ISOLATED AIDER WORKER RESULT",
+            "workflow_id": workflow_id,
+            "skill": "lean-dev-worker",
+            "task_label": validated_package["task_label"],
+            "normal_target_model": normal_target_model,
+            "or_model_provider": f"OpenRouter / {or_model}",
+            "selected_path": "isolated_aider_temp_workspace_blocked",
+            "final_outcome": "ISOLATED_AIDER_BLOCKED_AND_FALLBACK",
+            "validation_result": "FAIL",
+            "package_path": str(package_path),
+            "run_directory": str(run_dir),
+            "temp_workspace_removed": True,
+            "log_path": str(log_path),
+            "report_path": str(report_path),
+            "changed_files": [],
+            "scope_drift_files": [],
+            "copy_back_files": [],
+            "pre_command_results": [],
+            "post_command_results": [],
+            "aider_exit_code": None,
+            "repo_root_new_aider_artifacts": [],
+            "gitignore_changed_during_run": False,
+            "operator_message": f"Isolated OR worker blocked before a bounded result was accepted: {exc}",
+        }
+        write_text(report_path, f"# Worker Report\n\nBlocked: {exc}\n")
+        result = finalize_gateway_result(
+            run_dir=run_dir,
+            task_package_path=task_package_path,
+            result_payload=result,
+            status="blocked",
+            summary=f"Worker run blocked before producing an acceptable bounded result: {exc}",
+            changed_files=[],
+            checks_status="not_run",
+            checks_log=log_path.read_text(encoding="utf-8") if log_path.exists() else f"{exc}\n",
+            diff_patch="",
+            cost_payload={
+                "usage_available": False,
+                "estimated_or_cost_usd": estimated_or_cost,
+                "cost_estimate_confidence_percent": confidence_percent,
+                "or_model_provider": f"OpenRouter / {or_model}",
+            },
+        )
+        write_json(run_dir / "operator_choice_delegated.json", result)
+        write_central_usage_log(
+            workflow_id=workflow_id,
+            operator_choice="2",
+            task_label=validated_package["task_label"],
+            normal_target_model=normal_target_model,
+            or_model=or_model,
+            estimated_or_cost=estimated_or_cost,
+            confidence_percent=confidence_percent,
+            allowed_edit_paths=validated_package["allowed_edit_paths"],
+            package_path=package_path,
+            run_dir=run_dir,
+            result=result,
+            notes=list(validated_package["notes"]) if isinstance(validated_package["notes"], list) else [],
+            codex_followup_state="CODEX_FALLBACK_REQUIRED",
             actual_or_cost=None,
         )
         return result
@@ -534,6 +726,8 @@ def main() -> int:
     workflow_id = args.workflow_id or f"ISOLATED-AIDER-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
     run_dir = build_run_dir(args.run_root.resolve(), workflow_id)
     run_dir.mkdir(parents=True, exist_ok=True)
+    gateway_task_package = build_gateway_task_package(validated_package, package_path, args.or_model)
+    write_worker_task_package(run_dir / TASK_PACKAGE_FILENAME, gateway_task_package)
 
     if choice == "prompt":
         result = prompt_summary(
@@ -545,6 +739,23 @@ def main() -> int:
             confidence_percent=args.cost_estimate_confidence_percent,
             allowed_edit_paths=validated_package["allowed_edit_paths"],
             notes=list(validated_package["notes"]) if isinstance(validated_package["notes"], list) else [],
+        )
+        result = finalize_gateway_result(
+            run_dir=run_dir,
+            task_package_path=run_dir / TASK_PACKAGE_FILENAME,
+            result_payload=result,
+            status="local",
+            summary="Prompt mode only. The bounded worker run has not started and is awaiting operator choice.",
+            changed_files=[],
+            checks_status="not_run",
+            checks_log="Awaiting operator choice.\n",
+            diff_patch="",
+            cost_payload={
+                "usage_available": False,
+                "estimated_or_cost_usd": args.estimated_or_cost,
+                "cost_estimate_confidence_percent": args.cost_estimate_confidence_percent,
+                "or_model_provider": f"OpenRouter / {args.or_model}",
+            },
         )
         write_json(run_dir / "operator_choice_prompt.json", result)
         write_central_usage_log(
@@ -572,6 +783,23 @@ def main() -> int:
             task_label=args.task_label,
             normal_target_model=args.normal_target_model,
             or_model=args.or_model,
+        )
+        result = finalize_gateway_result(
+            run_dir=run_dir,
+            task_package_path=run_dir / TASK_PACKAGE_FILENAME,
+            result_payload=result,
+            status="local",
+            summary="Operator chose the local Codex path. No isolated OR worker run was executed.",
+            changed_files=[],
+            checks_status="not_run",
+            checks_log="Operator chose the local Codex path.\n",
+            diff_patch="",
+            cost_payload={
+                "usage_available": False,
+                "estimated_or_cost_usd": args.estimated_or_cost,
+                "cost_estimate_confidence_percent": args.cost_estimate_confidence_percent,
+                "or_model_provider": f"OpenRouter / {args.or_model}",
+            },
         )
         write_json(run_dir / "operator_choice_local.json", result)
         write_central_usage_log(

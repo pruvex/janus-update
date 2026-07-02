@@ -5,7 +5,7 @@ This document is intentionally rough.
 ## Objective
 Test if a delegated worker can improve a tiny docs file without touching anything else.
 
-## Current Issues
+## Issues
 - Wording is awkward
 - Structure is weak
 - Value is not clear

@@ -1,0 +1,44 @@
+{
+  "task_label": "Janus worker gateway docs-only live pilot",
+  "worker_profile": "aider-openrouter-qwen",
+  "allowed_edit_paths": [
+    "docs/target_doc.md"
+  ],
+  "forbidden_actions": [
+    "architecture",
+    "auth",
+    "commit",
+    "dependency",
+    "merge",
+    "migration",
+    "privacy",
+    "publish",
+    "push",
+    "release",
+    "secret",
+    "security",
+    "tag"
+  ],
+  "acceptance_criteria": [
+    "Only docs/target_doc.md changes are allowed.",
+    "The document should become clearer without widening scope."
+  ],
+  "checks": [
+    {
+      "label": "markdown_file_exists",
+      "command": [
+        "python",
+        "-c",
+        "from pathlib import Path; raise SystemExit(0 if Path('docs/target_doc.md').exists() else 1)"
+      ],
+      "expected_exit_codes": [
+        0
+      ]
+    }
+  ],
+  "checks_not_required_reason": "",
+  "requested_actions": [
+    "edit"
+  ],
+  "task_prompt_path": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-worker-gateway-live\\worker_task_package.json"
+}
