@@ -4,11 +4,24 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-SPEC30.3 - Produce the first-consumer recommendation package from the shadow evaluation
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-SPEC30.3_final_audit.md` (PASS)
+- **Spec**: `documentation/SPEC/Spec Done/30_shadow_task_evaluation_pack_fuer_worker_gateway_consumer_freigabe.md`
+- **Parent Task**: `documentation/tasks/TASK-SPEC30_shadow_task_evaluation_pack_fuer_worker_gateway_consumer_freigabe.md`
+- **Task Breakdown**: `documentation/tasks/TASK-SPEC30.3_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-SPEC30.3_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-SPEC30.3_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-SPEC30.3_AUDIT_PACKAGE.md`
+- **Validation**: `TASK-SPEC30.3` schliesst den dritten und letzten eng gebundenen Spec-30-Slice als bounded Empfehlungspaket fuer den ersten Worker-Consumer ab. Die versiegelten Klassenvergleiche bleiben reviewbar und muenden in genau eine ruhige Empfehlung: `docs_fleissarbeit` ist der erste echte Worker-Consumer-Kandidat, `openrouter/moonshotai/kimi-k2.5` ist das bevorzugte erste feste Modell fuer diesen Consumer, und `test_fixture_arbeit` bleibt als engerer Nachtestpfad erhalten. Final Audit PASS mit fokussierter Evaluation-Summary-, Klassenvergleichs-, Execution-Result- und Validator-Evidenz. Spec 30 ist damit insgesamt DONE und nach `documentation/SPEC/Spec Done/30_shadow_task_evaluation_pack_fuer_worker_gateway_consumer_freigabe.md` ueberfuehrt, ohne produktive Aktivierung, breite Routing-Freigabe oder behauptete Kostenueberlegenheit aus estimate-only Hinweisen abzuleiten.
+- **Changed Files**: `documentation/tasks/TASK-SPEC30.3_execution_result.md`, `documentation/tasks/TASK-SPEC30.3_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC30.3_final_audit.md`, `development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/runs/WF-SPEC30-SHADOW-EVAL-001/`, `documentation/SPEC/Spec Done/30_shadow_task_evaluation_pack_fuer_worker_gateway_consumer_freigabe.md`.
+
 ### TASK-SPEC30.2 - Implement the comparable shadow run and result pipeline
 
 - **Status**: DONE
 - **Final Audit**: `documentation/tasks/TASK-SPEC30.2_final_audit.md` (PASS)
-- **Spec**: `documentation/SPEC/30_shadow_task_evaluation_pack_fuer_worker_gateway_consumer_freigabe.md`
+- **Spec**: `documentation/SPEC/Spec Done/30_shadow_task_evaluation_pack_fuer_worker_gateway_consumer_freigabe.md`
 - **Parent Task**: `documentation/tasks/TASK-SPEC30_shadow_task_evaluation_pack_fuer_worker_gateway_consumer_freigabe.md`
 - **Task Breakdown**: `documentation/tasks/TASK-SPEC30.2_task_breakdown.md`
 - **Precheck**: `documentation/tasks/TASK-SPEC30.2_preimplementation_check.md`
@@ -21,7 +34,7 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 - **Status**: DONE
 - **Final Audit**: `documentation/tasks/TASK-SPEC30.1_final_audit.md` (PASS)
-- **Spec**: `documentation/SPEC/30_shadow_task_evaluation_pack_fuer_worker_gateway_consumer_freigabe.md`
+- **Spec**: `documentation/SPEC/Spec Done/30_shadow_task_evaluation_pack_fuer_worker_gateway_consumer_freigabe.md`
 - **Parent Task**: `documentation/tasks/TASK-SPEC30_shadow_task_evaluation_pack_fuer_worker_gateway_consumer_freigabe.md`
 - **Task Breakdown**: `documentation/tasks/TASK-SPEC30.1_task_breakdown.md`
 - **Precheck**: `documentation/tasks/TASK-SPEC30.1_preimplementation_check.md`

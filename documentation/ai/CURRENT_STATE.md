@@ -1,6 +1,210 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-03 16:34 +02:00`, `TASK-SPEC30.3` is documentation-synced and Spec 30 is now closed. The full three-slice shadow-evaluation block is sealed across task, spec, registry, and project-state surfaces: `docs_fleissarbeit` remains the first calm worker-consumer recommendation, `openrouter/moonshotai/kimi-k2.5` remains the preferred first fixed model for that consumer, and the closeout still explicitly avoids any claim of productive activation, broad routing rollout, or measured cost superiority beyond estimate-only hints.
+
+Current goal: finish the documentation-update validation/reporting block for `TASK-SPEC30.3`, then hand off to `janus-git-governance` for a bounded checkpoint recommendation.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- updated the parent Spec-30 task with the final `TASK-SPEC30.3` closeout and overall Spec-30 closeout summary
+- added Spec-30 completion metadata and moved the spec to `documentation/SPEC/Spec Done/30_shadow_task_evaluation_pack_fuer_worker_gateway_consumer_freigabe.md`
+- synced the final result into `documentation/01_CENTRAL_TASK_REGISTRY.md` and `PROJECT_STATE.md`
+
+Changed files:
+- `documentation/tasks/TASK-SPEC30_shadow_task_evaluation_pack_fuer_worker_gateway_consumer_freigabe.md`
+- `documentation/SPEC/Spec Done/30_shadow_task_evaluation_pack_fuer_worker_gateway_consumer_freigabe.md`
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python documentation/codex/scripts/search_what_i_learned.py --query "worker gateway shadow evaluation first consumer recommendation bounded comparison estimate-only cost hints"`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py C:\KI\Janus-Projekt\documentation\tasks\TASK-SPEC30.3_final_audit.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-documentation-update\scripts\validate_doc_update.py --repo C:\KI\Janus-Projekt --marker TASK-SPEC30.3 --require documentation/tasks/TASK-SPEC30_shadow_task_evaluation_pack_fuer_worker_gateway_consumer_freigabe.md --require documentation/01_CENTRAL_TASK_REGISTRY.md --require PROJECT_STATE.md --require documentation/ai/CURRENT_STATE.md`: PASS
+- `git diff --check -- documentation/tasks/TASK-SPEC30_shadow_task_evaluation_pack_fuer_worker_gateway_consumer_freigabe.md documentation/01_CENTRAL_TASK_REGISTRY.md PROJECT_STATE.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md documentation/tasks/TASK-SPEC30.3_documentation_update.md documentation/tasks/TASK-SPEC30.3_final_audit.md "documentation/SPEC/Spec Done/30_shadow_task_evaluation_pack_fuer_worker_gateway_consumer_freigabe.md"`: PASS with known CRLF warning only
+
+Open risks:
+- This closeout records a bounded recommendation result only; it still does not authorize productive worker-consumer activation, broad routing rollout, or any claim of cost superiority beyond estimate-only hints.
+- No push happened after this block, so remotes such as GitHub `origin` or `origin/codex-sync` may not contain this newest `CURRENT_STATE`; only `backup/develop` is known current through the earlier `TASK-SPEC30.2` checkpoint push.
+
+Next recommended step for ChatGPT: treat Spec 30 as documentation-closed and review only the Git-checkpoint scope, not the already sealed recommendation decision.
+
+Next recommended step for Codex: validate the documentation update, write the formal `TASK-SPEC30.3_documentation_update.md`, and then route to `janus-git-governance`.
+
+Last updated: `2026-07-03 16:34:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-03 16:24 +02:00`, `TASK-SPEC30.3` has passed `janus-final-audit`. The third Spec-30 slice is audit-clean: the sealed `WF-SPEC30-SHADOW-EVAL-001` comparison bundle supports exactly one bounded first-consumer recommendation, `docs_fleissarbeit` is confirmed as the calmest first worker-consumer candidate, `openrouter/moonshotai/kimi-k2.5` is confirmed as the preferred first fixed model for that consumer, and the package correctly avoids overclaiming broad model approval because cost evidence remains estimate-only.
+
+Current goal: run `janus-documentation-update` to close the completed `TASK-SPEC30.3` slice and finish the remaining Spec-30 documentation/state sync.
+
+Active phase: `janus-final-audit`, canonical state `HANDOFF`.
+
+Last Codex work:
+- audited `TASK-SPEC30.3` strictly from the compact audit package
+- spot-checked the sealed evaluation and class comparison summaries for recommendation support and scope boundaries
+- wrote `documentation/tasks/TASK-SPEC30.3_final_audit.md`
+- validated the final audit artifact
+
+Changed files:
+- `documentation/tasks/TASK-SPEC30.3_final_audit.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- audit package completeness check: PASS
+- debug blocker scan against `documentation/tasks/TASK-SPEC30.3_AUDIT_PACKAGE.md`: PASS
+- targeted evaluation summary review for `WF-SPEC30-SHADOW-EVAL-001`: PASS
+- targeted class-summary review for `docs_fleissarbeit` and `test_fixture_arbeit`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py C:\KI\Janus-Projekt\documentation\tasks\TASK-SPEC30.3_final_audit.md`: PASS
+- `git diff --check -- documentation/tasks/TASK-SPEC30.3_final_audit.md`: PASS
+
+Open risks:
+- This PASS applies to the bounded recommendation slice only; it still does not authorize productive worker-consumer activation, broad routing rollout, or any claim of measured model-cost superiority beyond the estimate-only hints.
+- The remaining work is documentation/state closure, including parent-task/spec completion metadata, registry/project-state sync, and the usual CURRENT_STATE continuity.
+- No push happened after this block, so remotes such as GitHub `origin` or `origin/codex-sync` may not contain this newest `CURRENT_STATE`; only `backup/develop` is known current through the earlier `TASK-SPEC30.2` checkpoint push.
+
+Next recommended step for ChatGPT: treat `TASK-SPEC30.3` as final-audited PASS and review only the documentation-sync scope needed to close Spec 30 cleanly without widening rollout claims.
+
+Next recommended step for Codex: run `janus-documentation-update` for `TASK-SPEC30.3` and complete the Spec-30 closeout across the parent task, registry, project snapshot, and spec metadata.
+
+Last updated: `2026-07-03 16:24:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-03 16:17 +02:00`, the compact audit package for `TASK-SPEC30.3` is built and review-ready. The third Spec-30 slice now has a clean final-audit input surface: bounded acceptance scope, validated precheck, execution result, scoped changed-file inventory, focused validation evidence, and the sealed `WF-SPEC30-SHADOW-EVAL-001` bundle that supports exactly one calm first-consumer recommendation for `docs_fleissarbeit` with `openrouter/moonshotai/kimi-k2.5` as the preferred first fixed model.
+
+Current goal: hand `documentation/tasks/TASK-SPEC30.3_AUDIT_PACKAGE.md` into `janus-final-audit` and verify that the recommendation stays strictly bounded to the sealed evidence.
+
+Active phase: `codex-audit-package-builder`, canonical state `HANDOFF`.
+
+Last Codex work:
+- built `documentation/tasks/TASK-SPEC30.3_AUDIT_PACKAGE.md` with strict scoped inputs so unrelated dirty-worktree noise stayed out
+- included the bound Spec/Task artifacts and the sealed shadow-evaluation run folder in the package inventory
+- verified that the package wording keeps the recommendation narrow and does not imply productive activation or broad model approval
+
+Changed files:
+- `documentation/tasks/TASK-SPEC30.3_AUDIT_PACKAGE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python documentation/codex/skills/codex-audit-package-builder/scripts/build_audit_package.py --cwd C:\KI\Janus-Projekt --out documentation\tasks\TASK-SPEC30.3_AUDIT_PACKAGE.md ...`: PASS
+- package section spot-check against `documentation/tasks/TASK-SPEC30.3_execution_result.md` and `documentation/tasks/TASK-SPEC30.3_preimplementation_check.md`: PASS
+- `git diff --check -- documentation/tasks/TASK-SPEC30.3_AUDIT_PACKAGE.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS with known CRLF warnings only
+
+Open risks:
+- The recommendation is intentionally bounded by estimate-only cost hints (`usage_available=false`) and by only two shadow classes, so it must not be overread as a global worker/model approval.
+- This package supports a first-consumer recommendation only; it does not authorize productive activation, broader routing rollout, commit, push, release, or repo writeback outside the existing sandbox evidence.
+- No push happened after this block, so remotes such as GitHub `origin` or `origin/codex-sync` may not contain this newest `CURRENT_STATE`; only `backup/develop` is known current through the earlier `TASK-SPEC30.2` checkpoint push.
+
+Next recommended step for ChatGPT: load only `documentation/tasks/TASK-SPEC30.3_AUDIT_PACKAGE.md` and review whether the final recommendation wording stays fully aligned with the sealed comparison evidence.
+
+Next recommended step for Codex: run `janus-final-audit` for `TASK-SPEC30.3` with `5.5` high in a fresh chat from the compact audit package only.
+
+Last updated: `2026-07-03 16:17:53 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-03 16:12 +02:00`, `TASK-SPEC30.3` is implemented and auto-verified. The third Spec-30 slice now has a bounded first-consumer recommendation package: the sealed `WF-SPEC30-SHADOW-EVAL-001` evidence bundle has been synthesized into one clear outcome that recommends `docs_fleissarbeit` as the first real worker-consumer candidate, prefers `openrouter/moonshotai/kimi-k2.5` as the initial fixed model for that consumer, and keeps `test_fixture_arbeit` as the next tighter retest class rather than overclaiming a broader rollout.
+
+Current goal: prepare a compact audit package for `TASK-SPEC30.3` before final audit reviews this bounded recommendation slice.
+
+Active phase: `janus-executioner`, canonical state `PASS`.
+
+Last Codex work:
+- implemented the recommendation-only closeout for `TASK-SPEC30.3`
+- reviewed the sealed class comparison bundle and representative run artifacts
+- wrote and validated `documentation/tasks/TASK-SPEC30.3_execution_result.md`
+
+Changed files:
+- `documentation/tasks/TASK-SPEC30.3_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- bounded review of `development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/runs/WF-SPEC30-SHADOW-EVAL-001/evaluation_summary.json`: PASS
+- bounded review of both class `comparison_summary.json` files: PASS
+- bounded spot-check of representative `DIFF.patch`, `RESULT.json`, `RESULT.md`, `COST.json`, and `worker_report.md` artifacts: PASS
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py C:\KI\Janus-Projekt\documentation\tasks\TASK-SPEC30.3_execution_result.md`: PASS
+- `git diff --check -- documentation/tasks/TASK-SPEC30.3_execution_result.md`: PASS
+
+Open risks:
+- The recommendation is intentionally bounded by estimate-only cost hints (`usage_available=false`) and by just two shadow classes, so it should not be overread as a global worker/model approval.
+- No push happened after this block, so remotes such as GitHub `origin` or `origin/codex-sync` may not contain this newest `CURRENT_STATE`; only `backup/develop` is known current through the earlier `TASK-SPEC30.2` checkpoint push.
+
+Next recommended step for ChatGPT: review only the bounded `TASK-SPEC30.3` audit surface and verify that the first-consumer recommendation does not overclaim beyond the sealed evidence.
+
+Next recommended step for Codex: run `codex-audit-package-builder` for `TASK-SPEC30.3`, then continue to `janus-final-audit`.
+
+Last updated: `2026-07-03 16:12:51 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-03 16:10 +02:00`, `TASK-SPEC30.3` has passed `janus-preimplementation-check`. The third Spec-30 slice is now execution-ready: it may synthesize the sealed `WF-SPEC30-SHADOW-EVAL-001` comparison evidence into exactly one first-consumer recommendation, tighter retest signal, or No-Go result, but it still must not rerun workers, expand the model matrix, activate any real worker consumer, or touch product code.
+
+Current goal: implement `TASK-SPEC30.3` through `janus-executioner` without widening beyond evidence synthesis, recommendation wording, and bounded closeout artifacts.
+
+Active phase: `janus-preimplementation-check`, canonical state `HANDOFF`.
+
+Last Codex work:
+- prechecked `TASK-SPEC30.3` as a single bounded recommendation slice
+- confirmed artifact identity across Spec 30, TASK-SPEC30, the sealed `TASK-SPEC30.1` and `TASK-SPEC30.2` slices, the released `TASK-SPEC30.3` handoff, and the existing shadow-evaluation result bundle
+- locked the third slice to recommendation synthesis only from the existing comparison artifacts
+- explicitly kept new worker runs, new model tests, productive activation, and product-code edits out of scope
+
+Changed files:
+- `documentation/tasks/TASK-SPEC30.3_preimplementation_check.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py C:\KI\Janus-Projekt\documentation\tasks\TASK-SPEC30.3_preimplementation_check.md`: PASS
+- `git diff --check -- documentation/tasks/TASK-SPEC30.3_preimplementation_check.md`: PASS
+
+Open risks:
+- `TASK-SPEC30.3` is the first recommendation-level slice, so implementation must still avoid overclaiming from the evidence and must choose exactly one supported outcome without pretending that productive worker activation already happened.
+- No push happened after this block, so remotes such as GitHub `origin` or `origin/codex-sync` may not contain this newest `CURRENT_STATE`; only `backup/develop` is known current through the earlier `TASK-SPEC30.2` checkpoint push.
+
+Next recommended step for ChatGPT: treat `TASK-SPEC30.3` as execution-ready and review only whether the recommendation logic stays bounded to the sealed comparison evidence.
+
+Next recommended step for Codex: run `janus-executioner` on `TASK-SPEC30.3` with `5.4` high.
+
+Last updated: `2026-07-03 16:10:22 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-03 16:07 +02:00`, the post-checkpoint handoff around Spec 30 is advanced again. The bounded `TASK-SPEC30.2` checkpoint is now committed locally and pushed to `backup/develop`, and `TASK-SPEC30.3` has been formally released through `janus-task-breakdown`: the next slice is tightly bound to synthesizing the existing `WF-SPEC30-SHADOW-EVAL-001` comparison evidence into exactly one first-consumer recommendation, tighter retest signal, or No-Go result.
+
+Current goal: run `janus-preimplementation-check` for `TASK-SPEC30.3` before any recommendation artifact is written.
+
+Active phase: `janus-task-breakdown`, canonical state `HANDOFF`.
+
+Last Codex work:
+- pushed the bounded `TASK-SPEC30.2` checkpoint commit `f59baa63e` to `backup/develop`
+- wrote `documentation/tasks/TASK-SPEC30.3_task_breakdown.md`
+- released `TASK-SPEC30.3` as the next single-target precheck handoff while keeping reruns, new model tests, and productive activation out of scope
+
+Changed files:
+- `documentation/tasks/TASK-SPEC30.3_task_breakdown.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `git push backup develop`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-task-breakdown\scripts\validate_task_handoff.py --task C:\KI\Janus-Projekt\documentation\tasks\TASK-SPEC30_shadow_task_evaluation_pack_fuer_worker_gateway_consumer_freigabe.md --target TASK-SPEC30.3`: PASS
+- `git diff --check -- documentation/tasks/TASK-SPEC30.3_task_breakdown.md`: PASS
+
+Open risks:
+- `TASK-SPEC30.3` must stay recommendation-only and must not silently expand into new worker runs, broader model matrices, product-code edits, or productive worker-consumer activation.
+- The remote `backup/develop` now contains the `TASK-SPEC30.2` checkpoint commit, but other remotes such as GitHub `origin` or `origin/codex-sync` may still not contain the latest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: review only whether the released `TASK-SPEC30.3` scope stays bounded to recommendation synthesis and does not smuggle new implementation back in.
+
+Next recommended step for Codex: run `janus-preimplementation-check` on `TASK-SPEC30.3` with `5.4` high.
+
+Last updated: `2026-07-03 16:07:32 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-03 15:48 +02:00`, `TASK-SPEC30.2` is fully documentation-synced. The second Spec-30 slice is now closed not only in audit artifacts, but also in the parent task, central registry, and project snapshot: the bounded comparable shadow-run pipeline is recorded as a completed slice while Spec 30 itself remains intentionally open for `TASK-SPEC30.3`.
 
 Current goal: close the completed `TASK-SPEC30.2` slice cleanly and then move to `TASK-SPEC30.3` through the next routed Janus step.
