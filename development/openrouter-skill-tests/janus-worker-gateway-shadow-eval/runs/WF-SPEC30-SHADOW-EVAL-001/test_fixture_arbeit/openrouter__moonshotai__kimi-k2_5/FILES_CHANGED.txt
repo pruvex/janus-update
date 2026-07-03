@@ -1,0 +1,2 @@
+fixtures/contact_memory_fixture.json
+tests/test_contact_memory_fixture.py

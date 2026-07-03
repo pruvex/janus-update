@@ -17,10 +17,15 @@ from typing import Any
 
 from janus_worker_contract import (
     REQUIRED_FORBIDDEN_ACTIONS,
+    validate_shadow_evaluation_manifest_file,
+    validate_worker_task_package_file,
     write_worker_result_dir,
     write_worker_task_package,
 )
-from janus_worker_gateway import validate_gateway_contract
+from janus_worker_gateway import (
+    validate_gateway_contract,
+    validate_shadow_evaluation_run_bundle,
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
@@ -212,6 +217,287 @@ def validate_package(package: dict[str, Any], package_path: Path) -> dict[str, A
         "pre_commands": pre_commands,
         "post_commands": post_commands,
         "notes": package.get("notes") or [],
+    }
+
+
+def model_slug(model_id: str) -> str:
+    return model_id.strip().replace("\\", "/").replace("/", "__").replace(":", "_").replace(".", "_")
+
+
+def load_shadow_task_package(path: Path) -> dict[str, Any]:
+    validation = validate_worker_task_package_file(path)
+    if validation["validation_result"] == "FAIL":
+        raise RuntimeError(f"shadow task package invalid: {path}")
+    return load_json(path)
+
+
+def build_runner_package_from_shadow_task(
+    shadow_task_package_path: Path,
+    *,
+    repo_root: Path,
+) -> dict[str, Any]:
+    shadow_package = load_shadow_task_package(shadow_task_package_path)
+    class_root = shadow_task_package_path.parent
+    class_root_rel = class_root.relative_to(repo_root).as_posix()
+    allowed_edit_paths = [path.replace("\\", "/") for path in shadow_package.get("allowed_edit_paths", [])]
+    workspace_files = [
+        {
+            "repo_path": f"{class_root_rel}/{relative_path}",
+            "workspace_path": relative_path,
+            "allow_edit": True,
+            "copy_back": True,
+        }
+        for relative_path in allowed_edit_paths
+    ]
+    post_commands: list[dict[str, Any]] = []
+    for item in shadow_package.get("checks", []):
+        if not isinstance(item, dict):
+            continue
+        post_commands.append(
+            {
+                "label": str(item.get("label") or "shadow_check"),
+                "command": item.get("command") or [],
+                "expected_exit_codes": item.get("expected_exit_codes", [0]),
+            }
+        )
+    return {
+        "task_label": shadow_package["task_label"],
+        "worker_profile": shadow_package["worker_profile"],
+        "task_prompt": package_prompt_text(shadow_package, shadow_task_package_path),
+        "workspace_files": workspace_files,
+        "pre_commands": [],
+        "post_commands": post_commands,
+        "acceptance_criteria": shadow_package.get("acceptance_criteria") or [],
+        "requested_actions": shadow_package.get("requested_actions") or ["edit"],
+        "notes": [
+            f"shadow_work_class={shadow_package.get('shadow_work_class', 'N_A')}",
+            "shadow_evaluation_package=true",
+        ],
+    }
+
+
+def read_text_map(repo_paths: list[Path]) -> dict[Path, str]:
+    return {path: path.read_text(encoding="utf-8") for path in repo_paths}
+
+
+def restore_repo_files(baseline_texts: dict[Path, str]) -> None:
+    for path, content in baseline_texts.items():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content, encoding="utf-8")
+
+
+def cost_hint_payload(run_dir: Path) -> dict[str, Any]:
+    cost_path = run_dir / "COST.json"
+    if not cost_path.exists():
+        return {}
+    return load_json(cost_path)
+
+
+def has_cost_hint(cost_payload: dict[str, Any]) -> bool:
+    if not isinstance(cost_payload, dict):
+        return False
+    if cost_payload.get("usage_available") is True:
+        return True
+    return any(
+        key in cost_payload
+        for key in ("actual_or_cost_usd", "estimated_or_cost_usd", "total_cost_usd")
+    )
+
+
+def build_shadow_class_summary_markdown(
+    *,
+    class_id: str,
+    expected_models: list[str],
+    run_records: list[dict[str, Any]],
+    comparison_status: str,
+) -> str:
+    lines = [
+        f"# Shadow Comparison Summary: {class_id}",
+        "",
+        f"- Comparison status: {comparison_status}",
+        f"- Expected models: {', '.join(expected_models)}",
+        "",
+        "## Runs",
+        "",
+    ]
+    for record in run_records:
+        lines.extend(
+            [
+                f"### {record['model_id']}",
+                f"- Final outcome: {record['final_outcome']}",
+                f"- Gateway status: {record['gateway_status']}",
+                f"- Validation result: {record['validation_result']}",
+                f"- Result status: {record['result_status']}",
+                f"- Cost hint available: {'yes' if record['cost_hint_available'] else 'no'}",
+                f"- Changed files: {', '.join(record['changed_files']) if record['changed_files'] else 'none'}",
+                "",
+            ]
+        )
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def build_shadow_evaluation_summary_markdown(
+    *,
+    evaluation_id: str,
+    bundle_status: str,
+    class_summary_paths: list[str],
+) -> str:
+    lines = [
+        f"# Shadow Evaluation Summary: {evaluation_id}",
+        "",
+        f"- Bundle status: {bundle_status}",
+        "",
+        "## Class summaries",
+        "",
+    ]
+    for path in class_summary_paths:
+        lines.append(f"- {path}")
+    lines.append("")
+    return "\n".join(lines)
+
+
+def run_shadow_evaluation_bundle(
+    *,
+    shadow_eval_manifest_path: Path,
+    normal_target_model: str,
+    estimated_or_cost: float,
+    confidence_percent: int,
+    workflow_id: str | None = None,
+    repo_root: Path | None = None,
+) -> dict[str, Any]:
+    root = repo_root or REPO_ROOT
+    manifest_validation = validate_shadow_evaluation_manifest_file(
+        shadow_eval_manifest_path,
+        repo_root=root,
+    )
+    if manifest_validation["validation_result"] == "FAIL":
+        raise RuntimeError("shadow evaluation manifest is not execution-ready")
+
+    manifest = load_json(shadow_eval_manifest_path)
+    evaluation_id = str(manifest.get("evaluation_id") or "SHADOW-EVAL").strip()
+    sandbox_root = (root / str(manifest.get("sandbox_root") or "")).resolve()
+    run_root = sandbox_root / "runs"
+    resolved_workflow_id = workflow_id or f"{evaluation_id}-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
+    evaluation_run_dir = build_run_dir(run_root, resolved_workflow_id)
+    evaluation_run_dir.mkdir(parents=True, exist_ok=True)
+
+    class_summary_paths: list[str] = []
+    class_records: list[dict[str, Any]] = []
+
+    for entry in manifest.get("shadow_work_classes", []):
+        if not isinstance(entry, dict):
+            continue
+        class_id = str(entry.get("class_id") or "").strip().lower()
+        task_package_path = (root / str(entry.get("task_package_path") or "")).resolve()
+        expected_models = [str(model).strip() for model in entry.get("comparison_models", []) if str(model).strip()]
+        if not class_id or not expected_models:
+            continue
+
+        runner_package = build_runner_package_from_shadow_task(
+            task_package_path,
+            repo_root=root,
+        )
+        class_dir = evaluation_run_dir / class_id
+        class_dir.mkdir(parents=True, exist_ok=True)
+        runner_package_path = class_dir / "shadow_runner_input.json"
+        write_json(runner_package_path, runner_package)
+        validated_package = validate_package(runner_package, runner_package_path)
+
+        baseline_repo_paths = [
+            (root / item["repo_path"]).resolve()
+            for item in validated_package["workspace_files"]
+        ]
+        baseline_texts = read_text_map(baseline_repo_paths)
+        run_records: list[dict[str, Any]] = []
+
+        for model_id in expected_models:
+            model_dir = class_dir / model_slug(model_id)
+            model_dir.mkdir(parents=True, exist_ok=True)
+            result = delegated_run(
+                workflow_id=f"{resolved_workflow_id}-{class_id}-{model_slug(model_id)}",
+                run_dir=model_dir,
+                validated_package=validated_package,
+                package_path=runner_package_path,
+                normal_target_model=normal_target_model,
+                or_model=model_id,
+                estimated_or_cost=estimated_or_cost,
+                confidence_percent=confidence_percent,
+            )
+            result_payload = load_json(model_dir / "RESULT.json")
+            cost_payload = cost_hint_payload(model_dir)
+            run_records.append(
+                {
+                    "model_id": model_id,
+                    "run_directory": model_dir.relative_to(root).as_posix(),
+                    "final_outcome": result.get("final_outcome", "N_A"),
+                    "gateway_status": result.get("gateway_status", "N_A"),
+                    "validation_result": result.get("validation_result", "FAIL"),
+                    "result_status": str(result_payload.get("status") or "N_A"),
+                    "changed_files": result.get("changed_files", []),
+                    "cost_hint_available": has_cost_hint(cost_payload),
+                }
+            )
+            restore_repo_files(baseline_texts)
+
+        blocked_reviewable = any(record["gateway_status"] == "WORKER_NON_SUCCESS_REVIEWABLE" for record in run_records)
+        invalid_run = any(record["validation_result"] != "PASS" for record in run_records) or len(run_records) != 2
+        comparison_status = (
+            "SHADOW_CLASS_COMPARISON_INVALID"
+            if invalid_run
+            else "SHADOW_CLASS_COMPARISON_BLOCKED_REVIEWABLE"
+            if blocked_reviewable
+            else "SHADOW_CLASS_COMPARISON_READY"
+        )
+        summary_payload = {
+            "class_id": class_id,
+            "task_package_path": task_package_path.relative_to(root).as_posix(),
+            "expected_models": expected_models,
+            "model_runs": run_records,
+            "comparison_status": comparison_status,
+        }
+        write_json(class_dir / "comparison_summary.json", summary_payload)
+        write_text(
+            class_dir / "comparison_summary.md",
+            build_shadow_class_summary_markdown(
+                class_id=class_id,
+                expected_models=expected_models,
+                run_records=run_records,
+                comparison_status=comparison_status,
+            ),
+        )
+        class_summary_paths.append((class_dir / "comparison_summary.json").relative_to(root).as_posix())
+        class_records.append(summary_payload)
+
+    bundle_validation = validate_shadow_evaluation_run_bundle(
+        shadow_eval_manifest_path,
+        evaluation_run_dir,
+        repo_root=root,
+    )
+    evaluation_summary = {
+        "evaluation_id": evaluation_id,
+        "workflow_id": resolved_workflow_id,
+        "manifest_path": shadow_eval_manifest_path.relative_to(root).as_posix(),
+        "evaluation_run_directory": evaluation_run_dir.relative_to(root).as_posix(),
+        "class_summary_paths": class_summary_paths,
+        "class_records": class_records,
+        "bundle_status": bundle_validation["gateway_status"],
+        "validation_result": bundle_validation["validation_result"],
+    }
+    write_json(evaluation_run_dir / "evaluation_summary.json", evaluation_summary)
+    write_text(
+        evaluation_run_dir / "evaluation_summary.md",
+        build_shadow_evaluation_summary_markdown(
+            evaluation_id=evaluation_id,
+            bundle_status=bundle_validation["gateway_status"],
+            class_summary_paths=class_summary_paths,
+        ),
+    )
+    return {
+        "evaluation_id": evaluation_id,
+        "workflow_id": resolved_workflow_id,
+        "evaluation_run_directory": evaluation_run_dir.relative_to(root).as_posix(),
+        "bundle_validation": bundle_validation,
+        "class_summary_paths": class_summary_paths,
     }
 
 
@@ -711,7 +997,8 @@ def main() -> int:
     parser.add_argument("--task-label", required=True)
     parser.add_argument("--normal-target-model", required=True)
     parser.add_argument("--operator-choice", required=True)
-    parser.add_argument("--input-package-json", type=Path, required=True)
+    parser.add_argument("--input-package-json", type=Path, default=None)
+    parser.add_argument("--shadow-eval-manifest-json", type=Path, default=None)
     parser.add_argument("--workflow-id", default=None)
     parser.add_argument("--or-model", default="openrouter/qwen/qwen3-coder-30b-a3b-instruct")
     parser.add_argument("--estimated-or-cost", type=float, default=0.00080)
@@ -720,6 +1007,22 @@ def main() -> int:
     args = parser.parse_args()
 
     choice = normalize_choice(args.operator_choice)
+    if args.shadow_eval_manifest_json:
+        if choice != "delegated":
+            raise SystemExit("shadow-eval-manifest-json currently supports delegated execution only.")
+        result = run_shadow_evaluation_bundle(
+            shadow_eval_manifest_path=args.shadow_eval_manifest_json.resolve(),
+            normal_target_model=args.normal_target_model,
+            estimated_or_cost=args.estimated_or_cost,
+            confidence_percent=args.cost_estimate_confidence_percent,
+            workflow_id=args.workflow_id,
+        )
+        output(result)
+        return 0 if result["bundle_validation"]["validation_result"] == "PASS" else 1
+
+    if not args.input_package_json:
+        raise SystemExit("input-package-json is required unless shadow-eval-manifest-json is provided.")
+
     package_path = args.input_package_json.resolve()
     package = load_json(package_path)
     validated_package = validate_package(package, package_path)

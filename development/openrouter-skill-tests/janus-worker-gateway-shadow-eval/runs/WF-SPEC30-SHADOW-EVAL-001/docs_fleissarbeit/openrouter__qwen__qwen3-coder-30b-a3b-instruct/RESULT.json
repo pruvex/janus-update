@@ -1,0 +1,9 @@
+{
+  "status": "success",
+  "checks_status": "pass",
+  "changed_files_count": 1,
+  "generated_at": "2026-07-03T15:31:53+02:00",
+  "workflow_id": "WF-SPEC30-SHADOW-EVAL-001-docs_fleissarbeit-openrouter__qwen__qwen3-coder-30b-a3b-instruct",
+  "selected_path": "isolated_aider_temp_workspace_live",
+  "final_outcome": "ISOLATED_AIDER_READY_FOR_CODEX_REVIEW"
+}

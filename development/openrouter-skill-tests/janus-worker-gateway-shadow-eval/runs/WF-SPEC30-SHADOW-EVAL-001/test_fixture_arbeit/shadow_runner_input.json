@@ -1,0 +1,45 @@
+{
+  "task_label": "Shadow test fixture comparison package",
+  "worker_profile": "shadow-eval-fixed-pair",
+  "task_prompt": "# Shadow Task: Test And Fixture Work\n\nYou are working inside a bounded shadow evaluation package.\n\nHard rules:\n\n- Edit only `fixtures/contact_memory_fixture.json` and `tests/test_contact_memory_fixture.py`.\n- Do not touch any source-code file outside this bounded fixture/test surface.\n- Do not add product approvals, release claims, or broad routing decisions.\n- Keep the change small and reviewable.\n\nTask:\n\n- Improve the fixture readability and test clarity while preserving the bounded test-only scope.\n- Keep the task suitable for a side-by-side worker comparison.\n",
+  "workspace_files": [
+    {
+      "repo_path": "development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/test_fixture_arbeit/fixtures/contact_memory_fixture.json",
+      "workspace_path": "fixtures/contact_memory_fixture.json",
+      "allow_edit": true,
+      "copy_back": true
+    },
+    {
+      "repo_path": "development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/test_fixture_arbeit/tests/test_contact_memory_fixture.py",
+      "workspace_path": "tests/test_contact_memory_fixture.py",
+      "allow_edit": true,
+      "copy_back": true
+    }
+  ],
+  "pre_commands": [],
+  "post_commands": [
+    {
+      "label": "fixture_test_file_exists",
+      "command": [
+        "python",
+        "-c",
+        "from pathlib import Path; ok = Path('fixtures/contact_memory_fixture.json').exists() and Path('tests/test_contact_memory_fixture.py').exists(); raise SystemExit(0 if ok else 1)"
+      ],
+      "expected_exit_codes": [
+        0
+      ]
+    }
+  ],
+  "acceptance_criteria": [
+    "Only the bounded fixture and test file may change.",
+    "The task must stay on fixture or test shaping, not source-code refactors.",
+    "No change may imply global worker approval or product activation."
+  ],
+  "requested_actions": [
+    "edit"
+  ],
+  "notes": [
+    "shadow_work_class=test_fixture_arbeit",
+    "shadow_evaluation_package=true"
+  ]
+}

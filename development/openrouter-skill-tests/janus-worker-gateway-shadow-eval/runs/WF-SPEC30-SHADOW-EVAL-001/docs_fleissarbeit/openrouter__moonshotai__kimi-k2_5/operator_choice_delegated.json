@@ -1,0 +1,81 @@
+{
+  "summary_header": "ISOLATED AIDER WORKER RESULT",
+  "workflow_id": "WF-SPEC30-SHADOW-EVAL-001-docs_fleissarbeit-openrouter__moonshotai__kimi-k2_5",
+  "skill": "lean-dev-worker",
+  "task_label": "Shadow docs fleissarbeit comparison package",
+  "normal_target_model": "5.4 high",
+  "or_model_provider": "OpenRouter / openrouter/moonshotai/kimi-k2.5",
+  "selected_path": "isolated_aider_temp_workspace_live",
+  "final_outcome": "ISOLATED_AIDER_READY_FOR_CODEX_REVIEW",
+  "validation_result": "PASS",
+  "package_path": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-worker-gateway-shadow-eval\\runs\\WF-SPEC30-SHADOW-EVAL-001\\docs_fleissarbeit\\shadow_runner_input.json",
+  "run_directory": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-worker-gateway-shadow-eval\\runs\\WF-SPEC30-SHADOW-EVAL-001\\docs_fleissarbeit\\openrouter__moonshotai__kimi-k2_5",
+  "temp_workspace_removed": true,
+  "log_path": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-worker-gateway-shadow-eval\\runs\\WF-SPEC30-SHADOW-EVAL-001\\docs_fleissarbeit\\openrouter__moonshotai__kimi-k2_5\\test_output.log",
+  "report_path": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-worker-gateway-shadow-eval\\runs\\WF-SPEC30-SHADOW-EVAL-001\\docs_fleissarbeit\\openrouter__moonshotai__kimi-k2_5\\worker_report.md",
+  "changed_files": [
+    "docs/target_doc.md"
+  ],
+  "scope_drift_files": [],
+  "copy_back_files": [
+    "development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/docs_fleissarbeit/docs/target_doc.md"
+  ],
+  "pre_command_results": [],
+  "post_command_results": [
+    {
+      "label": "markdown_file_exists",
+      "command": [
+        "python",
+        "-c",
+        "from pathlib import Path; raise SystemExit(0 if Path('docs/target_doc.md').exists() else 1)"
+      ],
+      "expected_exit_codes": [
+        0
+      ],
+      "actual_exit_code": 0,
+      "ok": true
+    }
+  ],
+  "aider_exit_code": 0,
+  "repo_root_new_aider_artifacts": [],
+  "gitignore_changed_during_run": false,
+  "operator_message": "Isolated OR worker produced a bounded result. Codex must review and decide whether to accept or harden locally.",
+  "gateway_status": "WORKER_SUCCESS_REVIEWABLE",
+  "task_package_validation": {
+    "validation_result": "PASS",
+    "contract_status": "TASK_PACKAGE_VALID",
+    "issues": [],
+    "task_label": "Shadow docs fleissarbeit comparison package",
+    "worker_profile": "shadow-eval-fixed-pair",
+    "allowed_edit_paths": [
+      "docs/target_doc.md"
+    ],
+    "required_result_artifacts": [
+      "RESULT.json",
+      "RESULT.md",
+      "DIFF.patch",
+      "FILES_CHANGED.txt",
+      "CHECKS.log",
+      "COST.json"
+    ]
+  },
+  "result_package_validation": {
+    "validation_result": "PASS",
+    "contract_status": "WORKER_SUCCESS_REVIEWABLE",
+    "issues": [],
+    "status": "success",
+    "changed_files": [
+      "docs/target_doc.md"
+    ],
+    "scope_drift_files": [],
+    "missing_artifacts": [],
+    "required_result_artifacts": [
+      "RESULT.json",
+      "RESULT.md",
+      "DIFF.patch",
+      "FILES_CHANGED.txt",
+      "CHECKS.log",
+      "COST.json"
+    ]
+  }
+}

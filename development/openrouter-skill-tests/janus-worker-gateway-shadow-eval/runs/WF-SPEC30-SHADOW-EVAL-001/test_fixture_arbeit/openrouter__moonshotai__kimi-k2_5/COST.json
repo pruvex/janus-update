@@ -1,0 +1,6 @@
+{
+  "usage_available": false,
+  "estimated_or_cost_usd": 0.001,
+  "cost_estimate_confidence_percent": 70,
+  "or_model_provider": "OpenRouter / openrouter/moonshotai/kimi-k2.5"
+}

@@ -1,0 +1,46 @@
+{
+  "task_label": "Shadow test fixture comparison package",
+  "worker_profile": "shadow-eval-fixed-pair",
+  "allowed_edit_paths": [
+    "fixtures/contact_memory_fixture.json",
+    "tests/test_contact_memory_fixture.py"
+  ],
+  "forbidden_actions": [
+    "architecture",
+    "auth",
+    "commit",
+    "dependency",
+    "merge",
+    "migration",
+    "privacy",
+    "publish",
+    "push",
+    "release",
+    "secret",
+    "security",
+    "tag"
+  ],
+  "acceptance_criteria": [
+    "Only the bounded fixture and test file may change.",
+    "The task must stay on fixture or test shaping, not source-code refactors.",
+    "No change may imply global worker approval or product activation."
+  ],
+  "checks": [
+    {
+      "label": "fixture_test_file_exists",
+      "command": [
+        "python",
+        "-c",
+        "from pathlib import Path; ok = Path('fixtures/contact_memory_fixture.json').exists() and Path('tests/test_contact_memory_fixture.py').exists(); raise SystemExit(0 if ok else 1)"
+      ],
+      "expected_exit_codes": [
+        0
+      ]
+    }
+  ],
+  "checks_not_required_reason": "",
+  "requested_actions": [
+    "edit"
+  ],
+  "task_prompt_path": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-worker-gateway-shadow-eval\\runs\\WF-SPEC30-SHADOW-EVAL-001\\test_fixture_arbeit\\shadow_runner_input.json"
+}

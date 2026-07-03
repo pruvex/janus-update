@@ -1,0 +1,22 @@
+--- a/tests/test_contact_memory_fixture.py
++++ b/tests/test_contact_memory_fixture.py
+@@ -3,8 +3,18 @@
+
+
+ def test_shadow_fixture_shape() -> None:
++    """Test that the contact memory fixture has the expected structure."""
+     fixture = Path("fixtures/contact_memory_fixture.json")
+     payload = json.loads(fixture.read_text(encoding="utf-8"))
+
++    # Verify required fields exist
++    assert "contact" in payload
++    assert "facts" in payload
++    assert "notes" in payload
++
++    # Verify field types
++    assert isinstance(payload["facts"], list)
++    assert isinstance(payload["notes"], list)
++
++    # Verify contact name is present
+     assert payload["contact"]
+-    assert isinstance(payload["facts"], list)

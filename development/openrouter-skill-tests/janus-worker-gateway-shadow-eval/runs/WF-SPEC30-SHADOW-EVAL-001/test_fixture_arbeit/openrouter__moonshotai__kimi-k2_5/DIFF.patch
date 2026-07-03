@@ -1,0 +1,31 @@
+--- a/fixtures/contact_memory_fixture.json
++++ b/fixtures/contact_memory_fixture.json
+@@ -1,9 +1,11 @@
+ {
+   "contact": "Shadow Nathan",
++
+   "facts": [
+     "mag ruhige Spaziergaenge",
+     "merkt sich Namen meistens korrekt"
+   ],
++
+   "notes": [
+     "fixture-only sandbox data",
+     "not connected to live Janus memory"
+--- a/tests/test_contact_memory_fixture.py
++++ b/tests/test_contact_memory_fixture.py
+@@ -3,8 +3,11 @@
+
+
+ def test_shadow_fixture_shape() -> None:
+-    fixture = Path("fixtures/contact_memory_fixture.json")
+-    payload = json.loads(fixture.read_text(encoding="utf-8"))
++    """Prüft, dass das Fixture die erwartete Struktur besitzt."""
++    fixture_path = Path("fixtures/contact_memory_fixture.json")
++    payload = json.loads(fixture_path.read_text(encoding="utf-8"))
+
+-    assert payload["contact"]
++    assert isinstance(payload["contact"], str) and payload["contact"]
+     assert isinstance(payload["facts"], list)
++    assert all(isinstance(fact, str) for fact in payload["facts"])
++    assert isinstance(payload.get("notes"), list)

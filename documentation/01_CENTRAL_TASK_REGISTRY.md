@@ -4,6 +4,32 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-SPEC30.2 - Implement the comparable shadow run and result pipeline
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-SPEC30.2_final_audit.md` (PASS)
+- **Spec**: `documentation/SPEC/30_shadow_task_evaluation_pack_fuer_worker_gateway_consumer_freigabe.md`
+- **Parent Task**: `documentation/tasks/TASK-SPEC30_shadow_task_evaluation_pack_fuer_worker_gateway_consumer_freigabe.md`
+- **Task Breakdown**: `documentation/tasks/TASK-SPEC30.2_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-SPEC30.2_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-SPEC30.2_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-SPEC30.2_AUDIT_PACKAGE.md`
+- **Validation**: `TASK-SPEC30.2` schliesst den zweiten eng gebundenen Spec-30-Slice als vergleichbare Shadow-Run- und Result-Pipeline fuer den Worker Gateway ab. Beide geforderten Shadow-Arbeitsklassen liefen gegen exakt das feste qwen-/kimi-Modellpaar, liefern normierte Ergebnisartefakte mit Kostenhinweisen, erzeugen je eine lokale Klassen-Zusammenfassung und muenden in ein validator-sauberes Top-Level-Bundle `SHADOW_EVALUATION_RUNS_READY`. Final Audit PASS mit fokussierter Runner-, Gateway-, Compare-, Compile-, Pytest-, Execution-Result- und Validator-Evidenz. Spec 30 bleibt dabei bewusst offen, weil `TASK-SPEC30.3` die erste Consumer-Empfehlung noch separat aus diesen Vergleichsartefakten ableiten muss.
+- **Changed Files**: `documentation/codex/model-routing/scripts/isolated_aider_workspace_runner.py`, `documentation/codex/model-routing/scripts/janus_worker_gateway.py`, `documentation/codex/model-routing/tests/test_isolated_aider_workspace_runner.py`, `documentation/codex/model-routing/tests/test_janus_worker_gateway.py`, `development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/runs/WF-SPEC30-SHADOW-EVAL-001/`, `documentation/tasks/TASK-SPEC30.2_execution_result.md`, `documentation/tasks/TASK-SPEC30.2_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC30.2_final_audit.md`.
+
+### TASK-SPEC30.1 - Build the bounded shadow task packages and fixed comparison config
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-SPEC30.1_final_audit.md` (PASS)
+- **Spec**: `documentation/SPEC/30_shadow_task_evaluation_pack_fuer_worker_gateway_consumer_freigabe.md`
+- **Parent Task**: `documentation/tasks/TASK-SPEC30_shadow_task_evaluation_pack_fuer_worker_gateway_consumer_freigabe.md`
+- **Task Breakdown**: `documentation/tasks/TASK-SPEC30.1_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-SPEC30.1_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-SPEC30.1_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-SPEC30.1_AUDIT_PACKAGE.md`
+- **Validation**: `TASK-SPEC30.1` schliesst den ersten eng gebundenen Spec-30-Slice als bounded Shadow-Evaluationsrahmen fuer den Worker Gateway ab. Genau zwei lokale Shadow-Arbeitsklassen sind jetzt fail-closed versiegelt, beide tragen feste Zwei-Modell-Vergleichspaare, und Contract plus Gateway validieren denselben Sandbox-Bundle-Rahmen, ohne Repo-Writeback, echte Consumer-Aktivierung oder globale Worker-Autoritaet freizugeben. Final Audit PASS mit fokussierter Contract-, Gateway-, Compile-, Pytest-, Execution-Result- und Validator-Evidenz. Spec 30 bleibt dabei bewusst offen, weil `TASK-SPEC30.2` die vergleichbaren Shadow-Laeufe und `TASK-SPEC30.3` die erste Consumer-Empfehlung noch separat liefern muessen.
+- **Changed Files**: `documentation/codex/model-routing/scripts/janus_worker_contract.py`, `documentation/codex/model-routing/scripts/janus_worker_gateway.py`, `documentation/codex/model-routing/tests/test_janus_worker_contract.py`, `documentation/codex/model-routing/tests/test_janus_worker_gateway.py`, `development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/`, `documentation/tasks/TASK-SPEC30.1_execution_result.md`, `documentation/tasks/TASK-SPEC30.1_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC30.1_final_audit.md`.
+
 ### TASK-SPEC29.3 - Add regression coverage, operator guidance, and the first bounded live-dev pilot
 
 - **Status**: DONE

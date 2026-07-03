@@ -1,0 +1,39 @@
+{
+  "task_label": "Shadow docs fleissarbeit comparison package",
+  "worker_profile": "shadow-eval-fixed-pair",
+  "task_prompt": "# Shadow Task: Docs Fleissarbeit\n\nYou are working inside a bounded shadow evaluation package.\n\nHard rules:\n\n- Edit only `docs/target_doc.md`.\n- Do not change any other file.\n- Do not add release claims, product approvals, or routing approvals.\n- Keep the change small and reviewable.\n\nTask:\n\n- Improve the grouping and clarity of the existing note.\n- Preserve the same topic and bounded scope.\n",
+  "workspace_files": [
+    {
+      "repo_path": "development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/docs_fleissarbeit/docs/target_doc.md",
+      "workspace_path": "docs/target_doc.md",
+      "allow_edit": true,
+      "copy_back": true
+    }
+  ],
+  "pre_commands": [],
+  "post_commands": [
+    {
+      "label": "markdown_file_exists",
+      "command": [
+        "python",
+        "-c",
+        "from pathlib import Path; raise SystemExit(0 if Path('docs/target_doc.md').exists() else 1)"
+      ],
+      "expected_exit_codes": [
+        0
+      ]
+    }
+  ],
+  "acceptance_criteria": [
+    "Only docs/target_doc.md may change.",
+    "The document should become clearer without adding new product claims.",
+    "No edits may imply product release or consumer activation."
+  ],
+  "requested_actions": [
+    "edit"
+  ],
+  "notes": [
+    "shadow_work_class=docs_fleissarbeit",
+    "shadow_evaluation_package=true"
+  ]
+}
