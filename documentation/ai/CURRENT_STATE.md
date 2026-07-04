@@ -1,6 +1,198 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-04 14:20 +02:00`, `DEV-005.1` is documentation-closed after final audit PASS. `DEV-005` has been moved to DONE in the Dev-/OR-infrastructure backlog, with all acceptance criteria checked and evidence linked to the task, precheck, execution result, audit package, final audit, renderer stub, example input package, and rendered markdown artifact.
+
+Current goal: choose the next small MCP-helper follow-up after the completed renderer/stub slice.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- moved `DEV-005` from `IN PROGRESS` to `DONE` in the Dev backlog
+- updated `DEV_STATE` to point at the next bounded MCP-helper decision
+- wrote `development/tasks/DEV-005.1_documentation_update.md`
+- documented exact skip reasons for Janus product backlog, dashboard, central registry, `PROJECT_STATE.md`, `CHANGELOG.md`, and `WHAT_I_LEARNED.md`
+
+Changed files:
+- `development/DEV_BACKLOG.md`
+- `development/DEV_STATE.md`
+- `development/tasks/DEV-005.1_documentation_update.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py C:\KI\Janus-Projekt\development\tasks\DEV-005.1_final_audit.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-documentation-update\scripts\validate_doc_update.py --repo C:\KI\Janus-Projekt --marker DEV-005 --require development/DEV_BACKLOG.md --require development/DEV_STATE.md --require documentation/ai/CURRENT_STATE.md`: PASS
+- `git diff --check -- development/DEV_BACKLOG.md development/DEV_STATE.md development/tasks/DEV-005.1_documentation_update.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS, with pre-existing CRLF warnings only if emitted
+
+Open risks:
+- The next MCP-helper slice should stay small; a local input-prep helper is the natural next step, but live fetches, autonomous execution, production routing, and repo-write delegation remain out of scope unless separately routed.
+- The wider worktree remains dirty, so any checkpoint must use narrow Git governance scoping.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat `DEV-005` as DONE and decide whether the next MCP-helper follow-up should be a bounded input-prep helper for assembling the renderer package.
+
+Next recommended step for Codex: run `janus-git-governance` for a narrow checkpoint of the completed `DEV-005.1` closeout before opening the next helper slice.
+
+Last updated: `2026-07-04 14:20:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-04 14:17 +02:00`, `DEV-005.1` has passed final audit. The bounded local renderer/stub slice is audit-clean: it accepts a small structured recommendation package, renders the locked MCP recommendation format into stable markdown, preserves favorite-first ordering and approval-boundary language, and stays fully outside live fetches, executor changes, production routing, and delegated authority. The compact audit package and final-audit artifact are both ready for closeout.
+
+Current goal: documentation-sync and close `DEV-005.1`, then decide whether the next MCP-helper follow-up should stay local-only or move to a slightly richer input-prep helper.
+
+Active phase: `janus-final-audit`, canonical state `PASS`.
+
+Last Codex work:
+- audited `DEV-005.1` against the compact audit package and bounded artifacts
+- wrote and validated `development/tasks/DEV-005.1_final_audit.md`
+- confirmed the renderer/input/output helper slice stays inside the Lean Dev authority boundary
+
+Changed files:
+- `development/tasks/DEV-005.1_final_audit.md`
+- `development/tasks/DEV-005.1_AUDIT_PACKAGE.md`
+- `development/tasks/DEV-005.1_execution_result.md`
+- `development/openrouter-skill-tests/openrouter_mcp_recommendation_renderer_stub_2026-07-04.py`
+- `development/openrouter-skill-tests/openrouter_mcp_recommendation_renderer_input_2026-07-04.json`
+- `development/openrouter-skill-tests/openrouter_mcp_recommendation_rendered_example_2026-07-04.md`
+- `development/DEV_STATE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- audit package completeness review: PASS
+- debug blocker scan against the audit package: PASS
+- `python development/openrouter-skill-tests/openrouter_mcp_recommendation_renderer_stub_2026-07-04.py --input development/openrouter-skill-tests/openrouter_mcp_recommendation_renderer_input_2026-07-04.json --output development/openrouter-skill-tests/openrouter_mcp_recommendation_rendered_example_2026-07-04.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py C:\KI\Janus-Projekt\development\tasks\DEV-005.1_execution_result.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py C:\KI\Janus-Projekt\development\tasks\DEV-005.1_final_audit.md`: PASS
+- `git diff --check -- development/tasks/DEV-005.1_final_audit.md development/tasks/DEV-005.1_AUDIT_PACKAGE.md development/tasks/DEV-005.1_execution_result.md development/DEV_STATE.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md development/openrouter-skill-tests/openrouter_mcp_recommendation_renderer_stub_2026-07-04.py development/openrouter-skill-tests/openrouter_mcp_recommendation_renderer_input_2026-07-04.json development/openrouter-skill-tests/openrouter_mcp_recommendation_rendered_example_2026-07-04.md`: PASS, with pre-existing CRLF warnings only if emitted
+
+Open risks:
+- `DEV-005.1` intentionally does not prepare richer input collection or live evidence assembly; the next slice should stay small if we extend this helper.
+- The wider worktree remains dirty, so future commit/push work must use narrow Git governance scoping.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat `DEV-005.1` as final-audit PASS and review only the documentation-sync/closeout scope plus the next small MCP-helper follow-up choice.
+
+Next recommended step for Codex: run `janus-documentation-update` for `DEV-005.1` to close the Dev backlog item/slice and update Dev state.
+
+Last updated: `2026-07-04 14:17:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-04 14:10 +02:00`, `DEV-005.1` is implemented and auto-verified. The first renderer/stub slice now exists as one bounded local Dev helper: it accepts a small structured recommendation package, renders the locked MCP recommendation format into stable markdown, preserves favorite-first ordering plus approval-boundary language, and stays fully outside live fetches, executor changes, and delegated authority. A compact audit package for the slice is also ready.
+
+Current goal: run final audit on `DEV-005.1`.
+
+Active phase: `janus-executioner`, canonical state `PASS`.
+
+Last Codex work:
+- implemented the first local MCP recommendation renderer/stub plus a bounded example input package
+- generated one rendered markdown example from the helper itself
+- wrote `development/tasks/DEV-005.1_execution_result.md`
+- built `development/tasks/DEV-005.1_AUDIT_PACKAGE.md` for the next final-audit gate
+
+Changed files:
+- `development/openrouter-skill-tests/openrouter_mcp_recommendation_renderer_stub_2026-07-04.py`
+- `development/openrouter-skill-tests/openrouter_mcp_recommendation_renderer_input_2026-07-04.json`
+- `development/openrouter-skill-tests/openrouter_mcp_recommendation_rendered_example_2026-07-04.md`
+- `development/DEV_STATE.md`
+- `development/tasks/DEV-005.1_execution_result.md`
+- `development/tasks/DEV-005.1_AUDIT_PACKAGE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- bounded content review against `development/tasks/DEV-005.1_recommendation_renderer_stub.md`: PASS
+- bounded content review against `development/tasks/DEV-005.1_preimplementation_check.md`: PASS
+- bounded content review against `development/openrouter-skill-tests/openrouter_mcp_recommendation_template_2026-07-04.md`: PASS
+- bounded content review against `development/openrouter-skill-tests/openrouter_mcp_pre_run_research_helper_workflow_note_2026-07-03.md`: PASS
+- `python development/openrouter-skill-tests/openrouter_mcp_recommendation_renderer_stub_2026-07-04.py --input development/openrouter-skill-tests/openrouter_mcp_recommendation_renderer_input_2026-07-04.json --output development/openrouter-skill-tests/openrouter_mcp_recommendation_rendered_example_2026-07-04.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py C:\KI\Janus-Projekt\development\tasks\DEV-005.1_execution_result.md`: PASS
+- `python documentation/codex/skills/codex-audit-package-builder/scripts/build_audit_package.py ...`: PASS
+- `git diff --check -- development/openrouter-skill-tests/openrouter_mcp_recommendation_renderer_stub_2026-07-04.py development/openrouter-skill-tests/openrouter_mcp_recommendation_renderer_input_2026-07-04.json development/openrouter-skill-tests/openrouter_mcp_recommendation_rendered_example_2026-07-04.md development/DEV_STATE.md development/tasks/DEV-005.1_execution_result.md development/tasks/DEV-005.1_AUDIT_PACKAGE.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS, with pre-existing CRLF warnings only if emitted
+
+Open risks:
+- The first renderer/stub slice must remain local-only and deterministic; live MCP fetches, autonomous execution, production routing, and repo-write delegation remain out of scope.
+- Final audit still needs to confirm that the helper output and audit package stay strictly inside the bounded Lean Dev contract.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat `DEV-005.1` as execution-complete and audit only the compact package plus the bounded renderer/input/output artifacts.
+
+Next recommended step for Codex: run `janus-final-audit` on `DEV-005.1` with `5.5` high.
+
+Last updated: `2026-07-04 14:10:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-04 13:58 +02:00`, `DEV-005.1` has passed preimplementation check. The next MCP-helper follow-up is now execution-ready as a bounded Lean Dev renderer/stub slice: it may add one local helper script, one small structured input package, and one rendered markdown example for the locked recommendation template, while staying deterministic, local-only, and outside any live-run or authority boundary.
+
+Current goal: implement `DEV-005.1` through `janus-executioner`.
+
+Active phase: `janus-preimplementation-check`, canonical state `HANDOFF`.
+
+Last Codex work:
+- prechecked `DEV-005.1` against the new Dev handoff, the locked recommendation template, the MCP workflow note, and the `DEV-004.1` final audit boundary
+- wrote `development/tasks/DEV-005.1_preimplementation_check.md`
+- updated `DEV_STATE` so the next bounded step points to execution
+
+Changed files:
+- `development/tasks/DEV-005.1_preimplementation_check.md`
+- `development/DEV_STATE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- targeted read of `janus-preimplementation-check` skill: PASS
+- artifact identity review across `DEV-005`, `DEV-005.1`, `DEV_STATE`, the MCP workflow note, and the locked recommendation template: PASS
+- `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py C:\KI\Janus-Projekt\development\tasks\DEV-005.1_preimplementation_check.md`: PASS
+- `git diff --check -- development/tasks/DEV-005.1_preimplementation_check.md development/DEV_STATE.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS, with pre-existing CRLF warnings only if emitted
+
+Open risks:
+- The first renderer/stub slice must remain local-only and deterministic; live MCP fetches, autonomous execution, production routing, and repo-write delegation remain out of scope.
+- The generic precheck template still carries the standard Playwright gate literal even though this slice is not a UI-test task; execution should treat that as template-required text, not as a real validation need for this artifact.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat `DEV-005.1` as execution-ready and review only the bounded input/output contract for the renderer/stub.
+
+Next recommended step for Codex: run `janus-executioner` on `DEV-005.1` with `5.4` medium.
+
+Last updated: `2026-07-04 13:58:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-04 13:49 +02:00`, the next bounded Dev follow-up has been routed after the completed `DEV-004.1` closeout. `DEV-005` is now the active Dev item, and `development/tasks/DEV-005.1_recommendation_renderer_stub.md` defines the first renderer/stub slice for turning a small recommendation input package into the locked MCP recommendation artifact shape without widening into live fetches, executor changes, or delegated authority.
+
+Current goal: run preimplementation check for `DEV-005.1`.
+
+Active phase: `janus-backlog-handoff`, canonical state `HANDOFF`.
+
+Last Codex work:
+- created the new Dev follow-up item `DEV-005` for the recommendation renderer/stub
+- routed `DEV-005` directly into a selected precheck handoff as `DEV-005.1`
+- updated `DEV_STATE` so the next bounded step is explicit
+
+Changed files:
+- `development/DEV_BACKLOG.md`
+- `development/DEV_STATE.md`
+- `development/tasks/DEV-005.1_recommendation_renderer_stub.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- targeted read of `janus-skill-router`, `janus-backlog-intake`, `janus-backlog-prioritization`, and `janus-backlog-handoff`: PASS
+- continuity review across `DEV-004`, `DEV_STATE`, and the locked MCP template: PASS
+- `git diff --check -- development/DEV_BACKLOG.md development/DEV_STATE.md development/tasks/DEV-005.1_recommendation_renderer_stub.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS, with pre-existing CRLF warnings only if emitted
+
+Open risks:
+- `DEV-005.1` must stay a local deterministic renderer/stub first; live MCP fetches, autonomous execution, production routing, and repo-write delegation are intentionally out of scope.
+- The wider worktree remains dirty, so future checkpoints must stay narrowly scoped.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat `DEV-005` as the active follow-up to `DEV-004` and review only the bounded input/output contract for the renderer/stub slice.
+
+Next recommended step for Codex: run `janus-preimplementation-check` on `DEV-005.1` with `5.4` medium.
+
+Last updated: `2026-07-04 13:49:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-04 13:39 +02:00`, `DEV-004.1` is documentation-closed after final audit PASS. `DEV-004` has been moved to DONE in the Dev-/OR-infrastructure backlog, with all acceptance criteria checked and evidence linked to the task, precheck, execution result, audit package, final audit, and implemented recommendation-template artifact.
 
 Current goal: choose the next small MCP-helper follow-up after the completed recommendation-template slice.

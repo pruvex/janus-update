@@ -36,6 +36,49 @@ This backlog tracks Dev- and OR-infrastructure work only. It is separate from th
 
 ## DONE
 
+### DEV-005 - Add a lightweight renderer stub for MCP recommendation artifacts
+
+- **Type:** IMPROVEMENT
+- **Status:** DONE
+- **Created:** 2026-07-04
+- **Updated:** 2026-07-04
+- **Completed:** 2026-07-04
+- **Source:** User Intake
+- **Follow-up to:** DEV-004 - Add a repeatable recommendation template for MCP pre-run OR selection
+- **Short Description:** Add one small local renderer/stub that can fill the locked MCP recommendation template from bounded evidence fields so Codex no longer has to assemble every recommendation artifact manually.
+- **Expected Behavior:** After the optional MCP research step and internal evidence review, Codex can pass one small structured input package into a local renderer/stub and receive one stable, archivable markdown recommendation artifact in the locked operator-facing format.
+- **Actual Behavior:** CLOSED - `DEV-005.1` adds the bounded local renderer/stub, example input package, and rendered markdown output while keeping the recommendation-only approval boundary intact.
+- **Reproduction / Context:** `DEV-004.1` proved the human-readable template shape. This follow-up removes repetitive manual filling while still avoiding executor changes, auto-run behavior, and delegated write authority.
+- **Area:** OpenRouter MCP / recommendation render workflow
+- **Evidence:** `development/openrouter-skill-tests/openrouter_mcp_pre_run_research_helper_workflow_note_2026-07-03.md`; `development/openrouter-skill-tests/openrouter_mcp_recommendation_template_2026-07-04.md`; `development/openrouter-skill-tests/openrouter_mcp_recommendation_rendered_example_2026-07-04.md`; `development/tasks/DEV-005.1_final_audit.md`
+- **Acceptance Criteria:**
+  - [x] A bounded Dev helper stub accepts one small structured recommendation input package.
+  - [x] The helper renders the locked recommendation template into stable markdown with deterministic section order.
+  - [x] The rendered output preserves the favorite-first ranking, alternatives, reason, next action, and approval-boundary language.
+  - [x] The slice stays local-only and does not add live MCP fetches, executor/runtime changes, production routing, or repo-write delegation.
+- **Importance:** HIGH
+- **Implementation Risk:** LOW
+- **Effort:** S
+- **Readiness:** READY
+- **Recommendation:** DONE
+- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
+- **Routing reason:** This was the smallest useful follow-up after `DEV-004.1`: a bounded local renderer/stub with clear input/output shape that added reuse without opening execution or authority boundaries.
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-07-04
+- **Handoff:** `development/tasks/DEV-005.1_recommendation_renderer_stub.md`
+- **Recommended next skill:** none
+- **Handoff created:** 2026-07-04
+- **Completed Task:** `development/tasks/DEV-005.1_recommendation_renderer_stub.md`
+- **Preimplementation Check:** PASS - `development/tasks/DEV-005.1_preimplementation_check.md`
+- **Execution Result:** `development/tasks/DEV-005.1_execution_result.md`
+- **Audit Package:** `development/tasks/DEV-005.1_AUDIT_PACKAGE.md`
+- **Final Audit:** PASS - `development/tasks/DEV-005.1_final_audit.md`
+- **Validation Evidence:** `development/tasks/DEV-005.1_execution_result.md`; `development/tasks/DEV-005.1_AUDIT_PACKAGE.md`; `development/openrouter-skill-tests/openrouter_mcp_recommendation_rendered_example_2026-07-04.md`
+- **Missing Information:**
+  - None
+- **Notes:** This is Dev-/OR-infrastructure only. It does not authorize live-run automation, live MCP fetching, executor/runtime changes, production routing activation, automatic model selection, final validation authority, or repo-write delegation. A future follow-up may add a small input-prep helper for assembling the structured package more conveniently.
+
 ### DEV-004 - Add a repeatable recommendation template for MCP pre-run OR selection
 
 - **Type:** IMPROVEMENT
