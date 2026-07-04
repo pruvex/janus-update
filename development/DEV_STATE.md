@@ -4,10 +4,10 @@
 Janus Dev And OR Infrastructure
 
 ## Current Goal
-Keep the bounded OR/workhorse rollout moving while turning the completed MCP pre-run workflow note into a repeatable, low-overhead recommendation flow.
+Keep the bounded OR/workhorse rollout moving by choosing the next small MCP-helper follow-up after the completed recommendation-template slice.
 
 ## Active Phase
-DEV-003.1 documentation closeout complete; ready to choose next MCP-helper follow-up
+DEV-004.1 documentation closeout complete; ready to choose the next MCP-helper follow-up
 
 ## Current Source Of Truth
 - `development/README.md`
@@ -24,7 +24,7 @@ DEV-003.1 documentation closeout complete; ready to choose next MCP-helper follo
 
 ## Open Work
 - Continue the current bounded executor-based rollout for high-value everyday skills.
-- Decide the next smallest MCP-helper follow-up after the completed `DEV-003.1` workflow note, preferably a compact recommendation template or lightweight helper stub.
+- Decide whether the next MCP-helper follow-up should stay template-oriented or move to a lightweight render stub/template-to-artifact helper.
 - Keep the separation between Lean Dev work and strict Janus product work explicit in future governance changes.
 
 ## Open Risks
@@ -34,7 +34,7 @@ DEV-003.1 documentation closeout complete; ready to choose next MCP-helper follo
 - OpenRouter MCP could distract from the current bounded execution architecture if treated as an execution replacement instead of an information layer.
 
 ## Next Recommended Step
-Route the next small MCP-helper follow-up. Recommended candidate: define one repeatable recommendation template or lightweight Dev helper stub for the 2 to 3 model price-performance shortlist, still without live-run automation or executor changes.
+Route the next small MCP-helper follow-up. Recommended candidate: a lightweight renderer/stub that can fill the locked recommendation template from MCP/live and internal evidence, while still avoiding executor changes, live-run automation, production routing, and repo-write delegation.
 
 ## Last Updated
-2026-07-03 23:38 +02:00
+2026-07-04 13:39 +02:00
