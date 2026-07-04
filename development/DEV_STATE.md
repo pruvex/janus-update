@@ -4,10 +4,10 @@
 Janus Dev And OR Infrastructure
 
 ## Current Goal
-Choose the next small MCP-helper follow-up after the completed input-prep helper slice.
+Choose the next small MCP-helper follow-up after the completed comparison-artifact helper slice.
 
 ## Active Phase
-DEV-006.1 documentation closeout complete; ready to choose the next MCP-helper follow-up
+DEV-007.1 documentation closeout complete; ready to choose the next MCP-helper follow-up
 
 ## Current Source Of Truth
 - `development/README.md`
@@ -24,7 +24,7 @@ DEV-006.1 documentation closeout complete; ready to choose the next MCP-helper f
 
 ## Open Work
 - Continue the current bounded executor-based rollout for high-value everyday skills.
-- Decide whether the next MCP-helper follow-up should stay package-prep-focused or move toward a bounded comparison-artifact helper for storing multiple recommendations side by side.
+- Decide whether the next MCP-helper follow-up should improve archive usability or pause the helper chain after the comparison-artifact slice.
 - Keep the separation between Lean Dev work and strict Janus product work explicit in future governance changes.
 
 ## Open Risks
@@ -34,9 +34,10 @@ DEV-006.1 documentation closeout complete; ready to choose the next MCP-helper f
 - OpenRouter MCP could distract from the current bounded execution architecture if treated as an execution replacement instead of an information layer.
 - The renderer/stub must stay deterministic and local-only in its first slice; live fetches, autonomous execution, and write authority would widen the scope too early.
 - The input-prep helper must also stay deterministic and local-only in its first slice; it must not silently grow into live evidence collection or execution orchestration.
+- The comparison-artifact helper must not silently widen from archival comparison support into recommendation synthesis, live evaluation, or execution orchestration.
 
 ## Next Recommended Step
-Route the next small MCP-helper follow-up. Recommended candidate: a bounded comparison-artifact helper that stores multiple prepared recommendations side by side while still avoiding live fetches, executor changes, production routing, and repo-write delegation.
+Route the next small MCP-helper follow-up. Recommended candidate: either a bounded archive-usability helper for saved recommendation comparisons or a narrow checkpoint before opening any further helper slice.
 
 ## Last Updated
-2026-07-04 14:40 +02:00
+2026-07-04 18:40 +02:00
