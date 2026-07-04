@@ -1,6 +1,244 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-03 23:38 +02:00`, `DEV-003.1` is documentation-closed and `DEV-003` is DONE in the Dev backlog. The optional OpenRouter MCP pre-run research-helper workflow is now represented by a final-audited workflow note, completed execution/audit artifacts, and a synced Dev state. This closes the first bounded MCP helper slice without adding runtime code, executor delegation, production routing, or automatic live-run authority.
+
+Current goal: choose the next small MCP-helper follow-up after the completed workflow-note slice.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- moved `DEV-003` from `IN PROGRESS` to `DONE` in `development/DEV_BACKLOG.md`
+- updated `development/DEV_STATE.md` to point at the next small MCP-helper follow-up
+- wrote `development/tasks/DEV-003.1_documentation_update.md`
+- validated the marker-scoped documentation update
+
+Changed files:
+- `development/DEV_BACKLOG.md`
+- `development/DEV_STATE.md`
+- `development/tasks/DEV-003.1_documentation_update.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py C:\KI\Janus-Projekt\development\tasks\DEV-003.1_final_audit.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-documentation-update\scripts\validate_doc_update.py --repo C:\KI\Janus-Projekt --marker DEV-003 --require development/DEV_BACKLOG.md --require development/DEV_STATE.md --require documentation/ai/CURRENT_STATE.md`: PASS
+- scoped `git diff --check`: PASS with known CRLF warnings only for `documentation/ai/CURRENT_STATE.md` and `documentation/codex/SKILL_USAGE_LOG.md`
+
+Open risks:
+- The first MCP-helper slice is intentionally documentation-only; the next value step should be a compact recommendation template or lightweight helper stub, not executor/runtime expansion.
+- The wider worktree remains dirty, so any checkpoint commit must be tightly scoped through `janus-git-governance`.
+- No push happened after this block, so remotes such as GitHub `origin`, `backup`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat `DEV-003` as DONE and review the next follow-up as a new small Lean Dev slice, preferably a repeatable recommendation template or helper stub.
+
+Next recommended step for Codex: route the next MCP-helper follow-up through `janus-skill-router` or Lean Dev backlog intake before implementation, then use `janus-git-governance` for a scoped checkpoint when the current closeout batch is ready to save.
+
+Last updated: `2026-07-03 23:38:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-03 23:31 +02:00`, `DEV-003.1` has passed final audit. The optional OpenRouter MCP pre-run research-helper workflow note is audit-clean: it remains documentation-first, optional, pre-run only, price-performance shortlist oriented, and explicitly preserves Codex/operator approval before any real OR candidate test continues. The audit also confirms that no executor architecture, runtime helper, product behavior, production routing, or final validation authority changed in this slice.
+
+Current goal: documentation-sync and close `DEV-003.1`, then decide the next small MCP-helper follow-up.
+
+Active phase: `janus-final-audit`, canonical state `PASS`.
+
+Last Codex work:
+- built `development/tasks/DEV-003.1_AUDIT_PACKAGE.md`
+- audited `DEV-003.1` against the audit package and referenced artifacts
+- wrote and validated `development/tasks/DEV-003.1_final_audit.md`
+
+Changed files:
+- `development/tasks/DEV-003.1_AUDIT_PACKAGE.md`
+- `development/tasks/DEV-003.1_final_audit.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- audit package completeness review: PASS
+- debug blocker scan against the audit package: PASS
+- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py C:\KI\Janus-Projekt\development\tasks\DEV-003.1_final_audit.md`: PASS
+- `git diff --check -- development/tasks/DEV-003.1_AUDIT_PACKAGE.md development/tasks/DEV-003.1_final_audit.md`: PASS
+
+Open risks:
+- `DEV-003.1` intentionally did not build a reusable template, CLI, MCP wrapper, or evidence-source collector; the next slice should choose one small follow-up rather than widening into executor work.
+- The wider worktree remains dirty, so future commit/push work must use narrow Git governance scoping.
+- No push happened after this block, so remotes such as GitHub `origin`, `backup`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat `DEV-003.1` as final-audit PASS and review only the documentation-sync/closeout scope plus the next small MCP-helper follow-up choice.
+
+Next recommended step for Codex: run `janus-documentation-update` for `DEV-003.1` to close the Dev backlog item/slice and update Dev state.
+
+Last updated: `2026-07-03 23:31:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-03 23:24 +02:00`, `DEV-003.1` is implemented and auto-verified. The first MCP-helper slice now exists as one bounded workflow-definition artifact: the optional OpenRouter MCP research helper is explicitly placed before live OR candidate tests, its first output format is fixed to a 2 to 3 candidate price-performance shortlist with task-type hints, and the note keeps MCP informational only with Codex/operator approval still required before any live OR run continues.
+
+Current goal: run final audit on `DEV-003.1`.
+
+Active phase: `janus-executioner`, canonical state `PASS`.
+
+Last Codex work:
+- implemented the first workflow note for the optional MCP pre-run research helper
+- updated `DEV_STATE` so the next step points to final audit
+- wrote and validated the execution result artifact for `DEV-003.1`
+
+Changed files:
+- `development/openrouter-skill-tests/openrouter_mcp_pre_run_research_helper_workflow_note_2026-07-03.md`
+- `development/DEV_STATE.md`
+- `development/tasks/DEV-003.1_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- bounded content review against `development/tasks/DEV-003.1_openrouter_mcp_research_helper_workflow_note.md`: PASS
+- bounded content review against `development/tasks/DEV-003.1_preimplementation_check.md`: PASS
+- bounded content review against `development/openrouter-skill-tests/openrouter_mcp_fit_decision_2026-06-27.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py C:\KI\Janus-Projekt\development\tasks\DEV-003.1_execution_result.md`: PASS
+- `git diff --check -- development/openrouter-skill-tests/openrouter_mcp_pre_run_research_helper_workflow_note_2026-07-03.md development/DEV_STATE.md development/tasks/DEV-003.1_execution_result.md`: PASS
+
+Open risks:
+- This slice is intentionally documentation-first, so no helper renderer or runtime scaffold exists yet; a later bounded slice must decide whether to stay doc-only or add a small reusable template/stub.
+- The workflow note is only valuable if future slices continue to respect its authority boundaries and do not quietly turn MCP into an executor substitute.
+- No push happened after this block, so remotes such as GitHub `origin`, `backup`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: review whether the workflow note stays fully aligned with the locked MCP fit decision and does not smuggle in new execution authority.
+
+Next recommended step for Codex: run `janus-final-audit` on `DEV-003.1` with the workflow note, precheck, and execution result only.
+
+Last updated: `2026-07-03 23:24:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-03 23:19 +02:00`, `DEV-003.1` has passed preimplementation check. The first MCP-helper slice is now execution-ready as a small Lean Dev workflow-definition task: it may write one compact workflow note that places the optional OpenRouter MCP research helper before live OR candidate tests, maps the relevant MCP tools onto candidate selection and telemetry, and locks recommendation/approval boundaries without touching executor architecture or runtime authority.
+
+Current goal: implement `DEV-003.1` through `janus-executioner`.
+
+Active phase: `janus-preimplementation-check`, canonical state `HANDOFF`.
+
+Last Codex work:
+- prechecked `DEV-003.1` against the selected handoff artifact, `DEV-003`, `DEV_STATE`, and the locked MCP fit decision
+- wrote `development/tasks/DEV-003.1_preimplementation_check.md`
+- validated the precheck artifact successfully
+
+Changed files:
+- `development/tasks/DEV-003.1_preimplementation_check.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- targeted read of `janus-preimplementation-check` skill: PASS
+- artifact identity review across `DEV-003`, `DEV-003.1`, `DEV_STATE`, and the MCP fit decision note: PASS
+- `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py C:\KI\Janus-Projekt\development\tasks\DEV-003.1_preimplementation_check.md`: PASS
+- `git diff --check -- development/tasks/DEV-003.1_preimplementation_check.md`: PASS
+
+Open risks:
+- The slice must remain documentation-first; no runtime helper, MCP transport code, or executor behavior may be introduced during execution.
+- The generic precheck template still carries the standard Playwright gate literal even though this slice is not a UI-test task; execution should treat that as template-required text, not as a real validation need for this artifact.
+- No push happened after this block, so remotes such as GitHub `origin`, `backup`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat `DEV-003.1` as execution-ready and keep the implementation bounded to one workflow-note artifact plus the normal Lean Dev state/log sync.
+
+Next recommended step for Codex: run `janus-executioner` on `DEV-003.1` with `5.4` medium.
+
+Last updated: `2026-07-03 23:19:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-03 23:15 +02:00`, `DEV-003` has been routed into active work with one bounded first implementation slice. The selected handoff moves the item to `IN PROGRESS` and creates `DEV-003.1` as a Lean Dev precheck target that is intentionally documentation-first: it should define where an optional OpenRouter MCP pre-run research helper sits in the existing OR workflow and how it formats recommendations, without changing executor architecture or granting any new live-run authority.
+
+Current goal: pass preimplementation check for `DEV-003.1` and keep the first slice workflow-only.
+
+Active phase: `janus-backlog-handoff`, canonical state `PASS`.
+
+Last Codex work:
+- routed `DEV-003` as the selected next Dev item
+- moved `DEV-003` to `IN PROGRESS` with routing metadata
+- created the bounded handoff artifact `development/tasks/DEV-003.1_openrouter_mcp_research_helper_workflow_note.md`
+- updated `DEV_STATE` so the next Lean Dev step is explicit
+
+Changed files:
+- `development/DEV_BACKLOG.md`
+- `development/tasks/DEV-003.1_openrouter_mcp_research_helper_workflow_note.md`
+- `development/DEV_STATE.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- targeted read of `janus-backlog-handoff` skill: PASS
+- selected-item routing review against `DEV-003` and MCP fit decision artifact: PASS
+- handoff artifact completeness review: PASS
+- dashboard sync: not run, because `development/DEV_BACKLOG.md` is a separate Dev source of truth and does not feed the Janus product dashboard snapshot
+
+Open risks:
+- `DEV-003.1` is intentionally documentation-first, so later slices will still need to decide whether a lightweight helper scaffold should follow after the workflow note is accepted.
+- The current handoff uses Lean Dev conventions rather than the Janus product backlog/dashboard path, so future mixed-scope work must keep that boundary explicit.
+- No push happened after this block, so remotes such as GitHub `origin`, `backup`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat `DEV-003.1` as the exact precheck target and keep the acceptance bar narrow around workflow placement, tool mapping, recommendation format, and operator approval boundaries.
+
+Next recommended step for Codex: run `janus-preimplementation-check` on `development/tasks/DEV-003.1_openrouter_mcp_research_helper_workflow_note.md` with `5.4` medium/high.
+
+Last updated: `2026-07-03 23:15:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-03 23:12 +02:00`, `DEV-003` is now prioritized as the top next Dev/OR slice. The optional OpenRouter MCP research-helper item has been deep-reviewed in delta mode and is marked as a small, ready, low-risk improvement that should be done next because it sharpens model selection before live OR tests without changing executor architecture or granting new authority.
+
+Current goal: prepare the first bounded implementation handoff for `DEV-003`.
+
+Active phase: `janus-backlog-prioritization`, canonical state `PASS`.
+
+Last Codex work:
+- reviewed the current Dev backlog in delta mode with focus on the newly added MCP-helper item
+- added evaluation fields to `DEV-003`
+- confirmed that `DEV-003` is the best next small Dev slice ahead of broader governance cleanup items
+
+Changed files:
+- `development/DEV_BACKLOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- targeted read of `janus-backlog-prioritization` skill: PASS
+- delta review of current open Dev items and `DEV_STATE` next-step guidance: PASS
+- prioritization cache update for `DEV-003`: PASS
+
+Open risks:
+- `DEV-003` is still a workflow-definition slice; later steps will still need to choose whether the first implementation artifact is documentation-only or includes a small helper scaffold.
+- The broader Dev backlog still contains governance separation work (`DEV-001`, `DEV-002`) that remains important but is not the fastest path to immediate OR workflow value.
+- No push happened after this block, so remotes such as GitHub `origin`, `backup`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat `DEV-003` as the next selected Dev item and keep the first implementation slice narrowly centered on workflow placement plus recommendation format.
+
+Next recommended step for Codex: run `janus-backlog-handoff` in selected-item mode for `DEV-003` and generate exactly one bounded first implementation slice.
+
+Last updated: `2026-07-03 23:12:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-03 23:09 +02:00`, the OpenRouter MCP research-helper idea is now captured as a bounded Dev backlog item. The decision-locked design from the current OR/MCP feature-design pass has been translated into `DEV-003`, keeping the helper optional, pre-run only, shortlist-based, price-performance-oriented, and explicitly non-authoritative for real OR execution.
+
+Current goal: turn the locked MCP-helper concept into the next small Dev/OR delivery slice through backlog prioritization.
+
+Active phase: `janus-backlog-intake`, canonical state `PASS`.
+
+Last Codex work:
+- converted the locked MCP-helper decision summary into a structured Dev backlog item
+- kept the slice inside `development/` rather than the Janus product backlog
+- preserved the boundaries that MCP remains a research layer, not an executor replacement or auto-run authority
+
+Changed files:
+- `development/DEV_BACKLOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- targeted read of `janus-backlog-intake` skill: PASS
+- targeted reread of `development/DEV_STATE.md`, `development/DEV_BACKLOG.md`, and `development/openrouter-skill-tests/openrouter_mcp_fit_decision_2026-06-27.md`: PASS
+- backlog item structure and scope review against Lean Dev rules: PASS
+
+Open risks:
+- The new item is intentionally still planning-only; no runtime integration, MCP call path, or telemetry writeback contract is implemented yet.
+- Internal experience signals are currently distributed across existing OR artifacts, so a later implementation slice must define a compact reusable evidence source instead of depending on ad hoc memory.
+- No push happened after this block, so remotes such as GitHub `origin`, `backup`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat `DEV-003` as the canonical next Dev backlog candidate and help keep the first implementation slice narrow around workflow placement and recommendation format, not executor architecture.
+
+Next recommended step for Codex: run `janus-backlog-prioritization` on `DEV-003` and choose one bounded first implementation slice for the optional MCP research-helper workflow.
+
+Last updated: `2026-07-03 23:09:11 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-03 16:34 +02:00`, `TASK-SPEC30.3` is documentation-synced and Spec 30 is now closed. The full three-slice shadow-evaluation block is sealed across task, spec, registry, and project-state surfaces: `docs_fleissarbeit` remains the first calm worker-consumer recommendation, `openrouter/moonshotai/kimi-k2.5` remains the preferred first fixed model for that consumer, and the closeout still explicitly avoids any claim of productive activation, broad routing rollout, or measured cost superiority beyond estimate-only hints.
 
 Current goal: finish the documentation-update validation/reporting block for `TASK-SPEC30.3`, then hand off to `janus-git-governance` for a bounded checkpoint recommendation.

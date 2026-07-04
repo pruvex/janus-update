@@ -4,10 +4,10 @@
 Janus Dev And OR Infrastructure
 
 ## Current Goal
-Activate the first approved Lean Dev mode for internal OR- and workhorse-infrastructure work by marking current repo-owned entrypoints as Lean-Dev or strict-only without weakening the strict Janus product pipeline.
+Keep the bounded OR/workhorse rollout moving while turning the completed MCP pre-run workflow note into a repeatable, low-overhead recommendation flow.
 
 ## Active Phase
-Lean governance operational application
+DEV-003.1 documentation closeout complete; ready to choose next MCP-helper follow-up
 
 ## Current Source Of Truth
 - `development/README.md`
@@ -23,17 +23,18 @@ Lean governance operational application
 - Lean Dev mode ends immediately when product logic, security/privacy, release/Git-governance, unclear scope, or new productive approval becomes involved.
 
 ## Open Work
-- Apply the approved Lean Dev rule to the current repo-owned OR and workhorse entrypoints in the active bounded slice.
-- Migrate mixed Dev- and OR-infrastructure topics out of the Janus backlog in a later bounded slice.
+- Continue the current bounded executor-based rollout for high-value everyday skills.
+- Decide the next smallest MCP-helper follow-up after the completed `DEV-003.1` workflow note, preferably a compact recommendation template or lightweight helper stub.
 - Keep the separation between Lean Dev work and strict Janus product work explicit in future governance changes.
 
 ## Open Risks
 - Mixed Dev- and OR-infrastructure topics still exist in Janus artifacts until the migration slice is executed.
 - Lean Dev mode must not bleed into Janus product work, release work, or security/privacy-sensitive changes.
 - Installed skill working copies under `C:\Users\pruve\.codex\skills` must not become an implicit execution target for Lean-Dev governance slices.
+- OpenRouter MCP could distract from the current bounded execution architecture if treated as an execution replacement instead of an information layer.
 
 ## Next Recommended Step
-Implement the active bounded slice that marks current repo-owned OR-/workhorse-entrypoints as Lean-Dev or strict-only, then re-audit the result before any broader Dev-governance migration work.
+Route the next small MCP-helper follow-up. Recommended candidate: define one repeatable recommendation template or lightweight Dev helper stub for the 2 to 3 model price-performance shortlist, still without live-run automation or executor changes.
 
 ## Last Updated
-2026-06-21 17:11 +02:00
+2026-07-03 23:38 +02:00
