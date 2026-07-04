@@ -1,0 +1,33 @@
+{
+  "task_class": "executor fleissarbeit",
+  "recommendation_time": "2026-07-04 14:36 +02:00",
+  "live_data_freshness": "fresh",
+  "internal_evidence_freshness": "recent",
+  "favorite_candidate": {
+    "model": "openrouter/moonshotai/kimi-k2.5",
+    "lead_reason": "strongest current balance of bounded patch readability and price-performance for this task class",
+    "best_fit_task_type": "executor fleissarbeit",
+    "main_tradeoff": "not the absolute cheapest option when raw price matters more than patch quality",
+    "next_action": "use this model for the next bounded OR candidate test for executor fleissarbeit"
+  },
+  "alternative_candidates": [
+    {
+      "model": "openrouter/qwen/qwen3-coder-30b-a3b-instruct",
+      "viability_reason": "still competitive when cost pressure is higher and the task remains tightly bounded",
+      "best_fit_task_type": "executor fleissarbeit",
+      "main_tradeoff": "weaker preferred-first signal than the favorite for our current bounded patch contract"
+    },
+    {
+      "model": "openrouter/z-ai/glm-4.7-flash",
+      "viability_reason": "can remain useful when a very cheap fallback needs a second shortlist spot",
+      "best_fit_task_type": "executor fleissarbeit",
+      "main_tradeoff": "less internal evidence support than the top two candidates"
+    }
+  ],
+  "signals": {
+    "price_performance": "favorable for the favorite",
+    "benchmark_ranking": "supportive but still secondary to our bounded contract evidence",
+    "internal_evidence": "stronger than generic benchmark noise for this task class",
+    "confidence": "medium"
+  }
+}

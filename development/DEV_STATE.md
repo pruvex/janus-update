@@ -4,10 +4,10 @@
 Janus Dev And OR Infrastructure
 
 ## Current Goal
-Choose the next small MCP-helper follow-up after the completed renderer/stub slice.
+Choose the next small MCP-helper follow-up after the completed input-prep helper slice.
 
 ## Active Phase
-DEV-005.1 documentation closeout complete; ready to choose the next MCP-helper follow-up
+DEV-006.1 documentation closeout complete; ready to choose the next MCP-helper follow-up
 
 ## Current Source Of Truth
 - `development/README.md`
@@ -24,7 +24,7 @@ DEV-005.1 documentation closeout complete; ready to choose the next MCP-helper f
 
 ## Open Work
 - Continue the current bounded executor-based rollout for high-value everyday skills.
-- Decide whether the next MCP-helper follow-up should stay local-only or move toward a slightly richer input-prep helper for assembling the structured recommendation package.
+- Decide whether the next MCP-helper follow-up should stay package-prep-focused or move toward a bounded comparison-artifact helper for storing multiple recommendations side by side.
 - Keep the separation between Lean Dev work and strict Janus product work explicit in future governance changes.
 
 ## Open Risks
@@ -33,9 +33,10 @@ DEV-005.1 documentation closeout complete; ready to choose the next MCP-helper f
 - Installed skill working copies under `C:\Users\pruve\.codex\skills` must not become an implicit execution target for Lean-Dev governance slices.
 - OpenRouter MCP could distract from the current bounded execution architecture if treated as an execution replacement instead of an information layer.
 - The renderer/stub must stay deterministic and local-only in its first slice; live fetches, autonomous execution, and write authority would widen the scope too early.
+- The input-prep helper must also stay deterministic and local-only in its first slice; it must not silently grow into live evidence collection or execution orchestration.
 
 ## Next Recommended Step
-Route the next small MCP-helper follow-up. Recommended candidate: a bounded input-prep helper that assembles the renderer package from local evidence fields while still avoiding live fetches, executor changes, production routing, and repo-write delegation.
+Route the next small MCP-helper follow-up. Recommended candidate: a bounded comparison-artifact helper that stores multiple prepared recommendations side by side while still avoiding live fetches, executor changes, production routing, and repo-write delegation.
 
 ## Last Updated
-2026-07-04 14:20 +02:00
+2026-07-04 14:40 +02:00

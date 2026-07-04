@@ -1,6 +1,112 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-04 14:44 +02:00`, `DEV-006.1` is documentation-closed after final audit PASS. `DEV-006` has been moved to DONE in the Dev-/OR-infrastructure backlog, with all acceptance criteria checked and evidence linked to the task, precheck, execution result, audit package, final audit, source bundle, prepared input package, input-prep helper, and renderer compatibility artifact.
+
+Current goal: choose the next small MCP-helper follow-up after the completed input-prep helper slice.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- confirmed the final-audit result and completed the Dev closeout for `DEV-006.1`
+- kept `DEV-006` in the DONE section with linked evidence and acceptance criteria checked
+- wrote `development/tasks/DEV-006.1_documentation_update.md`
+- documented exact skip reasons for Janus product backlog, dashboard, central registry, `PROJECT_STATE.md`, `CHANGELOG.md`, and `WHAT_I_LEARNED.md`
+
+Changed files:
+- `development/DEV_BACKLOG.md`
+- `development/DEV_STATE.md`
+- `development/tasks/DEV-006.1_documentation_update.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py C:\KI\Janus-Projekt\development\tasks\DEV-006.1_final_audit.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-documentation-update\scripts\validate_doc_update.py --repo C:\KI\Janus-Projekt --marker DEV-006 --require development/DEV_BACKLOG.md --require development/DEV_STATE.md --require documentation/ai/CURRENT_STATE.md`: PASS
+- `git diff --check -- development/DEV_BACKLOG.md development/DEV_STATE.md development/tasks/DEV-006.1_documentation_update.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS, with pre-existing CRLF warnings only if emitted
+
+Open risks:
+- The next MCP-helper follow-up should stay small; a bounded comparison-artifact helper is the natural next step, but live fetches, autonomous execution, production routing, and repo-write delegation remain out of scope unless separately routed.
+- The wider worktree remains dirty, so any checkpoint must use narrow Git governance scoping.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat `DEV-006` as DONE and decide whether the next MCP-helper follow-up should be a bounded comparison-artifact helper for storing multiple prepared recommendations side by side.
+
+Next recommended step for Codex: run `janus-git-governance` for a narrow checkpoint of the completed `DEV-006.1` closeout before opening the next helper slice.
+
+Last updated: `2026-07-04 14:44:19 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-04 14:36 +02:00`, `DEV-006.1` has passed preimplementation check. The next MCP-helper follow-up is now execution-ready as a bounded Lean Dev input-prep slice: it may add one local helper script, one small source/evidence bundle, and one prepared renderer package for the existing recommendation renderer path, while staying deterministic, local-only, and outside any live-run or authority boundary.
+
+Current goal: implement `DEV-006.1` through `janus-executioner`.
+
+Active phase: `janus-preimplementation-check`, canonical state `HANDOFF`.
+
+Last Codex work:
+- prechecked `DEV-006.1` against the new Dev handoff, the renderer input/output artifacts, the locked recommendation template, the MCP workflow note, and the `DEV-005.1` final audit boundary
+- wrote `development/tasks/DEV-006.1_preimplementation_check.md`
+- updated `DEV_STATE` so the next bounded step points to execution
+
+Changed files:
+- `development/tasks/DEV-006.1_preimplementation_check.md`
+- `development/DEV_STATE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- targeted read of `janus-preimplementation-check` skill: PASS
+- artifact identity review across `DEV-006`, `DEV-006.1`, `DEV_STATE`, the renderer input/output artifacts, the MCP workflow note, and the locked recommendation template: PASS
+- `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py C:\KI\Janus-Projekt\development\tasks\DEV-006.1_preimplementation_check.md`: PASS
+- `git diff --check -- development/tasks/DEV-006.1_preimplementation_check.md development/DEV_STATE.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS, with pre-existing CRLF warnings only if emitted
+
+Open risks:
+- The first input-prep helper slice must remain local-only and deterministic; live MCP fetches, autonomous execution, production routing, and repo-write delegation remain out of scope.
+- The generic precheck template still carries the standard Playwright gate literal even though this slice is not a UI-test task; execution should treat that as template-required text, not as a real validation need for this artifact.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat `DEV-006.1` as execution-ready and review only the bounded source-bundle-to-renderer-package contract for the input-prep helper.
+
+Next recommended step for Codex: run `janus-executioner` on `DEV-006.1` with `5.4` medium.
+
+Last updated: `2026-07-04 14:36:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-04 14:34 +02:00`, the next bounded Dev follow-up has been routed after the completed `DEV-005.1` closeout. `DEV-006` is now the active Dev item, and `development/tasks/DEV-006.1_recommendation_input_prep_helper.md` defines the first input-prep helper slice for assembling the renderer-ready recommendation package from a small local evidence bundle without widening into live fetches, executor changes, or delegated authority.
+
+Current goal: run preimplementation check for `DEV-006.1`.
+
+Active phase: `janus-backlog-handoff`, canonical state `HANDOFF`.
+
+Last Codex work:
+- created the new Dev follow-up item `DEV-006` for the recommendation input-prep helper
+- routed `DEV-006` directly into a selected precheck handoff as `DEV-006.1`
+- updated `DEV_STATE` so the next bounded step is explicit
+
+Changed files:
+- `development/DEV_BACKLOG.md`
+- `development/DEV_STATE.md`
+- `development/tasks/DEV-006.1_recommendation_input_prep_helper.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- targeted read of `janus-skill-router`, `janus-backlog-intake`, `janus-backlog-prioritization`, and `janus-backlog-handoff`: PASS
+- continuity review across `DEV-005`, `DEV_STATE`, the renderer input/output artifacts, and the locked MCP template: PASS
+- `git diff --check -- development/DEV_BACKLOG.md development/DEV_STATE.md development/tasks/DEV-006.1_recommendation_input_prep_helper.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS, with pre-existing CRLF warnings only if emitted
+
+Open risks:
+- `DEV-006.1` must stay a local deterministic input-prep helper first; live MCP fetches, autonomous execution, production routing, and repo-write delegation remain intentionally out of scope.
+- The wider worktree remains dirty, so future checkpoints must stay narrowly scoped.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat `DEV-006` as the active follow-up to `DEV-005` and review only the bounded evidence-bundle-to-renderer-package contract for the input-prep helper slice.
+
+Next recommended step for Codex: run `janus-preimplementation-check` on `DEV-006.1` with `5.4` medium.
+
+Last updated: `2026-07-04 14:34:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-04 14:20 +02:00`, `DEV-005.1` is documentation-closed after final audit PASS. `DEV-005` has been moved to DONE in the Dev-/OR-infrastructure backlog, with all acceptance criteria checked and evidence linked to the task, precheck, execution result, audit package, final audit, renderer stub, example input package, and rendered markdown artifact.
 
 Current goal: choose the next small MCP-helper follow-up after the completed renderer/stub slice.

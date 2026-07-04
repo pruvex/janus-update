@@ -36,6 +36,49 @@ This backlog tracks Dev- and OR-infrastructure work only. It is separate from th
 
 ## DONE
 
+### DEV-006 - Add a bounded input-prep helper for MCP recommendation packages
+
+- **Type:** IMPROVEMENT
+- **Status:** DONE
+- **Created:** 2026-07-04
+- **Updated:** 2026-07-04
+- **Completed:** 2026-07-04
+- **Source:** User Intake
+- **Follow-up to:** DEV-005 - Add a lightweight renderer stub for MCP recommendation artifacts
+- **Short Description:** Add one small local input-prep helper that assembles the structured recommendation package for the renderer from bounded local evidence fields so Codex does not have to hand-build the JSON payload every time.
+- **Expected Behavior:** After reviewing local MCP/live notes and internal evidence, Codex can pass a small bounded evidence bundle into a local input-prep helper and receive one renderer-ready structured package with stable keys and section mapping.
+- **Actual Behavior:** CLOSED - `DEV-006.1` adds the bounded local input-prep helper, source bundle, and prepared renderer-ready package while keeping the recommendation-only approval boundary intact.
+- **Reproduction / Context:** `DEV-005.1` proved that the renderer path is useful and safe. This follow-up removes repetitive manual JSON assembly while still avoiding live fetches, executor changes, and delegated write authority.
+- **Area:** OpenRouter MCP / recommendation package preparation workflow
+- **Evidence:** `development/openrouter-skill-tests/openrouter_mcp_recommendation_source_bundle_2026-07-04.json`; `development/openrouter-skill-tests/openrouter_mcp_recommendation_prepared_input_2026-07-04.json`; `development/tasks/DEV-006.1_final_audit.md`
+- **Acceptance Criteria:**
+  - [x] A bounded Dev helper accepts one small local evidence/input bundle for recommendation preparation.
+  - [x] The helper produces one renderer-ready structured package with stable field names and deterministic mapping.
+  - [x] The prepared package preserves favorite-first ranking, alternatives, reason, next action, and approval-boundary inputs needed by the renderer.
+  - [x] The slice stays local-only and does not add live MCP fetches, executor/runtime changes, production routing, or repo-write delegation.
+- **Importance:** HIGH
+- **Implementation Risk:** LOW
+- **Effort:** S
+- **Readiness:** READY
+- **Recommendation:** DONE
+- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
+- **Routing reason:** This was the next smallest useful follow-up after `DEV-005.1`: a bounded local input-prep helper that reduced repetitive manual package assembly without widening execution or authority boundaries.
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-07-04
+- **Handoff:** `development/tasks/DEV-006.1_recommendation_input_prep_helper.md`
+- **Recommended next skill:** none
+- **Handoff created:** 2026-07-04
+- **Completed Task:** `development/tasks/DEV-006.1_recommendation_input_prep_helper.md`
+- **Preimplementation Check:** PASS - `development/tasks/DEV-006.1_preimplementation_check.md`
+- **Execution Result:** `development/tasks/DEV-006.1_execution_result.md`
+- **Audit Package:** `development/tasks/DEV-006.1_AUDIT_PACKAGE.md`
+- **Final Audit:** PASS - `development/tasks/DEV-006.1_final_audit.md`
+- **Validation Evidence:** `development/tasks/DEV-006.1_execution_result.md`; `development/tasks/DEV-006.1_AUDIT_PACKAGE.md`; `development/openrouter-skill-tests/openrouter_mcp_recommendation_prepared_input_2026-07-04.json`
+- **Missing Information:**
+  - None
+- **Notes:** This is Dev-/OR-infrastructure only. It does not authorize live-run automation, live MCP fetching, executor/runtime changes, production routing activation, automatic model selection, final validation authority, or repo-write delegation. A future follow-up may add a small comparison-artifact helper for packaging multiple recommendations side by side more conveniently.
+
 ### DEV-005 - Add a lightweight renderer stub for MCP recommendation artifacts
 
 - **Type:** IMPROVEMENT
