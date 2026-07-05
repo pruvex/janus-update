@@ -36,6 +36,49 @@ This backlog tracks Dev- and OR-infrastructure work only. It is separate from th
 
 ## DONE
 
+### DEV-008 - Add a bounded archive-usability helper for recommendation comparison artifacts
+
+- **Type:** IMPROVEMENT
+- **Status:** DONE
+- **Created:** 2026-07-04
+- **Updated:** 2026-07-05
+- **Completed:** 2026-07-05
+- **Source:** User Intake
+- **Follow-up to:** DEV-007 - Add a bounded comparison-artifact helper for MCP recommendation packages
+- **Short Description:** Add one small local helper or artifact pattern that turns the saved comparison artifact into a more review-friendly archive view so Codex can inspect earlier recommendation comparisons without manually parsing raw JSON.
+- **Expected Behavior:** After the comparison artifact exists, Codex can generate one stable archive-friendly summary view with labels, favorite models, timestamps, and next actions while preserving the approval boundary.
+- **Actual Behavior:** CLOSED - `DEV-008.1` adds the bounded local archive-view helper and archive view artifact while keeping the recommendation-only approval boundary intact.
+- **Reproduction / Context:** `DEV-007.1` made multi-package comparison deterministic. This follow-up makes saved comparison artifacts quicker to scan without widening into recommendation synthesis, live evaluation, or delegated authority.
+- **Area:** OpenRouter MCP / recommendation archive usability workflow
+- **Evidence:** `development/openrouter-skill-tests/openrouter_mcp_recommendation_comparison_artifact_2026-07-04.json`; `development/openrouter-skill-tests/openrouter_mcp_recommendation_comparison_archive_view_2026-07-04.md`; `development/tasks/DEV-008.1_final_audit.md`
+- **Acceptance Criteria:**
+  - [x] A bounded Dev helper or artifact pattern accepts one saved comparison artifact or equivalent bounded local comparison input.
+  - [x] The resulting archive view presents labels, favorite models, timestamps, and suggested next actions in a stable review-friendly format.
+  - [x] The archive view preserves approval-boundary language and does not imply recommendation authority, live execution, or production routing.
+  - [x] The slice stays local-only and does not add live MCP fetches, executor/runtime changes, production routing, or repo-write delegation.
+- **Importance:** MEDIUM
+- **Implementation Risk:** LOW
+- **Effort:** S
+- **Readiness:** READY
+- **Recommendation:** DONE
+- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
+- **Routing reason:** This was the next smallest useful follow-up after `DEV-007.1`: a bounded archive-usability helper that built on the saved comparison artifact without widening execution or authority boundaries.
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-07-04
+- **Handoff:** `development/tasks/DEV-008.1_recommendation_comparison_archive_view_helper.md`
+- **Recommended next skill:** none
+- **Handoff created:** 2026-07-04
+- **Completed Task:** `development/tasks/DEV-008.1_recommendation_comparison_archive_view_helper.md`
+- **Preimplementation Check:** PASS - `development/tasks/DEV-008.1_preimplementation_check.md`
+- **Execution Result:** `development/tasks/DEV-008.1_execution_result.md`
+- **Audit Package:** `development/tasks/DEV-008.1_AUDIT_PACKAGE.md`
+- **Final Audit:** PASS - `development/tasks/DEV-008.1_final_audit.md`
+- **Validation Evidence:** `development/tasks/DEV-008.1_execution_result.md`; `development/tasks/DEV-008.1_AUDIT_PACKAGE.md`; `development/openrouter-skill-tests/openrouter_mcp_recommendation_comparison_archive_view_2026-07-04.md`
+- **Missing Information:**
+  - None
+- **Notes:** This is Dev-/OR-infrastructure only. It does not authorize live-run automation, live MCP fetching, recommendation synthesis, executor/runtime changes, production routing activation, automatic model selection, final validation authority, or repo-write delegation. A future follow-up may improve archive indexing or retrieval ergonomics, but not recommendation authority.
+
 ### DEV-007 - Add a bounded comparison-artifact helper for MCP recommendation packages
 
 - **Type:** IMPROVEMENT

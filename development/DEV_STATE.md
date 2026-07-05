@@ -4,10 +4,10 @@
 Janus Dev And OR Infrastructure
 
 ## Current Goal
-Choose the next small MCP-helper follow-up after the completed comparison-artifact helper slice.
+Close the completed archive-view helper slice cleanly and prepare the next bounded MCP-helper follow-up or checkpoint.
 
 ## Active Phase
-DEV-007.1 documentation closeout complete; ready to choose the next MCP-helper follow-up
+DEV-008.1 fully documented after final audit PASS; ready for narrow git checkpoint or the next bounded follow-up
 
 ## Current Source Of Truth
 - `development/README.md`
@@ -24,7 +24,7 @@ DEV-007.1 documentation closeout complete; ready to choose the next MCP-helper f
 
 ## Open Work
 - Continue the current bounded executor-based rollout for high-value everyday skills.
-- Decide whether the next MCP-helper follow-up should improve archive usability or pause the helper chain after the comparison-artifact slice.
+- Decide whether the next bounded MCP-helper follow-up should improve archive retrieval ergonomics or pause for a governance checkpoint.
 - Keep the separation between Lean Dev work and strict Janus product work explicit in future governance changes.
 
 ## Open Risks
@@ -35,9 +35,10 @@ DEV-007.1 documentation closeout complete; ready to choose the next MCP-helper f
 - The renderer/stub must stay deterministic and local-only in its first slice; live fetches, autonomous execution, and write authority would widen the scope too early.
 - The input-prep helper must also stay deterministic and local-only in its first slice; it must not silently grow into live evidence collection or execution orchestration.
 - The comparison-artifact helper must not silently widen from archival comparison support into recommendation synthesis, live evaluation, or execution orchestration.
+- The new archive-view helper must remain a read-only review surface and must not drift into winner selection, execution triggers, or live routing authority.
 
 ## Next Recommended Step
-Route the next small MCP-helper follow-up. Recommended candidate: either a bounded archive-usability helper for saved recommendation comparisons or a narrow checkpoint before opening any further helper slice.
+Run `janus-git-governance` for a narrow checkpoint covering `DEV-008.1` closeout, or route one new bounded MCP-helper follow-up only after keeping the archive-view slice local-only, deterministic, and read-only.
 
 ## Last Updated
-2026-07-04 18:40 +02:00
+2026-07-05 20:50 +02:00
