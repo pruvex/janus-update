@@ -36,6 +36,66 @@ Exactly one target task or implementation slice may be checked per run. If the r
 
 Model choice is part of the gate. If the current `5.4` context is warm and the implementation will continue in `5.4`, prefer `Assigned Model: 5.4` with low reasoning for short mechanical work instead of assigning `5.4 mini`. Assign `5.4 mini` only when the task is a separated low-risk mechanical block that is still likely cheaper than staying on warm `5.4`.
 
+## Tri-Modal Rollout Note
+
+Global delegation vocabulary across Janus is now:
+
+- `1 = Codex`
+- `2 = Cursor`
+- `3 = OpenRouter`
+
+This skill's bounded precheck-review lane is now wired through the shared manifest-backed `documentation/codex/model-routing/scripts/janus_delegate.py` entry. OpenRouter remains the recommended backend for this assist-only review slice; Cursor is visible as option `2` but is not the recommended backend here.
+
+## Bounded Delegation Gate
+
+For a narrowly bounded precheck slice, this skill now has the shared tri-modal operator gate:
+
+- `1 = Codex`
+- `2 = Cursor`
+- `3 = OpenRouter`
+
+Use the shared delegate entry first:
+
+```powershell
+python documentation/codex/model-routing/scripts/janus_delegate.py --lane precheck_review --task-id TASK-PC-001 --workflow-id <WORKFLOW-ID> --operator-choice prompt --input-package-json development/openrouter-skill-tests/janus-preimplementation-check/precheck_input_package.json --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000
+```
+
+For a narrowly bounded precheck slice, this skill may offer one operator-facing delegated choice only when all of the following are true:
+
+- exactly one target task package is bound
+- the delegated task is recommendation-only and bounded to precheck review output
+- no final precheck decision, execution start, implementation, Git action, or release action is delegated
+- Codex remains the final reviewer and local owner of the actual pass/block decision
+
+Binding implementation artifact:
+
+- `C:\KI\Janus-Projekt\documentation\codex\model-routing\scripts\codex_precheck_review_runner.py`
+
+Current bounded winner for the representative precheck slice:
+
+- `qwen/qwen3-coder-30b-a3b-instruct`
+
+Current lane behavior:
+
+- OpenRouter remains the recommended backend for this bounded assist-only review slice.
+- Cursor is visible as option `2`, but not the recommended backend.
+- The existing `codex_precheck_review_runner.py` remains the downstream OR helper planned by `janus_delegate.py`.
+- Current shared-gate productive evidence shows this lane is both usable and cost-stable for bounded single-task precheck packages.
+
+Gate rules:
+
+- if the user chooses `1`, `local`, or `codex`, stay local in Codex
+- if the user chooses `2`, `cursor`, or `Cursor`, do not imply a live Cursor precheck path unless a later migration artifact explicitly adds one
+- if the user chooses `3`, `or`, `opr`, or `openrouter`, the shared delegate currently plans the bounded precheck helper path and hands off to the existing runner
+- use only a bounded precheck input package; do not delegate the final precheck authority
+- accepted delegated output remains review material only; Codex must still perform the real precheck decision locally
+
+Forbidden inside this path:
+
+- delegated final precheck decisions
+- delegated execution start or implementation
+- delegated Git, release, routing-table, or `CURRENT_STATE` writes
+
 ## Validation Gates
 
 Verify:

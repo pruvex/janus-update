@@ -32,6 +32,66 @@ If the Spec file is missing, unreadable, or not a final Feature Spec, block inst
 - If a blocking product decision is missing, ask exactly one blocking question with at most two options.
 - Do not treat a vague `ok` as an approval signal or as a valid handoff substitute.
 
+## Tri-Modal Rollout Note
+
+Global delegation vocabulary across Janus is now:
+
+- `1 = Codex`
+- `2 = Cursor`
+- `3 = OpenRouter`
+
+This skill's bounded `REVIEW_ONLY` lane is now wired through the shared manifest-backed `documentation/codex/model-routing/scripts/janus_delegate.py` entry. OpenRouter remains the recommended backend for this assist-only review slice; Cursor is visible as option `2` but is not the recommended backend here.
+
+## Bounded Delegation Gate
+
+For a narrowly bounded `REVIEW_ONLY` slice, this skill now has the shared tri-modal operator gate:
+
+- `1 = Codex`
+- `2 = Cursor`
+- `3 = OpenRouter`
+
+Use the shared delegate entry first:
+
+```powershell
+python documentation/codex/model-routing/scripts/janus_delegate.py --lane spec_review --task-id TASK-SR-002 --workflow-id <WORKFLOW-ID> --operator-choice prompt --input-package-json development/openrouter-skill-tests/janus-spec-review/spec_review_input_package.json --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000
+```
+
+For a narrowly bounded `REVIEW_ONLY` slice, this skill may offer one operator-facing delegated choice only when all of the following are true:
+
+- exactly one finalized Spec file is under review
+- the delegated task is recommendation-only and bounded to review output plus metadata suggestion
+- no authoritative metadata write, task creation, Git action, release action, or product decision is delegated
+- Codex remains the final reviewer and local writer of any accepted `SPEC REVIEW METADATA` block
+
+Binding implementation artifact:
+
+- `C:\KI\Janus-Projekt\documentation\codex\model-routing\scripts\codex_spec_review_runner.py`
+
+Current bounded winner for the representative Spec 21 review slice:
+
+- `qwen/qwen3-coder-30b-a3b-instruct`
+
+Current lane behavior:
+
+- OpenRouter remains the recommended backend for this bounded assist-only review slice.
+- Cursor is visible as option `2`, but not the recommended backend.
+- The existing `codex_spec_review_runner.py` remains the downstream OR helper planned by `janus_delegate.py`.
+- Current shared-gate productive evidence shows this lane is usable, but materially costlier than the first planning estimate; prefer it for substantive `REVIEW_ONLY` bundles rather than tiny metadata-only checks.
+
+Gate rules:
+
+- if the user chooses `1`, `local`, or `codex`, stay local in Codex
+- if the user chooses `2`, `cursor`, or `Cursor`, do not imply a live Cursor spec-review path unless a later migration artifact explicitly adds one
+- if the user chooses `3`, `or`, `opr`, or `openrouter`, the shared delegate currently plans the bounded spec-review helper path and hands off to the existing runner
+- use only a bounded review package; do not delegate full spec authority
+- accepted delegated output remains review material only; Codex must still perform any real metadata write locally
+
+Forbidden inside this path:
+
+- delegated authoritative metadata writes
+- delegated task creation or next-skill authority
+- delegated Git, release, routing-table, or `CURRENT_STATE` writes
+
 ## Review Gates
 
 Check:

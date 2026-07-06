@@ -13,6 +13,23 @@ Default posture for this user: guide the process actively, keep the next step ex
 
 Bare acknowledgements like `ok` are continuation signals only when no actor or chat boundary changes. Never use them as a substitute for a required handoff block.
 
+## Tri-Modal Rollout Note
+
+Global delegation vocabulary across Janus is now:
+
+- `1 = Codex`
+- `2 = Cursor`
+- `3 = OpenRouter`
+
+This skill's bounded routing-review lane is now wired through the shared manifest-backed `documentation/codex/model-routing/scripts/janus_delegate.py` entry. OpenRouter remains the recommended backend for this assist-only review slice; Cursor is available as option `2` but is not the preferred backend here.
+
+Current evidence-aware routing baseline:
+
+- prefer OpenRouter for bounded assist-only lanes that are now productively proven and cost-stable, especially mechanical normalization or bounded precheck review work
+- keep stricter ROI scrutiny on deeper judgment lanes such as `janus-spec-review`, where the live shared-gate result was usable but materially costlier than the first estimate
+- prefer Cursor for write-capable or tool-heavy bounded work such as execution patching, debug repro, or bounded test-fixture work
+- keep Codex as the default when delegation overhead is likely to dominate, or when the lane is not yet live-proven for the needed authority level
+
 ## Required Context
 
 Prefer these files, only as needed:
@@ -59,6 +76,41 @@ MODEL SWITCH GATE
 If current setup is acceptable, say so and continue. If a switch is recommended, wait for user `ok`, `bleib hier`, or another explicit instruction.
 
 If `Neuer Chat: ja`, always include one compact fenced `text` handoff block directly in the user-visible answer so it renders as a gray copy box. Do not make the user reconstruct the next prompt from prose.
+
+## Bounded Delegation Gate
+
+For one bounded routing-recommendation slice, this skill may offer the shared tri-modal operator gate:
+
+- `1 = Codex`
+- `2 = Cursor`
+- `3 = OpenRouter`
+
+Use the shared delegate entry first:
+
+```powershell
+python documentation/codex/model-routing/scripts/janus_delegate.py `
+  --lane skill_router_review `
+  --task-id TASK-SR-001 `
+  --workflow-id WF-SKILL-ROUTER-GATE-001 `
+  --operator-choice prompt `
+  --input-package-json development/openrouter-skill-tests/janus-skill-router/skill_router_input_package.json `
+  --estimated-codex-saved-tokens 12000 `
+  --estimated-delegation-overhead-tokens 4000
+```
+
+Current lane behavior:
+
+- OpenRouter remains the recommended backend for this bounded assist-only review slice.
+- Cursor is visible as option `2`, but not the recommended backend.
+- The existing `codex_skill_router_review_runner.py` remains the downstream OR helper planned by `janus_delegate.py`.
+- Use this lane to help shape routing recommendations, but keep the actual recommendation lane-selective: not every OR-capable lane should be treated as equally cheap or equally mature.
+
+Boundaries:
+
+- no delegated implementation
+- no delegated Git, release, or routing-table authority
+- no delegated final process authority
+- Codex remains the final router and gate owner
 
 Use:
 
@@ -136,6 +188,16 @@ Only route to `janus-quickchange` when all are true:
 - if the quick fix expands mid-flight, the next step is to stop and reroute to `janus-backlog-intake` or `janus-feature-design`
 
 For larger features, do not create implementation tasks directly. Start decision mode, lock the user's decisions, then route to spec generation, normalization, review, task breakdown, and Backlog/dashboard visibility.
+
+## Delegation Heuristics
+
+When recommending an operator backend, prefer the most evidence-aligned bounded lane rather than the most general-sounding one:
+
+- cheap mechanical assist-only work: OpenRouter is usually the first external option
+- bounded precheck-style review work: OpenRouter is usually the first external option
+- deeper review/synthesis work: OpenRouter can still help, but only when the package is large enough to justify the higher review cost
+- write-capable or shell/tool-driven work: prefer Cursor first when the manifest exposes a validated Cursor worker lane
+- tiny obvious work: keep it on Codex even if an external lane exists
 
 ## Model Routing
 
