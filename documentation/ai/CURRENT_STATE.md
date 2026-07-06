@@ -1,6 +1,1885 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-06 14:02 +02:00`, the next small post-baseline guidance slice tightened the highest-level operator router itself. `janus-skill-router` in both the repo source and the installed `.codex` working copy now reflects the evidence-aware delegation baseline instead of a flatter generic tri-modal story. The router now states explicitly that OpenRouter is the preferred external option mainly for cheap assist-only lanes that are productively proven and cost-stable, that deeper judgment lanes like `janus-spec-review` need stricter ROI scrutiny, that Cursor is the preferred first external option for write-capable or tool-heavy bounded work, and that Codex should remain the default when delegation overhead dominates. This does not change runtime delegation code or production routing; it sharpens the operator-facing routing judgment at the top of the workflow.
+
+Current goal: move from migration and dry-run proof into selective productive OR/Cursor usage on bounded lanes while keeping Codex as final acceptance owner.
+
+Active phase: Lean Dev routing-default and operator-guidance tightening after the three-lane productive OR baseline, canonical state `PASS`.
+
+Last Codex work:
+- tightened `janus-skill-router` so the top-level routing guidance reflects lane-selective delegation instead of treating all OR-capable assist lanes as equally mature
+- added explicit heuristics for when to prefer OpenRouter, Cursor, or plain Codex
+- synchronized the installed `C:\Users\pruve\.codex\skills\janus-skill-router\SKILL.md` copy to the repo source
+
+Changed files:
+- `documentation/codex/skills/janus-skill-router/SKILL.md`
+- `C:\Users\pruve\.codex\skills\janus-skill-router\SKILL.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- repo-vs-installed parity: PASS for `janus-skill-router`
+- targeted wording presence check: PASS for `Current evidence-aware routing baseline`, `lane-selective`, and `Delegation Heuristics`
+- `git diff --check -- documentation/codex/skills/janus-skill-router/SKILL.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS except the known CRLF warnings on `CURRENT_STATE.md` and `SKILL_USAGE_LOG.md`
+
+Open risks:
+- The router guidance is now more honest, but it still rests on a relatively small live evidence sample for the OR assist lanes.
+- This slice intentionally changed guidance only; it did not widen any runtime authority or prove new live lanes.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: route future delegation conversations from the new baseline: OpenRouter for cheap proven assist lanes, Cursor for write-capable/tool-heavy bounded work, and Codex local when delegation overhead is likely to dominate.
+
+Next recommended step for Codex: continue with one more bounded operator-surface tightening only if it still closes a real wording or ROI gap; otherwise pause for checkpoint/commit governance before widening the sweep.
+
+Last updated: `2026-07-06 14:02:30 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-06 13:58 +02:00`, the first post-baseline routing-tightening slice was completed after the three productive shared-gate OpenRouter proofs on `spec_normalizer`, `spec_review`, and `precheck_review`. The manifest, machine-readable task list, human task-list summary, and the affected skill texts were adjusted to reflect the new evidence instead of leaving the old generic OR-default wording untouched. `spec_normalizer_review` is now described as the cheapest predictable OR default inside the Spec flow, `precheck_review` as a cost-stable proven OR default for single-task precheck packages, and `spec_review` as usable but materially costlier than the first estimate. The shared routing defaults were tightened accordingly: the `spec_review` prompt estimate was raised from `0.00015` to `0.00075`, its confidence was lowered from `78` to `55`, and its minimum net saved token threshold was raised from `5000` to `8000`. Repo and installed skill copies for the three touched skills were resynchronized and hash-equivalent again.
+
+Current goal: move from migration and dry-run proof into selective productive OR/Cursor usage on bounded lanes while keeping Codex as final acceptance owner.
+
+Active phase: Lean Dev routing-default and operator-guidance tightening after the three-lane productive OR baseline, canonical state `PASS`.
+
+Last Codex work:
+- tightened the shared delegation manifest and task-list guidance using the fresh three-lane OR evidence instead of older generic assumptions
+- made `spec_review` more conservative in the routing defaults because its live cost overshot the earlier estimate substantially
+- clarified in both repo and installed skill texts that `spec_normalizer` and `precheck_review` are the stronger current OR defaults, while `spec_review` should be used for substantive `REVIEW_ONLY` bundles
+- revalidated the affected routing artifacts and repo-vs-installed skill parity
+
+Changed files:
+- `documentation/codex/model-routing/config/delegation_routing_manifest.json`
+- `documentation/codex/model-routing/config/delegation_task_list_2026-07-05.json`
+- `documentation/codex/model-routing/config/delegation_task_list_2026-07-05.md`
+- `documentation/codex/skills/janus-spec-normalizer/SKILL.md`
+- `documentation/codex/skills/janus-spec-review/SKILL.md`
+- `documentation/codex/skills/janus-preimplementation-check/SKILL.md`
+- `C:\Users\pruve\.codex\skills\janus-spec-normalizer\SKILL.md`
+- `C:\Users\pruve\.codex\skills\janus-spec-review\SKILL.md`
+- `C:\Users\pruve\.codex\skills\janus-preimplementation-check\SKILL.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- JSON load validation: PASS for `delegation_routing_manifest.json` and `delegation_task_list_2026-07-05.json`
+- `python -m pytest documentation/codex/model-routing/tests/test_delegation_routing.py documentation/codex/model-routing/tests/test_janus_delegate.py -q`: PASS (`48 passed`)
+- repo-vs-installed skill parity: PASS for `janus-spec-normalizer`, `janus-spec-review`, and `janus-preimplementation-check`
+
+Open risks:
+- The productive OR evidence is still strong only for bounded assist-only lanes; this tightening does not justify OR as the primary write-capable backend.
+- `spec_review` now has a more honest operator estimate, but it is still based on a small current evidence set rather than a large repeated sample.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat the tri-modal routing layer as lane-selective by default: cheap mechanical and precheck-style assist work remain good OR candidates, while deeper review work needs stricter ROI scrutiny and write-capable work remains Cursor-first.
+
+Next recommended step for Codex: continue with one bounded follow-up that applies the same evidence-aware tightening to another high-signal operator surface, or pause here for a checkpoint/commit decision before widening the guidance sweep further.
+
+Last updated: `2026-07-06 13:58:06 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 23:26 +02:00`, a third post-migration productive OpenRouter operator test was executed on `janus-preimplementation-check`, completing a small three-lane bounded OR baseline across `spec_normalizer`, `spec_review`, and `precheck_review`. Workflow `WF-PRECHECK-REVIEW-LIVE-PROD-2026-07-05-001` completed with HTTP `200`, `validation_result = PASS`, and healthcheck `PASS`, returning `precheck_decision = PRECHECK_PASS_CANDIDATE`, `risk_level = LOW`, and `execution_handoff_ready = YES`. This gives a more realistic lane mix: one low-cost mechanical lane, one higher-judgment review lane with elevated cost, and one governance-style precheck lane that stayed both bounded and inexpensive. The resulting evidence now supports controlled productive OR usage on selected assist-only lanes, while still not justifying OR as the preferred write-apply path.
+
+Current goal: move from migration and dry-run proof into selective productive OR/Cursor usage on bounded lanes while keeping Codex as final acceptance owner.
+
+Active phase: Lean Dev productive OR validation after shared-delegate migration wave, canonical state `PASS`.
+
+Last Codex work:
+- selected `janus-preimplementation-check` as the third productive OR comparison lane after successful spec-normalizer and spec-review pilots
+- executed one live bounded OpenRouter precheck-review run with the existing precheck input package
+- confirmed the delegated payload returned `PRECHECK_PASS_CANDIDATE` with concrete evidence requirements and no blocking issues
+- verified validation and healthcheck artifacts to complete a three-lane productive OR baseline
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- new run artifacts:
+  - `documentation/codex/model-routing/precheck-review-runs/WF-PRECHECK-REVIEW-LIVE-PROD-2026-07-05-001/`
+  - `documentation/codex/model-routing/or_healthcheck_telemetry_precheck_review_2026-07-05_WF-PRECHECK-REVIEW-LIVE-PROD-2026-07-05-001.jsonl`
+
+Checks / validation performed:
+- `python documentation/codex/model-routing/scripts/codex_precheck_review_runner.py --task-label "Precheck review productive OR pilot" --normal-target-model "5.4 medium" --operator-choice delegated --workflow-id WF-PRECHECK-REVIEW-LIVE-PROD-2026-07-05-001 --estimated-or-cost 0.00012 --cost-estimate-confidence-percent 82 --input-package-json development/openrouter-skill-tests/janus-preimplementation-check/precheck_input_package.json --execute-direct-or`: PASS
+- live OpenRouter response summary: HTTP `200`, `finish_reason = stop`, prompt tokens `795`, completion tokens `144`, total tokens `939`, actual cost `0.00009597`, latency `6495 ms`
+- delegated precheck payload: `status = PASS`, `precheck_decision = PRECHECK_PASS_CANDIDATE`, `artifact_identity = PASS`, `scope_status = ATOMIC`, `risk_level = LOW`, `execution_handoff_ready = YES`
+- runner validation summary: PASS with input/result/telemetry validation all true
+- runner healthcheck summary: PASS, telemetry ingested with final outcome `PRECHECK_REVIEW_READY_FOR_CODEX_VALIDATION`
+
+Open risks:
+- The productive OR evidence is now good on three bounded assist-only lanes, but it still does not justify OR as the primary backend for write-capable execution or patch-apply work.
+- Lane economics vary sharply: `spec_normalizer` and `precheck_review` were cheap, while `spec_review` materially exceeded its estimate, so routing heuristics still need per-lane cost expectations.
+- Codex must remain the final reviewer and acceptance owner, especially on higher-judgment outputs like spec review.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat OpenRouter as productively viable for selected bounded assist-only lanes, but lane-selective rather than universal; the current evidence argues for OR on mechanical and precheck-style review work, with stricter cost scrutiny on deeper judgment lanes.
+
+Next recommended step for Codex: checkpoint this three-lane OR evidence and use it to tighten routing defaults or operator guidance, rather than spending more live calls immediately on similar assist-only lanes.
+
+Last updated: `2026-07-05 23:26:13 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 23:20 +02:00`, the second post-migration productive OpenRouter operator test was executed on another shared-gate assist-only lane: `janus-spec-review` via the bounded `codex_spec_review_runner.py` path. Workflow `WF-SPEC-REVIEW-LIVE-PROD-2026-07-05-001` completed with HTTP `200`, `validation_result = PASS`, and healthcheck `PASS`, returning a review payload of `APPROVED` with notes and `next_skill = janus-spec-to-task`. This confirms that the shared operator-routing surface can now carry not only mechanical normalization work, but also a higher-judgment bounded review lane. The main caveat is cost predictability: the actual OR cost was `0.00071341` against the planning estimate `0.00015`, so this lane is operationally useful but currently under-estimated.
+
+Current goal: move from migration and dry-run proof into selective productive OR/Cursor usage on bounded lanes while keeping Codex as final acceptance owner.
+
+Active phase: Lean Dev productive OR validation after shared-delegate migration wave, canonical state `PASS`.
+
+Last Codex work:
+- selected `janus-spec-review` as the second safe productive OR assist-only lane after the successful spec-normalizer pilot
+- executed one live bounded OpenRouter spec-review run with the existing spec-review input package
+- confirmed the delegated review payload was structurally valid and recommended `janus-spec-to-task`
+- verified healthcheck ingestion and telemetry capture for the live run
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- new run artifacts:
+  - `documentation/codex/model-routing/spec-review-runs/WF-SPEC-REVIEW-LIVE-PROD-2026-07-05-001/`
+  - `documentation/codex/model-routing/or_healthcheck_telemetry_spec_review_2026-06-25_WF-SPEC-REVIEW-LIVE-PROD-2026-07-05-001.jsonl`
+
+Checks / validation performed:
+- `python documentation/codex/model-routing/scripts/codex_spec_review_runner.py --task-label "Spec review productive OR pilot" --normal-target-model "5.4 medium" --operator-choice delegated --workflow-id WF-SPEC-REVIEW-LIVE-PROD-2026-07-05-001 --estimated-or-cost 0.00015 --cost-estimate-confidence-percent 78 --input-package-json development/openrouter-skill-tests/janus-spec-review/spec_review_input_package.json --execute-direct-or`: PASS
+- live OpenRouter response summary: HTTP `200`, `finish_reason = stop`, prompt tokens `704`, completion tokens `347`, total tokens `1051`, actual cost `0.00071341`
+- delegated review payload: `decision = APPROVED`, `risk = HIGH`, `metadata_written = YES`, `next_skill = janus-spec-to-task`
+- runner validation summary: PASS with no validation issues
+- runner healthcheck summary: PASS, telemetry ingested with final outcome `SPEC_REVIEW_READY_FOR_CODEX_VALIDATION`
+
+Open risks:
+- This productive proof now covers two bounded assist-only OR lanes, but still not a trustworthy OR write-apply lane.
+- The spec-review lane is materially more expensive than estimated, so the routing heuristics still need cost calibration before broader everyday use.
+- The review payload was usable but conservative; Codex still needs to remain the acceptance owner for refinement and final task-release judgment.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat shared-gate OpenRouter usage as productively proven for at least two real assist-only lanes, while distinguishing lane quality and cost behavior rather than assuming all OR lanes are equally efficient.
+
+Next recommended step for Codex: run one third productive OR test on another bounded assist-only lane such as `precheck_review` to build a small multi-lane baseline, then checkpoint the evidence before any wider rollout claims.
+
+Last updated: `2026-07-05 23:20:06 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 22:41 +02:00`, the first post-migration productive OpenRouter operator test was executed on a shared-gate assist-only lane: `janus-spec-normalizer` via the existing bounded `codex_spec_normalizer_runner.py` path. Workflow `WF-SPEC-NORMALIZER-LIVE-PROD-2026-07-05-001` completed with HTTP `200`, `validation_result = PASS`, validator `PASS`, and healthcheck `PASS`. The normalized spec output stayed parser-safe and unchanged in meaning, and the actual OR cost was `0.00018797`, below the planning estimate `0.00022`. This confirms that the shared operator-routing surface is not only structurally wired, but can now be exercised productively on a real bounded OR lane with acceptable cost and stable artifacts.
+
+Current goal: move from migration and dry-run proof into selective productive OR/Cursor usage on bounded lanes while keeping Codex as final acceptance owner.
+
+Active phase: Lean Dev productive OR validation after shared-delegate migration wave, canonical state `PASS`.
+
+Last Codex work:
+- selected `janus-spec-normalizer` as the first safe productive OR assist-only lane after the operator-flow checkpoint
+- executed one live bounded OpenRouter normalization run with the existing spec-normalizer input package
+- validated the produced normalized markdown with the spec-normalizer validator
+- confirmed healthcheck ingestion and telemetry capture for the live run
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- new run artifacts:
+  - `documentation/codex/model-routing/spec-normalizer-runs/WF-SPEC-NORMALIZER-LIVE-PROD-2026-07-05-001/`
+  - `documentation/codex/model-routing/or_healthcheck_telemetry_spec_normalizer_2026-07-05_WF-SPEC-NORMALIZER-LIVE-PROD-2026-07-05-001.jsonl`
+
+Checks / validation performed:
+- `python documentation/codex/model-routing/scripts/codex_spec_normalizer_runner.py --task-label "Spec normalizer productive OR pilot" --normal-target-model "5.4 mini" --operator-choice delegated --workflow-id WF-SPEC-NORMALIZER-LIVE-PROD-2026-07-05-001 --estimated-or-cost 0.00022 --cost-estimate-confidence-percent 72 --input-package-json development/openrouter-skill-tests/janus-spec-normalizer/spec_normalizer_input_package.json --execute-direct-or`: PASS
+- live OpenRouter response summary: HTTP `200`, `finish_reason = stop`, prompt tokens `695`, completion tokens `516`, total tokens `1211`, actual cost `0.00018797`, latency `10586 ms`
+- `python documentation/codex/skills/janus-spec-normalizer/scripts/validate_feature_spec.py documentation/codex/model-routing/spec-normalizer-runs/WF-SPEC-NORMALIZER-LIVE-PROD-2026-07-05-001/normalized_spec.md`: `SPEC VALIDATION PASS`
+- runner healthcheck summary: PASS, telemetry ingested with final outcome `OR_NORMALIZATION_READY_FOR_CODEX_VALIDATION`
+
+Open risks:
+- This productive proof covers a safe mechanical assist-only OR lane, not a write-capable or multi-step execution lane.
+- The repo remains heavily dirty overall, so healthcheck noise is high even though the bounded OR telemetry for this run is clean.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat bounded shared-gate OR usage as productively proven for at least one real assist-only lane and distinguish that from still-higher-risk execution or write-apply paths.
+
+Next recommended step for Codex: either run one second productive OR test on another assist-only lane such as `spec_review` or `precheck_review` for cross-lane confidence, or stop here and checkpoint the current OR evidence before any broader live usage.
+
+Last updated: `2026-07-05 23:17:22 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 22:41 +02:00`, a short operator-flow checkpoint was completed after the latest shared-delegate migration wave. The shared routing layer now exposes `23` manifest lanes and `25` concrete task entries, and the central `janus_delegate.py` / routing test sweep passed cleanly. The remaining visible `1 = Codex / 2 = OpenRouter` wording in repo skills is now confined to explicitly legacy helper subsections inside `janus-debug`, `janus-test-pipeline`, and `janus-executioner`, where the text already says those branches are no longer the primary everyday operator surface.
+
+Current goal: shift from migration-by-default toward controlled operator-flow confidence and productive OR/Cursor usage decisions, now that the main shared routing surface is in place.
+
+Active phase: Lean Dev operator-flow checkpoint after shared-delegate migration wave, canonical state `PASS`.
+
+Last Codex work:
+- reviewed the current shared-delegate coverage against remaining skill-local or legacy helper wording
+- confirmed the manifest/task-list breadth and the central delegate/routing test layer
+- verified that remaining old `1 = Codex / 2 = OpenRouter` wording appears only inside intentionally legacy helper-path sections
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_delegation_routing.py documentation/codex/model-routing/tests/test_janus_delegate.py -q`: PASS (`48 passed`)
+- manifest/task count snapshot: PASS (`23` lanes, `25` tasks)
+- targeted wording grep across `documentation/codex/skills/`: PASS with only intentional legacy-helper references in:
+  - `documentation/codex/skills/janus-debug/SKILL.md`
+  - `documentation/codex/skills/janus-test-pipeline/SKILL.md`
+  - `documentation/codex/skills/janus-executioner/SKILL.md`
+
+Open risks:
+- The shared operator-routing layer is broadly in place, but legacy helper branches still exist under some skills for explicit validation or fallback scenarios.
+- No new live OR or Cursor run was executed in this checkpoint, so productive behavior confidence still depends on earlier smoke evidence plus future approved real tasks.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat the shared operator-routing surface as the default truth and avoid steering back to older direct helper gates except where the skill text explicitly marks them as legacy validation paths.
+
+Next recommended step for Codex: stop the migration wave here and move into one approved productive OR operator test on a bounded assist-only lane, or pause for a governance checkpoint before any live spend.
+
+Last updated: `2026-07-05 22:41:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 22:41 +02:00`, the shared tri-modal delegate surface has been extended into `janus-spec-normalizer`. The shared manifest and task list now contain `spec_normalizer_review` / `TASK-SN-001`, `janus_delegate.py` can now plan the existing `codex_spec_normalizer_runner.py` as option `3`, and the spec-normalizer skill text now points operators to the shared `1 = Codex / 2 = Cursor / 3 = OpenRouter` gate instead of the older skill-local `1 = Codex / 2 = OpenRouter` prompt. The human-readable routing task list now also shows spec-normalizer in the spec flow. The installed `janus-spec-normalizer` skill copy under `C:\Users\pruve\.codex\skills\` was synchronized and hash-verified against the repo source.
+
+Current goal: finish converting the remaining realistic assist-only or bounded helper surfaces into one shared operator-routing contract before shifting attention back to broader operator-flow testing or Git checkpointing.
+
+Active phase: Lean Dev shared-delegate runtime migration, canonical state `PASS`.
+
+Last Codex work:
+- added `spec_normalizer_review` to the shared delegation manifest as an assist-only lane with Cursor visible and OpenRouter recommended
+- added `TASK-SN-001` to the machine-readable task list and the human-readable task summary
+- taught `janus_delegate.py` to plan `codex_spec_normalizer_runner.py` through the shared gate
+- updated `janus-spec-normalizer` skill wording to the shared `janus_delegate.py` entry
+- synchronized the installed `janus-spec-normalizer` skill copy and validated it against the repo version
+
+Changed files:
+- `documentation/codex/model-routing/config/delegation_routing_manifest.json`
+- `documentation/codex/model-routing/config/delegation_task_list_2026-07-05.json`
+- `documentation/codex/model-routing/config/delegation_task_list_2026-07-05.md`
+- `documentation/codex/model-routing/scripts/janus_delegate.py`
+- `documentation/codex/model-routing/tests/test_delegation_routing.py`
+- `documentation/codex/model-routing/tests/test_janus_delegate.py`
+- `documentation/codex/skills/janus-spec-normalizer/SKILL.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- installed working copy:
+  - `C:\Users\pruve\.codex\skills\janus-spec-normalizer\SKILL.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_spec_normalizer_runner.py documentation/codex/model-routing/tests/test_delegation_routing.py documentation/codex/model-routing/tests/test_janus_delegate.py -q`: PASS (`50 passed`)
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane spec_normalizer_review --task-id TASK-SN-001 --workflow-id WF-SN-PROMPT-DRYRUN-001 --operator-choice prompt --input-package-json development/openrouter-skill-tests/janus-spec-normalizer/spec_normalizer_input_package.json --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000`: PASS
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane spec_normalizer_review --task-id TASK-SN-001 --workflow-id WF-SN-OR-DRYRUN-001 --operator-choice 3 --input-package-json development/openrouter-skill-tests/janus-spec-normalizer/spec_normalizer_input_package.json --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000`: PASS
+- SHA256 hash comparison between repo and installed spec-normalizer skill copies: PASS
+
+Open risks:
+- Older bounded helper surfaces such as any remaining still-local documentation or specialty review lanes may still sit outside the shared operator-routing surface.
+- This slice keeps the existing OR helper under the shared gate; it does not create a new live Cursor spec-normalizer path.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat `janus-spec-normalizer` as part of the shared operator-routing surface and use `TASK-SN-001` whenever one bounded mechanical spec-normalization package fits.
+
+Next recommended step for Codex: pause for a short operator-flow checkpoint or continue into the next remaining still-local helper lane only if the user explicitly wants the migration wave to keep going.
+
+Last updated: `2026-07-05 22:41:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 22:34 +02:00`, the shared delegate surface has been extended into the bounded `janus-quickchange` patch-review lane. The shared manifest and task list now contain `quickchange_patch_review` / `TASK-QC-001`, `janus_delegate.py` now accepts and forwards bounded dispatcher inputs such as `--prompt-path`, `--editable-path`, and `--max-touched-files`, and the quickchange skill text now points operators to the shared `janus_delegate.py` entry for `quickchange_patch_review`. This lane remains intentionally honest about runtime shape: its visible gate is currently `1 = Codex` / `3 = OpenRouter`, because no validated Cursor quickchange backend exists here yet. The installed `janus-quickchange` skill copy under `C:\Users\pruve\.codex\skills\` was synchronized and hash-verified against the repo source.
+
+Current goal: finish converting the remaining realistic assist-only or bounded helper surfaces into one shared operator-routing contract before shifting attention back to broader operator-flow testing or Git checkpointing.
+
+Active phase: Lean Dev shared-delegate runtime migration, canonical state `PASS`.
+
+Last Codex work:
+- added `quickchange_patch_review` to the shared delegation manifest as a bounded dispatcher-backed helper lane with OpenRouter recommended
+- added `TASK-QC-001` to the machine-readable task list and the human-readable task summary
+- taught `janus_delegate.py` to carry bounded dispatcher parameters for shared quickchange planning
+- added example quickchange prompt and target fixtures for stable dry-run validation
+- updated `janus-quickchange` skill wording to the shared `janus_delegate.py` entry while keeping the no-Cursor caveat explicit
+- synchronized the installed `janus-quickchange` skill copy and validated it against the repo version
+
+Changed files:
+- `documentation/codex/model-routing/config/delegation_routing_manifest.json`
+- `documentation/codex/model-routing/config/delegation_task_list_2026-07-05.json`
+- `documentation/codex/model-routing/config/delegation_task_list_2026-07-05.md`
+- `documentation/codex/model-routing/scripts/janus_delegate.py`
+- `documentation/codex/model-routing/tests/test_delegation_routing.py`
+- `documentation/codex/model-routing/tests/test_janus_delegate.py`
+- `documentation/codex/skills/janus-quickchange/SKILL.md`
+- `documentation/codex/model-routing/fixtures/examples/quickchange_patch_review_prompt_example.md`
+- `documentation/codex/model-routing/fixtures/examples/quickchange_patch_review_target_example.txt`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- installed working copy:
+  - `C:\Users\pruve\.codex\skills\janus-quickchange\SKILL.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_delegation_routing.py documentation/codex/model-routing/tests/test_janus_delegate.py documentation/codex/model-routing/tests/test_quickchange_live_operator_path.py -q`: PASS (`49 passed`)
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane quickchange_patch_review --task-id TASK-QC-001 --workflow-id WF-QC-PROMPT-DRYRUN-001 --operator-choice prompt --prompt-path documentation/codex/model-routing/fixtures/examples/quickchange_patch_review_prompt_example.md --editable-path documentation/codex/model-routing/fixtures/examples/quickchange_patch_review_target_example.txt --max-touched-files 1 --estimated-codex-saved-tokens 8000 --estimated-delegation-overhead-tokens 4000`: PASS
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane quickchange_patch_review --task-id TASK-QC-001 --workflow-id WF-QC-OR-DRYRUN-001 --operator-choice 3 --prompt-path documentation/codex/model-routing/fixtures/examples/quickchange_patch_review_prompt_example.md --editable-path documentation/codex/model-routing/fixtures/examples/quickchange_patch_review_target_example.txt --max-touched-files 1 --estimated-codex-saved-tokens 8000 --estimated-delegation-overhead-tokens 4000`: PASS
+- SHA256 hash comparison between repo and installed quickchange skill copies: PASS
+
+Open risks:
+- `janus-quickchange` is now shared-gate aware for the bounded patch-review slice, but it still intentionally lacks a validated Cursor quickchange backend.
+- This slice standardizes planning and operator wording; it does not activate new live OpenRouter behavior on its own.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat `janus-quickchange` patch review as part of the shared delegate surface and use `TASK-QC-001` when one tiny allowlisted patch proposal is the right fit.
+
+Next recommended step for Codex: either migrate `janus-spec-normalizer` as the next still-local bounded helper surface or pause for a short operator-flow checkpoint before more lane additions.
+
+Last updated: `2026-07-05 22:34:22 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 22:17 +02:00`, the shared tri-modal delegate surface has been extended into `janus-preimplementation-check`. The shared manifest and task list now contain `precheck_review` / `TASK-PC-001`, `janus_delegate.py` can now plan the existing `codex_precheck_review_runner.py` as option `3`, and the precheck skill text now points operators to the shared `1 = Codex / 2 = Cursor / 3 = OpenRouter` gate instead of the older skill-local `1 = Codex / 2 = OpenRouter` prompt. A new focused runner test now covers prompt and delegated-fixture behavior for the precheck OR helper. The installed `janus-preimplementation-check` skill copy under `C:\Users\pruve\.codex\skills\` was synchronized and hash-verified against the repo source.
+
+Current goal: finish converting the remaining realistic assist-only skill-local delegation surfaces into one shared operator-routing contract before shifting attention back to broader operator-flow testing or Git checkpointing.
+
+Active phase: Lean Dev shared-delegate runtime migration, canonical state `PASS`.
+
+Last Codex work:
+- added `precheck_review` to the shared delegation manifest as an assist-only lane with Cursor visible and OpenRouter recommended
+- added `TASK-PC-001` to the machine-readable task list and the human-readable task summary
+- taught `janus_delegate.py` to plan `codex_precheck_review_runner.py` through the shared gate
+- updated `janus-preimplementation-check` skill wording to the shared `janus_delegate.py` entry
+- added a focused runner test for the precheck OR helper
+- synchronized the installed `janus-preimplementation-check` skill copy and validated it against the repo version
+
+Changed files:
+- `documentation/codex/model-routing/config/delegation_routing_manifest.json`
+- `documentation/codex/model-routing/config/delegation_task_list_2026-07-05.json`
+- `documentation/codex/model-routing/config/delegation_task_list_2026-07-05.md`
+- `documentation/codex/model-routing/scripts/janus_delegate.py`
+- `documentation/codex/model-routing/tests/test_delegation_routing.py`
+- `documentation/codex/model-routing/tests/test_janus_delegate.py`
+- `documentation/codex/model-routing/tests/test_codex_precheck_review_runner.py`
+- `documentation/codex/skills/janus-preimplementation-check/SKILL.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- installed working copy:
+  - `C:\Users\pruve\.codex\skills\janus-preimplementation-check\SKILL.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_codex_precheck_review_runner.py documentation/codex/model-routing/tests/test_delegation_routing.py documentation/codex/model-routing/tests/test_janus_delegate.py -q`: PASS (`44 passed`)
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane precheck_review --task-id TASK-PC-001 --workflow-id WF-PC-PROMPT-DRYRUN-001 --operator-choice prompt --input-package-json development/openrouter-skill-tests/janus-preimplementation-check/precheck_input_package.json --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000`: PASS
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane precheck_review --task-id TASK-PC-001 --workflow-id WF-PC-OR-DRYRUN-001 --operator-choice 3 --input-package-json development/openrouter-skill-tests/janus-preimplementation-check/precheck_input_package.json --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000`: PASS
+- SHA256 hash comparison between repo and installed precheck skill copies: PASS
+
+Open risks:
+- Older assist-only lanes such as `janus-spec-normalizer` and `janus-quickchange` still remain outside the shared delegate runtime surface.
+- This slice keeps the existing OR helper under the shared gate; it does not create a new live Cursor precheck path.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat `janus-preimplementation-check` as part of the shared operator-routing surface and use `TASK-PC-001` when one bounded precheck review package fits.
+
+Next recommended step for Codex: either migrate the next small still-local assist-only lane such as `janus-quickchange` or pause for a short operator-flow checkpoint before more runtime expansion.
+
+Last updated: `2026-07-05 22:17:54 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 21:55 +02:00`, the shared tri-modal delegate surface has been extended across the next contiguous Spec pipeline cluster: `janus-spec-review`, `janus-spec-to-task`, and `janus-task-breakdown`. The shared manifest and task list now contain `spec_review` / `TASK-SR-002`, `spec_to_task_review` / `TASK-ST-001`, and `task_breakdown_review` / `TASK-TB-001`. `janus_delegate.py` can now plan the existing `codex_spec_review_runner.py`, `codex_spec_to_task_runner.py`, and `codex_task_breakdown_runner.py` as option `3`, and all three skill texts now point operators to the shared `1 = Codex / 2 = Cursor / 3 = OpenRouter` gate instead of the older skill-local `1 = Codex / 2 = OpenRouter` prompts. New focused runner tests were added for all three helpers. The installed skill copies under `C:\Users\pruve\.codex\skills\` were synchronized and hash-verified against the repo sources.
+
+Current goal: finish converting the remaining realistic assist-only skill-local delegation surfaces into one shared operator-routing contract before shifting attention back to broader operator-flow testing or Git checkpointing.
+
+Active phase: Lean Dev shared-delegate runtime migration, canonical state `PASS`.
+
+Last Codex work:
+- added `spec_review`, `spec_to_task_review`, and `task_breakdown_review` to the shared delegation manifest as assist-only lanes with Cursor visible and OpenRouter recommended
+- added `TASK-SR-002`, `TASK-ST-001`, and `TASK-TB-001` to the machine-readable task list and the human-readable task summary
+- taught `janus_delegate.py` to plan `codex_spec_review_runner.py`, `codex_spec_to_task_runner.py`, and `codex_task_breakdown_runner.py` through the shared gate
+- updated `janus-spec-review`, `janus-spec-to-task`, and `janus-task-breakdown` skill wording to the shared `janus_delegate.py` entry
+- added focused runner tests for the three OR helpers
+- synchronized the installed skill copies for all three touched skills and validated them against the repo versions
+
+Changed files:
+- `documentation/codex/model-routing/config/delegation_routing_manifest.json`
+- `documentation/codex/model-routing/config/delegation_task_list_2026-07-05.json`
+- `documentation/codex/model-routing/config/delegation_task_list_2026-07-05.md`
+- `documentation/codex/model-routing/scripts/janus_delegate.py`
+- `documentation/codex/model-routing/tests/test_delegation_routing.py`
+- `documentation/codex/model-routing/tests/test_janus_delegate.py`
+- `documentation/codex/model-routing/tests/test_codex_spec_review_runner.py`
+- `documentation/codex/model-routing/tests/test_codex_spec_to_task_runner.py`
+- `documentation/codex/model-routing/tests/test_codex_task_breakdown_runner.py`
+- `documentation/codex/skills/janus-spec-review/SKILL.md`
+- `documentation/codex/skills/janus-spec-to-task/SKILL.md`
+- `documentation/codex/skills/janus-task-breakdown/SKILL.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- installed working copies:
+  - `C:\Users\pruve\.codex\skills\janus-spec-review\SKILL.md`
+  - `C:\Users\pruve\.codex\skills\janus-spec-to-task\SKILL.md`
+  - `C:\Users\pruve\.codex\skills\janus-task-breakdown\SKILL.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_codex_spec_review_runner.py documentation/codex/model-routing/tests/test_codex_spec_to_task_runner.py documentation/codex/model-routing/tests/test_codex_task_breakdown_runner.py documentation/codex/model-routing/tests/test_delegation_routing.py documentation/codex/model-routing/tests/test_janus_delegate.py -q`: PASS (`45 passed`)
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane spec_review --task-id TASK-SR-002 --workflow-id WF-SPEC-REVIEW-GATE-DRYRUN-001 --operator-choice prompt --input-package-json development/openrouter-skill-tests/janus-spec-review/spec_review_input_package.json --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000`: PASS
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane spec_to_task_review --task-id TASK-ST-001 --workflow-id WF-SPEC-TO-TASK-GATE-DRYRUN-001 --operator-choice prompt --input-package-json development/openrouter-skill-tests/janus-spec-to-task/spec_to_task_input_package.json --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000`: PASS
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane task_breakdown_review --task-id TASK-TB-001 --workflow-id WF-TASK-BREAKDOWN-GATE-DRYRUN-001 --operator-choice prompt --input-package-json development/openrouter-skill-tests/janus-task-breakdown/task_breakdown_input_package.json --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000`: PASS
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane spec_review --task-id TASK-SR-002 --workflow-id WF-SPEC-REVIEW-OR-DRYRUN-001 --operator-choice 3 --input-package-json development/openrouter-skill-tests/janus-spec-review/spec_review_input_package.json --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000`: PASS
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane spec_to_task_review --task-id TASK-ST-001 --workflow-id WF-SPEC-TO-TASK-OR-DRYRUN-001 --operator-choice 3 --input-package-json development/openrouter-skill-tests/janus-spec-to-task/spec_to_task_input_package.json --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000`: PASS
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane task_breakdown_review --task-id TASK-TB-001 --workflow-id WF-TASK-BREAKDOWN-OR-DRYRUN-001 --operator-choice 3 --input-package-json development/openrouter-skill-tests/janus-task-breakdown/task_breakdown_input_package.json --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000`: PASS
+- SHA256 hash comparison between repo and installed skill copies for the three touched skills: PASS
+- `git diff --check` on the touched files plus `CURRENT_STATE.md` and `SKILL_USAGE_LOG.md`: pending rerun after state-log update, expected only existing CRLF warnings on `CURRENT_STATE.md` and `SKILL_USAGE_LOG.md`
+
+Open risks:
+- The shared delegate now covers most of the realistic assist-only Spec pipeline surfaces, but older lanes such as `janus-preimplementation-check`, `janus-spec-normalizer`, and `janus-quickchange` still remain skill-local.
+- These slices keep the existing OR helpers under the shared gate; they do not create new live Cursor paths for the migrated skills.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat `janus-spec-review`, `janus-spec-to-task`, and `janus-task-breakdown` as part of the shared operator-routing surface and use `TASK-SR-002`, `TASK-ST-001`, and `TASK-TB-001` whenever bounded review packages fit.
+
+Next recommended step for Codex: pause for a small operator-flow checkpoint before migrating the remaining lower-priority lanes, unless the user explicitly wants the cluster to continue into `janus-preimplementation-check`.
+
+Last updated: `2026-07-05 21:55:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 21:42 +02:00`, `janus-spec-generator` has also been migrated into the shared tri-modal delegate surface as a bounded assist-only review lane. The shared manifest and task list now contain `spec_generator_review` / `TASK-SG-001`, `janus_delegate.py` can plan the existing `codex_spec_generator_review_runner.py` as option `3`, and the skill text now points operators to the shared `1 = Codex / 2 = Cursor / 3 = OpenRouter` gate instead of the old skill-local `1 = Codex / 2 = OpenRouter` prompt. A new focused runner test now covers prompt and delegated-fixture behavior for the spec-generator OR helper. The installed `janus-spec-generator` skill copy under `C:\Users\pruve\.codex\skills\` was synchronized and hash-verified against the repo source.
+
+Current goal: continue consolidating the remaining realistic skill-local delegation surfaces into one shared operator-routing contract while the patterns are still warm and consistent.
+
+Active phase: Lean Dev shared-delegate runtime migration, canonical state `PASS`.
+
+Last Codex work:
+- added `spec_generator_review` to the shared delegation manifest as an assist-only lane with Cursor visible and OpenRouter recommended
+- added `TASK-SG-001` to the machine-readable task list and the human-readable task summary
+- taught `janus_delegate.py` to plan `codex_spec_generator_review_runner.py` through the shared gate
+- updated `janus-spec-generator` skill wording to the shared `janus_delegate.py` entry
+- added a new focused runner test for the spec-generator OR helper
+- synchronized the installed `janus-spec-generator` skill copy and validated it against the repo version
+
+Changed files:
+- `documentation/codex/model-routing/config/delegation_routing_manifest.json`
+- `documentation/codex/model-routing/config/delegation_task_list_2026-07-05.json`
+- `documentation/codex/model-routing/config/delegation_task_list_2026-07-05.md`
+- `documentation/codex/model-routing/scripts/janus_delegate.py`
+- `documentation/codex/model-routing/tests/test_delegation_routing.py`
+- `documentation/codex/model-routing/tests/test_janus_delegate.py`
+- `documentation/codex/model-routing/tests/test_codex_spec_generator_review_runner.py`
+- `documentation/codex/skills/janus-spec-generator/SKILL.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- installed working copy:
+  - `C:\Users\pruve\.codex\skills\janus-spec-generator\SKILL.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_codex_spec_generator_review_runner.py documentation/codex/model-routing/tests/test_spec_generator_structured_render.py documentation/codex/model-routing/tests/test_delegation_routing.py documentation/codex/model-routing/tests/test_janus_delegate.py -q`: PASS (`33 passed`)
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane spec_generator_review --task-id TASK-SG-001 --workflow-id WF-SPEC-GENERATOR-GATE-DRYRUN-001 --operator-choice prompt --input-package-json development/openrouter-skill-tests/janus-spec-generator/spec_generator_input_package.json --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000`: PASS
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane spec_generator_review --task-id TASK-SG-001 --workflow-id WF-SPEC-GENERATOR-OR-DRYRUN-001 --operator-choice 3 --input-package-json development/openrouter-skill-tests/janus-spec-generator/spec_generator_input_package.json --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000`: PASS
+- SHA256 hash comparison between repo and installed `janus-spec-generator` skill copy: PASS
+- `git diff --check` on the touched files plus `CURRENT_STATE.md` and `SKILL_USAGE_LOG.md`: PASS with existing CRLF warnings on `CURRENT_STATE.md` and `SKILL_USAGE_LOG.md` only
+
+Open risks:
+- The shared delegate now covers another high-value assist-only lane, but several remaining older lanes such as precheck, spec-review, spec-to-task, task-breakdown, quickchange, and spec-normalizer are still skill-local.
+- This slice keeps the existing OR helper under the shared gate; it does not create a live Cursor spec-generation path.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat `janus-spec-generator` as part of the shared operator-routing surface and use `TASK-SG-001` / `spec_generator_review` when a bounded locked-decision spec-draft package fits.
+
+Next recommended step for Codex: if momentum should continue, the clean remaining candidates are now `janus-spec-review`, `janus-spec-to-task`, or `janus-task-breakdown`; otherwise pause for a small operator-flow checkpoint before touching the next cluster.
+
+Last updated: `2026-07-05 21:42:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 21:30 +02:00`, `janus-feature-design` has also been migrated into the shared tri-modal delegate surface as a bounded assist-only review lane. The shared manifest and task list now contain `feature_design_review` / `TASK-FD-001`, `janus_delegate.py` can plan the existing `codex_feature_design_runner.py` as option `3`, and the skill text now points operators to the shared `1 = Codex / 2 = Cursor / 3 = OpenRouter` gate instead of the old skill-local `1 = Codex / 2 = OpenRouter` prompt. A new focused runner test now covers prompt and delegated-fixture behavior for the feature-design OR helper. The installed `janus-feature-design` skill copy under `C:\Users\pruve\.codex\skills\` was synchronized and hash-verified against the repo source.
+
+Current goal: keep collapsing the remaining clean skill-local delegation surfaces into one consistent shared operator-routing contract before any broader production-style testing.
+
+Active phase: Lean Dev shared-delegate runtime migration, canonical state `PASS`.
+
+Last Codex work:
+- added `feature_design_review` to the shared delegation manifest as an assist-only lane with Cursor visible and OpenRouter recommended
+- added `TASK-FD-001` to the machine-readable task list and the human-readable task summary
+- taught `janus_delegate.py` to plan `codex_feature_design_runner.py` through the shared gate
+- updated `janus-feature-design` skill wording to the shared `janus_delegate.py` entry
+- added a new focused runner test for the feature-design OR helper
+- synchronized the installed `janus-feature-design` skill copy and validated it against the repo version
+
+Changed files:
+- `documentation/codex/model-routing/config/delegation_routing_manifest.json`
+- `documentation/codex/model-routing/config/delegation_task_list_2026-07-05.json`
+- `documentation/codex/model-routing/config/delegation_task_list_2026-07-05.md`
+- `documentation/codex/model-routing/scripts/janus_delegate.py`
+- `documentation/codex/model-routing/tests/test_delegation_routing.py`
+- `documentation/codex/model-routing/tests/test_janus_delegate.py`
+- `documentation/codex/model-routing/tests/test_codex_feature_design_runner.py`
+- `documentation/codex/skills/janus-feature-design/SKILL.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- installed working copy:
+  - `C:\Users\pruve\.codex\skills\janus-feature-design\SKILL.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_codex_feature_design_runner.py documentation/codex/model-routing/tests/test_delegation_routing.py documentation/codex/model-routing/tests/test_janus_delegate.py -q`: PASS (`29 passed`)
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane feature_design_review --task-id TASK-FD-001 --workflow-id WF-FEATURE-DESIGN-GATE-DRYRUN-001 --operator-choice prompt --input-package-json development/openrouter-skill-tests/janus-feature-design/feature_design_input_package.json --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000`: PASS
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane feature_design_review --task-id TASK-FD-001 --workflow-id WF-FEATURE-DESIGN-OR-DRYRUN-001 --operator-choice 3 --input-package-json development/openrouter-skill-tests/janus-feature-design/feature_design_input_package.json --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000`: PASS
+- SHA256 hash comparison between repo and installed `janus-feature-design` skill copy: PASS
+- `git diff --check` on the touched files plus `CURRENT_STATE.md` and `SKILL_USAGE_LOG.md`: PASS with existing CRLF warnings on `CURRENT_STATE.md` and `SKILL_USAGE_LOG.md` only
+
+Open risks:
+- The shared delegate now covers another clean assist-only lane, but several older historical docs and helper artifacts still intentionally describe legacy `1 = Codex / 2 = OpenRouter` paths.
+- This slice keeps the existing OR helper under the shared gate; it does not create a live Cursor feature-design path.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat `janus-feature-design` as part of the shared operator-routing surface and use `TASK-FD-001` / `feature_design_review` when a bounded locked-answer consolidation package fits.
+
+Next recommended step for Codex: pause and reassess the remaining non-migrated lanes; the next sensible slice is likely a deliberate decision about whether to keep moving assist-only lanes first or switch to a broader operator-flow checkpoint.
+
+Last updated: `2026-07-05 21:30:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 21:20 +02:00`, `janus-health-check` has been migrated into the shared tri-modal delegate surface as a bounded assist-only review lane. The shared manifest and task list now contain `health_check_review` / `TASK-HC-001`, `janus_delegate.py` can plan the existing `codex_health_check_review_runner.py` as option `3`, and the skill text now points operators to the shared `1 = Codex / 2 = Cursor / 3 = OpenRouter` gate instead of the old skill-local `1 = Codex / 2 = OpenRouter` prompt. The installed `janus-health-check` skill copy under `C:\Users\pruve\.codex\skills\` was synchronized and hash-verified against the repo source.
+
+Current goal: continue the small real runtime migrations so the remaining skill-local delegation surfaces move into the same shared delegate contract the newer lanes already use.
+
+Active phase: Lean Dev shared-delegate runtime migration, canonical state `PASS`.
+
+Last Codex work:
+- added `health_check_review` to the shared delegation manifest as an assist-only lane with Cursor visible and OpenRouter recommended
+- added `TASK-HC-001` to the machine-readable task list and the human-readable task summary
+- taught `janus_delegate.py` to plan `codex_health_check_review_runner.py` through the shared gate
+- updated `janus-health-check` skill wording to the shared `janus_delegate.py` entry
+- synchronized the installed `janus-health-check` skill copy and validated it against the repo version
+
+Changed files:
+- `documentation/codex/model-routing/config/delegation_routing_manifest.json`
+- `documentation/codex/model-routing/config/delegation_task_list_2026-07-05.json`
+- `documentation/codex/model-routing/config/delegation_task_list_2026-07-05.md`
+- `documentation/codex/model-routing/scripts/janus_delegate.py`
+- `documentation/codex/model-routing/tests/test_delegation_routing.py`
+- `documentation/codex/model-routing/tests/test_janus_delegate.py`
+- `documentation/codex/skills/janus-health-check/SKILL.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- installed working copy:
+  - `C:\Users\pruve\.codex\skills\janus-health-check\SKILL.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_delegation_routing.py documentation/codex/model-routing/tests/test_janus_delegate.py documentation/codex/model-routing/tests/test_health_check_review_runner.py -q`: PASS (`26 passed`)
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane health_check_review --task-id TASK-HC-001 --workflow-id WF-HEALTH-CHECK-GATE-DRYRUN-001 --operator-choice prompt --input-package-json development/openrouter-skill-tests/janus-health-check/health_check_input_package.json --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000`: PASS
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane health_check_review --task-id TASK-HC-001 --workflow-id WF-HEALTH-CHECK-OR-DRYRUN-001 --operator-choice 3 --input-package-json development/openrouter-skill-tests/janus-health-check/health_check_input_package.json --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000`: PASS
+- SHA256 hash comparison between repo and installed `janus-health-check` skill copy: PASS
+- `git diff --check` on the touched files plus `CURRENT_STATE.md` and `SKILL_USAGE_LOG.md`: PASS with existing CRLF warnings on `CURRENT_STATE.md` and `SKILL_USAGE_LOG.md` only
+
+Open risks:
+- This slice migrates only `janus-health-check`; other still skill-local lanes such as `janus-feature-design` remain documentation-aligned but not yet runtime-migrated.
+- The shared delegate still plans existing downstream runners for assist-only OR lanes; it does not convert them into new live execution paths.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat `janus-health-check` as part of the shared operator-routing surface and use `TASK-HC-001` / `health_check_review` when a bounded DAILY interpretation package fits.
+
+Next recommended step for Codex: move next to the other clean remaining candidate, `janus-feature-design`, using the same manifest/task/shared-gate migration pattern.
+
+Last updated: `2026-07-05 21:20:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 21:07 +02:00`, the remaining high-signal wording drift on the lower-priority skill-local delegation surfaces has been cleaned up. `janus-feature-design` and `janus-health-check` now begin their delegation sections with the same global `1 = Codex / 2 = Cursor / 3 = OpenRouter` vocabulary used elsewhere, while still stating honestly that their current bounded helper lanes remain local `1 = Codex / 2 = OpenRouter` paths until they are migrated into the shared `janus_delegate.py` entry. The installed skill copies under `C:\Users\pruve\.codex\skills\` were re-synced and hash-verified against the repo sources.
+
+Current goal: finish the operator-facing skill wording cleanup so the remaining non-migrated lanes stop looking out of step with the tri-modal rollout.
+
+Active phase: Lean Dev low-risk skill hygiene sweep, canonical state `PASS`.
+
+Last Codex work:
+- patched `janus-feature-design` to add the shared Janus delegation vocabulary before its still-local OR-only gate note
+- patched `janus-health-check` the same way so the global 1/2/3 language is visible without faking Cursor support on that lane
+- synchronized both patched repo files into the installed skill working copies
+- verified the new wording is present in both repo and installed copies
+- hash-checked repo versus installed copies for the two touched skills
+
+Changed files:
+- `documentation/codex/skills/janus-feature-design/SKILL.md`
+- `documentation/codex/skills/janus-health-check/SKILL.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- installed working copies:
+  - `C:\Users\pruve\.codex\skills\janus-feature-design\SKILL.md`
+  - `C:\Users\pruve\.codex\skills\janus-health-check\SKILL.md`
+
+Checks / validation performed:
+- targeted `rg` validation on the two touched skills plus their installed copies: PASS, new rollout wording present and old top-level rollout note text removed
+- SHA256 hash comparison between repo skill sources and installed working copies for the two touched skills: PASS, both matched
+- `git diff --check` on the touched repo skill files plus `CURRENT_STATE.md` and `SKILL_USAGE_LOG.md`: PASS with existing CRLF warnings on `CURRENT_STATE.md` and `SKILL_USAGE_LOG.md` only
+
+Open risks:
+- Several broader legacy helper docs, runners, and historical artifacts in `documentation/codex/model-routing/` still intentionally contain older `1 = Codex / 2 = OpenRouter` wording because they document historical or skill-local runtime paths rather than the shared tri-modal surface.
+- This sweep was documentation-only; it does not migrate `janus-feature-design` or `janus-health-check` into the shared `janus_delegate.py` runtime.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat the remaining top-level skill wording drift as handled and evaluate future delegation work based on actual lane/runtime needs rather than more prose cleanup.
+
+Next recommended step for Codex: stop and report the hygiene sweep result; the next meaningful work should be either a user-approved git checkpoint or a real runtime migration slice for one of the still skill-local lanes.
+
+Last updated: `2026-07-05 21:07:04 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 20:58 +02:00`, the highest-value skill surfaces have been tightened to match the now-proven Cursor-first delegation reality after the completed three-lane live wave. `janus-executioner` now states clearly that the shared `janus_delegate.py` tri-modal surface is the normal everyday operator-facing gate for bounded execution slices, while the older productive Dev-workhorse and direct OpenRouter helpers are documented as legacy/downstream validation paths only. `janus-debug` now makes explicit that Cursor is the primary bounded worker for `debug_repro_investigation`, and that the older `1 = Codex / 2 = OpenRouter` wording only applies to the legacy assist-only `debug_hypothesis_review` helper path. `janus-test-pipeline` now states that Cursor is the primary bounded worker for `test_fixture_worker`, and that the remaining `1 = Codex / 2 = OpenRouter` helper wording below belongs only to explicit legacy review/helper paths. The installed working copies under `C:\Users\pruve\.codex\skills\` were synchronized and hash-checked against the repo sources.
+
+Current goal: keep the operator-facing Janus skill story aligned with the proven live delegation behavior so the user sees Cursor-first guidance where it is genuinely the productive default.
+
+Active phase: Lean Dev skill-surface tightening, canonical state `PASS`.
+
+Last Codex work:
+- tightened the repo source-of-truth skill wording for `janus-executioner`, `janus-debug`, and `janus-test-pipeline`
+- reframed the older OpenRouter-specific helper paths as legacy/specialized downstream validation helpers rather than the primary operator-facing entry
+- synchronized the same wording into the installed skill working copies under `C:\Users\pruve\.codex\skills`
+- verified the older misleading wording patterns are gone from the touched repo skills
+- verified the installed copies are byte-aligned with the repo skill sources
+
+Changed files:
+- `documentation/codex/skills/janus-executioner/SKILL.md`
+- `documentation/codex/skills/janus-debug/SKILL.md`
+- `documentation/codex/skills/janus-test-pipeline/SKILL.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- installed working copies:
+  - `C:\Users\pruve\.codex\skills\janus-executioner\SKILL.md`
+  - `C:\Users\pruve\.codex\skills\janus-debug\SKILL.md`
+  - `C:\Users\pruve\.codex\skills\janus-test-pipeline\SKILL.md`
+
+Checks / validation performed:
+- targeted `rg` scan for the removed misleading phrases on the touched repo skills: PASS with no remaining matches
+- SHA256 hash comparison between repo skill sources and installed working copies for the three touched skills: PASS, all matched
+- `git diff --check` on the touched repo skill files plus `CURRENT_STATE.md` and `SKILL_USAGE_LOG.md`: PASS with existing CRLF warnings on `CURRENT_STATE.md` and `SKILL_USAGE_LOG.md` only
+
+Open risks:
+- This slice aligns the operator-facing skill docs, but it does not yet touch every remaining lower-priority assist-only or legacy helper surface in the broader skill set.
+- The live delegation proofs and the new shadow-catalog files remain mostly untracked fixture/state artifacts, so Git still cannot show a normal tracked before/after baseline for the whole rollout story.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat the Cursor-first path as productized enough for controlled everyday testing and avoid reopening the deprioritized OpenRouter execution-patch lane unless a genuinely different OR contract is being tested.
+
+Next recommended step for Codex: stop and report this skill-surface tightening result; the next optional slice is either a small hygiene sweep for remaining low-priority wording drift or a user-approved Git checkpoint through `janus-git-governance`.
+
+Last updated: `2026-07-05 20:58:11 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 20:28 +02:00`, the third and last live Cursor smoke of the first `cursor-shadow-catalog-v1` wave has also passed, this time on the catalog form of `test_fixture_worker` through the shared `janus_delegate.py` path. The run used `operator-choice 2`, produced a real Cursor session id (`3d4cd70c-9ccf-4332-9b27-7589cd89b8ad`), stayed inside the allowlist, and changed exactly the two expected shadow-eval files: `contact_memory_fixture.json` and `test_contact_memory_fixture.py`. Cursor improved the fixture structure and test clarity without touching product source code, and the focused local validation immediately passed (`15 passed`). With this run, the first live Cursor wave across the new representative shadow catalog is complete: execution, debug, and test worker lanes now all have shared-delegate live evidence.
+
+Current goal: decide whether the next productization slice should tighten skill surfaces around the now-proven Cursor-first reality or harden smaller runner/reporting details before broader productive use.
+
+Active phase: Lean Dev live shadow-lane validation, canonical state `PASS`.
+
+Last Codex work:
+- ran the live Cursor smoke on the catalog form of `test_fixture_worker` via `janus_delegate.py`
+- confirmed package validation and allowlist validation passed before execution
+- reviewed the returned Cursor summary for the fixture/test-helper lane
+- checked that only the two expected shadow-eval files changed
+- reran the focused fixture pytest locally and confirmed it passed
+
+Changed files:
+- `development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/test_fixture_arbeit/fixtures/contact_memory_fixture.json`
+- `development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/test_fixture_arbeit/tests/test_contact_memory_fixture.py`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane test_fixture_worker --task-id TASK-TP-003 --workflow-id WF-CURSOR-SHADOW-TEST-LIVE-001 --operator-choice 2 --input-package-json documentation/codex/model-routing/fixtures/cursor-shadow-catalog/test_fixture_worker/input_package.json --allowlist-file documentation/codex/model-routing/fixtures/cursor-shadow-catalog/test_fixture_worker/allowlist.txt --estimated-codex-saved-tokens 30000 --estimated-delegation-overhead-tokens 10000 --execute-live-cursor`: PASS
+- Cursor delegate result: `CURSOR_WORKER_READY_FOR_CODEX_REVIEW`, session id `3d4cd70c-9ccf-4332-9b27-7589cd89b8ad`
+- allowlist scope check via runner result: PASS, no changed files outside allowlist
+- local `python -m pytest development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/test_fixture_arbeit/tests/test_contact_memory_fixture.py -q`: PASS (`15 passed`)
+
+Open risks:
+- The live wave proves three representative Cursor lane types, but the shadow files involved are still untracked, so Git cannot yet show a normal tracked before/after diff baseline for this wave.
+- OpenRouter remains intentionally deprioritized on the execution-patch JSON lane and still should not distract from Cursor-first productization.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat the first live Cursor wave as sufficient evidence to start skill-surface tightening and small operator-flow cleanup, rather than spending more live calls immediately.
+
+Next recommended step for Codex: stop and report the completed three-lane Cursor live wave, then move next to skill-surface tightening with Cursor as the clear primary delegated worker and OpenRouter as bounded option 3.
+
+Last updated: `2026-07-05 20:28:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 20:24 +02:00`, the second live Cursor smoke on `cursor-shadow-catalog-v1` has also passed, this time on the `debug_repro_investigation` lane through the shared `janus_delegate.py` path. The run used `operator-choice 2`, produced a real Cursor session id (`4d286ce7-079e-4f8a-af5c-15d59e8758dd`), stayed inside the allowlist, and changed exactly one shadow debug artifact: `executed_runner_shadow.json`. Cursor aligned the executed runner path to the planned runner path, effectively resolving the simulated `RUNNER_ARTIFACT_MISMATCH`, and the focused local validation immediately passed (`1 passed`). With both the execution shadow lane and the debug shadow lane now proven live through the shared delegate path, the Cursor-first route has moved from one generic worker proof to two distinct live lane proofs with bounded edits and local verification.
+
+Current goal: finish the first live confidence wave across the new shadow catalog so the remaining `test_fixture_worker` lane is the only representative Cursor worker lane still lacking a fresh catalog-specific live proof.
+
+Active phase: Lean Dev live shadow-lane validation, canonical state `PASS`.
+
+Last Codex work:
+- ran the first live Cursor smoke on the shadow debug lane via `janus_delegate.py`
+- confirmed package validation and allowlist validation passed before execution
+- reviewed the returned Cursor root-cause summary and changed-file list from the live run
+- checked the changed debug shadow artifact and verified the executed runner path now matches the planned runner path
+- reran the focused debug shadow pytest locally and confirmed it passed
+
+Changed files:
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/sandbox/executed_runner_shadow.json`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane debug_repro_investigation --task-id TASK-DBG-002 --workflow-id WF-CURSOR-SHADOW-DEBUG-LIVE-001 --operator-choice 2 --input-package-json documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/input_package.json --allowlist-file documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/allowlist.txt --estimated-codex-saved-tokens 25000 --estimated-delegation-overhead-tokens 10000 --execute-live-cursor`: PASS
+- Cursor delegate result: `CURSOR_WORKER_READY_FOR_CODEX_REVIEW`, session id `4d286ce7-079e-4f8a-af5c-15d59e8758dd`
+- allowlist scope check via runner result: PASS, no changed files outside allowlist
+- local `python -m pytest documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/sandbox/test_debug_repro_shadow.py -q`: PASS (`1 passed`)
+
+Open risks:
+- The catalog-specific `test_fixture_worker` lane still has no fresh live run yet, even though the older non-catalog worker proof already exists.
+- The shadow catalog files remain untracked, so Git cannot show a normal tracked before/after diff baseline for these live lane proofs yet.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: approve one final live Cursor smoke on the catalog form of `test_fixture_worker`, then stop and evaluate whether skill-surface tightening should come next.
+
+Next recommended step for Codex: stop and report the successful live debug shadow proof, then move next to the catalog-specific `test_fixture_worker` live smoke if the user wants to continue.
+
+Last updated: `2026-07-05 20:24:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 20:21 +02:00`, the first live Cursor smoke on the new `cursor-shadow-catalog-v1` has passed on the `execution_patch_candidate` lane through the shared `janus_delegate.py` path. The run used `operator-choice 2`, produced a real Cursor session id (`dff68a5d-2cf5-4397-a722-ff81ba1a2782`), stayed inside the allowlist, and changed exactly one shadow sandbox file: `gate_prompt_shadow.py`. Cursor added one bounded `Session-Budget:` line to the helper, kept the line order stable, and the focused local validation immediately passed (`1 passed`). This is the strongest proof so far that the new shadow catalog is not just dry-run coherent but already usable for one real bounded execution-style worker slice on the shared tri-modal path.
+
+Current goal: continue converting the Cursor-first path from one successful generic worker proof into lane-by-lane live confidence on the new representative shadow catalog.
+
+Active phase: Lean Dev live shadow-lane validation, canonical state `PASS`.
+
+Last Codex work:
+- ran the first live Cursor smoke on the new shadow catalog via `janus_delegate.py` for `execution_patch_candidate`
+- confirmed package validation and allowlist validation passed before execution
+- reviewed the returned Cursor summary and session metadata from the live run
+- checked the changed shadow helper file and verified the edit stayed bounded to one new `Session-Budget:` line
+- reran the focused shadow pytest locally and confirmed it passed
+
+Changed files:
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/gate_prompt_shadow.py`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane execution_patch_candidate --task-id TASK-EX-001 --workflow-id WF-CURSOR-SHADOW-EXEC-LIVE-001 --operator-choice 2 --input-package-json documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/input_package.json --allowlist-file documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/allowlist.txt --estimated-codex-saved-tokens 35000 --estimated-delegation-overhead-tokens 10000 --execute-live-cursor`: PASS
+- Cursor delegate result: `CURSOR_WORKER_READY_FOR_CODEX_REVIEW`, session id `dff68a5d-2cf5-4397-a722-ff81ba1a2782`
+- allowlist scope check via runner result: PASS, no changed files outside allowlist
+- local `python -m pytest documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/test_gate_prompt_shadow.py -q`: PASS (`1 passed`)
+
+Open risks:
+- Only the execution shadow lane has fresh live proof so far; `debug_repro_investigation` and the new catalog form of `test_fixture_worker` are still no-live validated only.
+- The shadow catalog files are currently untracked, so Git cannot show a normal tracked before/after diff baseline yet.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: approve the next live Cursor smoke on `debug_repro_investigation`, because that is the most informative remaining lane after execution.
+
+Next recommended step for Codex: stop and report the successful first shadow-catalog live execution proof, then move next to the bounded debug shadow lane if the user wants to continue.
+
+Last updated: `2026-07-05 20:21:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 20:17 +02:00`, `cursor-shadow-catalog-v1` is in place as a no-live productization slice for the Cursor-first path. A new shadow catalog now exists under `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/` with three bounded representative tasks: `execution_patch_candidate`, `debug_repro_investigation`, and `test_fixture_worker`. Each task now has an input package, worker package, allowlist, and expected validation command, plus focused sandbox artifacts where needed. A new focused test file validates the catalog structure, worker-contract compatibility, allowlist discipline, and `janus_delegate.py` dry-run behavior for both prompt mode and Cursor option `2`. The no-live validation passed cleanly (`5 passed`), and explicit delegate dry-runs also passed for all three lanes. Execution and test lanes currently show `1 = Codex / 2 = Cursor / 3 = OpenRouter`, while the debug repro lane correctly stays `1 = Codex / 2 = Cursor` because OpenRouter is not enabled on that lane in the current manifest.
+
+Current goal: move from one-off live Cursor proof to repeatable no-live lane coverage so each core delegated worker lane has a bounded shadow task ready before broader productive use.
+
+Active phase: Lean Dev shadow-task hardening, canonical state `PASS`.
+
+Last Codex work:
+- created `cursor-shadow-catalog-v1` with three bounded representative Cursor tasks
+- added execution and debug sandbox artifacts so future live smokes can target realistic but isolated file edits
+- reused the proven `test_fixture_worker` shadow-eval file pair from `WF-CURSOR-LIVE-SMOKE-003`
+- added `test_cursor_shadow_catalog.py` to validate task packages, allowlists, task-list linkage, prompt gates, and Cursor dry-run planning
+- ran explicit `janus_delegate.py` prompt and Cursor dry-runs for all three lanes
+
+Changed files:
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/manifest.json`
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/`
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/`
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/test_fixture_worker/`
+- `documentation/codex/model-routing/tests/test_cursor_shadow_catalog.py`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_cursor_shadow_catalog.py -q`: PASS (`5 passed`)
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane execution_patch_candidate --task-id TASK-EX-001 --workflow-id WF-CURSOR-SHADOW-EXEC-001 --operator-choice prompt --input-package-json documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/input_package.json --allowlist-file documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/allowlist.txt --dry-run`: PASS
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane debug_repro_investigation --task-id TASK-DBG-002 --workflow-id WF-CURSOR-SHADOW-DEBUG-001 --operator-choice prompt --input-package-json documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/input_package.json --allowlist-file documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/allowlist.txt --dry-run`: PASS
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane test_fixture_worker --task-id TASK-TP-003 --workflow-id WF-CURSOR-SHADOW-TEST-001 --operator-choice prompt --input-package-json documentation/codex/model-routing/fixtures/cursor-shadow-catalog/test_fixture_worker/input_package.json --allowlist-file documentation/codex/model-routing/fixtures/cursor-shadow-catalog/test_fixture_worker/allowlist.txt --dry-run`: PASS
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane execution_patch_candidate --task-id TASK-EX-001 --workflow-id WF-CURSOR-SHADOW-EXEC-002 --operator-choice 2 --input-package-json documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/input_package.json --allowlist-file documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/allowlist.txt --dry-run`: PASS
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane debug_repro_investigation --task-id TASK-DBG-002 --workflow-id WF-CURSOR-SHADOW-DEBUG-002 --operator-choice 2 --input-package-json documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/input_package.json --allowlist-file documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/allowlist.txt --dry-run`: PASS
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane test_fixture_worker --task-id TASK-TP-003 --workflow-id WF-CURSOR-SHADOW-TEST-002 --operator-choice 2 --input-package-json documentation/codex/model-routing/fixtures/cursor-shadow-catalog/test_fixture_worker/input_package.json --allowlist-file documentation/codex/model-routing/fixtures/cursor-shadow-catalog/test_fixture_worker/allowlist.txt --dry-run`: PASS
+
+Open risks:
+- The new shadow tasks are no-live validated only; there is still no per-lane live Cursor proof yet for execution and debug.
+- The execution and debug sandbox tests are intentionally future-worker targets and are not part of the normal repo suite beyond the catalog validation file.
+- `debug_repro_investigation` currently exposes only `1 = Codex / 2 = Cursor` in prompt mode because OpenRouter is disabled for that lane in the manifest; that is current routing truth, not a regression.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: approve one live Cursor smoke per new shadow lane, starting with `execution_patch_candidate`, then `debug_repro_investigation`, while keeping OpenRouter execution-patch work deprioritized.
+
+Next recommended step for Codex: stop here and report the no-live catalog result with pytest output plus sample prompt and Cursor dry-run gate outputs for all three lanes.
+
+Last updated: `2026-07-05 20:17:42 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 20:12 +02:00`, the direct OpenRouter execution-patch comparison has been pushed one level further with two richer reruns. First, a code-anchored package (`WF-OPENROUTER-LIVE-SMOKE-003`) supplied the real target function signature, focused test call shape, and exact excerpt blocks. The transport stayed clean (`HTTP 200`, `finish_reason=stop`, validation `PASS`, healthcheck `PASS`), but the model still returned a bounded `BLOCKED` no-patch result, now with a more specific reason: it still did not feel safe emitting a unified diff from the provided excerpts. Second, a full-context package (`WF-OPENROUTER-LIVE-SMOKE-004`) supplied the full current contents of both allowed files plus file-path anchors. That removed the missing-context excuse, but the run then failed on `finish_reason=length` after a much larger prompt (`7967` prompt tokens, `2600` completion tokens, actual cost `0.00184338`) and the JSON result became unparsable, so the bounded gate correctly rejected it. The practical conclusion is strong: for this execution-patch-candidate lane, direct OpenRouter with the current JSON-patch runner shape is currently less attractive than Cursor or local Codex. With sparse context it blocks conservatively; with full context it becomes length/cost heavy and fails the bounded response contract.
+
+Current goal: decide the productive backend split realistically, using the newest live evidence instead of older OR expectations.
+
+Active phase: Lean Dev live delegation comparison, canonical state `PASS`.
+
+Last Codex work:
+- created a code-anchored execution patch candidate package with real function/test excerpts
+- ran a direct OpenRouter live rerun on that anchored package and captured the bounded `BLOCKED` result
+- created a full-context execution patch candidate package with full current contents of both allowed files and explicit file anchors
+- ran a second direct OpenRouter live rerun on the full-context package and captured the `finish_reason=length` failure plus parser fallback
+- compared both richer OR reruns against the earlier Cursor proof and earlier minimal OR runs
+
+Changed files:
+- `documentation/codex/model-routing/fixtures/examples/execution_patch_candidate_code_anchored_input_package_example.json`
+- `documentation/codex/model-routing/fixtures/examples/execution_patch_candidate_full_context_input_package_example.json`
+- `documentation/codex/model-routing/execution-direct-or-runs/WF-OPENROUTER-LIVE-SMOKE-003/`
+- `documentation/codex/model-routing/execution-direct-or-runs/WF-OPENROUTER-LIVE-SMOKE-004/`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python documentation/codex/model-routing/scripts/openrouter_direct_execution_patch_candidate_runner.py ... --input-package-json documentation/codex/model-routing/fixtures/examples/execution_patch_candidate_code_anchored_input_package_example.json --workflow-id WF-OPENROUTER-LIVE-SMOKE-003 --execute-live`: PASS at transport/evidence layer, final outcome `DIRECT_OR_BOUNDED_BLOCKED_NO_PATCH`
+- `WF-OPENROUTER-LIVE-SMOKE-003` response summary: HTTP `200`, finish reason `stop`, actual OR cost `0.000860832`
+- `WF-OPENROUTER-LIVE-SMOKE-003` patch candidate result: `BLOCKED`, no patch emitted, model cited insufficient safe unified-diff anchoring from excerpts
+- `python documentation/codex/model-routing/scripts/openrouter_direct_execution_patch_candidate_runner.py ... --input-package-json documentation/codex/model-routing/fixtures/examples/execution_patch_candidate_full_context_input_package_example.json --workflow-id WF-OPENROUTER-LIVE-SMOKE-004 --execute-live`: FAIL at bounded response contract
+- `WF-OPENROUTER-LIVE-SMOKE-004` response summary: HTTP `200`, finish reason `length`, prompt tokens `7967`, completion tokens `2600`, actual OR cost `0.00184338`
+- `WF-OPENROUTER-LIVE-SMOKE-004` validation summary: FAIL because `finish_reason=length`
+
+Open risks:
+- This conclusion is specific to the current direct OpenRouter execution-patch JSON runner shape and `deepseek/deepseek-v4-flash`, not a universal OpenRouter verdict.
+- The full-context package materially increased token cost and hit length limits, so brute-force more context is not a good cheap-worker strategy on this lane.
+- OpenRouter may still remain good for review/triage/draft lanes or for alternative patch-capable runners, but this specific execution patch path is not yet the cheap productive worker we want.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat Cursor as the primary cheap worker for bounded write-style fleissarbeit, and treat OpenRouter execution-patch work as a lower-priority optimization track unless a different OR runner/model contract is tried.
+
+Next recommended step for Codex: stop spending live OR calls on this exact JSON patch lane for now; either move OR testing to stronger assist/review lanes or test a different OR patch-capable path later, while productizing Cursor as option 2 first.
+
+Last updated: `2026-07-05 20:12:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 19:58 +02:00`, the first matched bounded OpenRouter comparison after the real Cursor worker proof is now documented. Two distinct OpenRouter outcomes matter. The first attempt (`WF-OPENROUTER-LIVE-SMOKE-001`) failed before any real task-quality comparison because the path used `codex exec --model moonshotai/kimi-k2.5`, and this ChatGPT-backed Codex account rejected that model with `400 invalid_request_error`; touched-file and allowlist validation still passed because no files were touched. The second attempt (`WF-OPENROUTER-LIVE-SMOKE-002`) used the direct OpenRouter transport correctly and succeeded at the transport/evidence layer: HTTP `200`, finish reason `stop`, healthcheck `PASS`, validation `PASS`, and actual OR cost `0.000443324`. But the model returned a bounded `BLOCKED` no-patch result instead of a usable execution patch because the package lacked exact code context for a real diff. So the fair current read is: Cursor has already proven one real bounded worker lane end to end, while OpenRouter has now proven the direct transport/cost path on the shared stack but not yet a productive patch candidate on this bounded execution example.
+
+Current goal: compare the real bounded Cursor and OpenRouter delegation paths honestly enough to decide where each backend should earn work in productive testing.
+
+Active phase: Lean Dev live delegation comparison, canonical state `PASS`.
+
+Last Codex work:
+- ran one OpenRouter live attempt through the old Codex-sidecar-style path and confirmed the failure was an account/model transport mismatch, not a task-quality failure
+- ran one direct OpenRouter live execution patch candidate through `openrouter_direct_execution_patch_candidate_runner.py`
+- verified the direct OpenRouter run produced bounded artifacts, cost telemetry, `finish_reason=stop`, `healthcheck_status=PASS`, and `validation_result=PASS`
+- reviewed the returned `patch_candidate_result.json` and confirmed the final outcome was `DIRECT_OR_BOUNDED_BLOCKED_NO_PATCH` because no exact code body was available for a safe diff
+- separated infrastructure truth from model-output truth so the OR comparison is now fair
+
+Changed files:
+- `documentation/codex/model-routing/execution-review-runs/WF-OPENROUTER-LIVE-SMOKE-001/`
+- `documentation/codex/model-routing/execution-direct-or-runs/WF-OPENROUTER-LIVE-SMOKE-002/`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python documentation/codex/model-routing/scripts/codex_execution_patch_candidate_runner.py ... --sidecar-model moonshotai/kimi-k2.5 --execute-live-sidecar`: FAIL at transport/account compatibility, not at bounded-task validation
+- `documentation/codex/model-routing/execution-review-runs/WF-OPENROUTER-LIVE-SMOKE-001/validation_summary.json`: PASS (`allowlist_ok=true`, `touched_file_count=0`)
+- `python documentation/codex/model-routing/scripts/openrouter_direct_execution_patch_candidate_runner.py ... --model deepseek/deepseek-v4-flash --workflow-id WF-OPENROUTER-LIVE-SMOKE-002 --execute-live`: PASS at transport/evidence layer
+- direct OR response summary: HTTP `200`, finish reason `stop`, actual OR cost `0.000443324`
+- direct OR validation summary: PASS, no changed files, cost below cap
+- direct OR patch candidate result: `BLOCKED`, no safe hunk without exact code context
+
+Open risks:
+- This is not yet a matched write-capable OR worker proof; it is a successful direct OR proposal run that ended with a bounded no-patch result.
+- The current execution patch candidate package is too abstract for a model to anchor a real diff safely, so it under-tests OpenRouter patch quality.
+- Cursor and OpenRouter have now been proven on different lane types: Cursor on bounded fixture-writing, OpenRouter on bounded proposal-only execution review.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat Cursor as the stronger current candidate for cheap bounded worker-style fleissarbeit, and treat OpenRouter as still viable for proposal/review lanes until a richer code-anchored OR task package proves more.
+
+Next recommended step for Codex: either rerun a direct OpenRouter patch-candidate test with exact target-function context, or wire one comparable bounded OpenRouter worker-style write lane in a shadow sandbox so the backend comparison becomes lane-matched.
+
+Last updated: `2026-07-05 19:58:36 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 19:52 +02:00`, the first real bounded Cursor worker run after the tri-modal cleanup has passed on the `test_fixture_worker` lane. The Janus runner invoked the real Cursor Agent CLI, the run stayed inside the explicit allowlist, and the worker returned a successful bounded result with session id `25c4e0b9-d50b-48ce-ba8d-e8ff767d9e56`. The worker touched exactly the two expected fixture-only files under the shadow-eval sandbox, and an independent local `pytest` rerun by Codex passed (`10 passed`). This is the strongest current proof that the shared tri-modal stack can hand off one real bounded fleissarbeit slice to Cursor and get a reviewable result back without widening authority.
+
+Current goal: move from no-live verification into selective real-worker evidence while keeping Codex as final reviewer and acceptance owner.
+
+Active phase: Lean Dev live worker validation, canonical state `PASS`.
+
+Last Codex work:
+- executed a real bounded Cursor worker run through `janus_cursor_worker_runner.py` for lane `test_fixture_worker`
+- verified package validation and allowlist validation passed before execution
+- confirmed the worker touched only the two allowed shadow-eval files
+- reran the resulting unit test locally in Codex and got `10 passed`
+- reviewed the returned worker summary and session metadata
+
+Changed files:
+- `development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/test_fixture_arbeit/fixtures/contact_memory_fixture.json`
+- `development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/test_fixture_arbeit/tests/test_contact_memory_fixture.py`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python documentation/codex/model-routing/scripts/janus_cursor_worker_runner.py --lane test_fixture_worker --workflow-id WF-CURSOR-LIVE-SMOKE-003 --input-package-json documentation/codex/model-routing/fixtures/examples/test_fixture_worker_input_package_example.json --allowlist-file documentation/codex/model-routing/fixtures/examples/allowlists/test_fixture_allowlist.txt --require-allowlist --execute-live`: PASS
+- Cursor runner result: `CURSOR_WORKER_READY_FOR_CODEX_REVIEW`, session id `25c4e0b9-d50b-48ce-ba8d-e8ff767d9e56`
+- local `python -m pytest development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/test_fixture_arbeit/tests/test_contact_memory_fixture.py -q`: PASS, `10 passed`
+- allowlist scope check via runner result: PASS, no changed files outside allowlist
+- scoped `git status --short` on changed fixture files: both are currently untracked sandbox files
+
+Open risks:
+- This proves one real bounded Cursor worker lane, not the broader Cursor or OpenRouter live surface.
+- The changed sandbox files are currently untracked fixture artifacts, so no Git-backed diff baseline existed for before/after review in this slice.
+- OpenRouter still has not been freshly proven in a live shared-lane execution after the current tri-modal cleanup.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: compare this now-proven real Cursor worker path against one bounded OpenRouter live lane before making any strong product routing preference claim.
+
+Next recommended step for Codex: stop and report the successful real Cursor worker proof, then wait for explicit approval before spending the next live run on an OpenRouter lane.
+
+Last updated: `2026-07-05 19:52:05 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 19:21 +02:00`, a bounded tri-modal dry-run block has verified the shared `janus_delegate.py` operator surface on three representative lanes without executing any live Cursor or OpenRouter work. The prompt gate is now visibly consistent for `execution_patch_candidate`, `debug_hypothesis_review`, and `test_fixture_worker`, each showing `1 = Codex / 2 = Cursor / 3 = OpenRouter`, positive ROI, and the expected recommended backend. The downstream planning paths also line up with the manifest: execution and debug OpenRouter selections plan existing bounded OpenRouter helpers without live calls, while the test fixture worker plans the bounded Cursor worker command without invoking it.
+
+Current goal: move from wording cleanup into controlled delegation-behavior verification before any broader live testing.
+
+Active phase: Lean Dev dry-run validation, canonical state `PASS`.
+
+Last Codex work:
+- ran prompt-mode dry-runs for `execution_patch_candidate`, `debug_hypothesis_review`, and `test_fixture_worker`
+- ran one bounded recommended-backend dry-run for OpenRouter on execution, OpenRouter on debug, and Cursor on the test fixture worker
+- verified that the visible operator gate, backend recommendation, ROI reporting, and planned downstream commands all match the tri-modal manifest/task-list design
+- kept the entire block no-live and review-first
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `janus_delegate.py` dry-run PASS for `execution_patch_candidate` prompt gate (`TASK-EX-001`)
+- `janus_delegate.py` dry-run PASS for `execution_patch_candidate` OpenRouter planning path
+- `janus_delegate.py` dry-run PASS for `debug_hypothesis_review` prompt gate (`TASK-DBG-001`)
+- `janus_delegate.py` dry-run PASS for `debug_hypothesis_review` OpenRouter planning path
+- `janus_delegate.py` dry-run PASS for `test_fixture_worker` prompt gate (`TASK-TP-003`)
+- `janus_delegate.py` dry-run PASS for `test_fixture_worker` Cursor planning path
+
+Open risks:
+- `execution_patch_candidate` currently recommends `Cursor` from the shared manifest, even though its older direct helper lore still talks about stronger OpenRouter lanes; that is now a routing/product decision to test, not a wording bug.
+- The OpenRouter selections in the representative dry-runs still plan existing helper commands as no-live downstream paths; this slice does not prove live OpenRouter execution.
+- The Cursor worker selection for `test_fixture_worker` is only proven as a planned command in this slice, not as a fresh repo-bound live run.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: decide whether to spend the next approval on one bounded live Cursor worker run (`test_fixture_worker`) or on one bounded OpenRouter live lane proof for the highest-value shared path, because the dry-run evidence is now strong enough to justify a single real execution test.
+
+Next recommended step for Codex: stop and report the dry-run evidence, then wait for explicit approval before any new live Cursor or OpenRouter call.
+
+Last updated: `2026-07-05 19:21:16 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 19:21 +02:00`, the second wording-consolidation sweep has cleaned the remaining mixed tri-modal and legacy helper surfaces. `janus-debug`, `janus-executioner`, `janus-test-pipeline`, `janus-health-check`, `janus-spec-normalizer`, and the documentation-specific fixed-OpenRouter block in `janus-documentation-update` now use explicit `OpenRouter` wording where they still describe older direct helper paths, while the shared `janus_delegate.py` `1 = Codex / 2 = Cursor / 3 = OpenRouter` entry remains the clearly stated primary operator-facing path where it already exists. A repo-wide skill grep for the stale `2 = OR` pattern now comes back clean across both source-of-truth and installed skill copies.
+
+Current goal: finish the last documentation/routing cleanup before productive tri-modal testing so operator-facing wording and actual backend/runtime boundaries stay aligned.
+
+Active phase: Lean Dev execution, canonical state `PASS`.
+
+Last Codex work:
+- updated the remaining mixed-surface repo skill docs for `janus-debug`, `janus-executioner`, `janus-test-pipeline`, `janus-health-check`, `janus-spec-normalizer`, and `janus-documentation-update`
+- mirrored the same wording cleanup into the installed working copies under `C:\Users\pruve\.codex\skills`
+- converted stale direct-helper `2 = OR` wording to explicit `2 = OpenRouter` where those paths are still intentionally legacy or special-case
+- clarified that the documentation-update fixed block is an intentional documentation-specific exception next to the newer shared tri-modal entry
+- reran a repo-wide skill grep to verify the stale `2 = OR` pattern is gone from both repo and installed skill copies
+
+Changed files:
+- `documentation/codex/skills/janus-debug/SKILL.md`
+- `documentation/codex/skills/janus-executioner/SKILL.md`
+- `documentation/codex/skills/janus-test-pipeline/SKILL.md`
+- `documentation/codex/skills/janus-health-check/SKILL.md`
+- `documentation/codex/skills/janus-spec-normalizer/SKILL.md`
+- `documentation/codex/skills/janus-documentation-update/SKILL.md`
+- `documentation/ai/CURRENT_STATE.md`
+- installed working copies:
+  - `C:\Users\pruve\.codex\skills\janus-debug\SKILL.md`
+  - `C:\Users\pruve\.codex\skills\janus-executioner\SKILL.md`
+  - `C:\Users\pruve\.codex\skills\janus-test-pipeline\SKILL.md`
+  - `C:\Users\pruve\.codex\skills\janus-health-check\SKILL.md`
+  - `C:\Users\pruve\.codex\skills\janus-spec-normalizer\SKILL.md`
+  - `C:\Users\pruve\.codex\skills\janus-documentation-update\SKILL.md`
+
+Checks / validation performed:
+- repo-wide skill grep for stale `2 = OR` wording across `documentation/codex/skills` and `C:\Users\pruve\.codex\skills`: PASS with no remaining matches
+- targeted grep for the new `2 = OpenRouter` / rollout-note wording on the touched repo skills: PASS
+- scoped `git diff --check` on touched tracking files: PASS with existing CRLF warnings for `CURRENT_STATE.md` and `SKILL_USAGE_LOG.md` only
+
+Open risks:
+- This cleanup aligns wording, not runtime; some paths still intentionally remain older direct OpenRouter helpers or documentation-specific exceptions rather than shared tri-modal runtime lanes.
+- The worktree remains heavily dirty overall, so health remains `GELB` until more consolidation or a deliberate checkpoint happens.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: move from wording cleanup to one controlled productive dry-run on the most representative shared tri-modal lanes so the next evidence block tests behavior rather than prose.
+
+Next recommended step for Codex: run a bounded productization dry-run set through `janus_delegate.py` for the most important lanes (`execution_patch_candidate`, `debug_hypothesis_review`, `test_fixture_worker` or `generator_review`) and capture operator-facing output before any broader live testing.
+
+Last updated: `2026-07-05 19:21:16 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 19:14 +02:00`, a bounded wording-consolidation slice has removed the old everyday `2 = OR` operator wording from the highest-value non-migrated skill surfaces and their installed working copies. The affected skills now explicitly say `2 = OpenRouter` and carry a short tri-modal rollout note that they are still on skill-local legacy OpenRouter lanes rather than the shared `janus_delegate.py` `1/2/3` entry. This keeps the operator story honest without falsely claiming Cursor support or shared-gate parity where no such runtime path exists yet.
+
+Current goal: finish the last documentation/routing cleanup before productive tri-modal testing so operator-facing wording and actual backend/runtime boundaries stay aligned.
+
+Active phase: Lean Dev execution, canonical state `PASS`.
+
+Last Codex work:
+- updated the repo source-of-truth skill docs for `janus-feature-design`, `janus-spec-generator`, `janus-spec-review`, `janus-spec-to-task`, `janus-task-breakdown`, `janus-preimplementation-check`, and `janus-quickchange`
+- mirrored the same wording cleanup into the installed working copies under `C:\Users\pruve\.codex\skills`
+- replaced stale visible `2 = OR` wording in those bounded legacy lanes with explicit `2 = OpenRouter`
+- added tri-modal rollout notes to clarify that these lanes are not yet on the shared `janus_delegate.py` `1 = Codex / 2 = Cursor / 3 = OpenRouter` gate
+- reran targeted grep validation to confirm the cleaned skill set no longer emits the old wording
+
+Changed files:
+- `documentation/codex/skills/janus-feature-design/SKILL.md`
+- `documentation/codex/skills/janus-spec-generator/SKILL.md`
+- `documentation/codex/skills/janus-spec-review/SKILL.md`
+- `documentation/codex/skills/janus-spec-to-task/SKILL.md`
+- `documentation/codex/skills/janus-task-breakdown/SKILL.md`
+- `documentation/codex/skills/janus-preimplementation-check/SKILL.md`
+- `documentation/codex/skills/janus-quickchange/SKILL.md`
+- `documentation/ai/CURRENT_STATE.md`
+- installed working copies:
+  - `C:\Users\pruve\.codex\skills\janus-feature-design\SKILL.md`
+  - `C:\Users\pruve\.codex\skills\janus-spec-generator\SKILL.md`
+  - `C:\Users\pruve\.codex\skills\janus-spec-review\SKILL.md`
+  - `C:\Users\pruve\.codex\skills\janus-spec-to-task\SKILL.md`
+  - `C:\Users\pruve\.codex\skills\janus-task-breakdown\SKILL.md`
+  - `C:\Users\pruve\.codex\skills\janus-preimplementation-check\SKILL.md`
+  - `C:\Users\pruve\.codex\skills\janus-quickchange\SKILL.md`
+
+Checks / validation performed:
+- targeted grep for old wording on the cleaned skill set: PASS with no remaining matches
+- targeted grep for new rollout-note / `2 = OpenRouter` wording on the cleaned repo skill set: PASS
+- repo-wide skill grep for remaining stale `2 = OR` wording: PASS, now narrowed to already-known lanes such as `janus-debug`, `janus-executioner`, `janus-test-pipeline`, `janus-health-check`, `janus-spec-normalizer`, and the intentionally separate fixed-OR block in `janus-documentation-update`
+- scoped `git diff --check` on touched tracking files: PASS with existing CRLF warnings for `CURRENT_STATE.md` and `SKILL_USAGE_LOG.md` only
+
+Open risks:
+- Residual old `2 = OR` wording still exists in some already-known lanes, especially inside `janus-debug`, `janus-executioner`, `janus-test-pipeline`, `janus-health-check`, `janus-spec-normalizer`, and the fixed-OR exception block in `janus-documentation-update`.
+- This slice intentionally changed wording only; it did not migrate those remaining skills to the shared tri-modal runtime.
+- The worktree remains heavily dirty overall, so health remains `GELB` until more consolidation or a deliberate checkpoint happens.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat the next cleanup slice as a smaller follow-up against the remaining mixed tri-modal/legacy surfaces (`janus-debug`, `janus-executioner`, `janus-test-pipeline`, `janus-health-check`, `janus-spec-normalizer`, and the documentation-update exception wording), but keep runtime truth ahead of uniformity.
+
+Next recommended step for Codex: patch the remaining mixed-surface skill docs that still combine shared tri-modal entry text with older `2 = OR` sub-blocks, then rerun the repo-wide grep before broader productive testing.
+
+Last updated: `2026-07-05 19:14:07 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 19:07 +02:00`, a bounded `janus-health-check DAILY` consolidation scan has confirmed that the core tri-modal delegation rollout is usable for further OR/Cursor productization work, but the repository still carries visible routing-language drift and a very dirty working tree. The migrated shared-gate surfaces remain in place, while several repo and installed skill documents still contain older `1 = Codex / 2 = OR` wording or explicit fixed-OR special-case blocks that should be treated as follow-up cleanup rather than silent truth.
+
+Current goal: finish the last documentation/routing cleanup before productive tri-modal testing so operator-facing wording and actual backend/runtime boundaries stay aligned.
+
+Active phase: Lean Dev hygiene check, canonical state `PASS`.
+
+Last Codex work:
+- ran the read-only `janus-health-check` skill in `DAILY` mode
+- verified the health-check rules and collected a fresh snapshot with the bundled helper
+- scanned repo and installed skill copies for lingering old `2 = OR` operator wording and special-case gate text
+- confirmed the shared 1/2/3 gate is present on the newly migrated surfaces, while older surrounding skill documentation still needs consolidation
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-health-check\scripts\health_snapshot.py --repo C:\KI\Janus-Projekt --mode DAILY`: PASS
+- targeted `rg` scans across `documentation/codex/skills`, `documentation/codex/model-routing`, and `C:\Users\pruve\.codex\skills`: PASS
+- `git status --short --branch`: PASS
+
+Open risks:
+- The worktree is heavily dirty (`811` total entries; `89` unstaged, `722` untracked), so system health cannot rate above `GELB` even though no immediate blocker appeared.
+- Representative drift remains in both repo and installed skill copies, including older `2 = OR` wording in `janus-feature-design`, `janus-spec-generator`, `janus-spec-review`, `janus-spec-to-task`, `janus-task-breakdown`, `janus-preimplementation-check`, `janus-quickchange`, and legacy sub-blocks inside some already-migrated skills.
+- `janus-documentation-update` still intentionally carries a separate fixed-OR documentation-specific block beside the new shared tri-modal entry, so wording must stay explicit to avoid pretending backend parity that does not exist yet.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat the next slice as a bounded wording-consolidation task, not a backend-runtime rewrite; preserve intentionally special-case documentation lanes, but normalize stale everyday `2 = OR` phrasing where tri-modal rollout already changed the operator story.
+
+Next recommended step for Codex: patch the highest-value remaining skill surfaces and installed copies that still present stale `2 = OR` everyday wording, then rerun the targeted grep before any broader productive testing.
+
+Last updated: `2026-07-05 19:07:31 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 19:01 +02:00`, the bounded external draft-helper path in `janus-documentation-update` has been folded into the shared tri-modal delegate stack, while the separate documentation-specific fixed-OR lane remains intentionally separate. `janus-documentation-update` now has a manifest-backed `documentation_draft_review` lane plus a concrete task entry `TASK-DU-001`, and its skill text now points operators to the shared `janus_delegate.py` entry for the bounded draft/helper path. The shared delegate plans this lane as `1 = Codex / 2 = Cursor / 3 = OpenRouter`, but the planned runtime is explicitly marked as transitional: visible option `3` currently routes into the existing read-only documentation draft helper path through `codex_bounded_delegation_dispatcher.py` rather than claiming a live OpenRouter write path.
+
+Current goal: keep the tri-modal operator surface coherent while preserving truthful backend/runtime boundaries for the remaining special-case documentation lane.
+
+Active phase: Lean Dev execution, canonical state `PASS`.
+
+Last Codex work:
+- added `documentation_draft_review` to `delegation_routing_manifest.json`
+- added `TASK-DU-001` to `delegation_task_list_2026-07-05.json`
+- updated `janus_delegate.py` to plan the transitional documentation draft helper path through `codex_bounded_delegation_dispatcher.py`
+- updated `janus-documentation-update` source-of-truth and installed working copy so the bounded external draft/helper path now points at the shared delegate entry while the fixed-OR lane remains explicitly separate
+- expanded tests and dry-run evidence for the new lane
+
+Changed files:
+- `documentation/codex/model-routing/config/delegation_routing_manifest.json`
+- `documentation/codex/model-routing/config/delegation_task_list_2026-07-05.json`
+- `documentation/codex/model-routing/scripts/janus_delegate.py`
+- `documentation/codex/model-routing/tests/test_delegation_routing.py`
+- `documentation/codex/model-routing/tests/test_janus_delegate.py`
+- `documentation/codex/skills/janus-documentation-update/SKILL.md`
+- `documentation/ai/CURRENT_STATE.md`
+- installed working copy:
+  - `C:\Users\pruve\.codex\skills\janus-documentation-update\SKILL.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_delegation_routing.py documentation/codex/model-routing/tests/test_janus_delegate.py -q`: PASS, 21 passed
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane documentation_draft_review --task-id TASK-DU-001 --workflow-id WF-DOC-DRAFT-REVIEW-001 --operator-choice prompt --estimated-codex-saved-tokens 8000 --estimated-delegation-overhead-tokens 4000`: PASS
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane documentation_draft_review --task-id TASK-DU-001 --workflow-id WF-DOC-DRAFT-REVIEW-002 --operator-choice 3 --estimated-codex-saved-tokens 8000 --estimated-delegation-overhead-tokens 4000`: PASS
+- scoped `git diff --check`: PASS with existing `CURRENT_STATE.md` CRLF warning only
+
+Open risks:
+- The bounded draft/helper path is now on the shared delegate stack, but its actual runtime remains the existing read-only sidecar helper and is explicitly not a live OpenRouter write path yet.
+- The separate fixed-OR documentation-skill lane remains intentionally outside the shared delegate stack in this slice.
+- No live Cursor or OpenRouter call was executed in this slice.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: decide whether the fixed-OR documentation-skill lane should stay a permanent documentation-specific exception or be re-expressed later in the shared delegate taxonomy with equally explicit transitional wording.
+
+Next recommended step for Codex: stop here and report that the bounded documentation draft/helper path now uses the shared delegate entry while preserving honest special-case wording for the remaining documentation-only lane.
+
+Last updated: `2026-07-05 19:01:54 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 18:55 +02:00`, the fourth legacy assist-only helper lane has been migrated into the shared tri-modal delegate stack. `janus-backlog-handoff` now has a manifest-backed `backlog_handoff_review` lane plus a concrete task entry `TASK-BH-001`, and its skill text now points operators to the shared `janus_delegate.py` entry instead of only the older direct OR runner. The shared delegate now plans this lane cleanly as `1 = Codex / 2 = Cursor / 3 = OpenRouter`, while still keeping OpenRouter as the recommended backend and keeping the existing `codex_backlog_handoff_review_runner.py` only as the planned downstream OR helper.
+
+Current goal: finish migrating the remaining legacy OR-only helper lanes into the shared tri-modal delegate stack, with the backlog-side review surfaces now aligned.
+
+Active phase: Lean Dev execution, canonical state `PASS`.
+
+Last Codex work:
+- added `backlog_handoff_review` to `delegation_routing_manifest.json`
+- added `TASK-BH-001` to `delegation_task_list_2026-07-05.json`
+- updated `janus_delegate.py` to plan the legacy backlog-handoff OR runner through the shared delegate entry with the correct downstream arguments
+- updated `janus-backlog-handoff` source-of-truth and installed working copy to advertise the shared tri-modal gate for this bounded lane
+- expanded tests and dry-run evidence for the new lane
+
+Changed files:
+- `documentation/codex/model-routing/config/delegation_routing_manifest.json`
+- `documentation/codex/model-routing/config/delegation_task_list_2026-07-05.json`
+- `documentation/codex/model-routing/scripts/janus_delegate.py`
+- `documentation/codex/model-routing/tests/test_delegation_routing.py`
+- `documentation/codex/model-routing/tests/test_janus_delegate.py`
+- `documentation/codex/skills/janus-backlog-handoff/SKILL.md`
+- `documentation/ai/CURRENT_STATE.md`
+- installed working copy:
+  - `C:\Users\pruve\.codex\skills\janus-backlog-handoff\SKILL.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_delegation_routing.py documentation/codex/model-routing/tests/test_janus_delegate.py -q`: PASS, 19 passed
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane backlog_handoff_review --task-id TASK-BH-001 --workflow-id WF-BACKLOG-HANDOFF-REVIEW-001 --operator-choice prompt --input-package-json development/openrouter-skill-tests/janus-backlog-handoff/backlog_handoff_input_package.json --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000`: PASS
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane backlog_handoff_review --task-id TASK-BH-001 --workflow-id WF-BACKLOG-HANDOFF-REVIEW-002 --operator-choice 3 --input-package-json development/openrouter-skill-tests/janus-backlog-handoff/backlog_handoff_input_package.json --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000`: PASS
+- scoped `git diff --check`: PASS with existing `CURRENT_STATE.md` CRLF warning only
+
+Open risks:
+- This migration now covers `janus-skill-router`, `janus-backlog-intake`, `janus-backlog-prioritization`, and `janus-backlog-handoff`; `janus-documentation-update` still keeps its older skill-local helper lanes.
+- Production routing remains intentionally off; no live Cursor or OpenRouter call was executed in this slice.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: migrate `janus-documentation-update` next, while deciding whether to fold only its bounded external draft path into the shared delegate first or also leave its fixed-OR documentation-specific lane separate.
+
+Next recommended step for Codex: stop here and report that the last backlog-side assist-only helper lane now runs through the shared tri-modal delegate stack with green tests and dry-run evidence.
+
+Last updated: `2026-07-05 18:55:32 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 18:50 +02:00`, the third legacy assist-only helper lane has been migrated into the shared tri-modal delegate stack. `janus-backlog-prioritization` now has a manifest-backed `backlog_prioritization_review` lane plus a concrete task entry `TASK-BP-001`, and its skill text now points operators to the shared `janus_delegate.py` entry instead of only the older direct OR runner. The shared delegate now plans this lane cleanly as `1 = Codex / 2 = Cursor / 3 = OpenRouter`, while still keeping OpenRouter as the recommended backend and keeping the existing `codex_backlog_prioritization_review_runner.py` only as the planned downstream OR helper.
+
+Current goal: continue migrating legacy OR-only helper lanes into the shared tri-modal delegate stack one bounded skill at a time, starting with low-risk assist-only review paths.
+
+Active phase: Lean Dev execution, canonical state `PASS`.
+
+Last Codex work:
+- added `backlog_prioritization_review` to `delegation_routing_manifest.json`
+- added `TASK-BP-001` to `delegation_task_list_2026-07-05.json`
+- updated `janus_delegate.py` to plan the legacy backlog-prioritization OR runner through the shared delegate entry with the correct downstream arguments
+- updated `janus-backlog-prioritization` source-of-truth and installed working copy to advertise the shared tri-modal gate for this bounded lane
+- expanded tests and dry-run evidence for the new lane
+
+Changed files:
+- `documentation/codex/model-routing/config/delegation_routing_manifest.json`
+- `documentation/codex/model-routing/config/delegation_task_list_2026-07-05.json`
+- `documentation/codex/model-routing/scripts/janus_delegate.py`
+- `documentation/codex/model-routing/tests/test_delegation_routing.py`
+- `documentation/codex/model-routing/tests/test_janus_delegate.py`
+- `documentation/codex/skills/janus-backlog-prioritization/SKILL.md`
+- `documentation/ai/CURRENT_STATE.md`
+- installed working copy:
+  - `C:\Users\pruve\.codex\skills\janus-backlog-prioritization\SKILL.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_delegation_routing.py documentation/codex/model-routing/tests/test_janus_delegate.py -q`: PASS, 17 passed
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane backlog_prioritization_review --task-id TASK-BP-001 --workflow-id WF-BACKLOG-PRIO-REVIEW-001 --operator-choice prompt --input-package-json development/openrouter-skill-tests/janus-backlog-prioritization/backlog_prioritization_input_package.json --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000`: PASS
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane backlog_prioritization_review --task-id TASK-BP-001 --workflow-id WF-BACKLOG-PRIO-REVIEW-002 --operator-choice 3 --input-package-json development/openrouter-skill-tests/janus-backlog-prioritization/backlog_prioritization_input_package.json --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000`: PASS
+- scoped `git diff --check`: PASS with existing `CURRENT_STATE.md` CRLF warning only
+
+Open risks:
+- This migration now covers `janus-skill-router`, `janus-backlog-intake`, and `janus-backlog-prioritization`; backlog handoff and documentation-update still keep their older skill-local OR helper lanes.
+- Production routing remains intentionally off; no live Cursor or OpenRouter call was executed in this slice.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: migrate `janus-backlog-handoff` next, because it is the last backlog-side bounded review lane before the documentation-update helper path.
+
+Next recommended step for Codex: stop here and report that the third legacy assist-only helper lane now runs through the shared tri-modal delegate stack with green tests and dry-run evidence.
+
+Last updated: `2026-07-05 18:50:38 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 18:32 +02:00`, the second legacy assist-only helper lane has been migrated into the shared tri-modal delegate stack. `janus-backlog-intake` now has a manifest-backed `backlog_intake_review` lane plus a concrete task entry `TASK-BI-001`, and its skill text now points operators to the shared `janus_delegate.py` entry instead of only the older direct OR runner. The shared delegate now plans this lane cleanly as `1 = Codex / 2 = Cursor / 3 = OpenRouter`, while still keeping OpenRouter as the recommended backend and keeping the existing `codex_backlog_intake_review_runner.py` only as the planned downstream OR helper.
+
+Current goal: continue migrating legacy OR-only helper lanes into the shared tri-modal delegate stack one bounded skill at a time, starting with low-risk assist-only review paths.
+
+Active phase: Lean Dev execution, canonical state `PASS`.
+
+Last Codex work:
+- added `backlog_intake_review` to `delegation_routing_manifest.json`
+- added `TASK-BI-001` to `delegation_task_list_2026-07-05.json`
+- updated `janus_delegate.py` to plan the legacy backlog-intake OR runner through the shared delegate entry with the correct downstream arguments
+- updated `janus-backlog-intake` source-of-truth and installed working copy to advertise the shared tri-modal gate for this bounded lane
+- expanded tests and dry-run evidence for the new lane
+
+Changed files:
+- `documentation/codex/model-routing/config/delegation_routing_manifest.json`
+- `documentation/codex/model-routing/config/delegation_task_list_2026-07-05.json`
+- `documentation/codex/model-routing/scripts/janus_delegate.py`
+- `documentation/codex/model-routing/tests/test_delegation_routing.py`
+- `documentation/codex/model-routing/tests/test_janus_delegate.py`
+- `documentation/codex/skills/janus-backlog-intake/SKILL.md`
+- `documentation/ai/CURRENT_STATE.md`
+- installed working copy:
+  - `C:\Users\pruve\.codex\skills\janus-backlog-intake\SKILL.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_delegation_routing.py documentation/codex/model-routing/tests/test_janus_delegate.py -q`: PASS, 15 passed
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane backlog_intake_review --task-id TASK-BI-001 --workflow-id WF-BACKLOG-REVIEW-001 --operator-choice prompt --input-package-json development/openrouter-skill-tests/janus-backlog-intake/backlog_intake_input_package.json --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000`: PASS
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane backlog_intake_review --task-id TASK-BI-001 --workflow-id WF-BACKLOG-REVIEW-002 --operator-choice 3 --input-package-json development/openrouter-skill-tests/janus-backlog-intake/backlog_intake_input_package.json --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000`: PASS
+- scoped `git diff --check`: PASS with existing `CURRENT_STATE.md` CRLF warning only
+
+Open risks:
+- This migration now covers `janus-skill-router` and `janus-backlog-intake`; backlog prioritization, backlog handoff, and documentation-update still keep their older skill-local OR helper lanes.
+- Production routing remains intentionally off; no live Cursor or OpenRouter call was executed in this slice.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: migrate `janus-backlog-prioritization` next, because it is another bounded assist-only review lane with almost the same authority profile.
+
+Next recommended step for Codex: stop here and report that the second legacy assist-only helper lane now runs through the shared tri-modal delegate stack with green tests and dry-run evidence.
+
+Last updated: `2026-07-05 18:32:38 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 18:28 +02:00`, the first legacy router-side helper lane has been migrated into the shared tri-modal delegate stack. `janus-skill-router` now has a manifest-backed `skill_router_review` lane plus a concrete task entry `TASK-SR-001`, and its skill text now points operators to the shared `janus_delegate.py` entry instead of only the older direct OR runner. The shared delegate can now plan this lane cleanly as `1 = Codex / 2 = Cursor / 3 = OpenRouter`, while still keeping OpenRouter as the recommended backend and keeping the existing `codex_skill_router_review_runner.py` only as the planned downstream OR helper.
+
+Current goal: migrate legacy OR-only helper lanes into the shared tri-modal delegate stack one bounded skill at a time, starting with low-risk assist-only review paths.
+
+Active phase: Lean Dev execution, canonical state `PASS`.
+
+Last Codex work:
+- added `skill_router_review` to `delegation_routing_manifest.json`
+- added `TASK-SR-001` to `delegation_task_list_2026-07-05.json`
+- updated `janus_delegate.py` to plan the legacy skill-router OR runner through the shared delegate entry with the correct downstream arguments
+- updated `janus-skill-router` source-of-truth and installed working copy to advertise the shared tri-modal gate for this bounded lane
+- expanded tests and dry-run evidence for the new lane
+
+Changed files:
+- `documentation/codex/model-routing/config/delegation_routing_manifest.json`
+- `documentation/codex/model-routing/config/delegation_task_list_2026-07-05.json`
+- `documentation/codex/model-routing/scripts/janus_delegate.py`
+- `documentation/codex/model-routing/tests/test_delegation_routing.py`
+- `documentation/codex/model-routing/tests/test_janus_delegate.py`
+- `documentation/codex/skills/janus-skill-router/SKILL.md`
+- `documentation/ai/CURRENT_STATE.md`
+- installed working copy:
+  - `C:\Users\pruve\.codex\skills\janus-skill-router\SKILL.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_delegation_routing.py documentation/codex/model-routing/tests/test_janus_delegate.py -q`: PASS, 13 passed
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane skill_router_review --task-id TASK-SR-001 --workflow-id WF-SKILL-ROUTER-GATE-001 --operator-choice prompt --input-package-json development/openrouter-skill-tests/janus-skill-router/skill_router_input_package.json --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000`: PASS
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane skill_router_review --task-id TASK-SR-001 --workflow-id WF-SKILL-ROUTER-GATE-002 --operator-choice 3 --input-package-json development/openrouter-skill-tests/janus-skill-router/skill_router_input_package.json --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000`: PASS
+- scoped `git diff --check`: PASS with existing `CURRENT_STATE.md` CRLF warning only
+
+Open risks:
+- This migration covers only `janus-skill-router`; backlog intake/prioritization/handoff and documentation-update still keep their older skill-local OR helper lanes.
+- Production routing remains intentionally off; no live Cursor or OpenRouter call was executed in this slice.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: migrate `janus-backlog-intake` next, because it is another bounded assist-only review lane with low authority and similar contract shape.
+
+Next recommended step for Codex: stop here and report that the first legacy router-side helper lane now runs through the shared tri-modal delegate stack with green tests and dry-run evidence.
+
+Last updated: `2026-07-05 18:27:59 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 18:23 +02:00`, the next tri-modal consistency slice is in place. The remaining router/backlog/documentation-facing skills that still described older OR-only review helpers now carry an explicit rollout note: the shared Janus delegation vocabulary is `1 = Codex / 2 = Cursor / 3 = OpenRouter`, but these specific lanes are still legacy skill-local OR helpers until they are migrated to the manifest-backed shared `janus_delegate.py` entry. The note was applied both to the repo source-of-truth skills and to the installed working-copy skills under `C:\Users\pruve\.codex\skills`.
+
+Current goal: keep the proven tri-modal wording coherent across Janus skill surfaces without falsely implying that every older OR-only helper lane already has a live Cursor path.
+
+Active phase: Lean Dev execution, canonical state `PASS`.
+
+Last Codex work:
+- added an explicit tri-modal rollout note to `janus-skill-router`, `janus-backlog-intake`, `janus-backlog-prioritization`, `janus-backlog-handoff`, and `janus-documentation-update`
+- clarified that those older bounded review/helper lanes remain OR-focused until a later manifest-backed migration explicitly rewires them
+- mirrored the same clarification into the installed skill working copies
+
+Changed files:
+- `documentation/codex/skills/janus-skill-router/SKILL.md`
+- `documentation/codex/skills/janus-backlog-intake/SKILL.md`
+- `documentation/codex/skills/janus-backlog-prioritization/SKILL.md`
+- `documentation/codex/skills/janus-backlog-handoff/SKILL.md`
+- `documentation/codex/skills/janus-documentation-update/SKILL.md`
+- `documentation/ai/CURRENT_STATE.md`
+- installed working copies:
+  - `C:\Users\pruve\.codex\skills\janus-skill-router\SKILL.md`
+  - `C:\Users\pruve\.codex\skills\janus-backlog-intake\SKILL.md`
+  - `C:\Users\pruve\.codex\skills\janus-backlog-prioritization\SKILL.md`
+  - `C:\Users\pruve\.codex\skills\janus-backlog-handoff\SKILL.md`
+  - `C:\Users\pruve\.codex\skills\janus-documentation-update\SKILL.md`
+
+Checks / validation performed:
+- repo skill rollout-note grep check: PASS
+- installed skill rollout-note grep check: PASS
+- no live run executed in this slice
+
+Open risks:
+- These five skills now describe the tri-modal vocabulary honestly, but their legacy OR helper lanes are still not migrated to shared manifest-backed execution.
+- Production routing remains intentionally off; live Cursor/OpenRouter runs still require explicit approval.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: choose one legacy OR-only skill lane and migrate its bounded helper path to the shared manifest-backed `janus_delegate.py` contract instead of spreading partial wording changes further.
+
+Next recommended step for Codex: stop here and report that the remaining skill surfaces now use honest tri-modal wording without overclaiming Cursor readiness where it does not yet exist.
+
+Last updated: `2026-07-05 18:23:54 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 17:36 +02:00`, the skill-surface integration step for the tri-modal Cursor rollout is in place. The three affected Janus skills now point their operator-facing bounded delegation entry to the shared `janus_delegate.py` path instead of speaking only in older `1 = Codex / 2 = OR` terms. `janus-executioner`, `janus-debug`, and `janus-test-pipeline` now explicitly describe the tri-modal gate (`1 = Codex / 2 = Cursor / 3 = OpenRouter`), the relevant live manifest lanes, the default plan-only behavior, and the explicit `--execute-live-cursor` approval path. The same wording was mirrored into the installed working-copy skills under `C:\Users\pruve\.codex\skills`.
+
+Current goal: keep the now-proven Cursor path visible and coherent at the skill surface without enabling broad production routing.
+
+Active phase: Lean Dev execution, canonical state `PASS`.
+
+Last Codex work:
+- updated `janus-executioner`, `janus-debug`, and `janus-test-pipeline` source-of-truth skills to point at the shared tri-modal delegate entry
+- mirrored the same tri-modal wording into the installed skill working copies
+- kept scope limited to operator-facing bounded delegation guidance only
+
+Changed files:
+- `documentation/codex/skills/janus-executioner/SKILL.md`
+- `documentation/codex/skills/janus-debug/SKILL.md`
+- `documentation/codex/skills/janus-test-pipeline/SKILL.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- installed working copies:
+  - `C:\Users\pruve\.codex\skills\janus-executioner\SKILL.md`
+  - `C:\Users\pruve\.codex\skills\janus-debug\SKILL.md`
+  - `C:\Users\pruve\.codex\skills\janus-test-pipeline\SKILL.md`
+
+Checks / validation performed:
+- repo skill surfaces grep check: PASS
+- installed skill surfaces grep check: PASS
+- no live run executed in this slice
+
+Open risks:
+- This slice aligns operator wording and entry paths, but it does not yet update every older OR-only skill in the repository; scope was intentionally limited to the three manifest-backed Janus skills.
+- Production routing remains intentionally off; live runs still require explicit approval.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: choose whether the next bounded slice should update the router/backlog-facing docs that still mention `2 = OR`, or stop here and treat the tri-modal rollout as sufficient for productive testing.
+
+Next recommended step for Codex: stop here and report the successful skill-surface alignment before touching any broader documentation or non-manifest skills.
+
+Last updated: `2026-07-05 17:36:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 17:29 +02:00`, the next productization layer for option `2 = Cursor` is in place. `janus_delegate.py` now supports an explicitly approved live Cursor execution path via `--execute-live-cursor`, while the default behavior remains plan-only and no-production-routing. This means the operator-facing 1/2/3 gate can now either return a bounded dry-run command as before or, when explicitly approved, invoke the downstream Cursor runner through the shared delegate entry instead of bypassing Janus and calling the runner directly.
+
+Current goal: keep Cursor as a proven bounded option in the operator gate while leaving production activation off and further live runs approval-gated.
+
+Active phase: Lean Dev execution, canonical state `PASS`.
+
+Last Codex work:
+- added explicit `--execute-live-cursor` support to `janus_delegate.py`
+- kept default Cursor behavior plan-only without live execution
+- added delegate tests for explicit live gating and mocked downstream runner invocation
+- documented the delegate-level live option in the Cursor prerequisites doc
+
+Changed files:
+- `documentation/codex/model-routing/scripts/janus_delegate.py`
+- `documentation/codex/model-routing/tests/test_janus_delegate.py`
+- `documentation/codex/model-routing/CURSOR_DELEGATION_PREREQUISITES.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_janus_delegate.py -q`: PASS, 7 passed
+- `python -m py_compile documentation/codex/model-routing/scripts/janus_delegate.py`: PASS
+- delegate dry-run for `test_fixture_worker` with operator choice `2`: PASS, still returns `CURSOR_WORKER_DRY_RUN_READY`
+
+Open risks:
+- No additional live run was executed in this slice; the new delegate-level live path is code-wired and test-covered only.
+- Production routing remains intentionally off; this is still an operator-driven bounded path.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: decide whether the next bounded slice should be skill-surface integration for the 1/2/3 gate or one more distinct Cursor lane smoke through `janus_delegate.py`.
+
+Next recommended step for Codex: stop here and report that the delegate entry can now explicitly drive the proven Cursor runner path without making it the default.
+
+Last updated: `2026-07-05 17:29:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 17:21 +02:00`, the bounded Cursor runner path is now proven end-to-end. After the first auth-failed live attempt, the same `WF-CURSOR-LIVE-SMOKE-002` runner smoke was rerun with the valid user-level Cursor environment and completed successfully through the Janus layer. The runner reached the real Agent CLI, stayed inside the exact allowlist, returned a real `session_id`, produced review artifacts, and changed only the two expected shadow-eval files. Codex then re-ran the focused fixture test locally and confirmed it passes.
+
+Current goal: decide the next bounded productization step for option `2 = Cursor` now that the runner path itself is validated.
+
+Active phase: Lean Dev execution, canonical state `PASS`.
+
+Last Codex work:
+- reran the approved bounded live runner smoke `WF-CURSOR-LIVE-SMOKE-002` with refreshed user env
+- confirmed `CURSOR_WORKER_READY_FOR_CODEX_REVIEW` and a real Cursor `session_id`
+- reviewed the worker result and verified the touched files stayed inside the allowlist
+- reran the focused local fixture test successfully
+- updated the live-smoke status artifact with the successful rerun outcome
+
+Changed files:
+- `documentation/codex/model-routing/CURSOR_LIVE_SMOKE_STATUS_2026-07-05.md`
+- `documentation/codex/model-routing/cursor-worker-runs/WF-CURSOR-LIVE-SMOKE-002/`
+- `development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/test_fixture_arbeit/fixtures/contact_memory_fixture.json`
+- `development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/test_fixture_arbeit/tests/test_contact_memory_fixture.py`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- live runner smoke `WF-CURSOR-LIVE-SMOKE-002`: PASS, `CURSOR_WORKER_READY_FOR_CODEX_REVIEW`
+- local fixture verification: `python -m pytest development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/test_fixture_arbeit/tests/test_contact_memory_fixture.py -q`: PASS, 5 passed
+
+Open risks:
+- The repo-level Cursor runner is proven, but higher-level productive routing/skill integration still needs bounded rollout work.
+- No additional live run should happen without explicit user approval.
+- The broader repo worktree remains very dirty; future live tests should continue using bounded shadow/example surfaces first.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: review the successful runner evidence and choose whether the next slice should be `janus_delegate.py` live option wiring, skill-gate integration updates, or a second distinct bounded Cursor lane smoke.
+
+Next recommended step for Codex: stop here and report the successful bounded Cursor runner validation before any broader activation work.
+
+Last updated: `2026-07-05 17:21:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 17:14 +02:00`, the first repo-bound bounded Cursor runner smoke has been executed with explicit user approval. The Janus integration layer reached the correct Agent CLI path and no longer failed on wrapper selection, package shape, allowlist shape, or dirty-worktree false positives. The live run still failed, but now on a concrete external auth error from Cursor itself: the Agent CLI reported that the `CURSOR_API_KEY` loaded from the environment was invalid. No files were changed and no allowlist violation occurred.
+
+Current goal: correct Cursor authentication for this shell/session, then rerun the same bounded runner smoke only after new explicit user approval.
+
+Active phase: Lean Dev execution, canonical state `BLOCKED`.
+
+Last Codex work:
+- hardened the Cursor runner to resolve the real Windows Agent CLI install path under `AppData\\Local\\cursor-agent`
+- allowed the example input package to validate through its referenced worker package
+- improved prompt construction by pulling worker-package prompt content and explicit allowlist/task-contract details
+- reduced false-fail risk for dirty worktrees by comparing baseline vs post-run changed-file state
+- executed the approved bounded live runner smoke `WF-CURSOR-LIVE-SMOKE-002`
+- captured the real blocker from Cursor stderr: invalid API key
+
+Changed files:
+- `documentation/codex/model-routing/scripts/janus_cursor_worker_runner.py`
+- `documentation/codex/model-routing/tests/test_janus_cursor_worker_runner.py`
+- `documentation/codex/model-routing/CURSOR_LIVE_SMOKE_STATUS_2026-07-05.md`
+- `documentation/codex/model-routing/cursor-worker-runs/WF-CURSOR-LIVE-SMOKE-002/`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_janus_cursor_worker_runner.py -q`: PASS, 8 passed
+- `python -m py_compile documentation/codex/model-routing/scripts/janus_cursor_worker_runner.py`: PASS
+- dry-run runner check with refreshed user+machine PATH: BLOCKED only on missing `CURSOR_API_KEY`, confirming resolver/package fixes are effective
+- live runner smoke `WF-CURSOR-LIVE-SMOKE-002`: FAIL, stderr says provided `CURSOR_API_KEY` is invalid
+
+Open risks:
+- The current `CURSOR_API_KEY` used in this Codex shell is not accepted by the Agent CLI.
+- No second live run may happen until the user explicitly approves again.
+- The repo worktree remains very dirty, so future live smokes should continue using the bounded shadow/example surface first.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: obtain a fresh valid Cursor API key or working CLI auth path for this shell, then re-approve the exact same `WF-CURSOR-LIVE-SMOKE-002` runner command.
+
+Next recommended step for Codex: stop here, report the exact auth error, and wait for explicit approval before any second live Cursor run.
+
+Last updated: `2026-07-05 17:14:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 17:03 +02:00`, the Cursor path is no longer blocked at the Janus integration layer. External Cursor evidence confirmed that the real Windows headless Agent CLI works when invoked as `agent -p ...`, and the repo-side Janus runner is already aligned with that shape. A fresh no-live validation pass in this workspace succeeded: the Cursor runner tests are green, both Cursor runner and `janus_delegate.py` compile, and the delegate dry-run for `test_fixture_worker` still produces the expected `1=Codex / 2=Cursor / 3=OpenRouter` gate with Cursor recommended and a bounded runner command planned.
+
+Current goal: run the first bounded live smoke through `janus_cursor_worker_runner.py` in an isolated temp/shadow workspace once the user explicitly approves that one live run.
+
+Active phase: Lean Dev execution, canonical state `HANDOFF`.
+
+Last Codex work:
+- verified that the local runner already resolves and plans `agent -p` instead of `cursor agent`
+- reran focused Cursor runner tests and compile checks successfully
+- reran `janus_delegate.py` dry-run for `test_fixture_worker` and confirmed the 1/2/3 operator gate plus Cursor recommendation still work
+- updated Cursor prerequisite and live-smoke docs to reflect the external Cursor confirmation
+
+Changed files:
+- `documentation/codex/model-routing/CURSOR_DELEGATION_PREREQUISITES.md`
+- `documentation/codex/model-routing/CURSOR_LIVE_SMOKE_STATUS_2026-07-05.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_janus_cursor_worker_runner.py -q`: PASS, 6 passed
+- `python -m py_compile documentation/codex/model-routing/scripts/janus_cursor_worker_runner.py documentation/codex/model-routing/scripts/janus_delegate.py`: PASS
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane test_fixture_worker --workflow-id WF-CURSOR-DELEGATE-DRY-001 --operator-choice 2 --input-package-json documentation/codex/model-routing/fixtures/examples/test_fixture_worker_input_package_example.json --allowlist-file documentation/codex/model-routing/fixtures/examples/allowlists/test_fixture_allowlist.txt`: PASS, `CURSOR_WORKER_DRY_RUN_READY`
+
+Open risks:
+- No repo-bound live Cursor worker smoke has been run from this Codex session yet; the next proof still needs explicit user approval.
+- The repo worktree remains very dirty, so the first live runner smoke should stay in the bounded shadow/example surface rather than product code.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: approve exactly one bounded live runner smoke through `janus_cursor_worker_runner.py` for `WF-CURSOR-LIVE-SMOKE-002`, then review its artifacts and allowlist discipline.
+
+Next recommended step for Codex: on explicit approval, run the bounded live smoke:
+`python documentation/codex/model-routing/scripts/janus_cursor_worker_runner.py --lane test_fixture_worker --workflow-id WF-CURSOR-LIVE-SMOKE-002 --input-package-json documentation/codex/model-routing/fixtures/examples/test_fixture_worker_input_package_example.json --allowlist-file documentation/codex/model-routing/fixtures/examples/allowlists/test_fixture_allowlist.txt --execute-live`
+
+Last updated: `2026-07-05 17:03:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 16:52 +02:00`, a direct Cursor-support handoff has been prepared after the first live smoke blocker. The repo now contains a copy-safe support handoff that summarizes the Windows headless-CLI mismatch, the exact commands attempted, the stderr warning pattern, the corrected `--resume` integration detail, and the concrete questions Cursor should answer. The handoff content was copied to the clipboard and a visible Cursor chat window was opened for direct operator follow-up.
+
+Current goal: get a concrete answer from Cursor about the correct Windows headless CLI install/repair path and the exact minimal verification command.
+
+Active phase: Lean Dev execution, canonical state `HANDOFF`.
+
+Last Codex work:
+- wrote a direct Cursor support handoff for the Windows headless CLI blocker
+- copied the handoff text to the local clipboard
+- launched a visible Cursor chat window for direct operator paste/send
+
+Changed files:
+- `documentation/codex/model-routing/HANDOFF_CURSOR_DIRECT_SUPPORT_2026-07-05.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- handoff file created successfully
+- clipboard load via `Set-Clipboard`: PASS
+- visible Cursor chat launch via `Cursor.exe --chat`: PASS
+
+Open risks:
+- Codex cannot read the reply from the visible Cursor desktop chat unless the headless CLI path is repaired later.
+- The underlying live blocker from the previous smoke remains unresolved until Cursor confirms the correct Windows CLI path.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: review the direct Cursor reply once the operator pastes it back, then decide whether to repair the local CLI install or adjust the Janus Cursor runner contract.
+
+Next recommended step for Codex: wait for the Cursor response and then implement the recommended install/verification path in one bounded follow-up slice.
+
+Last updated: `2026-07-05 16:52:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 16:45 +02:00`, the first approved live Cursor smoke has been executed as an isolated temp-workspace validation slice, and it is currently `BLOCKED` by the local Cursor CLI installation path rather than by Janus routing logic. The bounded smoke proved that our local machine can reach the Cursor app wrapper, but the reachable `cursor` command does not actually accept the documented headless agent flags on this setup: multiple live attempts returned exit code `0` while emitting no JSON result, making no file changes, and warning that flags such as `-p`, `--output-format`, and `--workspace` were unknown. Before the smoke, the runner was also corrected to use the official `--resume` flag instead of the incorrect `--resume-session-id`.
+
+Current goal: get one real Cursor headless CLI smoke working so the tri-modal option `2 = Cursor` can move from no-live prerequisites to a real bounded pilot.
+
+Active phase: Lean Dev execution, canonical state `BLOCKED`.
+
+Last Codex work:
+- fixed the Cursor runner's live resume flag from `--resume-session-id` to `--resume`
+- reran the focused runner tests successfully after the fix
+- built an isolated temp workspace smoke with copied worker rule and scratch file
+- attempted three real live Cursor CLI invocations (`cursor agent`, `cursor -p`, and bundled Node direct CLI)
+- documented the live blocker in `CURSOR_LIVE_SMOKE_STATUS_2026-07-05.md`
+
+Changed files:
+- `documentation/codex/model-routing/scripts/janus_cursor_worker_runner.py`
+- `documentation/codex/model-routing/tests/test_janus_cursor_worker_runner.py`
+- `documentation/codex/model-routing/CURSOR_DELEGATION_PREREQUISITES.md`
+- `documentation/codex/model-routing/CURSOR_LIVE_SMOKE_STATUS_2026-07-05.md`
+- `documentation/codex/model-routing/cursor-worker-runs/WF-CURSOR-LIVE-SMOKE-001/`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_janus_cursor_worker_runner.py -q`: PASS, 5 passed
+- `python -m py_compile documentation/codex/model-routing/scripts/janus_cursor_worker_runner.py`: PASS
+- live smoke attempt 1: `cursor agent -p ...`: BLOCKED, unknown-option warnings, no JSON, no file change
+- live smoke attempt 2: `cursor -p ...`: BLOCKED, unknown-option warnings, no JSON, no file change
+- live smoke attempt 3: bundled `node.exe out/cli.js -p ...`: BLOCKED, unknown-option warnings, no JSON, no file change
+
+Open risks:
+- The local `cursor` command currently reachable in this environment is not behaving like the documented headless Cursor CLI, so the first real live worker pilot cannot yet be trusted.
+- The repo worktree is already very dirty, so even after the CLI is repaired we should continue using isolated temp-workspace smoke before repo-bound live runs.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: review `CURSOR_LIVE_SMOKE_STATUS_2026-07-05.md` and confirm the blocker is local CLI installation/activation, not Janus routing logic.
+
+Next recommended step for Codex: install or repair the official Cursor headless CLI from the current Cursor docs in a fresh shell, then rerun the same isolated smoke before attempting a repo-bound Cursor worker run.
+
+Last updated: `2026-07-05 16:45:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 16:19 +02:00`, the Cursor-side prerequisites for tri-modal delegation are implemented as a no-live Dev-infrastructure slice. The bounded Cursor runner now validates task packages and allowlists, enforces `CURSOR_API_KEY`, persists session IDs and per-run artifacts, appends compact delegation log rows, and writes a repo-local Cursor worker rule plus indexing exclusions. `janus_delegate.py` continues to keep Codex as option 1 and OpenRouter as option 3 while planning the Cursor runner for option 2 without making live external calls.
+
+Current goal: finish the no-live Cursor prerequisite layer so we can safely prepare a later approved live Cursor pilot.
+
+Active phase: Lean Dev execution, canonical state `PASS`.
+
+Last Codex work:
+- expanded `janus_cursor_worker_runner.py` into a bounded prerequisite runner with assist/proposal modes, allowlist enforcement, session resume support, and deterministic run artifacts
+- added `.cursor/rules/janus-delegated-worker.mdc` and `.cursorignore` entries for delegated-worker safety and lower indexing noise
+- added `documentation/codex/model-routing/CURSOR_DELEGATION_PREREQUISITES.md` and initialized `documentation/codex/model-routing/cursor_delegation_log.jsonl`
+- aligned `janus_delegate.py` cursor planning with lane-level allowlist requirements
+- validated the mocked Cursor runner test surface end-to-end without any live Cursor invocation
+
+Changed files:
+- `documentation/codex/model-routing/scripts/janus_cursor_worker_runner.py`
+- `documentation/codex/model-routing/tests/test_janus_cursor_worker_runner.py`
+- `documentation/codex/model-routing/scripts/janus_delegate.py`
+- `.cursor/rules/janus-delegated-worker.mdc`
+- `.cursorignore`
+- `documentation/codex/model-routing/CURSOR_DELEGATION_PREREQUISITES.md`
+- `documentation/codex/model-routing/cursor_delegation_log.jsonl`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_janus_cursor_worker_runner.py -q`: PASS, 5 passed
+- `python -m py_compile documentation/codex/model-routing/scripts/janus_cursor_worker_runner.py`: PASS
+- `python -m py_compile documentation/codex/model-routing/scripts/janus_delegate.py`: PASS
+
+Open risks:
+- No live Cursor call has been executed yet, so the real CLI/auth/runtime path is still unproven.
+- The bounded runner currently relies on `CURSOR_API_KEY`; the actual user key must be set in the local shell or user environment before any approved pilot.
+- OpenRouter remains intact as option 3, but this slice did not retest OR behavior.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: review the Cursor prerequisite contract and decide whether the next bounded slice should be a mocked `janus_delegate.py` cursor-routing acceptance pass or one explicitly approved live Cursor smoke test in a temp workspace.
+
+Next recommended step for Codex: stop here per user instruction after the Cursor prerequisites acceptance criteria and wait for approval before any live Cursor call, commit, or push.
+
+Last updated: `2026-07-05 16:19:57 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 16:08 +02:00`, the tri-modal delegation phases 1-4 are implemented as a no-live Dev-infrastructure slice. `janus_delegate.py` can now read the session routing artifacts, show `1=Codex / 2=Cursor / 3=OpenRouter`, recommend the backend from the task list when ROI is positive, keep never-delegate tasks Codex-only, plan Cursor worker commands, and plan existing OpenRouter runner commands without making live external calls.
+
+Current goal: review the no-live tri-modal delegation entry before deciding on any live Cursor or OpenRouter pilot.
+
+Active phase: Lean Dev execution, canonical state `PASS`.
+
+Last Codex work:
+- added `delegation_routing.py` for manifest/task-list loading, validation, ROI handling, and operator-gate construction
+- added `janus_delegate.py` as the tri-modal dry-run entry point
+- added `janus_cursor_worker_runner.py` as a no-live bounded Cursor worker contract shell
+- added focused tests for manifest validation, tri-modal routing, Cursor dry-run planning, OR option-3 planning, negative ROI, and never-delegate tasks
+- wrote `documentation/codex/model-routing/TRI_MODAL_DELEGATION_PHASES_1_4_EXECUTION_RESULT_2026-07-05.md`
+
+Changed files:
+- `documentation/codex/model-routing/scripts/delegation_routing.py`
+- `documentation/codex/model-routing/scripts/janus_delegate.py`
+- `documentation/codex/model-routing/scripts/janus_cursor_worker_runner.py`
+- `documentation/codex/model-routing/tests/test_delegation_routing.py`
+- `documentation/codex/model-routing/tests/test_janus_delegate.py`
+- `documentation/codex/model-routing/tests/test_janus_cursor_worker_runner.py`
+- `documentation/codex/model-routing/TRI_MODAL_DELEGATION_PHASES_1_4_EXECUTION_RESULT_2026-07-05.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_delegation_routing.py documentation/codex/model-routing/tests/test_janus_delegate.py documentation/codex/model-routing/tests/test_janus_cursor_worker_runner.py -q`: PASS, 12 passed
+- `python -m py_compile documentation/codex/model-routing/scripts/delegation_routing.py documentation/codex/model-routing/scripts/janus_delegate.py documentation/codex/model-routing/scripts/janus_cursor_worker_runner.py`: PASS
+- sample `janus_delegate.py --operator-choice prompt` for `test_fixture_worker`: PASS, shows all three options and recommends Cursor
+- sample `janus_delegate.py --operator-choice 2` for `test_fixture_worker`: PASS, plans Cursor runner only, no live call
+- sample `janus_delegate.py --operator-choice 3` for `test_fixture_worker`: PASS, plans existing OR runner only, no live call
+- scoped `git diff --check`: PASS, with existing CRLF warnings for `CURRENT_STATE.md` and `SKILL_USAGE_LOG.md`
+
+Open risks:
+- No live Cursor or OpenRouter call has been executed; Cursor CLI live flags remain unproven until a separately approved pilot.
+- The manifest/task-list artifacts are currently untracked inputs and should be reviewed before checkpointing.
+- `janus_delegate.py` intentionally plans existing OR runner commands rather than replacing OR infrastructure.
+- `live_test_execution`, `diamond_retest_audit`, compiler steps, and final validation remain Codex-only.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: review `TRI_MODAL_DELEGATION_PHASES_1_4_EXECUTION_RESULT_2026-07-05.md` and decide whether the next bounded slice should be a mocked task-list validator, skill-gate doc update, or explicit Cursor live-pilot preparation.
+
+Next recommended step for Codex: stop here per user instruction after phases 1-4 and report status; do not run live Cursor/OpenRouter or commit without explicit approval.
+
+Last updated: `2026-07-05 16:08:16 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 15:47 +02:00`, `TASK-SPEC28.3` is implemented and handed off to final audit. The bounded `LIVE_TEST_EXECUTION` OR lane now has a Codex-owned trust gate: local and non-eligible paths stay explicitly Codex-local, delegated live-retest passes remain review-pending only with a complete review bundle, and incomplete delegated evidence fails closed to reject-and-fallback.
+
+Current goal: final-audit `TASK-SPEC28.3`, then decide whether `BACKLOG-118` is ready for the first real productive delegated local live retest.
+
+Active phase: `janus-executioner`, canonical state `HANDOFF`.
+
+Last Codex work:
+- tightened `test_pipeline_sidecar_write_pilot_runner.py` so review-bundle validation applies only to actual delegated live-retest review results
+- added Codex-owned normalization for `delegated_live_retest_then_codex_review` in `bounded_or_worker_outcome.py`
+- expanded focused regression coverage for non-eligible local fallback, review-ready delegated success, and fail-closed delegated success without review-bundle evidence
+- updated skill and registry wording so the bounded live-retest lane cannot be mistaken for broad everyday OR live-test approval
+- wrote `documentation/tasks/TASK-SPEC28.3_execution_result.md`
+
+Changed files:
+- `documentation/codex/model-routing/scripts/test_pipeline_sidecar_write_pilot_runner.py`
+- `documentation/codex/model-routing/scripts/bounded_or_worker_outcome.py`
+- `documentation/codex/model-routing/tests/test_test_pipeline_sidecar_write_pilot_runner.py`
+- `documentation/codex/skills/janus-test-pipeline/SKILL.md`
+- `documentation/codex/model-routing/or_everyday_operator_registry_summary_2026-06-24.md`
+- `documentation/tasks/TASK-SPEC28.3_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_test_pipeline_sidecar_write_pilot_runner.py -q`: PASS, 20 passed
+- `python -m pytest documentation/codex/model-routing/tests/test_assistive_or_review_consumer_integration.py -q`: PASS, 15 passed
+- `python -m pytest documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py -q`: PASS, 39 passed
+- `python -m pytest documentation/codex/model-routing/tests -q -k "live_retest or accept or reject or fallback"`: PASS, 78 passed and 163 deselected
+- `python -m py_compile documentation/codex/model-routing/scripts/test_pipeline_sidecar_write_pilot_runner.py documentation/codex/model-routing/scripts/bounded_or_worker_outcome.py`: PASS
+- `python -m py_compile documentation/codex/model-routing/tests/test_assistive_or_review_consumer_integration.py`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py documentation/tasks/TASK-SPEC28.3_execution_result.md`: PASS
+
+Open risks:
+- No real delegated local live retest has run yet; the lane is now trust-hardened, but still needs final audit and then live evidence from a real productive OR attempt.
+- Delegated worker outputs still depend on bounded package quality and must remain fail-closed if evidence, scope discipline, or auth prerequisites are incomplete.
+- `BACKLOG-118` should not be closed until final audit confirms that registry wording, lane behavior, and Codex-owned fallback semantics stay aligned.
+- The wider worktree remains dirty, so any checkpoint must stay narrowly scoped.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: review `TASK-SPEC28.3_execution_result.md` and the bounded trust-gate evidence only, then decide final-audit PASS versus blocker for the first productive delegated live-retest lane.
+
+Next recommended step for Codex: run `janus-final-audit` for `TASK-SPEC28.3` with `5.5` high in the same chat unless a fresh audit-only chat is preferred.
+
+Last updated: `2026-07-05 15:47:04 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 15:35 +02:00`, `TASK-SPEC28.3` has passed preimplementation check. `TASK-SPEC28.1` and `TASK-SPEC28.2` are closed, and the final remaining slice before the first real productive delegated local live retest is now execution-ready as a bounded Codex-owned accept/reject and regression-hardening gate.
+
+Current goal: implement `TASK-SPEC28.3` through `janus-executioner`, then decide whether the OR lane is ready for the first real productive delegated local live retest.
+
+Active phase: `janus-preimplementation-check`, canonical state `HANDOFF`.
+
+Last Codex work:
+- wrote `documentation/tasks/TASK-SPEC28.3_preimplementation_check.md`
+- verified the final remaining slice is atomic and scoped only to Codex-owned accept/reject, fail-closed fallback behavior, and lane regression hardening
+- bound the execution surface to tests, skill wording, and registry-summary boundaries only
+
+Changed files:
+- `documentation/tasks/TASK-SPEC28.3_preimplementation_check.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- artifact identity review across BACKLOG-118, Spec 28, TASK-SPEC28, TASK-SPEC28.3 breakdown, and TASK-SPEC28.2 closeout: PASS
+- `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py documentation/tasks/TASK-SPEC28.3_preimplementation_check.md`: PASS
+- scoped `git diff --check`: PASS, with existing CRLF warnings only if emitted
+
+Open risks:
+- No real OR live-retest run has happened yet; `TASK-SPEC28.3` must still prove fail-closed accept/reject behavior around incomplete evidence, auth preconditions, and review handoff.
+- Runtime auth and bounded worker authority must remain local-only and review-first when we move from contract readiness to the first real delegated retest attempt.
+- Registry or summary artifacts must not overstate this lane as global OR live-test approval.
+- The wider worktree remains dirty, so any checkpoint must stay narrowly scoped.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: review only the `TASK-SPEC28.3` precheck and keep the scope on fail-closed trust gating, not on new provider or product decisions.
+
+Next recommended step for Codex: run `janus-executioner` for `TASK-SPEC28.3` with `5.4` high in the same warm context.
+
+Last updated: `2026-07-05 15:35:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 21:22 +02:00`, `TASK-SPEC28.2` has a task-breakdown handoff ready for preimplementation check. This is the next productive OR step after the visible `LIVE_TEST_EXECUTION` gate: define the bounded local live-retest worker contract, auth/header handling boundary, and reviewable evidence outputs without granting final PASS/release/Git/routing authority.
+
+Current goal: precheck `TASK-SPEC28.2` and then implement the bounded worker/auth/evidence contract if it passes.
+
+Active phase: `janus-task-breakdown`, canonical state `HANDOFF`.
+
+Last Codex work:
+- created `documentation/tasks/TASK-SPEC28.2_task_breakdown.md`
+- bound the next scope to worker/auth/evidence contract only
+- explicitly deferred real live retest execution and final accept/reject hardening to later gates
+
+Changed files:
+- `documentation/tasks/TASK-SPEC28.2_task_breakdown.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- artifact review against Spec 28, TASK-SPEC28, TASK-SPEC28.1 final audit, and TASK-SPEC28.1 documentation update: PASS
+- `python C:\Users\pruve\.codex\skills\janus-task-breakdown\scripts\validate_task_handoff.py --task documentation/tasks/TASK-SPEC28_bounded_or_lane_fuer_live_test_execution.md --target TASK-SPEC28.2`: PASS
+- scoped `git diff --check`: PASS, with pre-existing CRLF warnings only if emitted
+
+Open risks:
+- `TASK-SPEC28.2` touches the local auth/header boundary and must not leak secrets into versioned fixtures or worker packages.
+- The contract must remain allowlisted and must not become broad shell delegation.
+- The wider worktree remains dirty, so any future checkpoint must stay narrowly scoped.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: review only the `TASK-SPEC28.2` task-breakdown handoff and worker/auth/evidence boundaries.
+
+Next recommended step for Codex: run `janus-preimplementation-check` for `TASK-SPEC28.2` with `5.4` high.
+
+Last updated: `2026-07-05 21:22:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 21:16 +02:00`, `TASK-SPEC28.1` is closed through documentation update after final audit PASS. `BACKLOG-118` remains IN PROGRESS because the visible productive `LIVE_TEST_EXECUTION` OR gate is now audit-clean, but the actual bounded worker/auth/evidence contract (`TASK-SPEC28.2`) and Codex-owned accept/reject hardening (`TASK-SPEC28.3`) are still open.
+
+Current goal: start `TASK-SPEC28.2` so OR can perform a real bounded local live-retest path with reviewable evidence.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- marked `TASK-SPEC28.1` DONE inside `documentation/tasks/TASK-SPEC28_bounded_or_lane_fuer_live_test_execution.md`
+- updated `BACKLOG-118` as partial progress with first acceptance criterion checked and next target task `TASK-SPEC28.2`
+- wrote `documentation/tasks/TASK-SPEC28.1_documentation_update.md`
+- synced `CURRENT_STATE` and the skill usage log for the completed slice
+
+Changed files:
+- `documentation/backlog/BACKLOG.md`
+- `documentation/tasks/TASK-SPEC28_bounded_or_lane_fuer_live_test_execution.md`
+- `documentation/tasks/TASK-SPEC28.1_documentation_update.md`
+- `janus-dashboard/data/backlog.snapshot.json`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py documentation/tasks/TASK-SPEC28.1_final_audit.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-backlog-handoff\scripts\validate_backlog.py C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md`: PASS WITH LEGACY WARNINGS
+- `npm run sync:backlog` in `janus-dashboard`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-documentation-update\scripts\validate_doc_update.py --repo C:\KI\Janus-Projekt --marker BACKLOG-118 --require documentation/backlog/BACKLOG.md --require documentation/tasks/TASK-SPEC28_bounded_or_lane_fuer_live_test_execution.md --require documentation/ai/CURRENT_STATE.md`: PASS
+- scoped `git diff --check`: PASS, with pre-existing CRLF warnings only if emitted
+
+Open risks:
+- Real delegated local live-retest execution is not active yet; only the visible eligibility gate is proven.
+- `TASK-SPEC28.2` must handle local auth/header boundaries and evidence output without leaking secrets or granting broad shell authority.
+- The wider worktree remains dirty, so checkpoint work must stay narrowly scoped.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: review the partial `BACKLOG-118` closeout and focus next on `TASK-SPEC28.2` boundaries.
+
+Next recommended step for Codex: run `janus-task-breakdown` for `TASK-SPEC28.2` with `5.4` high, then preimplementation check.
+
+Last updated: `2026-07-05 21:16:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-05 21:05 +02:00`, `TASK-SPEC28.1` has passed final audit. This is the first productive bounded OR `LIVE_TEST_EXECUTION` slice for Janus: eligible local bounded retests now expose the visible `1 = Codex` / `2 = OR` gate, while non-local or non-eligible live-test execution scopes remain fail-closed and Codex-only. The slice intentionally does not yet implement delegated worker execution, local auth/header handling, delegated evidence writes, or final accept/reject semantics; those remain the next `TASK-SPEC28.2` / `TASK-SPEC28.3` work.
+
+Current goal: close `TASK-SPEC28.1` through documentation update, then continue to the real OR worker/auth/evidence path in `TASK-SPEC28.2`.
+
+Active phase: `janus-final-audit`, canonical state `PASS`.
+
+Last Codex work:
+- built `documentation/tasks/TASK-SPEC28.1_AUDIT_PACKAGE.md`
+- created fresh positive and negative `LIVE_TEST_EXECUTION` gate evidence for `TP-LIVE-GATE-AUDIT-PROMPT-001` and `TP-LIVE-GATE-AUDIT-PROMPT-002`
+- wrote and validated `documentation/tasks/TASK-SPEC28.1_final_audit.md`
+
+Changed files:
+- `documentation/tasks/TASK-SPEC28.1_AUDIT_PACKAGE.md`
+- `documentation/tasks/TASK-SPEC28.1_final_audit.md`
+- `documentation/codex/model-routing/sidecar-runs/TP-LIVE-GATE-AUDIT-PROMPT-001/operator_choice_prompt.json`
+- `documentation/codex/model-routing/sidecar-runs/TP-LIVE-GATE-AUDIT-PROMPT-002/operator_choice_prompt.json`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py -q`: PASS, 39 passed
+- `python -m pytest documentation/codex/model-routing/tests/test_test_pipeline_sidecar_write_pilot_runner.py -q -k "live or gate or eligibility"`: PASS, 7 passed and 7 deselected
+- `python -m py_compile documentation/codex/model-routing/scripts/bounded_or_worker_eligibility.py documentation/codex/model-routing/scripts/test_pipeline_sidecar_write_pilot_runner.py`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py documentation/tasks/TASK-SPEC28.1_preimplementation_check.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py documentation/tasks/TASK-SPEC28.1_execution_result.md`: PASS
+- positive prompt evidence for `local_bounded_retest`: PASS, visible `choice_2 = OR`
+- negative prompt evidence for `non_local_live_test`: PASS, Codex-only with no visible `choice_2 = OR`
+- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py documentation/tasks/TASK-SPEC28.1_final_audit.md`: PASS
+- scoped `git diff --check`: PASS
+
+Open risks:
+- `TASK-SPEC28.1` only opens the visible productive OR choice for an eligible bounded local retest; the actual delegated worker/auth/evidence path is not ready until `TASK-SPEC28.2`.
+- The wider worktree remains dirty, so any checkpoint must stay narrowly scoped to Spec 28 artifacts.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: review the final-audit PASS and confirm documentation closeout before moving to `TASK-SPEC28.2`.
+
+Next recommended step for Codex: run `janus-documentation-update` for `TASK-SPEC28.1` with `5.4` medium, then route `TASK-SPEC28.2` to preimplementation check.
+
+Last updated: `2026-07-05 21:05:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-05 20:50 +02:00`, `DEV-008.1` is fully closed through documentation update after final audit PASS. The bounded MCP recommendation archive-view helper slice is now documented as DONE in the Dev backlog: it accepts one saved comparison artifact, renders one stable review-friendly markdown archive view with labels, favorite models, timestamps, suggested next actions, alternatives, decision notes, and approval-boundary wording, and stays fully outside live fetches, recommendation synthesis, executor changes, production routing, and delegated authority.
 
 Current goal: checkpoint the completed `DEV-008.1` slice cleanly and decide the next bounded MCP-helper follow-up.

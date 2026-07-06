@@ -1,0 +1,613 @@
+{
+  "task_list_version": "2026-07-05",
+  "session_label": "janus-core-skills-routing-baseline",
+  "status": "READY_FOR_OPERATOR_USE",
+  "manifest_ref": "documentation/codex/model-routing/config/delegation_routing_manifest.json",
+  "scope_note": "Concrete routing task list for janus-documentation-update, janus-quickchange, janus-backlog-handoff, janus-backlog-prioritization, janus-backlog-intake, janus-skill-router, janus-health-check, janus-feature-design, janus-spec-generator, janus-spec-normalizer, janus-spec-review, janus-spec-to-task, janus-task-breakdown, janus-preimplementation-check, janus-executioner, janus-debug, and janus-test-pipeline. Codex reads this list, shows the visible operator gate from the manifest, and delegates using the recommended backend unless the operator overrides.",
+  "operator_gate_labels": {
+    "1": "Codex",
+    "2": "Cursor",
+    "3": "OpenRouter"
+  },
+  "tasks": [
+    {
+      "task_id": "TASK-DU-001",
+      "title": "Review one bounded documentation draft helper slice",
+      "skill": "janus-documentation-update",
+      "lane_id": "documentation_draft_review",
+      "pipeline_mode": "DOCUMENTATION_DRAFT_REVIEW",
+      "recommended_backend": "openrouter",
+      "operator_override_allowed": true,
+      "models": {
+        "codex": { "model": "5.4", "reasoning": "medium" },
+        "cursor": { "model": "auto" },
+        "openrouter": { "model": "codex-cli/gpt-5.4-read-only-sidecar" }
+      },
+      "when_to_use": "Bounded non-binding draft, summary, milestone note, changelog draft, or handoff draft inside documentation-update safe scope",
+      "when_not_to_use": "Need binding documentation writes, release/governance decisions, fixed-OR doc-skill lane evaluation, or broader blocked-scope documentation work",
+      "estimated_codex_saved_tokens": 8000,
+      "estimated_delegation_overhead_tokens": 4000,
+      "minimum_net_codex_saved_tokens": 3000,
+      "delegate_command_template": "python documentation/codex/model-routing/scripts/janus_delegate.py --lane documentation_draft_review --task-id TASK-DU-001 --workflow-id {workflow_id} --operator-choice {choice} --estimated-codex-saved-tokens 8000 --estimated-delegation-overhead-tokens 4000"
+    },
+    {
+      "task_id": "TASK-QC-001",
+      "title": "Plan one bounded quickchange patch-review slice",
+      "skill": "janus-quickchange",
+      "lane_id": "quickchange_patch_review",
+      "pipeline_mode": "QUICKCHANGE_PATCH_REVIEW",
+      "recommended_backend": "openrouter",
+      "operator_override_allowed": true,
+      "models": {
+        "codex": { "model": "5.4", "reasoning": "medium" },
+        "cursor": { "model": "N/A" },
+        "openrouter": { "model": "qwen/qwen3-coder-30b-a3b-instruct" }
+      },
+      "when_to_use": "One tiny quickchange stays inside an exact file allowlist and the operator wants a bounded patch proposal before any local apply",
+      "when_not_to_use": "Need Cursor tool work, broad implementation, precheck authority, product decisions, or a multi-file scope that stops being a true quickchange",
+      "estimated_codex_saved_tokens": 8000,
+      "estimated_delegation_overhead_tokens": 4000,
+      "minimum_net_codex_saved_tokens": 3000,
+      "input_artifacts": [
+        "documentation/codex/model-routing/fixtures/examples/quickchange_patch_review_prompt_example.md",
+        "documentation/codex/model-routing/fixtures/examples/quickchange_patch_review_target_example.txt"
+      ],
+      "delegate_command_template": "python documentation/codex/model-routing/scripts/janus_delegate.py --lane quickchange_patch_review --task-id TASK-QC-001 --workflow-id {workflow_id} --operator-choice {choice} --prompt-path {prompt_path} --editable-path {editable_path} --max-touched-files {max_touched_files} --estimated-codex-saved-tokens 8000 --estimated-delegation-overhead-tokens 4000"
+    },
+    {
+      "task_id": "TASK-BH-001",
+      "title": "Review one bounded selected-handoff recommendation package",
+      "skill": "janus-backlog-handoff",
+      "lane_id": "backlog_handoff_review",
+      "pipeline_mode": "BACKLOG_HANDOFF_REVIEW",
+      "recommended_backend": "openrouter",
+      "operator_override_allowed": true,
+      "models": {
+        "codex": { "model": "5.4", "reasoning": "medium" },
+        "cursor": { "model": "auto" },
+        "openrouter": { "model": "qwen/qwen3-coder-30b-a3b-instruct" }
+      },
+      "when_to_use": "Exactly one READY backlog item is selected and external review can help shape the handoff recommendation before Codex writes anything",
+      "when_not_to_use": "Need authoritative backlog writes, status moves, artifact writes, Git actions, or final routing authority",
+      "estimated_codex_saved_tokens": 12000,
+      "estimated_delegation_overhead_tokens": 4000,
+      "minimum_net_codex_saved_tokens": 5000,
+      "input_artifacts": [
+        "development/openrouter-skill-tests/janus-backlog-handoff/backlog_handoff_input_package.json"
+      ],
+      "delegate_command_template": "python documentation/codex/model-routing/scripts/janus_delegate.py --lane backlog_handoff_review --task-id TASK-BH-001 --workflow-id {workflow_id} --operator-choice {choice} --input-package-json {input_package_json} --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000"
+    },
+    {
+      "task_id": "TASK-BP-001",
+      "title": "Review one bounded DELTA backlog prioritization package",
+      "skill": "janus-backlog-prioritization",
+      "lane_id": "backlog_prioritization_review",
+      "pipeline_mode": "BACKLOG_PRIORITIZATION_REVIEW",
+      "recommended_backend": "openrouter",
+      "operator_override_allowed": true,
+      "models": {
+        "codex": { "model": "5.4", "reasoning": "medium" },
+        "cursor": { "model": "auto" },
+        "openrouter": { "model": "qwen/qwen3-coder-30b-a3b-instruct" }
+      },
+      "when_to_use": "A bounded DELTA review package exists and external ranking help can save Codex synthesis tokens before final local prioritization",
+      "when_not_to_use": "Need final backlog write acceptance, handoff creation, implementation routing, or broad FULL review judgment",
+      "estimated_codex_saved_tokens": 12000,
+      "estimated_delegation_overhead_tokens": 4000,
+      "minimum_net_codex_saved_tokens": 5000,
+      "input_artifacts": [
+        "development/openrouter-skill-tests/janus-backlog-prioritization/backlog_prioritization_input_package.json"
+      ],
+      "delegate_command_template": "python documentation/codex/model-routing/scripts/janus_delegate.py --lane backlog_prioritization_review --task-id TASK-BP-001 --workflow-id {workflow_id} --operator-choice {choice} --input-package-json {input_package_json} --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000"
+    },
+    {
+      "task_id": "TASK-BI-001",
+      "title": "Draft one bounded backlog candidate review package",
+      "skill": "janus-backlog-intake",
+      "lane_id": "backlog_intake_review",
+      "pipeline_mode": "BACKLOG_INTAKE_REVIEW",
+      "recommended_backend": "openrouter",
+      "operator_override_allowed": true,
+      "models": {
+        "codex": { "model": "5.4", "reasoning": "medium" },
+        "cursor": { "model": "auto" },
+        "openrouter": { "model": "qwen/qwen3-coder-30b-a3b-instruct" }
+      },
+      "when_to_use": "Raw user request is bounded and redacted; external review can draft the backlog candidate shape before Codex writes anything",
+      "when_not_to_use": "Need prioritization, implementation routing, product decisions, or final backlog write authority",
+      "estimated_codex_saved_tokens": 12000,
+      "estimated_delegation_overhead_tokens": 4000,
+      "minimum_net_codex_saved_tokens": 5000,
+      "input_artifacts": [
+        "development/openrouter-skill-tests/janus-backlog-intake/backlog_intake_input_package.json"
+      ],
+      "delegate_command_template": "python documentation/codex/model-routing/scripts/janus_delegate.py --lane backlog_intake_review --task-id TASK-BI-001 --workflow-id {workflow_id} --operator-choice {choice} --input-package-json {input_package_json} --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000"
+    },
+    {
+      "task_id": "TASK-SR-001",
+      "title": "Review one bounded routing recommendation package",
+      "skill": "janus-skill-router",
+      "lane_id": "skill_router_review",
+      "pipeline_mode": "SKILL_ROUTER_REVIEW",
+      "recommended_backend": "openrouter",
+      "operator_override_allowed": true,
+      "models": {
+        "codex": { "model": "5.4", "reasoning": "medium" },
+        "cursor": { "model": "auto" },
+        "openrouter": { "model": "qwen/qwen3-coder-30b-a3b-instruct" }
+      },
+      "when_to_use": "Routing package is redacted and bounded; review help can save Codex synthesis tokens before final local routing",
+      "when_not_to_use": "Implementation, shell work, Git/release authority, or final routing-table edits are required",
+      "estimated_codex_saved_tokens": 12000,
+      "estimated_delegation_overhead_tokens": 4000,
+      "minimum_net_codex_saved_tokens": 5000,
+      "input_artifacts": [
+        "development/openrouter-skill-tests/janus-skill-router/skill_router_input_package.json"
+      ],
+      "delegate_command_template": "python documentation/codex/model-routing/scripts/janus_delegate.py --lane skill_router_review --task-id TASK-SR-001 --workflow-id {workflow_id} --operator-choice {choice} --input-package-json {input_package_json} --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000"
+    },
+    {
+      "task_id": "TASK-HC-001",
+      "title": "Review one bounded DAILY health-check interpretation package",
+      "skill": "janus-health-check",
+      "lane_id": "health_check_review",
+      "pipeline_mode": "HEALTH_CHECK_REVIEW",
+      "recommended_backend": "openrouter",
+      "operator_override_allowed": true,
+      "models": {
+        "codex": { "model": "5.4", "reasoning": "medium" },
+        "cursor": { "model": "auto" },
+        "openrouter": { "model": "qwen/qwen3-coder-30b-a3b-instruct" }
+      },
+      "when_to_use": "A redacted DAILY health-check package exists and external interpretation can save Codex synthesis tokens before final local judgment",
+      "when_not_to_use": "Need file deletion, auto-fix authority, Git/release action, or a broader WEEKLY/MONTHLY follow-up that should stay local",
+      "estimated_codex_saved_tokens": 12000,
+      "estimated_delegation_overhead_tokens": 4000,
+      "minimum_net_codex_saved_tokens": 5000,
+      "input_artifacts": [
+        "development/openrouter-skill-tests/janus-health-check/health_check_input_package.json"
+      ],
+      "delegate_command_template": "python documentation/codex/model-routing/scripts/janus_delegate.py --lane health_check_review --task-id TASK-HC-001 --workflow-id {workflow_id} --operator-choice {choice} --input-package-json {input_package_json} --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000"
+    },
+    {
+      "task_id": "TASK-FD-001",
+      "title": "Review one bounded feature-design consolidation package",
+      "skill": "janus-feature-design",
+      "lane_id": "feature_design_review",
+      "pipeline_mode": "FEATURE_DESIGN_REVIEW",
+      "recommended_backend": "openrouter",
+      "operator_override_allowed": true,
+      "models": {
+        "codex": { "model": "5.4", "reasoning": "medium" },
+        "cursor": { "model": "auto" },
+        "openrouter": { "model": "qwen/qwen3-coder-30b-a3b-instruct" }
+      },
+      "when_to_use": "A bounded feature-design package exists and external consolidation can save Codex synthesis tokens before final local summary ownership",
+      "when_not_to_use": "Need final product decision authority, implementation, task creation, Git/release action, or broader ambiguous product exploration",
+      "estimated_codex_saved_tokens": 12000,
+      "estimated_delegation_overhead_tokens": 4000,
+      "minimum_net_codex_saved_tokens": 5000,
+      "input_artifacts": [
+        "development/openrouter-skill-tests/janus-feature-design/feature_design_input_package.json"
+      ],
+      "delegate_command_template": "python documentation/codex/model-routing/scripts/janus_delegate.py --lane feature_design_review --task-id TASK-FD-001 --workflow-id {workflow_id} --operator-choice {choice} --input-package-json {input_package_json} --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000"
+    },
+    {
+      "task_id": "TASK-SG-001",
+      "title": "Review one bounded locked-decision spec draft package",
+      "skill": "janus-spec-generator",
+      "lane_id": "spec_generator_review",
+      "pipeline_mode": "SPEC_GENERATOR_REVIEW",
+      "recommended_backend": "openrouter",
+      "operator_override_allowed": true,
+      "models": {
+        "codex": { "model": "5.4", "reasoning": "medium" },
+        "cursor": { "model": "auto" },
+        "openrouter": { "model": "qwen/qwen3-coder-30b-a3b-instruct" }
+      },
+      "when_to_use": "A locked decision summary is bound and external draft consolidation can save Codex synthesis tokens before final local spec writing",
+      "when_not_to_use": "Need authoritative spec file writes, task creation, implementation, Git/release action, or unresolved product decisions",
+      "estimated_codex_saved_tokens": 12000,
+      "estimated_delegation_overhead_tokens": 4000,
+      "minimum_net_codex_saved_tokens": 5000,
+      "input_artifacts": [
+        "development/openrouter-skill-tests/janus-spec-generator/spec_generator_input_package.json"
+      ],
+      "delegate_command_template": "python documentation/codex/model-routing/scripts/janus_delegate.py --lane spec_generator_review --task-id TASK-SG-001 --workflow-id {workflow_id} --operator-choice {choice} --input-package-json {input_package_json} --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000"
+    },
+    {
+      "task_id": "TASK-SN-001",
+      "title": "Normalize one bounded draft spec package",
+      "skill": "janus-spec-normalizer",
+      "lane_id": "spec_normalizer_review",
+      "pipeline_mode": "SPEC_NORMALIZER_REVIEW",
+      "recommended_backend": "openrouter",
+      "operator_override_allowed": true,
+      "models": {
+        "codex": { "model": "5.4", "reasoning": "medium" },
+        "cursor": { "model": "auto" },
+        "openrouter": { "model": "qwen/qwen3-coder-30b-a3b-instruct" }
+      },
+      "when_to_use": "Exactly one draft spec package is bound and external mechanical normalization can save Codex cleanup tokens before final local review handoff; this is the cheapest currently proven OR lane in the Spec flow",
+      "when_not_to_use": "Need product reinterpretation, task creation, authoritative spec acceptance, unresolved source identity, or the package is so tiny that local cleanup is cheaper",
+      "estimated_codex_saved_tokens": 12000,
+      "estimated_delegation_overhead_tokens": 4000,
+      "minimum_net_codex_saved_tokens": 5000,
+      "input_artifacts": [
+        "development/openrouter-skill-tests/janus-spec-normalizer/spec_normalizer_input_package.json"
+      ],
+      "delegate_command_template": "python documentation/codex/model-routing/scripts/janus_delegate.py --lane spec_normalizer_review --task-id TASK-SN-001 --workflow-id {workflow_id} --operator-choice {choice} --input-package-json {input_package_json} --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000"
+    },
+    {
+      "task_id": "TASK-SR-002",
+      "title": "Review one bounded finalized spec package",
+      "skill": "janus-spec-review",
+      "lane_id": "spec_review",
+      "pipeline_mode": "SPEC_REVIEW",
+      "recommended_backend": "openrouter",
+      "operator_override_allowed": true,
+      "models": {
+        "codex": { "model": "5.4", "reasoning": "medium" },
+        "cursor": { "model": "auto" },
+        "openrouter": { "model": "qwen/qwen3-coder-30b-a3b-instruct" }
+      },
+      "when_to_use": "A substantive finalized spec is under REVIEW_ONLY and external recommendation can save Codex synthesis tokens before final local metadata writing",
+      "when_not_to_use": "Need authoritative metadata write, task creation, unresolved product decisions, release/governance action, or only tiny metadata-only sanity checks where OR overhead is likely not worth it",
+      "estimated_codex_saved_tokens": 12000,
+      "estimated_delegation_overhead_tokens": 4000,
+      "minimum_net_codex_saved_tokens": 8000,
+      "input_artifacts": [
+        "development/openrouter-skill-tests/janus-spec-review/spec_review_input_package.json"
+      ],
+      "delegate_command_template": "python documentation/codex/model-routing/scripts/janus_delegate.py --lane spec_review --task-id TASK-SR-002 --workflow-id {workflow_id} --operator-choice {choice} --input-package-json {input_package_json} --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000"
+    },
+    {
+      "task_id": "TASK-ST-001",
+      "title": "Review one bounded approved-spec task-compilation draft package",
+      "skill": "janus-spec-to-task",
+      "lane_id": "spec_to_task_review",
+      "pipeline_mode": "SPEC_TO_TASK_REVIEW",
+      "recommended_backend": "openrouter",
+      "operator_override_allowed": true,
+      "models": {
+        "codex": { "model": "5.4", "reasoning": "medium" },
+        "cursor": { "model": "auto" },
+        "openrouter": { "model": "qwen/qwen3-coder-30b-a3b-instruct" }
+      },
+      "when_to_use": "An approved final spec is bound and external task-compilation draft help can save Codex synthesis before final local task writing",
+      "when_not_to_use": "Need authoritative task-file write, implementation, unresolved approval state, or release/governance action",
+      "estimated_codex_saved_tokens": 12000,
+      "estimated_delegation_overhead_tokens": 4000,
+      "minimum_net_codex_saved_tokens": 5000,
+      "input_artifacts": [
+        "development/openrouter-skill-tests/janus-spec-to-task/spec_to_task_input_package.json"
+      ],
+      "delegate_command_template": "python documentation/codex/model-routing/scripts/janus_delegate.py --lane spec_to_task_review --task-id TASK-ST-001 --workflow-id {workflow_id} --operator-choice {choice} --input-package-json {input_package_json} --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000"
+    },
+    {
+      "task_id": "TASK-TB-001",
+      "title": "Review one bounded single-target task breakdown package",
+      "skill": "janus-task-breakdown",
+      "lane_id": "task_breakdown_review",
+      "pipeline_mode": "TASK_BREAKDOWN_REVIEW",
+      "recommended_backend": "openrouter",
+      "operator_override_allowed": true,
+      "models": {
+        "codex": { "model": "5.4", "reasoning": "medium" },
+        "cursor": { "model": "auto" },
+        "openrouter": { "model": "qwen/qwen3-coder-30b-a3b-instruct" }
+      },
+      "when_to_use": "One source spec and one task artifact are bound and external single-target refinement can save Codex synthesis before final local handoff writing",
+      "when_not_to_use": "Need authoritative handoff write, precheck execution, multi-task release, or unresolved source identity",
+      "estimated_codex_saved_tokens": 12000,
+      "estimated_delegation_overhead_tokens": 4000,
+      "minimum_net_codex_saved_tokens": 5000,
+      "input_artifacts": [
+        "development/openrouter-skill-tests/janus-task-breakdown/task_breakdown_input_package.json"
+      ],
+      "delegate_command_template": "python documentation/codex/model-routing/scripts/janus_delegate.py --lane task_breakdown_review --task-id TASK-TB-001 --workflow-id {workflow_id} --operator-choice {choice} --input-package-json {input_package_json} --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000"
+    },
+    {
+      "task_id": "TASK-PC-001",
+      "title": "Review one bounded preimplementation-check package",
+      "skill": "janus-preimplementation-check",
+      "lane_id": "precheck_review",
+      "pipeline_mode": "PRECHECK_REVIEW",
+      "recommended_backend": "openrouter",
+      "operator_override_allowed": true,
+      "models": {
+        "codex": { "model": "5.4", "reasoning": "medium" },
+        "cursor": { "model": "auto" },
+        "openrouter": { "model": "qwen/qwen3-coder-30b-a3b-instruct" }
+      },
+      "when_to_use": "Exactly one target task package is bound and external precheck review can save Codex synthesis tokens before the final local pass/block decision; this lane is now productively proven and cost-stable",
+      "when_not_to_use": "Need final precheck authority, execution start, implementation, Git/release action, unresolved artifact identity, or a trivial local check where delegation overhead would dominate",
+      "estimated_codex_saved_tokens": 12000,
+      "estimated_delegation_overhead_tokens": 4000,
+      "minimum_net_codex_saved_tokens": 5000,
+      "input_artifacts": [
+        "development/openrouter-skill-tests/janus-preimplementation-check/precheck_input_package.json"
+      ],
+      "delegate_command_template": "python documentation/codex/model-routing/scripts/janus_delegate.py --lane precheck_review --task-id TASK-PC-001 --workflow-id {workflow_id} --operator-choice {choice} --input-package-json {input_package_json} --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000"
+    },
+    {
+      "task_id": "TASK-DBG-001",
+      "title": "Rank debug hypotheses for one bounded failure slice",
+      "skill": "janus-debug",
+      "lane_id": "debug_hypothesis_review",
+      "pipeline_mode": "DEBUG_HYPOTHESIS_REVIEW",
+      "recommended_backend": "openrouter",
+      "operator_override_allowed": true,
+      "models": {
+        "codex": { "model": "5.4", "reasoning": "high" },
+        "cursor": { "model": "auto" },
+        "openrouter": { "model": "qwen/qwen3-coder-30b-a3b-instruct" }
+      },
+      "when_to_use": "Failure package is ready, evidence redacted, only hypothesis ranking needed before Codex repro",
+      "when_not_to_use": "Repro, shell, or file edits are already required",
+      "estimated_codex_saved_tokens": 12000,
+      "estimated_delegation_overhead_tokens": 4000,
+      "minimum_net_codex_saved_tokens": 5000,
+      "input_artifacts": [
+        "debug_input_package.json"
+      ],
+      "delegate_command_template": "python documentation/codex/model-routing/scripts/janus_delegate.py --lane debug_hypothesis_review --workflow-id {workflow_id} --operator-choice {choice} --input-package-json {input_package_json} --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000"
+    },
+    {
+      "task_id": "TASK-DBG-002",
+      "title": "Reproduce and investigate one bounded debug slice with tools",
+      "skill": "janus-debug",
+      "lane_id": "debug_repro_investigation",
+      "pipeline_mode": "DEBUG_REPRO",
+      "recommended_backend": "cursor",
+      "operator_override_allowed": true,
+      "models": {
+        "codex": { "model": "5.4", "reasoning": "high" },
+        "cursor": { "model": "composer-2.5", "fallback_model": "auto" },
+        "openrouter": null
+      },
+      "when_to_use": "Need command execution, log inspection, bounded file edits, or iterative repro",
+      "when_not_to_use": "Only hypothesis ranking; security/privacy escalation; iteration 5 reached without new evidence",
+      "estimated_codex_saved_tokens": 25000,
+      "estimated_delegation_overhead_tokens": 10000,
+      "minimum_net_codex_saved_tokens": 8000,
+      "allowlist_hint": [
+        "src/<bounded-subsystem>/**",
+        "tests/**"
+      ],
+      "delegate_command_template": "python documentation/codex/model-routing/scripts/janus_delegate.py --lane debug_repro_investigation --workflow-id {workflow_id} --operator-choice {choice} --input-package-json {input_package_json} --allowlist-file {allowlist_file} --estimated-codex-saved-tokens 25000 --estimated-delegation-overhead-tokens 10000"
+    },
+    {
+      "task_id": "TASK-TP-001",
+      "title": "Compile TestSpec to TestPlan",
+      "skill": "janus-test-pipeline",
+      "lane_id": null,
+      "pipeline_mode": "TESTSPEC_TO_TEST_PLAN",
+      "recommended_backend": "codex",
+      "operator_override_allowed": false,
+      "models": {
+        "codex": { "model": "5.4", "reasoning": "medium" },
+        "cursor": null,
+        "openrouter": null
+      },
+      "when_to_use": "Always use deterministic compiler first",
+      "when_not_to_use": "Never delegate; compiler is source of truth",
+      "local_command_template": "node tests/e2e/generator/compile-testspec-to-testplan.mjs --spec {testspec_path}"
+    },
+    {
+      "task_id": "TASK-TP-002",
+      "title": "Generator review during TEST_RUN_PRECHECK",
+      "skill": "janus-test-pipeline",
+      "lane_id": "generator_review",
+      "pipeline_mode": "TEST_RUN_PRECHECK",
+      "recommended_backend": "openrouter",
+      "operator_override_allowed": true,
+      "models": {
+        "codex": { "model": "5.4", "reasoning": "medium" },
+        "cursor": { "model": "auto" },
+        "openrouter": { "model": "openai/gpt-oss-20b" }
+      },
+      "when_to_use": "Narrow generator-review problem inside precheck; large enough to save Codex review tokens",
+      "when_not_to_use": "Compiler broken, scope unclear, or task needs shell/test execution",
+      "estimated_codex_saved_tokens": 8000,
+      "estimated_delegation_overhead_tokens": 4000,
+      "minimum_net_codex_saved_tokens": 3000,
+      "delegate_command_template": "python documentation/codex/model-routing/scripts/janus_delegate.py --lane generator_review --workflow-id {workflow_id} --operator-choice {choice} --input-package-json {input_package_json} --estimated-codex-saved-tokens 8000 --estimated-delegation-overhead-tokens 4000"
+    },
+    {
+      "task_id": "TASK-TP-003",
+      "title": "Write bounded test fixture/helper and run allowlisted checks",
+      "skill": "janus-test-pipeline",
+      "lane_id": "test_fixture_worker",
+      "pipeline_mode": "TEST_RUN_PRECHECK",
+      "recommended_backend": "cursor",
+      "operator_override_allowed": true,
+      "models": {
+        "codex": { "model": "5.4", "reasoning": "medium" },
+        "cursor": { "model": "composer-2.5", "fallback_model": "auto" },
+        "openrouter": { "model": "moonshotai/kimi-k2.5", "fallback_model": "qwen/qwen3-coder-30b-a3b-instruct" }
+      },
+      "when_to_use": "Need fixture/helper code plus bounded command execution before live Playwright",
+      "when_not_to_use": "Tiny obvious fixture; ROI negative; package allowlist missing",
+      "estimated_codex_saved_tokens": 30000,
+      "estimated_delegation_overhead_tokens": 10000,
+      "minimum_net_codex_saved_tokens": 8000,
+      "allowlist_hint": [
+        "tests/**",
+        "tests/e2e/generated/{test_run_id}*"
+      ],
+      "delegate_command_template": "python documentation/codex/model-routing/scripts/janus_delegate.py --lane test_fixture_worker --workflow-id {workflow_id} --operator-choice {choice} --input-package-json {input_package_json} --allowlist-file {allowlist_file} --estimated-codex-saved-tokens 30000 --estimated-delegation-overhead-tokens 10000"
+    },
+    {
+      "task_id": "TASK-TP-004",
+      "title": "Run live Playwright/provider test",
+      "skill": "janus-test-pipeline",
+      "lane_id": "live_test_execution",
+      "pipeline_mode": "LIVE_TEST_EXECUTION",
+      "recommended_backend": "codex",
+      "operator_override_allowed": false,
+      "models": {
+        "codex": { "model": "5.4", "reasoning": "medium" },
+        "cursor": null,
+        "openrouter": null
+      },
+      "when_to_use": "After preflight READY and explicit user approval OK START LIVE TEST",
+      "when_not_to_use": "Never delegate to Cursor or OR",
+      "required_user_approval": "OK START LIVE TEST",
+      "local_command_template": "npx playwright test {runner_path} --headed --workers=1 --reporter=list"
+    },
+    {
+      "task_id": "TASK-TP-005",
+      "title": "Triage test failures from result bundle",
+      "skill": "janus-test-pipeline",
+      "lane_id": "test_result_triage_review",
+      "pipeline_mode": "FINDING_TRIAGE",
+      "recommended_backend": "openrouter",
+      "operator_override_allowed": true,
+      "models": {
+        "codex": { "model": "5.4", "reasoning": "medium" },
+        "cursor": { "model": "auto" },
+        "openrouter": { "model": "qwen/qwen3-coder-30b-a3b-instruct" }
+      },
+      "when_to_use": "Result bundle and evidence snippets are large; classification help saves Codex work",
+      "when_not_to_use": "Tiny/obvious failure; OR briefing would cost more than local triage",
+      "estimated_codex_saved_tokens": 18000,
+      "estimated_delegation_overhead_tokens": 4000,
+      "minimum_net_codex_saved_tokens": 8000,
+      "input_artifacts": [
+        "documentation/test-results/{test_run_id}_results.json",
+        "triage_input_package.json"
+      ],
+      "delegate_command_template": "python documentation/codex/model-routing/scripts/janus_delegate.py --lane test_result_triage_review --workflow-id {workflow_id} --operator-choice {choice} --input-package-json {input_package_json} --estimated-codex-saved-tokens 18000 --estimated-delegation-overhead-tokens 4000"
+    },
+    {
+      "task_id": "TASK-TP-006",
+      "title": "Diamond retest audit after blocker closure",
+      "skill": "janus-test-pipeline",
+      "lane_id": "diamond_retest_audit",
+      "pipeline_mode": "DIAMOND_RETEST_AUDIT",
+      "recommended_backend": "codex",
+      "operator_override_allowed": false,
+      "models": {
+        "codex": { "model": "5.4", "reasoning": "high" },
+        "cursor": null,
+        "openrouter": null
+      },
+      "when_to_use": "Final release-readiness decision from retest evidence",
+      "when_not_to_use": "Never delegate"
+    },
+    {
+      "task_id": "TASK-EX-001",
+      "title": "Propose bounded execution patch for one prechecked slice",
+      "skill": "janus-executioner",
+      "lane_id": "execution_patch_candidate",
+      "pipeline_mode": "EXECUTION_PATCH",
+      "recommended_backend": "cursor",
+      "operator_override_allowed": true,
+      "models": {
+        "codex": { "model": "5.4", "reasoning": "high" },
+        "cursor": { "model": "composer-2.5", "fallback_model": "auto" },
+        "openrouter": { "model": "moonshotai/kimi-k2.5", "fallback_model": "qwen/qwen3-coder-30b-a3b-instruct" }
+      },
+      "when_to_use": "One bounded implementation slice with explicit allowlist and positive ROI",
+      "when_not_to_use": "Scope unclear, security/privacy risk, or slice too small for delegation overhead",
+      "estimated_codex_saved_tokens": 35000,
+      "estimated_delegation_overhead_tokens": 10000,
+      "minimum_net_codex_saved_tokens": 10000,
+      "allowlist_hint": [
+        "src/<bounded-area>/**"
+      ],
+      "delegate_command_template": "python documentation/codex/model-routing/scripts/janus_delegate.py --lane execution_patch_candidate --workflow-id {workflow_id} --operator-choice {choice} --input-package-json {input_package_json} --allowlist-file {allowlist_file} --estimated-codex-saved-tokens 35000 --estimated-delegation-overhead-tokens 10000"
+    },
+    {
+      "task_id": "TASK-EX-002",
+      "title": "Apply accepted execution patch inside bounded allowlist",
+      "skill": "janus-executioner",
+      "lane_id": "execution_write_apply_candidate",
+      "pipeline_mode": "EXECUTION_WRITE_APPLY",
+      "recommended_backend": "cursor",
+      "operator_override_allowed": true,
+      "models": {
+        "codex": { "model": "5.4", "reasoning": "high" },
+        "cursor": { "model": "composer-2.5" },
+        "openrouter": { "model": "deepseek/deepseek-v4-flash" }
+      },
+      "when_to_use": "Accepted proposal package exists; next step is bounded apply plus Codex diff review",
+      "when_not_to_use": "No accepted source package; broad write approval not granted",
+      "requires_accepted_source": true,
+      "estimated_codex_saved_tokens": 20000,
+      "estimated_delegation_overhead_tokens": 12000,
+      "minimum_net_codex_saved_tokens": 12000,
+      "delegate_command_template": "python documentation/codex/model-routing/scripts/janus_delegate.py --lane execution_write_apply_candidate --workflow-id {workflow_id} --operator-choice {choice} --input-package-json {input_package_json} --accepted-source-run-dir {accepted_source_run_dir} --estimated-codex-saved-tokens 20000 --estimated-delegation-overhead-tokens 12000"
+    },
+    {
+      "task_id": "TASK-EX-003",
+      "title": "Validate execution result and claim task completion",
+      "skill": "janus-executioner",
+      "lane_id": null,
+      "pipeline_mode": "EXECUTION_VALIDATION",
+      "recommended_backend": "codex",
+      "operator_override_allowed": false,
+      "models": {
+        "codex": { "model": "5.4", "reasoning": "high" },
+        "cursor": null,
+        "openrouter": null
+      },
+      "when_to_use": "After any delegated patch; manual Janus validation remains Codex-owned",
+      "when_not_to_use": "Never delegate final completion claim"
+    }
+  ],
+  "quick_reference": {
+    "documentation_update_flow": [
+      "TASK-DU-001"
+    ],
+    "backlog_handoff_flow": [
+      "TASK-BH-001"
+    ],
+    "backlog_prioritization_flow": [
+      "TASK-BP-001"
+    ],
+    "backlog_intake_flow": [
+      "TASK-BI-001"
+    ],
+    "skill_router_flow": [
+      "TASK-SR-001"
+    ],
+    "health_check_flow": [
+      "TASK-HC-001"
+    ],
+    "feature_design_flow": [
+      "TASK-FD-001"
+    ],
+    "spec_generator_flow": [
+      "TASK-SG-001"
+    ],
+    "spec_review_flow": [
+      "TASK-SR-002"
+    ],
+    "spec_to_task_flow": [
+      "TASK-ST-001"
+    ],
+    "task_breakdown_flow": [
+      "TASK-TB-001"
+    ],
+    "debug_flow": [
+      "TASK-DBG-001",
+      "TASK-DBG-002",
+      "TASK-EX-003"
+    ],
+    "test_pipeline_flow": [
+      "TASK-TP-001",
+      "TASK-TP-002",
+      "TASK-TP-003",
+      "TASK-TP-004",
+      "TASK-TP-005",
+      "TASK-TP-006"
+    ],
+    "execution_flow": [
+      "TASK-EX-001",
+      "TASK-EX-002",
+      "TASK-EX-003"
+    ]
+  }
+}
