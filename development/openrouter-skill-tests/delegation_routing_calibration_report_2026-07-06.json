@@ -1,0 +1,1075 @@
+{
+  "generated_at": "2026-07-06T12:58:30+00:00",
+  "manifest_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\config\\delegation_routing_manifest.json",
+  "task_list_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\config\\delegation_task_list_2026-07-05.json",
+  "lane_count": 23,
+  "report_type": "delegation_routing_calibration",
+  "lane_summaries": [
+    {
+      "lane_id": "backlog_handoff_review",
+      "task_id": "TASK-BH-001",
+      "skill": "janus-backlog-handoff",
+      "recommended_backend": "openrouter",
+      "configured_prompt_estimated_or_cost": 0.00018,
+      "configured_confidence_percent": 76,
+      "minimum_net_codex_saved_tokens": 5000,
+      "estimated_delegation_overhead_tokens": 4000,
+      "sample_count": 2,
+      "observed_actual_or_cost_min": 0.00017933,
+      "observed_actual_or_cost_max": 0.00017933,
+      "observed_actual_or_cost_mean": 0.00017933,
+      "observed_actual_or_cost_median": 0.00017933,
+      "suggested_prompt_estimated_or_cost": 0.0001883,
+      "suggested_confidence_percent": 90,
+      "status": "ALIGNED",
+      "evidence_records": [
+        {
+          "workflow_id": "WF-BACKLOG-HANDOFF-EVERYDAY-OR-2026-06-28",
+          "actual_or_cost": 0.00017933,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\backlog-handoff-review-runs\\WF-BACKLOG-HANDOFF-EVERYDAY-OR-2026-06-28\\validation_summary.json"
+        },
+        {
+          "workflow_id": "WF-BACKLOG-HANDOFF-FIXTURE-CHECK-2026-06-25",
+          "actual_or_cost": 0.00017933,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\backlog-handoff-review-runs\\WF-BACKLOG-HANDOFF-FIXTURE-CHECK-2026-06-25\\validation_summary.json"
+        }
+      ]
+    },
+    {
+      "lane_id": "backlog_intake_review",
+      "task_id": "TASK-BI-001",
+      "skill": "janus-backlog-intake",
+      "recommended_backend": "openrouter",
+      "configured_prompt_estimated_or_cost": 0.00018,
+      "configured_confidence_percent": 74,
+      "minimum_net_codex_saved_tokens": 5000,
+      "estimated_delegation_overhead_tokens": 4000,
+      "sample_count": 2,
+      "observed_actual_or_cost_min": 0.00016096,
+      "observed_actual_or_cost_max": 0.00016096,
+      "observed_actual_or_cost_mean": 0.00016096,
+      "observed_actual_or_cost_median": 0.00016096,
+      "suggested_prompt_estimated_or_cost": 0.00016901,
+      "suggested_confidence_percent": 90,
+      "status": "ALIGNED",
+      "evidence_records": [
+        {
+          "workflow_id": "WF-BACKLOG-EVERYDAY-OR-2026-06-27",
+          "actual_or_cost": 0.00016096,
+          "selected_or_model": "qwen/qwen3-coder-30b-a3b-instruct",
+          "cost_estimate_confidence_percent": 74.0,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\backlog-intake-review-runs\\WF-BACKLOG-EVERYDAY-OR-2026-06-27\\operator_choice_delegated.json"
+        },
+        {
+          "workflow_id": "WF-BACKLOG-FIXTURE-CHECK-2026-06-25",
+          "actual_or_cost": 0.00016096,
+          "selected_or_model": "qwen/qwen3-coder-30b-a3b-instruct",
+          "cost_estimate_confidence_percent": 74.0,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\backlog-intake-review-runs\\WF-BACKLOG-FIXTURE-CHECK-2026-06-25\\operator_choice_delegated.json"
+        }
+      ]
+    },
+    {
+      "lane_id": "backlog_prioritization_review",
+      "task_id": "TASK-BP-001",
+      "skill": "janus-backlog-prioritization",
+      "recommended_backend": "openrouter",
+      "configured_prompt_estimated_or_cost": 0.00035,
+      "configured_confidence_percent": 78,
+      "minimum_net_codex_saved_tokens": 5000,
+      "estimated_delegation_overhead_tokens": 4000,
+      "sample_count": 2,
+      "observed_actual_or_cost_min": 0.0003101,
+      "observed_actual_or_cost_max": 0.0003101,
+      "observed_actual_or_cost_mean": 0.0003101,
+      "observed_actual_or_cost_median": 0.0003101,
+      "suggested_prompt_estimated_or_cost": 0.00032561,
+      "suggested_confidence_percent": 90,
+      "status": "ALIGNED",
+      "evidence_records": [
+        {
+          "workflow_id": "WF-BACKLOG-PRIO-EVERYDAY-OR-2026-06-27",
+          "actual_or_cost": 0.0003101,
+          "selected_or_model": "qwen/qwen3-coder-30b-a3b-instruct",
+          "cost_estimate_confidence_percent": 78.0,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\backlog-prioritization-review-runs\\WF-BACKLOG-PRIO-EVERYDAY-OR-2026-06-27\\operator_choice_delegated.json"
+        },
+        {
+          "workflow_id": "WF-BACKLOG-PRIO-FIXTURE-CHECK-2026-06-25",
+          "actual_or_cost": 0.0003101,
+          "selected_or_model": "qwen/qwen3-coder-30b-a3b-instruct",
+          "cost_estimate_confidence_percent": 78.0,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\backlog-prioritization-review-runs\\WF-BACKLOG-PRIO-FIXTURE-CHECK-2026-06-25\\operator_choice_delegated.json"
+        }
+      ]
+    },
+    {
+      "lane_id": "debug_hypothesis_review",
+      "task_id": "TASK-DBG-001",
+      "skill": "janus-debug",
+      "recommended_backend": "openrouter",
+      "configured_prompt_estimated_or_cost": 0.00048,
+      "configured_confidence_percent": 85,
+      "minimum_net_codex_saved_tokens": 5000,
+      "estimated_delegation_overhead_tokens": 4000,
+      "sample_count": 4,
+      "observed_actual_or_cost_min": 0.00045678,
+      "observed_actual_or_cost_max": 0.00045678,
+      "observed_actual_or_cost_mean": 0.00045678,
+      "observed_actual_or_cost_median": 0.00045678,
+      "suggested_prompt_estimated_or_cost": 0.00047962,
+      "suggested_confidence_percent": 90,
+      "status": "ALIGNED",
+      "evidence_records": [
+        {
+          "workflow_id": "WF-DEBUG-EVERYDAY-DELEGATED-003",
+          "actual_or_cost": 0.00045678,
+          "selected_or_model": "qwen/qwen3.5-flash-02-23",
+          "cost_estimate_confidence_percent": 81.0,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\debug-review-runs\\WF-DEBUG-EVERYDAY-DELEGATED-003\\operator_choice_delegated.json"
+        },
+        {
+          "workflow_id": "WF-DEBUG-EVERYDAY-DELEGATED-2026-06-27",
+          "actual_or_cost": 0.00045678,
+          "selected_or_model": "qwen/qwen3-coder-30b-a3b-instruct",
+          "cost_estimate_confidence_percent": 81.0,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\debug-review-runs\\WF-DEBUG-EVERYDAY-DELEGATED-2026-06-27\\operator_choice_delegated.json"
+        },
+        {
+          "workflow_id": "WF-DEBUG-EVERYDAY-DELEGATED-2026-06-29-001",
+          "actual_or_cost": 0.00045678,
+          "selected_or_model": "qwen/qwen3-coder-30b-a3b-instruct",
+          "cost_estimate_confidence_percent": 81.0,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\debug-review-runs\\WF-DEBUG-EVERYDAY-DELEGATED-2026-06-29-001\\operator_choice_delegated.json"
+        },
+        {
+          "workflow_id": "WF-DEBUG-EVERYDAY-OR-2026-06-28",
+          "actual_or_cost": 0.00045678,
+          "selected_or_model": "qwen/qwen3-coder-30b-a3b-instruct",
+          "cost_estimate_confidence_percent": 81.0,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\debug-review-runs\\WF-DEBUG-EVERYDAY-OR-2026-06-28\\operator_choice_delegated.json"
+        }
+      ]
+    },
+    {
+      "lane_id": "debug_repro_investigation",
+      "task_id": "TASK-DBG-002",
+      "skill": "janus-debug",
+      "recommended_backend": "cursor",
+      "configured_prompt_estimated_or_cost": null,
+      "configured_confidence_percent": null,
+      "minimum_net_codex_saved_tokens": 8000,
+      "estimated_delegation_overhead_tokens": 10000,
+      "sample_count": 0,
+      "observed_actual_or_cost_min": null,
+      "observed_actual_or_cost_max": null,
+      "observed_actual_or_cost_mean": null,
+      "observed_actual_or_cost_median": null,
+      "suggested_prompt_estimated_or_cost": null,
+      "suggested_confidence_percent": null,
+      "status": "NO_EVIDENCE",
+      "evidence_records": []
+    },
+    {
+      "lane_id": "diamond_retest_audit",
+      "task_id": "TASK-TP-006",
+      "skill": "janus-test-pipeline",
+      "recommended_backend": "codex",
+      "configured_prompt_estimated_or_cost": null,
+      "configured_confidence_percent": null,
+      "minimum_net_codex_saved_tokens": 0,
+      "estimated_delegation_overhead_tokens": 0,
+      "sample_count": 0,
+      "observed_actual_or_cost_min": null,
+      "observed_actual_or_cost_max": null,
+      "observed_actual_or_cost_mean": null,
+      "observed_actual_or_cost_median": null,
+      "suggested_prompt_estimated_or_cost": null,
+      "suggested_confidence_percent": null,
+      "status": "NO_EVIDENCE",
+      "evidence_records": []
+    },
+    {
+      "lane_id": "documentation_draft_review",
+      "task_id": "TASK-DU-001",
+      "skill": "janus-documentation-update",
+      "recommended_backend": "openrouter",
+      "configured_prompt_estimated_or_cost": 0.0,
+      "configured_confidence_percent": 60,
+      "minimum_net_codex_saved_tokens": 3000,
+      "estimated_delegation_overhead_tokens": 4000,
+      "sample_count": 0,
+      "observed_actual_or_cost_min": null,
+      "observed_actual_or_cost_max": null,
+      "observed_actual_or_cost_mean": null,
+      "observed_actual_or_cost_median": null,
+      "suggested_prompt_estimated_or_cost": null,
+      "suggested_confidence_percent": 60,
+      "status": "NO_EVIDENCE",
+      "evidence_records": []
+    },
+    {
+      "lane_id": "execution_patch_candidate",
+      "task_id": "TASK-EX-001",
+      "skill": "janus-executioner",
+      "recommended_backend": "cursor",
+      "configured_prompt_estimated_or_cost": null,
+      "configured_confidence_percent": null,
+      "minimum_net_codex_saved_tokens": 10000,
+      "estimated_delegation_overhead_tokens": 10000,
+      "sample_count": 60,
+      "observed_actual_or_cost_min": 0.00016867,
+      "observed_actual_or_cost_max": 0.0810794,
+      "observed_actual_or_cost_mean": 0.00424574,
+      "observed_actual_or_cost_median": 0.00056197,
+      "suggested_prompt_estimated_or_cost": 0.00467031,
+      "suggested_confidence_percent": 60,
+      "status": "HIGH_VARIANCE_REVIEW_SCOPE",
+      "evidence_records": [
+        {
+          "workflow_id": "WF-EXEC-EVERYDAY-OR-2026-06-27",
+          "actual_or_cost": 0.00063384,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": 87.0,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\bounded-dispatch-runs\\WF-EXEC-EVERYDAY-OR-2026-06-27\\dispatcher_result.json"
+        },
+        {
+          "workflow_id": "WF-EXEC-EVERYDAY-OR-2026-06-28",
+          "actual_or_cost": 0.00063384,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": 87.0,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\bounded-dispatch-runs\\WF-EXEC-EVERYDAY-OR-2026-06-28\\dispatcher_result.json"
+        },
+        {
+          "workflow_id": "BACKLOG-116-EXECUTION-OR-001",
+          "actual_or_cost": 0.00097661,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\BACKLOG-116-EXECUTION-OR-001\\validation_summary.json"
+        },
+        {
+          "workflow_id": "DEV-WORKHORSE-EXECUTION-GATE-001",
+          "actual_or_cost": 0.000168672,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DEV-WORKHORSE-EXECUTION-GATE-001\\validation_summary.json"
+        },
+        {
+          "workflow_id": "DEV-WORKHORSE-EXECUTION-GATE-002",
+          "actual_or_cost": 0.00075572,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DEV-WORKHORSE-EXECUTION-GATE-002\\validation_summary.json"
+        },
+        {
+          "workflow_id": "DEV-WORKHORSE-EXECUTION-GATE-003",
+          "actual_or_cost": 0.00047768,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DEV-WORKHORSE-EXECUTION-GATE-003\\validation_summary.json"
+        },
+        {
+          "workflow_id": "DIRECT-OR-DEEPSEEK-EXECUTION-CURRENT-SHAPE-007",
+          "actual_or_cost": 0.001080891,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DIRECT-OR-DEEPSEEK-EXECUTION-CURRENT-SHAPE-007\\validation_summary.json"
+        },
+        {
+          "workflow_id": "DIRECT-OR-DEEPSEEK-EXECUTION-HARDEN-FIXTURE-001",
+          "actual_or_cost": 0.0002114,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DIRECT-OR-DEEPSEEK-EXECUTION-HARDEN-FIXTURE-001\\validation_summary.json"
+        },
+        {
+          "workflow_id": "DIRECT-OR-DEEPSEEK-EXECUTION-LIVE-001",
+          "actual_or_cost": 0.000471744,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DIRECT-OR-DEEPSEEK-EXECUTION-LIVE-001\\validation_summary.json"
+        },
+        {
+          "workflow_id": "DIRECT-OR-DEEPSEEK-EXECUTION-LIVE-002",
+          "actual_or_cost": 0.00073542,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DIRECT-OR-DEEPSEEK-EXECUTION-LIVE-002\\validation_summary.json"
+        },
+        {
+          "workflow_id": "DIRECT-OR-DEEPSEEK-EXECUTION-LIVE-003",
+          "actual_or_cost": 0.00048402,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DIRECT-OR-DEEPSEEK-EXECUTION-LIVE-003\\validation_summary.json"
+        },
+        {
+          "workflow_id": "DIRECT-OR-DEEPSEEK-EXECUTION-LIVE-004",
+          "actual_or_cost": 0.0007378,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DIRECT-OR-DEEPSEEK-EXECUTION-LIVE-004\\validation_summary.json"
+        },
+        {
+          "workflow_id": "DIRECT-OR-DEEPSEEK-EXECUTION-LIVE-005",
+          "actual_or_cost": 0.0005986541,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DIRECT-OR-DEEPSEEK-EXECUTION-LIVE-005\\validation_summary.json"
+        },
+        {
+          "workflow_id": "DIRECT-OR-DEEPSEEK-EXECUTION-LIVE-006",
+          "actual_or_cost": 0.00039312,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DIRECT-OR-DEEPSEEK-EXECUTION-LIVE-006\\validation_summary.json"
+        },
+        {
+          "workflow_id": "DIRECT-OR-DEEPSEEK-EXECUTION-NORMALIZE-FIXTURE-001",
+          "actual_or_cost": 0.0002114,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DIRECT-OR-DEEPSEEK-EXECUTION-NORMALIZE-FIXTURE-001\\validation_summary.json"
+        },
+        {
+          "workflow_id": "DIRECT-OR-DEEPSEEK-EXECUTION-POST-WRITE-008",
+          "actual_or_cost": 0.00063384,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DIRECT-OR-DEEPSEEK-EXECUTION-POST-WRITE-008\\validation_summary.json"
+        },
+        {
+          "workflow_id": "DIRECT-OR-DEEPSEEK-EXECUTION-REDESIGN-FIXTURE-001",
+          "actual_or_cost": 0.0002114,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DIRECT-OR-DEEPSEEK-EXECUTION-REDESIGN-FIXTURE-001\\validation_summary.json"
+        },
+        {
+          "workflow_id": "DIRECT-OR-DEEPSEEK-EXECUTION-REDESIGN-FIXTURE-002",
+          "actual_or_cost": 0.0002114,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DIRECT-OR-DEEPSEEK-EXECUTION-REDESIGN-FIXTURE-002\\validation_summary.json"
+        },
+        {
+          "workflow_id": "DIRECT-OR-EXECUTION-DISPATCH-FIXTURE-001",
+          "actual_or_cost": 0.0002114,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DIRECT-OR-EXECUTION-DISPATCH-FIXTURE-001\\validation_summary.json"
+        },
+        {
+          "workflow_id": "DIRECT-OR-EXECUTION-DISPATCH-LIVE-002",
+          "actual_or_cost": 0.0,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DIRECT-OR-EXECUTION-DISPATCH-LIVE-002\\validation_summary.json"
+        },
+        {
+          "workflow_id": "DIRECT-OR-EXECUTION-FIXTURE-001",
+          "actual_or_cost": 0.0002114,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DIRECT-OR-EXECUTION-FIXTURE-001\\validation_summary.json"
+        },
+        {
+          "workflow_id": "DIRECT-OR-EXECUTION-FIXTURE-TIMEOUT-HARDEN-001",
+          "actual_or_cost": 0.0002114,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DIRECT-OR-EXECUTION-FIXTURE-TIMEOUT-HARDEN-001\\validation_summary.json"
+        },
+        {
+          "workflow_id": "DIRECT-OR-QWEN-EXECUTION-FIXTURE-003",
+          "actual_or_cost": 0.00041862,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DIRECT-OR-QWEN-EXECUTION-FIXTURE-003\\validation_summary.json"
+        },
+        {
+          "workflow_id": "DIRECT-OR-QWEN-EXECUTION-LIVE-001",
+          "actual_or_cost": 0.005427825,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DIRECT-OR-QWEN-EXECUTION-LIVE-001\\validation_summary.json"
+        },
+        {
+          "workflow_id": "DIRECT-OR-WAVE1-DEEPSEEK-V4FLASH-001",
+          "actual_or_cost": 0.00018936,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DIRECT-OR-WAVE1-DEEPSEEK-V4FLASH-001\\validation_summary.json"
+        },
+        {
+          "workflow_id": "DIRECT-OR-WAVE1-GLM52-001",
+          "actual_or_cost": 0.0810794,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DIRECT-OR-WAVE1-GLM52-001\\validation_summary.json"
+        },
+        {
+          "workflow_id": "DIRECT-OR-WAVE1-GPT53-CODEX-LIVE-RETRY-001",
+          "actual_or_cost": 0.02699375,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DIRECT-OR-WAVE1-GPT53-CODEX-LIVE-RETRY-001\\validation_summary.json"
+        },
+        {
+          "workflow_id": "DIRECT-OR-WAVE1-GPT53-CODEX-SCHEMA-FIX-FIXTURE-001",
+          "actual_or_cost": 0.0002114,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DIRECT-OR-WAVE1-GPT53-CODEX-SCHEMA-FIX-FIXTURE-001\\validation_summary.json"
+        },
+        {
+          "workflow_id": "DIRECT-OR-WAVE1-GPT53-CODEX-SCHEMA-FIX-FIXTURE-002",
+          "actual_or_cost": 0.0002114,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DIRECT-OR-WAVE1-GPT53-CODEX-SCHEMA-FIX-FIXTURE-002\\validation_summary.json"
+        },
+        {
+          "workflow_id": "EXEC-PATCH-CURRENT-SHAPE-001",
+          "actual_or_cost": 0.0004150784,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\EXEC-PATCH-CURRENT-SHAPE-001\\validation_summary.json"
+        },
+        {
+          "workflow_id": "EXEC-PATCH-CURRENT-SHAPE-CONTRACT-001",
+          "actual_or_cost": 0.0002114,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\EXEC-PATCH-CURRENT-SHAPE-CONTRACT-001\\validation_summary.json"
+        },
+        {
+          "workflow_id": "EXEC-PATCH-CURRENT-SHAPE-LIVE-002",
+          "actual_or_cost": 0.0010171,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\EXEC-PATCH-CURRENT-SHAPE-LIVE-002\\validation_summary.json"
+        },
+        {
+          "workflow_id": "EXEC-PATCH-CURRENT-SHAPE-SIGNATURE-CONTRACT-001",
+          "actual_or_cost": 0.0002114,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\EXEC-PATCH-CURRENT-SHAPE-SIGNATURE-CONTRACT-001\\validation_summary.json"
+        },
+        {
+          "workflow_id": "EXEC-PATCH-EXACT-CONTEXT-CLEANED-FIXTURE-001",
+          "actual_or_cost": 0.0002114,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\EXEC-PATCH-EXACT-CONTEXT-CLEANED-FIXTURE-001\\validation_summary.json"
+        },
+        {
+          "workflow_id": "EXEC-PATCH-EXACT-CONTEXT-CONTRACT-001",
+          "actual_or_cost": 0.0002114,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\EXEC-PATCH-EXACT-CONTEXT-CONTRACT-001\\validation_summary.json"
+        },
+        {
+          "workflow_id": "EXEC-PATCH-EXACT-CONTEXT-LIVE-004",
+          "actual_or_cost": 0.00031797,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\EXEC-PATCH-EXACT-CONTEXT-LIVE-004\\validation_summary.json"
+        },
+        {
+          "workflow_id": "EXEC-PATCH-EXACT-CONTEXT-LIVE-005",
+          "actual_or_cost": 0.000977417,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\EXEC-PATCH-EXACT-CONTEXT-LIVE-005\\validation_summary.json"
+        },
+        {
+          "workflow_id": "EXEC-PATCH-SIGNATURE-AWARE-LIVE-003",
+          "actual_or_cost": 0.00037287,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\EXEC-PATCH-SIGNATURE-AWARE-LIVE-003\\validation_summary.json"
+        },
+        {
+          "workflow_id": "LEAN-EXEC-deepseek-deepseek-v4-flash",
+          "actual_or_cost": 0.00052528,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\LEAN-EXEC-deepseek-deepseek-v4-flash\\validation_summary.json"
+        },
+        {
+          "workflow_id": "LEAN-EXEC-moonshotai-kimi-k2.5",
+          "actual_or_cost": 0.00947481,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\LEAN-EXEC-moonshotai-kimi-k2.5\\validation_summary.json"
+        },
+        {
+          "workflow_id": "LEAN-EXEC-qwen-qwen3-coder-30b-a3b-instruct",
+          "actual_or_cost": 0.00045318,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\LEAN-EXEC-qwen-qwen3-coder-30b-a3b-instruct\\validation_summary.json"
+        },
+        {
+          "workflow_id": "LEAN-EXEC-qwen-qwen3.5-flash-02-23",
+          "actual_or_cost": 0.001348035,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\LEAN-EXEC-qwen-qwen3.5-flash-02-23\\validation_summary.json"
+        },
+        {
+          "workflow_id": "LEAN-EXEC-z-ai-glm-4.7-flash",
+          "actual_or_cost": 0.000679125,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\LEAN-EXEC-z-ai-glm-4.7-flash\\validation_summary.json"
+        },
+        {
+          "workflow_id": "LIVE-HARNESS-EXECUTION-OR-001",
+          "actual_or_cost": 0.0072798,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\LIVE-HARNESS-EXECUTION-OR-001\\validation_summary.json"
+        },
+        {
+          "workflow_id": "LIVE-HARNESS-EXECUTION-OR-002",
+          "actual_or_cost": 0.006237,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\LIVE-HARNESS-EXECUTION-OR-002\\validation_summary.json"
+        },
+        {
+          "workflow_id": "LIVE-HARNESS-EXECUTION-OR-003",
+          "actual_or_cost": 0.00607275,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\LIVE-HARNESS-EXECUTION-OR-003\\validation_summary.json"
+        },
+        {
+          "workflow_id": "LIVE-HARNESS-EXECUTION-OR-004",
+          "actual_or_cost": 0.005778,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\LIVE-HARNESS-EXECUTION-OR-004\\validation_summary.json"
+        },
+        {
+          "workflow_id": "TASK-SPEC28.1-EXECUTION-OR-001",
+          "actual_or_cost": 0.05054355,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\TASK-SPEC28.1-EXECUTION-OR-001\\validation_summary.json"
+        },
+        {
+          "workflow_id": "TASK-SPEC28.1-EXECUTION-OR-002",
+          "actual_or_cost": 0.0080658,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\TASK-SPEC28.1-EXECUTION-OR-002\\validation_summary.json"
+        },
+        {
+          "workflow_id": "TASK-SPEC28.1-EXECUTION-OR-003",
+          "actual_or_cost": 0.0225945,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\TASK-SPEC28.1-EXECUTION-OR-003\\validation_summary.json"
+        },
+        {
+          "workflow_id": "WF-B113-EVERYDAY-OR-EP-001",
+          "actual_or_cost": 0.00063384,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\WF-B113-EVERYDAY-OR-EP-001\\validation_summary.json"
+        },
+        {
+          "workflow_id": "WF-BACKLOG-108-EXEC-OR-GATE-2026-06-28-001",
+          "actual_or_cost": 0.00035266,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\WF-BACKLOG-108-EXEC-OR-GATE-2026-06-28-001\\validation_summary.json"
+        },
+        {
+          "workflow_id": "WF-BACKLOG-115-EXEC-GATE-2026-06-30-001",
+          "actual_or_cost": 0.00033592,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\WF-BACKLOG-115-EXEC-GATE-2026-06-30-001\\validation_summary.json"
+        },
+        {
+          "workflow_id": "WF-EXEC-EVERYDAY-OR-2026-06-27",
+          "actual_or_cost": 0.00063384,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\WF-EXEC-EVERYDAY-OR-2026-06-27\\validation_summary.json"
+        },
+        {
+          "workflow_id": "WF-EXEC-EVERYDAY-OR-2026-06-28",
+          "actual_or_cost": 0.00063384,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\WF-EXEC-EVERYDAY-OR-2026-06-28\\validation_summary.json"
+        },
+        {
+          "workflow_id": "WF-EXEC-EVERYDAY-OR-2026-06-28-002",
+          "actual_or_cost": 0.00037007,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\WF-EXEC-EVERYDAY-OR-2026-06-28-002\\validation_summary.json"
+        },
+        {
+          "workflow_id": "WF-OPENROUTER-LIVE-SMOKE-002",
+          "actual_or_cost": 0.000443324,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\WF-OPENROUTER-LIVE-SMOKE-002\\validation_summary.json"
+        },
+        {
+          "workflow_id": "WF-OPENROUTER-LIVE-SMOKE-003",
+          "actual_or_cost": 0.000860832,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\WF-OPENROUTER-LIVE-SMOKE-003\\validation_summary.json"
+        },
+        {
+          "workflow_id": "WF-OPENROUTER-LIVE-SMOKE-004",
+          "actual_or_cost": 0.00184338,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\WF-OPENROUTER-LIVE-SMOKE-004\\validation_summary.json"
+        },
+        {
+          "workflow_id": "WF-SPEC25-CURR-OR-EP-001",
+          "actual_or_cost": 0.0002114,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\WF-SPEC25-CURR-OR-EP-001\\validation_summary.json"
+        },
+        {
+          "workflow_id": "WF-SPEC25-CURR-OR-EP-002",
+          "actual_or_cost": 0.00063384,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\WF-SPEC25-CURR-OR-EP-002\\validation_summary.json"
+        }
+      ]
+    },
+    {
+      "lane_id": "execution_write_apply_candidate",
+      "task_id": "TASK-EX-002",
+      "skill": "janus-executioner",
+      "recommended_backend": "cursor",
+      "configured_prompt_estimated_or_cost": null,
+      "configured_confidence_percent": null,
+      "minimum_net_codex_saved_tokens": 12000,
+      "estimated_delegation_overhead_tokens": 12000,
+      "sample_count": 0,
+      "observed_actual_or_cost_min": null,
+      "observed_actual_or_cost_max": null,
+      "observed_actual_or_cost_mean": null,
+      "observed_actual_or_cost_median": null,
+      "suggested_prompt_estimated_or_cost": null,
+      "suggested_confidence_percent": null,
+      "status": "NO_EVIDENCE",
+      "evidence_records": []
+    },
+    {
+      "lane_id": "feature_design_review",
+      "task_id": "TASK-FD-001",
+      "skill": "janus-feature-design",
+      "recommended_backend": "openrouter",
+      "configured_prompt_estimated_or_cost": 0.00024,
+      "configured_confidence_percent": 68,
+      "minimum_net_codex_saved_tokens": 5000,
+      "estimated_delegation_overhead_tokens": 4000,
+      "sample_count": 0,
+      "observed_actual_or_cost_min": null,
+      "observed_actual_or_cost_max": null,
+      "observed_actual_or_cost_mean": null,
+      "observed_actual_or_cost_median": null,
+      "suggested_prompt_estimated_or_cost": null,
+      "suggested_confidence_percent": 68,
+      "status": "NO_EVIDENCE",
+      "evidence_records": []
+    },
+    {
+      "lane_id": "generator_review",
+      "task_id": "TASK-TP-002",
+      "skill": "janus-test-pipeline",
+      "recommended_backend": "openrouter",
+      "configured_prompt_estimated_or_cost": null,
+      "configured_confidence_percent": null,
+      "minimum_net_codex_saved_tokens": 3000,
+      "estimated_delegation_overhead_tokens": 4000,
+      "sample_count": 0,
+      "observed_actual_or_cost_min": null,
+      "observed_actual_or_cost_max": null,
+      "observed_actual_or_cost_mean": null,
+      "observed_actual_or_cost_median": null,
+      "suggested_prompt_estimated_or_cost": null,
+      "suggested_confidence_percent": null,
+      "status": "NO_EVIDENCE",
+      "evidence_records": []
+    },
+    {
+      "lane_id": "health_check_review",
+      "task_id": "TASK-HC-001",
+      "skill": "janus-health-check",
+      "recommended_backend": "openrouter",
+      "configured_prompt_estimated_or_cost": 0.00016,
+      "configured_confidence_percent": 69,
+      "minimum_net_codex_saved_tokens": 5000,
+      "estimated_delegation_overhead_tokens": 4000,
+      "sample_count": 0,
+      "observed_actual_or_cost_min": null,
+      "observed_actual_or_cost_max": null,
+      "observed_actual_or_cost_mean": null,
+      "observed_actual_or_cost_median": null,
+      "suggested_prompt_estimated_or_cost": null,
+      "suggested_confidence_percent": 69,
+      "status": "NO_EVIDENCE",
+      "evidence_records": []
+    },
+    {
+      "lane_id": "live_test_execution",
+      "task_id": "TASK-TP-004",
+      "skill": "janus-test-pipeline",
+      "recommended_backend": "codex",
+      "configured_prompt_estimated_or_cost": null,
+      "configured_confidence_percent": null,
+      "minimum_net_codex_saved_tokens": 0,
+      "estimated_delegation_overhead_tokens": 0,
+      "sample_count": 0,
+      "observed_actual_or_cost_min": null,
+      "observed_actual_or_cost_max": null,
+      "observed_actual_or_cost_mean": null,
+      "observed_actual_or_cost_median": null,
+      "suggested_prompt_estimated_or_cost": null,
+      "suggested_confidence_percent": null,
+      "status": "NO_EVIDENCE",
+      "evidence_records": []
+    },
+    {
+      "lane_id": "precheck_review",
+      "task_id": "TASK-PC-001",
+      "skill": "janus-preimplementation-check",
+      "recommended_backend": "openrouter",
+      "configured_prompt_estimated_or_cost": 0.00012,
+      "configured_confidence_percent": 82,
+      "minimum_net_codex_saved_tokens": 5000,
+      "estimated_delegation_overhead_tokens": 4000,
+      "sample_count": 2,
+      "observed_actual_or_cost_min": 9.588e-05,
+      "observed_actual_or_cost_max": 9.597e-05,
+      "observed_actual_or_cost_mean": 9.593e-05,
+      "observed_actual_or_cost_median": 9.593e-05,
+      "suggested_prompt_estimated_or_cost": 0.00010077,
+      "suggested_confidence_percent": 85,
+      "status": "ALIGNED",
+      "evidence_records": [
+        {
+          "workflow_id": "WF-PRECHECK-FIXTURE-CHECK-2026-06-25",
+          "actual_or_cost": 9.588e-05,
+          "selected_or_model": "qwen/qwen3-coder-30b-a3b-instruct",
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\precheck-review-runs\\WF-PRECHECK-FIXTURE-CHECK-2026-06-25\\response_summary.json"
+        },
+        {
+          "workflow_id": "WF-PRECHECK-REVIEW-LIVE-PROD-2026-07-05-001",
+          "actual_or_cost": 9.597e-05,
+          "selected_or_model": "qwen/qwen3-coder-30b-a3b-instruct",
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\precheck-review-runs\\WF-PRECHECK-REVIEW-LIVE-PROD-2026-07-05-001\\response_summary.json"
+        }
+      ]
+    },
+    {
+      "lane_id": "quickchange_patch_review",
+      "task_id": "TASK-QC-001",
+      "skill": "janus-quickchange",
+      "recommended_backend": "openrouter",
+      "configured_prompt_estimated_or_cost": 0.00013,
+      "configured_confidence_percent": 65,
+      "minimum_net_codex_saved_tokens": 3000,
+      "estimated_delegation_overhead_tokens": 4000,
+      "sample_count": 1,
+      "observed_actual_or_cost_min": 0.00011984,
+      "observed_actual_or_cost_max": 0.00011984,
+      "observed_actual_or_cost_mean": 0.00011984,
+      "observed_actual_or_cost_median": 0.00011984,
+      "suggested_prompt_estimated_or_cost": 0.00012583,
+      "suggested_confidence_percent": 65,
+      "status": "ALIGNED",
+      "evidence_records": [
+        {
+          "workflow_id": "BOUNDED-QUICKCHANGE-OR-LIVE-001",
+          "actual_or_cost": 0.00011984,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": 68.0,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\direct-or-runs\\BOUNDED-QUICKCHANGE-OR-LIVE-001\\operator_summary.json"
+        }
+      ]
+    },
+    {
+      "lane_id": "skill_router_review",
+      "task_id": "TASK-SR-001",
+      "skill": "janus-skill-router",
+      "recommended_backend": "openrouter",
+      "configured_prompt_estimated_or_cost": 0.00018,
+      "configured_confidence_percent": 70,
+      "minimum_net_codex_saved_tokens": 5000,
+      "estimated_delegation_overhead_tokens": 4000,
+      "sample_count": 0,
+      "observed_actual_or_cost_min": null,
+      "observed_actual_or_cost_max": null,
+      "observed_actual_or_cost_mean": null,
+      "observed_actual_or_cost_median": null,
+      "suggested_prompt_estimated_or_cost": null,
+      "suggested_confidence_percent": 70,
+      "status": "NO_EVIDENCE",
+      "evidence_records": []
+    },
+    {
+      "lane_id": "spec_generator_review",
+      "task_id": "TASK-SG-001",
+      "skill": "janus-spec-generator",
+      "recommended_backend": "openrouter",
+      "configured_prompt_estimated_or_cost": 0.00027,
+      "configured_confidence_percent": 70,
+      "minimum_net_codex_saved_tokens": 5000,
+      "estimated_delegation_overhead_tokens": 4000,
+      "sample_count": 3,
+      "observed_actual_or_cost_min": 0.00071,
+      "observed_actual_or_cost_max": 0.00071,
+      "observed_actual_or_cost_mean": 0.00071,
+      "observed_actual_or_cost_median": 0.00071,
+      "suggested_prompt_estimated_or_cost": 0.0007455,
+      "suggested_confidence_percent": 85,
+      "status": "UNDER_ESTIMATED",
+      "evidence_records": [
+        {
+          "workflow_id": "WF-SPEC-GEN-CURRENT-002",
+          "actual_or_cost": 0.00071,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\spec-generator-review-runs\\WF-SPEC-GEN-CURRENT-002\\validation_summary.json"
+        },
+        {
+          "workflow_id": "WF-SPEC-GEN-LIVE-FIXTURE-2026-06-26",
+          "actual_or_cost": 0.00071,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\spec-generator-review-runs\\WF-SPEC-GEN-LIVE-FIXTURE-2026-06-26\\validation_summary.json"
+        },
+        {
+          "workflow_id": "WF-SPEC-GEN-STRUCTURED-FIXTURE-2026-06-26",
+          "actual_or_cost": 0.00071,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\spec-generator-review-runs\\WF-SPEC-GEN-STRUCTURED-FIXTURE-2026-06-26\\validation_summary.json"
+        }
+      ]
+    },
+    {
+      "lane_id": "spec_normalizer_review",
+      "task_id": "TASK-SN-001",
+      "skill": "janus-spec-normalizer",
+      "recommended_backend": "openrouter",
+      "configured_prompt_estimated_or_cost": 0.00022,
+      "configured_confidence_percent": 78,
+      "minimum_net_codex_saved_tokens": 5000,
+      "estimated_delegation_overhead_tokens": 4000,
+      "sample_count": 4,
+      "observed_actual_or_cost_min": 0.00018797,
+      "observed_actual_or_cost_max": 0.00018921,
+      "observed_actual_or_cost_mean": 0.0001889,
+      "observed_actual_or_cost_median": 0.00018921,
+      "suggested_prompt_estimated_or_cost": 0.00019867,
+      "suggested_confidence_percent": 85,
+      "status": "ALIGNED",
+      "evidence_records": [
+        {
+          "workflow_id": "WF-SPEC-NORMALIZER-LIVE-2026-06-26",
+          "actual_or_cost": 0.00018921,
+          "selected_or_model": "qwen/qwen3-coder-30b-a3b-instruct",
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\spec-normalizer-runs\\WF-SPEC-NORMALIZER-LIVE-2026-06-26\\response_summary.json"
+        },
+        {
+          "workflow_id": "WF-SPEC-NORMALIZER-LIVE-PROD-2026-07-05-001",
+          "actual_or_cost": 0.00018797,
+          "selected_or_model": "qwen/qwen3-coder-30b-a3b-instruct",
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\spec-normalizer-runs\\WF-SPEC-NORMALIZER-LIVE-PROD-2026-07-05-001\\response_summary.json"
+        },
+        {
+          "workflow_id": "WF-SPEC-NORMALIZER-LIVE-REPEAT-2026-06-26",
+          "actual_or_cost": 0.00018921,
+          "selected_or_model": "qwen/qwen3-coder-30b-a3b-instruct",
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\spec-normalizer-runs\\WF-SPEC-NORMALIZER-LIVE-REPEAT-2026-06-26\\response_summary.json"
+        },
+        {
+          "workflow_id": "WF-SPEC-NORMALIZER-REAL-LIFE-2026-06-28-001",
+          "actual_or_cost": 0.00018921,
+          "selected_or_model": "qwen/qwen3-coder-30b-a3b-instruct",
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\spec-normalizer-runs\\WF-SPEC-NORMALIZER-REAL-LIFE-2026-06-28-001\\response_summary.json"
+        }
+      ]
+    },
+    {
+      "lane_id": "spec_review",
+      "task_id": "TASK-SR-002",
+      "skill": "janus-spec-review",
+      "recommended_backend": "openrouter",
+      "configured_prompt_estimated_or_cost": 0.00075,
+      "configured_confidence_percent": 55,
+      "minimum_net_codex_saved_tokens": 8000,
+      "estimated_delegation_overhead_tokens": 4000,
+      "sample_count": 2,
+      "observed_actual_or_cost_min": 0.00015036,
+      "observed_actual_or_cost_max": 0.00071341,
+      "observed_actual_or_cost_mean": 0.00043188,
+      "observed_actual_or_cost_median": 0.00043188,
+      "suggested_prompt_estimated_or_cost": 0.00074908,
+      "suggested_confidence_percent": 60,
+      "status": "ALIGNED",
+      "evidence_records": [
+        {
+          "workflow_id": "WF-SPEC-REVIEW-FIXTURE-CHECK-2026-06-25",
+          "actual_or_cost": 0.00015036,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\spec-review-runs\\WF-SPEC-REVIEW-FIXTURE-CHECK-2026-06-25\\validation_summary.json"
+        },
+        {
+          "workflow_id": "WF-SPEC-REVIEW-LIVE-PROD-2026-07-05-001",
+          "actual_or_cost": 0.0007134075,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\spec-review-runs\\WF-SPEC-REVIEW-LIVE-PROD-2026-07-05-001\\validation_summary.json"
+        }
+      ]
+    },
+    {
+      "lane_id": "spec_to_task_review",
+      "task_id": "TASK-ST-001",
+      "skill": "janus-spec-to-task",
+      "recommended_backend": "openrouter",
+      "configured_prompt_estimated_or_cost": 0.00037,
+      "configured_confidence_percent": 74,
+      "minimum_net_codex_saved_tokens": 5000,
+      "estimated_delegation_overhead_tokens": 4000,
+      "sample_count": 1,
+      "observed_actual_or_cost_min": 0.00068685,
+      "observed_actual_or_cost_max": 0.00068685,
+      "observed_actual_or_cost_mean": 0.00068685,
+      "observed_actual_or_cost_median": 0.00068685,
+      "suggested_prompt_estimated_or_cost": 0.00072119,
+      "suggested_confidence_percent": 74,
+      "status": "UNDER_ESTIMATED",
+      "evidence_records": [
+        {
+          "workflow_id": "WF-SPEC-TO-TASK-FIXTURE-CHECK-2026-06-26",
+          "actual_or_cost": 0.00068685,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\spec-to-task-runs\\WF-SPEC-TO-TASK-FIXTURE-CHECK-2026-06-26\\validation_summary.json"
+        }
+      ]
+    },
+    {
+      "lane_id": "task_breakdown_review",
+      "task_id": "TASK-TB-001",
+      "skill": "janus-task-breakdown",
+      "recommended_backend": "openrouter",
+      "configured_prompt_estimated_or_cost": 0.00018,
+      "configured_confidence_percent": 75,
+      "minimum_net_codex_saved_tokens": 5000,
+      "estimated_delegation_overhead_tokens": 4000,
+      "sample_count": 2,
+      "observed_actual_or_cost_min": 0.00017092,
+      "observed_actual_or_cost_max": 0.00017493,
+      "observed_actual_or_cost_mean": 0.00017292,
+      "observed_actual_or_cost_median": 0.00017292,
+      "suggested_prompt_estimated_or_cost": 0.00018368,
+      "suggested_confidence_percent": 90,
+      "status": "ALIGNED",
+      "evidence_records": [
+        {
+          "workflow_id": "WF-TASK-BREAKDOWN-FIXTURE-CHECK-2026-06-26",
+          "actual_or_cost": 0.00017092,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\task-breakdown-runs\\WF-TASK-BREAKDOWN-FIXTURE-CHECK-2026-06-26\\validation_summary.json"
+        },
+        {
+          "workflow_id": "WF-TASK-BREAKDOWN-REAL-LIFE-2026-06-28-001",
+          "actual_or_cost": 0.00017493,
+          "selected_or_model": null,
+          "cost_estimate_confidence_percent": null,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\task-breakdown-runs\\WF-TASK-BREAKDOWN-REAL-LIFE-2026-06-28-001\\validation_summary.json"
+        }
+      ]
+    },
+    {
+      "lane_id": "test_fixture_worker",
+      "task_id": "TASK-TP-003",
+      "skill": "janus-test-pipeline",
+      "recommended_backend": "cursor",
+      "configured_prompt_estimated_or_cost": null,
+      "configured_confidence_percent": null,
+      "minimum_net_codex_saved_tokens": 8000,
+      "estimated_delegation_overhead_tokens": 10000,
+      "sample_count": 0,
+      "observed_actual_or_cost_min": null,
+      "observed_actual_or_cost_max": null,
+      "observed_actual_or_cost_mean": null,
+      "observed_actual_or_cost_median": null,
+      "suggested_prompt_estimated_or_cost": null,
+      "suggested_confidence_percent": null,
+      "status": "NO_EVIDENCE",
+      "evidence_records": []
+    },
+    {
+      "lane_id": "test_result_triage_review",
+      "task_id": "TASK-TP-005",
+      "skill": "janus-test-pipeline",
+      "recommended_backend": "openrouter",
+      "configured_prompt_estimated_or_cost": 0.00031,
+      "configured_confidence_percent": 90,
+      "minimum_net_codex_saved_tokens": 8000,
+      "estimated_delegation_overhead_tokens": 4000,
+      "sample_count": 2,
+      "observed_actual_or_cost_min": 0.00028765,
+      "observed_actual_or_cost_max": 0.00028765,
+      "observed_actual_or_cost_mean": 0.00028765,
+      "observed_actual_or_cost_median": 0.00028765,
+      "suggested_prompt_estimated_or_cost": 0.00030203,
+      "suggested_confidence_percent": 90,
+      "status": "ALIGNED",
+      "evidence_records": [
+        {
+          "workflow_id": "WF-TRIAGE-EVERYDAY-DELEGATED-003",
+          "actual_or_cost": 0.00028765,
+          "selected_or_model": "openai/gpt-oss-20b",
+          "cost_estimate_confidence_percent": 79.0,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\test-triage-runs\\WF-TRIAGE-EVERYDAY-DELEGATED-003\\operator_choice_delegated.json"
+        },
+        {
+          "workflow_id": "WF-TRIAGE-EVERYDAY-DELEGATED-2026-06-29-001",
+          "actual_or_cost": 0.00028765,
+          "selected_or_model": "qwen/qwen3-coder-30b-a3b-instruct",
+          "cost_estimate_confidence_percent": 79.0,
+          "source_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\test-triage-runs\\WF-TRIAGE-EVERYDAY-DELEGATED-2026-06-29-001\\operator_choice_delegated.json"
+        }
+      ]
+    }
+  ]
+}

@@ -9980,6 +9980,166 @@ Next recommended step for ChatGPT: summarize this as "new live Janus bug: cross-
 Next recommended step for Codex: run `janus-backlog-prioritization` for `BACKLOG-119` with `5.4` and medium reasoning, then decide whether it should move straight to selected handoff or sit behind the current in-progress contact/memory work.
 
 Last updated: `2026-07-02 00:11:59 +02:00`.
+## Current Snapshot Update
+As of `2026-07-06`, the OR routing work now has a repeatable local calibration surface instead of relying on memory and scattered run folders. A new helper at `documentation/codex/model-routing/scripts/delegation_routing_calibration.py` reads the current tri-modal manifest and task list, scans only bounded local routing-evidence paths, and renders JSON plus Markdown reports showing configured estimates, observed actual costs, and non-binding suggested adjustments per lane.
+
+Current goal: use a deterministic local calibration helper to decide the next small routing-default follow-up before spending more OR test budget.
+
+Active phase: `janus-executioner`, canonical state `HANDOFF`.
+
+Last Codex work:
+- created `DEV-009.1` as a bounded Lean Dev maintenance slice for routing-cost calibration
+- added `delegation_routing_calibration.py` as a local-only helper beside the existing tri-modal routing artifacts
+- added focused regression coverage for evidence extraction, no-evidence rows, and Markdown rendering
+- rendered example JSON and Markdown calibration reports from the current repo evidence set
+- surfaced actionable findings: `quickchange_patch_review` is materially over-estimated, `spec_generator_review` and `spec_to_task_review` are under-estimated, and `debug_hypothesis_review` plus `test_result_triage_review` still lack explicit configured estimates
+
+Changed files:
+- `development/tasks/DEV-009.1_delegation_routing_calibration_helper.md`
+- `development/tasks/DEV-009.1_preimplementation_check.md`
+- `development/tasks/DEV-009.1_execution_result.md`
+- `documentation/codex/model-routing/scripts/delegation_routing_calibration.py`
+- `documentation/codex/model-routing/tests/test_delegation_routing_calibration.py`
+- `development/openrouter-skill-tests/delegation_routing_calibration_report_2026-07-06.json`
+- `development/openrouter-skill-tests/delegation_routing_calibration_report_2026-07-06.md`
+- `development/DEV_BACKLOG.md`
+- `development/DEV_STATE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_delegation_routing_calibration.py -q`: PASS (`3 passed`)
+- `python documentation/codex/model-routing/scripts/delegation_routing_calibration.py --output-json development/openrouter-skill-tests/delegation_routing_calibration_report_2026-07-06.json --output-md development/openrouter-skill-tests/delegation_routing_calibration_report_2026-07-06.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py C:\KI\Janus-Projekt\development\tasks\DEV-009.1_execution_result.md`: PASS
+- `git diff --check -- documentation/codex/model-routing/scripts/delegation_routing_calibration.py documentation/codex/model-routing/tests/test_delegation_routing_calibration.py development/openrouter-skill-tests/delegation_routing_calibration_report_2026-07-06.json development/openrouter-skill-tests/delegation_routing_calibration_report_2026-07-06.md development/tasks/DEV-009.1_delegation_routing_calibration_helper.md development/tasks/DEV-009.1_preimplementation_check.md development/tasks/DEV-009.1_execution_result.md development/DEV_BACKLOG.md development/DEV_STATE.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS with pre-existing CRLF warnings only
+
+Open risks:
+- evidence coverage is intentionally pattern-bound and not every lane currently has trustworthy local evidence
+- execution-path evidence still mixes older experiments and should be reviewed carefully before any new estimate is written back
+- no commit or push happened after this calibration-helper slice, so a remote such as GitHub may not contain this newest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: summarize this as "Codex now has a local routing-calibration helper that turns existing OR evidence into a reusable report, so future default tuning can be evidence-driven instead of ad hoc."
+
+Next recommended step for Codex: run `janus-final-audit` for `DEV-009.1` with `5.5` high, or use `janus-executioner` for one tiny follow-up that applies the most obvious report findings without widening scope.
+
+Last updated: `2026-07-06 14:20:00 +02:00`.
+## Current Snapshot Update
+As of `2026-07-06`, the calibration helper did not stay theoretical. A second bounded Lean-Dev slice (`DEV-009.2`) used the new report to tune the clearest low-risk routing defaults in the tri-modal manifest: `quickchange_patch_review` was brought down sharply, and `debug_hypothesis_review` plus `test_result_triage_review` now have explicit OpenRouter cost defaults for the first time. The intentionally noisy execution lane was left unchanged.
+
+Current goal: close the calibration-and-tuning work as one clean Dev item, or defer only the remaining under-estimated spec-like lanes to a later small follow-up.
+
+Active phase: `janus-executioner`, canonical state `HANDOFF`.
+
+Last Codex work:
+- created `DEV-009.2` as a tiny follow-up slice bound to the new calibration report
+- tuned `quickchange_patch_review` from `0.0012` to `0.00013` with lower confidence to reflect the currently small evidence base
+- added explicit defaults for `debug_hypothesis_review` (`0.00048`, `85`) and `test_result_triage_review` (`0.00031`, `90`)
+- added a focused regression test that locks those tuned defaults and also proves the execution lane stayed untouched
+- rerendered the local calibration report and confirmed the debug and triage lanes now show `ALIGNED`
+
+Changed files:
+- `development/tasks/DEV-009.2_delegation_routing_default_tuning.md`
+- `development/tasks/DEV-009.2_preimplementation_check.md`
+- `development/tasks/DEV-009.2_execution_result.md`
+- `documentation/codex/model-routing/config/delegation_routing_manifest.json`
+- `documentation/codex/model-routing/tests/test_delegation_routing.py`
+- `development/openrouter-skill-tests/delegation_routing_calibration_report_2026-07-06.json`
+- `development/openrouter-skill-tests/delegation_routing_calibration_report_2026-07-06.md`
+- `development/DEV_BACKLOG.md`
+- `development/DEV_STATE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_delegation_routing.py documentation/codex/model-routing/tests/test_delegation_routing_calibration.py -q`: PASS (`22 passed`)
+- `python documentation/codex/model-routing/scripts/delegation_routing_calibration.py --output-json development/openrouter-skill-tests/delegation_routing_calibration_report_2026-07-06.json --output-md development/openrouter-skill-tests/delegation_routing_calibration_report_2026-07-06.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py C:\KI\Janus-Projekt\development\tasks\DEV-009.2_execution_result.md`: PASS
+- `git diff --check -- documentation/codex/model-routing/config/delegation_routing_manifest.json documentation/codex/model-routing/tests/test_delegation_routing.py development/openrouter-skill-tests/delegation_routing_calibration_report_2026-07-06.json development/openrouter-skill-tests/delegation_routing_calibration_report_2026-07-06.md development/tasks/DEV-009.2_delegation_routing_default_tuning.md development/tasks/DEV-009.2_preimplementation_check.md development/tasks/DEV-009.2_execution_result.md development/DEV_BACKLOG.md development/DEV_STATE.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS with pre-existing CRLF warnings only
+
+Open risks:
+- `spec_generator_review` and `spec_to_task_review` remain under-estimated in the latest report and may deserve a later small follow-up
+- execution-path evidence still has high variance, so the manifest correctly remains conservative there
+- no push happened after this tuning slice, so a remote such as GitHub may not contain this newest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: summarize this as "the new calibration layer is already paying off: Codex used it to correct the clearest routing-default mistakes and left the noisy execution lane alone."
+
+Next recommended step for Codex: run `janus-final-audit` for `DEV-009` with `5.5` high, or, if the user prefers momentum over closeout, queue one later bounded follow-up for the two still under-estimated spec-like assist lanes.
+
+Last updated: `2026-07-06 14:57:00 +02:00`.
+## Current Snapshot Update
+As of `2026-07-06`, `DEV-009` has passed final audit. The audit covered both sub-slices: the local routing-calibration helper (`DEV-009.1`) and the first evidence-driven routing-default tuning follow-up (`DEV-009.2`). The final audit found no blockers and confirmed that no live Cursor/OpenRouter call, production routing activation, authority widening, or Janus product runtime behavior change was introduced.
+
+Current goal: close `DEV-009` cleanly through documentation update and then decide whether to checkpoint or continue with a later tiny follow-up for under-estimated spec-like lanes.
+
+Active phase: `janus-final-audit`, canonical state `PASS`.
+
+Last Codex work:
+- built `development/tasks/DEV-009_AUDIT_PACKAGE.md`
+- removed duplicate intermediate DEV-009 backlog lines from the audit package and Dev backlog
+- created `development/tasks/DEV-009_final_audit.md`
+- validated the final audit result with the Janus final-audit validator
+- reran the focused routing/calibration pytest set after the final audit and kept it green
+
+Changed files:
+- `development/tasks/DEV-009_AUDIT_PACKAGE.md`
+- `development/tasks/DEV-009_final_audit.md`
+- `development/DEV_BACKLOG.md`
+- `development/DEV_STATE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py C:\KI\Janus-Projekt\development\tasks\DEV-009_final_audit.md`: PASS
+- `python -m pytest documentation/codex/model-routing/tests/test_delegation_routing.py documentation/codex/model-routing/tests/test_delegation_routing_calibration.py -q`: PASS (`22 passed in 0.31s`)
+- `git diff --check -- development/tasks/DEV-009_AUDIT_PACKAGE.md development/tasks/DEV-009_final_audit.md development/DEV_BACKLOG.md development/DEV_STATE.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS with known CRLF warnings only
+
+Open risks:
+- `spec_generator_review` and `spec_to_task_review` remain under-estimated and are deferred follow-up candidates
+- execution-path evidence remains high variance and should stay review-scoped until a cleaner evidence set exists
+- no commit or push happened after this audit block, so a remote such as GitHub may not contain this newest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: summarize this as "`DEV-009` final audit PASS; the calibration helper and first default tuning are accepted, with only non-blocking future tuning candidates left."
+
+Next recommended step for Codex: run `janus-documentation-update` for `DEV-009` with `5.4` medium, then use `janus-git-governance` for a clean checkpoint decision.
+
+Last updated: `2026-07-06 15:03:08 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-06 15:08 +02:00`, `DEV-009` is now closed through documentation update after final audit PASS. The bounded Lean Dev slice is fully recorded in the Dev backlog as DONE: it added a deterministic local calibration helper for delegation-routing cost evidence, used that helper to correct the clearest low-risk OpenRouter cost defaults, and deliberately kept the noisy execution lane out of scope.
+
+Current goal: preserve the completed `DEV-009` closeout and decide whether to checkpoint now or queue one later tiny follow-up for the still under-estimated spec-like assist lanes.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- moved `DEV-009` from `IN PROGRESS` to `DONE` in the Dev backlog
+- created `development/tasks/DEV-009_documentation_update.md`
+- updated the Dev state to point at checkpoint-or-follow-up as the next decision
+- synced the rolling `CURRENT_STATE` and Janus skill-usage log for the completed closeout
+
+Changed files:
+- `development/DEV_BACKLOG.md`
+- `development/DEV_STATE.md`
+- `development/tasks/DEV-009_documentation_update.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py C:\KI\Janus-Projekt\development\tasks\DEV-009_final_audit.md`: PASS
+- `python -m pytest documentation/codex/model-routing/tests/test_delegation_routing.py documentation/codex/model-routing/tests/test_delegation_routing_calibration.py -q`: PASS (`22 passed in 0.31s`)
+- `python C:\Users\pruve\.codex\skills\janus-documentation-update\scripts\validate_doc_update.py --repo C:\KI\Janus-Projekt --marker DEV-009 --require development/DEV_BACKLOG.md --require development/DEV_STATE.md --require development/tasks/DEV-009_documentation_update.md --require documentation/ai/CURRENT_STATE.md`: PASS
+- `git diff --check -- development/DEV_BACKLOG.md development/DEV_STATE.md development/tasks/DEV-009_documentation_update.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS with known CRLF warnings only
+
+Open risks:
+- `spec_generator_review` and `spec_to_task_review` still look under-estimated in the latest calibration report and remain optional later follow-up candidates
+- execution-path evidence remains high variance and should stay review-scoped until a cleaner evidence set exists
+- no commit or push happened after this documentation-update block, so a remote such as GitHub may not contain this newest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: summarize this as "`DEV-009` is fully closed: the calibration helper and first evidence-backed routing-default tuning are done, documented, and checkpoint-ready."
+
+Next recommended step for Codex: run `janus-git-governance` for a narrow checkpoint, or deliberately open one later bounded follow-up for the still under-estimated spec-like assist lanes.
+
+Last updated: `2026-07-06 15:08:00 +02:00`.
 
 ## Current Snapshot Update
 As of `2026-07-02`, `BACKLOG-119` is now locally implemented and regression-green. The Nathan/Elena relationship bug was not just a vague recall miss: the contact-memory sync dropped a direct fact like `nathans freundin heisst elena` because `Nathan` did not resolve cleanly to the existing `Nathan Raimann` contact and no normalized relationship detail was written onto the contact card or synced back into durable contact memory.

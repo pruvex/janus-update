@@ -95,8 +95,8 @@
         "budget_profile": "quickchange_patch_review",
         "runner": "codex_bounded_delegation_dispatcher.py",
         "dispatcher_task_class": "quickchange_patch_review",
-        "prompt_estimated_or_cost": 0.0012,
-        "prompt_cost_estimate_confidence_percent": 84,
+        "prompt_estimated_or_cost": 0.00013,
+        "prompt_cost_estimate_confidence_percent": 65,
         "transitional_runtime_note": "Visible option 3 routes through the existing bounded quickchange dispatcher path; Cursor is not yet a validated quickchange backend here."
       },
       "minimum_net_codex_saved_tokens": 3000,
@@ -498,7 +498,9 @@
         "recommended": true,
         "model": "qwen/qwen3-coder-30b-a3b-instruct",
         "budget_profile": "debug_hypothesis_review",
-        "runner": "codex_debug_hypothesis_review_runner.py"
+        "runner": "codex_debug_hypothesis_review_runner.py",
+        "prompt_estimated_or_cost": 0.00048,
+        "prompt_cost_estimate_confidence_percent": 85
       },
       "minimum_net_codex_saved_tokens": 5000,
       "estimated_delegation_overhead_tokens": 4000
@@ -554,7 +556,9 @@
         "recommended": true,
         "model": "qwen/qwen3-coder-30b-a3b-instruct",
         "budget_profile": "test_result_triage_review",
-        "runner": "codex_test_result_triage_review_runner.py"
+        "runner": "codex_test_result_triage_review_runner.py",
+        "prompt_estimated_or_cost": 0.00031,
+        "prompt_cost_estimate_confidence_percent": 90
       },
       "minimum_net_codex_saved_tokens": 8000,
       "estimated_delegation_overhead_tokens": 4000

@@ -36,6 +36,48 @@ This backlog tracks Dev- and OR-infrastructure work only. It is separate from th
 
 ## DONE
 
+### DEV-009 - Add a bounded local calibration helper for delegation-routing cost evidence
+
+- **Type:** IMPROVEMENT
+- **Status:** DONE
+- **Created:** 2026-07-06
+- **Updated:** 2026-07-06
+- **Completed:** 2026-07-06
+- **Source:** User Intake
+- **Follow-up to:** 2026-07-06 shared-routing evidence tightening
+- **Short Description:** Add one small local helper that compares configured tri-modal routing cost defaults against already recorded bounded delegation evidence so Codex can tune routing defaults intentionally instead of by memory.
+- **Expected Behavior:** After productive OR and bounded routing runs exist, Codex can render one stable local calibration report with sample counts, configured estimates, observed actual costs, and non-binding suggested adjustments before changing manifest defaults.
+- **Actual Behavior:** CLOSED - `DEV-009.1` added the deterministic local calibration helper, and `DEV-009.2` applied the first low-risk evidence-backed default corrections for `quickchange_patch_review`, `debug_hypothesis_review`, and `test_result_triage_review` while intentionally leaving the noisy execution lane untouched.
+- **Reproduction / Context:** After the first productive tri-modal routing evidence accumulated, this bounded follow-up turned scattered local cost observations into one repeatable review surface and used it to correct only the clearest low-risk manifest defaults.
+- **Area:** Tri-modal routing maintenance / local calibration
+- **Evidence:** `development/tasks/DEV-009.1_execution_result.md`; `development/tasks/DEV-009.2_execution_result.md`; `development/tasks/DEV-009_AUDIT_PACKAGE.md`; `development/tasks/DEV-009_final_audit.md`; `development/openrouter-skill-tests/delegation_routing_calibration_report_2026-07-06.json`; `development/openrouter-skill-tests/delegation_routing_calibration_report_2026-07-06.md`
+- **Acceptance Criteria:**
+  - [x] A bounded local helper reads the current delegation manifest and task list without mutating them.
+  - [x] The helper scans only known local routing-evidence paths and renders a stable calibration report.
+  - [x] The report includes sample count, configured estimate, observed actual-cost summary, and non-binding suggested estimate or confidence per lane.
+  - [x] The slice stays local-only and does not add live calls, automatic rewrites, production routing, or new authority.
+- **Importance:** HIGH
+- **Implementation Risk:** LOW
+- **Effort:** S
+- **Readiness:** READY
+- **Recommendation:** DONE
+- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
+- **Routing reason:** This was the smallest useful follow-up after the first productive OR routing baseline: first add a local calibration layer, then apply only the clearest low-risk manifest corrections without widening execution authority.
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-07-06
+- **Handoff:** `development/tasks/DEV-009.1_delegation_routing_calibration_helper.md`
+- **Recommended next skill:** none
+- **Completed Task:** `development/tasks/DEV-009.2_delegation_routing_default_tuning.md`
+- **Preimplementation Check:** PASS - `development/tasks/DEV-009.2_preimplementation_check.md`
+- **Execution Result:** `development/tasks/DEV-009.2_execution_result.md`
+- **Audit Package:** `development/tasks/DEV-009_AUDIT_PACKAGE.md`
+- **Final Audit:** PASS - `development/tasks/DEV-009_final_audit.md`
+- **Validation Evidence:** `development/tasks/DEV-009.1_execution_result.md`; `development/tasks/DEV-009.2_execution_result.md`; `development/openrouter-skill-tests/delegation_routing_calibration_report_2026-07-06.json`; `development/openrouter-skill-tests/delegation_routing_calibration_report_2026-07-06.md`; `development/tasks/DEV-009_final_audit.md`
+- **Missing Information:**
+  - None for this bounded closeout. Later spec-like lane tuning remains optional follow-up work, not a blocker for completion.
+- **Notes:** This is Dev-/OR-infrastructure only. It does not authorize live-run automation, automatic routing changes, production routing activation, final validation authority, or repo-write delegation.
+
 ### DEV-008 - Add a bounded archive-usability helper for recommendation comparison artifacts
 
 - **Type:** IMPROVEMENT
