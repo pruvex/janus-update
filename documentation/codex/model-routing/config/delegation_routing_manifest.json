@@ -313,8 +313,8 @@
         "model": "qwen/qwen3-coder-30b-a3b-instruct",
         "budget_profile": "spec_generator_review",
         "runner": "codex_spec_generator_review_runner.py",
-        "prompt_estimated_or_cost": 0.00027,
-        "prompt_cost_estimate_confidence_percent": 70
+        "prompt_estimated_or_cost": 0.00075,
+        "prompt_cost_estimate_confidence_percent": 85
       },
       "minimum_net_codex_saved_tokens": 5000,
       "estimated_delegation_overhead_tokens": 4000
@@ -406,7 +406,7 @@
         "model": "qwen/qwen3-coder-30b-a3b-instruct",
         "budget_profile": "spec_to_task_review",
         "runner": "codex_spec_to_task_runner.py",
-        "prompt_estimated_or_cost": 0.00037,
+        "prompt_estimated_or_cost": 0.00072,
         "prompt_cost_estimate_confidence_percent": 74
       },
       "minimum_net_codex_saved_tokens": 5000,

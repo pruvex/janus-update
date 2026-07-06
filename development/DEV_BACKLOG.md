@@ -36,6 +36,47 @@ This backlog tracks Dev- and OR-infrastructure work only. It is separate from th
 
 ## DONE
 
+### DEV-010 - Tune under-estimated spec-like OpenRouter assist lane defaults
+
+- **Type:** IMPROVEMENT
+- **Status:** DONE
+- **Created:** 2026-07-06
+- **Updated:** 2026-07-06
+- **Completed:** 2026-07-06
+- **Source:** Follow-up to DEV-009 calibration report
+- **Follow-up to:** DEV-009 - Add a bounded local calibration helper for delegation-routing cost evidence
+- **Short Description:** Apply one narrow follow-up tuning pass for the still under-estimated `spec_generator_review` and `spec_to_task_review` OpenRouter cost defaults using the bounded local calibration report.
+- **Expected Behavior:** The manifest should carry more realistic cost defaults for the two spec-like assist lanes, the rerendered calibration report should move them from `UNDER_ESTIMATED` to `ALIGNED`, and no other lane should change.
+- **Actual Behavior:** CLOSED - `DEV-010` tuned the two targeted spec-like assist lane cost defaults, rerendered the calibration report, and passed final audit. The report now marks both targeted lanes as `ALIGNED`.
+- **Area:** Tri-modal routing maintenance / spec-like assist lane calibration
+- **Evidence:** `development/tasks/DEV-010_spec_like_assist_lane_tuning.md`; `development/tasks/DEV-010_preimplementation_check.md`; `development/tasks/DEV-010_execution_result.md`; `development/tasks/DEV-010_AUDIT_PACKAGE.md`; `development/tasks/DEV-010_final_audit.md`; `development/openrouter-skill-tests/delegation_routing_calibration_report_2026-07-06.json`; `development/openrouter-skill-tests/delegation_routing_calibration_report_2026-07-06.md`; `documentation/codex/model-routing/config/delegation_routing_manifest.json`
+- **Acceptance Criteria:**
+  - [x] `spec_generator_review` receives an evidence-backed OpenRouter cost default update.
+  - [x] `spec_to_task_review` receives an evidence-backed OpenRouter cost default update.
+  - [x] A focused regression test locks the two tuned defaults.
+  - [x] The rerendered calibration report shows both tuned lanes as `ALIGNED`.
+  - [x] No execution-lane, product-runtime, live-call, or authority-widening change is introduced.
+- **Importance:** MEDIUM
+- **Implementation Risk:** LOW
+- **Effort:** S
+- **Readiness:** READY
+- **Recommendation:** DONE
+- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
+- **Routing reason:** After DEV-009, these two assist-only spec lanes were the last clearly under-estimated defaults in the bounded calibration report and could be corrected without widening into noisier execution-path economics.
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-07-06
+- **Handoff:** `development/tasks/DEV-010_spec_like_assist_lane_tuning.md`
+- **Recommended next skill:** none
+- **Preimplementation Check:** PASS - `development/tasks/DEV-010_preimplementation_check.md`
+- **Execution Result:** `development/tasks/DEV-010_execution_result.md`
+- **Audit Package:** `development/tasks/DEV-010_AUDIT_PACKAGE.md`
+- **Final Audit:** PASS - `development/tasks/DEV-010_final_audit.md`
+- **Validation Evidence:** `development/openrouter-skill-tests/delegation_routing_calibration_report_2026-07-06.json`; `development/openrouter-skill-tests/delegation_routing_calibration_report_2026-07-06.md`; `development/tasks/DEV-010_execution_result.md`; `development/tasks/DEV-010_final_audit.md`
+- **Missing Information:**
+  - None for this bounded closeout. `spec_to_task_review` should still be revisited after more productive evidence because the current default rests on one bounded sample.
+- **Notes:** This is Dev-/OR-infrastructure only. It does not authorize live-run automation, production routing activation, new backends, skill prose rewrites, execution-lane retuning, final validation delegation, or repo-write delegation.
+
 ### DEV-009 - Add a bounded local calibration helper for delegation-routing cost evidence
 
 - **Type:** IMPROVEMENT

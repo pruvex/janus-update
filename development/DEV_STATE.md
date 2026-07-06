@@ -4,10 +4,10 @@
 Janus Dev And OR Infrastructure
 
 ## Current Goal
-Preserve the completed DEV-009 closeout and decide whether to checkpoint now or queue one later tiny follow-up for the still under-estimated spec-like assist lanes.
+Preserve the completed DEV-010 closeout and decide whether to checkpoint the accepted routing-maintenance work now.
 
 ## Active Phase
-DEV-009 closed through documentation update; ready for janus-git-governance checkpoint or a later small follow-up decision
+DEV-010 closed through documentation update; ready for janus-git-governance checkpoint
 
 ## Current Source Of Truth
 - `development/README.md`
@@ -23,8 +23,8 @@ DEV-009 closed through documentation update; ready for janus-git-governance chec
 - Lean Dev mode ends immediately when product logic, security/privacy, release/Git-governance, unclear scope, or new productive approval becomes involved.
 
 ## Open Work
-- Run `janus-git-governance` for a narrow checkpoint covering the completed DEV-009 closeout and its already-audited artifacts.
-- Optionally schedule one later narrow follow-up for `spec_generator_review` and `spec_to_task_review`.
+- Run `janus-git-governance` for a narrow checkpoint covering the completed DEV-010 closeout and its already-audited artifacts.
+- Decide deliberately whether to leave the remaining `NO_EVIDENCE` / high-variance lanes for later instead of continuing to tune without evidence.
 - Keep execution-lane default tuning deferred until the evidence set is cleaner and less dominated by older experiment variance.
 - Keep the separation between Lean Dev work and strict Janus product work explicit in future governance changes.
 
@@ -40,9 +40,10 @@ DEV-009 closed through documentation update; ready for janus-git-governance chec
 - The new calibration helper currently depends on bounded path patterns; future follow-ups must keep that evidence scope explicit and avoid silently treating every historical experiment as equally authoritative.
 - Execution-lane evidence is still noisy and spans older transport experiments, so any follow-up tuning there should stay conservative and review-driven rather than auto-applied.
 - The new triage and debug defaults are evidence-backed, but they still rely on a relatively small number of historical runs and should be revisited after more productive shared-gate usage.
+- `spec_to_task_review` still rests on only one bounded sample even after tuning, so later evidence should confirm the new default before treating it as stable long-term.
 
 ## Next Recommended Step
-Run `janus-git-governance` for `DEV-009`, then either checkpoint the completed closeout or deliberately queue one later narrow follow-up for the still under-estimated spec-like assist lanes.
+Run `janus-git-governance` for `DEV-010`, then checkpoint the completed closeout or intentionally stop with execution-lane economics still deferred.
 
 ## Last Updated
-2026-07-06 15:08 +02:00
+2026-07-06 15:41 +02:00

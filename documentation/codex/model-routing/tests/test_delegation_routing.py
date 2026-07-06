@@ -228,6 +228,8 @@ class DelegationRoutingTests(unittest.TestCase):
         quickchange_openrouter = self.manifest["lanes"]["quickchange_patch_review"]["openrouter"]
         debug_openrouter = self.manifest["lanes"]["debug_hypothesis_review"]["openrouter"]
         triage_openrouter = self.manifest["lanes"]["test_result_triage_review"]["openrouter"]
+        spec_generator_openrouter = self.manifest["lanes"]["spec_generator_review"]["openrouter"]
+        spec_to_task_openrouter = self.manifest["lanes"]["spec_to_task_review"]["openrouter"]
         execution_openrouter = self.manifest["lanes"]["execution_patch_candidate"]["openrouter"]
 
         self.assertEqual(quickchange_openrouter["prompt_estimated_or_cost"], 0.00013)
@@ -236,6 +238,10 @@ class DelegationRoutingTests(unittest.TestCase):
         self.assertEqual(debug_openrouter["prompt_cost_estimate_confidence_percent"], 85)
         self.assertEqual(triage_openrouter["prompt_estimated_or_cost"], 0.00031)
         self.assertEqual(triage_openrouter["prompt_cost_estimate_confidence_percent"], 90)
+        self.assertEqual(spec_generator_openrouter["prompt_estimated_or_cost"], 0.00075)
+        self.assertEqual(spec_generator_openrouter["prompt_cost_estimate_confidence_percent"], 85)
+        self.assertEqual(spec_to_task_openrouter["prompt_estimated_or_cost"], 0.00072)
+        self.assertEqual(spec_to_task_openrouter["prompt_cost_estimate_confidence_percent"], 74)
         self.assertNotIn("prompt_estimated_or_cost", execution_openrouter)
 
     def test_test_fixture_worker_gate_recommends_cursor_and_keeps_or_as_option_three(self) -> None:

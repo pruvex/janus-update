@@ -1,6 +1,6 @@
 # Delegation Routing Calibration Report
 
-- Generated at: `2026-07-06T12:58:30+00:00`
+- Generated at: `2026-07-06T13:24:39+00:00`
 - Lane count: `23`
 - Purpose: compare configured OpenRouter routing defaults against bounded local evidence only
 
@@ -22,10 +22,10 @@
 | precheck_review | TASK-PC-001 | 2 | 0.00012 | 0.00009597 | 0.00010077 | ALIGNED |
 | quickchange_patch_review | TASK-QC-001 | 1 | 0.00013 | 0.00011984 | 0.00012583 | ALIGNED |
 | skill_router_review | TASK-SR-001 | 0 | 0.00018 | - | - | NO_EVIDENCE |
-| spec_generator_review | TASK-SG-001 | 3 | 0.00027 | 0.00071 | 0.0007455 | UNDER_ESTIMATED |
+| spec_generator_review | TASK-SG-001 | 3 | 0.00075 | 0.00071 | 0.0007455 | ALIGNED |
 | spec_normalizer_review | TASK-SN-001 | 4 | 0.00022 | 0.00018921 | 0.00019867 | ALIGNED |
 | spec_review | TASK-SR-002 | 2 | 0.00075 | 0.00071341 | 0.00074908 | ALIGNED |
-| spec_to_task_review | TASK-ST-001 | 1 | 0.00037 | 0.00068685 | 0.00072119 | UNDER_ESTIMATED |
+| spec_to_task_review | TASK-ST-001 | 1 | 0.00072 | 0.00068685 | 0.00072119 | ALIGNED |
 | task_breakdown_review | TASK-TB-001 | 2 | 0.00018 | 0.00017493 | 0.00018368 | ALIGNED |
 | test_fixture_worker | TASK-TP-003 | 0 | - | - | - | NO_EVIDENCE |
 | test_result_triage_review | TASK-TP-005 | 2 | 0.00031 | 0.00028765 | 0.00030203 | ALIGNED |
@@ -333,13 +333,13 @@
 - Task: `TASK-SG-001`
 - Skill: `janus-spec-generator`
 - Recommended backend: `openrouter`
-- Configured estimate: `0.00027`
-- Configured confidence: `70`
+- Configured estimate: `0.00075`
+- Configured confidence: `85`
 - Sample count: `3`
 - Observed min/mean/max: `0.00071` / `0.00071` / `0.00071`
 - Suggested estimate: `0.0007455`
-- Suggested confidence: `85`
-- Status: `UNDER_ESTIMATED`
+- Suggested confidence: `90`
+- Status: `ALIGNED`
 - Evidence:
   - `WF-SPEC-GEN-CURRENT-002` via `C:\KI\Janus-Projekt\documentation\codex\model-routing\spec-generator-review-runs\WF-SPEC-GEN-CURRENT-002\validation_summary.json` -> `0.00071`
   - `WF-SPEC-GEN-LIVE-FIXTURE-2026-06-26` via `C:\KI\Janus-Projekt\documentation\codex\model-routing\spec-generator-review-runs\WF-SPEC-GEN-LIVE-FIXTURE-2026-06-26\validation_summary.json` -> `0.00071`
@@ -384,13 +384,13 @@
 - Task: `TASK-ST-001`
 - Skill: `janus-spec-to-task`
 - Recommended backend: `openrouter`
-- Configured estimate: `0.00037`
+- Configured estimate: `0.00072`
 - Configured confidence: `74`
 - Sample count: `1`
 - Observed min/mean/max: `0.00068685` / `0.00068685` / `0.00068685`
 - Suggested estimate: `0.00072119`
 - Suggested confidence: `74`
-- Status: `UNDER_ESTIMATED`
+- Status: `ALIGNED`
 - Evidence:
   - `WF-SPEC-TO-TASK-FIXTURE-CHECK-2026-06-26` via `C:\KI\Janus-Projekt\documentation\codex\model-routing\spec-to-task-runs\WF-SPEC-TO-TASK-FIXTURE-CHECK-2026-06-26\validation_summary.json` -> `0.00068685`
 

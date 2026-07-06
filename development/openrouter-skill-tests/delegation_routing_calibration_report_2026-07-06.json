@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-06T12:58:30+00:00",
+  "generated_at": "2026-07-06T13:24:39+00:00",
   "manifest_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\config\\delegation_routing_manifest.json",
   "task_list_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\config\\delegation_task_list_2026-07-05.json",
   "lane_count": 23,
@@ -839,8 +839,8 @@
       "task_id": "TASK-SG-001",
       "skill": "janus-spec-generator",
       "recommended_backend": "openrouter",
-      "configured_prompt_estimated_or_cost": 0.00027,
-      "configured_confidence_percent": 70,
+      "configured_prompt_estimated_or_cost": 0.00075,
+      "configured_confidence_percent": 85,
       "minimum_net_codex_saved_tokens": 5000,
       "estimated_delegation_overhead_tokens": 4000,
       "sample_count": 3,
@@ -849,8 +849,8 @@
       "observed_actual_or_cost_mean": 0.00071,
       "observed_actual_or_cost_median": 0.00071,
       "suggested_prompt_estimated_or_cost": 0.0007455,
-      "suggested_confidence_percent": 85,
-      "status": "UNDER_ESTIMATED",
+      "suggested_confidence_percent": 90,
+      "status": "ALIGNED",
       "evidence_records": [
         {
           "workflow_id": "WF-SPEC-GEN-CURRENT-002",
@@ -962,7 +962,7 @@
       "task_id": "TASK-ST-001",
       "skill": "janus-spec-to-task",
       "recommended_backend": "openrouter",
-      "configured_prompt_estimated_or_cost": 0.00037,
+      "configured_prompt_estimated_or_cost": 0.00072,
       "configured_confidence_percent": 74,
       "minimum_net_codex_saved_tokens": 5000,
       "estimated_delegation_overhead_tokens": 4000,
@@ -973,7 +973,7 @@
       "observed_actual_or_cost_median": 0.00068685,
       "suggested_prompt_estimated_or_cost": 0.00072119,
       "suggested_confidence_percent": 74,
-      "status": "UNDER_ESTIMATED",
+      "status": "ALIGNED",
       "evidence_records": [
         {
           "workflow_id": "WF-SPEC-TO-TASK-FIXTURE-CHECK-2026-06-26",
