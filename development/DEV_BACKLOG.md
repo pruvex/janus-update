@@ -36,6 +36,47 @@ This backlog tracks Dev- and OR-infrastructure work only. It is separate from th
 
 ## DONE
 
+### DEV-011 - Add a bounded evidence-gap plan for remaining delegation lanes
+
+- **Type:** IMPROVEMENT
+- **Status:** DONE
+- **Created:** 2026-07-06
+- **Updated:** 2026-07-06
+- **Completed:** 2026-07-06
+- **Source:** Follow-up to DEV-009 / DEV-010 calibration closeout
+- **Short Description:** Add one local review-only helper that turns the current delegation routing calibration report into a prioritized next-evidence plan for remaining `NO_EVIDENCE` and high-variance lanes.
+- **Expected Behavior:** Codex can inspect one deterministic plan that identifies which Cursor/OpenRouter lanes need shadow fixtures or explicit live approval next, while keeping never-delegate lanes Codex-owned and avoiding automatic manifest tuning.
+- **Actual Behavior:** CLOSED - `DEV-011` added a deterministic local evidence-gap planner, rendered JSON/Markdown review artifacts, passed final audit, and recorded the next recommended delegation-evidence order without widening authority.
+- **Area:** Tri-modal routing maintenance / evidence planning
+- **Evidence:** `development/tasks/DEV-011_delegation_evidence_gap_plan.md`; `development/tasks/DEV-011_preimplementation_check.md`; `development/tasks/DEV-011_execution_result.md`; `development/tasks/DEV-011_validation_summary.md`; `development/tasks/DEV-011_AUDIT_PACKAGE.md`; `development/tasks/DEV-011_final_audit.md`; `development/openrouter-skill-tests/delegation_evidence_gap_plan_2026-07-06.json`; `development/openrouter-skill-tests/delegation_evidence_gap_plan_2026-07-06.md`
+- **Acceptance Criteria:**
+  - [x] A local helper reads the current calibration report, manifest, and task list without mutating them.
+  - [x] The helper renders a prioritized JSON and Markdown evidence-gap plan.
+  - [x] Cursor no-evidence worker lanes are prioritized above lower-value review gaps.
+  - [x] `live_test_execution` and `diamond_retest_audit` remain Codex-owned and never-delegate.
+  - [x] The slice performs no live Cursor/OpenRouter calls and no manifest tuning.
+- **Importance:** HIGH
+- **Implementation Risk:** LOW
+- **Effort:** S
+- **Readiness:** READY
+- **Recommendation:** DONE
+- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
+- **Routing reason:** After DEV-009 and DEV-010 removed the clearest cost-estimate mismatches, the next useful local-only step was ranking the remaining evidence gaps instead of tuning no-evidence lanes by guesswork.
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-07-06
+- **Handoff:** `development/tasks/DEV-011_delegation_evidence_gap_plan.md`
+- **Recommended next skill:** none
+- **Preimplementation Check:** PASS - `development/tasks/DEV-011_preimplementation_check.md`
+- **Execution Result:** `development/tasks/DEV-011_execution_result.md`
+- **Audit Package:** `development/tasks/DEV-011_AUDIT_PACKAGE.md`
+- **Final Audit:** PASS - `development/tasks/DEV-011_final_audit.md`
+- **Documentation Update:** `development/tasks/DEV-011_documentation_update.md`
+- **Validation Evidence:** `development/tasks/DEV-011_validation_summary.md`; `development/openrouter-skill-tests/delegation_evidence_gap_plan_2026-07-06.json`; `development/openrouter-skill-tests/delegation_evidence_gap_plan_2026-07-06.md`; `development/tasks/DEV-011_final_audit.md`
+- **Missing Information:**
+  - None for this bounded closeout. Future live evidence still requires explicit operator approval lane by lane.
+- **Notes:** This is Dev-/OR-infrastructure only. It does not authorize live-run automation, production routing activation, manifest tuning, final validation delegation, or repo-write delegation.
+
 ### DEV-010 - Tune under-estimated spec-like OpenRouter assist lane defaults
 
 - **Type:** IMPROVEMENT

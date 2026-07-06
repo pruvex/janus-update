@@ -1,6 +1,121 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-06 16:08 +02:00`, `DEV-011` was closed through documentation update after final audit PASS. The Dev backlog now marks `DEV-011` as DONE, the closeout artifact `development/tasks/DEV-011_documentation_update.md` records the bounded documentation scope and exact skip reasons, and the rolling Dev state now points to `janus-git-governance` as the next step. The underlying outcome did not change: the evidence-gap planner remains a local-only review artifact that prioritizes Cursor evidence gaps first, keeps `live_test_execution` and `diamond_retest_audit` Codex-owned, and does not authorize any live Cursor/OpenRouter call or manifest-write action.
+
+Current goal: prepare a narrow checkpoint decision for the completed DEV-011 closeout.
+
+Active phase: Lean Dev delegation evidence planning closeout, canonical state `PASS`.
+
+Last Codex work:
+- moved `DEV-011` from `IN PROGRESS` to `DONE` in `development/DEV_BACKLOG.md`
+- added `development/tasks/DEV-011_documentation_update.md`
+- updated `development/DEV_STATE.md` and this rolling snapshot to point at Git-governance checkpoint as the next step
+
+Changed files:
+- `development/DEV_BACKLOG.md`
+- `development/DEV_STATE.md`
+- `development/tasks/DEV-011_documentation_update.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- plus the existing DEV-011 implementation/audit artifacts already recorded in the previous snapshots
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py development/tasks/DEV-011_final_audit.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-documentation-update\scripts\validate_doc_update.py --repo C:\KI\Janus-Projekt --marker DEV-011 --require development/DEV_BACKLOG.md --require development/DEV_STATE.md --require development/tasks/DEV-011_documentation_update.md --require documentation/ai/CURRENT_STATE.md`: PASS
+- `python -m pytest documentation/codex/model-routing/tests/test_delegation_evidence_gap_plan.py documentation/codex/model-routing/tests/test_delegation_routing_calibration.py -q`: PASS (`7 passed`)
+
+Open risks:
+- The evidence-gap plan is still guidance only; any future live Cursor/OpenRouter step needs explicit approval.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat DEV-011 as DONE and route the next same-thread step to `janus-git-governance` rather than reopening documentation or implementation.
+
+Next recommended step for Codex: run `janus-git-governance` for a narrow DEV-011 checkpoint and then stop before any push unless the user explicitly approves it.
+
+Last updated: `2026-07-06 16:08:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-06 16:05 +02:00`, `DEV-011` passed final audit. A compact audit package was built at `development/tasks/DEV-011_AUDIT_PACKAGE.md`, a validation summary was added, and the final audit at `development/tasks/DEV-011_final_audit.md` returned `FINAL AUDIT RESULT: PASS`. The audit confirmed that the evidence-gap plan is local-only, review-only, does not authorize live Cursor/OpenRouter calls, does not tune the manifest, and does not activate production routing.
+
+Current goal: close DEV-011 through documentation update after final audit PASS.
+
+Active phase: Lean Dev delegation evidence planning, canonical state `HANDOFF` to documentation update.
+
+Last Codex work:
+- built `DEV-011_AUDIT_PACKAGE.md` from the bound DEV-011 artifacts
+- added `DEV-011_validation_summary.md`
+- ran and saved the final audit as PASS
+- validated the final audit report and reran the focused pytest sweep
+
+Changed files:
+- `development/tasks/DEV-011_AUDIT_PACKAGE.md`
+- `development/tasks/DEV-011_validation_summary.md`
+- `development/tasks/DEV-011_final_audit.md`
+- `development/DEV_STATE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- plus the DEV-011 implementation files listed in the previous snapshot
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py development/tasks/DEV-011_final_audit.md`: PASS
+- `python -m pytest documentation/codex/model-routing/tests/test_delegation_evidence_gap_plan.py documentation/codex/model-routing/tests/test_delegation_routing_calibration.py -q`: PASS (`7 passed`)
+
+Open risks:
+- DEV-011 is audit-passed but not formally DONE until `janus-documentation-update` records the closeout in Dev docs.
+- The evidence-gap plan still requires explicit operator approval before any live Cursor or OpenRouter run.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat DEV-011 as final-audit PASS and route the next same-thread step to documentation update, not more implementation.
+
+Next recommended step for Codex: run `janus-documentation-update` for DEV-011, then enter Git governance for a narrow checkpoint.
+
+Last updated: `2026-07-06 16:05:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-06 15:58 +02:00`, `DEV-011` implemented a local-only delegation evidence-gap plan after the DEV-009/DEV-010 calibration closeout. The new helper reads the existing calibration report plus the routing manifest/task list and renders a prioritized JSON/Markdown plan for lanes that still have `NO_EVIDENCE` or high-variance evidence. It does not call Cursor or OpenRouter, does not tune the manifest, and does not activate production routing. The generated plan currently prioritizes Cursor evidence gaps for `debug_repro_investigation`, `test_fixture_worker`, and `execution_write_apply_candidate`; then OR review gaps; and keeps `live_test_execution` plus `diamond_retest_audit` Codex-owned.
+
+Current goal: finalize DEV-011 as a review-only evidence-planning slice before selecting the next explicit live-smoke or shadow-fixture task.
+
+Active phase: Lean Dev delegation evidence planning, canonical state `HANDOFF` to final audit.
+
+Last Codex work:
+- added `delegation_evidence_gap_plan.py` as a deterministic local planner over the existing calibration report
+- added focused tests for Cursor gap priority, never-delegate protection, high-variance non-tuning behavior, and Markdown boundary wording
+- rendered `delegation_evidence_gap_plan_2026-07-06.json` and `.md`
+- recorded DEV-011 task, precheck, and execution-result artifacts
+
+Changed files:
+- `documentation/codex/model-routing/scripts/delegation_evidence_gap_plan.py`
+- `documentation/codex/model-routing/tests/test_delegation_evidence_gap_plan.py`
+- `development/openrouter-skill-tests/delegation_evidence_gap_plan_2026-07-06.json`
+- `development/openrouter-skill-tests/delegation_evidence_gap_plan_2026-07-06.md`
+- `development/tasks/DEV-011_delegation_evidence_gap_plan.md`
+- `development/tasks/DEV-011_preimplementation_check.md`
+- `development/tasks/DEV-011_execution_result.md`
+- `development/DEV_BACKLOG.md`
+- `development/DEV_STATE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py development/tasks/DEV-011_preimplementation_check.md`: PASS
+- `python -m pytest documentation/codex/model-routing/tests/test_delegation_evidence_gap_plan.py -q`: PASS (`4 passed`)
+- `python documentation/codex/model-routing/scripts/delegation_evidence_gap_plan.py --calibration-report development/openrouter-skill-tests/delegation_routing_calibration_report_2026-07-06.json --output-json development/openrouter-skill-tests/delegation_evidence_gap_plan_2026-07-06.json --output-md development/openrouter-skill-tests/delegation_evidence_gap_plan_2026-07-06.md`: PASS
+
+Open risks:
+- DEV-011 still needs final audit before being marked DONE or committed.
+- The plan is a routing-review artifact only; it does not approve live Cursor/OpenRouter calls.
+- The next useful evidence step still needs explicit operator approval if it runs live Cursor or OpenRouter.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: review the evidence-gap plan as the source for which lane should receive the next bounded shadow/live test, with Cursor-first attention on debug repro and test fixture work.
+
+Next recommended step for Codex: run `janus-final-audit` for DEV-011, then close through documentation update and only then enter Git governance for a checkpoint.
+
+Last updated: `2026-07-06 15:58:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-06 14:02 +02:00`, the next small post-baseline guidance slice tightened the highest-level operator router itself. `janus-skill-router` in both the repo source and the installed `.codex` working copy now reflects the evidence-aware delegation baseline instead of a flatter generic tri-modal story. The router now states explicitly that OpenRouter is the preferred external option mainly for cheap assist-only lanes that are productively proven and cost-stable, that deeper judgment lanes like `janus-spec-review` need stricter ROI scrutiny, that Cursor is the preferred first external option for write-capable or tool-heavy bounded work, and that Codex should remain the default when delegation overhead dominates. This does not change runtime delegation code or production routing; it sharpens the operator-facing routing judgment at the top of the workflow.
 
 Current goal: move from migration and dry-run proof into selective productive OR/Cursor usage on bounded lanes while keeping Codex as final acceptance owner.
