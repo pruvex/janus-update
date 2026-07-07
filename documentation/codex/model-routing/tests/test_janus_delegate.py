@@ -508,6 +508,16 @@ class JanusDelegateTests(unittest.TestCase):
         self.assertEqual(result["selected_model"], "moonshotai/kimi-k2.5")
         self.assertEqual(result["planned_runner"], "test_pipeline_sidecar_write_pilot_runner.py")
 
+    def test_debug_repro_prompt_mode_stays_cursor_only_when_or_has_no_bounded_shell_authority(self) -> None:
+        result = self.route("--lane", "debug_repro_investigation", "--task-id", "TASK-DBG-002", "--operator-choice", "prompt")
+
+        self.assertEqual(result["validation_result"], "PASS")
+        self.assertEqual(result["final_outcome"], "AWAITING_OPERATOR_CHOICE")
+        self.assertEqual(result["operator_gate_lines"], ["1 = Codex", "2 = Cursor"])
+        self.assertEqual(result["visible_backends"], ["codex", "cursor"])
+        self.assertEqual(result["recommended_backend"], "cursor")
+        self.assertNotIn("openrouter", result["models"])
+
     def test_live_execution_rejects_cursor_override(self) -> None:
         result = self.route("--lane", "live_test_execution", "--task-id", "TASK-TP-004", "--operator-choice", "2")
 

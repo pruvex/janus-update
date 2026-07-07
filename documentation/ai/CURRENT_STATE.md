@@ -1,6 +1,42 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-07 20:33 +02:00`, the post-checkpoint operator-truth hardening slice is complete for `TASK-DBG-002` / `debug_repro_investigation`. Right after the local checkpoint commit `591865bcc` (`feat(model-routing): checkpoint cursor tri-modal delegation core`), Codex tightened the shared gate contract so this bounded repro/shell lane is explicitly and testably `1 = Codex / 2 = Cursor`, with no visible OpenRouter option while `openrouter.enabled` remains false for the lane in the routing manifest. A focused regression was added to `test_janus_delegate.py`, the operator-facing task-list summary was clarified, the new focused test passed, the full delegate test file passed, and a direct prompt-mode dry-run confirmed the visible gate stays Cursor-only for delegated work on this lane.
+
+Current goal: finish turning the tri-modal delegation stack from operational and promising into ready for serious livedev use with honest operator gates, Codex review ownership, and low-surprise bounded delegation.
+
+Active phase: post-checkpoint `janus-executioner` hardening of the shared operator truth for the debug repro lane, canonical state `PASS`.
+
+Last Codex work:
+- created a local checkpoint commit for the tri-modal / Cursor delegation core (`591865bcc`)
+- added a focused delegate regression proving `TASK-DBG-002` stays `1 = Codex / 2 = Cursor`
+- clarified the human task-list summary so operator-facing docs match runtime truth for the debug repro lane
+- reran the focused and full shared delegate tests
+- reran `janus_delegate.py` in prompt mode against the real debug package to confirm the visible backend set remains `codex,cursor`
+
+Changed files:
+- `documentation/codex/model-routing/tests/test_janus_delegate.py`
+- `documentation/codex/model-routing/config/delegation_task_list_2026-07-05.md`
+- `documentation/ai/CURRENT_STATE.md`
+- local git history on `develop` includes checkpoint commit `591865bcc`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_janus_delegate.py -q -k debug_repro_prompt_mode_stays_cursor_only_when_or_has_no_bounded_shell_authority`: PASS (`1 passed, 33 deselected`)
+- `python -m pytest documentation/codex/model-routing/tests/test_janus_delegate.py -q`: PASS (`34 passed`)
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane debug_repro_investigation --task-id TASK-DBG-002 --workflow-id WF-POST-HARDENING-GATE-001 --operator-choice prompt --input-package-json documentation/codex/model-routing/debug-review-fixtures/debug_repro_investigation_real_repo_template_fix_input_package_2026-07-07.json --allowlist-file documentation/codex/model-routing/debug-review-fixtures/allowlists/debug_repro_investigation_real_repo_template_fix_allowlist_2026-07-07.txt --estimated-codex-saved-tokens 18000 --estimated-delegation-overhead-tokens 9000 --minimum-net-codex-saved-tokens 8000`: PASS (`operator_gate_lines = [1 = Codex, 2 = Cursor]`, `recommended_backend = cursor`)
+
+Open risks:
+- The local checkpoint commit exists, but no push happened; remotes may not contain commit `591865bcc`.
+- The new post-checkpoint hardening slice is still local and uncommitted at this moment.
+- OpenRouter remains intentionally absent for this bounded debug repro lane, so OR still should not be presented as a live worker option here until manifest/runtime authority changes.
+
+Next recommended step for ChatGPT: describe the system as having crossed from “Cursor lanes proven” into “operator truth also being tightened lane by lane,” especially that debug repro is now explicitly Cursor-only in the shared gate.
+
+Next recommended step for Codex: take the same operator-truth pass across any remaining lanes where manifest authority and human-facing wording could still drift, then choose the next real livedev task from a lane whose gate, package template, and review loop are already field-proven.
+
+Last updated: `2026-07-07 20:33:17 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-07 20:25 +02:00`, the third real non-harness repo field test is now complete on the remaining core lane: `TASK-DBG-002` / `debug_repro_investigation`. Codex added a focused red regression to `test_debug_repro_investigation_templates.py` for a real contract gap in the debug worker template: the lane required focused checks before Codex review, but the template still omitted `run_checks` in `requested_actions`. The regression failed as expected, the shared `janus_delegate.py -> Cursor` path then ran live as `WF-CURSOR-REAL-DBG-001`, and Cursor made a bounded one-file fix to the real debug template JSON. Both the targeted regression and the full `test_debug_repro_investigation_templates.py` file pass afterward, and the allowlist remained intact. This means all three core Cursor-first bounded lanes now have genuine repo field-test evidence, not just shadow, harness, or template-only evidence.
 
 Current goal: finish turning the tri-modal delegation stack from “operational and promising” into “ready for serious livedev use with Codex as reviewer and acceptance owner.”

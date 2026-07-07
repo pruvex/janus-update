@@ -93,6 +93,8 @@ Task-specific option labels can narrow this generic gate; the main current excep
 3. Codex lokal   →  Validation, janus-final-audit handoff
 ```
 
+Hinweis: `TASK-DBG-002` bleibt absichtlich bei `1 = Codex / 2 = Cursor`. OpenRouter ist fuer diese bounded Repro-/Shell-Lane aktuell nicht als sichtbare Option aktiviert.
+
 ### Test-pipeline flow
 
 ```text
