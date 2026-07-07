@@ -1,0 +1,96 @@
+TASK-SPEC26
+- Source Spec: documentation/SPEC/26_operator_facing_codex_oder_or_wahl_in_bestehenden_janus_skills.md
+- Backlog Item: N/A
+- Feature: Operator-facing Codex-oder-OR-Wahl in bestehenden Janus-Skills
+- Generated At: 2026-07-07
+
+## Generated Tasks
+
+### TASK-SPEC26.1 Harden the shared operator-gate eligibility contract for visible bounded OR choices
+- Ziel: Eine gemeinsame fail-closed Eligibility- und Sichtbarkeitslogik absichern, die bestehende Janus-Skill-Einstiege nur dann fuer einen sichtbaren bounded OR-Pfad freigibt, wenn der konkrete Lane wirklich gebunden, gesund und freigegeben ist.
+- Scope: Zentrale Gate-Eligibility, Sichtbarkeitsstatus, negative Pfade fuer fehlende Gate-Daten oder ungesunde Lanes, keine Skill-spezifische UI- oder Laufzeitverdrahtung.
+- Files:
+  - documentation/codex/model-routing/config/bounded_or_worker_eligibility_2026-06-17.json
+  - documentation/codex/model-routing/scripts/bounded_or_worker_eligibility.py
+  - documentation/codex/model-routing/scripts/bounded_or_worker_gate_prompt.py
+  - documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py
+  - documentation/codex/model-routing/tests/test_bounded_or_worker_gate_prompt.py
+- Steps:
+  - Den gemeinsamen Visibility-Contract gegen die aktuelle Spec absichern.
+  - Freigegebene bounded OR-Lanes explizit von experimentellen, partiellen oder ungesunden Kandidaten trennen.
+  - Fail-closed Verhalten fuer fehlende Gate-Daten oder fehlende Freigabe festziehen.
+  - Die gemeinsame Gate-Ausgabe so halten, dass keine scheinbar gueltige Alltagswahl ohne echte Lane-Freigabe entsteht.
+- Acceptance Criteria:
+  - Die gemeinsame Gate-Logik zeigt sichtbare bounded OR-Wahl nur fuer wirklich freigegebene und gesunde Lanes.
+  - Experimentelle, partielle oder ungesunde Kandidaten bleiben unsichtbar im normalen Operator-Gate.
+  - Fehlende Pflichtinformationen fuehren fail-closed zu keiner sichtbaren bounded OR-Wahl.
+  - Die Contract-Schicht impliziert weder globale OR-Freigabe noch Production Routing.
+- Tests:
+  - Positivtest fuer einen freigegebenen bounded OR-Lane
+  - Negativtest fuer experimentellen oder partiellen Kandidaten
+  - Negativtest fuer fehlende Gate-Pflichtinformationen
+  - Regressionstest gegen versehentliche globale Freischaltung
+- Model: 5.4
+- Reason: Ohne einen zentralen Eligibility-Contract koennen einzelne Skill-Einstiege dieselbe Grundregel unterschiedlich interpretieren und ungesunde OR-Kandidaten sichtbar machen.
+- Closeout: Final Audit PASS ist in `documentation/tasks/TASK-SPEC26.1_final_audit.md` dokumentiert. Der erste Spec-26-Slice ist damit task-scharf abgeschlossen: die gemeinsame bounded OR-Contract-Schicht erzwingt jetzt fail-closed sichtbare Gates nur fuer visibility-ready Lanes, haelt `execution_write_apply_candidate` als `HIDDEN_PARTIAL_CANDIDATE` verborgen, und blockiert sichtbare Everyday-Gates bei fehlendem `evidence_status` oder fehlendem `selected_or_model`. Spec 26 bleibt bewusst offen, weil `TASK-SPEC26.2` die bestehenden Skill-Einstiege erst noch anbinden und `TASK-SPEC26.3` die cross-skill Regression samt Registry-Sync noch separat absichern muss.
+
+### TASK-SPEC26.2 Wire visible bounded OR choices into the approved existing skill entries
+- Ziel: Die sichtbare Wahl zwischen lokalem Codex-Pfad und bounded OR-Pfad an den bestehenden Skill-Einstiegen verankern, aber nur dort, wo der gemeinsame Eligibility-Contract einen konkreten Lane freigibt.
+- Scope: Repo-versionierte Skill-Einstiege, zugehoerige Runner-Einstiegspfade und sichtbare Operator-Wording-Ausrichtung fuer bereits freigegebene Skill-Familien; keine neue Lane-Erfindung und keine globale Aktivierung.
+- Files:
+  - documentation/codex/skills/janus-executioner/SKILL.md
+  - documentation/codex/skills/janus-debug/SKILL.md
+  - documentation/codex/skills/janus-test-pipeline/SKILL.md
+  - documentation/codex/skills/janus-quickchange/SKILL.md
+  - documentation/codex/skills/janus-documentation-update/SKILL.md
+  - documentation/codex/model-routing/scripts/codex_dev_workhorse_runner.py
+  - documentation/codex/model-routing/scripts/codex_debug_hypothesis_review_runner.py
+  - documentation/codex/model-routing/scripts/codex_test_result_triage_review_runner.py
+  - documentation/codex/model-routing/scripts/codex_quickchange_write_apply_runner.py
+  - documentation/codex/model-routing/scripts/doc_skill_mini_fixed_or_live_runner.py
+- Steps:
+  - Die betroffenen Skill-Einstiege auf den gemeinsamen Eligibility-Contract ausrichten.
+  - Sichtbare bounded OR-Wahl automatisch nur bei passenden freigegebenen Lanes anzeigen.
+  - Nicht passende oder fail-closed Faelle explizit Codex-only lassen.
+  - Skill-Texte und sichtbare Einstiegspfade konsistent auf dieselbe Operator-Interaktion bringen.
+- Acceptance Criteria:
+  - Geeignete bestehende Skill-Einstiege zeigen automatisch die bounded OR-Wahl nur bei passendem freigegebenem Lane.
+  - Nicht passende bestehende Skill-Einstiege bleiben sichtbar lokal bei Codex.
+  - Die sichtbare Operator-Interaktion ist ueber die betroffenen Skills konsistent.
+  - Es entsteht keine implizite Aktivierung fuer Skills oder Teilpfade ohne freigegebenen Lane.
+- Tests:
+  - Positivtest fuer passende Einstiege in mindestens einer bestehenden Lane-Familie
+  - Negativtest fuer bestehenden Skill-Fall ohne freigegebenen Lane
+  - Regressionstest fuer konsistente Gate-Ausgabe ueber die betroffenen Skill-Einstiege
+- Model: 5.4
+- Reason: Der eigentliche Nutzerwert entsteht erst, wenn die bounded OR-Wahl sichtbar direkt an den relevanten Skill-Einstiegen auftaucht statt nur in zentralen Hilfsartefakten.
+- Closeout: Final Audit PASS ist in `documentation/tasks/TASK-SPEC26.2_final_audit.md` dokumentiert. Der zweite Spec-26-Slice ist damit task-scharf abgeschlossen: die freigegebenen bestehenden Skill-Einstiege zeigen die normale Alltagswahl nur noch fuer wirklich sichtbare approved Lanes, waehrend produktive Hidden-/Partial-Faelle wie `execution_write_apply_candidate` im sichtbaren Prompt fail-closed lokal bleiben und keine normale `2 = OR`-Wahl mehr emittieren. Spec 26 bleibt bewusst offen, weil `TASK-SPEC26.3` die cross-skill Regression samt Registry-Sync noch separat absichern muss.
+
+### TASK-SPEC26.3 Add cross-skill regression and registry-sync coverage for bounded OR visibility
+- Ziel: Skill-uebergreifend absichern, dass nur freigegebene bounded OR-Lanes sichtbar bleiben und dass Registry-/Inventar-Artefakte nicht von der realen Gate-Logik wegdriften.
+- Scope: Cross-skill Regressionen, fail-closed Pfade, Registry-/Inventar-Sync fuer sichtbare versus unsichtbare Lanes, keine neue Produktentscheidung und keine Erweiterung auf ungebundene Delegation.
+- Files:
+  - documentation/codex/model-routing/tests/test_assistive_or_review_consumer_integration.py
+  - documentation/codex/model-routing/tests/test_codex_dev_workhorse_runner.py
+  - documentation/codex/model-routing/tests/test_quickchange_write_apply_runner.py
+  - documentation/codex/model-routing/tests/test_bounded_or_worker_gate_prompt.py
+  - documentation/codex/model-routing/or_everyday_lane_inventory_2026-06-24.md
+  - documentation/codex/model-routing/or_everyday_operator_registry_summary_2026-06-24.md
+- Steps:
+  - Skill-uebergreifende Regressionen fuer sichtbare und unsichtbare Lane-Klassen ergaenzen.
+  - Lokalen Codex-owned Fallback fuer fail-closed Gate-Zustaende absichern.
+  - Zentrale Registry-/Inventar-Artefakte mit der tatsaechlichen Sichtbarkeitslogik synchron halten.
+  - Sicherstellen, dass keine experimentellen oder partiellen Kandidaten versehentlich als normale Alltagswahl dargestellt werden.
+- Acceptance Criteria:
+  - Experimentelle oder partielle Kandidaten bleiben auch skill-uebergreifend unsichtbar im normalen Operator-Gate.
+  - Fail-closed Faelle landen klar in einem lokalen Codex-owned Ausgang.
+  - Registry und reale Sichtbarkeitslogik widersprechen sich nicht fuer die zentralen Lane-Klassen.
+  - Regressionen verhindern stille Rueckfaelle in inkonsistente oder zu breite Skill-Sichtbarkeit.
+- Tests:
+  - Skill-uebergreifender Positivtest fuer freigegebene Sichtbarkeit
+  - Skill-uebergreifender Negativtest fuer experimentelle oder partielle Kandidaten
+  - Negativtest fuer fail-closed Gate-Zustand mit lokalem Codex-Ausgang
+  - Sync-Test zwischen Registry und realer Sichtbarkeitslogik
+- Model: 5.4
+- Reason: Bei einem mehrskilligen Visibility-Feature ist der groesste Praxisfehler stilles Driften zwischen zentraler Registry, echter Gate-Logik und verbotenen experimentellen Sichtbarkeiten.
+- Closeout: Final Audit PASS ist in `documentation/tasks/TASK-SPEC26.3_final_audit.md` dokumentiert. Der dritte und letzte Spec-26-Slice ist damit task-scharf abgeschlossen: `generator_review` ist jetzt im shared contract als `HIDDEN_INTERNAL_ONLY` fixiert, `execution_write_apply_candidate` bleibt `HIDDEN_PARTIAL_CANDIDATE`, sichtbare freigegebene Alltagspfade bleiben weiter operator-sichtbar, und die zentralen Registry-/Inventar-Artefakte behaupten keine versteckten `2 = OR`-Wege mehr. Spec 26 ist damit als vollstaendiger Drei-Slice-Block fertig und kann nach Dokumentations-Sync geschlossen werden.

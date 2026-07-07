@@ -17,6 +17,13 @@ DEFAULT_ELIGIBILITY_CONFIG_PATH = (
 DEFAULT_BUDGET_PROFILE_CONFIG_PATH = (
     MODEL_ROUTING_DIR / "config" / "or_task_budget_profiles_2026-06-19.json"
 )
+VISIBLE_OPERATOR_GATE_STATUSES = {"VISIBLE_APPROVED"}
+VISIBLE_EVIDENCE_STATUSES = {
+    "LIVE_EVIDENCE_CONFIRMED",
+    "BOUNDED_LIVE_EVIDENCE_CONFIRMED",
+    "BOUNDED_WORKFLOW_READY",
+}
+LIVE_TEST_EXECUTION_SELECTED_OR_MODEL = "moonshotai/kimi-k2.5"
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -77,6 +84,227 @@ def _base_result(
 def model_matches(normal_target_model: str, expected_tokens: list[str]) -> bool:
     check = norm(normal_target_model)
     return any(token in check for token in expected_tokens)
+
+
+def _visibility_result(
+    *,
+    subject_type: str,
+    subject_id: str,
+    visibility_status: str,
+    evidence_status: str | None = None,
+    selected_or_model: str | None = None,
+) -> dict[str, Any]:
+    normalized_evidence_status = str(evidence_status or "").strip()
+    normalized_selected_model = str(selected_or_model or "").strip()
+    if visibility_status not in VISIBLE_OPERATOR_GATE_STATUSES:
+        return {
+            "operator_gate_visibility": "HIDDEN",
+            "subject_type": subject_type,
+            "subject_id": subject_id,
+            "visibility_status": visibility_status or "HIDDEN_UNSPECIFIED",
+            "reason_code": visibility_status or "VISIBILITY_FAIL_CLOSED",
+            "message": "The visible 1 = Codex / 2 = OR operator gate must remain hidden for this bounded lane.",
+            "selected_or_model": normalized_selected_model or "N_A",
+            "evidence_status": normalized_evidence_status or "UNKNOWN",
+        }
+    if not normalized_evidence_status:
+        return {
+            "operator_gate_visibility": "HIDDEN",
+            "subject_type": subject_type,
+            "subject_id": subject_id,
+            "visibility_status": "HIDDEN_REQUIRED_FIELD_MISSING",
+            "reason_code": "EVIDENCE_STATUS_MISSING",
+            "message": "The visible operator gate must remain hidden because evidence_status is missing.",
+            "selected_or_model": normalized_selected_model or "N_A",
+            "evidence_status": "UNKNOWN",
+        }
+    if normalized_evidence_status not in VISIBLE_EVIDENCE_STATUSES:
+        return {
+            "operator_gate_visibility": "HIDDEN",
+            "subject_type": subject_type,
+            "subject_id": subject_id,
+            "visibility_status": visibility_status,
+            "reason_code": "EVIDENCE_STATUS_NOT_VISIBLE_READY",
+            "message": "The visible operator gate must remain hidden until this bounded lane has released healthy evidence.",
+            "selected_or_model": normalized_selected_model or "N_A",
+            "evidence_status": normalized_evidence_status,
+        }
+    if subject_type in {"doc_skill_fixed_or", "productive_dev_workhorse_task_class"} and not normalized_selected_model:
+        return {
+            "operator_gate_visibility": "HIDDEN",
+            "subject_type": subject_type,
+            "subject_id": subject_id,
+            "visibility_status": "HIDDEN_REQUIRED_FIELD_MISSING",
+            "reason_code": "SELECTED_OR_MODEL_MISSING",
+            "message": "The visible operator gate must remain hidden because selected_or_model is missing.",
+            "selected_or_model": "N_A",
+            "evidence_status": normalized_evidence_status,
+        }
+    if visibility_status in VISIBLE_OPERATOR_GATE_STATUSES:
+        return {
+            "operator_gate_visibility": "VISIBLE",
+            "subject_type": subject_type,
+            "subject_id": subject_id,
+            "visibility_status": visibility_status,
+            "reason_code": "VISIBILITY_CONFIRMED",
+            "message": "The visible 1 = Codex / 2 = OR operator gate may be shown for this already approved bounded lane.",
+            "selected_or_model": normalized_selected_model or "N_A",
+            "evidence_status": normalized_evidence_status,
+        }
+    return {
+        "operator_gate_visibility": "HIDDEN",
+        "subject_type": subject_type,
+        "subject_id": subject_id,
+        "visibility_status": visibility_status or "HIDDEN_UNSPECIFIED",
+        "reason_code": "VISIBILITY_FAIL_CLOSED",
+        "message": "The visible 1 = Codex / 2 = OR operator gate must remain hidden for this bounded lane.",
+        "selected_or_model": normalized_selected_model or "N_A",
+        "evidence_status": normalized_evidence_status or "UNKNOWN",
+    }
+
+
+def evaluate_existing_skill_operator_gate_visibility(
+    *,
+    subject_type: str,
+    subject_id: str,
+    config_path: Path = DEFAULT_ELIGIBILITY_CONFIG_PATH,
+) -> dict[str, Any]:
+    config = load_json(config_path)
+    if subject_type == "doc_skill_fixed_or":
+        skill_entry = ((config.get("doc_skill_fixed_or") or {}).get("skills") or {}).get(subject_id)
+        if skill_entry is None:
+            return {
+                **_visibility_result(
+                    subject_type=subject_type,
+                    subject_id=subject_id,
+                    visibility_status="HIDDEN_NOT_ALLOWED",
+                ),
+                "reason_code": "SKILL_NOT_ALLOWED",
+                "message": "Skill is outside the explicitly allowed bounded OR worker set.",
+            }
+        return _visibility_result(
+            subject_type=subject_type,
+            subject_id=subject_id,
+            visibility_status=str(skill_entry.get("operator_gate_visibility_status", "")),
+            evidence_status=skill_entry.get("evidence_status"),
+            selected_or_model=skill_entry.get("selected_or_model"),
+        )
+
+    if subject_type == "dispatcher_task_class":
+        task_entry = (config.get("dispatcher_task_classes") or {}).get(subject_id)
+        if task_entry is None:
+            return {
+                **_visibility_result(
+                    subject_type=subject_type,
+                    subject_id=subject_id,
+                    visibility_status="HIDDEN_NOT_ALLOWED",
+                ),
+                "reason_code": "TASK_CLASS_NOT_ALLOWED",
+                "message": "Task class is outside the shared bounded OR worker contract.",
+            }
+        return _visibility_result(
+            subject_type=subject_type,
+            subject_id=subject_id,
+            visibility_status=str(task_entry.get("operator_gate_visibility_status", "")),
+            evidence_status=task_entry.get("evidence_status"),
+            selected_or_model=task_entry.get("selected_or_model"),
+        )
+
+    if subject_type == "productive_dev_workhorse_task_class":
+        task_entry = ((config.get("productive_dev_workhorse_path") or {}).get("allowed_task_classes") or {}).get(
+            subject_id
+        )
+        if task_entry is None:
+            return {
+                **_visibility_result(
+                    subject_type=subject_type,
+                    subject_id=subject_id,
+                    visibility_status="HIDDEN_NOT_ALLOWED",
+                ),
+                "reason_code": "TASK_CLASS_NOT_ALLOWED",
+                "message": "Task class is outside the productive Dev-workhorse bounded contract.",
+            }
+        return _visibility_result(
+            subject_type=subject_type,
+            subject_id=subject_id,
+            visibility_status=str(task_entry.get("operator_gate_visibility_status", "")),
+            evidence_status=task_entry.get("evidence_status", "BOUNDED_WORKFLOW_READY"),
+            selected_or_model=task_entry.get("selected_or_model"),
+        )
+
+    return {
+        **_visibility_result(
+            subject_type=subject_type,
+            subject_id=subject_id,
+            visibility_status="HIDDEN_UNSUPPORTED_SUBJECT_TYPE",
+        ),
+        "reason_code": "SUBJECT_TYPE_NOT_SUPPORTED",
+        "message": "Subject type is not supported by the shared existing-skill operator-gate visibility contract.",
+    }
+
+
+def evaluate_live_test_execution_gate(
+    *,
+    mode: str,
+    live_test_scope: str,
+) -> dict[str, Any]:
+    subject_id = f"{mode}:{live_test_scope}"
+    if norm(mode) != "live_test_execution":
+        return _base_result(
+            result="OR_NOT_ELIGIBLE",
+            subject_type="live_test_execution_gate",
+            subject_id=subject_id,
+            reason_code="MODE_NOT_ALLOWED",
+            message="Only the LIVE_TEST_EXECUTION entry may expose this bounded OR gate.",
+            selected_or_model=LIVE_TEST_EXECUTION_SELECTED_OR_MODEL,
+        )
+
+    normalized_scope = norm(live_test_scope)
+    if normalized_scope == "local_bounded_retest":
+        return _base_result(
+            result="OR_ALLOWED",
+            subject_type="live_test_execution_gate",
+            subject_id=subject_id,
+            reason_code="ELIGIBILITY_CONFIRMED",
+            message="Bounded OR gate is allowed for one local bounded LIVE_TEST_EXECUTION retest slice.",
+            evidence_status="CONTRACT_ONLY_ALLOWED",
+            selected_or_model=LIVE_TEST_EXECUTION_SELECTED_OR_MODEL,
+        )
+    if normalized_scope == "local_broad_retest":
+        return _base_result(
+            result="OR_NOT_ELIGIBLE",
+            subject_type="live_test_execution_gate",
+            subject_id=subject_id,
+            reason_code="SLICE_TOO_BROAD",
+            message="Broad local LIVE_TEST_EXECUTION slices must remain Codex-only until the bounded worker contract exists.",
+            selected_or_model=LIVE_TEST_EXECUTION_SELECTED_OR_MODEL,
+        )
+    if normalized_scope == "non_local_live_test":
+        return _base_result(
+            result="OR_NOT_ELIGIBLE",
+            subject_type="live_test_execution_gate",
+            subject_id=subject_id,
+            reason_code="NON_LOCAL_LIVE_TEST",
+            message="Non-local LIVE_TEST_EXECUTION flows must remain Codex-only.",
+            selected_or_model=LIVE_TEST_EXECUTION_SELECTED_OR_MODEL,
+        )
+    if normalized_scope == "not_a_retest":
+        return _base_result(
+            result="OR_NOT_ELIGIBLE",
+            subject_type="live_test_execution_gate",
+            subject_id=subject_id,
+            reason_code="NOT_A_RETEST",
+            message="Only bounded retest slices may expose the LIVE_TEST_EXECUTION OR gate.",
+            selected_or_model=LIVE_TEST_EXECUTION_SELECTED_OR_MODEL,
+        )
+    return _base_result(
+        result="OR_NOT_ELIGIBLE",
+        subject_type="live_test_execution_gate",
+        subject_id=subject_id,
+        reason_code="LIVE_TEST_SCOPE_UNKNOWN",
+        message="Unknown LIVE_TEST_EXECUTION scope. The bounded OR gate stays hidden fail-closed.",
+        selected_or_model=LIVE_TEST_EXECUTION_SELECTED_OR_MODEL,
+    )
 
 
 def evaluate_doc_skill_fixed_or(
@@ -156,6 +384,7 @@ def evaluate_dispatch_task_class(
 ) -> dict[str, Any]:
     config = load_json(config_path)["dispatcher_task_classes"]
     task_entry = config.get(task_class)
+    selected_or_model = task_entry.get("selected_or_model") if isinstance(task_entry, dict) else None
     if task_entry is None:
         return _base_result(
             result="OR_NOT_ELIGIBLE",
@@ -173,6 +402,7 @@ def evaluate_dispatch_task_class(
             reason_code=task_entry.get("reason_code", "EVIDENCE_NOT_CONFIRMED"),
             message=task_entry.get("message", "Task class is not yet evidence-backed for bounded OR use."),
             evidence_status=evidence_status,
+            selected_or_model=selected_or_model,
         )
     if task_entry.get("eligibility_result") == "OR_NOT_ELIGIBLE":
         return _base_result(
@@ -182,6 +412,7 @@ def evaluate_dispatch_task_class(
             reason_code=task_entry.get("reason_code", "TASK_CLASS_NOT_ALLOWED"),
             message=task_entry.get("message", "Task class is not allowed for bounded OR use."),
             evidence_status=evidence_status,
+            selected_or_model=selected_or_model,
         )
     return _base_result(
         result="OR_ALLOWED",
@@ -190,6 +421,7 @@ def evaluate_dispatch_task_class(
         reason_code=task_entry.get("reason_code", "ELIGIBILITY_CONFIRMED"),
         message=task_entry.get("message", "Task class is allowed for bounded OR worker gating."),
         evidence_status=evidence_status,
+        selected_or_model=selected_or_model,
     )
 
 
@@ -485,6 +717,16 @@ def evaluate_productive_dev_workhorse_path(
             message="No budget profile is configured for this productive Dev-workhorse task class.",
         )
 
+    selected_or_model = str(task_entry.get("selected_or_model") or "").strip()
+    if not selected_or_model:
+        return _base_result(
+            result="OR_NOT_ELIGIBLE",
+            subject_type="productive_dev_workhorse_path",
+            subject_id=subject_id,
+            reason_code="SELECTED_OR_MODEL_MISSING",
+            message="No fixed recommended OR model is configured for this productive Dev-workhorse task class.",
+        )
+
     budget_profile = _load_budget_profile(budget_profile_name, budget_config_path)
     if budget_profile is None:
         return _base_result(
@@ -503,6 +745,7 @@ def evaluate_productive_dev_workhorse_path(
                 subject_id=subject_id,
                 reason_code="ESTIMATED_COST_MISSING",
                 message="Estimated OR cost is required before offering the productive Dev-workhorse gate.",
+                selected_or_model=selected_or_model,
             ),
             "budget_profile": budget_profile_name,
             "per_call_cap_usd": float(budget_profile["per_call_cap_usd"]),
@@ -537,6 +780,7 @@ def evaluate_productive_dev_workhorse_path(
                 subject_id=subject_id,
                 reason_code="PER_CALL_CAP_EXCEEDED",
                 message="Estimated OR cost exceeds the productive Dev-workhorse per-call cap before the gate can be offered.",
+                selected_or_model=selected_or_model,
             ),
             "budget_profile": budget_profile_name,
             "per_call_cap_usd": per_call_cap,
@@ -552,6 +796,7 @@ def evaluate_productive_dev_workhorse_path(
             reason_code="ELIGIBILITY_CONFIRMED",
             message="Productive Dev-workhorse path eligibility confirmed for this task class.",
             evidence_status="CONTRACT_ONLY_ALLOWED",
+            selected_or_model=selected_or_model,
         ),
         "budget_profile": budget_profile_name,
         "per_call_cap_usd": per_call_cap,

@@ -11,31 +11,38 @@
     "skills": {
       "DOC-SKILL-001": {
         "selected_or_model": "openai/gpt-oss-20b",
-        "evidence_status": "LIVE_EVIDENCE_CONFIRMED"
+        "evidence_status": "LIVE_EVIDENCE_CONFIRMED",
+        "operator_gate_visibility_status": "VISIBLE_APPROVED"
       },
       "DOC-SKILL-002": {
         "selected_or_model": "openai/gpt-oss-20b",
-        "evidence_status": "LIVE_EVIDENCE_CONFIRMED"
+        "evidence_status": "LIVE_EVIDENCE_CONFIRMED",
+        "operator_gate_visibility_status": "VISIBLE_APPROVED"
       },
       "DOC-SKILL-003": {
         "selected_or_model": "openai/gpt-oss-20b",
-        "evidence_status": "LIVE_EVIDENCE_CONFIRMED"
+        "evidence_status": "LIVE_EVIDENCE_CONFIRMED",
+        "operator_gate_visibility_status": "VISIBLE_APPROVED"
       },
       "DOC-SKILL-006": {
         "selected_or_model": "openai/gpt-oss-120b",
-        "evidence_status": "LIVE_EVIDENCE_CONFIRMED"
+        "evidence_status": "LIVE_EVIDENCE_CONFIRMED",
+        "operator_gate_visibility_status": "VISIBLE_APPROVED"
       },
       "DOC-SKILL-008": {
         "selected_or_model": "qwen/qwen3.5-flash-02-23",
-        "evidence_status": "LIVE_EVIDENCE_CONFIRMED"
+        "evidence_status": "LIVE_EVIDENCE_CONFIRMED",
+        "operator_gate_visibility_status": "VISIBLE_APPROVED"
       },
       "DOC-SKILL-009": {
         "selected_or_model": "qwen/qwen3.5-flash-02-23",
-        "evidence_status": "LIVE_EVIDENCE_CONFIRMED"
+        "evidence_status": "LIVE_EVIDENCE_CONFIRMED",
+        "operator_gate_visibility_status": "VISIBLE_APPROVED"
       },
       "DOC-SKILL-010": {
         "selected_or_model": "qwen/qwen3.5-flash-02-23",
-        "evidence_status": "LIVE_EVIDENCE_CONFIRMED"
+        "evidence_status": "LIVE_EVIDENCE_CONFIRMED",
+        "operator_gate_visibility_status": "VISIBLE_APPROVED"
       }
     }
   },
@@ -43,48 +50,60 @@
     "documentation_draft": {
       "eligibility_result": "OR_ALLOWED",
       "evidence_status": "BOUNDED_WORKFLOW_READY",
+      "operator_gate_visibility_status": "VISIBLE_APPROVED",
       "reason_code": "ELIGIBILITY_CONFIRMED",
       "message": "Bounded documentation draft delegation is already workflow-ready."
     },
     "quickchange_patch_review": {
-      "eligibility_result": "OR_NOT_ELIGIBLE",
-      "evidence_status": "LEGACY_DIRECT_ENTRY_DISABLED",
-      "reason_code": "SKILL_NOT_ALLOWED",
-      "message": "Legacy quickchange patch review is no longer OR-eligible at the shared dispatcher entry."
+      "eligibility_result": "OR_ALLOWED",
+      "evidence_status": "BOUNDED_LIVE_EVIDENCE_CONFIRMED",
+      "operator_gate_visibility_status": "VISIBLE_APPROVED",
+      "selected_or_model": "qwen/qwen3-coder-30b-a3b-instruct",
+      "reason_code": "ELIGIBILITY_CONFIRMED",
+      "message": "Bounded quickchange patch review is allowed again at the shared dispatcher entry."
     },
     "quickchange_write_apply": {
       "eligibility_result": "OR_ALLOWED",
       "evidence_status": "BOUNDED_LIVE_EVIDENCE_CONFIRMED",
+      "operator_gate_visibility_status": "VISIBLE_APPROVED",
       "reason_code": "ELIGIBILITY_CONFIRMED",
       "message": "Bounded quickchange write-apply path has accepted live evidence."
     },
     "generator_review": {
       "eligibility_result": "OR_ALLOWED",
       "evidence_status": "BOUNDED_WORKFLOW_READY",
+      "operator_gate_visibility_status": "HIDDEN_INTERNAL_ONLY",
+      "selected_or_model": "openai/gpt-oss-20b",
       "reason_code": "ELIGIBILITY_CONFIRMED",
-      "message": "Bounded generator review is allowed through the shared delegation contract."
+      "message": "Bounded generator review remains internal-only and must stay hidden from the normal everyday operator gate."
     },
     "debug_hypothesis_review": {
       "eligibility_result": "OR_ALLOWED",
       "evidence_status": "BOUNDED_LIVE_EVIDENCE_CONFIRMED",
+      "operator_gate_visibility_status": "VISIBLE_APPROVED",
+      "selected_or_model": "qwen/qwen3-coder-30b-a3b-instruct",
       "reason_code": "ELIGIBILITY_CONFIRMED",
       "message": "Bounded debug hypothesis review is allowed for the first worker rollout."
     },
     "test_result_triage_review": {
       "eligibility_result": "OR_ALLOWED",
       "evidence_status": "BOUNDED_LIVE_EVIDENCE_CONFIRMED",
+      "operator_gate_visibility_status": "VISIBLE_APPROVED",
+      "selected_or_model": "qwen/qwen3-coder-30b-a3b-instruct",
       "reason_code": "ELIGIBILITY_CONFIRMED",
       "message": "Bounded test-result triage review is allowed for the first worker rollout."
     },
     "execution_patch_candidate": {
       "eligibility_result": "OR_ALLOWED",
       "evidence_status": "BOUNDED_LIVE_EVIDENCE_CONFIRMED",
+      "operator_gate_visibility_status": "VISIBLE_APPROVED",
       "reason_code": "ELIGIBILITY_CONFIRMED",
       "message": "Proposal-first execution patch candidates are allowed as bounded reviewed delegation."
     },
     "execution_write_apply_candidate": {
       "eligibility_result": "OR_ALLOWED",
       "evidence_status": "BOUNDED_AUDITED_FOUNDATION",
+      "operator_gate_visibility_status": "HIDDEN_PARTIAL_CANDIDATE",
       "reason_code": "ELIGIBILITY_CONFIRMED",
       "message": "Execution write-apply candidate entry remains bounded and reviewed under Codex-owned acceptance."
     }
@@ -145,11 +164,13 @@
     "allowed_task_classes": {
       "execution_patch_candidate": {
         "budget_profile": "execution_patch_candidate",
-        "selected_or_model": "deepseek/deepseek-v4-flash"
+        "selected_or_model": "moonshotai/kimi-k2.5",
+        "operator_gate_visibility_status": "VISIBLE_APPROVED"
       },
       "execution_write_apply_candidate": {
         "budget_profile": "execution_write_apply_candidate",
-        "selected_or_model": "deepseek/deepseek-v4-flash"
+        "selected_or_model": "deepseek/deepseek-v4-flash",
+        "operator_gate_visibility_status": "HIDDEN_PARTIAL_CANDIDATE"
       }
     }
   }

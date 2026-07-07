@@ -1,6 +1,1220 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-07 17:54 +02:00`, Spec 26 completed `janus-documentation-update` as its final closeout step. `TASK-SPEC26.3` is now synchronized into the parent task, central registry, and project snapshot, and the full Spec moved to `documentation/SPEC/Spec Done/26_operator_facing_codex_oder_or_wahl_in_bestehenden_janus_skills.md` with `SPEC IMPLEMENTATION METADATA` marking the three-slice chain DONE.
+
+Current goal: finish the Spec-26 closeout cleanly and hand back a documentation-complete, audit-complete state before any git checkpoint.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- added the final `TASK-SPEC26.3` closeout line to the parent `TASK-SPEC26` artifact
+- synchronized central registry and `PROJECT_STATE.md` so Spec 26 is no longer shown as still-open
+- moved Spec 26 into `documentation/SPEC/Spec Done/` and appended `SPEC IMPLEMENTATION METADATA`
+- recorded a dedicated `TASK-SPEC26.3_documentation_update.md` closeout artifact
+
+Changed files:
+- `documentation/tasks/TASK-SPEC26_operator_facing_codex_oder_or_wahl_in_bestehenden_janus_skills.md`
+- `documentation/tasks/TASK-SPEC26.3_documentation_update.md`
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `documentation/SPEC/Spec Done/26_operator_facing_codex_oder_or_wahl_in_bestehenden_janus_skills.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-documentation-update\scripts\validate_doc_update.py --repo C:\KI\Janus-Projekt --marker TASK-SPEC26.3 --require documentation/tasks/TASK-SPEC26_operator_facing_codex_oder_or_wahl_in_bestehenden_janus_skills.md --require documentation/tasks/TASK-SPEC26.3_documentation_update.md --require documentation/01_CENTRAL_TASK_REGISTRY.md --require PROJECT_STATE.md --require documentation/ai/CURRENT_STATE.md`: PASS
+- `git diff --check -- documentation/tasks/TASK-SPEC26_operator_facing_codex_oder_or_wahl_in_bestehenden_janus_skills.md documentation/tasks/TASK-SPEC26.3_documentation_update.md documentation/01_CENTRAL_TASK_REGISTRY.md PROJECT_STATE.md documentation/SPEC/Spec Done/26_operator_facing_codex_oder_or_wahl_in_bestehenden_janus_skills.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS
+
+Open risks:
+- No commit or push happened after the full Spec-26 closeout, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+- The git worktree remains dirty, so any checkpoint should stay path-scoped.
+
+Next recommended step for ChatGPT: summarize Spec 26 as fully DONE and documentation-synced; do not treat any of its slices as still open.
+
+Next recommended step for Codex: stop here or route to `janus-git-governance` only if the user wants a checkpoint commit/push.
+
+Last updated: `2026-07-07 17:54:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 17:42 +02:00`, `TASK-SPEC26.3` passed final audit in the restarted July chain. The final audit at `documentation/tasks/TASK-SPEC26.3_final_audit.md` confirms the last Spec-26 slice is audit-cleared: `generator_review` is now hidden internal-only in the shared visibility contract, `execution_write_apply_candidate` remains hidden partial, approved visible lanes still surface `2 = OR`, and the central inventory plus compact registry summary match that runtime truth.
+
+Current goal: sync the `TASK-SPEC26.3` PASS and close Spec 26 through documentation update.
+
+Active phase: `janus-final-audit`, canonical state `PASS`.
+
+Last Codex work:
+- created `documentation/tasks/TASK-SPEC26.3_final_audit.md`
+- audited the refreshed execution result, audit package, direct dispatcher evidence, focused tests, and scoped diff
+- confirmed Spec 26 now has task-level PASS audits for `TASK-SPEC26.1`, `TASK-SPEC26.2`, and `TASK-SPEC26.3`
+
+Changed files:
+- `documentation/tasks/TASK-SPEC26.3_final_audit.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py documentation/tasks/TASK-SPEC26.3_final_audit.md`: PASS
+- `git diff --check -- documentation/tasks/TASK-SPEC26.3_final_audit.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS
+
+Open risks:
+- Documentation sync has not yet closed Spec 26 or moved the Spec to `documentation/SPEC/Spec Done/`.
+- The wider worktree is dirty and includes uncommitted Spec-26 chain artifacts, so any git checkpoint should stay path-scoped.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: route to `janus-documentation-update` for `TASK-SPEC26.3` PASS and overall Spec-26 closeout using the three task-level PASS audits.
+
+Next recommended step for Codex: run `janus-documentation-update` with `5.4` low reasoning, close Spec 26 as implemented, and keep commit/push gated behind explicit user approval.
+
+Last updated: `2026-07-07 17:42:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 17:28 +02:00`, `TASK-SPEC26.3` completed `janus-executioner` in the restarted July chain and is ready for final audit. The final open Spec-26 slice now keeps the cross-skill operator story fail-closed in one consistent truth set: the shared eligibility contract marks `generator_review` as `HIDDEN_INTERNAL_ONLY`, `execution_write_apply_candidate` remains `HIDDEN_PARTIAL_CANDIDATE`, the focused regression suite proves both hidden lanes stay local-only, and the central lane inventory plus compact registry summary no longer overstate either lane as a normal everyday `2 = OR` path.
+
+Current goal: close Spec 26 by running a bounded final audit on the refreshed `TASK-SPEC26.3` execution artifacts.
+
+Active phase: `janus-executioner`, canonical state `HANDOFF`.
+
+Last Codex work:
+- corrected the shared dispatcher visibility truth for `generator_review` from visible everyday to `HIDDEN_INTERNAL_ONLY`
+- refreshed the focused gate regression so hidden-lane runtime behavior and registry-document truth are asserted together
+- synchronized the central lane inventory and compact registry summary to the repaired hidden-vs-visible contract
+- refreshed `TASK-SPEC26.3_execution_result.md` and `TASK-SPEC26.3_AUDIT_PACKAGE.md` to the current July implementation truth
+
+Changed files:
+- `documentation/codex/model-routing/config/bounded_or_worker_eligibility_2026-06-17.json`
+- `documentation/codex/model-routing/tests/test_bounded_or_worker_gate_prompt.py`
+- `documentation/codex/model-routing/or_everyday_lane_inventory_2026-06-24.md`
+- `documentation/codex/model-routing/or_everyday_operator_registry_summary_2026-06-24.md`
+- `documentation/tasks/TASK-SPEC26.3_execution_result.md`
+- `documentation/tasks/TASK-SPEC26.3_AUDIT_PACKAGE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m unittest documentation.codex.model-routing.tests.test_assistive_or_review_consumer_integration`: PASS (`15` tests)
+- `python -m unittest documentation.codex.model-routing.tests.test_codex_dev_workhorse_runner`: PASS (`23` tests; one expected CLI rejection message from a negative test)
+- `python -m unittest documentation.codex.model-routing.tests.test_quickchange_write_apply_runner`: PASS (`3` tests)
+- `python -m unittest documentation.codex.model-routing.tests.test_bounded_or_worker_gate_prompt`: PASS (`13` tests)
+- direct dispatcher probe for `debug_hypothesis_review`, `test_result_triage_review`, `quickchange_patch_review`, `generator_review`, and `execution_write_apply_candidate`: PASS
+- `git diff --check -- documentation/codex/model-routing/config/bounded_or_worker_eligibility_2026-06-17.json documentation/codex/model-routing/tests/test_bounded_or_worker_gate_prompt.py documentation/codex/model-routing/or_everyday_lane_inventory_2026-06-24.md documentation/codex/model-routing/or_everyday_operator_registry_summary_2026-06-24.md documentation/tasks/TASK-SPEC26.3_execution_result.md documentation/tasks/TASK-SPEC26.3_AUDIT_PACKAGE.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py documentation/tasks/TASK-SPEC26.3_execution_result.md`: PASS
+
+Open risks:
+- This slice intentionally corrected one shared visibility-contract row (`generator_review`) in addition to test/doc sync, so final audit should keep review tightly on that exact bounded truth repair rather than reopen broader contract design.
+- `TASK-SPEC26.3` is execution-complete but not yet final-audited in the restarted July chain.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: route directly into `janus-final-audit` for `TASK-SPEC26.3` using the refreshed execution result and audit package only.
+
+Next recommended step for Codex: execute a bounded `janus-final-audit` on `TASK-SPEC26.3` with `5.5` high reasoning.
+
+Last updated: `2026-07-07 17:28:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 17:10 +02:00`, `TASK-SPEC26.3` has now also passed preimplementation check in the restarted July chain. The final open Spec-26 slice is formally bound as the cross-skill regression and registry-alignment fence that must keep hidden or partial lanes visibly local while leaving the already sealed `TASK-SPEC26.1` and `TASK-SPEC26.2` work untouched.
+
+Current goal: move Spec 26 into implementation for the final bounded slice `TASK-SPEC26.3`.
+
+Active phase: `janus-preimplementation-check`, canonical state `PASS`.
+
+Last Codex work:
+- refreshed `documentation/tasks/TASK-SPEC26.3_preimplementation_check.md` into the validator-compatible current precheck format
+- explicitly marked older `TASK-SPEC26.3` downstream artifacts as archive/reference only instead of active authority
+- kept the implementation scope bound to the four focused regression suites plus the two central operator-registry documents
+
+Changed files:
+- `documentation/tasks/TASK-SPEC26.3_preimplementation_check.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py documentation/tasks/TASK-SPEC26.3_preimplementation_check.md`: PASS
+- `git diff --check -- documentation/tasks/TASK-SPEC26.3_preimplementation_check.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS
+
+Open risks:
+- Older historical `TASK-SPEC26.3_execution_result.md` and later artifacts still exist in the repo and must remain archive/reference until the current July execution chain is rerun intentionally.
+- `TASK-SPEC26.3` is now only precheck-passed; implementation, fresh execution evidence, and final audit in the restarted chain have not happened yet.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: route directly into `janus-executioner` for `TASK-SPEC26.3` using the fresh precheck artifact as the active authority.
+
+Next recommended step for Codex: run `janus-executioner` for `TASK-SPEC26.3` with `5.4` medium reasoning.
+
+Last updated: `2026-07-07 17:10:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 17:02 +02:00`, `TASK-SPEC26.3` is now the formally released next slice for Spec 26. A fresh handoff exists at `documentation/tasks/TASK-SPEC26.3_task_breakdown.md`, and the July-valid source-of-truth framing now points only at the final open cross-skill regression and registry-sync fence while keeping `TASK-SPEC26.1` and `TASK-SPEC26.2` closed as sealed baseline slices.
+
+Current goal: move Spec 26 into the final bounded slice `TASK-SPEC26.3` one gate at a time without auto-jumping into older historical precheck or execution artifacts.
+
+Active phase: `janus-task-breakdown`, canonical state `PASS`.
+
+Last Codex work:
+- released `TASK-SPEC26.3` as the only current open implementation slice from the refreshed `TASK-SPEC26` artifact
+- created a fresh `documentation/tasks/TASK-SPEC26.3_task_breakdown.md` handoff aligned to the current July source of truth
+- kept older `TASK-SPEC26.3` precheck/execution artifacts as historical reference only instead of silently skipping the breakdown gate
+
+Changed files:
+- `documentation/tasks/TASK-SPEC26.3_task_breakdown.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-task-breakdown\scripts\validate_task_handoff.py --task documentation/tasks/TASK-SPEC26.3_task_breakdown.md --target TASK-SPEC26.3`: PASS
+- `git diff --check -- documentation/tasks/TASK-SPEC26.3_task_breakdown.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS
+
+Open risks:
+- Older historical `TASK-SPEC26.3_preimplementation_check.md` and later artifacts still exist in the repo and must be treated as archive/reference until the current July chain is rerun intentionally.
+- Spec 26 is still not complete; `TASK-SPEC26.3` remains the final open slice for cross-skill regression and registry-sync work.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: route directly into `janus-preimplementation-check` for `TASK-SPEC26.3` and keep the fresh breakdown handoff plus the current Spec/task artifacts as the only active source of truth.
+
+Next recommended step for Codex: run `janus-preimplementation-check` for `TASK-SPEC26.3` with `5.4` medium reasoning.
+
+Last updated: `2026-07-07 17:02:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 16:45 +02:00`, `TASK-SPEC26.2` completed `janus-documentation-update` as a task-level closeout while Spec 26 intentionally remains open. The parent task artifact now carries an explicit closeout line for the second slice, a dedicated `documentation/tasks/TASK-SPEC26.2_documentation_update.md` records the exact closeout scope and skip reasons, and the already-correct July truth in `documentation/01_CENTRAL_TASK_REGISTRY.md` plus `PROJECT_STATE.md` was rechecked instead of being churned unnecessarily.
+
+Current goal: keep Spec 26 synchronized after the second slice closeout and leave `TASK-SPEC26.3` as the next separate bounded step.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- synchronized the `TASK-SPEC26.2` PASS into the parent `TASK-SPEC26` artifact with an explicit closeout line
+- added a dedicated documentation-update artifact describing the exact closeout scope, verified no-op surfaces, and skip reasons
+- rechecked that `documentation/01_CENTRAL_TASK_REGISTRY.md` and `PROJECT_STATE.md` already match the current July final-audit truth without further edits
+
+Changed files:
+- `documentation/tasks/TASK-SPEC26_operator_facing_codex_oder_or_wahl_in_bestehenden_janus_skills.md`
+- `documentation/tasks/TASK-SPEC26.2_documentation_update.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-documentation-update\scripts\validate_doc_update.py --repo C:\KI\Janus-Projekt --marker TASK-SPEC26.2 --require documentation/tasks/TASK-SPEC26_operator_facing_codex_oder_or_wahl_in_bestehenden_janus_skills.md --require documentation/tasks/TASK-SPEC26.2_documentation_update.md --require documentation/01_CENTRAL_TASK_REGISTRY.md --require PROJECT_STATE.md --require documentation/ai/CURRENT_STATE.md`: PASS
+- `git diff --check -- documentation/tasks/TASK-SPEC26_operator_facing_codex_oder_or_wahl_in_bestehenden_janus_skills.md documentation/tasks/TASK-SPEC26.2_documentation_update.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS
+
+Open risks:
+- Spec 26 is still not complete; `TASK-SPEC26.3` remains open for the cross-skill regression and registry-sync slice.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: keep Spec 26 open and route only `TASK-SPEC26.3` as its own bounded slice when you want to continue.
+
+Next recommended step for Codex: either pause here with task-level closure complete or start the separate `janus-task-breakdown` / `janus-preimplementation-check` chain for `TASK-SPEC26.3`.
+
+Last updated: `2026-07-07 16:45:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 16:33 +02:00`, `TASK-SPEC26.2` passed final audit. The audit package was refreshed with explicit bound audit inputs, manual-evidence status, and pipeline completion status before the final audit decision. The final audit at `documentation/tasks/TASK-SPEC26.2_final_audit.md` is `PASS`, validates the productive execution visibility fix plus touched skill-entry wording alignment, and confirms that Spec 26 remains open for `TASK-SPEC26.3`.
+
+Current goal: sync the task-level PASS for `TASK-SPEC26.2` into Janus documentation while keeping Spec 26 open for the separate `TASK-SPEC26.3` registry/cross-skill slice.
+
+Active phase: `janus-final-audit`, canonical state `PASS`.
+
+Last Codex work:
+- refreshed `documentation/tasks/TASK-SPEC26.2_AUDIT_PACKAGE.md` with complete final-audit input fields
+- replaced the stale `TASK-SPEC26.2_final_audit.md` with the current July task-level final audit result
+- validated the final audit with the installed `janus-final-audit` validator
+- reran the bounded test matrix after removing a stray BOM from `test_codex_dev_workhorse_runner.py`
+
+Changed files:
+- `documentation/tasks/TASK-SPEC26.2_AUDIT_PACKAGE.md`
+- `documentation/tasks/TASK-SPEC26.2_final_audit.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m unittest documentation.codex.model-routing.tests.test_codex_dev_workhorse_runner`: PASS (`23` tests; one expected CLI rejection message from a negative test)
+- `python -m unittest documentation.codex.model-routing.tests.test_assistive_or_review_consumer_integration`: PASS (`15` tests)
+- `python -m unittest documentation.codex.model-routing.tests.test_quickchange_write_apply_runner`: PASS (`3` tests)
+- `python -m unittest documentation.codex.model-routing.tests.test_bounded_or_worker_gate_prompt`: PASS (`12` tests)
+- `python -m py_compile documentation/codex/model-routing/scripts/codex_dev_workhorse_runner.py documentation/codex/model-routing/scripts/codex_debug_hypothesis_review_runner.py documentation/codex/model-routing/scripts/codex_test_result_triage_review_runner.py documentation/codex/model-routing/scripts/codex_quickchange_write_apply_runner.py documentation/codex/model-routing/scripts/doc_skill_mini_fixed_or_live_runner.py`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py documentation/tasks/TASK-SPEC26.2_final_audit.md`: PASS
+- `git diff --check -- documentation/codex/skills/janus-executioner/SKILL.md documentation/codex/skills/janus-debug/SKILL.md documentation/codex/skills/janus-test-pipeline/SKILL.md documentation/codex/skills/janus-quickchange/SKILL.md documentation/codex/skills/janus-documentation-update/SKILL.md documentation/codex/model-routing/scripts/codex_dev_workhorse_runner.py documentation/codex/model-routing/tests/test_codex_dev_workhorse_runner.py documentation/tasks/TASK-SPEC26.2_execution_result.md documentation/tasks/TASK-SPEC26.2_AUDIT_PACKAGE.md documentation/tasks/TASK-SPEC26.2_final_audit.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS
+
+Open risks:
+- `TASK-SPEC26.3` still remains for broader cross-skill regression and registry-sync coverage.
+- Documentation sync has not yet recorded the `TASK-SPEC26.2` PASS in task/registry/project-state artifacts.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: route to `janus-documentation-update` for task-level closeout of `TASK-SPEC26.2`; keep Spec 26 open and do not start `TASK-SPEC26.3` in the same documentation step.
+
+Next recommended step for Codex: run `janus-documentation-update` with `5.4` low reasoning using `TASK-SPEC26.2_final_audit.md`, `TASK-SPEC26.2_execution_result.md`, and `TASK-SPEC26.2_AUDIT_PACKAGE.md`.
+
+Last updated: `2026-07-07 16:33:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 16:19 +02:00`, `TASK-SPEC26.2` completed `janus-executioner` and is ready for final audit. The productive execution entry now honors the shared existing-skill visibility contract before surfacing a normal delegated choice, so `execution_patch_candidate` stays visible while `execution_write_apply_candidate` now fails closed at the prompt layer as `HIDDEN_PARTIAL_CANDIDATE`. The touched repo skill entries were aligned to describe the same approved-vs-hidden operator rule, and fresh execution/audit artifacts replaced the stale older `TASK-SPEC26.2` narrative.
+
+Current goal: close the Spec-26 existing-skill integration slice by running a blocker-focused final audit on the refreshed `TASK-SPEC26.2` artifacts.
+
+Active phase: `janus-executioner`, canonical state `HANDOFF`.
+
+Last Codex work:
+- hardened `codex_dev_workhorse_runner.py` so the productive execution gate checks shared visibility status before showing a normal delegated option
+- updated the focused productive runner regression to prove hidden partial `execution_write_apply_candidate` stays Codex-only
+- aligned the touched skill-entry docs so only approved bounded lanes are described as normal visible delegated choices
+- refreshed `TASK-SPEC26.2_execution_result.md` and `TASK-SPEC26.2_AUDIT_PACKAGE.md` to the current July implementation truth
+
+Changed files:
+- `documentation/codex/skills/janus-executioner/SKILL.md`
+- `documentation/codex/skills/janus-debug/SKILL.md`
+- `documentation/codex/skills/janus-test-pipeline/SKILL.md`
+- `documentation/codex/skills/janus-quickchange/SKILL.md`
+- `documentation/codex/skills/janus-documentation-update/SKILL.md`
+- `documentation/codex/model-routing/scripts/codex_dev_workhorse_runner.py`
+- `documentation/codex/model-routing/tests/test_codex_dev_workhorse_runner.py`
+- `documentation/tasks/TASK-SPEC26.2_execution_result.md`
+- `documentation/tasks/TASK-SPEC26.2_AUDIT_PACKAGE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m unittest documentation.codex.model-routing.tests.test_codex_dev_workhorse_runner`: PASS
+- `python -m unittest documentation.codex.model-routing.tests.test_assistive_or_review_consumer_integration`: PASS
+- `python -m unittest documentation.codex.model-routing.tests.test_quickchange_write_apply_runner`: PASS
+- `python -m unittest documentation.codex.model-routing.tests.test_bounded_or_worker_gate_prompt`: PASS
+- `python -m py_compile documentation/codex/model-routing/scripts/codex_dev_workhorse_runner.py documentation/codex/model-routing/scripts/codex_debug_hypothesis_review_runner.py documentation/codex/model-routing/scripts/codex_test_result_triage_review_runner.py documentation/codex/model-routing/scripts/codex_quickchange_write_apply_runner.py documentation/codex/model-routing/scripts/doc_skill_mini_fixed_or_live_runner.py`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py documentation/tasks/TASK-SPEC26.2_execution_result.md`: PASS
+- `git diff --check -- documentation/codex/skills/janus-executioner/SKILL.md documentation/codex/skills/janus-debug/SKILL.md documentation/codex/skills/janus-test-pipeline/SKILL.md documentation/codex/skills/janus-quickchange/SKILL.md documentation/codex/skills/janus-documentation-update/SKILL.md documentation/codex/model-routing/scripts/codex_dev_workhorse_runner.py documentation/codex/model-routing/tests/test_codex_dev_workhorse_runner.py documentation/tasks/TASK-SPEC26.2_execution_result.md documentation/tasks/TASK-SPEC26.2_AUDIT_PACKAGE.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS
+
+Open risks:
+- `TASK-SPEC26.3` still remains for broader cross-skill regression and registry-sync coverage; this slice only closes the existing-skill integration layer.
+- Legacy helper paths still exist for explicit validation use, so final audit should verify that they remain helper-only in wording and do not appear as normal everyday gates.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: run `janus-final-audit` for `TASK-SPEC26.2` using the refreshed execution result and audit package only.
+
+Next recommended step for Codex: execute a blocker-focused `janus-final-audit` on `TASK-SPEC26.2` with `5.5` high reasoning and keep the audit limited to the refreshed July artifacts.
+
+Last updated: `2026-07-07 16:19:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 16:02 +02:00`, `TASK-SPEC26.2` passed `janus-preimplementation-check` and is now implementation-ready as the active Spec-26 slice. The precheck output at `documentation/tasks/TASK-SPEC26.2_preimplementation_check.md` was refreshed into the validator-compatible Codex-native format, the bound identity was reconfirmed against the current Spec and task artifacts, and the slice remains tightly limited to existing skill-entry integration plus directly corresponding runner/test surfaces. The shared visibility contract from `TASK-SPEC26.1` stays fixed baseline only; this step does not reopen contract logic, registry-sync, production routing, or delegated authority scope.
+
+Current goal: move Spec 26 through bounded existing-skill integration with `TASK-SPEC26.2` now prechecked and ready for implementation.
+
+Active phase: `janus-preimplementation-check`, canonical state `PASS`.
+
+Last Codex work:
+- refreshed `documentation/tasks/TASK-SPEC26.2_preimplementation_check.md` into the validator-compatible precheck format used by the installed Codex tooling
+- verified artifact identity across Spec 26, `TASK-SPEC26`, and the new `TASK-SPEC26.2` breakdown handoff
+- bounded the implementation slice to approved visible lanes plus hidden/partial fail-closed behavior only
+
+Changed files:
+- `documentation/tasks/TASK-SPEC26.2_preimplementation_check.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py documentation/tasks/TASK-SPEC26.2_preimplementation_check.md`: PASS
+- `git diff --check -- documentation/tasks/TASK-SPEC26.2_preimplementation_check.md documentation/tasks/TASK-SPEC26.2_task_breakdown.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS
+
+Open risks:
+- The installed precheck validator now enforces a newer Codex-native format than the older copy-block wording still present in the skill text, so future prechecks should follow validator truth until those instructions are reconciled.
+- `TASK-SPEC26.2` still touches multiple skill-entry surfaces, so implementation must stay strictly on approved visible lanes and fail-closed behavior only.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: route directly into `janus-executioner` for `TASK-SPEC26.2` using the bounded file set and evidence gate from the refreshed precheck.
+
+Next recommended step for Codex: execute `TASK-SPEC26.2` via `janus-executioner` on `5.4` with medium reasoning, limited to existing skill-entry integration and focused regression coverage.
+
+Last updated: `2026-07-07 16:02:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 15:52 +02:00`, `TASK-SPEC26.2` was released as the next active bounded slice after the clean closeout of `TASK-SPEC26.1`. A fresh handoff now exists at `documentation/tasks/TASK-SPEC26.2_task_breakdown.md`, and the task-breakdown validator returned `TASK HANDOFF VALIDATION PASS`. The released slice is explicitly limited to wiring the already approved shared visibility contract into existing skill-entry surfaces plus their directly corresponding runner entrypoints and focused regressions. It must not reopen the shared contract itself, must not sync registry/inventory artifacts, and must not broaden the locked Spec-26 product framing.
+
+Current goal: move Spec 26 into the existing-skill integration slice `TASK-SPEC26.2` one gate at a time.
+
+Active phase: `janus-task-breakdown`, canonical state `PASS`.
+
+Last Codex work:
+- released `TASK-SPEC26.2` as the next single active implementation slice from the still-open Spec 26 task artifact
+- created a fresh `TASK-SPEC26.2_task_breakdown.md` handoff tied to the current July source-of-truth files
+- validated the new handoff with the dedicated task-breakdown validator
+
+Changed files:
+- `documentation/tasks/TASK-SPEC26.2_task_breakdown.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-task-breakdown\scripts\validate_task_handoff.py --task documentation/tasks/TASK-SPEC26.2_task_breakdown.md --target TASK-SPEC26.2`: PASS
+
+Open risks:
+- Older June `TASK-SPEC26.2` precheck/audit artifacts exist in the repo and should be treated as historical reference only until the fresh `TASK-SPEC26.2` gate chain is rerun against the current July state.
+- `TASK-SPEC26.2` touches several existing skill-entry surfaces at once, so the next precheck must keep the slice bounded to already approved visible lanes and hidden-lane fail-closed behavior only.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: route directly into `janus-preimplementation-check` for `TASK-SPEC26.2` and keep the refreshed Spec 26 artifact plus the new `TASK-SPEC26.2_task_breakdown.md` handoff as the only active source of truth.
+
+Next recommended step for Codex: run `janus-preimplementation-check` for `TASK-SPEC26.2` with `5.4` medium reasoning.
+
+Last updated: `2026-07-07 15:52:23 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 15:49 +02:00`, `TASK-SPEC26.1` completed `janus-documentation-update` as a task-level closeout while Spec 26 intentionally remains open. The parent task file now carries an explicit closeout line for `TASK-SPEC26.1`, the central task registry and `PROJECT_STATE.md` now describe the current July implementation truth instead of the older June audit wording, and a dedicated `documentation/tasks/TASK-SPEC26.1_documentation_update.md` artifact records the exact closeout scope plus skip reasons. The validation chain is green: the final-audit artifact still validates, the documentation-update validator confirms the `TASK-SPEC26.1` marker across task/registry/project-state/current-state, and the documentation diff is formatting-clean.
+
+Current goal: keep Spec 26 synchronized after the first slice closeout and decide whether to open `TASK-SPEC26.2` next.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- synchronized the `TASK-SPEC26.1` closeout marker into the parent task artifact
+- refreshed the `TASK-SPEC26.1` entries in the central registry and `PROJECT_STATE.md` to the real current implementation and validation state
+- added a dedicated documentation-update artifact with explicit skip reasons because Spec 26 is still open
+
+Changed files:
+- `documentation/tasks/TASK-SPEC26_operator_facing_codex_oder_or_wahl_in_bestehenden_janus_skills.md`
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `documentation/tasks/TASK-SPEC26.1_documentation_update.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py documentation/tasks/TASK-SPEC26.1_final_audit.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-documentation-update\scripts\validate_doc_update.py --repo C:\KI\Janus-Projekt --marker TASK-SPEC26.1 --require documentation/tasks/TASK-SPEC26_operator_facing_codex_oder_or_wahl_in_bestehenden_janus_skills.md --require documentation/01_CENTRAL_TASK_REGISTRY.md --require PROJECT_STATE.md --require documentation/ai/CURRENT_STATE.md`: PASS
+- `git diff --check -- documentation/tasks/TASK-SPEC26_operator_facing_codex_oder_or_wahl_in_bestehenden_janus_skills.md documentation/01_CENTRAL_TASK_REGISTRY.md PROJECT_STATE.md documentation/tasks/TASK-SPEC26.1_documentation_update.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS
+
+Open risks:
+- Spec 26 is still not complete; `TASK-SPEC26.2` and `TASK-SPEC26.3` remain open and the Spec must not be marked DONE or moved to `Spec Done`.
+- `PROJECT_STATE.md` still contains older forward-looking aggregate wording for Spec 26 as a whole; the task-level entry for `TASK-SPEC26.1` is now accurate, but any spec-level closeout should wait until all slices are truly complete.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: keep Spec 26 open and route only the next bounded slice if the user explicitly wants to continue implementation now.
+
+Next recommended step for Codex: either pause for review or start `janus-task-breakdown` / `janus-preimplementation-check` flow for `TASK-SPEC26.2` as the next bounded slice.
+
+Last updated: `2026-07-07 15:49:36 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 15:46 +02:00`, `TASK-SPEC26.1` passed `janus-final-audit` after the stale June task artifacts were refreshed to the current implementation truth. The saved `TASK-SPEC26.1_execution_result.md`, `TASK-SPEC26.1_AUDIT_PACKAGE.md`, and `TASK-SPEC26.1_final_audit.md` now consistently reflect the actual July slice: `DOC-SKILL-001` and `generator_review` remain visibly approved, while `execution_write_apply_candidate` is hidden as `HIDDEN_PARTIAL_CANDIDATE`, and the changed-file scope is limited to the shared config/helper/tests plus governance artifacts. Both execution-result and final-audit validators passed, so the first Spec-26 slice is now formally audit-cleared and ready for task-level documentation sync.
+
+Current goal: close out `TASK-SPEC26.1` cleanly through documentation update while keeping Spec 26 open for later slices.
+
+Active phase: `janus-final-audit`, canonical state `HANDOFF`.
+
+Last Codex work:
+- detected that the previously saved Spec-26 task artifacts were validator-clean but semantically stale
+- refreshed execution result, audit package, and final audit to match the real current implementation and evidence
+- validated the refreshed final-audit chain and cleared `TASK-SPEC26.1` for `janus-documentation-update`
+
+Changed files:
+- `documentation/tasks/TASK-SPEC26.1_execution_result.md`
+- `documentation/tasks/TASK-SPEC26.1_AUDIT_PACKAGE.md`
+- `documentation/tasks/TASK-SPEC26.1_final_audit.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py documentation/tasks/TASK-SPEC26.1_execution_result.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py documentation/tasks/TASK-SPEC26.1_final_audit.md`: PASS
+- `git diff --check -- documentation/tasks/TASK-SPEC26.1_execution_result.md documentation/tasks/TASK-SPEC26.1_AUDIT_PACKAGE.md documentation/tasks/TASK-SPEC26.1_final_audit.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS
+
+Open risks:
+- Spec 26 itself is not done; `TASK-SPEC26.2` and `TASK-SPEC26.3` remain open and the Spec must not be moved to `Spec Done`.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: route to `janus-documentation-update` for task-level closeout only, and keep Spec 26 open for later slices instead of treating the whole feature as done.
+
+Next recommended step for Codex: run `janus-documentation-update` with the refreshed execution result, audit package, and final audit for `TASK-SPEC26.1`.
+
+Last updated: `2026-07-07 15:46:56 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 15:40 +02:00`, `TASK-SPEC26.1` completed its first implementation slice in `janus-executioner` with focused contract-only changes to the shared bounded OR visibility layer. The shared eligibility helper now fail-closes visible operator-gate output when released-health evidence is missing or not visibility-ready, productive lanes that require a fixed model now hide the gate when `selected_or_model` is missing, and the partial `execution_write_apply_candidate` lane is now explicitly hidden behind `HIDDEN_PARTIAL_CANDIDATE` instead of inheriting normal everyday visibility. Focused unit tests and compile checks passed, so the common visibility contract is now materially stricter without yet touching skill-entry rewiring, registry sync, or runtime activation.
+
+Current goal: keep the operator-choice feature moving one bounded slice at a time after the shared visibility contract hardening pass.
+
+Active phase: `janus-executioner`, canonical state `PASS`.
+
+Last Codex work:
+- hardened the shared visibility helper so visible OR gates require visibility-ready evidence and required lane data
+- reclassified the partial `execution_write_apply_candidate` lane as hidden in the shared contract config
+- updated focused regression tests so this slice stays contract-only and does not depend on registry-sync assertions that belong to later work
+
+Changed files:
+- `documentation/codex/model-routing/config/bounded_or_worker_eligibility_2026-06-17.json`
+- `documentation/codex/model-routing/scripts/bounded_or_worker_eligibility.py`
+- `documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py`
+- `documentation/codex/model-routing/tests/test_bounded_or_worker_gate_prompt.py`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m unittest documentation.codex.model-routing.tests.test_bounded_or_worker_eligibility`: PASS
+- `python -m unittest documentation.codex.model-routing.tests.test_bounded_or_worker_gate_prompt`: PASS
+- `python -m py_compile documentation/codex/model-routing/scripts/bounded_or_worker_eligibility.py documentation/codex/model-routing/scripts/bounded_or_worker_gate_prompt.py documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py documentation/codex/model-routing/tests/test_bounded_or_worker_gate_prompt.py`: PASS
+- `git diff --check -- documentation/codex/model-routing/config/bounded_or_worker_eligibility_2026-06-17.json documentation/codex/model-routing/scripts/bounded_or_worker_eligibility.py documentation/codex/model-routing/scripts/bounded_or_worker_gate_prompt.py documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py documentation/codex/model-routing/tests/test_bounded_or_worker_gate_prompt.py documentation/tasks/TASK-SPEC26.1_preimplementation_check.md`: PASS
+
+Open risks:
+- Registry and inventory docs may still describe older operator visibility for some lanes; that intentional sync work belongs to later `TASK-SPEC26.3`, not this completed contract slice.
+- The refreshed Spec still uses the older bounded `Codex` vs `OR` product framing; later slices must avoid silently broadening this into a newer tri-modal product contract without explicit feature authority.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: route to `janus-final-audit` for `TASK-SPEC26.1` and keep the completed contract-only scope explicit so the audit does not incorrectly expect skill rewiring or registry sync in this slice.
+
+Next recommended step for Codex: run `janus-final-audit` for `TASK-SPEC26.1` with `5.4` medium reasoning before deciding whether to open the next bounded slice `TASK-SPEC26.2`.
+
+Last updated: `2026-07-07 15:40:31 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 15:35 +02:00`, `TASK-SPEC26.1` passed `janus-preimplementation-check` without requiring any artifact rewrite. The existing precheck handoff at `documentation/tasks/TASK-SPEC26.1_preimplementation_check.md` validated cleanly with `PRECHECK VALIDATION PASS`, which confirms that the first execution slice for the refreshed operator-choice feature is formally ready for `janus-executioner`. The implementation scope remains sharply bounded to the shared fail-closed operator-gate eligibility and visibility contract only: no skill-entry rewiring, no cross-skill registry sync, and no runtime activation or broader tri-modal product drift belong to this slice.
+
+Current goal: execute `TASK-SPEC26.1` as the first bounded implementation slice for the refreshed operator-choice feature.
+
+Active phase: `janus-preimplementation-check`, canonical state `HANDOFF`.
+
+Last Codex work:
+- verified the live `janus-preimplementation-check` validator contract against the installed skill
+- confirmed the existing `TASK-SPEC26.1_preimplementation_check.md` artifact already matched the required repo-native format
+- validated the saved precheck artifact and cleared the feature for `janus-executioner`
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py documentation/tasks/TASK-SPEC26.1_preimplementation_check.md`: PASS
+
+Open risks:
+- The approved Spec and released task artifacts still intentionally use the older bounded `Codex` vs `OR` product framing; implementation must not silently widen into newer tri-modal product behavior during this first slice.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: use the validated `documentation/tasks/TASK-SPEC26.1_preimplementation_check.md` artifact as the execution handoff and keep the refreshed Spec plus refreshed `TASK-SPEC26` artifacts as the only source of truth.
+
+Next recommended step for Codex: run `janus-executioner` for `TASK-SPEC26.1` with `5.4` medium reasoning and keep the implementation strictly on the shared eligibility/gate contract files plus the focused regression tests.
+
+Last updated: `2026-07-07 15:35:48 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 16:49 +02:00`, `TASK-SPEC26.1` was released as the single active refinement slice for the refreshed operator-choice feature. A dedicated breakdown handoff now exists at `documentation/tasks/TASK-SPEC26.1_task_breakdown.md`, and the validator returned `TASK HANDOFF VALIDATION PASS`. The released slice is explicitly bounded to the shared operator-gate eligibility and visibility contract only: no skill-entry rewiring, no cross-skill registry sync, and no runtime activation drift are allowed in this first precheck target. This means the feature is no longer just compiled to tasks in general; it now has one concrete, precheck-ready first slice under normal Diamond governance.
+
+Current goal: move the refreshed operator-choice feature through one tightly bounded precheck-ready slice at a time, starting with the shared fail-closed visibility contract.
+
+Active phase: single-target task refinement complete, canonical state `PASS`.
+
+Last Codex work:
+- released `TASK-SPEC26.1` as the only active breakdown slice from the refreshed `TASK-SPEC26` artifact
+- created a dedicated `TASK-SPEC26.1_task_breakdown.md` handoff
+- validated the handoff with the dedicated task-breakdown validator
+
+Changed files:
+- `documentation/tasks/TASK-SPEC26.1_task_breakdown.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-task-breakdown\scripts\validate_task_handoff.py --task documentation/tasks/TASK-SPEC26.1_task_breakdown.md --target TASK-SPEC26.1`: PASS
+
+Open risks:
+- The released slice intentionally stays on the older bounded `Codex` vs `OR` product framing from the approved Spec and must not be used to silently introduce broader tri-modal product behavior during precheck or implementation.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: route directly into `janus-preimplementation-check` on `TASK-SPEC26.1` and keep the refreshed Spec, refreshed `TASK-SPEC26`, and the new breakdown handoff as the only source of truth.
+
+Next recommended step for Codex: run `janus-preimplementation-check` for `TASK-SPEC26.1` with `5.4` medium reasoning.
+
+Last updated: `2026-07-07 16:49:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 16:42 +02:00`, the approved Spec for the operator-facing Codex-vs-bounded-OR feature was compiled into a fresh current task artifact at `documentation/tasks/TASK-SPEC26_operator_facing_codex_oder_or_wahl_in_bestehenden_janus_skills.md`. The task file now contains three deterministic implementation slices: `TASK-SPEC26.1` for the shared operator-gate eligibility contract, `TASK-SPEC26.2` for wiring visible bounded OR choices into approved skill entries, and `TASK-SPEC26.3` for cross-skill regression plus registry-sync coverage. The dedicated validator returned `TASK ARTIFACT VALIDATION PASS`, so the feature is now ready for the normal next Diamond step `janus-task-breakdown` instead of remaining at Spec level.
+
+Current goal: move the refreshed operator-choice feature from approved Spec into one released target task at a time without reopening product scope or duplicating task truth.
+
+Active phase: approved Spec compiled to current task artifact, canonical state `PASS`.
+
+Last Codex work:
+- refreshed the active `TASK-SPEC26` artifact in place from the newly approved Spec
+- kept the decomposition deterministic and scoped to three implementation slices
+- validated the generated task artifact with the dedicated validator script
+
+Changed files:
+- `documentation/tasks/TASK-SPEC26_operator_facing_codex_oder_or_wahl_in_bestehenden_janus_skills.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-spec-to-task\scripts\validate_task_artifact.py --task documentation/tasks/TASK-SPEC26_operator_facing_codex_oder_or_wahl_in_bestehenden_janus_skills.md`: PASS
+
+Open risks:
+- The refreshed task artifact intentionally preserves the bounded Codex-vs-OR product framing from the approved Spec and does not silently widen into newer tri-modal infrastructure ambitions.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: route directly into `janus-task-breakdown` on `TASK-SPEC26.1` and keep the approved Spec plus refreshed task artifact as the only source of truth.
+
+Next recommended step for Codex: run `janus-task-breakdown` on `documentation/tasks/TASK-SPEC26_operator_facing_codex_oder_or_wahl_in_bestehenden_janus_skills.md` with `Target Task: TASK-SPEC26.1`.
+
+Last updated: `2026-07-07 16:42:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 16:33 +02:00`, the refreshed Spec `documentation/SPEC/26_operator_facing_codex_oder_or_wahl_in_bestehenden_janus_skills.md` passed the formal `janus-spec-review` gate. The Spec now includes a valid `SPEC REVIEW METADATA` block with `Review Status: APPROVED`, `Complexity Score: 58`, `Risk: MEDIUM`, `Recommended Review Model: 5.4`, `Skill-1 Ready: YES`, and `Split Required: NO`, and the dedicated validator returned `SPEC REVIEW VALIDATION PASS`. This moves the feature cleanly from spec generation into compilation readiness: the next normal Diamond step is `janus-spec-to-task`, not another feature-design or spec-generator loop.
+
+Current goal: continue the refreshed operator-choice feature through the normal Diamond path now that both the feature-design source and the active Spec have passed their gates.
+
+Active phase: approved Spec review, canonical state `PASS`.
+
+Last Codex work:
+- reviewed the refreshed Spec against the locked decision source and Janus spec-review gates
+- wrote the formal `SPEC REVIEW METADATA` block with an `APPROVED` decision
+- validated the review metadata with the dedicated validator script
+
+Changed files:
+- `documentation/SPEC/26_operator_facing_codex_oder_or_wahl_in_bestehenden_janus_skills.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-spec-review\scripts\validate_spec_review.py --spec documentation/SPEC/26_operator_facing_codex_oder_or_wahl_in_bestehenden_janus_skills.md`: PASS
+
+Open risks:
+- The approved Spec intentionally follows the locked bounded `Codex` vs `OR` product framing from the current decision source rather than trying to silently widen the feature into broader tri-modal product behavior.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: route the feature directly into `janus-spec-to-task` and keep the currently approved Spec as the only source of truth unless the user explicitly reopens the product decision.
+
+Next recommended step for Codex: run `janus-spec-to-task` on `documentation/SPEC/26_operator_facing_codex_oder_or_wahl_in_bestehenden_janus_skills.md` with `5.4` medium reasoning.
+
+Last updated: `2026-07-07 16:33:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 16:24 +02:00`, the locked decision summary from `WF-FEATURE-DESIGN-LIVE-OR-001` was converted into the active feature Spec for this feature by updating `documentation/SPEC/26_operator_facing_codex_oder_or_wahl_in_bestehenden_janus_skills.md`. The Spec now follows the current Janus Spec Generator structure, preserves the bounded operator-choice intent from the locked decision source, keeps Codex as final authority, and lands with `target_skill: janus-spec-review`, `recommended_model: 5.4`, `recommended_reasoning: medium`, and `complexity_score: 58`. This means the feature is now back on the normal Diamond path: feature-design evidence has been consumed into an actual review-ready Spec instead of remaining only as a delegated summary artifact.
+
+Current goal: move the newly refreshed operator-choice feature from validated decision summary into normal Spec review and then continue through the Diamond pipeline without reopening already-locked feature questions.
+
+Active phase: post-feature-design Spec generation, canonical state `PASS`.
+
+Last Codex work:
+- consumed the locked `LATEST DECISION SUMMARY` from the bounded live OR feature-design run
+- updated the active feature Spec in place instead of creating a duplicate parallel Spec
+- aligned the Spec with the current Janus Spec Generator structure and routing block
+
+Changed files:
+- `documentation/SPEC/26_operator_facing_codex_oder_or_wahl_in_bestehenden_janus_skills.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- Spec structure spot-check on required headings and routing block: PASS
+- Complexity consistency spot-check (`58` in routing block and internal breakdown): PASS
+
+Open risks:
+- The refreshed Spec correctly follows the latest locked decision summary, which still uses the older bounded `Codex` vs `OR` framing for this feature rather than the broader current tri-modal vocabulary.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: route this feature directly into `janus-spec-review` using the refreshed Spec file, instead of reopening feature design unless the user explicitly wants to change the product decision.
+
+Next recommended step for Codex: run `janus-spec-review` on `documentation/SPEC/26_operator_facing_codex_oder_or_wahl_in_bestehenden_janus_skills.md` with `5.4` medium reasoning.
+
+Last updated: `2026-07-07 16:24:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 16:12 +02:00`, the first explicitly approved live OR run for `TASK-FD-001` / `feature_design_review` completed successfully. The bounded runner `codex_feature_design_runner.py` executed workflow `WF-FEATURE-DESIGN-LIVE-OR-001` against the existing feature-design input package, returned `validation_result = PASS`, and produced `final_outcome = FEATURE_DESIGN_REVIEW_READY_FOR_CODEX_VALIDATION` with actual OR cost `0.00024824`. The delegated result stayed within the intended assist-only contract: one bounded `LATEST DECISION SUMMARY` draft, `Recommended Next Skill: janus-spec-generator`, no implementation/task authority claims, and Codex still as final owner. This turns `feature_design_review` from a no-live-ready lane into a lane with one clean bounded live OR proof.
+
+Current goal: keep converting selected unresolved OR review lanes into evidence-backed everyday options, while preserving the rule that Codex remains final reviewer and acceptance owner.
+
+Active phase: post-DEV-011 bounded live-OR expansion plus operator-story productization, canonical state `PASS`.
+
+Last Codex work:
+- ran the first explicitly approved live OR `feature_design_review` slice through the real bounded runner
+- verified the delegated result, validation summary, and OR telemetry directly from run artifacts
+- confirmed the lane stayed assist-only and ended at `janus-spec-generator` handoff level rather than claiming product authority
+
+Changed files:
+- `documentation/codex/model-routing/feature-design-runs/WF-FEATURE-DESIGN-LIVE-OR-001/consumer_input_package.json`
+- `documentation/codex/model-routing/feature-design-runs/WF-FEATURE-DESIGN-LIVE-OR-001/request_body_source.json`
+- `documentation/codex/model-routing/feature-design-runs/WF-FEATURE-DESIGN-LIVE-OR-001/response_body.json`
+- `documentation/codex/model-routing/feature-design-runs/WF-FEATURE-DESIGN-LIVE-OR-001/response_summary.json`
+- `documentation/codex/model-routing/feature-design-runs/WF-FEATURE-DESIGN-LIVE-OR-001/delegated_result.md`
+- `documentation/codex/model-routing/feature-design-runs/WF-FEATURE-DESIGN-LIVE-OR-001/validation_summary.json`
+- `documentation/codex/model-routing/feature-design-runs/WF-FEATURE-DESIGN-LIVE-OR-001/consumer_operator_choice_delegated.json`
+- `documentation/codex/model-routing/feature-design-runs/WF-FEATURE-DESIGN-LIVE-OR-001/healthcheck_summary.json`
+- `documentation/codex/model-routing/or_healthcheck_telemetry_feature_design_2026-06-26_WF-FEATURE-DESIGN-LIVE-OR-001.jsonl`
+- `development/DEV_STATE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- bounded live OR runner execution for `WF-FEATURE-DESIGN-LIVE-OR-001`: PASS
+- delegated result review: PASS (`DECISION_SUMMARY_READY`, `Recommended Next Skill: janus-spec-generator`)
+- validation summary review: PASS (`actual_or_cost = 0.00024824`, no validation issues)
+
+Open risks:
+- This is one clean bounded live proof, not yet a broad verdict on every future feature-design package shape.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat `feature_design_review` as live-proven for one bounded assist-only OR slice and recommend either spec generation for this feature or the next unresolved OR lane rather than asking for more proof on this same package.
+
+Next recommended step for Codex: either hand the resulting locked decision summary into `janus-spec-generator`, or if the user wants to keep expanding delegation evidence first, pick the next unresolved bounded OR lane with the same no-live-then-live discipline.
+
+Last updated: `2026-07-07 16:12:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 15:58 +02:00`, the next unresolved lane moved forward without any live OR call: `TASK-FD-001` / `feature_design_review` now has a clean no-live operator reference. A new artifact `FEATURE_DESIGN_REVIEW_NO_LIVE_PATH_2026-07-07.md` captures the intended everyday use, the shared `1 = Codex / 2 = Cursor / 3 = OpenRouter` gate, the bounded input package, the current `3 = OpenRouter` recommendation, and the explicit rule that this slice is prompt/dry-run ready but not yet live-proven. The repo and installed `janus-feature-design` skill copies now point to that artifact, and the focused delegate test suite asserts that the document exists and references the current lane contract. This gives the next OR candidate a clearer operator entry before any explicit live approval is spent.
+
+Current goal: keep the bounded delegation system practical in everyday use by turning unresolved lanes into clear operator-ready no-live entries before deciding where live budget is actually worth it.
+
+Active phase: post-DEV-011 lane productization and operator-story cleanup, canonical state `PASS`.
+
+Last Codex work:
+- created a dedicated no-live operator reference for `feature_design_review`
+- linked the feature-design skill to that reference in both repo and installed-skill copies
+- added a focused delegate test that locks the new reference to the current lane contract
+
+Changed files:
+- `documentation/codex/model-routing/FEATURE_DESIGN_REVIEW_NO_LIVE_PATH_2026-07-07.md`
+- `documentation/codex/skills/janus-feature-design/SKILL.md`
+- `C:/Users/pruve/.codex/skills/janus-feature-design/SKILL.md`
+- `documentation/codex/model-routing/tests/test_janus_delegate.py`
+- `development/DEV_STATE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_janus_delegate.py documentation/codex/model-routing/tests/test_delegation_routing.py -q`: PASS (`53 passed`)
+
+Open risks:
+- `feature_design_review` is now operator-ready at prompt/dry-run level, but it still has no explicitly approved live OR evidence and should not be described as live-proven.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: if the user wants the next OR lane to advance, treat `feature_design_review` as the cleanest current candidate for an explicitly approved first live OR run rather than reopening older transition cleanup first.
+
+Next recommended step for Codex: either request explicit live approval for one bounded `feature_design_review` OR run, or productize the next unresolved no-live lane in the same style if the user prefers to keep derisking before live calls.
+
+Last updated: `2026-07-07 15:58:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 15:47 +02:00`, one more active cleanup slice aligned the remaining operator-facing guidance around `TASK-EX-002` without rewriting historical evidence reports. The human task list now explicitly says that the generic `2 = Cursor` gate has a task-specific exception for `TASK-EX-002`, where visible option 2 is `Deterministic Apply`. The active `delegation_evidence_gap_plan.py` helper was also taught to treat `deterministic_apply` as a settled local-worker contract instead of as a missing Cursor evidence gap, and a focused regression test now locks that behavior in. This keeps future review-only gap-plan regenerations from incorrectly telling operators to reopen live agent planning on a lane that is already product-decided.
+
+Current goal: keep the bounded delegation story coherent across active routing helpers, current operator docs, and proven lane references, then choose whether the next value is one more cleanup slice or a new unresolved lane.
+
+Active phase: post-DEV-011 active-doc and helper cleanup, canonical state `PASS`.
+
+Last Codex work:
+- clarified the current task-list note that `TASK-EX-002` relabels option 2 from generic Cursor to `Deterministic Apply`
+- updated the active evidence-gap planner so `deterministic_apply` is not treated like a missing Cursor lane
+- added a focused regression test for that planner behavior
+
+Changed files:
+- `documentation/codex/model-routing/scripts/delegation_evidence_gap_plan.py`
+- `documentation/codex/model-routing/tests/test_delegation_evidence_gap_plan.py`
+- `documentation/codex/model-routing/config/delegation_task_list_2026-07-05.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_delegation_evidence_gap_plan.py documentation/codex/model-routing/tests/test_delegation_routing.py documentation/codex/model-routing/tests/test_janus_delegate.py -q`: PASS (`57 passed`)
+
+Open risks:
+- Historical reports from `2026-07-06` still correctly preserve the older `NO_EVIDENCE` calibration state and should remain treated as history, not as the current operator contract.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat the remaining `2026-07-06` calibration/evidence-gap markdowns as historical snapshots, while relying on the updated task list and active helpers for current operator guidance.
+
+Next recommended step for Codex: either do one last narrow cleanup pass over current operator-facing docs, or stop cleanup here and move to the next unresolved delegation lane.
+
+Last updated: `2026-07-07 15:47:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 15:36 +02:00`, the tri-modal routing truth for `TASK-EX-002` was tightened so the machine-readable task list now matches the already-correct human/operator story: `execution_write_apply_candidate` recommends `deterministic_apply` rather than `cursor`, while still presenting option 2 through the existing shared gate. The routing logic now returns `recommended_backend = deterministic_apply` for this accepted-source lane, validation accepts that special recommendation value, and the focused delegate/routing/shadow-catalog tests are green again. This removes the last easy-to-miss mismatch where prompt wording said `2 = Deterministic Apply` but internal recommendation fields still implied Cursor.
+
+Current goal: keep consolidating the proven Cursor and deterministic worker lanes into one coherent operator story, then either do a small remaining wording cleanup or move to the next unresolved lane.
+
+Active phase: post-DEV-011 routing truth cleanup and operator-story hardening, canonical state `PASS`.
+
+Last Codex work:
+- aligned `TASK-EX-002` machine-readable routing metadata with the already-shipped deterministic apply contract
+- updated routing validation logic so `deterministic_apply` is a first-class recommended backend for this special lane
+- refreshed focused routing/delegate/shadow-catalog tests to lock the contract in place
+
+Changed files:
+- `documentation/codex/model-routing/config/delegation_task_list_2026-07-05.json`
+- `documentation/codex/model-routing/scripts/delegation_routing.py`
+- `documentation/codex/model-routing/tests/test_delegation_routing.py`
+- `documentation/codex/model-routing/tests/test_janus_delegate.py`
+- `documentation/codex/model-routing/tests/test_cursor_shadow_catalog.py`
+- `development/DEV_STATE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_delegation_routing.py documentation/codex/model-routing/tests/test_janus_delegate.py documentation/codex/model-routing/tests/test_cursor_shadow_catalog.py -q`: PASS (`60 passed`)
+
+Open risks:
+- Older historical evidence notes and archived calibration documents still contain earlier transitional language and should remain treated as history, not as current operator truth.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat `TASK-EX-002` as fully settled at the recommendation layer too, so future advice should say `Deterministic Apply` rather than `Cursor` for the accepted-source apply lane.
+
+Next recommended step for Codex: either do one last narrow cleanup of stale operator-facing wording in current docs, or move on to the next unresolved delegation lane instead of revisiting already-proven worker contracts.
+
+Last updated: `2026-07-07 15:36:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 15:09 +02:00`, `TASK-DBG-002` / `debug_repro_investigation` was productized as the canonical Cursor golden path for bounded debug work. A new reference artifact `DEBUG_REPRO_INVESTIGATION_GOLDEN_PATH_2026-07-07.md` now captures the operator gate, allowlist, validation command, live proof workflows, and intended everyday use for `2 = Cursor` in the debug skill. The repo and installed `janus-debug` skill copies now point to that artifact, and a focused catalog test asserts that the golden-path doc exists and references the live proof workflows. This turns the previously scattered `WF-CURSOR-SHADOW-DEBUG-LIVE-001` / `WF-CURSOR-SHADOW-DEBUG-LIVE-002` evidence into one stable operator-facing reference for bounded repro/fix delegation.
+
+Current goal: consolidate the now-proven bounded Cursor lanes into a simpler operator story and choose whether the next value is cleanup or another lane/productization slice.
+
+Active phase: post-DEV-011 golden-path productization for proven Cursor lanes, canonical state `PASS`.
+
+Last Codex work:
+- created a dedicated golden-path doc for `debug_repro_investigation`
+- linked the debug skill wording to that canonical reference
+- added a focused test that guards the presence of the golden-path artifact and its live proof references
+
+Changed files:
+- `documentation/codex/model-routing/DEBUG_REPRO_INVESTIGATION_GOLDEN_PATH_2026-07-07.md`
+- `documentation/codex/skills/janus-debug/SKILL.md`
+- `C:/Users/pruve/.codex/skills/janus-debug/SKILL.md`
+- `documentation/codex/model-routing/tests/test_cursor_shadow_catalog.py`
+- `development/DEV_STATE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_cursor_shadow_catalog.py -q`: PASS (`8 passed`)
+
+Open risks:
+- The golden path now exists as a clear operator reference, but older scattered docs elsewhere in the repo may still describe earlier transitional wording.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat `debug_repro_investigation` as the canonical example for `2 = Cursor` in bounded debug work and recommend either a small wording-cleanup slice or a different remaining lane rather than more proof here.
+
+Next recommended step for Codex: either do one cleanup pass over older transitional wording, or move to the next unresolved lane instead of spending more time on already-proven Cursor golden paths.
+
+Last updated: `2026-07-07 15:09:22 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-06 20:49 +02:00`, `TASK-TP-003` / `test_fixture_worker` was productized as the canonical Cursor golden path instead of spending another live run on a lane that already had strong PASS evidence. A new reference artifact `TEST_FIXTURE_WORKER_GOLDEN_PATH_2026-07-06.md` now captures the operator gate, allowlist, validation command, reference workflows, and intended everyday use for `2 = Cursor` in the test pipeline. The repo and installed `janus-test-pipeline` skill copies now point to that artifact, and a focused catalog test asserts that the golden-path doc exists and references the live proof workflows. This turns the previously scattered `WF-CURSOR-LIVE-SMOKE-003` / `WF-CURSOR-SHADOW-TEST-LIVE-001` / `WF-CURSOR-SHADOW-TEST-LIVE-002` evidence into one stable operator-facing reference.
+
+Current goal: consolidate the now-proven bounded lanes into a cleaner operator story and pick the next highest-value lane or hardening slice from a stronger foundation.
+
+Active phase: post-DEV-011 golden-path productization for proven Cursor lanes, canonical state `PASS`.
+
+Last Codex work:
+- created a dedicated golden-path doc for `test_fixture_worker`
+- linked the test-pipeline skill wording to that canonical reference
+- added a focused test that guards the presence of the golden-path artifact and its live proof references
+
+Changed files:
+- `documentation/codex/model-routing/TEST_FIXTURE_WORKER_GOLDEN_PATH_2026-07-06.md`
+- `documentation/codex/skills/janus-test-pipeline/SKILL.md`
+- `C:/Users/pruve/.codex/skills/janus-test-pipeline/SKILL.md`
+- `documentation/codex/model-routing/tests/test_cursor_shadow_catalog.py`
+- `development/DEV_STATE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_cursor_shadow_catalog.py -q`: PASS (`7 passed`)
+
+Open risks:
+- The golden path now exists as a clear operator reference, but older scattered docs elsewhere in the repo may still describe earlier transitional wording.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat `test_fixture_worker` as the canonical example for `2 = Cursor` in the test pipeline and recommend the next slice from the remaining higher-uncertainty lanes rather than asking for more proof here.
+
+Next recommended step for Codex: either tighten one remaining lane contract nuance, or move to the next productization target such as `debug_repro_investigation` if the user wants another proven Cursor tool-worker example.
+
+Last updated: `2026-07-06 20:49:27 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-06 20:07 +02:00`, `TASK-EX-001` gained the missing reset mechanism that turns the current no-op shadow fixture back into a meaningful future Cursor patch target without leaving the repository in a broken state. A pre-session-budget baseline copy for `gate_prompt_shadow.py` was added under the EX-001 fixture, plus a local helper script `reset_execution_patch_candidate_shadow_fixture.py` that restores the shadow helper into the "patch needed" state on demand. The reset helper was exercised once to prove it really removes the session-budget line, then the live working fixture was restored to the normal green state and the focused shadow/reset/catalog pytest bundle passed. This means the next explicit EX-001 live Cursor run can start from a real bounded delta simply by running the reset helper first, instead of relying on manual prep.
+
+Current goal: keep EX-001 live-path proof plus add repeatable reset prep, so the next Cursor proposal run measures actual patch generation instead of another no-op confirmation.
+
+Active phase: post-DEV-011 fixture-hardening for `execution_patch_candidate`, canonical state `PASS`.
+
+Last Codex work:
+- added a pre-session-budget baseline file for the EX-001 shadow helper
+- added a deterministic local reset helper for the EX-001 shadow fixture
+- added focused tests for the reset helper
+- verified the reset works and then restored the repo fixture to the green post-patch state
+
+Changed files:
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/baseline/gate_prompt_shadow.py`
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/input_package.json`
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/gate_prompt_shadow.py`
+- `documentation/codex/model-routing/scripts/reset_execution_patch_candidate_shadow_fixture.py`
+- `documentation/codex/model-routing/tests/test_reset_execution_patch_candidate_shadow_fixture.py`
+- `development/DEV_STATE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_reset_execution_patch_candidate_shadow_fixture.py documentation/codex/model-routing/tests/test_cursor_shadow_catalog.py -q`: PASS (`8 passed`)
+- `python documentation/codex/model-routing/scripts/reset_execution_patch_candidate_shadow_fixture.py`: PASS (`SHADOW_FIXTURE_RESET_TO_BASELINE`)
+- `python -m pytest documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/test_gate_prompt_shadow.py documentation/codex/model-routing/tests/test_reset_execution_patch_candidate_shadow_fixture.py documentation/codex/model-routing/tests/test_cursor_shadow_catalog.py -q`: PASS (`9 passed`)
+
+Open risks:
+- The reset helper intentionally mutates the working fixture when invoked, so it should be used immediately before an EX-001 live smoke or followed by an explicit restore step.
+- EX-001 still has only one meaningful live worker-path proof so far; the next post-reset run is the first one that will really test bounded patch generation again.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: tell Codex to run the reset helper immediately before the next explicit EX-001 live Cursor smoke, or move to the `test_fixture_worker` golden-path documentation slice if a lower-friction productionization win is preferred first.
+
+Next recommended step for Codex: on the next EX-001 live trial, run `python documentation/codex/model-routing/scripts/reset_execution_patch_candidate_shadow_fixture.py` first, then rerun the bounded live Cursor proposal path against the restored baseline.
+
+Last updated: `2026-07-06 20:07:57 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-06 19:51 +02:00`, the next executioner lane slice moved to `TASK-EX-001` / `execution_patch_candidate` and completed one bounded live Cursor proposal run on sandbox-only shadow files. The shared gate behaved as intended: dry-run prompt mode showed `1 = Codex / 2 = Cursor / 3 = OpenRouter` with positive ROI and `Cursor` recommended, and the live delegated run `WF-CURSOR-SHADOW-EXEC-PROPOSAL-LIVE-001` completed through `janus_delegate.py` plus `janus_cursor_worker_runner.py` with `final_outcome = CURSOR_WORKER_READY_FOR_CODEX_REVIEW` and a real `session_id`. The important nuance is that this was a clean no-op validation slice, not a new patch proposal: Cursor correctly discovered that the shadow helper already contained the requested session-budget line, reran the focused pytest successfully, and returned without editing any allowlisted files. A stale shadow-catalog test that still expected the old EX-002 Cursor dry-run path was also updated to the new deterministic-apply contract and now passes.
+
+Current goal: keep `EX-002` settled, and turn `EX-001` from a no-op proof into a future meaningful Cursor proposal regression by giving it a pre-edit baseline or a fresh bounded delta.
+
+Active phase: post-DEV-011 live Cursor validation for `execution_patch_candidate`, canonical state `PASS`.
+
+Last Codex work:
+- validated the `execution_patch_candidate` shadow fixture locally
+- ran the shared EX-001 prompt gate and one bounded live Cursor proposal run
+- confirmed the live path stayed inside the allowlist and completed with review-ready artifacts
+- updated the stale shadow-catalog test for the new EX-002 deterministic-apply contract
+
+Changed files:
+- `documentation/codex/model-routing/cursor-worker-runs/WF-CURSOR-SHADOW-EXEC-PROPOSAL-LIVE-001/dispatcher_result.json`
+- `documentation/codex/model-routing/cursor-worker-runs/WF-CURSOR-SHADOW-EXEC-PROPOSAL-LIVE-001/cursor_response.json`
+- `documentation/codex/model-routing/cursor-worker-runs/WF-CURSOR-SHADOW-EXEC-PROPOSAL-LIVE-001/stdout.log`
+- `documentation/codex/model-routing/cursor-worker-runs/WF-CURSOR-SHADOW-EXEC-PROPOSAL-LIVE-001/stderr.log`
+- `documentation/codex/model-routing/cursor-worker-runs/WF-CURSOR-SHADOW-EXEC-PROPOSAL-LIVE-001/session_id.txt`
+- `documentation/codex/model-routing/cursor-worker-runs/WF-CURSOR-SHADOW-EXEC-PROPOSAL-LIVE-001/changed_files.txt`
+- `documentation/codex/model-routing/tests/test_cursor_shadow_catalog.py`
+- `development/DEV_STATE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/test_gate_prompt_shadow.py -q`: PASS (`1 passed`)
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane execution_patch_candidate --task-id TASK-EX-001 --workflow-id WF-CURSOR-SHADOW-EXEC-PROPOSAL-DRY-001 --operator-choice prompt --input-package-json documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/input_package.json --allowlist-file documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/allowlist.txt --estimated-codex-saved-tokens 35000 --estimated-delegation-overhead-tokens 10000 --minimum-net-codex-saved-tokens 10000`: PASS
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane execution_patch_candidate --task-id TASK-EX-001 --workflow-id WF-CURSOR-SHADOW-EXEC-PROPOSAL-LIVE-001 --operator-choice 2 --input-package-json documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/input_package.json --allowlist-file documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/allowlist.txt --estimated-codex-saved-tokens 35000 --estimated-delegation-overhead-tokens 10000 --minimum-net-codex-saved-tokens 10000 --execute-live-cursor`: PASS (`CURSOR_WORKER_READY_FOR_CODEX_REVIEW`, no file edits needed)
+- `python -m pytest documentation/codex/model-routing/tests/test_cursor_shadow_catalog.py -q`: PASS (`6 passed`)
+
+Open risks:
+- The current EX-001 shadow task is already satisfied before delegation, so it is not yet a strong regression target for evaluating Cursor patch quality.
+- The live run proved the worker surface, not the model's ability to generate a fresh bounded patch under pressure.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat the EX-001 lane as live-path proven but semantically too easy in its current fixture shape; recommend a fresh bounded pre-edit baseline before drawing conclusions about Cursor patch quality there.
+
+Next recommended step for Codex: either reset the EX-001 shadow fixture to a pre-session-budget baseline and rerun later, or move to the `test_fixture_worker` golden-path documentation slice for a cleaner productionization win.
+
+Last updated: `2026-07-06 19:51:16 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-06 19:30 +02:00`, the accepted-source write lane was formally rerouted away from Cursor and OpenRouter as apply workers. The tri-modal artifacts now treat `TASK-EX-002` / `execution_write_apply_candidate` as `1 = Codex` or `2 = Deterministic Apply`, with option 2 planning `codex_execution_write_apply_candidate_runner.py` instead of `janus_cursor_worker_runner.py`. The manifest disables Cursor and OR for this apply step, the task list now models option 2 as `deterministic_local_apply`, the shared delegate returns `DETERMINISTIC_APPLY_DRY_RUN_READY`, and the focused routing/delegate pytest suite is green. This converts the earlier backend-fit evidence into the actual operator-facing product decision for the lane.
+
+Current goal: finish productizing the accepted-source write lane around deterministic local apply while keeping Cursor for proposal/tool lanes and OR as option 3 where it still makes sense.
+
+Active phase: post-DEV-011 routing hardening for `TASK-EX-002`, canonical state `PASS`.
+
+Last Codex work:
+- changed the shared delegation gate so `execution_write_apply_candidate` shows `2 = Deterministic Apply`
+- wired `janus_delegate.py` option 2 for this lane to `codex_execution_write_apply_candidate_runner.py`
+- disabled Cursor and OR as apply workers for this lane in the manifest
+- updated task list, executioner skill wording, and focused routing/delegate tests
+
+Changed files:
+- `documentation/codex/model-routing/scripts/delegation_routing.py`
+- `documentation/codex/model-routing/scripts/janus_delegate.py`
+- `documentation/codex/model-routing/config/delegation_routing_manifest.json`
+- `documentation/codex/model-routing/config/delegation_task_list_2026-07-05.json`
+- `documentation/codex/model-routing/config/delegation_task_list_2026-07-05.md`
+- `documentation/codex/model-routing/tests/test_delegation_routing.py`
+- `documentation/codex/model-routing/tests/test_janus_delegate.py`
+- `documentation/codex/skills/janus-executioner/SKILL.md`
+- `C:/Users/pruve/.codex/skills/janus-executioner/SKILL.md`
+- `development/DEV_STATE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_delegation_routing.py documentation/codex/model-routing/tests/test_janus_delegate.py -q`: PASS (`52 passed`)
+- `python -m pytest documentation/codex/model-routing/tests/test_execution_write_apply_candidate_live_operator_path.py -q`: PASS (`3 passed`)
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane execution_write_apply_candidate --task-id TASK-EX-002 --workflow-id WF-EX-002-GATE-SAMPLE-001 --operator-choice prompt`: PASS
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane execution_write_apply_candidate --task-id TASK-EX-002 --workflow-id WF-EX-002-GATE-SAMPLE-002 --operator-choice 2 --input-package-json documentation/codex/model-routing/fixtures/examples/execution_write_apply_input_package_example.json --allowlist-file documentation/codex/model-routing/fixtures/examples/allowlists/execution_patch_allowlist.txt --accepted-source-run-dir documentation/codex/model-routing/execution-direct-or-runs/WF-EXEC-PATCH-EXAMPLE-001 --estimated-codex-saved-tokens 28000 --estimated-delegation-overhead-tokens 10000 --minimum-net-codex-saved-tokens 12000 --dry-run`: PASS
+
+Open risks:
+- This block changed the operator contract and planning path only; no new live worker call was run in this slice.
+- Older docs and inventories elsewhere in the repo may still mention the historical OR/Cursor apply story for `execution_write_apply_candidate`.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat `TASK-EX-002` as product-decided for deterministic local apply and stop recommending Cursor or OR as the apply worker for that lane.
+
+Next recommended step for Codex: move to the next highest-value bounded lane, or do a documentation cleanup pass to align older OR executioner references with the new deterministic-apply decision.
+
+Last updated: `2026-07-06 19:30:42 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-06 18:56 +02:00`, the accepted-source write lane was compared against a different bounded execution surface and passed immediately there. A full accepted-source shadow package was created at `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/accepted_source/WF-SHADOW-LOCAL-APPLY-COMPARE-001/`, then replayed through `codex_execution_write_apply_candidate_runner.py`. The validation-only gate `WF-SHADOW-LOCAL-APPLY-COMPARE-VALIDATE-001` returned `PASS`, and the deterministic local-apply comparison `WF-SHADOW-LOCAL-APPLY-COMPARE-LIVE-001` returned `EXECUTION_WRITE_APPLY_LIVE_WRITE_READY_FOR_CODEX_ACCEPT_REJECT`. The exact allowlisted shadow test file was touched and the focused pytest still passed afterward. This materially narrows the earlier blocker: the lane itself is working, and the remaining problem is specifically the Cursor execution surface for this write-style lane.
+
+Current goal: stop treating `TASK-EX-002` as a generic lane problem and pivot the next comparison or productionization step toward non-Cursor execution surfaces for this accepted-source write path.
+
+Active phase: post-DEV-011 backend-fit comparison for the accepted-source execution lane, canonical state `PASS WITH BLOCKED CURSOR COMPARISON`.
+
+Last Codex work:
+- built a full accepted-source shadow package for deterministic local write-apply comparison
+- validated that package through the existing write-apply candidate runner
+- executed the local deterministic apply path successfully on the same bounded lane
+- confirmed the focused shadow pytest still passes after the applied bounded delta
+
+Changed files:
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/accepted_source/WF-SHADOW-LOCAL-APPLY-COMPARE-001/input_package.json`
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/accepted_source/WF-SHADOW-LOCAL-APPLY-COMPARE-001/validation_summary.json`
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/accepted_source/WF-SHADOW-LOCAL-APPLY-COMPARE-001/operator_summary.json`
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/accepted_source/WF-SHADOW-LOCAL-APPLY-COMPARE-001/summary.json`
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/accepted_source/WF-SHADOW-LOCAL-APPLY-COMPARE-001/delegated_result.md`
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/accepted_source/WF-SHADOW-LOCAL-APPLY-COMPARE-001/git_diff.patch`
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/accepted_source/WF-SHADOW-LOCAL-APPLY-COMPARE-001/changed_files.txt`
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/accepted_source/WF-SHADOW-LOCAL-APPLY-COMPARE-001/stdout.log`
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/accepted_source/WF-SHADOW-LOCAL-APPLY-COMPARE-001/stderr.log`
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/accepted_source/WF-SHADOW-LOCAL-APPLY-COMPARE-001/exit_code.txt`
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/sandbox/test_gate_prompt_apply_shadow.py`
+- `development/openrouter-skill-tests/execution_write_apply_live_smoke_2026-07-06.md`
+- `development/DEV_STATE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python documentation/codex/model-routing/scripts/codex_execution_write_apply_candidate_runner.py --task-label "Shadow local apply compare" --normal-target-model "5.4 medium" --operator-choice delegated --workflow-id WF-SHADOW-LOCAL-APPLY-COMPARE-VALIDATE-001 --accepted-source-run-dir documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/accepted_source/WF-SHADOW-LOCAL-APPLY-COMPARE-001`: PASS
+- `python documentation/codex/model-routing/scripts/codex_execution_write_apply_candidate_runner.py --task-label "Shadow local apply compare" --normal-target-model "5.4 medium" --operator-choice delegated --workflow-id WF-SHADOW-LOCAL-APPLY-COMPARE-LIVE-001 --accepted-source-run-dir documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/accepted_source/WF-SHADOW-LOCAL-APPLY-COMPARE-001 --execute-live-sidecar`: PASS
+- `python -m pytest documentation/codex/model-routing/tests/test_execution_write_apply_candidate_live_operator_path.py -q`: PASS (`3 passed`)
+- `python -m pytest documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/sandbox/test_gate_prompt_apply_shadow.py -q`: PASS (`1 passed`)
+
+Open risks:
+- Cursor remains blocked for this lane even though the same bounded lane passes on the local deterministic apply surface.
+- The touched shadow test file is still only local worktree state until a later explicit governance decision decides whether this comparison delta should be kept, checkpointed, or discarded.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat Cursor as disproven for the current accepted-source write lane and favor the non-Cursor write-apply surface or OpenRouter-backed accepted-source flow for future productionization.
+
+Next recommended step for Codex: if the user wants to keep pushing OR, run the next bounded comparison on the OpenRouter-backed accepted-source flow rather than returning to Cursor for `TASK-EX-002`.
+
+Last updated: `2026-07-06 18:56:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-06 18:49 +02:00`, the accepted-source execution lane was also tested with a deliberately smaller prompt/runtime shape and still timed out. The input package for `execution_write_apply_candidate` now supports `cursor_prompt_mode = minimal_write_apply`, which strips the live prompt down to a task label, workspace-relative file list, accepted-source summary line, one validation command, and a concise JSON return instruction. The bounded live rerun `WF-CURSOR-SHADOW-EXEC-WRITE-LIVE-005` still returned `final_outcome = CURSOR_AGENT_TIMEOUT` after `30s`, with no shadow-file edits and the focused pytest still passing. This means the blocker now survives all three local hardening levers we tried: worker timeout control, narrowed sandbox workspace root, and reduced prompt shape.
+
+Current goal: stop spending cycles on the same Cursor live shape and switch the next evidence slice to a different execution surface or backend strategy for accepted-source write work.
+
+Active phase: post-DEV-011 backend-fit evidence for the accepted-source execution lane, canonical state `BLOCKED`.
+
+Last Codex work:
+- added a minimal accepted-source write prompt mode for the Cursor worker runner
+- reran the same bounded live smoke with the reduced prompt shape
+- confirmed the same deterministic timeout outcome
+
+Changed files:
+- `documentation/codex/model-routing/scripts/janus_cursor_worker_runner.py`
+- `documentation/codex/model-routing/tests/test_janus_cursor_worker_runner.py`
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/input_package.json`
+- `development/openrouter-skill-tests/execution_write_apply_live_smoke_2026-07-06.md`
+- `development/DEV_STATE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_janus_cursor_worker_runner.py -q`: PASS (`13 passed`)
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane execution_write_apply_candidate --task-id TASK-EX-002 --workflow-id WF-CURSOR-SHADOW-EXEC-WRITE-LIVE-005 --operator-choice 2 --input-package-json documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/input_package.json --allowlist-file documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/allowlist.txt --accepted-source-run-dir documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/accepted_source/WF-CURSOR-SHADOW-EXEC-ACCEPTED-001 --estimated-codex-saved-tokens 28000 --estimated-delegation-overhead-tokens 10000 --minimum-net-codex-saved-tokens 12000 --execute-live-cursor`: BLOCKED with deterministic `CURSOR_AGENT_TIMEOUT` after `30s`
+- `python -m pytest documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/sandbox/test_gate_prompt_apply_shadow.py -q`: PASS (`1 passed`)
+
+Open risks:
+- The accepted-source write lane now appears to be a poor fit for the current Cursor agent execution surface, even under a minimal prompt and sandbox-only workspace.
+- Further retries on the same Cursor path are now more likely to burn time than generate new information unless the execution surface itself changes.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat the Cursor backend as provisionally unsuitable for this accepted-source write lane and route the next comparison slice toward a different backend or worker style, not another same-shape Cursor rerun.
+
+Next recommended step for Codex: compare `TASK-EX-002` on a different bounded execution surface next, with OpenRouter retained as option 3 and Cursor left available but deprioritized for this lane.
+
+Last updated: `2026-07-06 18:49:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-06 18:44 +02:00`, the accepted-source execution lane blocker was hardened from an opaque hang into a deterministic, reviewable timeout outcome. `janus_cursor_worker_runner.py` now enforces a worker-side live timeout, kills the process tree on timeout, flushes partial artifacts, and narrows the live workspace root to the common allowlist directory when possible. After that hardening, two reruns of the same bounded live smoke (`WF-CURSOR-SHADOW-EXEC-WRITE-LIVE-003` and `WF-CURSOR-SHADOW-EXEC-WRITE-LIVE-004`) both returned cleanly with `final_outcome = CURSOR_AGENT_TIMEOUT` after `30s`, wrote deterministic artifacts, left no lingering process tree, and still made no shadow-file edits. Narrowing the workspace root to the sandbox directory did not unblock the agent.
+
+Current goal: move from runtime-control hardening to prompt/runtime-shape reduction for the accepted-source write lane, because the remaining blocker now appears to live inside Cursor agent behavior rather than Janus orchestration.
+
+Active phase: post-DEV-011 controlled live-timeout evidence for the accepted-source execution lane, canonical state `BLOCKED`.
+
+Last Codex work:
+- added worker-side live timeout handling and process-tree kill to `janus_cursor_worker_runner.py`
+- added deterministic partial-artifact flush on timeout
+- narrowed live workspace root to the common allowlist directory for bounded runs
+- reran the same bounded live smoke twice and captured stable controlled timeout evidence
+
+Changed files:
+- `documentation/codex/model-routing/scripts/janus_cursor_worker_runner.py`
+- `documentation/codex/model-routing/tests/test_janus_cursor_worker_runner.py`
+- `development/openrouter-skill-tests/execution_write_apply_live_smoke_2026-07-06.md`
+- `development/DEV_STATE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_janus_cursor_worker_runner.py -q`: PASS (`12 passed`)
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane execution_write_apply_candidate --task-id TASK-EX-002 --workflow-id WF-CURSOR-SHADOW-EXEC-WRITE-LIVE-004 --operator-choice 2 --input-package-json documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/input_package.json --allowlist-file documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/allowlist.txt --accepted-source-run-dir documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/accepted_source/WF-CURSOR-SHADOW-EXEC-ACCEPTED-001 --estimated-codex-saved-tokens 28000 --estimated-delegation-overhead-tokens 10000 --minimum-net-codex-saved-tokens 12000 --execute-live-cursor`: BLOCKED with deterministic `CURSOR_AGENT_TIMEOUT` after `30s`
+- `python -m pytest documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/sandbox/test_gate_prompt_apply_shadow.py -q`: PASS (`1 passed`)
+
+Open risks:
+- The accepted-source write lane still times out even with a sandbox-only workspace root, so the next likely lever is prompt/runtime-shape reduction rather than more runner kill logic.
+- The worker still records empty `stdout.log` and `stderr.log` on timeout for this lane, which limits insight into what the Cursor agent was doing before the timeout.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat `TASK-EX-002` as a controlled runtime blocker and route the next slice toward reducing prompt/runtime complexity for the Cursor agent rather than reworking Janus delegation gates again.
+
+Next recommended step for Codex: build one smaller accepted-source prompt variant or minimal worker package for the same lane and rerun the bounded live smoke against that reduced prompt shape.
+
+Last updated: `2026-07-06 18:44:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-06 17:10 +02:00`, the first explicit bounded live Cursor smoke for the accepted-source execution lane `execution_write_apply_candidate` / `TASK-EX-002` was attempted and produced a real runtime blocker. Workflow `WF-CURSOR-SHADOW-EXEC-WRITE-LIVE-001` launched through `janus_delegate.py`, reached `janus_cursor_worker_runner.py`, and successfully spawned the Cursor Agent CLI process chain, but the run did not complete within the local Codex timeout window (`244038 ms`). The workflow directory was created, but the worker did not flush `dispatcher_result.json` or the usual result artifacts before the hang. No allowlisted shadow files changed, and the focused local shadow pytest remained green after the aborted attempt.
+
+Current goal: turn the new accepted-source write lane from contract-ready into live-runnable by hardening the Cursor worker timeout/artifact behavior.
+
+Active phase: post-DEV-011 live Cursor blocker capture for the accepted-source execution lane, canonical state `BLOCKED`.
+
+Last Codex work:
+- ran the first explicit live Cursor smoke for `TASK-EX-002`
+- captured that the hang occurs inside the spawned Cursor agent path before Janus result-artifact flush
+- confirmed no sandbox drift and reran the focused shadow pytest successfully
+- saved a compact blocker artifact for the live-smoke attempt
+
+Changed files:
+- `development/openrouter-skill-tests/execution_write_apply_live_smoke_2026-07-06.md`
+- `development/DEV_STATE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane execution_write_apply_candidate --task-id TASK-EX-002 --workflow-id WF-CURSOR-SHADOW-EXEC-WRITE-LIVE-001 --operator-choice 2 --input-package-json documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/input_package.json --allowlist-file documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/allowlist.txt --accepted-source-run-dir documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/accepted_source/WF-CURSOR-SHADOW-EXEC-ACCEPTED-001 --estimated-codex-saved-tokens 28000 --estimated-delegation-overhead-tokens 10000 --minimum-net-codex-saved-tokens 12000 --execute-live-cursor`: BLOCKED by local timeout after process spawn
+- `python -m pytest documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/sandbox/test_gate_prompt_apply_shadow.py -q`: PASS (`1 passed`)
+
+Open risks:
+- `janus_cursor_worker_runner.py` currently does not enforce its own subprocess timeout or partial-artifact flush for hung Cursor live calls.
+- The accepted-source write lane may be more sensitive to full-repo workspace scope than the previously proven debug/test lanes.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat `TASK-EX-002` live evidence as blocked by Cursor runtime behavior, not by contract wiring, and route the next slice to a small runner-hardening fix rather than another blind live retry.
+
+Next recommended step for Codex: add an internal live subprocess timeout plus partial result-artifact flush to `janus_cursor_worker_runner.py`, then rerun the same bounded live smoke.
+
+Last updated: `2026-07-06 17:10:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-06 17:00 +02:00`, the next bounded Dev slice hardened Cursor support for the accepted-source execution lane `execution_write_apply_candidate` / `TASK-EX-002` without enabling any production routing or running a live Cursor call. `janus_cursor_worker_runner.py` now validates and forwards `accepted_source_run_dir`, appends compact accepted-source context into the worker prompt, and blocks the lane fail-closed when the accepted-source package is missing. `janus_delegate.py` now forwards `--accepted-source-run-dir` into the Cursor worker path, and a new shadow fixture bundle for `execution_write_apply_candidate` was added under `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/` so the lane can be exercised safely before touching real code.
+
+Current goal: finish the remaining bounded Cursor evidence work by moving from contract-complete no-live validation toward one explicit live smoke for the accepted-source execution lane.
+
+Active phase: post-DEV-011 accepted-source Cursor lane hardening, canonical state `PASS`.
+
+Last Codex work:
+- added accepted-source validation and prompt-context support to the shared Cursor worker runner
+- wired accepted-source forwarding through the shared `janus_delegate.py` entry for Cursor option `2`
+- added a dedicated shadow fixture package for `TASK-EX-002`
+- expanded focused tests for the runner, delegate, and shadow catalog
+
+Changed files:
+- `documentation/codex/model-routing/scripts/janus_cursor_worker_runner.py`
+- `documentation/codex/model-routing/scripts/janus_delegate.py`
+- `documentation/codex/model-routing/tests/test_janus_cursor_worker_runner.py`
+- `documentation/codex/model-routing/tests/test_janus_delegate.py`
+- `documentation/codex/model-routing/tests/test_cursor_shadow_catalog.py`
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/allowlist.txt`
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/expected_validation.cmd`
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/input_package.json`
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/worker_package.json`
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/accepted_source/WF-CURSOR-SHADOW-EXEC-ACCEPTED-001/dispatcher_result.json`
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/accepted_source/WF-CURSOR-SHADOW-EXEC-ACCEPTED-001/changed_files.txt`
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/accepted_source/WF-CURSOR-SHADOW-EXEC-ACCEPTED-001/cursor_response.json`
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/sandbox/gate_prompt_apply_shadow.py`
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/sandbox/test_gate_prompt_apply_shadow.py`
+- `development/DEV_STATE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_janus_cursor_worker_runner.py documentation/codex/model-routing/tests/test_janus_delegate.py documentation/codex/model-routing/tests/test_cursor_shadow_catalog.py -q`: PASS (`47 passed`)
+- `python -m pytest documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/sandbox/test_gate_prompt_apply_shadow.py -q`: PASS (`1 passed`)
+
+Open risks:
+- `TASK-EX-002` remains ROI-gated by default in the manifest/task-list baseline, so prompt mode still hides Cursor unless the operator supplies stronger bounded savings estimates for this validation slice.
+- The new write-apply shadow fixture is contract-ready and green, but it has not yet been exercised through one explicit live Cursor smoke.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat the accepted-source Cursor lane as contract-complete and ask only for one explicit live smoke decision, not for more no-live plumbing.
+
+Next recommended step for Codex: with explicit approval, run one bounded live Cursor smoke for `TASK-EX-002` using the new shadow fixture package plus positive validation-slice ROI overrides.
+
+Last updated: `2026-07-06 17:00:16 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-06 16:22 +02:00`, the first post-DEV-011 explicit live Cursor follow-up was executed on the highest-priority lane from the evidence-gap plan: `debug_repro_investigation` / `TASK-DBG-002`. Workflow `WF-CURSOR-SHADOW-DEBUG-LIVE-002` ran through the shared `janus_delegate.py` path with operator choice `2 = Cursor` and returned `validation_result = PASS`, `final_outcome = CURSOR_WORKER_READY_FOR_CODEX_REVIEW`, and a positive ROI estimate. The worker reported no new file edits because the bounded shadow mismatch had already been fixed by an earlier run; it still reproduced the mismatch shape correctly, confirmed the current shadow artifacts are aligned, and the focused pytest command passed again afterward.
+
+Current goal: continue converting the highest-priority Cursor lanes from no-live planning into explicit live evidence, one bounded lane at a time.
+
+Active phase: post-DEV-011 bounded live Cursor validation, canonical state `PASS`.
+
+Last Codex work:
+- executed one bounded live Cursor smoke for `TASK-DBG-002`
+- reviewed the returned worker artifacts and confirmed this was a valid no-op/pass outcome rather than a silent failure
+- recorded a compact live-smoke result artifact for the lane
+
+Changed files:
+- `development/openrouter-skill-tests/debug_repro_live_smoke_2026-07-06.md`
+- `development/DEV_STATE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane debug_repro_investigation --task-id TASK-DBG-002 --workflow-id WF-CURSOR-SHADOW-DEBUG-LIVE-002 --operator-choice 2 --input-package-json documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/input_package.json --allowlist-file documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/allowlist.txt --estimated-codex-saved-tokens 25000 --estimated-delegation-overhead-tokens 10000 --execute-live-cursor`: PASS
+- `python -m pytest documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/sandbox/test_debug_repro_shadow.py -q`: PASS (`1 passed`)
+
+Open risks:
+- The live-smoke result is valid, but it is a bounded no-op/pass case; it does not yet prove write-heavy or broader debug mutation behavior.
+- The calibration/evidence-gap helpers do not yet automatically ingest this Cursor live proof, so later maintenance work should avoid treating the lane as no-evidence by mistake.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat `debug_repro_investigation` as live-smoke proven and move the next explicit live approval to `test_fixture_worker` or `execution_write_apply_candidate`.
+
+Next recommended step for Codex: with explicit approval, run one bounded live Cursor smoke for `TASK-TP-003` first, unless the user wants to prioritize the write-apply lane instead.
+
+Last updated: `2026-07-06 16:22:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-06 16:16 +02:00`, the next post-DEV-011 step was a no-live readiness check for the highest-priority Cursor lane from the new evidence-gap plan: `debug_repro_investigation` / `TASK-DBG-002`. The existing shadow package under `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/` was revalidated locally and the focused pytest passed without edits. A compact readiness note now records that the shadow package is internally coherent and that the next meaningful evidence step is one explicitly approved live Cursor smoke through the shared `janus_delegate.py` path.
+
+Current goal: prepare the next bounded Cursor-first live candidate without spending live calls prematurely.
+
+Active phase: post-DEV-011 no-live lane readiness validation, canonical state `PASS`.
+
+Last Codex work:
+- revalidated the `debug_repro_investigation` shadow package inputs, allowlist, worker package, and focused pytest command
+- added a compact readiness artifact for the lane
+- updated Dev state to recommend a single explicit live Cursor smoke as the next step
+
+Changed files:
+- `development/openrouter-skill-tests/debug_repro_shadow_readiness_2026-07-06.md`
+- `development/DEV_STATE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/sandbox/test_debug_repro_shadow.py -q`: PASS (`1 passed`)
+
+Open risks:
+- No live Cursor approval exists yet for `TASK-DBG-002`.
+- The shadow package is ready, but live behavior and returned worker output quality are still unproven for this lane.
+- No push happened after this block, so remotes such as `backup`, `origin`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat `debug_repro_investigation` as the first live-candidate lane from the evidence-gap plan and ask only for explicit live approval, not for more no-live preparation.
+
+Next recommended step for Codex: on explicit approval, run one bounded live Cursor smoke for `TASK-DBG-002` through the shared `janus_delegate.py` path and validate the result locally.
+
+Last updated: `2026-07-06 16:16:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-06 16:08 +02:00`, `DEV-011` was closed through documentation update after final audit PASS. The Dev backlog now marks `DEV-011` as DONE, the closeout artifact `development/tasks/DEV-011_documentation_update.md` records the bounded documentation scope and exact skip reasons, and the rolling Dev state now points to `janus-git-governance` as the next step. The underlying outcome did not change: the evidence-gap planner remains a local-only review artifact that prioritizes Cursor evidence gaps first, keeps `live_test_execution` and `diamond_retest_audit` Codex-owned, and does not authorize any live Cursor/OpenRouter call or manifest-write action.
 
 Current goal: prepare a narrow checkpoint decision for the completed DEV-011 closeout.

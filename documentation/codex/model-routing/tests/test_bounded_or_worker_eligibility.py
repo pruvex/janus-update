@@ -173,7 +173,7 @@ class BoundedOrWorkerEligibilityTests(unittest.TestCase):
         self.assertEqual(result["reason_code"], "ELIGIBILITY_CONFIRMED")
         self.assertEqual(result["budget_profile"], "execution_patch_candidate")
         self.assertEqual(result["per_call_cap_usd"], 0.05)
-        self.assertEqual(result["selected_or_model"], "qwen/qwen3-coder-30b-a3b-instruct")
+        self.assertEqual(result["selected_or_model"], "moonshotai/kimi-k2.5")
 
     def test_productive_dev_workhorse_path_allows_write_apply_candidate_with_fixed_model(self) -> None:
         result = eligibility.evaluate_productive_dev_workhorse_path(
@@ -187,6 +187,34 @@ class BoundedOrWorkerEligibilityTests(unittest.TestCase):
         self.assertEqual(result["budget_profile"], "execution_write_apply_candidate")
         self.assertEqual(result["selected_or_model"], "deepseek/deepseek-v4-flash")
 
+    def test_live_test_execution_gate_allows_local_bounded_retest(self) -> None:
+        result = eligibility.evaluate_live_test_execution_gate(
+            mode="LIVE_TEST_EXECUTION",
+            live_test_scope="local_bounded_retest",
+        )
+
+        self.assertEqual(result["eligibility_result"], "OR_ALLOWED")
+        self.assertEqual(result["reason_code"], "ELIGIBILITY_CONFIRMED")
+        self.assertEqual(result["selected_or_model"], "moonshotai/kimi-k2.5")
+
+    def test_live_test_execution_gate_rejects_broad_local_retest(self) -> None:
+        result = eligibility.evaluate_live_test_execution_gate(
+            mode="LIVE_TEST_EXECUTION",
+            live_test_scope="local_broad_retest",
+        )
+
+        self.assertEqual(result["eligibility_result"], "OR_NOT_ELIGIBLE")
+        self.assertEqual(result["reason_code"], "SLICE_TOO_BROAD")
+
+    def test_live_test_execution_gate_rejects_non_local_slice(self) -> None:
+        result = eligibility.evaluate_live_test_execution_gate(
+            mode="LIVE_TEST_EXECUTION",
+            live_test_scope="non_local_live_test",
+        )
+
+        self.assertEqual(result["eligibility_result"], "OR_NOT_ELIGIBLE")
+        self.assertEqual(result["reason_code"], "NON_LOCAL_LIVE_TEST")
+
     def test_shared_visibility_contract_allows_live_doc_skill_gate(self) -> None:
         result = eligibility.evaluate_existing_skill_operator_gate_visibility(
             subject_type="doc_skill_fixed_or",
@@ -198,15 +226,15 @@ class BoundedOrWorkerEligibilityTests(unittest.TestCase):
         self.assertEqual(result["reason_code"], "VISIBILITY_CONFIRMED")
         self.assertEqual(result["selected_or_model"], "openai/gpt-oss-20b")
 
-    def test_shared_visibility_contract_allows_execution_write_candidate(self) -> None:
+    def test_shared_visibility_contract_hides_partial_execution_write_candidate(self) -> None:
         result = eligibility.evaluate_existing_skill_operator_gate_visibility(
             subject_type="productive_dev_workhorse_task_class",
             subject_id="execution_write_apply_candidate",
         )
 
-        self.assertEqual(result["operator_gate_visibility"], "VISIBLE")
-        self.assertEqual(result["visibility_status"], "VISIBLE_APPROVED")
-        self.assertEqual(result["reason_code"], "VISIBILITY_CONFIRMED")
+        self.assertEqual(result["operator_gate_visibility"], "HIDDEN")
+        self.assertEqual(result["visibility_status"], "HIDDEN_PARTIAL_CANDIDATE")
+        self.assertEqual(result["reason_code"], "HIDDEN_PARTIAL_CANDIDATE")
 
     def test_shared_visibility_contract_allows_generator_review_task(self) -> None:
         result = eligibility.evaluate_existing_skill_operator_gate_visibility(
@@ -232,6 +260,42 @@ class BoundedOrWorkerEligibilityTests(unittest.TestCase):
 
         self.assertEqual(result["operator_gate_visibility"], "HIDDEN")
         self.assertEqual(result["reason_code"], "TASK_CLASS_NOT_ALLOWED")
+
+    def test_shared_visibility_contract_hides_dispatcher_task_with_missing_evidence_status(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            config_path = Path(temp_dir) / "eligibility.json"
+            payload = eligibility.load_json(eligibility.DEFAULT_ELIGIBILITY_CONFIG_PATH)
+            payload["dispatcher_task_classes"]["generator_review"].pop("evidence_status", None)
+            config_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+            result = eligibility.evaluate_existing_skill_operator_gate_visibility(
+                subject_type="dispatcher_task_class",
+                subject_id="generator_review",
+                config_path=config_path,
+            )
+
+        self.assertEqual(result["operator_gate_visibility"], "HIDDEN")
+        self.assertEqual(result["visibility_status"], "HIDDEN_REQUIRED_FIELD_MISSING")
+        self.assertEqual(result["reason_code"], "EVIDENCE_STATUS_MISSING")
+
+    def test_shared_visibility_contract_hides_productive_task_with_missing_selected_model(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            config_path = Path(temp_dir) / "eligibility.json"
+            payload = eligibility.load_json(eligibility.DEFAULT_ELIGIBILITY_CONFIG_PATH)
+            payload["productive_dev_workhorse_path"]["allowed_task_classes"]["execution_patch_candidate"].pop(
+                "selected_or_model", None
+            )
+            config_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+            result = eligibility.evaluate_existing_skill_operator_gate_visibility(
+                subject_type="productive_dev_workhorse_task_class",
+                subject_id="execution_patch_candidate",
+                config_path=config_path,
+            )
+
+        self.assertEqual(result["operator_gate_visibility"], "HIDDEN")
+        self.assertEqual(result["visibility_status"], "HIDDEN_REQUIRED_FIELD_MISSING")
+        self.assertEqual(result["reason_code"], "SELECTED_OR_MODEL_MISSING")
 
     def test_productive_dev_workhorse_path_rejects_existing_workflow_outside_path(self) -> None:
         result = eligibility.evaluate_productive_dev_workhorse_path(

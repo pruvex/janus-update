@@ -162,7 +162,7 @@ class BoundedOrWorkerGatePromptTests(unittest.TestCase):
         self.assertEqual(result["choice_2"], "OR")
         self.assertIn("2 = OR", result["operator_prompt_lines"])
 
-    def test_prompt_summary_shows_generator_review_when_visibility_is_approved(self) -> None:
+    def test_prompt_summary_hides_generator_review_when_lane_is_internal_only(self) -> None:
         args = type(
             "Args",
             (),
@@ -178,14 +178,14 @@ class BoundedOrWorkerGatePromptTests(unittest.TestCase):
 
         result = dispatcher.prompt_summary(args, "WF-GATE-GENERATOR-001")
 
-        self.assertEqual(result["final_outcome"], "AWAITING_OPERATOR_CHOICE")
-        self.assertEqual(result["operator_gate_visibility"], "VISIBLE")
-        self.assertEqual(result["visibility_status"], "VISIBLE_APPROVED")
+        self.assertEqual(result["final_outcome"], "LOCAL_CODEX_PATH_SELECTED")
+        self.assertEqual(result["operator_gate_visibility"], "HIDDEN")
+        self.assertEqual(result["visibility_status"], "HIDDEN_INTERNAL_ONLY")
         self.assertEqual(result["choice_1"], "Codex")
-        self.assertEqual(result["choice_2"], "OR")
-        self.assertIn("2 = OR", result["operator_prompt_lines"])
+        self.assertNotIn("choice_2", result)
+        self.assertIn("HIDDEN_INTERNAL_ONLY", result["operator_message"])
 
-    def test_prompt_summary_shows_execution_write_apply_candidate_when_visibility_is_approved(self) -> None:
+    def test_prompt_summary_hides_execution_write_apply_candidate_when_lane_is_partial(self) -> None:
         args = type(
             "Args",
             (),
@@ -201,12 +201,12 @@ class BoundedOrWorkerGatePromptTests(unittest.TestCase):
 
         result = dispatcher.prompt_summary(args, "WF-GATE-WRITE-001")
 
-        self.assertEqual(result["final_outcome"], "AWAITING_OPERATOR_CHOICE")
-        self.assertEqual(result["operator_gate_visibility"], "VISIBLE")
-        self.assertEqual(result["visibility_status"], "VISIBLE_APPROVED")
+        self.assertEqual(result["final_outcome"], "LOCAL_CODEX_PATH_SELECTED")
+        self.assertEqual(result["operator_gate_visibility"], "HIDDEN")
+        self.assertEqual(result["visibility_status"], "HIDDEN_PARTIAL_CANDIDATE")
         self.assertEqual(result["choice_1"], "Codex")
-        self.assertEqual(result["choice_2"], "OR")
-        self.assertIn("2 = OR", result["operator_prompt_lines"])
+        self.assertNotIn("choice_2", result)
+        self.assertIn("HIDDEN_PARTIAL_CANDIDATE", result["operator_message"])
 
     def test_missing_gate_result_keeps_codex_only_fallback(self) -> None:
         result = gate_prompt.build_missing_gate_result(
@@ -249,36 +249,47 @@ class BoundedOrWorkerGatePromptTests(unittest.TestCase):
         self.assertNotIn("choice_2", result)
         self.assertIn("partial_candidate_not_everyday_ready", result["operator_message"])
 
-    def test_operator_registry_docs_match_visible_execution_write_apply_contract(self) -> None:
+    def test_visibility_suppressed_result_reports_partial_candidate_reason(self) -> None:
+        result = gate_prompt.build_visibility_suppressed_result(
+            workflow_id="WF-GATE-005",
+            task_label="Hidden partial candidate",
+            selected_path="codex_only_visibility_hidden",
+            final_outcome="LOCAL_CODEX_PATH_SELECTED",
+            normal_target_model="5.4 medium",
+            visibility_status="HIDDEN_PARTIAL_CANDIDATE",
+            suppression_reason="EVIDENCE_STATUS_NOT_VISIBLE_READY",
+            selected_or_model="deepseek/deepseek-v4-flash",
+            task_class="execution_write_apply_candidate",
+            evidence_status="BOUNDED_AUDITED_FOUNDATION",
+        )
+
+        self.assertEqual(result["operator_gate_visibility"], "HIDDEN")
+        self.assertEqual(result["visibility_status"], "HIDDEN_PARTIAL_CANDIDATE")
+        self.assertEqual(result["choice_1"], "Codex")
+        self.assertNotIn("choice_2", result)
+        self.assertIn("EVIDENCE_STATUS_NOT_VISIBLE_READY", result["operator_message"])
+
+    def test_registry_docs_match_hidden_and_visible_everyday_lane_truth(self) -> None:
         inventory = (
-            Path(__file__).resolve().parents[1]
-            / "or_everyday_lane_inventory_2026-06-24.md"
+            Path(__file__).resolve().parents[1] / "or_everyday_lane_inventory_2026-06-24.md"
         ).read_text(encoding="utf-8")
         summary = (
-            Path(__file__).resolve().parents[1]
-            / "or_everyday_operator_registry_summary_2026-06-24.md"
+            Path(__file__).resolve().parents[1] / "or_everyday_operator_registry_summary_2026-06-24.md"
         ).read_text(encoding="utf-8")
 
-        self.assertIn(
-            "| `janus-test-pipeline` | `generator_review` | `1 = Codex`, `2 = OR` | `OR_READY` |",
-            inventory,
-        )
-        self.assertIn(
-            "| `janus-executioner` | `execution_write_apply_candidate` via productive Dev-workhorse entry | `1 = Codex`, `2 = OR` | `OR_READY` |",
-            inventory,
-        )
-        self.assertIn(
-            "| `janus-test-pipeline` | `generator_review` | `1 = Codex`, `2 = OR` | `openai/gpt-oss-20b` via delegated intent / deterministic local execution | bounded generator-backed review only; Codex remains final reviewer and acceptance owner |",
-            summary,
-        )
-        self.assertIn(
-            "| `janus-executioner` | `execution_write_apply_candidate` | `1 = Codex`, `2 = OR` | accepted-source delegated write candidate with deterministic local patch apply | accepted-source-backed only; Codex remains diff reviewer, validation owner, and final acceptance owner |",
-            summary,
-        )
-        self.assertIn(
-            "| `janus-executioner` | `execution_write_apply_candidate` | `1 = Codex`, `2 = OR` |",
-            summary,
-        )
+        self.assertNotIn("| `janus-test-pipeline` | `generator_review` | `1 = Codex`, `2 = OR` |", inventory)
+        self.assertNotIn("| `janus-executioner` | `execution_write_apply_candidate` via productive Dev-workhorse entry | `1 = Codex`, `2 = OR` |", inventory)
+        self.assertIn("`generator_review`", inventory)
+        self.assertIn("`execution_write_apply_candidate`", inventory)
+        self.assertIn("HIDDEN_INTERNAL_ONLY", inventory)
+        self.assertIn("HIDDEN_PARTIAL_CANDIDATE", inventory)
+
+        self.assertNotIn("| `janus-test-pipeline` | `generator_review` | `1 = Codex`, `2 = OR` |", summary)
+        self.assertNotIn("| `janus-executioner` | `execution_write_apply_candidate` | `1 = Codex`, `2 = OR` |", summary)
+        self.assertIn("`generator_review`", summary)
+        self.assertIn("`execution_write_apply_candidate`", summary)
+        self.assertIn("HIDDEN_INTERNAL_ONLY", summary)
+        self.assertIn("HIDDEN_PARTIAL_CANDIDATE", summary)
 
 
 if __name__ == "__main__":
