@@ -679,33 +679,35 @@
       "estimated_delegation_overhead_tokens": 10000
     },
     "execution_write_apply_candidate": {
-      "skill": "janus-executioner",
-      "lane_class": "ACCEPTED_SOURCE_WRITE",
-      "description": "Deterministic bounded apply backed by accepted proposal package",
-      "codex": {
-        "enabled": true,
-        "default_model": "5.4",
-        "default_reasoning": "high"
+        "skill": "janus-executioner",
+        "lane_class": "ACCEPTED_SOURCE_WRITE",
+        "description": "Deterministic bounded apply backed by accepted proposal package",
+        "codex": {
+          "enabled": true,
+          "default_model": "5.4",
+          "default_reasoning": "high"
+        },
+        "cursor": {
+          "enabled": false,
+          "recommended": false,
+          "reason": "Accepted-source apply is deterministic; Cursor agent is a poor fit after repeated TIMEOUT evidence."
+        },
+        "deterministic_apply_worker": {
+          "enabled": true,
+          "recommended": true,
+          "display_label": "Deterministic Apply",
+          "model": "deterministic_local_apply",
+          "runner": "codex_execution_write_apply_candidate_runner.py",
+          "requires_accepted_source": true
+        },
+        "openrouter": {
+          "enabled": false,
+          "recommended": false,
+          "reason": "Do not invest in OR apply path; accepted-source apply is mechanical and handled by the deterministic local worker."
+        },
+        "minimum_net_codex_saved_tokens": 12000,
+        "estimated_delegation_overhead_tokens": 12000
       },
-      "cursor": {
-        "enabled": true,
-        "recommended": true,
-        "model": "composer-2.5",
-        "mode": "accepted_source_apply",
-        "requires_accepted_source": true,
-        "cli_flags": ["--force", "--trust", "--approve-mcps", "--output-format", "json"]
-      },
-      "openrouter": {
-        "enabled": true,
-        "recommended": false,
-        "model": "deepseek/deepseek-v4-flash",
-        "budget_profile": "execution_write_apply_candidate",
-        "runner": "codex_dev_workhorse_runner.py",
-        "requires_accepted_source": true
-      },
-      "minimum_net_codex_saved_tokens": 12000,
-      "estimated_delegation_overhead_tokens": 12000
-    },
     "diamond_retest_audit": {
       "skill": "janus-test-pipeline",
       "lane_class": "CODEX_ONLY",

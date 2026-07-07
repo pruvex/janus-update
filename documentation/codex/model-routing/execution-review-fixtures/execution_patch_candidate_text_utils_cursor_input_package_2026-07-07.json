@@ -1,0 +1,19 @@
+{
+  "task_id": "TASK-EX-001",
+  "lane_id": "execution_patch_candidate",
+  "bound_skill_context": "janus-executioner",
+  "task_label": "Fix normalize_heading output in the isolated text utils harness",
+  "worker_package_json": "documentation/codex/model-routing/execution-review-fixtures/execution_patch_candidate_text_utils_cursor_worker_package_2026-07-07.json",
+  "allowlist_file": "documentation/codex/model-routing/execution-review-fixtures/allowlists/execution_patch_candidate_text_utils_allowlist_2026-07-07.txt",
+  "acceptance_criteria": [
+    "Only the allowlisted text_utils source file may change.",
+    "The heading normalization behavior must be fixed without widening scope.",
+    "The focused pytest and py_compile commands must pass before Codex review."
+  ],
+  "local_validation_command": "python -m pytest development/openrouter-skill-tests/janus-worker-aider-isolated-code-poc/test_text_utils.py -q",
+  "estimated_codex_saved_tokens": 25000,
+  "estimated_delegation_overhead_tokens": 10000,
+  "recommended_backend": "cursor",
+  "recommended_model": "composer-2.5",
+  "cursor_prompt_contract": "Stay inside the one-file allowlist, preserve the function signature, run only the bounded checks, and return concise JSON-friendly output."
+}

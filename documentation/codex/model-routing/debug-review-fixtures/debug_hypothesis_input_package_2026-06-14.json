@@ -1,0 +1,18 @@
+{
+  "workflow_id": "DEBUG-HYPOTHESIS-FIXTURE-001",
+  "bound_skill_context": "janus-debug",
+  "expected_behavior": "The generated test-run handover should be created after the bounded helper finishes.",
+  "actual_behavior": "The bounded helper returns without producing the expected handover artifact.",
+  "failure_code": "RUNNER_ARTIFACT_MISMATCH",
+  "evidence_snippets": [
+    "summary.json shows status=PASS but target artifact count=0",
+    "stderr contains no secret data and only reports missing generated artifact",
+    "local validator notes output-path mismatch against expected artifact name"
+  ],
+  "changed_files": [
+    "documentation/codex/model-routing/scripts/test_pipeline_sidecar_write_pilot_runner.py"
+  ],
+  "iteration_number": 2,
+  "explicit_question": "What are the most likely bounded causes and which local verifiers should Codex run next?",
+  "redaction_ready": true
+}

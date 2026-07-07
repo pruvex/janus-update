@@ -1,0 +1,4 @@
+{
+  "test_run_id": "TEST-RUN-SHADOW-DBG-001",
+  "runner_path": "tests/e2e/generated/shadow_debug_alpha.spec.js"
+}

@@ -1,0 +1,3 @@
+path/to/debug_artifact_a.json
+path/to/debug_artifact_b.json
+path/to/test_debug_repro.py

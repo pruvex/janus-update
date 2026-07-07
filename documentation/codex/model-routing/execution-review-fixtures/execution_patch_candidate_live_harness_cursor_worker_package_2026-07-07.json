@@ -1,0 +1,55 @@
+{
+  "task_label": "Fix clamp high-bound logic in the live execution patch harness",
+  "worker_profile": "cursor-agent",
+  "allowed_edit_paths": [
+    "development/openrouter-skill-tests/execution_patch_candidate_live_harness/math_utils.py"
+  ],
+  "acceptance_criteria": [
+    "Only development/openrouter-skill-tests/execution_patch_candidate_live_harness/math_utils.py may change.",
+    "clamp(value, low, high) must return high when value exceeds high.",
+    "The function signature must stay unchanged.",
+    "The focused pytest command must pass before Codex review."
+  ],
+  "checks": [
+    {
+      "label": "pytest",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "development/openrouter-skill-tests/execution_patch_candidate_live_harness/test_math_utils.py",
+        "-q"
+      ]
+    },
+    {
+      "label": "py_compile",
+      "command": [
+        "python",
+        "-m",
+        "py_compile",
+        "development/openrouter-skill-tests/execution_patch_candidate_live_harness/math_utils.py",
+        "development/openrouter-skill-tests/execution_patch_candidate_live_harness/test_math_utils.py"
+      ]
+    }
+  ],
+  "forbidden_actions": [
+    "commit",
+    "push",
+    "tag",
+    "merge",
+    "release",
+    "publish",
+    "dependency",
+    "secret",
+    "auth",
+    "security",
+    "privacy",
+    "migration",
+    "architecture"
+  ],
+  "requested_actions": [
+    "edit",
+    "run_checks"
+  ],
+  "task_prompt": "Edit only development/openrouter-skill-tests/execution_patch_candidate_live_harness/math_utils.py. Add the smallest bounded fix so clamp(value, low, high) returns high when value exceeds high. Do not edit the test file. Run only the listed checks. Do not commit. Return concise JSON-compatible output."
+}

@@ -93,6 +93,8 @@ def _priority(
     if status == "HIGH_VARIANCE_REVIEW_SCOPE":
         return 65
     if status == "NO_EVIDENCE":
+        if recommended_backend == "deterministic_apply":
+            return 20
         if recommended_backend == "cursor":
             return 100 if net_saved >= 15000 else 90
         if recommended_backend == "openrouter":
@@ -109,6 +111,8 @@ def _next_action(lane_id: str, task: dict[str, Any] | None, status: str) -> str:
     if _is_never_delegate(lane_id, task):
         return "keep_codex_owned_never_delegate"
     recommended_backend = task.get("recommended_backend") if isinstance(task, dict) else None
+    if status == "NO_EVIDENCE" and recommended_backend == "deterministic_apply":
+        return "keep_deterministic_apply_contract_and_avoid_live_agent_planning"
     if status == "NO_EVIDENCE" and recommended_backend == "cursor":
         return "build_or_reuse_cursor_shadow_fixture_then_request_explicit_live_cursor_smoke"
     if status == "NO_EVIDENCE" and recommended_backend == "openrouter":
@@ -121,6 +125,8 @@ def _rationale(lane_id: str, task: dict[str, Any] | None, status: str) -> str:
         return "Lane is Codex-owned by policy and should not become delegated evidence work."
     recommended_backend = task.get("recommended_backend") if isinstance(task, dict) else "unknown"
     if status == "NO_EVIDENCE":
+        if recommended_backend == "deterministic_apply":
+            return "This lane is already intentionally sealed to a deterministic local worker, so missing agent evidence is not a reason to reopen Cursor or OpenRouter planning."
         return f"{recommended_backend} is configured as the preferred backend, but no bounded local evidence was found."
     if status == "HIGH_VARIANCE_REVIEW_SCOPE":
         return "Existing evidence is too mixed to tune automatically; separate transport/runtime evidence before changing defaults."

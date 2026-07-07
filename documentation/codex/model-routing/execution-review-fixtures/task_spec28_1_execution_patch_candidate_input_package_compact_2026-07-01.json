@@ -1,0 +1,45 @@
+{
+  "workflow_id": "TASK-SPEC28.1-EXECUTION-OR-003",
+  "bound_skill_context": "janus-executioner",
+  "target_task": "TASK-SPEC28.1",
+  "spec_path": "documentation/tasks/TASK-SPEC28.1_task_breakdown.md",
+  "precheck_path": "documentation/tasks/TASK-SPEC28.1_preimplementation_check.md",
+  "precheck_status": "PRE-CHECK PASSED",
+  "allowed_files": [
+    "documentation/codex/skills/janus-test-pipeline/SKILL.md",
+    "documentation/codex/model-routing/scripts/bounded_or_worker_eligibility.py",
+    "documentation/codex/model-routing/scripts/test_pipeline_sidecar_write_pilot_runner.py",
+    "documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py",
+    "documentation/codex/model-routing/tests/test_test_pipeline_sidecar_write_pilot_runner.py"
+  ],
+  "max_touched_files": 5,
+  "mini_test_plan": [
+    "python -m pytest documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py -q",
+    "python -m pytest documentation/codex/model-routing/tests/test_test_pipeline_sidecar_write_pilot_runner.py -q -k \"live or gate or eligibility\"",
+    "python -m py_compile documentation/codex/model-routing/scripts/bounded_or_worker_eligibility.py documentation/codex/model-routing/scripts/test_pipeline_sidecar_write_pilot_runner.py"
+  ],
+  "manual_validation_gate": "Codex must verify that eligible local LIVE_TEST_EXECUTION retests show 1 = Codex / 2 = OR, while non-eligible or non-local live-retest flows remain Codex-only.",
+  "delegation_question": "Produce one minimal bounded patch candidate for TASK-SPEC28.1. Add only fail-closed eligibility plus a visible operator gate for eligible local LIVE_TEST_EXECUTION retests. Do not implement auth/header handling, worker package details, delegated evidence-write semantics, or final accept-reject closeout.",
+  "current_seam_context": "The current janus-test-pipeline skill documents visible OR gates for generator-review, strong isolated test-worker, and finding-triage lanes, but not yet for LIVE_TEST_EXECUTION. The current test_pipeline_sidecar_write_pilot_runner.py prompt summary is test-artifact oriented and not live-retest aware. The current bounded_or_worker_eligibility.py exposes productive execution_patch_candidate eligibility but no dedicated fail-closed visible live-retest gate seam.",
+  "signature_context": "Preserve the existing evaluate_productive_dev_workhorse_path(...) contract and the existing prompt_summary(...), main(), and invoke_isolated_aider_runner wiring in test_pipeline_sidecar_write_pilot_runner.py. Add the smallest helper seam instead of a new dispatcher or broad mode rewrite.",
+  "call_shape_examples": [
+    "self.assertIn(\"1 = Codex\", summary[\"operator_prompt_lines\"])",
+    "self.assertIn(\"2 = OR\", summary[\"operator_prompt_lines\"])",
+    "result = eligibility.evaluate_productive_dev_workhorse_path(path_id=\"productive_dev_workhorse_path\", task_class=\"execution_patch_candidate\", estimated_or_cost=0.02)"
+  ],
+  "forbidden_anchors": [
+    "broad live test delegation for all modes",
+    "local auth/header contract implementation",
+    "delegated evidence-write semantics",
+    "final Codex-owned accept-reject wiring",
+    "new dispatcher or routing-table redesign"
+  ],
+  "required_current_anchors": [
+    "LIVE_TEST_EXECUTION",
+    "1 = Codex",
+    "2 = OR",
+    "prompt_summary",
+    "invoke_isolated_aider_runner",
+    "evaluate_productive_dev_workhorse_path"
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "task_id": "TASK-DBG-002",
+  "lane_id": "debug_repro_investigation",
+  "bound_skill_context": "janus-debug",
+  "task_label": "Replace with the same bounded debug repro task label as the worker package",
+  "worker_package_json": "documentation/codex/model-routing/debug-review-fixtures/replace_worker_package.json",
+  "allowlist_file": "documentation/codex/model-routing/debug-review-fixtures/allowlists/replace_allowlist.txt",
+  "failure_code": "REPLACE_WITH_BOUNDED_FAILURE_CODE",
+  "acceptance_criteria": [
+    "Only the allowlisted debug files may change.",
+    "The mismatch must be resolved without widening scope.",
+    "The focused validation command must pass before Codex review."
+  ],
+  "local_validation_command": "python -m pytest path/to/test_debug_repro.py -q",
+  "estimated_codex_saved_tokens": 25000,
+  "estimated_delegation_overhead_tokens": 10000,
+  "recommended_backend": "cursor",
+  "recommended_model": "composer-2.5",
+  "cursor_prompt_contract": "Investigate only the allowlisted bounded debug files, run only the focused checks, and return concise JSON-friendly output with root cause and changed_files."
+}

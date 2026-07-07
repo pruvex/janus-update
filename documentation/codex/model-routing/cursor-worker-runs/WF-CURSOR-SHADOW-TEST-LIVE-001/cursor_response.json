@@ -1,0 +1,16 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 83235,
+  "duration_api_ms": 83235,
+  "result": "I'll locate the existing contact-memory fixture and unit test so we can adjust only those files.\nImproving fixture structure and test clarity per the bounded shadow-eval task, without touching product source code.\nBounded contact-memory fixture and unit test are updated. All focused tests pass (`15 passed`).\n\n### Fixture (`contact_memory_fixture.json`, v1.2)\n- Added a `contract` section documenting each top-level key for side-by-side worker review\n- Added `review_focus`, `narrative`, and `reconciliation_steps` to the primary Chris Gier scenario\n- Extended `field_classification_examples` with hobby and dislike cases (with `rationale`)\n- Added `rationale` to untrusted-memory examples to show origin-based blocking vs. the trusted hobby case\n\n### Tests (`test_contact_memory_fixture.py`)\n- Module docstring and shared `fixture` pytest fixture\n- Contract coverage for the new `contract` section\n- Reconciliation self-consistency check: `expected_after_reconciliation` is derived from `confirmed_memory_facts`\n- Parametrized classification and blocked-category tests for clearer review\n\n```json\n{\n  \"status\": \"PASS\",\n  \"changed_files\": [\n    \"development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/test_fixture_arbeit/fixtures/contact_memory_fixture.json\",\n    \"development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/test_fixture_arbeit/tests/test_contact_memory_fixture.py\"\n  ],\n  \"command_results\": [\n    {\n      \"command\": \"python -m pytest development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/test_fixture_arbeit/tests/test_contact_memory_fixture.py -q\",\n      \"exit_code\": 0,\n      \"summary\": \"15 passed\"\n    }\n  ],\n  \"summary\": \"Improved fixture readability and test clarity while staying fixture-only; no product source code touched.\",\n  \"blockers\": []\n}\n```",
+  "session_id": "3d4cd70c-9ccf-4332-9b27-7589cd89b8ad",
+  "request_id": "185ea5bb-a6ea-4abc-a9ff-da1fddbfdb26",
+  "usage": {
+    "inputTokens": 37536,
+    "outputTokens": 5994,
+    "cacheReadTokens": 397321,
+    "cacheWriteTokens": 0
+  }
+}

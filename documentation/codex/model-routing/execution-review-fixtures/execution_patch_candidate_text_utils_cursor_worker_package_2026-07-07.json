@@ -1,0 +1,55 @@
+{
+  "task_label": "Fix normalize_heading output in the isolated text utils harness",
+  "worker_profile": "cursor-agent",
+  "allowed_edit_paths": [
+    "development/openrouter-skill-tests/janus-worker-aider-isolated-code-poc/text_utils.py"
+  ],
+  "acceptance_criteria": [
+    "Only development/openrouter-skill-tests/janus-worker-aider-isolated-code-poc/text_utils.py may change.",
+    "normalize_heading must trim input and title-case the words in the returned string.",
+    "The function signature must stay unchanged.",
+    "The focused pytest command must pass before Codex review."
+  ],
+  "checks": [
+    {
+      "label": "pytest",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "development/openrouter-skill-tests/janus-worker-aider-isolated-code-poc/test_text_utils.py",
+        "-q"
+      ]
+    },
+    {
+      "label": "py_compile",
+      "command": [
+        "python",
+        "-m",
+        "py_compile",
+        "development/openrouter-skill-tests/janus-worker-aider-isolated-code-poc/text_utils.py",
+        "development/openrouter-skill-tests/janus-worker-aider-isolated-code-poc/test_text_utils.py"
+      ]
+    }
+  ],
+  "forbidden_actions": [
+    "commit",
+    "push",
+    "tag",
+    "merge",
+    "release",
+    "publish",
+    "dependency",
+    "secret",
+    "auth",
+    "security",
+    "privacy",
+    "migration",
+    "architecture"
+  ],
+  "requested_actions": [
+    "edit",
+    "run_checks"
+  ],
+  "task_prompt": "Edit only development/openrouter-skill-tests/janus-worker-aider-isolated-code-poc/text_utils.py. Make the smallest bounded fix so normalize_heading trims the input and returns title-cased words. Do not edit the test file. Run only the listed checks. Do not commit. Return concise JSON-compatible output."
+}

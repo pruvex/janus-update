@@ -1,0 +1,55 @@
+{
+  "task_label": "Block Cursor runner package planning when allowed_edit_paths and allowlist disagree",
+  "worker_profile": "cursor-agent",
+  "allowed_edit_paths": [
+    "documentation/codex/model-routing/scripts/janus_cursor_worker_runner.py"
+  ],
+  "acceptance_criteria": [
+    "Only documentation/codex/model-routing/scripts/janus_cursor_worker_runner.py may change.",
+    "A dry-run or live plan must fail closed when the worker package allowed_edit_paths do not match the provided allowlist entries.",
+    "The focused regression in test_janus_cursor_worker_runner.py must pass before Codex review."
+  ],
+  "checks": [
+    {
+      "label": "pytest",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "documentation/codex/model-routing/tests/test_janus_cursor_worker_runner.py",
+        "-q",
+        "-k",
+        "allowlist_disagree"
+      ]
+    },
+    {
+      "label": "py_compile",
+      "command": [
+        "python",
+        "-m",
+        "py_compile",
+        "documentation/codex/model-routing/scripts/janus_cursor_worker_runner.py"
+      ]
+    }
+  ],
+  "forbidden_actions": [
+    "commit",
+    "push",
+    "tag",
+    "merge",
+    "release",
+    "publish",
+    "dependency",
+    "secret",
+    "auth",
+    "security",
+    "privacy",
+    "migration",
+    "architecture"
+  ],
+  "requested_actions": [
+    "edit",
+    "run_checks"
+  ],
+  "task_prompt": "Edit only documentation/codex/model-routing/scripts/janus_cursor_worker_runner.py. Add the smallest fail-closed validation so Cursor runner planning blocks when the worker package allowed_edit_paths and the provided allowlist entries disagree. Keep existing package-reference behavior intact. Run only the listed checks. Do not commit. Return concise JSON-compatible output."
+}

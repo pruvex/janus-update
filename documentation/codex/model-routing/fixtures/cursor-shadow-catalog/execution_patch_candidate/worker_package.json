@@ -1,0 +1,44 @@
+{
+  "shadow_work_class": "execution_patch_candidate",
+  "task_label": "Bounded shadow execution patch task",
+  "worker_profile": "cursor-agent-composer-shadow",
+  "task_prompt": "Update the shadow operator prompt helper so it adds exactly one session-budget line while keeping the existing line order and wording style as stable as possible.",
+  "allowed_edit_paths": [
+    "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/gate_prompt_shadow.py",
+    "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/test_gate_prompt_shadow.py"
+  ],
+  "acceptance_criteria": [
+    "Only the allowlisted shadow helper/test files may change.",
+    "The helper change must stay bounded to one new session-budget output line.",
+    "The focused shadow pytest command must pass."
+  ],
+  "checks": [
+    {
+      "label": "shadow_execution_pytest",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/test_gate_prompt_shadow.py",
+        "-q"
+      ],
+      "expected_exit_codes": [0]
+    }
+  ],
+  "forbidden_actions": [
+    "architecture",
+    "auth",
+    "commit",
+    "dependency",
+    "merge",
+    "migration",
+    "privacy",
+    "publish",
+    "push",
+    "release",
+    "secret",
+    "security",
+    "tag"
+  ],
+  "requested_actions": ["edit"]
+}

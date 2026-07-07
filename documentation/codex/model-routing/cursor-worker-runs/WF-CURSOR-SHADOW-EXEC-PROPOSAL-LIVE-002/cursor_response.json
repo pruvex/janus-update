@@ -1,0 +1,16 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 54631,
+  "duration_api_ms": 54631,
+  "result": "Searching the codebase for the shadow operator prompt helper to see how it's structured.\nAdding the session-budget line using the existing `session_cap_usd` parameter, placed after the cost line to preserve order.\nUpdated `gate_prompt_shadow.py` with a single session-budget line at the end of the prompt list, using the existing `session_cap_usd` parameter and the same `.6f` formatting as the cost line.\n\n```17:20:C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\fixtures\\cursor-shadow-catalog\\execution_patch_candidate\\sandbox\\gate_prompt_shadow.py\n    if selected_model.strip():\n        lines.append(f\"Empfohlenes Worker-Modell: {selected_model}\")\n    lines.append(f\"Voraussichtliche Worker-Kosten {estimated_cost:.6f}\")\n    lines.append(f\"Session-Budget: Sitzungs-Deckel {session_cap_usd:.6f} USD\")\n```\n\nExisting line order and wording are unchanged; only the unused `_ = session_cap_usd` discard was removed and the new line appended after the cost line.\n\nValidation: `1 passed`\n\n```json\n{\n  \"status\": \"PASS\",\n  \"changed_files\": [\n    \"documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/gate_prompt_shadow.py\"\n  ],\n  \"command_results\": [\n    {\n      \"command\": \"python -m pytest .../sandbox/test_gate_prompt_shadow.py -q\",\n      \"exit_code\": 0,\n      \"result\": \"1 passed\"\n    }\n  ],\n  \"summary\": \"Added one Session-Budget line using session_cap_usd with stable line order and German wording style.\",\n  \"blockers\": []\n}\n```",
+  "session_id": "3a658eb7-1bcf-4194-8c7c-993e948ce91b",
+  "request_id": "6da4d472-201e-4336-ac55-12ee6f1b325e",
+  "usage": {
+    "inputTokens": 22390,
+    "outputTokens": 1920,
+    "cacheReadTokens": 246151,
+    "cacheWriteTokens": 0
+  }
+}

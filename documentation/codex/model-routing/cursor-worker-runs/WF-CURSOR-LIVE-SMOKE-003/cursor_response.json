@@ -1,0 +1,16 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 151898,
+  "duration_api_ms": 151898,
+  "result": "I'll locate the existing contact-memory fixture and related unit tests, then adjust only those files per your bounded scope.\nImproving the fixture structure for SPEC-10 alignment and clearer tests, without touching product source code.\nThe parametrized blocked-category test was too strict â€” I'll align it with the three examples we actually have.\nBounded contact-memory fixture and unit tests are updated. Scope stayed fixture-only; no product source code was touched.\n\n### Fixture (`contact_memory_fixture.json`)\n- Added `fixture_version` and explicit `sync_policy` (allowed fields, trusted origins, blocked categories).\n- Renamed `recall_scenario` â†’ `primary_recall_scenario` with `address_book_before`, `reconciliation_trigger`, and `origin` on facts.\n- Aligned field name `special_details` â†’ `personal_details` (matches backend contact model).\n- Added `field_classification_examples` (vegetarian â†’ `personal_details`, not `preferences`).\n- Added `untrusted_memory_examples` for model-generated facts that must not auto-sync.\n\n### Tests (`test_contact_memory_fixture.py`)\n- Added top-level contract validation and shared constants.\n- Split assertions into focused tests (sandbox scope, sync policy, recall scenario, dietary routing, blocked/untrusted examples).\n- Parametrized confirmed-fact checks for Star Wars and Kimchi.\n\n### Verification\n```text\npython -m pytest development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/test_fixture_arbeit/tests/test_contact_memory_fixture.py -q\nâ†’ 10 passed\n```\n\n```json\n{\n  \"status\": \"READY_FOR_CODEX_REVIEW\",\n  \"changed_files\": [\n    \"development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/test_fixture_arbeit/fixtures/contact_memory_fixture.json\",\n    \"development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/test_fixture_arbeit/tests/test_contact_memory_fixture.py\"\n  ],\n  \"command_results\": {\n    \"pytest\": \"10 passed\"\n  },\n  \"summary\": \"Fixture reshaped for SPEC-10 readability with sync policy, dietary classification, and untrusted-memory examples; matching unit tests expanded from 5 to 10.\",\n  \"blockers\": []\n}\n```",
+  "session_id": "25c4e0b9-d50b-48ce-ba8d-e8ff767d9e56",
+  "request_id": "14a8cad0-3ff5-4f94-9cc8-5ed42b509dbd",
+  "usage": {
+    "inputTokens": 68574,
+    "outputTokens": 6282,
+    "cacheReadTokens": 478242,
+    "cacheWriteTokens": 0
+  }
+}

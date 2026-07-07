@@ -1,0 +1,24 @@
+{
+  "task_id": "TASK-EX-002",
+  "lane_id": "execution_write_apply_candidate",
+  "bound_skill_context": "janus-executioner",
+  "task_label": "Apply one accepted-source prompt delta to the write-apply shadow helper",
+  "worker_package_json": "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/worker_package.json",
+  "allowlist_file": "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/allowlist.txt",
+  "accepted_source_run_dir": "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/accepted_source/WF-CURSOR-SHADOW-EXEC-ACCEPTED-001",
+  "apply_mode": "deterministic_local_patch_apply",
+  "requires_accepted_source": true,
+  "acceptance_criteria": [
+    "Only the two allowlisted shadow files may change.",
+    "The helper should gain exactly one accepted-source summary line and preserve the existing line order.",
+    "The focused shadow pytest command must pass before Codex review."
+  ],
+  "local_validation_command": "python -m pytest documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/sandbox/test_gate_prompt_apply_shadow.py -q",
+  "redaction_ready": true,
+  "estimated_codex_saved_tokens": 25000,
+  "estimated_delegation_overhead_tokens": 10000,
+  "recommended_backend": "cursor",
+  "recommended_model": "composer-2.5",
+  "cursor_prompt_mode": "minimal_write_apply",
+  "cursor_prompt_contract": "Use the accepted source package as the authority for the bounded delta. Edit only the allowlisted shadow helper/test pair. Run only the focused pytest command. Do not commit. Return concise JSON-friendly output."
+}

@@ -1,0 +1,63 @@
+{
+  "backend": "cursor",
+  "lane_id": "execution_patch_candidate",
+  "workflow_id": "WF-CURSOR-LIVE-HARNESS-EXEC-001",
+  "selected_model": "composer-2.5",
+  "session_id": null,
+  "validation_result": "BLOCKED",
+  "selected_path": "cursor_worker_blocked",
+  "final_outcome": "CURSOR_WORKER_INPUT_BLOCKED",
+  "package_validation": {
+    "validation_result": "FAIL",
+    "contract_status": "TASK_PACKAGE_INVALID",
+    "issues": [
+      "missing task_label",
+      "missing worker_profile",
+      "allowed_edit_paths must contain at least one path",
+      "acceptance_criteria must contain at least one item",
+      "checks must be a list",
+      "forbidden_actions missing required boundaries: architecture, auth, commit, dependency, merge, migration, privacy, publish, push, release, secret, security, tag",
+      "task_prompt or task_prompt_path is required"
+    ],
+    "task_label": "N_A",
+    "worker_profile": "N_A",
+    "allowed_edit_paths": [],
+    "required_result_artifacts": [
+      "RESULT.json",
+      "RESULT.md",
+      "DIFF.patch",
+      "FILES_CHANGED.txt",
+      "CHECKS.log",
+      "COST.json"
+    ]
+  },
+  "allowlist_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "allowlist": [
+      "development/openrouter-skill-tests/execution_patch_candidate_live_harness/math_utils.py"
+    ]
+  },
+  "codex_review_required": true,
+  "operator_message": "Cursor worker input was blocked before invocation.",
+  "accepted_source_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "accepted_source_run_dir": null,
+    "recognized_artifacts": []
+  },
+  "planned_command": [
+    "C:\\Users\\pruve\\AppData\\Local\\cursor-agent\\agent.CMD",
+    "-p",
+    "--workspace",
+    "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\execution_patch_candidate_live_harness",
+    "--model",
+    "composer-2.5",
+    "--output-format",
+    "json",
+    "--force",
+    "--trust",
+    "--approve-mcps",
+    "Allowed edit paths:\n- development/openrouter-skill-tests/execution_patch_candidate_live_harness/math_utils.py\n\nReturn status, changed_files, command_results, summary, and blockers as concise JSON-compatible output.\n\nWorkspace root: C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\execution_patch_candidate_live_harness\nWorkspace-relative edit paths:\n- math_utils.py"
+  ]
+}

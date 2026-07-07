@@ -176,6 +176,47 @@ class DelegationEvidenceGapPlanTests(unittest.TestCase):
         self.assertIn("Live requires explicit approval: `True`", rendered)
         self.assertIn("keep_codex_owned_never_delegate", rendered)
 
+    def test_deterministic_apply_lane_is_not_treated_as_missing_cursor_evidence(self) -> None:
+        manifest = {"lanes": {"execution_write_apply_candidate": {"skill": "janus-executioner"}}}
+        task_list = {
+            "tasks": [
+                {
+                    "task_id": "TASK-EX-002",
+                    "lane_id": "execution_write_apply_candidate",
+                    "recommended_backend": "deterministic_apply",
+                    "pipeline_mode": "EXECUTION_WRITE_APPLY",
+                    "estimated_codex_saved_tokens": 28000,
+                    "estimated_delegation_overhead_tokens": 10000,
+                }
+            ]
+        }
+        calibration_report = {
+            "report_type": "delegation_routing_calibration",
+            "lane_summaries": [
+                {
+                    "lane_id": "execution_write_apply_candidate",
+                    "task_id": "TASK-EX-002",
+                    "skill": "janus-executioner",
+                    "status": "NO_EVIDENCE",
+                    "sample_count": 0,
+                }
+            ],
+        }
+
+        plan = gap_plan.build_plan(
+            calibration_report=calibration_report,
+            manifest=manifest,
+            task_list=task_list,
+            generated_at="2026-07-07T13:30:00+00:00",
+        )
+
+        self.assertEqual(plan["entry_count"], 1)
+        entry = plan["entries"][0]
+        self.assertEqual(entry["recommended_backend"], "deterministic_apply")
+        self.assertEqual(entry["priority"], 20)
+        self.assertEqual(entry["next_action"], "keep_deterministic_apply_contract_and_avoid_live_agent_planning")
+        self.assertIn("deterministic local worker", entry["rationale"])
+
 
 if __name__ == "__main__":
     unittest.main()

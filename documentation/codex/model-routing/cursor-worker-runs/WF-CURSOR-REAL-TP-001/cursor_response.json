@@ -1,0 +1,16 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 36420,
+  "duration_api_ms": 36420,
+  "result": "Searching for the allowlisted worker template and its focused test.\nAdding `run_checks` to the template's `requested_actions` to match the execution template pattern.\n```json\n{\n  \"status\": \"PASS\",\n  \"changed_files\": [\n    \"documentation/codex/model-routing/test-fixture-review-fixtures/test_fixture_worker_cursor_worker_package_template_2026-07-07.json\"\n  ],\n  \"command_results\": [\n    {\n      \"command\": \"python -m pytest documentation/codex/model-routing/tests/test_test_fixture_worker_templates.py -q -k requests_running_checks\",\n      \"exit_code\": 0,\n      \"result\": \"1 passed, 2 deselected\"\n    }\n  ],\n  \"summary\": \"Added run_checks to requested_actions in the test fixture worker package template so it matches the bounded checks contract.\",\n  \"blockers\": []\n}\n```",
+  "session_id": "d68577f5-f075-45b9-9aab-a6dd2f8b6848",
+  "request_id": "c1760da1-d284-40c3-bda2-d80687422304",
+  "usage": {
+    "inputTokens": 23181,
+    "outputTokens": 1103,
+    "cacheReadTokens": 120287,
+    "cacheWriteTokens": 0
+  }
+}

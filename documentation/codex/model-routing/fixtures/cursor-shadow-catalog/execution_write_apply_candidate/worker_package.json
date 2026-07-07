@@ -1,0 +1,44 @@
+{
+  "shadow_work_class": "execution_write_apply_candidate",
+  "task_label": "Bounded shadow execution write-apply task",
+  "worker_profile": "cursor-agent-composer-shadow",
+  "task_prompt": "Apply the accepted-source prompt delta to the shadow helper by adding exactly one accepted-source summary line while keeping the helper behavior otherwise stable.",
+  "allowed_edit_paths": [
+    "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/sandbox/gate_prompt_apply_shadow.py",
+    "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/sandbox/test_gate_prompt_apply_shadow.py"
+  ],
+  "acceptance_criteria": [
+    "Only the allowlisted shadow helper/test files may change.",
+    "The helper change must stay bounded to one accepted-source summary line.",
+    "The focused shadow pytest command must pass."
+  ],
+  "checks": [
+    {
+      "label": "shadow_execution_write_apply_pytest",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/sandbox/test_gate_prompt_apply_shadow.py",
+        "-q"
+      ],
+      "expected_exit_codes": [0]
+    }
+  ],
+  "forbidden_actions": [
+    "architecture",
+    "auth",
+    "commit",
+    "dependency",
+    "merge",
+    "migration",
+    "privacy",
+    "publish",
+    "push",
+    "release",
+    "secret",
+    "security",
+    "tag"
+  ],
+  "requested_actions": ["edit"]
+}

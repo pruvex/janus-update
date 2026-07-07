@@ -1,0 +1,5 @@
+{
+  "status": "PASS",
+  "git_diff": "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/accepted_source/WF-SHADOW-LOCAL-APPLY-COMPARE-001/git_diff.patch",
+  "changed_files": "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/accepted_source/WF-SHADOW-LOCAL-APPLY-COMPARE-001/changed_files.txt"
+}

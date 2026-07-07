@@ -1,0 +1,82 @@
+{
+  "backend": "cursor",
+  "lane_id": "test_fixture_worker",
+  "workflow_id": "WF-CURSOR-REAL-TP-001",
+  "selected_model": "composer-2.5",
+  "session_id": "d68577f5-f075-45b9-9aab-a6dd2f8b6848",
+  "validation_result": "PASS",
+  "selected_path": "cursor_worker_live_mockable",
+  "final_outcome": "CURSOR_WORKER_READY_FOR_CODEX_REVIEW",
+  "package_validation": {
+    "validation_result": "PASS",
+    "contract_status": "TASK_PACKAGE_VALID_VIA_WORKER_REFERENCE",
+    "issues": [],
+    "task_label": "Align test fixture worker template requested_actions with its bounded check contract",
+    "worker_profile": "cursor-agent",
+    "allowed_edit_paths": [
+      "documentation/codex/model-routing/test-fixture-review-fixtures/test_fixture_worker_cursor_worker_package_template_2026-07-07.json",
+      "documentation/codex/model-routing/tests/test_test_fixture_worker_templates.py"
+    ],
+    "required_result_artifacts": [
+      "RESULT.json",
+      "RESULT.md",
+      "DIFF.patch",
+      "FILES_CHANGED.txt",
+      "CHECKS.log",
+      "COST.json"
+    ],
+    "source_package_path": "documentation\\codex\\model-routing\\test-fixture-review-fixtures\\test_fixture_worker_real_repo_template_fix_input_package_2026-07-07.json",
+    "worker_package_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\test-fixture-review-fixtures\\test_fixture_worker_real_repo_template_fix_worker_package_2026-07-07.json"
+  },
+  "allowlist_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "allowlist": [
+      "documentation/codex/model-routing/test-fixture-review-fixtures/test_fixture_worker_cursor_worker_package_template_2026-07-07.json",
+      "documentation/codex/model-routing/tests/test_test_fixture_worker_templates.py"
+    ]
+  },
+  "allowlist_consistency_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "package_allowed_edit_paths": [
+      "documentation/codex/model-routing/test-fixture-review-fixtures/test_fixture_worker_cursor_worker_package_template_2026-07-07.json",
+      "documentation/codex/model-routing/tests/test_test_fixture_worker_templates.py"
+    ],
+    "allowlist": [
+      "documentation/codex/model-routing/test-fixture-review-fixtures/test_fixture_worker_cursor_worker_package_template_2026-07-07.json",
+      "documentation/codex/model-routing/tests/test_test_fixture_worker_templates.py"
+    ],
+    "declared_allowlist_file": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\test-fixture-review-fixtures\\allowlists\\test_fixture_worker_real_repo_template_fix_allowlist_2026-07-07.txt"
+  },
+  "accepted_source_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "accepted_source_run_dir": null,
+    "recognized_artifacts": []
+  },
+  "accepted_source_run_dir": null,
+  "planned_command": [
+    "C:\\Users\\pruve\\AppData\\Local\\cursor-agent\\agent.CMD",
+    "-p",
+    "--workspace",
+    "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing",
+    "--model",
+    "composer-2.5",
+    "--output-format",
+    "json",
+    "--force",
+    "--trust",
+    "--approve-mcps",
+    "Edit only the allowlisted test fixture worker template and its focused test. Make the smallest bounded fix so the worker template explicitly requests running checks when checks are part of the contract. Run only the listed pytest command. Do not commit. Return concise JSON-compatible output.\n\nTask label: Align test fixture worker template requested_actions with its bounded check contract\n\nEdit only the allowlisted template and focused test file, keep the fix bounded to requested_actions and related expectations, run only the listed pytest command, and return concise JSON-friendly output.\n\nAcceptance criteria:\n- Only the allowlisted template and focused template test may change.\n- The worker template must explicitly request running checks when checks are part of the contract.\n- The focused pytest command must pass before Codex review.\n\nAllowed edit paths:\n- documentation/codex/model-routing/test-fixture-review-fixtures/test_fixture_worker_cursor_worker_package_template_2026-07-07.json\n- documentation/codex/model-routing/tests/test_test_fixture_worker_templates.py\n\nReturn status, changed_files, command_results, summary, and blockers as concise JSON-compatible output.\n\nWorkspace root: C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\nWorkspace-relative edit paths:\n- test-fixture-review-fixtures/test_fixture_worker_cursor_worker_package_template_2026-07-07.json\n- tests/test_test_fixture_worker_templates.py"
+  ],
+  "mode": "proposal_first",
+  "workspace_root": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing",
+  "live_execution_allowed": false,
+  "codex_review_required": true,
+  "changed_files": [
+    "documentation/codex/model-routing/test-fixture-review-fixtures/test_fixture_worker_cursor_worker_package_template_2026-07-07.json"
+  ],
+  "changed_outside_allowlist": [],
+  "operator_message": "Cursor worker finished the bounded slice and returned artifacts for Codex review."
+}

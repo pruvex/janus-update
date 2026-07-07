@@ -25,7 +25,12 @@
     "execution_patch_candidate": {
       "per_call_cap_usd": 0.05,
       "session_cap_usd": 0.15,
-      "description": "Proposal-only code patch candidate work for prechecked execution slices."
+      "description": "Proposal-only code patch candidate work for prechecked execution slices, using the stronger OR lane by default."
+    },
+    "strong_test_worker": {
+      "per_call_cap_usd": 0.12,
+      "session_cap_usd": 0.36,
+      "description": "Isolated strong OR test worker for bounded test authoring, repeated whitelisted command execution, and result summarization."
     },
     "execution_write_apply_candidate": {
       "per_call_cap_usd": 0.1,

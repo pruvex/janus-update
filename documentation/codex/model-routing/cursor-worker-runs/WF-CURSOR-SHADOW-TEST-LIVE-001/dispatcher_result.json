@@ -1,0 +1,62 @@
+{
+  "backend": "cursor",
+  "lane_id": "test_fixture_worker",
+  "workflow_id": "WF-CURSOR-SHADOW-TEST-LIVE-001",
+  "selected_model": "composer-2.5",
+  "session_id": "3d4cd70c-9ccf-4332-9b27-7589cd89b8ad",
+  "validation_result": "PASS",
+  "selected_path": "cursor_worker_live_mockable",
+  "final_outcome": "CURSOR_WORKER_READY_FOR_CODEX_REVIEW",
+  "package_validation": {
+    "validation_result": "PASS",
+    "contract_status": "TASK_PACKAGE_VALID_VIA_WORKER_REFERENCE",
+    "issues": [],
+    "task_label": "Bounded shadow test fixture worker task",
+    "worker_profile": "cursor-agent-composer-shadow",
+    "allowed_edit_paths": [
+      "development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/test_fixture_arbeit/fixtures/contact_memory_fixture.json",
+      "development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/test_fixture_arbeit/tests/test_contact_memory_fixture.py"
+    ],
+    "required_result_artifacts": [
+      "RESULT.json",
+      "RESULT.md",
+      "DIFF.patch",
+      "FILES_CHANGED.txt",
+      "CHECKS.log",
+      "COST.json"
+    ],
+    "source_package_path": "documentation\\codex\\model-routing\\fixtures\\cursor-shadow-catalog\\test_fixture_worker\\input_package.json",
+    "worker_package_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\fixtures\\cursor-shadow-catalog\\test_fixture_worker\\worker_package.json"
+  },
+  "allowlist_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "allowlist": [
+      "development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/test_fixture_arbeit/fixtures/contact_memory_fixture.json",
+      "development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/test_fixture_arbeit/tests/test_contact_memory_fixture.py"
+    ]
+  },
+  "planned_command": [
+    "C:\\Users\\pruve\\AppData\\Local\\cursor-agent\\agent.CMD",
+    "-p",
+    "--workspace",
+    "C:\\KI\\Janus-Projekt",
+    "--model",
+    "composer-2.5",
+    "--output-format",
+    "json",
+    "--force",
+    "--trust",
+    "--approve-mcps",
+    "Create or adjust only the bounded contact-memory fixture and its matching unit test. Keep the task fixture-only and do not refactor unrelated source code.\n\nTask label: Adjust the proven shadow fixture helper pair reused from WF-CURSOR-LIVE-SMOKE-003\n\nEdit only the allowlisted shadow-eval fixture files. Run only the focused pytest command. Do not commit. Return concise JSON-friendly output.\n\nAcceptance criteria:\n- Only the two allowlisted shadow-eval files may change.\n- The task must stay fixture/test-helper scoped.\n- The focused pytest command must pass before Codex review.\n\nAllowed edit paths:\n- development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/test_fixture_arbeit/fixtures/contact_memory_fixture.json\n- development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/test_fixture_arbeit/tests/test_contact_memory_fixture.py\n\nReturn status, changed_files, command_results, summary, and blockers as concise JSON-compatible output."
+  ],
+  "mode": "proposal_first",
+  "live_execution_allowed": false,
+  "codex_review_required": true,
+  "changed_files": [
+    "development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/test_fixture_arbeit/fixtures/contact_memory_fixture.json",
+    "development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/test_fixture_arbeit/tests/test_contact_memory_fixture.py"
+  ],
+  "changed_outside_allowlist": [],
+  "operator_message": "Cursor worker finished the bounded slice and returned artifacts for Codex review."
+}

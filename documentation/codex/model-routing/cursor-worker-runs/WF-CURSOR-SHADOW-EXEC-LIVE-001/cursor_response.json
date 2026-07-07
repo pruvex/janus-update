@@ -1,0 +1,16 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 114269,
+  "duration_api_ms": 114269,
+  "result": "I'll locate the shadow operator prompt helper and see how session-budget lines are handled elsewhere so we can add one line without disturbing the existing format.\nI'll check the production gate prompt for how session-budget lines are formatted so the shadow helper can match that style.\nAdding one `Session-Budget:` line before the cost line, matching the existing compact wording style.\nUpdated `build_shadow_operator_prompt_lines` to append exactly one session-budget line while leaving the existing lines and order intact.\n\n**Change:** Added optional `session_cap_usd` (default `0.15`, matching the `execution_patch_candidate` budget profile) and inserted one line before the cost line:\n\n```python\nlines.append(f\"Session-Budget: Sitzungs-Deckel {session_cap_usd:.6f} USD\")\n```\n\n**Line order (unchanged except for the new line):**\n1. `1 = Codex`\n2. `2 = {choice_2_label}`\n3. Cursor explanation line\n4. Optional model line (when provided)\n5. **Session-Budget** (new)\n6. Worker cost line\n\n**Validation:** `1 passed` â€” `test_gate_prompt_shadow.py`\n\n```json\n{\n  \"status\": \"PASS\",\n  \"changed_files\": [\n    \"documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/gate_prompt_shadow.py\"\n  ],\n  \"command_results\": [\n    {\n      \"command\": \"python -m pytest documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/test_gate_prompt_shadow.py -q\",\n      \"exit_code\": 0,\n      \"summary\": \"1 passed\"\n    }\n  ],\n  \"summary\": \"Added one Session-Budget line with configurable session_cap_usd defaulting to 0.15 USD, placed before the existing cost line.\",\n  \"blockers\": []\n}\n```",
+  "session_id": "dff68a5d-2cf5-4397-a722-ff81ba1a2782",
+  "request_id": "d13b3dc9-08da-4818-b29e-9ea2c300544d",
+  "usage": {
+    "inputTokens": 41389,
+    "outputTokens": 3733,
+    "cacheReadTokens": 538167,
+    "cacheWriteTokens": 0
+  }
+}

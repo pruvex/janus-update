@@ -1,0 +1,16 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 146470,
+  "duration_api_ms": 146470,
+  "result": "I'll locate the shadow operator prompt helper and see how its lines are built so we can add one session-budget line without disturbing the rest.\nVerifying the helper output and whether a minimal baseline still needs the session-budget line.\nThe shadow helper already includes exactly one session-budget line in the right place. I verified the output and ran the focused pytest â€” both pass.\n\n**Current behavior** in `gate_prompt_shadow.py`:\n\n```4:20:C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\fixtures\\cursor-shadow-catalog\\execution_patch_candidate\\sandbox\\gate_prompt_shadow.py\ndef build_shadow_operator_prompt_lines(\n    *,\n    choice_2_label: str = \"Cursor\",\n    selected_model: str = \"\",\n    estimated_cost: float = 0.0,\n    session_cap_usd: float = 0.15,\n) -> list[str]:\n    lines = [\n        \"1 = Codex\",\n        f\"2 = {choice_2_label}\",\n        \"Cursor is the bounded external worker option for this shadow lane.\",\n    ]\n    if selected_model.strip():\n        lines.append(f\"Empfohlenes Worker-Modell: {selected_model}\")\n    lines.append(f\"Session-Budget: Sitzungs-Deckel {session_cap_usd:.6f} USD\")\n    lines.append(f\"Voraussichtliche Worker-Kosten {estimated_cost:.6f}\")\n    return lines\n```\n\n**Line order preserved:**\n1. Choice labels (`1 = Codex`, `2 = Cursor`)\n2. Lane description\n3. Optional worker model\n4. **Session-Budget** (new, exactly one line)\n5. Worker cost estimate (unchanged, still last)\n\n**Validation:** `python -m pytest .../test_gate_prompt_shadow.py -q` â†’ **1 passed**\n\n```json\n{\n  \"status\": \"PASS\",\n  \"changed_files\": [],\n  \"command_results\": [\n    {\n      \"command\": \"python -m pytest documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/test_gate_prompt_shadow.py -q\",\n      \"exit_code\": 0,\n      \"result\": \"1 passed\"\n    }\n  ],\n  \"summary\": \"The shadow operator prompt helper already emits exactly one Session-Budget line (Sitzungs-Deckel 0.150000 USD by default) between the optional worker-model line and the existing cost line. Line order and German operator wording style are stable; focused pytest passes.\",\n  \"blockers\": []\n}\n```\n\nNo edits were required in this session â€” the allowlisted helper/test pair already satisfies the worker package acceptance criteria. If you want a fresh diff from a reset baseline for another smoke run, say the word and I can strip and re-apply the minimal patch.",
+  "session_id": "be7caed7-65e9-4e8c-b38c-084070935ce5",
+  "request_id": "4ff6a26e-8f3d-4bf1-a6ce-da7a16abbc97",
+  "usage": {
+    "inputTokens": 41266,
+    "outputTokens": 7056,
+    "cacheReadTokens": 636128,
+    "cacheWriteTokens": 0
+  }
+}

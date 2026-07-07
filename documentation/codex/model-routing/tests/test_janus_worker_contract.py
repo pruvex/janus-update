@@ -52,6 +52,56 @@ def write_result_dir(root: Path, *, status: str = "success", checks_status: str 
     return result_dir
 
 
+def write_shadow_package(root: Path, class_id: str, *, allowed_edit_paths: list[str] | None = None) -> Path:
+    package_dir = root / "development" / "openrouter-skill-tests" / "janus-worker-gateway-shadow-eval" / class_id
+    package_dir.mkdir(parents=True, exist_ok=True)
+    package_path = package_dir / "task_package.json"
+    payload = valid_package()
+    payload["task_label"] = f"{class_id} shadow package"
+    payload["shadow_work_class"] = class_id
+    payload["worker_profile"] = "shadow-eval-fixed-pair"
+    payload["allowed_edit_paths"] = allowed_edit_paths or [f"{class_id}/target.md"]
+    payload["task_prompt"] = f"Edit only the bounded files for {class_id}."
+    package_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    return package_path
+
+
+def write_shadow_manifest(root: Path, *, class_ids: list[str] | None = None, duplicate_models: bool = False) -> Path:
+    class_ids = class_ids or ["docs_fleissarbeit", "test_fixture_arbeit"]
+    manifest_path = root / "development" / "openrouter-skill-tests" / "janus-worker-gateway-shadow-eval" / "shadow_evaluation_manifest.json"
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    shadow_classes: list[dict[str, object]] = []
+    for class_id in class_ids:
+        package_path = write_shadow_package(root, class_id)
+        shadow_classes.append(
+            {
+                "class_id": class_id,
+                "task_package_path": package_path.relative_to(root).as_posix(),
+                "comparison_models": (
+                    [
+                        "openrouter/qwen/qwen3-coder-30b-a3b-instruct",
+                        "openrouter/qwen/qwen3-coder-30b-a3b-instruct",
+                    ]
+                    if duplicate_models
+                    else [
+                        "openrouter/qwen/qwen3-coder-30b-a3b-instruct",
+                        "openrouter/moonshotai/kimi-k2.5",
+                    ]
+                ),
+            }
+        )
+    manifest = {
+        "evaluation_id": "SPEC30-SHADOW-EVAL-001",
+        "sandbox_root": "development/openrouter-skill-tests/janus-worker-gateway-shadow-eval",
+        "real_repo_writeback_allowed": False,
+        "global_worker_release_allowed": False,
+        "real_consumer_activation_allowed": False,
+        "shadow_work_classes": shadow_classes,
+    }
+    manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    return manifest_path
+
+
 class JanusWorkerContractTests(unittest.TestCase):
     def test_valid_task_package_passes_contract(self) -> None:
         result = contract.validate_worker_task_package(valid_package())
@@ -155,6 +205,40 @@ class JanusWorkerContractTests(unittest.TestCase):
 
         self.assertEqual(result["validation_result"], "FAIL")
         self.assertIn("success result must list at least one changed file", result["issues"])
+
+    def test_shadow_evaluation_manifest_passes_with_exact_two_classes(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            manifest_path = write_shadow_manifest(root)
+
+            result = contract.validate_shadow_evaluation_manifest_file(manifest_path, repo_root=root)
+
+        self.assertEqual(result["validation_result"], "PASS")
+        self.assertEqual(result["contract_status"], "SHADOW_EVALUATION_READY")
+        self.assertEqual(
+            sorted(result["package_validations"].keys()),
+            ["docs_fleissarbeit", "test_fixture_arbeit"],
+        )
+
+    def test_shadow_evaluation_manifest_rejects_missing_required_class(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            manifest_path = write_shadow_manifest(root, class_ids=["docs_fleissarbeit", "docs_fleissarbeit"])
+
+            result = contract.validate_shadow_evaluation_manifest_file(manifest_path, repo_root=root)
+
+        self.assertEqual(result["validation_result"], "FAIL")
+        self.assertTrue(any("missing required shadow work classes" in issue for issue in result["issues"]))
+
+    def test_shadow_evaluation_manifest_rejects_duplicate_model_pair(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            manifest_path = write_shadow_manifest(root, duplicate_models=True)
+
+            result = contract.validate_shadow_evaluation_manifest_file(manifest_path, repo_root=root)
+
+        self.assertEqual(result["validation_result"], "FAIL")
+        self.assertTrue(any("comparison_models must not contain duplicates" in issue for issue in result["issues"]))
 
 
 if __name__ == "__main__":

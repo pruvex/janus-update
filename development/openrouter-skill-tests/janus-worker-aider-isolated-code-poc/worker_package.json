@@ -1,0 +1,36 @@
+{
+  "task_label": "Run bounded isolated code/test worker slice on tiny helper sample",
+  "task_prompt_path": "development/openrouter-skill-tests/janus-worker-aider-isolated-code-poc/worker_task.md",
+  "workspace_files": [
+    {
+      "repo_path": "development/openrouter-skill-tests/janus-worker-aider-isolated-code-poc/text_utils.py",
+      "workspace_path": "text_utils.py",
+      "allow_edit": true,
+      "copy_back": true
+    },
+    {
+      "repo_path": "development/openrouter-skill-tests/janus-worker-aider-isolated-code-poc/test_text_utils.py",
+      "workspace_path": "test_text_utils.py",
+      "allow_edit": false,
+      "copy_back": false
+    }
+  ],
+  "pre_commands": [
+    {
+      "label": "PRETEST",
+      "command": ["python", "-m", "pytest", "-q", "test_text_utils.py"],
+      "expected_exit_codes": [0]
+    }
+  ],
+  "post_commands": [
+    {
+      "label": "POSTTEST",
+      "command": ["python", "-m", "pytest", "-q", "test_text_utils.py"],
+      "expected_exit_codes": [0]
+    }
+  ],
+  "notes": [
+    "Synthetic bounded code/test sample",
+    "Useful as a green-path smoke test for the standard isolated runner"
+  ]
+}

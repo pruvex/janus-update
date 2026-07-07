@@ -1,0 +1,52 @@
+{
+  "workflow_id": "TASK-SPEC28.1-EXECUTION-OR-001",
+  "bound_skill_context": "janus-executioner",
+  "target_task": "TASK-SPEC28.1",
+  "spec_path": "documentation/tasks/TASK-SPEC28.1_task_breakdown.md",
+  "precheck_path": "documentation/tasks/TASK-SPEC28.1_preimplementation_check.md",
+  "precheck_status": "PRE-CHECK PASSED",
+  "allowed_files": [
+    "documentation/codex/skills/janus-test-pipeline/SKILL.md",
+    "documentation/codex/model-routing/scripts/bounded_or_worker_eligibility.py",
+    "documentation/codex/model-routing/scripts/test_pipeline_sidecar_write_pilot_runner.py",
+    "documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py",
+    "documentation/codex/model-routing/tests/test_test_pipeline_sidecar_write_pilot_runner.py"
+  ],
+  "max_touched_files": 5,
+  "mini_test_plan": [
+    "python -m pytest documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py -q",
+    "python -m pytest documentation/codex/model-routing/tests/test_test_pipeline_sidecar_write_pilot_runner.py -q -k \"live or gate or eligibility\"",
+    "python -m py_compile documentation/codex/model-routing/scripts/bounded_or_worker_eligibility.py documentation/codex/model-routing/scripts/test_pipeline_sidecar_write_pilot_runner.py"
+  ],
+  "manual_validation_gate": "Codex must still verify that an eligible local LIVE_TEST_EXECUTION slice now exposes a visible 1 = Codex / 2 = OR gate while non-eligible, too-broad, or non-local live-retest flows remain deterministically Codex-only.",
+  "delegation_question": "Produce one bounded patch candidate for TASK-SPEC28.1. Add only the fail-closed eligibility and visible operator gate for eligible local LIVE_TEST_EXECUTION retests inside janus-test-pipeline. Keep TASK-SPEC28.2 and TASK-SPEC28.3 out of scope: no local auth or header contract, no worker package details, no delegated evidence-write semantics, and no final Codex-owned accept-reject wiring beyond the visibility-only lane entry.",
+  "current_seam_context": "The current janus-test-pipeline skill already exposes visible OR gates for generator-review, strong isolated test-worker, and finding-triage lanes, but the LIVE_TEST_EXECUTION section remains Codex-owned and does not yet describe or trigger a dedicated visible OR gate for eligible local live retests. In documentation/codex/model-routing/scripts/test_pipeline_sidecar_write_pilot_runner.py the visible prompt summary is still hard-wired to TESTSPEC_TO_TEST_PLAN or strong-worker behavior rather than a fail-closed LIVE_TEST_EXECUTION eligibility check. In documentation/codex/model-routing/scripts/bounded_or_worker_eligibility.py the productive Dev-workhorse contract exists for execution_patch_candidate and execution_write_apply_candidate, but the first TASK-SPEC28.1 slice must stay visibility-only and must not expand into later worker-auth-evidence contract work.",
+  "signature_context": "Preserve the existing evaluate_productive_dev_workhorse_path(path_id: str, task_class: str, estimated_or_cost: float | int | None, ...) helper contract and the existing prompt_summary(...), main(), and isolated worker prompt wiring in test_pipeline_sidecar_write_pilot_runner.py. Prefer adding the smallest live-retest eligibility/gate seam that reuses the current visible OR language and fail-closed behavior instead of inventing a new broad dispatcher or replacing current task-artifact flows.",
+  "call_shape_examples": [
+    "result = eligibility.evaluate_productive_dev_workhorse_path(path_id=\"productive_dev_workhorse_path\", task_class=\"execution_patch_candidate\", estimated_or_cost=0.02)",
+    "self.assertIn(\"1 = Codex\", summary[\"operator_prompt_lines\"])",
+    "self.assertIn(\"2 = OR\", summary[\"operator_prompt_lines\"])"
+  ],
+  "exact_code_context_blocks": [
+    "documentation/codex/skills/janus-test-pipeline/SKILL.md::Strong OR Test Worker Gate and LIVE_TEST_EXECUTION\\nFor eligible bounded test work that goes beyond generator review, show a normal operator-facing gate when the slice is:\\n- one bound TestSpec/TestRun or one bounded test target\\n- one isolated worker package with explicit `workspace_files`, `pre_commands`, and `post_commands`\\n- no production app data mutation unless the package and user approval explicitly bind it\\n- no secrets in the package and no unbounded repository context\\n- positive expected Codex-token ROI after package preparation and Codex review overhead\\n\\nPreferred strong OR model for this lane:\\n- `moonshotai/kimi-k2.5`\\n\\n## Mode: LIVE_TEST_EXECUTION\\nInputs:\\n- TestSpec path.\\n- TestPlan path.\\n- Generated runner path.\\n- Approved `TEST_RUN_ID`.\\n\\nProcess:\\n1. Run deterministic preflight first:",
+    "documentation/codex/model-routing/scripts/test_pipeline_sidecar_write_pilot_runner.py::prompt_summary\\noperator_prompt_lines = [\\n    \"1 = Codex\",\\n    \"2 = OR\",\\n    \"OR ist hier die externe Option, um Codex-Guthaben zu sparen.\",\\n    \"Live-Evidenz: bounded test-artifact generator lane on structured local executor surface\",\\n    \"Einordnung: deterministische Generator-Ausgabe bleibt lokal validiert; Codex behaelt finale Review- und Akzeptanzhoheit\",\\n    f\"Technischer Delegationspfad: structured local executor / {sidecar_model}\",\\n    f\"Pre-Call-Kostenbasis: bounded test-artifact generation for {test_run_id}\",\\n    \"Voraussichtliche OR-Kosten noch nicht belastbar kalibriert, Evidenzgenauigkeit 100% fuer den lokalen strukturierten Ausfuehrungspfad\",\\n]",
+    "documentation/codex/model-routing/scripts/test_pipeline_sidecar_write_pilot_runner.py::main isolated worker branch\\nif isolated_package_path is not None:\\n    isolated_choice = \"delegated\" if choice == \"sidecar\" else choice\\n    completed = invoke_isolated_aider_runner(\\n        workflow_id=workflow_id,\\n        task_label=f\"Strong OR test worker for {args.test_run_id}\",\\n        normal_target_model=args.normal_target_model,\\n        or_model=args.sidecar_model,\\n        operator_choice=isolated_choice,\\n        estimated_or_cost=args.estimated_or_cost,\\n        confidence_percent=args.cost_estimate_confidence_percent,\\n        input_package_json=isolated_package_path,\\n    )",
+    "documentation/codex/model-routing/tests/test_test_pipeline_sidecar_write_pilot_runner.py::visible gate assertions\\nself.assertEqual(summary[\"choice_1\"], \"Codex\")\\nself.assertEqual(summary[\"choice_2\"], \"OR\")\\nself.assertIn(\"1 = Codex\", summary[\"operator_prompt_lines\"])\\nself.assertIn(\"2 = OR\", summary[\"operator_prompt_lines\"])",
+    "documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py::productive Dev-workhorse execution patch gate\\nresult = eligibility.evaluate_productive_dev_workhorse_path(\\n    path_id=\"productive_dev_workhorse_path\",\\n    task_class=\"execution_patch_candidate\",\\n    estimated_or_cost=0.02,\\n)\\nself.assertEqual(result[\"eligibility_result\"], \"OR_ALLOWED\")\\nself.assertEqual(result[\"selected_or_model\"], \"moonshotai/kimi-k2.5\")"
+  ],
+  "forbidden_anchors": [
+    "broad live test delegation for all modes",
+    "local auth/header contract implementation",
+    "delegated evidence-write semantics",
+    "final Codex-owned accept-reject wiring for OR live retests",
+    "new broad dispatcher or routing-table redesign"
+  ],
+  "required_current_anchors": [
+    "LIVE_TEST_EXECUTION",
+    "1 = Codex",
+    "2 = OR",
+    "evaluate_productive_dev_workhorse_path",
+    "prompt_summary",
+    "invoke_isolated_aider_runner"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "task_id": "TASK-EX-001",
+  "lane_id": "execution_patch_candidate",
+  "bound_skill_context": "janus-executioner",
+  "task_label": "Replace with the same bounded coding task label as the worker package",
+  "worker_package_json": "documentation/codex/model-routing/execution-review-fixtures/replace_worker_package.json",
+  "allowlist_file": "documentation/codex/model-routing/execution-review-fixtures/allowlists/replace_allowlist.txt",
+  "acceptance_criteria": [
+    "Only the allowlisted source file set may change.",
+    "The bounded behavior change must be fixed without widening scope.",
+    "The focused validation command must pass before Codex review."
+  ],
+  "local_validation_command": "python -m pytest path/to/test_target.py -q",
+  "estimated_codex_saved_tokens": 25000,
+  "estimated_delegation_overhead_tokens": 10000,
+  "recommended_backend": "cursor",
+  "recommended_model": "composer-2.5",
+  "cursor_prompt_contract": "Stay inside the allowlist, preserve declared signatures and boundaries, run only the bounded checks, and return concise JSON-friendly output."
+}

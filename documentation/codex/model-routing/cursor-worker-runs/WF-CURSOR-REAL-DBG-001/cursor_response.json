@@ -1,0 +1,16 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 49377,
+  "duration_api_ms": 49377,
+  "result": "I'll locate the allowlisted debug worker template and the test that expects checks before Codex review.\nThe template is missing `run_checks` in `requested_actions`; I'll add it and run the focused pytest.\n```json\n{\n  \"status\": \"PASS\",\n  \"changed_files\": [\n    \"documentation/codex/model-routing/debug-review-fixtures/debug_repro_investigation_cursor_worker_package_template_2026-07-07.json\"\n  ],\n  \"command_results\": [\n    {\n      \"command\": \"python -m pytest documentation/codex/model-routing/tests/test_debug_repro_investigation_templates.py -q\",\n      \"exit_code\": 0,\n      \"result\": \"3 passed in 0.37s\"\n    }\n  ],\n  \"summary\": \"Added run_checks to requested_actions in the debug worker package template so it matches the lane contract (checks before Codex review) and test_worker_package_template_requests_running_checks.\",\n  \"blockers\": []\n}\n```",
+  "session_id": "73475e99-0fed-4493-8f67-8d7ab45398df",
+  "request_id": "66338c8d-bc8b-4dc4-93fa-5b3e8cceb751",
+  "usage": {
+    "inputTokens": 23995,
+    "outputTokens": 1130,
+    "cacheReadTokens": 121726,
+    "cacheWriteTokens": 0
+  }
+}

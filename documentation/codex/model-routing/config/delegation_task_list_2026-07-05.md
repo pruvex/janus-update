@@ -11,6 +11,7 @@ Operator gate everywhere:
 - `3 = OpenRouter`
 
 Codex shows the recommendation from this list. Operator may override unless `operator_override_allowed: false`.
+Task-specific option labels can narrow this generic gate; the main current exception is `TASK-EX-002`, where visible option `2` is `Deterministic Apply` rather than Cursor.
 
 ---
 
@@ -37,7 +38,7 @@ Codex shows the recommendation from this list. Operator may override unless `ope
 | TASK-TP-005 | janus-test-pipeline | Failure triage | **OR** | auto | qwen3-coder-30b |
 | TASK-TP-006 | janus-test-pipeline | Retest audit | **Codex** | — | — |
 | TASK-EX-001 | janus-executioner | Patch vorschlagen | **Cursor** | composer-2.5 | kimi-k2.5 |
-| TASK-EX-002 | janus-executioner | Accepted patch apply | **Cursor** | composer-2.5 | deepseek-v4-flash |
+| TASK-EX-002 | janus-executioner | Accepted patch apply | **Deterministic Apply** | deterministic_local_apply | — |
 | TASK-EX-003 | janus-executioner | Validation + completion | **Codex** | — | — |
 
 ---
@@ -109,7 +110,7 @@ Codex shows the recommendation from this list. Operator may override unless `ope
 1. TASK-EX-001  →  2=Cursor        Patch proposal
    (Alternative: 3=OR kimi proposal-first)
 2. Codex review →  accept/reject
-3. TASK-EX-002  →  2=Cursor        bounded apply (wenn accepted)
+3. TASK-EX-002  →  2=Deterministic Apply  bounded local apply (wenn accepted)
 4. TASK-EX-003  →  Codex           validation + completion claim
 ```
 
@@ -127,7 +128,7 @@ Codex shows the recommendation from this list. Operator may override unless `ope
 | `qwen/qwen3-coder-30b-a3b-instruct` | Beste aktuelle Default-Wahl fuer `spec_normalizer_review` und `precheck_review`; bei `spec_review` nur fuer substanzielle REVIEW_ONLY-Pakete |
 | `openai/gpt-oss-20b` | Generator review |
 | `moonshotai/kimi-k2.5` | Proposal-first patches, test fixture (Aider) |
-| `deepseek/deepseek-v4-flash` | Accepted-source write-apply (OR path) |
+| `deepseek/deepseek-v4-flash` | Nicht mehr fuer TASK-EX-002 priorisieren; OR bleibt Proposal-/Assist-Lane |
 
 ---
 

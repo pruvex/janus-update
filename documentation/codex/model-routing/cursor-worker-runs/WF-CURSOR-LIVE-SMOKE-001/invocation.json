@@ -1,0 +1,17 @@
+﻿{
+    "command":  [
+                    "cursor",
+                    "agent",
+                    "-p",
+                    "--output-format",
+                    "json",
+                    "--workspace",
+                    "C:\\Users\\pruve\\AppData\\Local\\Temp\\janus-cursor-live-smoke-001",
+                    "--model",
+                    "auto",
+                    "--trust",
+                    "--force",
+                    "Append exactly one new line \u0027CURSOR_SMOKE_OK\u0027 to notes.txt. Change no other files. Do not run terminal commands. Return one short sentence confirming what you changed."
+                ],
+    "workspace":  "C:\\Users\\pruve\\AppData\\Local\\Temp\\janus-cursor-live-smoke-001"
+}

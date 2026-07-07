@@ -23,10 +23,14 @@ if str(MODEL_ROUTING_DIR / "scripts") not in __import__("sys").path:
 DISPATCHER_PATH = MODEL_ROUTING_DIR / "scripts" / "codex_bounded_delegation_dispatcher.py"
 BUDGET_PROFILE_CONFIG_PATH = MODEL_ROUTING_DIR / "config" / "or_task_budget_profiles_2026-06-19.json"
 
-from bounded_or_worker_eligibility import evaluate_productive_dev_workhorse_path
+from bounded_or_worker_eligibility import (
+    evaluate_existing_skill_operator_gate_visibility,
+    evaluate_productive_dev_workhorse_path,
+)
 from bounded_or_worker_gate_prompt import (
     build_missing_gate_result,
     build_operator_prompt_lines,
+    build_visibility_suppressed_result,
     missing_gate_fields,
 )
 
@@ -448,6 +452,32 @@ def prompt_summary(args: argparse.Namespace) -> dict[str, Any]:
                 "Route: Codex-only vor dem sichtbaren Gate",
             ],
             "operator_message": eligibility["message"],
+            "budget_profile": eligibility.get("budget_profile", "N_A"),
+            "per_call_cap_usd": eligibility.get("per_call_cap_usd"),
+            "session_cap_usd": eligibility.get("session_cap_usd"),
+        }
+    visibility = evaluate_existing_skill_operator_gate_visibility(
+        subject_type="productive_dev_workhorse_task_class",
+        subject_id=args.task_class,
+    )
+    if visibility["operator_gate_visibility"] != "VISIBLE":
+        return {
+            **build_visibility_suppressed_result(
+                workflow_id=args.workflow_id,
+                task_label=args.task_label,
+                selected_path="codex_only_visibility_hidden",
+                final_outcome="LOCAL_CODEX_PATH_SELECTED",
+                normal_target_model=args.normal_target_model,
+                visibility_status=visibility["visibility_status"],
+                suppression_reason=visibility["reason_code"],
+                selected_or_model=visibility.get("selected_or_model") or None,
+                skill="janus-executioner",
+                task_class=args.task_class,
+                evidence_status=eligibility["evidence_status"],
+            ),
+            "eligibility_result": eligibility["eligibility_result"],
+            "eligibility_reason_code": eligibility["reason_code"],
+            "evidence_status": eligibility["evidence_status"],
             "budget_profile": eligibility.get("budget_profile", "N_A"),
             "per_call_cap_usd": eligibility.get("per_call_cap_usd"),
             "session_cap_usd": eligibility.get("session_cap_usd"),

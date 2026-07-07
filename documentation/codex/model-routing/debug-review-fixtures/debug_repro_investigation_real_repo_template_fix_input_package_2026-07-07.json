@@ -1,0 +1,11 @@
+{
+  "workflow_id": "WF-CURSOR-REAL-DBG-001",
+  "lane_id": "debug_repro_investigation",
+  "task_id": "TASK-DBG-002",
+  "task_label": "Align the debug worker template with its validation contract",
+  "worker_package_json": "documentation/codex/model-routing/debug-review-fixtures/debug_repro_investigation_real_repo_template_fix_worker_package_2026-07-07.json",
+  "allowlist_file": "documentation/codex/model-routing/debug-review-fixtures/allowlists/debug_repro_investigation_real_repo_template_fix_allowlist_2026-07-07.txt",
+  "goal": "Fix the real debug lane template so it explicitly requests running checks before Codex review and leaves the focused template test green.",
+  "codex_review_required": true,
+  "live_execution_allowed": true
+}

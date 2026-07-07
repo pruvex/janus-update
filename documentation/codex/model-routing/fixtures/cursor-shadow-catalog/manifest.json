@@ -1,0 +1,49 @@
+{
+  "catalog_version": "2026-07-05",
+  "catalog_id": "cursor-shadow-catalog-v1",
+  "status": "NO_LIVE_READY",
+  "scope_note": "Representative bounded Cursor shadow tasks for execution, debug, and test lanes. Built for no-live validation first and one future live smoke per lane.",
+  "operator_gate_labels": {
+    "1": "Codex",
+    "2": "Cursor",
+    "3": "OpenRouter"
+  },
+  "tasks": [
+    {
+      "task_id": "TASK-EX-001",
+      "lane_id": "execution_patch_candidate",
+      "skill": "janus-executioner",
+      "relative_dir": "execution_patch_candidate",
+      "input_package_json": "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/input_package.json",
+      "worker_package_json": "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/worker_package.json",
+      "allowlist_file": "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/allowlist.txt",
+      "expected_validation_cmd": "python -m pytest documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/test_gate_prompt_shadow.py -q",
+      "max_touched_files": 2,
+      "notes": "Small shadow code-edit task for a bounded execution-style worker slice."
+    },
+    {
+      "task_id": "TASK-DBG-002",
+      "lane_id": "debug_repro_investigation",
+      "skill": "janus-debug",
+      "relative_dir": "debug_repro_investigation",
+      "input_package_json": "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/input_package.json",
+      "worker_package_json": "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/worker_package.json",
+      "allowlist_file": "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/allowlist.txt",
+      "expected_validation_cmd": "python -m pytest documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/sandbox/test_debug_repro_shadow.py -q",
+      "max_touched_files": 3,
+      "notes": "Bounded repro/fix lane with explicit artifact mismatch evidence in sandbox JSON files."
+    },
+    {
+      "task_id": "TASK-TP-003",
+      "lane_id": "test_fixture_worker",
+      "skill": "janus-test-pipeline",
+      "relative_dir": "test_fixture_worker",
+      "input_package_json": "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/test_fixture_worker/input_package.json",
+      "worker_package_json": "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/test_fixture_worker/worker_package.json",
+      "allowlist_file": "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/test_fixture_worker/allowlist.txt",
+      "expected_validation_cmd": "python -m pytest development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/test_fixture_arbeit/tests/test_contact_memory_fixture.py -q",
+      "max_touched_files": 2,
+      "notes": "Reuses the proven shadow-eval fixture files from WF-CURSOR-LIVE-SMOKE-003."
+    }
+  ]
+}

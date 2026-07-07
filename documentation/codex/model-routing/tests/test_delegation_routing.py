@@ -258,6 +258,21 @@ class DelegationRoutingTests(unittest.TestCase):
         self.assertEqual(gate["models"]["openrouter"], "moonshotai/kimi-k2.5")
         self.assertEqual(gate["roi"]["status"], "POSITIVE")
 
+    def test_execution_write_apply_gate_uses_deterministic_apply_as_option_two(self) -> None:
+        gate = delegation_routing.build_gate(
+            manifest=self.manifest,
+            task_list=self.task_list,
+            lane_id="execution_write_apply_candidate",
+            task_id="TASK-EX-002",
+        )
+
+        self.assertEqual(gate["recommended_backend"], "deterministic_apply")
+        self.assertEqual(gate["operator_gate_lines"], ["1 = Codex", "2 = Deterministic Apply"])
+        self.assertEqual(gate["visible_backends"], ["codex", "cursor"])
+        self.assertEqual(gate["models"]["cursor"], "deterministic_local_apply")
+        self.assertNotIn("openrouter", gate["visible_backends"])
+        self.assertEqual(gate["roi"]["status"], "POSITIVE")
+
     def test_negative_roi_hides_external_backends(self) -> None:
         gate = delegation_routing.build_gate(
             manifest=self.manifest,

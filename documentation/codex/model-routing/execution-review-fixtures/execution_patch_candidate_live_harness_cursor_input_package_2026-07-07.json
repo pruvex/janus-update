@@ -1,0 +1,19 @@
+{
+  "task_id": "TASK-EX-001",
+  "lane_id": "execution_patch_candidate",
+  "bound_skill_context": "janus-executioner",
+  "task_label": "Fix clamp high-bound logic in the live execution patch harness",
+  "worker_package_json": "documentation/codex/model-routing/execution-review-fixtures/execution_patch_candidate_live_harness_cursor_worker_package_2026-07-07.json",
+  "allowlist_file": "documentation/codex/model-routing/execution-review-fixtures/allowlists/execution_patch_candidate_live_harness_allowlist_2026-07-07.txt",
+  "acceptance_criteria": [
+    "Only the allowlisted live harness source file may change.",
+    "The high-bound clamp case must be fixed without widening scope.",
+    "The focused pytest and py_compile commands must pass before Codex review."
+  ],
+  "local_validation_command": "python -m pytest development/openrouter-skill-tests/execution_patch_candidate_live_harness/test_math_utils.py -q",
+  "estimated_codex_saved_tokens": 30000,
+  "estimated_delegation_overhead_tokens": 10000,
+  "recommended_backend": "cursor",
+  "recommended_model": "composer-2.5",
+  "cursor_prompt_contract": "Stay inside the one-file allowlist, keep the function signature intact, run only the bounded checks, and return concise JSON-friendly output."
+}

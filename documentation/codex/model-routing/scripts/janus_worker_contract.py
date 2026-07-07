@@ -26,6 +26,10 @@ REQUIRED_RESULT_ARTIFACTS = (
 SUCCESS_STATUSES = {"success"}
 NON_SUCCESS_STATUSES = {"failed", "blocked", "local"}
 VALID_RESULT_STATUSES = SUCCESS_STATUSES | NON_SUCCESS_STATUSES
+REQUIRED_SHADOW_WORK_CLASS_IDS = {
+    "docs_fleissarbeit",
+    "test_fixture_arbeit",
+}
 
 REQUIRED_FORBIDDEN_ACTIONS = {
     "commit",
@@ -151,6 +155,137 @@ def validate_worker_task_package_file(path: Path) -> dict[str, Any]:
             "required_result_artifacts": list(REQUIRED_RESULT_ARTIFACTS),
         }
     return validate_worker_task_package(package)
+
+
+def _normalized_repo_relpath(value: Any) -> str:
+    return _as_non_empty_string(value).replace("\\", "/")
+
+
+def validate_shadow_evaluation_manifest(
+    manifest: dict[str, Any],
+    *,
+    repo_root: Path | None = None,
+) -> dict[str, Any]:
+    issues: list[str] = []
+    package_validations: dict[str, dict[str, Any]] = {}
+
+    evaluation_id = _as_non_empty_string(manifest.get("evaluation_id"))
+    if not evaluation_id:
+        issues.append("missing evaluation_id")
+
+    sandbox_root = _normalized_repo_relpath(manifest.get("sandbox_root"))
+    if not sandbox_root:
+        issues.append("missing sandbox_root")
+
+    if manifest.get("real_repo_writeback_allowed") is not False:
+        issues.append("real_repo_writeback_allowed must be false")
+    if manifest.get("global_worker_release_allowed") is not False:
+        issues.append("global_worker_release_allowed must be false")
+    if manifest.get("real_consumer_activation_allowed") is not False:
+        issues.append("real_consumer_activation_allowed must be false")
+
+    class_entries = manifest.get("shadow_work_classes")
+    if not isinstance(class_entries, list):
+        issues.append("shadow_work_classes must be a list")
+        class_entries = []
+
+    if len(class_entries) != 2:
+        issues.append("shadow_work_classes must contain exactly two class definitions")
+
+    seen_class_ids: set[str] = set()
+    seen_package_paths: set[str] = set()
+
+    for index, entry in enumerate(class_entries, start=1):
+        if not isinstance(entry, dict):
+            issues.append(f"shadow_work_classes[{index}] must be an object")
+            continue
+
+        class_id = _normalized_repo_relpath(entry.get("class_id")).lower()
+        if not class_id:
+            issues.append(f"shadow_work_classes[{index}] missing class_id")
+            continue
+        if class_id not in REQUIRED_SHADOW_WORK_CLASS_IDS:
+            issues.append(f"shadow_work_classes[{index}] unknown class_id: {class_id}")
+        if class_id in seen_class_ids:
+            issues.append(f"shadow_work_classes[{index}] duplicate class_id: {class_id}")
+        seen_class_ids.add(class_id)
+
+        package_path_value = _normalized_repo_relpath(entry.get("task_package_path"))
+        if not package_path_value:
+            issues.append(f"{class_id} missing task_package_path")
+        elif sandbox_root and not package_path_value.startswith(sandbox_root.rstrip("/") + "/"):
+            issues.append(f"{class_id} task_package_path must stay under sandbox_root")
+        elif package_path_value in seen_package_paths:
+            issues.append(f"{class_id} task_package_path must be unique")
+        else:
+            seen_package_paths.add(package_path_value)
+
+        comparison_models = _string_list(entry.get("comparison_models"))
+        if len(comparison_models) != 2:
+            issues.append(f"{class_id} comparison_models must contain exactly two models")
+        elif len(set(comparison_models)) != 2:
+            issues.append(f"{class_id} comparison_models must not contain duplicates")
+        invalid_models = [model for model in comparison_models if "/" not in model]
+        if invalid_models:
+            issues.append(f"{class_id} comparison_models must use provider/model identifiers")
+
+        if repo_root is None or not package_path_value:
+            continue
+
+        package_path = (repo_root / package_path_value).resolve()
+        package_validation = validate_worker_task_package_file(package_path)
+        package_validations[class_id] = package_validation
+        if package_validation["validation_result"] == "FAIL":
+            issues.append(f"{class_id} task package is invalid")
+            continue
+
+        try:
+            package_payload = load_json(package_path)
+        except (OSError, json.JSONDecodeError) as exc:
+            issues.append(f"{class_id} task package unreadable: {exc}")
+            continue
+
+        declared_class_id = _normalized_repo_relpath(package_payload.get("shadow_work_class")).lower()
+        if declared_class_id != class_id:
+            issues.append(f"{class_id} task package shadow_work_class mismatch")
+
+    if seen_class_ids and seen_class_ids != REQUIRED_SHADOW_WORK_CLASS_IDS:
+        missing_class_ids = sorted(REQUIRED_SHADOW_WORK_CLASS_IDS - seen_class_ids)
+        unexpected_class_ids = sorted(seen_class_ids - REQUIRED_SHADOW_WORK_CLASS_IDS)
+        if missing_class_ids:
+            issues.append("missing required shadow work classes: " + ", ".join(missing_class_ids))
+        if unexpected_class_ids:
+            issues.append("unexpected shadow work classes: " + ", ".join(unexpected_class_ids))
+
+    return {
+        "validation_result": "PASS" if not issues else "FAIL",
+        "contract_status": "SHADOW_EVALUATION_READY" if not issues else "SHADOW_EVALUATION_INVALID",
+        "issues": issues,
+        "evaluation_id": evaluation_id or "N_A",
+        "sandbox_root": sandbox_root or "N_A",
+        "required_shadow_work_classes": sorted(REQUIRED_SHADOW_WORK_CLASS_IDS),
+        "package_validations": package_validations,
+    }
+
+
+def validate_shadow_evaluation_manifest_file(
+    path: Path,
+    *,
+    repo_root: Path | None = None,
+) -> dict[str, Any]:
+    try:
+        manifest = load_json(path)
+    except (OSError, json.JSONDecodeError) as exc:
+        return {
+            "validation_result": "FAIL",
+            "contract_status": "SHADOW_EVALUATION_INVALID",
+            "issues": [f"shadow evaluation manifest unreadable: {exc}"],
+            "evaluation_id": "N_A",
+            "sandbox_root": "N_A",
+            "required_shadow_work_classes": sorted(REQUIRED_SHADOW_WORK_CLASS_IDS),
+            "package_validations": {},
+        }
+    return validate_shadow_evaluation_manifest(manifest, repo_root=repo_root)
 
 
 def write_worker_task_package(path: Path, payload: dict[str, Any]) -> None:

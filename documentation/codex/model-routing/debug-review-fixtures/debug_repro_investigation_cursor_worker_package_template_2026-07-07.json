@@ -1,0 +1,46 @@
+{
+  "task_label": "Replace with one short bounded debug repro task label",
+  "worker_profile": "cursor-agent",
+  "allowed_edit_paths": [
+    "path/to/debug_artifact_a.json",
+    "path/to/debug_artifact_b.json",
+    "path/to/test_debug_repro.py"
+  ],
+  "acceptance_criteria": [
+    "Only the allowlisted debug files may change.",
+    "The mismatch must be resolved without widening into unrelated files or lanes.",
+    "The focused validation command must pass before Codex review."
+  ],
+  "checks": [
+    {
+      "label": "pytest",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "path/to/test_debug_repro.py",
+        "-q"
+      ]
+    }
+  ],
+  "forbidden_actions": [
+    "commit",
+    "push",
+    "tag",
+    "merge",
+    "release",
+    "publish",
+    "dependency",
+    "secret",
+    "auth",
+    "security",
+    "privacy",
+    "migration",
+    "architecture"
+  ],
+  "requested_actions": [
+    "edit",
+    "run_checks"
+  ],
+  "task_prompt": "Investigate only the allowlisted bounded debug files, reproduce the stated mismatch, and make the smallest fix that resolves it. Run only the listed checks. Do not commit. Return concise JSON-compatible output."
+}

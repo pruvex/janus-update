@@ -1,0 +1,16 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 172991,
+  "duration_api_ms": 172991,
+  "result": "Investigating the shadow runner artifact mismatch: searching the codebase for where plan and executed runner paths diverge.\nReproducing the mismatch programmatically, then verifying the fixture fix and running validation.\n## Result: `PASS` (already resolved)\n\n### Reproduction\n\nThe shadow lane simulates `RUNNER_ARTIFACT_MISMATCH` when the planned and executed runner paths diverge:\n\n| Artifact | `runner_path` |\n|---|---|\n| `runner_plan_shadow.json` (plan) | `tests/e2e/generated/shadow_debug_alpha.spec.js` |\n| `executed_runner_shadow.json` (broken state) | `tests/e2e/generated/shadow_debug_beta.spec.js` |\n\nThat mismatch is reproducible: plan `alpha` â‰  executed `beta`. A prior live Cursor run on this lane already applied the bounded fix â€” `executed_runner_shadow.json` now matches the plan (`alpha`), and the stale `failure_code` field was removed.\n\n### Current state\n\nBoth artifacts agree:\n\n```1:4:documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/sandbox/runner_plan_shadow.json\n{\n  \"test_run_id\": \"TEST-RUN-SHADOW-DBG-001\",\n  \"runner_path\": \"tests/e2e/generated/shadow_debug_alpha.spec.js\"\n}\n```\n\n```1:4:documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/sandbox/executed_runner_shadow.json\n{\n  \"test_run_id\": \"TEST-RUN-SHADOW-DBG-001\",\n  \"runner_path\": \"tests/e2e/generated/shadow_debug_alpha.spec.js\"\n}\n```\n\n### Validation\n\n```\npython -m pytest documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/sandbox/test_debug_repro_shadow.py -q\nâ†’ 1 passed\n```\n\nNo further edits were needed this session.\n\n```json\n{\n  \"status\": \"PASS\",\n  \"changed_files\": [],\n  \"command_results\": [\n    {\n      \"command\": \"python -m pytest documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/sandbox/test_debug_repro_shadow.py -q\",\n      \"exit_code\": 0\n    }\n  ],\n  \"summary\": \"RUNNER_ARTIFACT_MISMATCH was plan=alpha vs executed=beta; executed_runner_shadow.json already aligned to plan path; focused pytest passes.\",\n  \"blockers\": []\n}\n```",
+  "session_id": "88445e58-94e5-426f-9e00-e7b6102f8716",
+  "request_id": "f60f43e7-6d62-438a-8aa9-b73163249b53",
+  "usage": {
+    "inputTokens": 37038,
+    "outputTokens": 5172,
+    "cacheReadTokens": 397760,
+    "cacheWriteTokens": 0
+  }
+}

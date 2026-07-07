@@ -1,0 +1,19 @@
+{
+  "task_id": "TASK-TP-003",
+  "lane_id": "test_fixture_worker",
+  "bound_skill_context": "janus-test-pipeline",
+  "task_label": "Align test fixture worker template requested_actions with its bounded check contract",
+  "worker_package_json": "documentation/codex/model-routing/test-fixture-review-fixtures/test_fixture_worker_real_repo_template_fix_worker_package_2026-07-07.json",
+  "allowlist_file": "documentation/codex/model-routing/test-fixture-review-fixtures/allowlists/test_fixture_worker_real_repo_template_fix_allowlist_2026-07-07.txt",
+  "acceptance_criteria": [
+    "Only the allowlisted template and focused template test may change.",
+    "The worker template must explicitly request running checks when checks are part of the contract.",
+    "The focused pytest command must pass before Codex review."
+  ],
+  "local_validation_command": "python -m pytest documentation/codex/model-routing/tests/test_test_fixture_worker_templates.py -q -k requests_running_checks",
+  "estimated_codex_saved_tokens": 18000,
+  "estimated_delegation_overhead_tokens": 9000,
+  "recommended_backend": "cursor",
+  "recommended_model": "composer-2.5",
+  "cursor_prompt_contract": "Edit only the allowlisted template and focused test file, keep the fix bounded to requested_actions and related expectations, run only the listed pytest command, and return concise JSON-friendly output."
+}

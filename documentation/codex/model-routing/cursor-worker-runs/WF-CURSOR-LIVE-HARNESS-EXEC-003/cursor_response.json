@@ -1,0 +1,16 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 30980,
+  "duration_api_ms": 30980,
+  "result": "I'll read `text_utils.py` and the worker package to see the current `normalize_heading` behavior and which checks to run.\nApplying the minimal fix, then running the listed POSTTEST check.\n```json\n{\n  \"status\": \"PASS\",\n  \"changed_files\": [\n    \"development/openrouter-skill-tests/janus-worker-aider-isolated-code-poc/text_utils.py\"\n  ],\n  \"command_results\": [\n    {\n      \"label\": \"POSTTEST\",\n      \"command\": [\"python\", \"-m\", \"pytest\", \"-q\", \"test_text_utils.py\"],\n      \"exit_code\": 0,\n      \"result\": \"1 passed\"\n    }\n  ],\n  \"summary\": \"normalize_heading now strips input and returns title-cased words via .title() after strip/lower.\",\n  \"blockers\": []\n}\n```",
+  "session_id": "580ce1c6-38e2-42ef-bf7b-e09641259300",
+  "request_id": "9a3c9d03-750f-46d8-847c-0c90868d5a73",
+  "usage": {
+    "inputTokens": 15244,
+    "outputTokens": 1414,
+    "cacheReadTokens": 74307,
+    "cacheWriteTokens": 0
+  }
+}

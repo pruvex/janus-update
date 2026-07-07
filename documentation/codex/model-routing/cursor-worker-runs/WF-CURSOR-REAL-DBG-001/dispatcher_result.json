@@ -1,0 +1,82 @@
+{
+  "backend": "cursor",
+  "lane_id": "debug_repro_investigation",
+  "workflow_id": "WF-CURSOR-REAL-DBG-001",
+  "selected_model": "composer-2.5",
+  "session_id": "73475e99-0fed-4493-8f67-8d7ab45398df",
+  "validation_result": "PASS",
+  "selected_path": "cursor_worker_live_mockable",
+  "final_outcome": "CURSOR_WORKER_READY_FOR_CODEX_REVIEW",
+  "package_validation": {
+    "validation_result": "PASS",
+    "contract_status": "TASK_PACKAGE_VALID_VIA_WORKER_REFERENCE",
+    "issues": [],
+    "task_label": "Align the debug worker template with its validation contract",
+    "worker_profile": "cursor-agent",
+    "allowed_edit_paths": [
+      "documentation/codex/model-routing/debug-review-fixtures/debug_repro_investigation_cursor_worker_package_template_2026-07-07.json",
+      "documentation/codex/model-routing/tests/test_debug_repro_investigation_templates.py"
+    ],
+    "required_result_artifacts": [
+      "RESULT.json",
+      "RESULT.md",
+      "DIFF.patch",
+      "FILES_CHANGED.txt",
+      "CHECKS.log",
+      "COST.json"
+    ],
+    "source_package_path": "documentation\\codex\\model-routing\\debug-review-fixtures\\debug_repro_investigation_real_repo_template_fix_input_package_2026-07-07.json",
+    "worker_package_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\debug-review-fixtures\\debug_repro_investigation_real_repo_template_fix_worker_package_2026-07-07.json"
+  },
+  "allowlist_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "allowlist": [
+      "documentation/codex/model-routing/debug-review-fixtures/debug_repro_investigation_cursor_worker_package_template_2026-07-07.json",
+      "documentation/codex/model-routing/tests/test_debug_repro_investigation_templates.py"
+    ]
+  },
+  "allowlist_consistency_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "package_allowed_edit_paths": [
+      "documentation/codex/model-routing/debug-review-fixtures/debug_repro_investigation_cursor_worker_package_template_2026-07-07.json",
+      "documentation/codex/model-routing/tests/test_debug_repro_investigation_templates.py"
+    ],
+    "allowlist": [
+      "documentation/codex/model-routing/debug-review-fixtures/debug_repro_investigation_cursor_worker_package_template_2026-07-07.json",
+      "documentation/codex/model-routing/tests/test_debug_repro_investigation_templates.py"
+    ],
+    "declared_allowlist_file": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\debug-review-fixtures\\allowlists\\debug_repro_investigation_real_repo_template_fix_allowlist_2026-07-07.txt"
+  },
+  "accepted_source_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "accepted_source_run_dir": null,
+    "recognized_artifacts": []
+  },
+  "accepted_source_run_dir": null,
+  "planned_command": [
+    "C:\\Users\\pruve\\AppData\\Local\\cursor-agent\\agent.CMD",
+    "-p",
+    "--workspace",
+    "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing",
+    "--model",
+    "composer-2.5",
+    "--output-format",
+    "json",
+    "--force",
+    "--trust",
+    "--approve-mcps",
+    "Edit only the allowlisted debug worker template and its focused test. Keep the change bounded to the debug repro lane contract. Make the smallest fix that brings the template into line with the test expectation that checks should be run before Codex review. Run only the listed pytest command. Do not commit. Return concise JSON-compatible output.\n\nTask label: Align the debug worker template with its validation contract\n\nAllowed edit paths:\n- documentation/codex/model-routing/debug-review-fixtures/debug_repro_investigation_cursor_worker_package_template_2026-07-07.json\n- documentation/codex/model-routing/tests/test_debug_repro_investigation_templates.py\n\nReturn status, changed_files, command_results, summary, and blockers as concise JSON-compatible output.\n\nWorkspace root: C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\nWorkspace-relative edit paths:\n- debug-review-fixtures/debug_repro_investigation_cursor_worker_package_template_2026-07-07.json\n- tests/test_debug_repro_investigation_templates.py"
+  ],
+  "mode": "proposal_first",
+  "workspace_root": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing",
+  "live_execution_allowed": false,
+  "codex_review_required": true,
+  "changed_files": [
+    "documentation/codex/model-routing/debug-review-fixtures/debug_repro_investigation_cursor_worker_package_template_2026-07-07.json"
+  ],
+  "changed_outside_allowlist": [],
+  "operator_message": "Cursor worker finished the bounded slice and returned artifacts for Codex review."
+}

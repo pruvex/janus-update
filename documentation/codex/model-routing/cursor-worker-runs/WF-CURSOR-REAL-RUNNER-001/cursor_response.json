@@ -1,0 +1,16 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 79969,
+  "duration_api_ms": 79969,
+  "result": "I'll read the runner script and its tests to see how planning and allowlist validation work today.\nAdding minimal allowlist consistency validation and integrating it into the planning block path.\nRunning the listed checks.\n```json\n{\n  \"status\": \"success\",\n  \"changed_files\": [\n    \"documentation/codex/model-routing/scripts/janus_cursor_worker_runner.py\"\n  ],\n  \"command_results\": [\n    {\n      \"label\": \"pytest\",\n      \"command\": \"python -m pytest documentation/codex/model-routing/tests/test_janus_cursor_worker_runner.py -q -k allowlist_disagree\",\n      \"exit_code\": 0,\n      \"result\": \"1 passed, 13 deselected\"\n    },\n    {\n      \"label\": \"py_compile\",\n      \"command\": \"python -m py_compile documentation/codex/model-routing/scripts/janus_cursor_worker_runner.py\",\n      \"exit_code\": 0,\n      \"result\": \"PASS\"\n    }\n  ],\n  \"summary\": \"Added validate_allowlist_consistency() to fail closed when package allowed_edit_paths and the provided allowlist disagree; integrated into planning block via allowlist_consistency_validation. Worker-package reference behavior unchanged.\",\n  \"blockers\": []\n}\n```",
+  "session_id": "7a88975c-516d-48a3-b208-78a04d90b42a",
+  "request_id": "664df584-5ee7-4c36-9c48-0bb87f91e710",
+  "usage": {
+    "inputTokens": 39013,
+    "outputTokens": 6257,
+    "cacheReadTokens": 235082,
+    "cacheWriteTokens": 0
+  }
+}

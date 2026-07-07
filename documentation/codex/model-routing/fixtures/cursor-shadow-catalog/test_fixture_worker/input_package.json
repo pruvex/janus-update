@@ -1,0 +1,20 @@
+{
+  "task_id": "TASK-TP-003",
+  "lane_id": "test_fixture_worker",
+  "bound_skill_context": "janus-test-pipeline",
+  "task_label": "Adjust the proven shadow fixture helper pair reused from WF-CURSOR-LIVE-SMOKE-003",
+  "worker_package_json": "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/test_fixture_worker/worker_package.json",
+  "allowlist_file": "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/test_fixture_worker/allowlist.txt",
+  "acceptance_criteria": [
+    "Only the two allowlisted shadow-eval files may change.",
+    "The task must stay fixture/test-helper scoped.",
+    "The focused pytest command must pass before Codex review."
+  ],
+  "local_validation_command": "python -m pytest development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/test_fixture_arbeit/tests/test_contact_memory_fixture.py -q",
+  "redaction_ready": true,
+  "estimated_codex_saved_tokens": 30000,
+  "estimated_delegation_overhead_tokens": 10000,
+  "recommended_backend": "cursor",
+  "recommended_model": "composer-2.5",
+  "cursor_prompt_contract": "Edit only the allowlisted shadow-eval fixture files. Run only the focused pytest command. Do not commit. Return concise JSON-friendly output."
+}

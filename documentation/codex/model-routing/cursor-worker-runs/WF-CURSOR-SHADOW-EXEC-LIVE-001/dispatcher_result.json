@@ -1,0 +1,61 @@
+{
+  "backend": "cursor",
+  "lane_id": "execution_patch_candidate",
+  "workflow_id": "WF-CURSOR-SHADOW-EXEC-LIVE-001",
+  "selected_model": "composer-2.5",
+  "session_id": "dff68a5d-2cf5-4397-a722-ff81ba1a2782",
+  "validation_result": "PASS",
+  "selected_path": "cursor_worker_live_mockable",
+  "final_outcome": "CURSOR_WORKER_READY_FOR_CODEX_REVIEW",
+  "package_validation": {
+    "validation_result": "PASS",
+    "contract_status": "TASK_PACKAGE_VALID_VIA_WORKER_REFERENCE",
+    "issues": [],
+    "task_label": "Bounded shadow execution patch task",
+    "worker_profile": "cursor-agent-composer-shadow",
+    "allowed_edit_paths": [
+      "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/gate_prompt_shadow.py",
+      "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/test_gate_prompt_shadow.py"
+    ],
+    "required_result_artifacts": [
+      "RESULT.json",
+      "RESULT.md",
+      "DIFF.patch",
+      "FILES_CHANGED.txt",
+      "CHECKS.log",
+      "COST.json"
+    ],
+    "source_package_path": "documentation\\codex\\model-routing\\fixtures\\cursor-shadow-catalog\\execution_patch_candidate\\input_package.json",
+    "worker_package_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\fixtures\\cursor-shadow-catalog\\execution_patch_candidate\\worker_package.json"
+  },
+  "allowlist_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "allowlist": [
+      "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/gate_prompt_shadow.py",
+      "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/test_gate_prompt_shadow.py"
+    ]
+  },
+  "planned_command": [
+    "C:\\Users\\pruve\\AppData\\Local\\cursor-agent\\agent.CMD",
+    "-p",
+    "--workspace",
+    "C:\\KI\\Janus-Projekt",
+    "--model",
+    "composer-2.5",
+    "--output-format",
+    "json",
+    "--force",
+    "--trust",
+    "--approve-mcps",
+    "Update the shadow operator prompt helper so it adds exactly one session-budget line while keeping the existing line order and wording style as stable as possible.\n\nTask label: Add one bounded session-budget line to the shadow execution prompt helper\n\nEdit only the allowlisted shadow helper/test pair. Run only the focused pytest command. Do not commit. Return concise JSON-friendly output.\n\nAcceptance criteria:\n- Only the two allowlisted shadow files may change.\n- The helper should gain exactly one bounded session-budget line without widening task scope.\n- The focused shadow pytest command must pass before Codex review.\n\nAllowed edit paths:\n- documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/gate_prompt_shadow.py\n- documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/test_gate_prompt_shadow.py\n\nReturn status, changed_files, command_results, summary, and blockers as concise JSON-compatible output."
+  ],
+  "mode": "proposal_first",
+  "live_execution_allowed": false,
+  "codex_review_required": true,
+  "changed_files": [
+    "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/gate_prompt_shadow.py"
+  ],
+  "changed_outside_allowlist": [],
+  "operator_message": "Cursor worker finished the bounded slice and returned artifacts for Codex review."
+}

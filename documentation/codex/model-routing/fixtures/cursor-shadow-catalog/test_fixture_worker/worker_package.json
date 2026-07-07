@@ -1,0 +1,44 @@
+{
+  "shadow_work_class": "test_fixture_worker",
+  "task_label": "Bounded shadow test fixture worker task",
+  "worker_profile": "cursor-agent-composer-shadow",
+  "task_prompt": "Create or adjust only the bounded contact-memory fixture and its matching unit test. Keep the task fixture-only and do not refactor unrelated source code.",
+  "allowed_edit_paths": [
+    "development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/test_fixture_arbeit/fixtures/contact_memory_fixture.json",
+    "development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/test_fixture_arbeit/tests/test_contact_memory_fixture.py"
+  ],
+  "acceptance_criteria": [
+    "Only the allowlisted shadow-eval fixture files may change.",
+    "The task must stay on fixture/test shaping, not product source-code refactors.",
+    "The focused pytest command must pass."
+  ],
+  "checks": [
+    {
+      "label": "shadow_fixture_pytest",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/test_fixture_arbeit/tests/test_contact_memory_fixture.py",
+        "-q"
+      ],
+      "expected_exit_codes": [0]
+    }
+  ],
+  "forbidden_actions": [
+    "architecture",
+    "auth",
+    "commit",
+    "dependency",
+    "merge",
+    "migration",
+    "privacy",
+    "publish",
+    "push",
+    "release",
+    "secret",
+    "security",
+    "tag"
+  ],
+  "requested_actions": ["edit"]
+}

@@ -1,0 +1,21 @@
+{
+  "task_id": "TASK-EX-001",
+  "lane_id": "execution_patch_candidate",
+  "bound_skill_context": "janus-executioner",
+  "task_label": "Add one bounded session-budget line to the shadow execution prompt helper",
+  "worker_package_json": "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/worker_package.json",
+  "allowlist_file": "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/allowlist.txt",
+  "acceptance_criteria": [
+    "Only the two allowlisted shadow files may change.",
+    "The helper should gain exactly one bounded session-budget line without widening task scope.",
+    "The focused shadow pytest command must pass before Codex review."
+  ],
+  "local_validation_command": "python -m pytest documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/test_gate_prompt_shadow.py -q",
+  "shadow_reset_command": "python documentation/codex/model-routing/scripts/reset_execution_patch_candidate_shadow_fixture.py",
+  "redaction_ready": true,
+  "estimated_codex_saved_tokens": 35000,
+  "estimated_delegation_overhead_tokens": 10000,
+  "recommended_backend": "cursor",
+  "recommended_model": "composer-2.5",
+  "cursor_prompt_contract": "Edit only the allowlisted shadow helper/test pair. Run only the focused pytest command. Do not commit. Return concise JSON-friendly output."
+}

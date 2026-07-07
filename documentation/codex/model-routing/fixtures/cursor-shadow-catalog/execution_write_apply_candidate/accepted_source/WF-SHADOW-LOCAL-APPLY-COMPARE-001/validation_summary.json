@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "accepted_for_codex_patch_review": true,
+  "changed_files": [
+    "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/sandbox/test_gate_prompt_apply_shadow.py"
+  ],
+  "source_file_snapshots": {
+    "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/sandbox/test_gate_prompt_apply_shadow.py": {
+      "sha256": "2f54530f09bc35110cf9668dde1871b1a23876fe9f0b0974eb1396de22bda5df",
+      "bytes": 576
+    }
+  }
+}

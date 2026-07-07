@@ -13,7 +13,7 @@
       "task_variant": "benchmark_summary"
     },
     "DOC-SKILL-002": {
-      "selected_or_model": "openai/gpt-oss-20b",
+      "selected_or_model": "qwen/qwen3-coder-30b-a3b-instruct",
       "fixture_dir": "documentation/codex/model-routing/live-eval/DOC-SKILL-002-GPT54-MINI-LIVE-EVAL-001",
       "task_variant": "scoring_summary"
     },
@@ -23,12 +23,12 @@
       "task_variant": "copy_safe_handoff"
     },
     "DOC-SKILL-006": {
-      "selected_or_model": "openai/gpt-oss-120b",
+      "selected_or_model": "qwen/qwen3-coder-30b-a3b-instruct",
       "fixture_dir": "documentation/codex/model-routing/live-eval/DOC-SKILL-006-GPT54-MINI-LIVE-EVAL-001",
       "task_variant": "mechanical_markdown_cleanup"
     },
     "DOC-SKILL-008": {
-      "selected_or_model": "qwen/qwen3.5-flash-02-23",
+      "selected_or_model": "qwen/qwen3-coder-30b-a3b-instruct",
       "fixture_dir": "documentation/codex/model-routing/live-eval/DOC-SKILL-008-GPT54-MINI-LIVE-EVAL-001",
       "task_variant": "summary_short"
     },

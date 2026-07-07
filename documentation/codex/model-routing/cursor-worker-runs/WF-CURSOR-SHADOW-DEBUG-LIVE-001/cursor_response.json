@@ -1,0 +1,16 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 51663,
+  "duration_api_ms": 51663,
+  "result": "Investigating the shadow runner artifact mismatch: locating where plan vs executed runner paths are defined and diverge.\nReproducing the mismatch, then applying the smallest bounded fix.\nMismatch reproduced: plan points to `shadow_debug_alpha.spec.js`, executed to `shadow_debug_beta.spec.js`. Aligning the executed artifact with the plan.\n**Root cause:** `executed_runner_shadow.json` recorded `shadow_debug_beta.spec.js` while `runner_plan_shadow.json` planned `shadow_debug_alpha.spec.js` â€” a `RUNNER_ARTIFACT_MISMATCH`.\n\n**Fix:** Updated `executed_runner_shadow.json` to use the planâ€™s `runner_path` and removed the stale `failure_code`. No other files changed.\n\n**Validation:** `pytest .../test_debug_repro_shadow.py -q` â€” 1 passed.\n\n```json\n{\n  \"status\": \"PASS\",\n  \"changed_files\": [\n    \"documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/sandbox/executed_runner_shadow.json\"\n  ],\n  \"command_results\": [\n    {\n      \"command\": \"python -m pytest documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/sandbox/test_debug_repro_shadow.py -q\",\n      \"exit_code\": 0\n    }\n  ],\n  \"summary\": \"Aligned executed runner_path with plan (alpha); removed failure_code after mismatch resolution.\",\n  \"blockers\": []\n}\n```",
+  "session_id": "4d286ce7-079e-4f8a-af5c-15d59e8758dd",
+  "request_id": "fffb558d-a502-46e3-8116-eba18b71ff91",
+  "usage": {
+    "inputTokens": 39691,
+    "outputTokens": 1741,
+    "cacheReadTokens": 243019,
+    "cacheWriteTokens": 0
+  }
+}

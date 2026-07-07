@@ -1,0 +1,45 @@
+{
+  "task_label": "Align the debug worker template with its validation contract",
+  "worker_profile": "cursor-agent",
+  "allowed_edit_paths": [
+    "documentation/codex/model-routing/debug-review-fixtures/debug_repro_investigation_cursor_worker_package_template_2026-07-07.json",
+    "documentation/codex/model-routing/tests/test_debug_repro_investigation_templates.py"
+  ],
+  "acceptance_criteria": [
+    "Only the allowlisted debug lane template and its focused test may change.",
+    "The debug worker template must explicitly request running checks when its contract says the focused validation command must pass before Codex review.",
+    "The focused debug template pytest file must pass before handoff back to Codex."
+  ],
+  "checks": [
+    {
+      "label": "pytest",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "documentation/codex/model-routing/tests/test_debug_repro_investigation_templates.py",
+        "-q"
+      ]
+    }
+  ],
+  "forbidden_actions": [
+    "commit",
+    "push",
+    "tag",
+    "merge",
+    "release",
+    "publish",
+    "dependency",
+    "secret",
+    "auth",
+    "security",
+    "privacy",
+    "migration",
+    "architecture"
+  ],
+  "requested_actions": [
+    "edit",
+    "run_checks"
+  ],
+  "task_prompt": "Edit only the allowlisted debug worker template and its focused test. Keep the change bounded to the debug repro lane contract. Make the smallest fix that brings the template into line with the test expectation that checks should be run before Codex review. Run only the listed pytest command. Do not commit. Return concise JSON-compatible output."
+}

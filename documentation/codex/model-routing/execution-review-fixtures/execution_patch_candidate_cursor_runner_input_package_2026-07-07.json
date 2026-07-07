@@ -1,0 +1,19 @@
+{
+  "task_id": "TASK-EX-001",
+  "lane_id": "execution_patch_candidate",
+  "bound_skill_context": "janus-executioner",
+  "task_label": "Block Cursor runner package planning when allowed_edit_paths and allowlist disagree",
+  "worker_package_json": "documentation/codex/model-routing/execution-review-fixtures/execution_patch_candidate_cursor_runner_worker_package_2026-07-07.json",
+  "allowlist_file": "documentation/codex/model-routing/execution-review-fixtures/allowlists/execution_patch_candidate_cursor_runner_allowlist_2026-07-07.txt",
+  "acceptance_criteria": [
+    "Only the allowlisted runner source file may change.",
+    "The allowlist mismatch must fail closed without widening the runner scope.",
+    "The focused pytest regression and py_compile command must pass before Codex review."
+  ],
+  "local_validation_command": "python -m pytest documentation/codex/model-routing/tests/test_janus_cursor_worker_runner.py -q -k allowlist_disagree",
+  "estimated_codex_saved_tokens": 22000,
+  "estimated_delegation_overhead_tokens": 10000,
+  "recommended_backend": "cursor",
+  "recommended_model": "composer-2.5",
+  "cursor_prompt_contract": "Edit only the allowlisted runner file, keep the fix fail-closed and bounded, run only the focused regression and py_compile, and return concise JSON-friendly output."
+}

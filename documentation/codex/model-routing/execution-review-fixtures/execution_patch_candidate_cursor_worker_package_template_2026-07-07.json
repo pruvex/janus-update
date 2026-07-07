@@ -1,0 +1,45 @@
+{
+  "task_label": "Replace with one short bounded coding task label",
+  "worker_profile": "cursor-agent",
+  "allowed_edit_paths": [
+    "path/to/target.py"
+  ],
+  "acceptance_criteria": [
+    "Only the allowlisted source file may change.",
+    "The bounded behavior change must be implemented without widening scope.",
+    "The function or API signature must stay unchanged unless the bound task explicitly says otherwise.",
+    "The focused validation command must pass before Codex review."
+  ],
+  "checks": [
+    {
+      "label": "pytest",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "path/to/test_target.py",
+        "-q"
+      ]
+    }
+  ],
+  "forbidden_actions": [
+    "commit",
+    "push",
+    "tag",
+    "merge",
+    "release",
+    "publish",
+    "dependency",
+    "secret",
+    "auth",
+    "security",
+    "privacy",
+    "migration",
+    "architecture"
+  ],
+  "requested_actions": [
+    "edit",
+    "run_checks"
+  ],
+  "task_prompt": "Edit only the allowlisted source file. Make the smallest bounded fix that satisfies the stated acceptance criteria. Do not edit tests unless they are explicitly allowlisted. Run only the listed checks. Do not commit. Return concise JSON-compatible output."
+}

@@ -1,0 +1,45 @@
+{
+  "shadow_work_class": "debug_repro_investigation",
+  "task_label": "Bounded shadow debug repro task",
+  "worker_profile": "cursor-agent-composer-shadow",
+  "task_prompt": "Reproduce the shadow runner artifact mismatch and make the smallest bounded fix so the plan path and executed runner path agree.",
+  "allowed_edit_paths": [
+    "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/sandbox/runner_plan_shadow.json",
+    "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/sandbox/executed_runner_shadow.json",
+    "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/sandbox/test_debug_repro_shadow.py"
+  ],
+  "acceptance_criteria": [
+    "Only the allowlisted shadow debug files may change.",
+    "The mismatch must be resolved without widening into other lanes or product files.",
+    "The focused shadow pytest command must pass."
+  ],
+  "checks": [
+    {
+      "label": "shadow_debug_pytest",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/sandbox/test_debug_repro_shadow.py",
+        "-q"
+      ],
+      "expected_exit_codes": [0]
+    }
+  ],
+  "forbidden_actions": [
+    "architecture",
+    "auth",
+    "commit",
+    "dependency",
+    "merge",
+    "migration",
+    "privacy",
+    "publish",
+    "push",
+    "release",
+    "secret",
+    "security",
+    "tag"
+  ],
+  "requested_actions": ["edit"]
+}

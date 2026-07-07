@@ -1,0 +1,72 @@
+{
+  "backend": "cursor",
+  "lane_id": "execution_write_apply_candidate",
+  "workflow_id": "WF-CURSOR-SHADOW-EXEC-WRITE-LIVE-004",
+  "selected_model": "composer-2.5",
+  "session_id": null,
+  "validation_result": "BLOCKED",
+  "selected_path": "cursor_worker_blocked",
+  "final_outcome": "CURSOR_AGENT_TIMEOUT",
+  "package_validation": {
+    "validation_result": "PASS",
+    "contract_status": "TASK_PACKAGE_VALID_VIA_WORKER_REFERENCE",
+    "issues": [],
+    "task_label": "Bounded shadow execution write-apply task",
+    "worker_profile": "cursor-agent-composer-shadow",
+    "allowed_edit_paths": [
+      "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/sandbox/gate_prompt_apply_shadow.py",
+      "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/sandbox/test_gate_prompt_apply_shadow.py"
+    ],
+    "required_result_artifacts": [
+      "RESULT.json",
+      "RESULT.md",
+      "DIFF.patch",
+      "FILES_CHANGED.txt",
+      "CHECKS.log",
+      "COST.json"
+    ],
+    "source_package_path": "documentation\\codex\\model-routing\\fixtures\\cursor-shadow-catalog\\execution_write_apply_candidate\\input_package.json",
+    "worker_package_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\fixtures\\cursor-shadow-catalog\\execution_write_apply_candidate\\worker_package.json"
+  },
+  "allowlist_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "allowlist": [
+      "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/sandbox/gate_prompt_apply_shadow.py",
+      "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/sandbox/test_gate_prompt_apply_shadow.py"
+    ]
+  },
+  "codex_review_required": true,
+  "operator_message": "Cursor agent exceeded the bounded live timeout (30s) before producing a final result.",
+  "accepted_source_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "accepted_source_run_dir": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\fixtures\\cursor-shadow-catalog\\execution_write_apply_candidate\\accepted_source\\WF-CURSOR-SHADOW-EXEC-ACCEPTED-001",
+    "recognized_artifacts": [
+      "dispatcher_result.json",
+      "cursor_response.json",
+      "changed_files.txt"
+    ]
+  },
+  "accepted_source_run_dir": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\fixtures\\cursor-shadow-catalog\\execution_write_apply_candidate\\accepted_source\\WF-CURSOR-SHADOW-EXEC-ACCEPTED-001",
+  "planned_command": [
+    "C:\\Users\\pruve\\AppData\\Local\\cursor-agent\\agent.CMD",
+    "-p",
+    "--workspace",
+    "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\fixtures\\cursor-shadow-catalog\\execution_write_apply_candidate\\sandbox",
+    "--model",
+    "composer-2.5",
+    "--output-format",
+    "json",
+    "--force",
+    "--trust",
+    "--approve-mcps",
+    "Apply the accepted-source prompt delta to the shadow helper by adding exactly one accepted-source summary line while keeping the helper behavior otherwise stable.\n\nTask label: Apply one accepted-source prompt delta to the write-apply shadow helper\n\nUse the accepted source package as the authority for the bounded delta. Edit only the allowlisted shadow helper/test pair. Run only the focused pytest command. Do not commit. Return concise JSON-friendly output.\n\nAcceptance criteria:\n- Only the two allowlisted shadow files may change.\n- The helper should gain exactly one accepted-source summary line and preserve the existing line order.\n- The focused shadow pytest command must pass before Codex review.\n\nAllowed edit paths:\n- documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/sandbox/gate_prompt_apply_shadow.py\n- documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/sandbox/test_gate_prompt_apply_shadow.py\n\nReturn status, changed_files, command_results, summary, and blockers as concise JSON-compatible output.\n\nWorkspace root: C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\fixtures\\cursor-shadow-catalog\\execution_write_apply_candidate\\sandbox\nWorkspace-relative edit paths:\n- gate_prompt_apply_shadow.py\n- test_gate_prompt_apply_shadow.py\n\nAccepted source package context:\nAccepted source run dir: C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\fixtures\\cursor-shadow-catalog\\execution_write_apply_candidate\\accepted_source\\WF-CURSOR-SHADOW-EXEC-ACCEPTED-001\nAccepted source final outcome: EXECUTION_PATCH_CANDIDATE_READY_FOR_CODEX_REVIEW\nAccepted source changed files:\n- documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/sandbox/gate_prompt_apply_shadow.py\nAccepted source summary: Add exactly one line: 'Accepted source summary: apply the validated prompt delta exactly once.' before the cost line."
+  ],
+  "live_execution_allowed": true,
+  "mode": "accepted_source_apply",
+  "workspace_root": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\fixtures\\cursor-shadow-catalog\\execution_write_apply_candidate\\sandbox",
+  "timeout_seconds": 30,
+  "changed_files": [],
+  "changed_outside_allowlist": []
+}

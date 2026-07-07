@@ -1,0 +1,45 @@
+{
+  "task_label": "Replace with one short bounded fixture or test-helper task label",
+  "worker_profile": "cursor-agent",
+  "allowed_edit_paths": [
+    "path/to/fixture_or_test_file.json",
+    "path/to/test_fixture_file.py"
+  ],
+  "acceptance_criteria": [
+    "Only the allowlisted fixture or test-helper files may change.",
+    "The task must stay fixture or test-helper scoped, not product source-code scoped.",
+    "The focused validation command must pass before Codex review."
+  ],
+  "checks": [
+    {
+      "label": "pytest",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "path/to/test_fixture_file.py",
+        "-q"
+      ]
+    }
+  ],
+  "forbidden_actions": [
+    "commit",
+    "push",
+    "tag",
+    "merge",
+    "release",
+    "publish",
+    "dependency",
+    "secret",
+    "auth",
+    "security",
+    "privacy",
+    "migration",
+    "architecture"
+  ],
+  "requested_actions": [
+    "edit",
+    "run_checks"
+  ],
+  "task_prompt": "Edit only the allowlisted fixture or test-helper files. Keep the task fixture-scoped and do not refactor unrelated product code. Run only the listed checks. Do not commit. Return concise JSON-compatible output."
+}

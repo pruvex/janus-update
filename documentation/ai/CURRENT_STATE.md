@@ -1,6 +1,435 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-07 20:25 +02:00`, the third real non-harness repo field test is now complete on the remaining core lane: `TASK-DBG-002` / `debug_repro_investigation`. Codex added a focused red regression to `test_debug_repro_investigation_templates.py` for a real contract gap in the debug worker template: the lane required focused checks before Codex review, but the template still omitted `run_checks` in `requested_actions`. The regression failed as expected, the shared `janus_delegate.py -> Cursor` path then ran live as `WF-CURSOR-REAL-DBG-001`, and Cursor made a bounded one-file fix to the real debug template JSON. Both the targeted regression and the full `test_debug_repro_investigation_templates.py` file pass afterward, and the allowlist remained intact. This means all three core Cursor-first bounded lanes now have genuine repo field-test evidence, not just shadow, harness, or template-only evidence.
+
+Current goal: finish turning the tri-modal delegation stack from “operational and promising” into “ready for serious livedev use with Codex as reviewer and acceptance owner.”
+
+Active phase: bounded `janus-debug` real non-harness Cursor field test on the debug-template contract seam, canonical state `PASS`.
+
+Last Codex work:
+- added a focused red regression to `test_debug_repro_investigation_templates.py` for a real debug-lane template contract gap
+- created a real `TASK-DBG-002` package triplet targeting the repo-owned debug worker template and its focused test
+- confirmed the new regression fails before delegation
+- ran the shared `janus_delegate.py -> Cursor` path live as `WF-CURSOR-REAL-DBG-001`
+- verified that Cursor changed only the debug worker template JSON and made the regression pass
+- reran the full debug template test file successfully
+
+Changed files:
+- `documentation/codex/model-routing/tests/test_debug_repro_investigation_templates.py`
+- `documentation/codex/model-routing/debug-review-fixtures/debug_repro_investigation_cursor_worker_package_template_2026-07-07.json`
+- `documentation/codex/model-routing/debug-review-fixtures/allowlists/debug_repro_investigation_real_repo_template_fix_allowlist_2026-07-07.txt`
+- `documentation/codex/model-routing/debug-review-fixtures/debug_repro_investigation_real_repo_template_fix_worker_package_2026-07-07.json`
+- `documentation/codex/model-routing/debug-review-fixtures/debug_repro_investigation_real_repo_template_fix_input_package_2026-07-07.json`
+- `documentation/codex/model-routing/cursor-worker-runs/WF-CURSOR-REAL-DBG-001/`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_debug_repro_investigation_templates.py -q -k requests_running_checks`: expected FAIL before delegation (`1 failed, 2 deselected`)
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane debug_repro_investigation --task-id TASK-DBG-002 --workflow-id WF-CURSOR-REAL-DBG-001 --operator-choice prompt --input-package-json documentation/codex/model-routing/debug-review-fixtures/debug_repro_investigation_real_repo_template_fix_input_package_2026-07-07.json --allowlist-file documentation/codex/model-routing/debug-review-fixtures/allowlists/debug_repro_investigation_real_repo_template_fix_allowlist_2026-07-07.txt --estimated-codex-saved-tokens 18000 --estimated-delegation-overhead-tokens 9000 --minimum-net-codex-saved-tokens 8000`: PASS
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane debug_repro_investigation --task-id TASK-DBG-002 --workflow-id WF-CURSOR-REAL-DBG-001 --operator-choice 2 --input-package-json documentation/codex/model-routing/debug-review-fixtures/debug_repro_investigation_real_repo_template_fix_input_package_2026-07-07.json --allowlist-file documentation/codex/model-routing/debug-review-fixtures/allowlists/debug_repro_investigation_real_repo_template_fix_allowlist_2026-07-07.txt --estimated-codex-saved-tokens 18000 --estimated-delegation-overhead-tokens 9000 --minimum-net-codex-saved-tokens 8000 --execute-live-cursor`: PASS (`CURSOR_WORKER_READY_FOR_CODEX_REVIEW`, session id `73475e99-0fed-4493-8f67-8d7ab45398df`)
+- `python -m pytest documentation/codex/model-routing/tests/test_debug_repro_investigation_templates.py -q -k requests_running_checks`: PASS (`1 passed, 2 deselected`)
+- `python -m pytest documentation/codex/model-routing/tests/test_debug_repro_investigation_templates.py -q`: PASS (`3 passed`)
+
+Open risks:
+- We now have real repo field-test evidence on all three core Cursor lanes, but the current strong state is still local until a checkpoint commit exists.
+- The next meaningful unknown is no longer “can the bounded worker make a tiny real fix?” but “how does the system behave on a somewhat larger real livedev slice with multiple bounded edits or a denser review surface?”
+- No commit or push happened after this block, so remotes may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: describe the delegation system as having crossed the important threshold where the three core Cursor-first bounded lanes all have real repo field-test evidence with Codex still acting as final reviewer.
+
+Next recommended step for Codex: either take a checkpoint commit now because the proof stack is materially strong, or select one medium-small real bounded livedev task and route it through the already-proven lane that best fits the work.
+
+Last updated: `2026-07-07 20:25:01 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 18:19 +02:00`, the second real non-harness repo field test is now complete on a different lane: `TASK-TP-003` / `test_fixture_worker`. Codex added a focused regression to `test_test_fixture_worker_templates.py` for a real consistency gap in the newly productized fixture lane: the worker template described bounded checks but did not yet explicitly request `run_checks` in `requested_actions`. The regression failed as expected, the shared `janus_delegate.py -> Cursor` path then ran live as `WF-CURSOR-REAL-TP-001`, and Cursor made a bounded one-file fix to the real template JSON. Both the targeted regression and the full `test_test_fixture_worker_templates.py` file pass afterward, and the allowlist remained intact. This means the new packaging standards are now validated not only in tests and harnesses, but through two genuine repo field tests on two different lanes.
+
+Current goal: consolidate the delegation stack as a genuinely usable everyday system instead of a mostly prepared system waiting for its first real work.
+
+Active phase: bounded `janus-test-pipeline` real non-harness Cursor field test on the template/contract seam, canonical state `PASS`.
+
+Last Codex work:
+- added a focused red regression to `test_test_fixture_worker_templates.py` for a real lane-template contract gap
+- created a real `TASK-TP-003` package triplet targeting the repo-owned test fixture worker template and its focused test
+- confirmed the new regression fails before delegation
+- ran the shared `janus_delegate.py -> Cursor` path live as `WF-CURSOR-REAL-TP-001`
+- verified that Cursor changed only the worker template JSON and made the regression pass
+- reran the full template test file successfully
+
+Changed files:
+- `documentation/codex/model-routing/tests/test_test_fixture_worker_templates.py`
+- `documentation/codex/model-routing/test-fixture-review-fixtures/test_fixture_worker_cursor_worker_package_template_2026-07-07.json`
+- `documentation/codex/model-routing/test-fixture-review-fixtures/allowlists/test_fixture_worker_real_repo_template_fix_allowlist_2026-07-07.txt`
+- `documentation/codex/model-routing/test-fixture-review-fixtures/test_fixture_worker_real_repo_template_fix_worker_package_2026-07-07.json`
+- `documentation/codex/model-routing/test-fixture-review-fixtures/test_fixture_worker_real_repo_template_fix_input_package_2026-07-07.json`
+- `documentation/codex/model-routing/cursor-worker-runs/WF-CURSOR-REAL-TP-001/`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_test_fixture_worker_templates.py -q -k requests_running_checks`: expected FAIL before delegation (`1 failed, 2 deselected`)
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane test_fixture_worker --task-id TASK-TP-003 --workflow-id WF-CURSOR-REAL-TP-001 --operator-choice prompt --input-package-json documentation/codex/model-routing/test-fixture-review-fixtures/test_fixture_worker_real_repo_template_fix_input_package_2026-07-07.json --allowlist-file documentation/codex/model-routing/test-fixture-review-fixtures/allowlists/test_fixture_worker_real_repo_template_fix_allowlist_2026-07-07.txt --estimated-codex-saved-tokens 18000 --estimated-delegation-overhead-tokens 9000 --minimum-net-codex-saved-tokens 8000`: PASS
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane test_fixture_worker --task-id TASK-TP-003 --workflow-id WF-CURSOR-REAL-TP-001 --operator-choice 2 --input-package-json documentation/codex/model-routing/test-fixture-review-fixtures/test_fixture_worker_real_repo_template_fix_input_package_2026-07-07.json --allowlist-file documentation/codex/model-routing/test-fixture-review-fixtures/allowlists/test_fixture_worker_real_repo_template_fix_allowlist_2026-07-07.txt --estimated-codex-saved-tokens 18000 --estimated-delegation-overhead-tokens 9000 --minimum-net-codex-saved-tokens 8000 --execute-live-cursor`: PASS (`CURSOR_WORKER_READY_FOR_CODEX_REVIEW`, session id `d68577f5-f075-45b9-9aab-a6dd2f8b6848`)
+- `python -m pytest documentation/codex/model-routing/tests/test_test_fixture_worker_templates.py -q -k requests_running_checks`: PASS (`1 passed, 2 deselected`)
+- `python -m pytest documentation/codex/model-routing/tests/test_test_fixture_worker_templates.py -q`: PASS (`3 passed`)
+
+Open risks:
+- We now have two strong real non-harness field tests on two different lanes, but there is still no checkpoint commit, so the current strong state lives only locally.
+- The system is now materially more trustworthy, but the next meaningful unknown is how it behaves on a somewhat larger real bounded task rather than another micro-fix.
+- No commit or push happened after this block, so remotes may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: describe the delegation stack as having crossed from “prepared and proven in slices” into “already delivered useful real repo fixes on multiple lanes.”
+
+Next recommended step for Codex: recommend a checkpoint commit now, or if the user wants pure momentum, pick one medium-small real bounded task where the package standard saves noticeable local effort instead of only proving another micro-regression.
+
+Last updated: `2026-07-07 18:19:50 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 18:11 +02:00`, the first small real non-harness repo task using the new EX-001 packaging standard is now complete. Codex added a focused regression to `test_janus_cursor_worker_runner.py` for a real operational safety gap in the live runner: when a thin input package explicitly declares an allowlist contract but the worker package `allowed_edit_paths` and provided allowlist disagree, the runner should fail closed before planning or invocation. The new regression failed as expected, the shared `janus_delegate.py -> Cursor` path was then used on a real repo task package targeting `janus_cursor_worker_runner.py`, and Cursor produced a bounded one-file fix in `WF-CURSOR-REAL-RUNNER-001`. A full local runner test pass afterward exposed that the first fix was slightly too broad, so Codex narrowed the new consistency check to the intended contract case only: it now activates when the input package explicitly declares an `allowlist_file`, instead of penalizing older dry-run cases that never declared that contract. The targeted regression, full runner test file, and `py_compile` all pass now.
+
+Current goal: shift from “delegation lanes are operationalized” to “the operationalized standards survive contact with real repo tasks and tighten the system itself.”
+
+Active phase: bounded `janus-executioner` real non-harness Cursor field test on the main runner seam, canonical state `PASS`.
+
+Last Codex work:
+- added a focused red regression to `test_janus_cursor_worker_runner.py` for explicit allowlist-contract drift
+- created a real EX-001 task package triplet targeting the repo-owned `janus_cursor_worker_runner.py`
+- confirmed the new regression fails before delegation
+- ran the shared `janus_delegate.py -> Cursor` path live as `WF-CURSOR-REAL-RUNNER-001`
+- verified that Cursor changed only `janus_cursor_worker_runner.py` and made the regression pass
+- reran the full runner test file, found the first fix was too broad, and narrowed the new consistency check to explicit input-package allowlist contracts only
+- revalidated the full runner test file and `py_compile` successfully
+
+Changed files:
+- `documentation/codex/model-routing/scripts/janus_cursor_worker_runner.py`
+- `documentation/codex/model-routing/tests/test_janus_cursor_worker_runner.py`
+- `documentation/codex/model-routing/execution-review-fixtures/allowlists/execution_patch_candidate_cursor_runner_allowlist_2026-07-07.txt`
+- `documentation/codex/model-routing/execution-review-fixtures/execution_patch_candidate_cursor_runner_worker_package_2026-07-07.json`
+- `documentation/codex/model-routing/execution-review-fixtures/execution_patch_candidate_cursor_runner_input_package_2026-07-07.json`
+- `documentation/codex/model-routing/cursor-worker-runs/WF-CURSOR-REAL-RUNNER-001/`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_janus_cursor_worker_runner.py -q -k allowlist_disagree`: expected FAIL before delegation (`1 failed, 13 deselected`)
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane execution_patch_candidate --task-id TASK-EX-001 --workflow-id WF-CURSOR-REAL-RUNNER-001 --operator-choice prompt --input-package-json documentation/codex/model-routing/execution-review-fixtures/execution_patch_candidate_cursor_runner_input_package_2026-07-07.json --allowlist-file documentation/codex/model-routing/execution-review-fixtures/allowlists/execution_patch_candidate_cursor_runner_allowlist_2026-07-07.txt --estimated-codex-saved-tokens 22000 --estimated-delegation-overhead-tokens 10000 --minimum-net-codex-saved-tokens 10000`: PASS
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane execution_patch_candidate --task-id TASK-EX-001 --workflow-id WF-CURSOR-REAL-RUNNER-001 --operator-choice 2 --input-package-json documentation/codex/model-routing/execution-review-fixtures/execution_patch_candidate_cursor_runner_input_package_2026-07-07.json --allowlist-file documentation/codex/model-routing/execution-review-fixtures/allowlists/execution_patch_candidate_cursor_runner_allowlist_2026-07-07.txt --estimated-codex-saved-tokens 22000 --estimated-delegation-overhead-tokens 10000 --minimum-net-codex-saved-tokens 10000 --execute-live-cursor`: PASS (`CURSOR_WORKER_READY_FOR_CODEX_REVIEW`, session id `7a88975c-516d-48a3-b208-78a04d90b42a`)
+- `python -m pytest documentation/codex/model-routing/tests/test_janus_cursor_worker_runner.py -q -k allowlist_disagree`: PASS (`1 passed, 13 deselected`)
+- `python -m pytest documentation/codex/model-routing/tests/test_janus_cursor_worker_runner.py -q`: PASS (`14 passed`)
+- `python -m py_compile documentation/codex/model-routing/scripts/janus_cursor_worker_runner.py`: PASS
+- `git diff --check -- documentation/codex/model-routing/scripts/janus_cursor_worker_runner.py documentation/codex/model-routing/tests/test_janus_cursor_worker_runner.py documentation/codex/model-routing/execution-review-fixtures/allowlists/execution_patch_candidate_cursor_runner_allowlist_2026-07-07.txt documentation/codex/model-routing/execution-review-fixtures/execution_patch_candidate_cursor_runner_worker_package_2026-07-07.json documentation/codex/model-routing/execution-review-fixtures/execution_patch_candidate_cursor_runner_input_package_2026-07-07.json`: PASS
+
+Open risks:
+- We now have one strong real non-harness field test, but we should not yet pretend every remaining repo slice will be this clean; the next few real tasks will still teach us where packaging or runner boundaries need tightening.
+- The first Cursor fix was good enough for the new regression but still too broad for the full file, which is a healthy reminder that Codex review remains essential even on a now-strong lane.
+- No commit or push happened after this block, so remotes may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: describe the delegation system as having crossed the important line from operationalized templates into at least one successful real repo field test with Cursor on the main runner seam.
+
+Next recommended step for Codex: either run one second real non-harness repo slice on a different lane using its new packaging standard, or pause here and checkpoint because the current state is already materially stronger than a pure shadow/harness rollout.
+
+Last updated: `2026-07-07 18:11:37 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 18:05 +02:00`, the third major Cursor-first lane is now operationalized as well: `TASK-DBG-002` / `debug_repro_investigation` has its own reusable operator playbook, copy-safe input/worker/allowlist templates, and a focused template test that validates both the generic template and the already proven shadow-catalog package set against the shared worker contract. The new lane-specific template test passed, the broader worker-contract regression stayed green, and the diff is clean. With this, the three most valuable Cursor-style bounded lanes now all exist in the same stronger form: evidence-backed, operator-documented, and contract-checked.
+
+Current goal: move from isolated proven lanes to a genuinely usable small delegation system for everyday bounded work.
+
+Active phase: bounded delegation packaging/productization for `TASK-DBG-002`, canonical state `PASS`.
+
+Last Codex work:
+- added a dedicated `debug_repro_investigation` operator playbook
+- added reusable template files for input package, worker package, and allowlist authoring for the bounded debug lane
+- linked the existing `DEBUG_REPRO_INVESTIGATION` golden path to the new everyday packaging references
+- added a focused test that validates the new template worker package and checks the proven shadow-catalog package triplet for worker-package/allowlist consistency
+- reran the broader worker-contract regression to keep the packaging standard aligned with the shared contract seam
+
+Changed files:
+- `documentation/codex/model-routing/DEBUG_REPRO_INVESTIGATION_OPERATOR_PLAYBOOK_2026-07-07.md`
+- `documentation/codex/model-routing/debug-review-fixtures/debug_repro_investigation_cursor_input_template_2026-07-07.json`
+- `documentation/codex/model-routing/debug-review-fixtures/debug_repro_investigation_cursor_worker_package_template_2026-07-07.json`
+- `documentation/codex/model-routing/debug-review-fixtures/allowlists/debug_repro_investigation_allowlist_template_2026-07-07.txt`
+- `documentation/codex/model-routing/tests/test_debug_repro_investigation_templates.py`
+- `documentation/codex/model-routing/DEBUG_REPRO_INVESTIGATION_GOLDEN_PATH_2026-07-07.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_debug_repro_investigation_templates.py -q`: PASS (`2 passed`)
+- `python -m pytest documentation/codex/model-routing/tests/test_janus_worker_contract.py -q`: PASS (`14 passed`)
+- `python -m py_compile documentation/codex/model-routing/tests/test_debug_repro_investigation_templates.py`: PASS
+- `git diff --check -- documentation/codex/model-routing/DEBUG_REPRO_INVESTIGATION_OPERATOR_PLAYBOOK_2026-07-07.md documentation/codex/model-routing/debug-review-fixtures/debug_repro_investigation_cursor_worker_package_template_2026-07-07.json documentation/codex/model-routing/debug-review-fixtures/debug_repro_investigation_cursor_input_template_2026-07-07.json documentation/codex/model-routing/debug-review-fixtures/allowlists/debug_repro_investigation_allowlist_template_2026-07-07.txt documentation/codex/model-routing/tests/test_debug_repro_investigation_templates.py documentation/codex/model-routing/DEBUG_REPRO_INVESTIGATION_GOLDEN_PATH_2026-07-07.md`: PASS
+
+Open risks:
+- `TASK-EX-001`, `TASK-TP-003`, and `TASK-DBG-002` now have reusable packaging standards, but we still have not yet spent these new templates on a small real non-harness production-like repo task.
+- OpenRouter remains preserved where available, but the current packaging standards intentionally optimize the Cursor-first paths because that is where the best bounded evidence exists.
+- No commit or push happened after this block, so remotes may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: describe the delegation system as having three operationalized Cursor-first lanes now, not just scattered working examples.
+
+Next recommended step for Codex: stop building more template layers for a moment and spend the next slice on one small real non-harness repo task that uses one of the new standards directly, or operationalize the next truly high-value remaining lane only if it unlocks similar everyday use.
+
+Last updated: `2026-07-07 18:05:18 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 18:02 +02:00`, the same packaging/productization discipline that was just established for `TASK-EX-001` now also exists for `TASK-TP-003` / `test_fixture_worker`. Codex added a dedicated operator playbook for the Cursor-first fixture/test-helper lane, added copy-safe input/worker/allowlist templates under a lane-specific fixture directory, linked the existing golden-path note to those packaging references, and added a focused template test that validates the new worker template plus the already proven shadow-catalog package set against the shared worker contract. The new template test passed, the broader worker-contract regression stayed green, and the diff is clean, so `test_fixture_worker` is now documented and mechanically checked as an everyday reusable packaging pattern rather than only a proven live example.
+
+Current goal: keep converting the most valuable Cursor-first bounded lanes from “we have evidence” into “we have reusable operational standards.”
+
+Active phase: bounded delegation packaging/productization for `TASK-TP-003`, canonical state `PASS`.
+
+Last Codex work:
+- added a dedicated `test_fixture_worker` operator playbook
+- added reusable template files for input package, worker package, and allowlist authoring for the fixture/test-helper lane
+- linked the `TEST_FIXTURE_WORKER` golden path to the new everyday packaging references
+- added a focused test that validates the new template worker package and checks the proven shadow-catalog package triplet for worker-package/allowlist consistency
+- reran the broader worker-contract regression to keep the packaging standard aligned with the existing contract seam
+
+Changed files:
+- `documentation/codex/model-routing/TEST_FIXTURE_WORKER_OPERATOR_PLAYBOOK_2026-07-07.md`
+- `documentation/codex/model-routing/test-fixture-review-fixtures/test_fixture_worker_cursor_input_template_2026-07-07.json`
+- `documentation/codex/model-routing/test-fixture-review-fixtures/test_fixture_worker_cursor_worker_package_template_2026-07-07.json`
+- `documentation/codex/model-routing/test-fixture-review-fixtures/allowlists/test_fixture_worker_allowlist_template_2026-07-07.txt`
+- `documentation/codex/model-routing/tests/test_test_fixture_worker_templates.py`
+- `documentation/codex/model-routing/TEST_FIXTURE_WORKER_GOLDEN_PATH_2026-07-06.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_test_fixture_worker_templates.py -q`: PASS (`2 passed`)
+- `python -m pytest documentation/codex/model-routing/tests/test_janus_worker_contract.py -q`: PASS (`14 passed`)
+- `python -m py_compile documentation/codex/model-routing/tests/test_test_fixture_worker_templates.py`: PASS
+- `git diff --check -- documentation/codex/model-routing/TEST_FIXTURE_WORKER_OPERATOR_PLAYBOOK_2026-07-07.md documentation/codex/model-routing/test-fixture-review-fixtures/test_fixture_worker_cursor_worker_package_template_2026-07-07.json documentation/codex/model-routing/test-fixture-review-fixtures/test_fixture_worker_cursor_input_template_2026-07-07.json documentation/codex/model-routing/test-fixture-review-fixtures/allowlists/test_fixture_worker_allowlist_template_2026-07-07.txt documentation/codex/model-routing/tests/test_test_fixture_worker_templates.py documentation/codex/model-routing/TEST_FIXTURE_WORKER_GOLDEN_PATH_2026-07-06.md`: PASS
+
+Open risks:
+- `TASK-EX-001` and `TASK-TP-003` now have reusable packaging standards, but the same level of operationalization still does not yet exist for every valuable Cursor lane.
+- These template standards intentionally optimize the Cursor-first paths; OpenRouter remains preserved where available, but not as the packaging-first focus here.
+- No commit or push happened after this block, so remotes may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: describe both `TASK-EX-001` and `TASK-TP-003` as now operationalized, not merely evidenced, and frame the next question as which remaining high-value Cursor lane deserves the same treatment.
+
+Next recommended step for Codex: productize `TASK-DBG-002` in the same way or spend the next slice on one small real non-harness task that uses the new templates directly.
+
+Last updated: `2026-07-07 18:02:21 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 17:59 +02:00`, the Cursor-first `TASK-EX-001` productization now has a reusable operator package shape instead of depending on one-off handcrafted input files. Codex added a focused EX-001 operator playbook, a copy-safe input template, a copy-safe worker package template, and an allowlist template, then added a dedicated template test that validates both the generic worker package template and the two already proven real harness package sets against the shared worker contract. The focused template test and the broader worker-contract regression both passed, so the new packaging standard is not only documented but mechanically checked.
+
+Current goal: move from “EX-001 proven in examples” to “EX-001 easy to run repeatedly on real bounded tasks without package-shape drift.”
+
+Active phase: bounded `janus-executioner` packaging/productization for `TASK-EX-001`, canonical state `PASS`.
+
+Last Codex work:
+- added a dedicated EX-001 operator playbook for the Cursor-first execution proposal lane
+- added reusable template files for input package, worker package, and allowlist authoring
+- linked the golden-path note to those new everyday packaging references
+- added a focused test that validates the template worker package and checks the two real harness package triplets for worker-package/allowlist consistency
+- reran the broader worker contract regression to make sure the new packaging standard does not drift from the existing contract seam
+
+Changed files:
+- `documentation/codex/model-routing/EXECUTION_PATCH_CANDIDATE_OPERATOR_PLAYBOOK_2026-07-07.md`
+- `documentation/codex/model-routing/execution-review-fixtures/execution_patch_candidate_cursor_input_template_2026-07-07.json`
+- `documentation/codex/model-routing/execution-review-fixtures/execution_patch_candidate_cursor_worker_package_template_2026-07-07.json`
+- `documentation/codex/model-routing/execution-review-fixtures/allowlists/execution_patch_candidate_allowlist_template_2026-07-07.txt`
+- `documentation/codex/model-routing/tests/test_execution_patch_candidate_templates.py`
+- `documentation/codex/model-routing/EXECUTION_PATCH_CANDIDATE_GOLDEN_PATH_2026-07-07.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_execution_patch_candidate_templates.py -q`: PASS (`2 passed`)
+- `python -m pytest documentation/codex/model-routing/tests/test_janus_worker_contract.py -q`: PASS (`14 passed`)
+- `python -m py_compile documentation/codex/model-routing/tests/test_execution_patch_candidate_templates.py`: PASS
+- `git diff --check -- documentation/codex/model-routing/EXECUTION_PATCH_CANDIDATE_OPERATOR_PLAYBOOK_2026-07-07.md documentation/codex/model-routing/execution-review-fixtures/execution_patch_candidate_cursor_worker_package_template_2026-07-07.json documentation/codex/model-routing/execution-review-fixtures/execution_patch_candidate_cursor_input_template_2026-07-07.json documentation/codex/model-routing/execution-review-fixtures/allowlists/execution_patch_candidate_allowlist_template_2026-07-07.txt documentation/codex/model-routing/tests/test_execution_patch_candidate_templates.py documentation/codex/model-routing/EXECUTION_PATCH_CANDIDATE_GOLDEN_PATH_2026-07-07.md`: PASS
+
+Open risks:
+- EX-001 packaging is now much easier and safer, but we still have not yet built the same level of reusable productization for the next valuable lane beyond EX-001.
+- OpenRouter remains preserved as option `3`, but this packaging standard is intentionally optimized around the Cursor-first path.
+- No commit or push happened after this block, so remotes may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat EX-001 as not only evidence-backed but operationally repeatable now; future discussion should focus less on whether Cursor works here and more on which next lane deserves the same packaging treatment.
+
+Next recommended step for Codex: apply this same packaging standard to the next highest-value bounded lane or use it immediately on one small real non-harness repo task to prove the template works outside the curated examples.
+
+Last updated: `2026-07-07 17:59:13 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 17:54 +02:00`, `TASK-EX-001` / `execution_patch_candidate` now has a second independent real tiny repo-bound Cursor proof, not just the earlier clamp harness. Codex created a second bounded worker package around the isolated `text_utils.py` helper, intentionally degraded the function to a red baseline, confirmed the focused pytest fails, and then reran the same shared `janus_delegate.py -> Cursor` path as `WF-CURSOR-LIVE-HARNESS-EXEC-003`. The worker changed only the allowlisted `text_utils.py`, restored the expected title-casing behavior, and left the harness green with local pytest and `py_compile` both passing. This makes the EX-001 Cursor path materially stronger than a one-off demo: two different single-file repo harnesses, both red-to-green, both allowlist-clean, both under the same shared gate.
+
+Current goal: finish the last practical hardening steps before we start treating the Cursor-first execution proposal lane as ready for broader live everyday use.
+
+Active phase: bounded `janus-executioner` productization for `TASK-EX-001`, canonical state `PASS`.
+
+Last Codex work:
+- created a second real Cursor worker/input package pair for a different one-file repo harness
+- added a dedicated allowlist for the `text_utils.py` harness
+- intentionally degraded `normalize_heading` to a failing red baseline
+- confirmed the focused harness pytest fails before delegation
+- reran the shared tri-modal gate and confirmed visible `1 = Codex / 2 = Cursor / 3 = OpenRouter` with positive ROI and `Cursor` recommended
+- executed the second live delegate run `WF-CURSOR-LIVE-HARNESS-EXEC-003`
+- confirmed the bounded edit stayed inside the one-file allowlist and that local pytest plus `py_compile` pass afterward
+
+Changed files:
+- `documentation/codex/model-routing/execution-review-fixtures/allowlists/execution_patch_candidate_text_utils_allowlist_2026-07-07.txt`
+- `documentation/codex/model-routing/execution-review-fixtures/execution_patch_candidate_text_utils_cursor_worker_package_2026-07-07.json`
+- `documentation/codex/model-routing/execution-review-fixtures/execution_patch_candidate_text_utils_cursor_input_package_2026-07-07.json`
+- `development/openrouter-skill-tests/janus-worker-aider-isolated-code-poc/text_utils.py`
+- `documentation/codex/model-routing/cursor-worker-runs/WF-CURSOR-LIVE-HARNESS-EXEC-003/`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest development/openrouter-skill-tests/janus-worker-aider-isolated-code-poc/test_text_utils.py -q`: expected FAIL before delegation (`1 failed`)
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane execution_patch_candidate --task-id TASK-EX-001 --workflow-id WF-CURSOR-LIVE-HARNESS-EXEC-003 --operator-choice prompt --input-package-json documentation/codex/model-routing/execution-review-fixtures/execution_patch_candidate_text_utils_cursor_input_package_2026-07-07.json --allowlist-file documentation/codex/model-routing/execution-review-fixtures/allowlists/execution_patch_candidate_text_utils_allowlist_2026-07-07.txt --estimated-codex-saved-tokens 25000 --estimated-delegation-overhead-tokens 10000 --minimum-net-codex-saved-tokens 10000`: PASS
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane execution_patch_candidate --task-id TASK-EX-001 --workflow-id WF-CURSOR-LIVE-HARNESS-EXEC-003 --operator-choice 2 --input-package-json documentation/codex/model-routing/execution-review-fixtures/execution_patch_candidate_text_utils_cursor_input_package_2026-07-07.json --allowlist-file documentation/codex/model-routing/execution-review-fixtures/allowlists/execution_patch_candidate_text_utils_allowlist_2026-07-07.txt --estimated-codex-saved-tokens 25000 --estimated-delegation-overhead-tokens 10000 --minimum-net-codex-saved-tokens 10000 --execute-live-cursor`: PASS (`CURSOR_WORKER_READY_FOR_CODEX_REVIEW`, session id `580ce1c6-38e2-42ef-bf7b-e09641259300`)
+- `python -m pytest development/openrouter-skill-tests/janus-worker-aider-isolated-code-poc/test_text_utils.py -q`: PASS (`1 passed`)
+- `python -m py_compile development/openrouter-skill-tests/janus-worker-aider-isolated-code-poc/text_utils.py development/openrouter-skill-tests/janus-worker-aider-isolated-code-poc/test_text_utils.py`: PASS
+
+Open risks:
+- Cursor now looks clearly strongest on `TASK-EX-001`, but we still have not yet turned this into a single easy operator playbook that covers package shape, allowlist shape, and recommended thresholds in one place.
+- OpenRouter remains preserved as option `3`, but it is still meaningfully behind Cursor on this lane under bounded evidence.
+- No commit or push happened after this block, so remotes may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: describe the EX-001 Cursor path as now supported by two independent repo-bound red-to-green proofs, not just one, and frame it as ready for controlled broader live use.
+
+Next recommended step for Codex: consolidate the now-proven EX-001 package shape into a reusable “real bounded execution proposal” template or operator playbook so productive use does not depend on ad hoc package authoring every time.
+
+Last updated: `2026-07-07 17:54:45 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 17:45 +02:00`, `TASK-EX-001` / `execution_patch_candidate` is now proven not only on the shadow sandbox but also through one real tiny repo-bound harness task using the shared `janus_delegate.py -> Cursor` path. Operator-facing guidance was tightened so this lane is explicitly Cursor-first in everyday use, a dedicated golden-path note was added, and a bounded live harness package pair was created for the repo test. The harness source was intentionally reset to the buggy red state first, the focused pytest failed, the first live delegate attempt exposed an input-contract mismatch between the older execution package shape and the Cursor worker package contract, and Codex fixed that by adding a real Cursor worker package plus thin input wrapper. The rerun `WF-CURSOR-LIVE-HARNESS-EXEC-002` then passed with `CURSOR_WORKER_READY_FOR_CODEX_REVIEW`, changed only the allowlisted `math_utils.py`, and restored the harness to green with local pytest and `py_compile` both passing.
+
+Current goal: finish turning the tri-modal delegation stack into something we can confidently start using in live everyday work, with Cursor as the primary bounded coding worker where the evidence clearly supports it.
+
+Active phase: bounded `janus-executioner` productization for `TASK-EX-001`, canonical state `PASS`.
+
+Last Codex work:
+- added a dedicated `execution_patch_candidate` golden-path reference note
+- clarified in `janus-executioner` skill wording that `TASK-EX-001` is Cursor-first, while OpenRouter remains preserved as option `3`
+- added a dedicated allowlist plus Cursor worker/input package pair for the tiny live harness repo task
+- intentionally restored the harness `clamp` function to the failing state
+- confirmed the focused harness pytest fails before delegation
+- ran the shared tri-modal gate and confirmed visible `1 = Codex / 2 = Cursor / 3 = OpenRouter` with positive ROI and `Cursor` recommended
+- captured the first live failure as a contract mismatch between the legacy execution input package shape and the Cursor worker package contract
+- fixed that by binding a valid Cursor worker package through a thin input wrapper instead of widening runner logic
+- reran the live delegate path successfully as `WF-CURSOR-LIVE-HARNESS-EXEC-002`
+- confirmed the bounded edit stayed inside the one-file allowlist and that local pytest plus `py_compile` pass afterward
+
+Changed files:
+- `documentation/codex/skills/janus-executioner/SKILL.md`
+- `documentation/codex/model-routing/EXECUTION_PATCH_CANDIDATE_GOLDEN_PATH_2026-07-07.md`
+- `documentation/codex/model-routing/execution-review-fixtures/allowlists/execution_patch_candidate_live_harness_allowlist_2026-07-07.txt`
+- `documentation/codex/model-routing/execution-review-fixtures/execution_patch_candidate_live_harness_cursor_worker_package_2026-07-07.json`
+- `documentation/codex/model-routing/execution-review-fixtures/execution_patch_candidate_live_harness_cursor_input_package_2026-07-07.json`
+- `development/openrouter-skill-tests/execution_patch_candidate_live_harness/math_utils.py`
+- `documentation/codex/model-routing/cursor-worker-runs/WF-CURSOR-LIVE-HARNESS-EXEC-002/`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest development/openrouter-skill-tests/execution_patch_candidate_live_harness/test_math_utils.py -q`: expected FAIL before delegation (`1 failed, 2 passed`)
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane execution_patch_candidate --task-id TASK-EX-001 --workflow-id WF-CURSOR-LIVE-HARNESS-EXEC-001 --operator-choice prompt --input-package-json documentation/codex/model-routing/execution-review-fixtures/execution_patch_candidate_live_harness_input_package_2026-07-01.json --allowlist-file documentation/codex/model-routing/execution-review-fixtures/allowlists/execution_patch_candidate_live_harness_allowlist_2026-07-07.txt --estimated-codex-saved-tokens 30000 --estimated-delegation-overhead-tokens 10000 --minimum-net-codex-saved-tokens 10000`: PASS
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane execution_patch_candidate --task-id TASK-EX-001 --workflow-id WF-CURSOR-LIVE-HARNESS-EXEC-001 --operator-choice 2 --input-package-json documentation/codex/model-routing/execution-review-fixtures/execution_patch_candidate_live_harness_input_package_2026-07-01.json --allowlist-file documentation/codex/model-routing/execution-review-fixtures/allowlists/execution_patch_candidate_live_harness_allowlist_2026-07-07.txt --estimated-codex-saved-tokens 30000 --estimated-delegation-overhead-tokens 10000 --minimum-net-codex-saved-tokens 10000 --execute-live-cursor`: BLOCKED (`CURSOR_WORKER_INPUT_BLOCKED`; package-contract mismatch found)
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane execution_patch_candidate --task-id TASK-EX-001 --workflow-id WF-CURSOR-LIVE-HARNESS-EXEC-002 --operator-choice 2 --input-package-json documentation/codex/model-routing/execution-review-fixtures/execution_patch_candidate_live_harness_cursor_input_package_2026-07-07.json --allowlist-file documentation/codex/model-routing/execution-review-fixtures/allowlists/execution_patch_candidate_live_harness_allowlist_2026-07-07.txt --estimated-codex-saved-tokens 30000 --estimated-delegation-overhead-tokens 10000 --minimum-net-codex-saved-tokens 10000 --execute-live-cursor`: PASS (`CURSOR_WORKER_READY_FOR_CODEX_REVIEW`, session id `2d3ad282-d31a-4add-ab54-777854857c3f`)
+- `python -m pytest development/openrouter-skill-tests/execution_patch_candidate_live_harness/test_math_utils.py -q`: PASS (`3 passed`)
+- `python -m py_compile development/openrouter-skill-tests/execution_patch_candidate_live_harness/math_utils.py development/openrouter-skill-tests/execution_patch_candidate_live_harness/test_math_utils.py`: PASS
+- `git diff --check -- documentation/codex/skills/janus-executioner/SKILL.md documentation/codex/model-routing/EXECUTION_PATCH_CANDIDATE_GOLDEN_PATH_2026-07-07.md documentation/codex/model-routing/execution-review-fixtures/allowlists/execution_patch_candidate_live_harness_allowlist_2026-07-07.txt documentation/codex/model-routing/execution-review-fixtures/execution_patch_candidate_live_harness_cursor_worker_package_2026-07-07.json documentation/codex/model-routing/execution-review-fixtures/execution_patch_candidate_live_harness_cursor_input_package_2026-07-07.json development/openrouter-skill-tests/execution_patch_candidate_live_harness/math_utils.py documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS
+
+Open risks:
+- The everyday execution story is now strongest on Cursor for `TASK-EX-001`, but OpenRouter option `3` is still weaker on this lane and should stay secondary until stronger bounded evidence appears.
+- The first harness run showed a real shape mismatch between older execution-style input packages and Cursor worker package validation; future productive EX-001 packages should follow the Cursor worker wrapper shape directly.
+- No commit or push happened after this block, so remotes may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat `TASK-EX-001` as genuinely productized enough for controlled live everyday testing with `2 = Cursor`, while still describing OpenRouter as preserved but secondary on this lane.
+
+Next recommended step for Codex: either package the same Cursor worker-shape for the next highest-value real bounded lane, or do one more controlled real-life EX-001-style task before widening beyond the current execution proposal surface.
+
+Last updated: `2026-07-07 17:45:46 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 19:24 +02:00`, the apples-to-apples OpenRouter comparison for `TASK-EX-001` / `execution_patch_candidate` is now complete on the same bounded shadow task that Cursor just solved. A dedicated direct-OR shadow input package was added, the helper was reset back to the red baseline, and the focused shadow pytest failed again before any OR call. The recommended OpenRouter model `moonshotai/kimi-k2.5` returned a semantically relevant patch candidate, but the diff collapsed into a single line and was fail-closed by the bounded validator. The declared fallback `qwen/qwen3-coder-30b-a3b-instruct` stayed cheaper and bounded, but it fell back to a parser-blocked no-patch `BLOCKED` result instead of producing a usable patch. Codex then restored the shadow helper to the green state locally so the focused sandbox pytest passes again.
+
+Current goal: finish turning the tri-modal delegation system into an everyday worker setup by locking in which backend actually earns the default on each valuable lane.
+
+Active phase: bounded `janus-executioner` backend comparison for `TASK-EX-001`, canonical state `PASS`.
+
+Last Codex work:
+- created a dedicated direct-OR shadow input package for the EX-001 apples-to-apples comparison
+- reset the shadow helper back to the failing baseline before the OR comparison
+- reran the focused shadow pytest and confirmed the baseline is red without the `Session-Budget:` line
+- ran a live direct OpenRouter comparison with `moonshotai/kimi-k2.5`
+- inspected the Kimi run and confirmed the result was rejected only because the unified diff formatting collapsed into one line
+- ran the declared OpenRouter fallback `qwen/qwen3-coder-30b-a3b-instruct`
+- inspected the Qwen fallback and confirmed it stayed bounded/cost-clean but returned a parser-blocked `BLOCKED` no-patch result rather than a usable patch
+- restored the shadow helper locally to the green state and reran the focused pytest successfully
+
+Changed files:
+- `documentation/codex/model-routing/execution-review-fixtures/execution_patch_candidate_shadow_input_package_2026-07-07.json`
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/gate_prompt_shadow.py`
+- `documentation/codex/model-routing/execution-direct-or-runs/WF-OPENROUTER-SHADOW-EXEC-PROPOSAL-LIVE-001/`
+- `documentation/codex/model-routing/execution-direct-or-runs/WF-OPENROUTER-SHADOW-EXEC-PROPOSAL-LIVE-002/`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python documentation/codex/model-routing/scripts/reset_execution_patch_candidate_shadow_fixture.py`: PASS (`SHADOW_FIXTURE_RESET_TO_BASELINE`)
+- `python -m pytest documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/test_gate_prompt_shadow.py -q`: expected FAIL before OR comparison (`Session-Budget:` line absent)
+- `python documentation/codex/model-routing/scripts/openrouter_direct_execution_patch_candidate_runner.py --task-label "TASK-EX-001 shadow session-budget line repair" --normal-target-model "5.4 medium" --model moonshotai/kimi-k2.5 --workflow-id WF-OPENROUTER-SHADOW-EXEC-PROPOSAL-LIVE-001 --input-package-json documentation/codex/model-routing/execution-review-fixtures/execution_patch_candidate_shadow_input_package_2026-07-07.json --estimated-or-cost 0.0100 --cost-estimate-confidence-percent 70 --execute-live`: FAIL (`DIRECT_OR_REJECT_AND_FALLBACK`; diff collapsed to one line)
+- `python documentation/codex/model-routing/scripts/openrouter_direct_execution_patch_candidate_runner.py --task-label "TASK-EX-001 shadow session-budget line repair" --normal-target-model "5.4 medium" --model qwen/qwen3-coder-30b-a3b-instruct --workflow-id WF-OPENROUTER-SHADOW-EXEC-PROPOSAL-LIVE-002 --input-package-json documentation/codex/model-routing/execution-review-fixtures/execution_patch_candidate_shadow_input_package_2026-07-07.json --estimated-or-cost 0.0100 --cost-estimate-confidence-percent 70 --execute-live`: PASS at bounded runner level with final outcome `DIRECT_OR_BOUNDED_BLOCKED_NO_PATCH`
+- `python -m pytest documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/test_gate_prompt_shadow.py -q`: PASS (`1 passed`) after local green restore
+
+Open risks:
+- OpenRouter remains meaningfully weaker than Cursor on this exact bounded execution-proposal lane: one model produced a semantically relevant but invalid diff payload, the other stayed bounded but failed to return a usable patch.
+- The OR comparison is still on a shadow sandbox, not yet on a real Janus product-code execution slice.
+- No commit or push happened after this comparison, so remotes may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: treat `execution_patch_candidate` as Cursor-first in practical everyday use right now; describe OpenRouter option 3 as still available but not yet good enough to recommend as the default worker for this lane.
+
+Next recommended step for Codex: productize the now-evidence-backed decision by tightening operator-facing guidance so `TASK-EX-001` is clearly Cursor-first, then move to the next unresolved OR-vs-Cursor lane only if it promises new evidence rather than repeating the same failure shape.
+
+Last updated: `2026-07-07 19:24:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 19:05 +02:00`, `TASK-EX-001` / `execution_patch_candidate` completed a more meaningful bounded Cursor live proof than the earlier no-op slice. The shadow helper was first reset to its pre-session-budget baseline, the focused sandbox pytest failed as expected before delegation, the shared `janus_delegate.py` gate again recommended `2 = Cursor` with positive ROI, and the live run `WF-CURSOR-SHADOW-EXEC-PROPOSAL-LIVE-002` returned `CURSOR_WORKER_READY_FOR_CODEX_REVIEW` with a real session id while re-adding the missing `Session-Budget:` line inside the allowlist. A clean post-run focused pytest then passed locally.
+
+Current goal: convert the delegation stack from “architecturally present” into “reliably useful on real bounded worker tasks,” starting with execution proposal work.
+
+Active phase: bounded `janus-executioner` validation for `TASK-EX-001`, canonical state `PASS`.
+
+Last Codex work:
+- reset the `execution_patch_candidate` shadow helper to the true pre-edit baseline
+- verified the focused sandbox pytest fails before delegation when the `Session-Budget:` line is missing
+- reran the shared tri-modal gate and confirmed `1 = Codex / 2 = Cursor / 3 = OpenRouter` with positive ROI and `Cursor` recommended
+- executed a new live Cursor proposal run `WF-CURSOR-SHADOW-EXEC-PROPOSAL-LIVE-002`
+- confirmed the allowlisted helper now contains the re-added session-budget line and the focused pytest passes afterward
+
+Changed files:
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/gate_prompt_shadow.py`
+- `documentation/codex/model-routing/cursor-worker-runs/WF-CURSOR-SHADOW-EXEC-PROPOSAL-LIVE-002/`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python documentation/codex/model-routing/scripts/reset_execution_patch_candidate_shadow_fixture.py`: PASS (`SHADOW_FIXTURE_RESET_TO_BASELINE`)
+- `python -m pytest documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/test_gate_prompt_shadow.py -q`: expected FAIL before delegation (`Session-Budget:` line absent)
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane execution_patch_candidate --task-id TASK-EX-001 --workflow-id WF-CURSOR-SHADOW-EXEC-PROPOSAL-DRY-002 --operator-choice prompt --input-package-json documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/input_package.json --allowlist-file documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/allowlist.txt --estimated-codex-saved-tokens 35000 --estimated-delegation-overhead-tokens 10000 --minimum-net-codex-saved-tokens 10000`: PASS
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane execution_patch_candidate --task-id TASK-EX-001 --workflow-id WF-CURSOR-SHADOW-EXEC-PROPOSAL-LIVE-002 --operator-choice 2 --input-package-json documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/input_package.json --allowlist-file documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/allowlist.txt --estimated-codex-saved-tokens 35000 --estimated-delegation-overhead-tokens 10000 --minimum-net-codex-saved-tokens 10000 --execute-live-cursor`: PASS (`CURSOR_WORKER_READY_FOR_CODEX_REVIEW`, session id `3a658eb7-1bcf-4194-8c7c-993e948ce91b`)
+- `python -m pytest documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/test_gate_prompt_shadow.py -q`: PASS (`1 passed`) after delegation
+
+Open risks:
+- This is still a shadow-sandbox proof, not yet a productive Janus product-code slice.
+- `execution_patch_candidate` is now meaningfully live-proven for Cursor, but we still need a clean decision on when Cursor vs OpenRouter is the better everyday worker for this lane.
+- No commit or push happened after this run, so remotes may not contain this newest `CURRENT_STATE`.
+
+Next recommended step for ChatGPT: describe `TASK-EX-001` as now meaningfully Cursor-proven, not merely no-op-proven; recommend either one bounded OpenRouter comparison on the same lane or operator-facing productization of the Cursor path.
+
+Next recommended step for Codex: either run one apples-to-apples OpenRouter comparison for `TASK-EX-001`, or consolidate the current Cursor evidence into a stable golden-path/operator reference before broader rollout.
+
+Last updated: `2026-07-07 19:05:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-07 17:54 +02:00`, Spec 26 completed `janus-documentation-update` as its final closeout step. `TASK-SPEC26.3` is now synchronized into the parent task, central registry, and project snapshot, and the full Spec moved to `documentation/SPEC/Spec Done/26_operator_facing_codex_oder_or_wahl_in_bestehenden_janus_skills.md` with `SPEC IMPLEMENTATION METADATA` marking the three-slice chain DONE.
 
 Current goal: finish the Spec-26 closeout cleanly and hand back a documentation-complete, audit-complete state before any git checkpoint.

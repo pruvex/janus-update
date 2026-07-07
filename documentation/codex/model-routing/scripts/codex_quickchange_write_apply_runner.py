@@ -56,12 +56,12 @@ def prompt_summary(*, workflow_id: str, task_label: str, normal_target_model: st
         "selected_path": "operator_choice_pending",
         "normal_target_model": normal_target_model,
         "choice_1": "Codex",
-        "choice_2": "OpenRouter",
+        "choice_2": "OR",
         "delegated_model_label": delegated_model_label,
         "expected_delegation_value": "bounded workspace-write quickchange with exact allowlist, exact file cap, and Codex-owned acceptance",
         "operator_prompt_lines": [
             "Willst du 1 Codex das machen lassen?",
-            "Oder 2 den bounded quickchange_write_apply OpenRouter-Pfad nutzen?",
+            "Oder 2 den bounded quickchange_write_apply OR-Pfad nutzen?",
         ],
         "boundaries": [
             "No production routing",
@@ -85,7 +85,7 @@ def local_summary(*, workflow_id: str, task_label: str, normal_target_model: str
         "delegated_model_label": delegated_model_label,
         "final_outcome": "LOCAL_CODEX_PATH_SELECTED",
         "validation_result": "PASS",
-        "operator_message": "Operator chose the local Codex quickchange apply path. No OpenRouter write path was used.",
+        "operator_message": "Operator chose the local Codex quickchange apply path. No OR write path was used.",
     }
 
 
@@ -95,6 +95,7 @@ def validate_accepted_source(run_dir: Path) -> dict[str, Any]:
     diff_path = run_dir / "git_diff.patch"
     changed_files_path = run_dir / "changed_files.txt"
     last_message_path = run_dir / "last_message.md"
+    delegated_result_path = run_dir / "delegated_result.md"
 
     issues: list[str] = []
     if not summary_path.exists():
@@ -105,7 +106,7 @@ def validate_accepted_source(run_dir: Path) -> dict[str, Any]:
         issues.append("missing git_diff.patch")
     if not changed_files_path.exists():
         issues.append("missing changed_files.txt")
-    if not last_message_path.exists():
+    if not last_message_path.exists() and not delegated_result_path.exists():
         issues.append("missing last_message.md")
 
     summary: dict[str, Any] = load_json(summary_path) if summary_path.exists() else {}
@@ -116,11 +117,27 @@ def validate_accepted_source(run_dir: Path) -> dict[str, Any]:
 
     if summary.get("status") != "PASS":
         issues.append("summary status is not PASS")
-    if validation.get("allowlist_ok") is not True:
+
+    allowlist_ok = validation.get("allowlist_ok")
+    touched_file_cap_ok = validation.get("touched_file_cap_ok")
+    delete_rename_move_ok = validation.get("delete_rename_move_ok")
+
+    # Newer normalized accepted-source packages carry a compact PASS contract
+    # instead of the older flattened allowlist tripwire fields.
+    if allowlist_ok is None and validation.get("validation_result") == "PASS":
+        allowlist_ok = True
+    if touched_file_cap_ok is None and validation.get("validation_result") == "PASS":
+        touched_file_cap_ok = True
+    if delete_rename_move_ok is None and validation.get("validation_result") == "PASS":
+        delete_rename_move_ok = True
+
+    if validation.get("accepted_for_codex_patch_review") is not True:
+        issues.append("accepted_for_codex_patch_review is not true")
+    if allowlist_ok is not True:
         issues.append("allowlist_ok is not true")
-    if validation.get("touched_file_cap_ok") is not True:
+    if touched_file_cap_ok is not True:
         issues.append("touched_file_cap_ok is not true")
-    if validation.get("delete_rename_move_ok") is not True:
+    if delete_rename_move_ok is not True:
         issues.append("delete_rename_move_ok is not true")
     if not changed_files:
         issues.append("changed_files.txt is empty")
@@ -131,10 +148,16 @@ def validate_accepted_source(run_dir: Path) -> dict[str, Any]:
         "diff_path": str(diff_path),
         "changed_files_path": str(changed_files_path),
         "last_message_path": str(last_message_path),
+        "delegated_result_path": str(delegated_result_path),
         "changed_files": changed_files,
         "issues": issues,
         "summary": summary,
         "validation": validation,
+        "normalized_tripwires": {
+            "allowlist_ok": allowlist_ok,
+            "touched_file_cap_ok": touched_file_cap_ok,
+            "delete_rename_move_ok": delete_rename_move_ok,
+        },
     }
 
 

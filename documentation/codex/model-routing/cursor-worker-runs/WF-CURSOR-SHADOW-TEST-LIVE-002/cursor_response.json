@@ -1,0 +1,16 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 91984,
+  "duration_api_ms": 91984,
+  "result": "I'll locate the existing contact-memory fixture and its unit test, then adjust only those artifacts.\nImproving the fixture and tests for clearer SPEC 10 coverage and reviewer readability, staying within the two allowed files.\nBounded contact-memory fixture and unit test updated. Only the two allowlisted sandbox files changed.\n\n**Fixture (`contact_memory_fixture.json` v1.3)**\n- Added `review_checklist` and documented `conflict_scenario` / `duplicate_preservation_scenario`\n- Gave confirmed/blocked/untrusted examples stable `id` fields\n- Completed blocked-category coverage (phone, relationship, religion, finance)\n- Added phrase-preservation example (`Zeit im Garten` must not split)\n- Added conflict and duplicate-preservation negative scenarios from SPEC 10\n\n**Tests (`test_contact_memory_fixture.py`)**\n- Added `example_by_id` helper and expanded contract keys\n- Parametrized blocked-category coverage (all 7 categories)\n- Added tests for phrase preservation, conflict handling, duplicate preservation, and fixture-only notes\n\n**Validation:** `23 passed` (was 15)\n\n```json\n{\n  \"status\": \"COMPLETE\",\n  \"changed_files\": [\n    \"development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/test_fixture_arbeit/fixtures/contact_memory_fixture.json\",\n    \"development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/test_fixture_arbeit/tests/test_contact_memory_fixture.py\"\n  ],\n  \"command_results\": {\n    \"pytest\": \"PASS (23 passed)\"\n  },\n  \"summary\": \"Fixture v1.3 now documents full blocked-category coverage plus conflict/duplicate negative paths; matching unit tests expanded for clearer side-by-side review.\",\n  \"blockers\": []\n}\n```",
+  "session_id": "2c6672b4-f2f2-464e-8c4b-f3247df37547",
+  "request_id": "f18629a4-533b-48fb-81cc-39d17d3fe915",
+  "usage": {
+    "inputTokens": 34977,
+    "outputTokens": 6020,
+    "cacheReadTokens": 225196,
+    "cacheWriteTokens": 0
+  }
+}

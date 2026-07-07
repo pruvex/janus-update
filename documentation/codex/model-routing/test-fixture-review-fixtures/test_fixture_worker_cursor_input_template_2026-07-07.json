@@ -1,0 +1,19 @@
+{
+  "task_id": "TASK-TP-003",
+  "lane_id": "test_fixture_worker",
+  "bound_skill_context": "janus-test-pipeline",
+  "task_label": "Replace with the same bounded fixture or test-helper task label as the worker package",
+  "worker_package_json": "documentation/codex/model-routing/test-fixture-review-fixtures/replace_worker_package.json",
+  "allowlist_file": "documentation/codex/model-routing/test-fixture-review-fixtures/allowlists/replace_allowlist.txt",
+  "acceptance_criteria": [
+    "Only the allowlisted fixture or test-helper files may change.",
+    "The task must stay fixture or test-helper scoped.",
+    "The focused validation command must pass before Codex review."
+  ],
+  "local_validation_command": "python -m pytest path/to/test_fixture_file.py -q",
+  "estimated_codex_saved_tokens": 30000,
+  "estimated_delegation_overhead_tokens": 10000,
+  "recommended_backend": "cursor",
+  "recommended_model": "composer-2.5",
+  "cursor_prompt_contract": "Edit only the allowlisted fixture or test-helper files, run only the bounded checks, and return concise JSON-friendly output."
+}

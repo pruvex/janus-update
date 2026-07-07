@@ -29,6 +29,7 @@ def normalize_codex_owned_outcome(
     elif "delegated_assist_only" in selected_path or selected_path in {
         "delegated_intent_local_structured_executor",
         "delegated_execution_write_apply_candidate_entry_gate",
+        "delegated_live_retest_then_codex_review",
     }:
         if validation_result == "PASS":
             status = "DELEGATED_REVIEW_PENDING_CODEX_DECISION"

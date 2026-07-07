@@ -1,0 +1,61 @@
+{
+  "backend": "cursor",
+  "lane_id": "debug_repro_investigation",
+  "workflow_id": "WF-CURSOR-SHADOW-DEBUG-LIVE-002",
+  "selected_model": "composer-2.5",
+  "session_id": "88445e58-94e5-426f-9e00-e7b6102f8716",
+  "validation_result": "PASS",
+  "selected_path": "cursor_worker_live_mockable",
+  "final_outcome": "CURSOR_WORKER_READY_FOR_CODEX_REVIEW",
+  "package_validation": {
+    "validation_result": "PASS",
+    "contract_status": "TASK_PACKAGE_VALID_VIA_WORKER_REFERENCE",
+    "issues": [],
+    "task_label": "Bounded shadow debug repro task",
+    "worker_profile": "cursor-agent-composer-shadow",
+    "allowed_edit_paths": [
+      "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/sandbox/runner_plan_shadow.json",
+      "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/sandbox/executed_runner_shadow.json",
+      "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/sandbox/test_debug_repro_shadow.py"
+    ],
+    "required_result_artifacts": [
+      "RESULT.json",
+      "RESULT.md",
+      "DIFF.patch",
+      "FILES_CHANGED.txt",
+      "CHECKS.log",
+      "COST.json"
+    ],
+    "source_package_path": "documentation\\codex\\model-routing\\fixtures\\cursor-shadow-catalog\\debug_repro_investigation\\input_package.json",
+    "worker_package_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\fixtures\\cursor-shadow-catalog\\debug_repro_investigation\\worker_package.json"
+  },
+  "allowlist_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "allowlist": [
+      "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/sandbox/runner_plan_shadow.json",
+      "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/sandbox/executed_runner_shadow.json",
+      "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/sandbox/test_debug_repro_shadow.py"
+    ]
+  },
+  "planned_command": [
+    "C:\\Users\\pruve\\AppData\\Local\\cursor-agent\\agent.CMD",
+    "-p",
+    "--workspace",
+    "C:\\KI\\Janus-Projekt",
+    "--model",
+    "composer-2.5",
+    "--output-format",
+    "json",
+    "--force",
+    "--trust",
+    "--approve-mcps",
+    "Reproduce the shadow runner artifact mismatch and make the smallest bounded fix so the plan path and executed runner path agree.\n\nTask label: Fix one bounded shadow runner-artifact mismatch\n\nInvestigate only the allowlisted shadow artifact mismatch files. Run only the focused pytest command. Do not commit. Return concise JSON-friendly output with root cause and changed_files.\n\nAcceptance criteria:\n- Only the three allowlisted shadow files may change.\n- The shadow runner paths must match after the bounded fix.\n- The focused shadow pytest command must pass before Codex review.\n\nAllowed edit paths:\n- documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/sandbox/runner_plan_shadow.json\n- documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/sandbox/executed_runner_shadow.json\n- documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/sandbox/test_debug_repro_shadow.py\n\nReturn status, changed_files, command_results, summary, and blockers as concise JSON-compatible output."
+  ],
+  "mode": "proposal_first",
+  "live_execution_allowed": false,
+  "codex_review_required": true,
+  "changed_files": [],
+  "changed_outside_allowlist": [],
+  "operator_message": "Cursor worker finished the bounded slice and returned artifacts for Codex review."
+}

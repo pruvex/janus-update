@@ -1,0 +1,21 @@
+{
+  "task_id": "TASK-DBG-002",
+  "lane_id": "debug_repro_investigation",
+  "bound_skill_context": "janus-debug",
+  "task_label": "Fix one bounded shadow runner-artifact mismatch",
+  "worker_package_json": "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/worker_package.json",
+  "allowlist_file": "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/allowlist.txt",
+  "failure_code": "RUNNER_ARTIFACT_MISMATCH",
+  "acceptance_criteria": [
+    "Only the three allowlisted shadow files may change.",
+    "The shadow runner paths must match after the bounded fix.",
+    "The focused shadow pytest command must pass before Codex review."
+  ],
+  "local_validation_command": "python -m pytest documentation/codex/model-routing/fixtures/cursor-shadow-catalog/debug_repro_investigation/sandbox/test_debug_repro_shadow.py -q",
+  "redaction_ready": true,
+  "estimated_codex_saved_tokens": 25000,
+  "estimated_delegation_overhead_tokens": 10000,
+  "recommended_backend": "cursor",
+  "recommended_model": "composer-2.5",
+  "cursor_prompt_contract": "Investigate only the allowlisted shadow artifact mismatch files. Run only the focused pytest command. Do not commit. Return concise JSON-friendly output with root cause and changed_files."
+}
