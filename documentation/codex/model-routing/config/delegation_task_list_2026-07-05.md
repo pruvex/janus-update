@@ -11,7 +11,10 @@ Operator gate everywhere:
 - `3 = OpenRouter`
 
 Codex shows the recommendation from this list. Operator may override unless `operator_override_allowed: false`.
-Task-specific option labels can narrow this generic gate; the main current exception is `TASK-EX-002`, where visible option `2` is `Deterministic Apply` rather than Cursor.
+Task-specific option labels can narrow this generic gate. Current important exceptions:
+
+- `TASK-DBG-002`: visible gate is effectively `1 = Codex / 2 = Cursor`; OpenRouter is intentionally hidden for this bounded repro/shell lane
+- `TASK-EX-002`: visible option `2` is `Deterministic Apply` rather than Cursor
 
 ---
 

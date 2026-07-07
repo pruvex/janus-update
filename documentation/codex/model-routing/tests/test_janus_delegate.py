@@ -217,6 +217,22 @@ class JanusDelegateTests(unittest.TestCase):
         self.assertNotIn("--estimated-codex-saved-tokens", result["planned_command"])
         self.assertNotIn("--estimated-delegation-overhead-tokens", result["planned_command"])
 
+    def test_execution_patch_prompt_mode_shows_tri_modal_gate_with_cursor_recommended(self) -> None:
+        result = self.route(
+            "--lane",
+            "execution_patch_candidate",
+            "--task-id",
+            "TASK-EX-001",
+            "--operator-choice",
+            "prompt",
+        )
+
+        self.assertEqual(result["validation_result"], "PASS")
+        self.assertEqual(result["final_outcome"], "AWAITING_OPERATOR_CHOICE")
+        self.assertEqual(result["operator_gate_lines"], ["1 = Codex", "2 = Cursor", "3 = OpenRouter"])
+        self.assertEqual(result["visible_backends"], ["codex", "cursor", "openrouter"])
+        self.assertEqual(result["recommended_backend"], "cursor")
+
     def test_execution_write_apply_prompt_mode_shows_deterministic_apply_gate(self) -> None:
         result = self.route(
             "--lane",

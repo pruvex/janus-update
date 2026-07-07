@@ -1,6 +1,43 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-07 21:01 +02:00`, the next operator-truth hardening pass is complete for the shared execution proposal lane `TASK-EX-001` / `execution_patch_candidate`. After the small checkpoint-style commit `11bdb1b3a` (`test(model-routing): harden debug repro operator gate`), Codex extended the shared delegate contract so the execution proposal lane is now explicitly pinned by its own prompt-mode regression: visible gate `1 = Codex / 2 = Cursor / 3 = OpenRouter`, with `cursor` still recommended and OpenRouter preserved only as the optional proposal-first fallback. The top-level human task-list wording was also corrected so it no longer implies a universal `1/2/3` gate without exceptions; it now names both current important exceptions truthfully: `TASK-DBG-002` as Cursor-only among delegated options, and `TASK-EX-002` as deterministic apply instead of Cursor. The focused new regression passed, the full shared delegate suite passed at `35 passed`, and a direct prompt-mode `janus_delegate.py` dry-run for `TASK-EX-001` confirmed the intended tri-modal gate and backend recommendation.
+
+Current goal: finish turning the tri-modal delegation stack from operational and promising into ready for serious livedev use with honest operator gates, Codex review ownership, and low-surprise bounded delegation.
+
+Active phase: follow-on `janus-executioner` operator-story hardening for the shared execution proposal lane, canonical state `PASS`.
+
+Last Codex work:
+- committed the prior debug-lane operator-truth hardening slice as local commit `11bdb1b3a`
+- added a focused shared-gate regression for `TASK-EX-001` prompt mode
+- corrected the top-level human routing note so gate exceptions are named explicitly instead of implied
+- reran the focused and full shared delegate tests
+- reran `janus_delegate.py` in prompt mode for `TASK-EX-001` to verify the visible tri-modal gate and `cursor` recommendation
+
+Changed files:
+- `documentation/codex/model-routing/tests/test_janus_delegate.py`
+- `documentation/codex/model-routing/config/delegation_task_list_2026-07-05.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- local git history on `develop` includes commit `11bdb1b3a`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_janus_delegate.py -q -k execution_patch_prompt_mode_shows_tri_modal_gate_with_cursor_recommended`: PASS (`1 passed, 34 deselected`)
+- `python -m pytest documentation/codex/model-routing/tests/test_janus_delegate.py -q`: PASS (`35 passed`)
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane execution_patch_candidate --task-id TASK-EX-001 --workflow-id WF-POST-GATE-HARDENING-EX-001 --operator-choice prompt --input-package-json documentation/codex/model-routing/execution-review-fixtures/execution_patch_candidate_cursor_input_template_2026-07-07.json --allowlist-file documentation/codex/model-routing/execution-review-fixtures/allowlists/execution_patch_candidate_allowlist_template_2026-07-07.txt --estimated-codex-saved-tokens 35000 --estimated-delegation-overhead-tokens 10000 --minimum-net-codex-saved-tokens 10000`: PASS (`operator_gate_lines = [1 = Codex, 2 = Cursor, 3 = OpenRouter]`, `recommended_backend = cursor`)
+
+Open risks:
+- Neither recent local commit has been pushed; remotes may contain neither `591865bcc` nor `11bdb1b3a`.
+- This newest execution-gate hardening slice is still local and uncommitted at this moment.
+- The tri-modal stack is now more truthful at the gate layer, but the next real confidence gain comes from routing one somewhat denser livedev task through a proven lane, not from endless wording cleanup.
+
+Next recommended step for ChatGPT: describe the stack as now having honest lane-specific operator truth on both sides of the main execution/debug split: `EX-001` stays tri-modal with Cursor recommended, `DBG-002` stays delegated Cursor-only, and `EX-002` stays deterministic apply.
+
+Next recommended step for Codex: checkpoint this small `EX-001` operator-truth slice, then choose the next bounded real livedev task where the proven package templates and shared gate already match runtime truth.
+
+Last updated: `2026-07-07 21:01:48 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-07 20:33 +02:00`, the post-checkpoint operator-truth hardening slice is complete for `TASK-DBG-002` / `debug_repro_investigation`. Right after the local checkpoint commit `591865bcc` (`feat(model-routing): checkpoint cursor tri-modal delegation core`), Codex tightened the shared gate contract so this bounded repro/shell lane is explicitly and testably `1 = Codex / 2 = Cursor`, with no visible OpenRouter option while `openrouter.enabled` remains false for the lane in the routing manifest. A focused regression was added to `test_janus_delegate.py`, the operator-facing task-list summary was clarified, the new focused test passed, the full delegate test file passed, and a direct prompt-mode dry-run confirmed the visible gate stays Cursor-only for delegated work on this lane.
 
 Current goal: finish turning the tri-modal delegation stack from operational and promising into ready for serious livedev use with honest operator gates, Codex review ownership, and low-surprise bounded delegation.
