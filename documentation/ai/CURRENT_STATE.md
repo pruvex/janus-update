@@ -1,6 +1,75 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-07 21:13 +02:00`, the operator-surface audit moved from one-off fixes into a small reusable regression harness. After the real `janus-backlog-handoff` bug was corrected, Codex extended `test_skill_surface_operator_mappings.py` so the repo now continuously checks several representative shared tri-modal skill surfaces against current lane truth: `janus-backlog-handoff` must keep OpenRouter on option `3`; `janus-documentation-update`, `janus-feature-design`, and `janus-preimplementation-check` must keep their shared-gate `3 -> OpenRouter` mapping while explicitly not implying a live Cursor path on option `2`; and `janus-quickchange` must preserve its documented exception where option `2` stays hidden and the visible gate is only `1 = Codex / 3 = OpenRouter`. The expanded guard passes at `5 passed`, which means the most important everyday operator-surface contracts are now checked by test instead of only by memory and grep.
+
+Current goal: finish turning the tri-modal delegation stack from operational and promising into ready for serious livedev use with honest operator gates, Codex review ownership, and low-surprise bounded delegation.
+
+Active phase: broadened `janus-executioner` operator-surface truth harness for shared tri-modal skill wording, canonical state `PASS`.
+
+Last Codex work:
+- expanded the operator-surface regression from one backlog-handoff check into a representative multi-skill guard
+- added assertions for shared-gate `3 -> OpenRouter` behavior on documentation draft, feature design, and precheck helper lanes
+- added an assertion for the `quickchange` exception where option `2` remains intentionally hidden
+- reran the skill-surface test file and confirmed all representative mappings pass
+
+Changed files:
+- `documentation/codex/model-routing/tests/test_skill_surface_operator_mappings.py`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_skill_surface_operator_mappings.py -q`: PASS (`5 passed`)
+- attempted repo-scoped `git diff --check` including the installed skill copy: expected repo-boundary limitation because `C:\Users\pruve\.codex\skills\...` is outside the Git repository, not because of a content error
+
+Open risks:
+- The newest operator-surface audit slice is still local and uncommitted at this moment.
+- The expanded guard now covers representative high-traffic skill surfaces, but not every single Janus skill with mixed legacy/helper wording.
+- No push happened after the recent delegation commits, so remotes may not contain `591865bcc`, `11bdb1b3a`, `c2e6ad5ce`, or the current local operator-surface fixes.
+
+Next recommended step for ChatGPT: describe the project as having moved from ad hoc operator cleanup into test-backed operator truth, with explicit coverage for the main shared tri-modal patterns plus the quickchange exception.
+
+Next recommended step for Codex: either checkpoint this operator-surface audit slice, or continue one more bounded pass over the remaining lower-traffic shared-lane skills and only fix concrete choice-mapping or authority bugs that the new regression does not yet cover.
+
+Last updated: `2026-07-07 21:13:12 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 21:07 +02:00`, the next real livedev hardening slice is complete on the operator-surface side: `janus-backlog-handoff` no longer misroutes the shared tri-modal gate by telling the operator that option `2` should enter the OpenRouter path. The repo-owned skill source and the installed working copy both now correctly map OpenRouter to option `3`, matching the current shared gate contract (`1 = Codex / 2 = Cursor / 3 = OpenRouter`). Codex also added a focused regression test that reads the repo skill surface and fails if the stale `2 -> OpenRouter` wording returns. The new test failed once immediately because the test itself pointed at the wrong repo root, that bug was corrected in scope, and the regression now passes cleanly.
+
+Current goal: finish turning the tri-modal delegation stack from operational and promising into ready for serious livedev use with honest operator gates, Codex review ownership, and low-surprise bounded delegation.
+
+Active phase: small real `janus-executioner` livedev fix on an actual operator-surface bug in the shared tri-modal skill wording, canonical state `PASS`.
+
+Last Codex work:
+- identified a real operator error in `janus-backlog-handoff`: the shared tri-modal gate text still mapped choice `2` to the OpenRouter path
+- corrected that mapping to choice `3` in the repo-owned skill source
+- synced the same correction into the installed working copy under `C:\Users\pruve\.codex\skills`
+- added a focused regression test to keep the stale `2 -> OpenRouter` wording from reappearing
+- fixed one in-scope path bug in the new regression test and reran validation successfully
+
+Changed files:
+- `documentation/codex/skills/janus-backlog-handoff/SKILL.md`
+- `C:\Users\pruve\.codex\skills\janus-backlog-handoff\SKILL.md`
+- `documentation/codex/model-routing/tests/test_skill_surface_operator_mappings.py`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_skill_surface_operator_mappings.py -q`: PASS (`1 passed`)
+- `Select-String -Path documentation/codex/skills/janus-backlog-handoff/SKILL.md,C:\Users\pruve\.codex\skills\janus-backlog-handoff\SKILL.md -Pattern 'if the user chooses \`3\`, \`or\`, \`openrouter\`, or \`opr\`|if the user chooses \`2\`, \`or\`, \`openrouter\`, or \`opr\`'`: PASS (both copies show only the `3 -> OpenRouter` mapping)
+
+Open risks:
+- This slice is still local and uncommitted at this moment.
+- It fixes one real operator-surface bug, but there may still be other old helper-wording seams in less-traveled skill surfaces that need the same kind of honest pass.
+- No push happened after the recent delegation commits, so remotes may not contain `591865bcc`, `11bdb1b3a`, `c2e6ad5ce`, or this newest local fix.
+
+Next recommended step for ChatGPT: describe the system as now not only runtime-consistent, but increasingly operator-consistent too: the human-facing skill text is being brought into line with the actual tri-modal gate one real bug at a time.
+
+Next recommended step for Codex: continue with one more high-value operator-surface audit across the remaining shared tri-modal skills, focusing only on real choice-mapping or authority bugs rather than broad prose cleanup.
+
+Last updated: `2026-07-07 21:07:08 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-07 21:01 +02:00`, the next operator-truth hardening pass is complete for the shared execution proposal lane `TASK-EX-001` / `execution_patch_candidate`. After the small checkpoint-style commit `11bdb1b3a` (`test(model-routing): harden debug repro operator gate`), Codex extended the shared delegate contract so the execution proposal lane is now explicitly pinned by its own prompt-mode regression: visible gate `1 = Codex / 2 = Cursor / 3 = OpenRouter`, with `cursor` still recommended and OpenRouter preserved only as the optional proposal-first fallback. The top-level human task-list wording was also corrected so it no longer implies a universal `1/2/3` gate without exceptions; it now names both current important exceptions truthfully: `TASK-DBG-002` as Cursor-only among delegated options, and `TASK-EX-002` as deterministic apply instead of Cursor. The focused new regression passed, the full shared delegate suite passed at `35 passed`, and a direct prompt-mode `janus_delegate.py` dry-run for `TASK-EX-001` confirmed the intended tri-modal gate and backend recommendation.
 
 Current goal: finish turning the tri-modal delegation stack from operational and promising into ready for serious livedev use with honest operator gates, Codex review ownership, and low-surprise bounded delegation.
