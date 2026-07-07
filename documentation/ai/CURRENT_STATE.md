@@ -1,6 +1,39 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-07 21:16 +02:00`, the operator-surface hardening slice has been checkpointed and then followed by one more targeted rest-audit. Codex split the work into two clean local commits to satisfy Janus Git governance: `60421519b` (`docs(skill-rules): fix backlog handoff tri-modal mapping`) for the repo skill-rule correction itself, and `b5e1b4822` (`test(model-routing): add skill surface truth harness`) for the multi-skill regression plus closeout artifacts. After that checkpoint, Codex ran a final targeted scan over the remaining shared tri-modal skill surfaces and found no second concrete everyday-gate mismatch of the same class. The remaining `2 = OpenRouter` occurrences are currently confined to explicitly labeled legacy/helper paths such as `debug_hypothesis_review`, legacy `test-pipeline` review helpers, or the documentation-specific fixed-OR exception, not to the normal shared tri-modal everyday gate.
+
+Current goal: finish turning the tri-modal delegation stack from operational and promising into ready for serious livedev use with honest operator gates, Codex review ownership, and low-surprise bounded delegation.
+
+Active phase: post-checkpoint verification pass on the remaining operator-surface drift candidates, canonical state `PASS`.
+
+Last Codex work:
+- split the operator-surface hardening work into a skill-rule commit and a harness/closeout commit to satisfy Git guard rules
+- checkpointed the repo skill-rule correction as `60421519b`
+- checkpointed the multi-skill operator-surface truth harness as `b5e1b4822`
+- ran one more targeted scan over remaining shared tri-modal skill surfaces
+- confirmed that no second concrete shared everyday-gate mismatch of the same class remains in the repo-owned Janus skills
+
+Changed files:
+- no new content files changed after commit `b5e1b4822`
+- local git history on `develop` now includes `60421519b` and `b5e1b4822`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_skill_surface_operator_mappings.py -q`: PASS (`5 passed`)
+- targeted skill-surface grep/audit PASS: remaining `2 = OpenRouter` references are confined to explicitly labeled legacy/helper paths, not the shared everyday tri-modal gate
+
+Open risks:
+- No push happened after the recent delegation commits, so remotes may not contain `591865bcc`, `11bdb1b3a`, `c2e6ad5ce`, `60421519b`, or `b5e1b4822`.
+- Some lower-traffic legacy helper wording still exists by design; if those helper paths are later retired, the text should be simplified rather than merely audited again.
+- The next meaningful confidence gain is now another real bounded livedev task through a proven lane, not more wording archaeology.
+
+Next recommended step for ChatGPT: describe the operator-surface work as having reached a useful local plateau: the important shared-gate patterns are test-backed, the one real mismatch found was fixed, and the remaining old `2 = OpenRouter` references are intentional helper-path exceptions rather than hidden everyday-gate bugs.
+
+Next recommended step for Codex: stop the operator-surface archaeology and spend the next slice on a real bounded livedev task through one of the proven worker lanes, so the next evidence gain is behavioral rather than documentary.
+
+Last updated: `2026-07-07 21:16:14 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-07 21:13 +02:00`, the operator-surface audit moved from one-off fixes into a small reusable regression harness. After the real `janus-backlog-handoff` bug was corrected, Codex extended `test_skill_surface_operator_mappings.py` so the repo now continuously checks several representative shared tri-modal skill surfaces against current lane truth: `janus-backlog-handoff` must keep OpenRouter on option `3`; `janus-documentation-update`, `janus-feature-design`, and `janus-preimplementation-check` must keep their shared-gate `3 -> OpenRouter` mapping while explicitly not implying a live Cursor path on option `2`; and `janus-quickchange` must preserve its documented exception where option `2` stays hidden and the visible gate is only `1 = Codex / 3 = OpenRouter`. The expanded guard passes at `5 passed`, which means the most important everyday operator-surface contracts are now checked by test instead of only by memory and grep.
 
 Current goal: finish turning the tri-modal delegation stack from operational and promising into ready for serious livedev use with honest operator gates, Codex review ownership, and low-surprise bounded delegation.
