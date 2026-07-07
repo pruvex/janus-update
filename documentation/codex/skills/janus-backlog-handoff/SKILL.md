@@ -10,6 +10,16 @@ description: Enrich Janus Backlog routing metadata, prepare dashboard-ready hand
 Route `READY` Backlog items into the correct Diamond pipeline entry point. Do not prioritize, implement, debug, final-audit, or release.
 This is primarily a ChatGPT-side routing skill. Codex normally consumes the resulting handoff rather than executing this skill as the next actor.
 
+## Tri-Modal Rollout Note
+
+Global delegation vocabulary across Janus is now:
+
+- `1 = Codex`
+- `2 = Cursor`
+- `3 = OpenRouter`
+
+This skill's bounded selected-handoff review lane is now wired through the shared manifest-backed `documentation/codex/model-routing/scripts/janus_delegate.py` entry. OpenRouter remains the recommended backend for this assist-only review slice; Cursor is available as option `2` but is not the preferred backend here.
+
 ## Source Reference
 
 Legacy source:
@@ -37,6 +47,52 @@ Default is `DASHBOARD_PREP`.
 - If status changes, physically move the entire item block under the canonical status heading.
 - Dashboard fields must be individual markdown list fields.
 - After Backlog changes, sync dashboard snapshot with `npm run sync:backlog` in `C:\KI\Janus-Projekt\janus-dashboard` or explicitly report why not run.
+
+## Bounded Delegation Gate
+
+For a narrowly bounded `SELECTED_HANDOFF` review slice, this skill may offer the shared tri-modal operator gate only when all of the following are true:
+
+- exactly one `READY` backlog item is selected
+- the delegated task is recommendation-only and bounded to routing plus handoff suggestion
+- no authoritative backlog write, status move, artifact write, Git action, release action, or final routing decision is delegated
+- Codex remains the final reviewer and local writer of any backlog or task artifact
+
+Binding implementation artifact:
+
+- `C:\KI\Janus-Projekt\documentation\codex\model-routing\scripts\codex_backlog_handoff_review_runner.py`
+
+Current bounded winner for the representative `BACKLOG-109` selected-handoff slice:
+
+- `qwen/qwen3-coder-30b-a3b-instruct`
+
+Use the shared delegate entry first:
+
+```powershell
+python documentation/codex/model-routing/scripts/janus_delegate.py --lane backlog_handoff_review --task-id TASK-BH-001 --workflow-id WF-BACKLOG-HANDOFF-REVIEW-001 --operator-choice prompt --input-package-json development/openrouter-skill-tests/janus-backlog-handoff/backlog_handoff_input_package.json --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000
+```
+
+Current lane behavior:
+
+- `1 = Codex`
+- `2 = Cursor`
+- `3 = OpenRouter`
+- OpenRouter remains the recommended backend for this bounded assist-only review slice.
+- Cursor is visible as option `2`, but not the recommended backend.
+- The existing `codex_backlog_handoff_review_runner.py` remains the downstream OR helper planned by `janus_delegate.py`.
+
+Gate rules:
+
+- if the user chooses `1`, `local`, or `codex`, invoke the same runner with `--operator-choice local`
+- if the user chooses `3`, `or`, `openrouter`, or `opr`, invoke the same runner with `--operator-choice delegated --input-package-json <bounded package>`
+- use only a bounded review package; do not delegate full backlog writing
+- accepted delegated output remains review material only; Codex must still perform any real backlog/task artifact changes locally
+
+Forbidden inside this path:
+
+- delegated backlog status changes
+- delegated handoff artifact creation as authoritative repo state
+- delegated next-skill authority
+- delegated Git, release, routing-table, or `CURRENT_STATE` writes
 
 ## Context Budget
 
