@@ -4,6 +4,32 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-INTENT-M1.2 - Integrate the auxiliary classifier into detect_all_intents with merge rules and flag-off parity
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-INTENT-M1.2_final_audit.md` (PASS)
+- **Spec**: `documentation/Cursor specs/INTENT_ENGINE_HERMES_INSPIRED_UPGRADE_PLAN.md`
+- **Parent Task**: `documentation/tasks/TASK-INTENT-M1_auxiliary_action_subject_classifier.md`
+- **Task Breakdown**: `documentation/tasks/TASK-INTENT-M1.2_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-INTENT-M1.2_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-INTENT-M1.2_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-INTENT-M1.2_AUDIT_PACKAGE.md`
+- **Validation**: `TASK-INTENT-M1.2` schliesst den Integrationskern von Intent M1 I1 ab. `detect_all_intents()` merged den neuen Auxiliary-Classifier jetzt kontrolliert in den bestehenden Intent-Pfad, behaelt Flag-`off`-Paritaet, Safety-Veto und bestehende Calendar-/Routing-Guardrails bei und bleibt durch fokussierte Regressionen lokal gruen. Der manuelle Recall-Gate-Blocker wurde zuerst als Live-DB-Kontamination bereinigt und anschliessend als Gemini-spezifischer Post-`memory.read`-Drift mit deterministischem lokalem Contact-Recall-Fallback gehaertet; die finalen GPT- und Gemini-Retests sind gruen. M1 I1 bleibt dennoch offen, weil `TASK-INTENT-M1.3` den Benchmark-Uplift, die Latenz-Guardrails und das Staging-Enablement gegen die M0-Baseline noch beweisen muss.
+- **Changed Files**: `backend/services/orchestrator/intent_engine.py`, `backend/services/orchestrator/intent_aux_classifier.py`, `backend/services/orchestrator/intent_config.py`, `backend/services/orchestrator/execution_engine.py`, `backend/tests/test_calendar_routing_fix.py`, `backend/tests/test_intent_aux_classifier.py`, `backend/tests/test_intent_action_subject_mapping.py`, `backend/tests/test_provider_auth_fallback.py`, `backend/tests/integration/test_pet_recall_chat_path.py`, `documentation/tasks/TASK-INTENT-M1.2_execution_result.md`, `documentation/tasks/TASK-INTENT-M1.2_validation_summary.md`, `documentation/test-runs/TASK-INTENT-M1.2_debug_live_db_contamination_cleanup_2026-07-08.md`, `documentation/test-runs/TASK-INTENT-M1.2_debug_gemini_contact_recall_fallback_2026-07-08.md`, `documentation/tasks/TASK-INTENT-M1.2_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-INTENT-M1.2_final_audit.md`.
+
+### TASK-INTENT-M1.1 - Build the auxiliary classifier contract, provider wrapper, and focused unit coverage
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-INTENT-M1.1_final_audit.md` (PASS)
+- **Spec**: `documentation/Cursor specs/INTENT_ENGINE_HERMES_INSPIRED_UPGRADE_PLAN.md`
+- **Parent Task**: `documentation/tasks/TASK-INTENT-M1_auxiliary_action_subject_classifier.md`
+- **Task Breakdown**: `documentation/tasks/TASK-INTENT-M1.1_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-INTENT-M1.1_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-INTENT-M1.1_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-INTENT-M1.1_AUDIT_PACKAGE.md`
+- **Validation**: `TASK-INTENT-M1.1` schliesst den ersten eng gebundenen Intent-M1-Slice als contract-only Auxiliary-Classifier-Baustein ab. Der neue `ActionSubjectResult`-Contract validiert fail-closed, die Default-Provider-Schicht ruft gebunden ueber `llm_gateway.call_llm` auf, M1-Flags und Basis-Config sind vorhanden, und die fokussierten Unit-Tests bleiben lokal gruen. Final Audit PASS mit fokussierter Pytest-, Compile-, Execution-Result- und Validator-Evidenz. M1 I1 bleibt dabei bewusst offen, weil `TASK-INTENT-M1.2` erst noch `detect_all_intents()` integrieren und `TASK-INTENT-M1.3` den Benchmark-Uplift gegen die M0-Baseline beweisen muss.
+- **Changed Files**: `backend/services/orchestrator/intent_aux_classifier.py`, `backend/services/orchestrator/intent_config.py`, `backend/data/schemas_intent.py`, `backend/tests/test_intent_aux_classifier.py`, `backend/tests/test_intent_action_subject_mapping.py`, `documentation/tasks/TASK-INTENT-M1.1_execution_result.md`, `documentation/tasks/TASK-INTENT-M1.1_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-INTENT-M1.1_final_audit.md`.
+
 ### TASK-SPEC30.3 - Produce the first-consumer recommendation package from the shadow evaluation
 
 - **Status**: DONE

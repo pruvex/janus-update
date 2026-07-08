@@ -96,6 +96,7 @@ def test_memory_read_fallback_v2_builds_pet_overview_summary():
                                 {"fact": "Hund Tasso ist ein podenco."},
                                 {"fact": "Hund Tasso frisst gerne thunfisch."},
                                 {"fact": "Oliver Schwab hat eine Katze namens garfield."},
+                                {"fact": "Katze Garfield mag Thunfisch \u00fcberhaupt nicht."},
                                 {"fact": "Aber garfield mag keinen thunfisch."},
                             ]
                         },
@@ -111,6 +112,7 @@ def test_memory_read_fallback_v2_builds_pet_overview_summary():
     assert "ist ein podenco" in message
     assert "frisst gerne thunfisch" in message
     assert "Garfield (Katze)" in message
+    assert "mag Thunfisch \u00fcberhaupt nicht" in message
     assert "Garfield mag keinen thunfisch" not in message
 
 
@@ -131,6 +133,30 @@ def test_memory_read_force_fallback_for_pet_overview_query():
                             ]
                         },
                     }
+                ),
+            }
+        ],
+    )
+
+
+def test_memory_read_force_fallback_for_contact_recall_query():
+    assert _should_force_memory_read_fallback(
+        "Was weißt du über Chris Gier?",
+        [
+            {
+                "name": "memory.read",
+                "_skill_id": "memory.read",
+                "content": json.dumps(
+                    {
+                        "status": "ok",
+                        "data": {
+                            "memories": [
+                                {"fact": "Chris Gier liebt Kimchi."},
+                                {"fact": "Chris Gier ist Vegetarier."},
+                            ]
+                        },
+                    },
+                    ensure_ascii=False,
                 ),
             }
         ],

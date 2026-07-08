@@ -1,7 +1,12 @@
 """Test calendar routing fix - shopping guardrail bypass for calendar intents."""
 
 import pytest
+from backend.services.orchestrator.execution_dispatcher import (
+    _is_contact_relationship_recall_query,
+    _suppress_identity_for_address_book_contact_recall,
+)
 from backend.services.capability_registry import CapabilityRegistry
+from backend.services.orchestrator import intent_engine as intent_engine_module
 from backend.services.orchestrator.intent_engine import (
     IntentDetectionResult,
     IntentEngine,
@@ -37,6 +42,68 @@ class TestCalendarRoutingFix:
         # Non-calendar queries
         assert not intent_engine.detect_calendar_intent("was kostet das")
         assert not intent_engine.detect_calendar_intent("kaufen bei amazon")
+
+    def test_aux_classifier_flag_off_keeps_legacy_detect_all_intents(self, intent_engine, monkeypatch):
+        monkeypatch.setattr(intent_engine_module, "is_aux_classifier_enabled", lambda: False)
+        monkeypatch.setattr(
+            intent_engine_module.intent_aux_classifier,
+            "classify_sync",
+            lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("aux must stay off")),
+        )
+
+        result = intent_engine.detect_all_intents("Chris mag Pizza")
+        assert result.is_fact_telling
+        assert not result.is_personal_recall
+
+    def test_aux_classifier_medium_conflict_routes_to_clarify(self, intent_engine, monkeypatch):
+        monkeypatch.setattr(intent_engine_module, "is_aux_classifier_enabled", lambda: True)
+
+        class FakeConfig:
+            medium_confidence_threshold = 0.55
+            high_confidence_threshold = 0.80
+
+        monkeypatch.setattr(intent_engine_module, "get_intent_aux_classifier_config", lambda: FakeConfig())
+        monkeypatch.setattr(
+            intent_engine_module.intent_aux_classifier,
+            "classify_sync",
+            lambda *_args, **_kwargs: intent_engine_module.ActionSubjectResult(
+                action="recall",
+                subject="contact",
+                confidence=0.70,
+                evidence="was mag chris",
+                source="aux_llm",
+            ),
+        )
+
+        result = intent_engine.detect_all_intents("Chris mag Pizza")
+        assert result.is_fact_telling
+        assert result.is_ambiguous
+        assert result.vetoed_intents.get("aux_classifier") == "aux_legacy_conflict"
+
+    def test_aux_classifier_high_confidence_marks_calendar_mutation(self, intent_engine, monkeypatch):
+        monkeypatch.setattr(intent_engine_module, "is_aux_classifier_enabled", lambda: True)
+
+        class FakeConfig:
+            medium_confidence_threshold = 0.55
+            high_confidence_threshold = 0.80
+
+        monkeypatch.setattr(intent_engine_module, "get_intent_aux_classifier_config", lambda: FakeConfig())
+        monkeypatch.setattr(
+            intent_engine_module.intent_aux_classifier,
+            "classify_sync",
+            lambda *_args, **_kwargs: intent_engine_module.ActionSubjectResult(
+                action="mutate",
+                subject="calendar",
+                confidence=0.92,
+                evidence="spaeter legen",
+                source="aux_llm",
+            ),
+        )
+
+        text = "Kannst du Aldi naechsten Samstag spaeter legen?"
+        result = intent_engine.detect_all_intents(text, calendar_snapshot=ALD_SNAPSHOT)
+        assert result.is_calendar_intent
+        assert result.is_calendar_mutation
 
     def test_weather_dog_walk_with_mit_is_not_calendar(self, intent_engine):
         """Regression: bare 'mit' in a weather walk question must not route to calendar."""
@@ -141,6 +208,168 @@ class TestWeatherSnapshotIntentSuppress:
         assert result.primary_intent == "weather"
 
 
+class TestNewsIntentPrecision:
+    @pytest.fixture
+    def intent_engine(self):
+        return IntentEngine()
+
+    def test_contact_preference_with_word_zeit_is_not_news_intent(self, intent_engine):
+        result = intent_engine.detect_all_intents("der chris verbringt gerne zeit im garten")
+
+        assert result.is_fact_telling
+        assert not result.is_news_intent
+        assert result.primary_intent is None
+
+    def test_contact_preference_with_news_source_word_vetoes_news_intent(self, intent_engine):
+        result = intent_engine.detect_all_intents("Chris mag den Spiegel")
+
+        assert result.is_fact_telling
+        assert not result.is_news_intent
+        assert result.primary_intent is None
+        assert result.vetoed_intents.get("news") == "fact_telling_contact_statement"
+
+    def test_contact_hobby_statement_with_game_title_stays_fact_telling(self, intent_engine):
+        result = intent_engine.detect_all_intents("Nathan spielt gerne League of Legends")
+
+        assert result.is_fact_telling
+        assert not result.is_news_intent
+        assert result.primary_intent is None
+        assert result.vetoed_intents.get("ambiguity") == "fact_telling_contact_statement"
+
+    def test_die_zeit_and_zeit_online_remain_news_sources(self, intent_engine):
+        assert intent_engine.detect_news_intent("was schreibt die Zeit heute?")
+        assert intent_engine.detect_news_intent("Zeit Online Nachrichten zu KI")
+
+
+class TestContactKnowledgeRecallIntent:
+    @pytest.fixture
+    def intent_engine(self):
+        return IntentEngine()
+
+    def test_contact_preference_question_is_personal_recall_not_fact_telling(self, intent_engine):
+        result = intent_engine.detect_all_intents("was mag chris?")
+
+        assert result.is_personal_recall
+        assert not result.is_fact_telling
+        assert result.primary_intent == "personal_recall"
+
+    def test_contact_knowledge_question_is_personal_recall(self, intent_engine):
+        result = intent_engine.detect_all_intents("was weißt du alles über chris?")
+
+        assert result.is_personal_recall
+        assert result.primary_intent == "personal_recall"
+
+
+    def test_contact_knowledge_question_bypasses_external_and_ambiguity(self, intent_engine):
+        result = intent_engine.detect_all_intents("was wei\u00dft du alles \u00fcber chris?")
+
+        assert result.is_personal_recall
+        assert not result.is_wikipedia_intent
+        assert not result.is_ambiguous
+        assert result.primary_intent == "personal_recall"
+        assert result.vetoed_intents.get("ambiguity") == "personal_recall_contact_statement"
+
+    def test_full_contact_knowledge_question_is_personal_recall_without_clarification(self, intent_engine):
+        result = intent_engine.detect_all_intents("was wei\u00dft du \u00fcber chris gier?")
+
+        assert result.is_personal_recall
+        assert not result.is_ambiguous
+        assert result.primary_intent == "personal_recall"
+
+    def test_multi_contact_preference_question_is_personal_recall_without_clarification(self, intent_engine):
+        result = intent_engine.detect_all_intents("was mögen chris und oli?")
+
+        assert result.is_personal_recall
+        assert not result.is_ambiguous
+        assert result.primary_intent == "personal_recall"
+
+    def test_relationship_contact_question_bypasses_wikipedia_and_ambiguity(self, intent_engine):
+        result = intent_engine.detect_all_intents("wer ist nathans freundin?")
+
+        assert result.is_personal_recall
+        assert not result.is_wikipedia_intent
+        assert not result.is_ambiguous
+        assert result.primary_intent == "personal_recall"
+        assert result.vetoed_intents.get("wikipedia") == "personal_recall_contact_statement"
+        assert result.vetoed_intents.get("ambiguity") == "personal_recall_contact_statement"
+
+    def test_relationship_contact_name_question_bypasses_wikipedia_and_ambiguity(self, intent_engine):
+        result = intent_engine.detect_all_intents("wie heisst nathans freundin?")
+
+        assert result.is_personal_recall
+        assert not result.is_wikipedia_intent
+        assert not result.is_ambiguous
+        assert result.primary_intent == "personal_recall"
+
+    def test_relationship_contact_recall_helper_detects_possessive_question(self):
+        assert _is_contact_relationship_recall_query("wer ist nathans freundin?")
+        assert _is_contact_relationship_recall_query("wie heisst nathans freundin?")
+        assert not _is_contact_relationship_recall_query("wer ist nikola tesla?")
+
+    def test_contact_fact_statement_bypasses_ambiguity_clarification(self, intent_engine):
+        result = intent_engine.detect_all_intents("OLI LIEBT Big bang theory")
+
+        assert result.is_fact_telling
+        assert not result.is_ambiguous
+        assert result.ambiguity_confidence == 0.0
+        assert result.vetoed_intents.get("ambiguity") == "fact_telling_contact_statement"
+
+    def test_pronoun_contact_fact_followup_bypasses_ambiguity_clarification(self, intent_engine):
+        result = intent_engine.detect_all_intents("und er hat einen Hund")
+
+        assert result.is_fact_telling
+        assert not result.is_ambiguous
+        assert result.ambiguity_confidence == 0.0
+        assert result.vetoed_intents.get("ambiguity") == "fact_telling_contact_statement"
+
+    def test_pronoun_contact_fact_followup_with_besitzt_bypasses_ambiguity_clarification(self, intent_engine):
+        result = intent_engine.detect_all_intents("und er besitzt einen Hund")
+
+        assert result.is_fact_telling
+        assert not result.is_ambiguous
+        assert result.ambiguity_confidence == 0.0
+        assert result.vetoed_intents.get("ambiguity") == "fact_telling_contact_statement"
+
+    def test_named_pet_attribute_contact_fact_bypasses_ambiguity_clarification(self, intent_engine):
+        result = intent_engine.detect_all_intents("olis hund tasso ist ein podenco")
+
+        assert result.is_fact_telling
+        assert not result.is_ambiguous
+        assert result.ambiguity_confidence == 0.0
+        assert result.vetoed_intents.get("ambiguity") == "fact_telling_contact_statement"
+
+    def test_address_book_contact_recall_suppresses_user_identity_directive(self):
+        address_context = "**Adressbuch:**\nKontakt: Christoph Gier (Nickname: Cris)"
+
+        assert _suppress_identity_for_address_book_contact_recall(
+            "was wei\u00dft du \u00fcber chris gier?",
+            address_context,
+        )
+        assert not _suppress_identity_for_address_book_contact_recall(
+            "was ist mein name?",
+            address_context,
+        )
+
+    def test_contact_recall_without_concrete_address_book_hit_keeps_identity_directive(self):
+        prompt_rule_only = (
+            "[ADRESSBUCH-KONTAKTE]\n"
+            'Wenn unter "**Adressbuch:**" genau passende Kontaktinformationen zur Anfrage stehen.'
+        )
+
+        assert not _suppress_identity_for_address_book_contact_recall(
+            "was wei\u00dft du \u00fcber chris gier?",
+            prompt_rule_only,
+        )
+
+    def test_self_recall_keeps_identity_directive_even_with_address_book_context(self):
+        address_context = "**Adressbuch:**\nKontakt: Christoph Gier (Nickname: Cris)"
+
+        assert not _suppress_identity_for_address_book_contact_recall(
+            "was wei\u00dft du \u00fcber mich?",
+            address_context,
+        )
+
+
 class TestDiamondPdfToolPolicy:
     """create_pdf nur bei explizitem Wunsch / Meta-Flow (CapabilityRegistry)."""
 
@@ -187,6 +416,15 @@ class TestDiamondPdfToolPolicy:
 
         assert "system.weather" in pol["mandatory"]
         assert "calendar.list_events" not in pol["mandatory"]
+
+    def test_personal_recall_policy_mandates_memory_and_forbids_external_search(self, registry):
+        pol = registry.get_intent_skill_policy(
+            IntentDetectionResult(is_personal_recall=True, primary_intent="personal_recall")
+        )
+
+        assert "memory.read" in pol["mandatory"]
+        assert "system.websearch" in pol["forbidden"]
+        assert "system.rss_news" in pol["forbidden"]
 
 
 if __name__ == "__main__":

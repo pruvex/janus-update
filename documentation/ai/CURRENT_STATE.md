@@ -1,6 +1,643 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-08 14:21 +02:00`, `TASK-INTENT-M1.2` is now fully closed at the documentation layer as well. After the final PASS audit, Codex synced the task-level closure into the active Intent M1 task chain, central registry, project state, and roadmap tracker without widening into M1.3. The canonical truth is now: M1.1 and M1.2 are both sealed, while M1.3 remains the single next bound Intent slice.
+
+Current goal: finish the M1.2 closeout cleanly and leave the repo with one unambiguous next Intent step.
+
+Active phase: `janus-documentation-update` for `TASK-INTENT-M1.2`, canonical state `PASS`.
+
+Last Codex work:
+- synced the `TASK-INTENT-M1.2` PASS into the parent M1 task artifact, central registry, `PROJECT_STATE.md`, and the roadmap progress tracker
+- recorded a dedicated documentation-update artifact for the M1.2 closeout
+- kept M1 I1 explicitly open only for `TASK-INTENT-M1.3` benchmark, latency, and staged-enablement proof
+
+Changed files:
+- `documentation/tasks/TASK-INTENT-M1_auxiliary_action_subject_classifier.md`
+- `documentation/tasks/TASK-INTENT-M1.2_documentation_update.md`
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `documentation/Cursor specs/ROADMAP_EPIC_ORDER.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-documentation-update\scripts\validate_doc_update.py --repo C:\KI\Janus-Projekt --marker TASK-INTENT-M1.2 --require documentation/tasks/TASK-INTENT-M1_auxiliary_action_subject_classifier.md --require documentation/01_CENTRAL_TASK_REGISTRY.md --require PROJECT_STATE.md --require documentation/ai/CURRENT_STATE.md`: PASS
+- scoped `git diff --check` for the M1.2 documentation surfaces: PASS
+
+Open risks:
+- `TASK-INTENT-M1.3` remains open, so the roadmap must not be read as full M1-I1 completion yet.
+- No commit or push happened in this block, so no remote should be assumed to contain the latest M1.2 documentation sync or CURRENT_STATE snapshot yet.
+
+Next recommended step for ChatGPT: summarize that M1.2 is now audit-pass and documentation-synced, but M1.3 remains the next mandatory benchmark-proof slice.
+
+Next recommended step for Codex: run the documentation-update validator plus scoped `git diff --check`, then hand off to `janus-git-governance` for an optional checkpoint recommendation.
+
+Last updated: `2026-07-08 14:21:07 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-08 01:00 +02:00`, a new runtime blocker superseded the pending M1.2 manual gate: Janus startup had slowed so much that Electron timed out before the backend became reachable. Codex debugged that failure slice and traced it to the new M1.2 import path: `intent_engine.py` now imported `intent_aux_classifier`, and that module still pulled `llm_gateway` in eagerly at module import time. Because `llm_gateway` drags a heavy backend service graph with it, the import alone cost about `36s`, and importing `intent_aux_classifier` cost about `38s`, which helped push total backend readiness beyond the Electron wait window.
+
+Current goal: restore normal Janus startup behavior without widening the intent roadmap slice or altering enabled runtime behavior.
+
+Active phase: `janus-debug` for the M1.2 startup regression, canonical state `PASS`.
+
+Last Codex work:
+- reproduced the slowdown from the provided startup transcript and isolated the long stall before router import finished
+- measured direct import timings for `backend.services.llm_gateway` and `backend.services.orchestrator.intent_aux_classifier`
+- moved the `llm_gateway` import in `intent_aux_classifier.py` from module scope into the default provider callable so the heavy gateway graph is loaded only when the aux provider path actually runs
+- re-ran focused pytest and compile checks after the lazy-import fix
+
+Changed files:
+- `backend/services/orchestrator/intent_aux_classifier.py`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- direct import timing before fix: `intent_aux_classifier import seconds= 38.036`, `llm_gateway import seconds= 36.121`
+- direct import timing after fix: `intent_aux_classifier import seconds= 0.6`
+- `python -m pytest backend/tests/test_intent_aux_classifier.py backend/tests/test_intent_action_subject_mapping.py backend/tests/test_calendar_routing_fix.py -q`: PASS (`60 passed`)
+- `python -m py_compile backend/services/orchestrator/intent_aux_classifier.py backend/services/orchestrator/intent_engine.py backend/services/orchestrator/intent_config.py`: PASS
+
+Open risks:
+- I have fixed the measured import-time regression, but I have not yet rerun a full `npm run start-dev` end-to-end in this block.
+- The unrelated startup warnings and the `cannot specify both default and default_factory` Sentry-side error remain visible in the user log and may still deserve a later separate slice if startup remains abnormal after this fix.
+- No commit or push happened in this block, so no remote should be assumed to contain the latest startup-fix snapshot yet.
+
+Next recommended step for ChatGPT: summarize that the acute startup slowdown was caused by an eager heavy import on the new M1.2 path and that the import has been lazy-loaded locally.
+
+Next recommended step for Codex: have the user retry Janus startup; if it is still abnormally slow, capture a fresh startup log and continue `janus-debug` on the remaining startup warnings separately.
+
+Last updated: `2026-07-08 01:00:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-08 00:36 +02:00`, `TASK-INTENT-M1.2` has now passed preimplementation check and is ready for bounded implementation. Codex validated the released integration slice against the M1 task artifact and Intent spec section 5.6, then wrote a validator-clean precheck handoff that keeps authority strictly on `detect_all_intents()` integration, merge rules, safety-veto preservation, circuit-breaker fallback, and focused regressions only. M1.3 benchmark uplift and staged enablement remain explicitly fenced off.
+
+Current goal: start the live M1.2 integration slice cleanly without leaking into the later benchmark-proof scope.
+
+Active phase: `janus-preimplementation-check` for Intent M1.2, canonical state `PASS`.
+
+Last Codex work:
+- read the released `TASK-INTENT-M1.2` handoff and revalidated it against Intent spec section 5.6
+- wrote `documentation/tasks/TASK-INTENT-M1.2_preimplementation_check.md`
+- kept the execution authority tightly on the live intent-engine integration seam and focused regression cluster
+- validator-checked the precheck artifact for the exact M1.2 target
+
+Changed files:
+- `documentation/tasks/TASK-INTENT-M1.2_preimplementation_check.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\\Users\\pruve\\.codex\\skills\\janus-preimplementation-check\\scripts\\validate_precheck.py documentation/tasks/TASK-INTENT-M1.2_preimplementation_check.md`: PASS
+- `git diff --check -- documentation/tasks/TASK-INTENT-M1.2_preimplementation_check.md documentation/tasks/TASK-INTENT-M1.2_task_breakdown.md documentation/tasks/TASK-INTENT-M1_auxiliary_action_subject_classifier.md`: PASS
+
+Open risks:
+- Implementation has not started yet; M1.2 is precheck-passed but still code-open.
+- The most likely drift risk is mixing M1.3 benchmark/latency proof into the M1.2 execution block.
+- No commit or push happened in this block, so no remote should be assumed to contain the latest M1.2 precheck or CURRENT_STATE snapshot yet.
+
+Next recommended step for ChatGPT: summarize that `TASK-INTENT-M1.2` is now precheck-passed and ready for execution, while M1.3 remains intentionally deferred.
+
+Next recommended step for Codex: run `janus-executioner` on `TASK-INTENT-M1.2` with `5.4` medium.
+
+Last updated: `2026-07-08 00:36:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-08 00:28 +02:00`, the next bounded Intent slice is now formally released. Right after the M1.1 documentation closeout, Codex used `janus-task-breakdown` to carve out exactly one follow-up target: `TASK-INTENT-M1.2`. The released handoff stays tightly on `detect_all_intents()` integration, merge rules, safety-veto preservation, circuit-breaker fallback, and bounded regressions; benchmark proof, staging enablement, and Memory A/B remain explicitly outside this next gate.
+
+Current goal: move from the sealed M1.1 contract slice into one clean precheck-ready M1.2 integration slice without widening into M1.3 proof work.
+
+Active phase: `janus-task-breakdown` for Intent M1.2, canonical state `PASS`.
+
+Last Codex work:
+- re-read the bound M1 task artifact and Intent spec section 5.6 for the integration-only slice
+- wrote `documentation/tasks/TASK-INTENT-M1.2_task_breakdown.md` as the new single-target handoff
+- kept M1.2 explicitly limited to `detect_all_intents()` integration, confidence merge rules, safety preservation, circuit-breaker fallback, and focused regressions
+- validator-checked the released target against the parent task artifact
+
+Changed files:
+- `documentation/tasks/TASK-INTENT-M1.2_task_breakdown.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\\Users\\pruve\\.codex\\skills\\janus-task-breakdown\\scripts\\validate_task_handoff.py --task documentation/tasks/TASK-INTENT-M1_auxiliary_action_subject_classifier.md --target TASK-INTENT-M1.2`: PASS
+- `git diff --check -- documentation/tasks/TASK-INTENT-M1.2_task_breakdown.md documentation/tasks/TASK-INTENT-M1_auxiliary_action_subject_classifier.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS
+
+Open risks:
+- Preimplementation check has not run yet; M1.2 is released but not execution-authorized.
+- The biggest drift risk is accidentally pulling M1.3 benchmark/latency proof into the M1.2 integration slice.
+- No commit or push happened in this block, so no remote should be assumed to contain the latest M1.2 handoff or CURRENT_STATE snapshot yet.
+
+Next recommended step for ChatGPT: summarize that `TASK-INTENT-M1.2` is now the released next M1 slice and that benchmark proof is still fenced off for `TASK-INTENT-M1.3`.
+
+Next recommended step for Codex: run `janus-preimplementation-check` for `TASK-INTENT-M1.2` with `5.4` medium.
+
+Last updated: `2026-07-08 00:28:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-08 00:20 +02:00`, `TASK-INTENT-M1.1` is now not only locally implemented and final-audited, but also documentation-synced. Codex recorded the task-level PASS in the parent M1 task artifact, central registry, project state, and roadmap tracker, while keeping Intent M1 explicitly open for the next two bounded slices. The earlier Cursor Composer/API runs remain evidence only and are not being promoted into the productive path for this roadmap slice.
+
+Current goal: close M1.1 cleanly and move straight into the next bounded Intent M1 slice without mixing in Memory A/B or later roadmap work.
+
+Active phase: `janus-documentation-update` for Intent M1.1, canonical state `PASS`.
+
+Last Codex work:
+- wrote `documentation/tasks/TASK-INTENT-M1.1_documentation_update.md` as the bound closeout artifact
+- synced the parent M1 task artifact with an explicit `TASK-INTENT-M1.1` closeout note
+- added the task-level PASS to `documentation/01_CENTRAL_TASK_REGISTRY.md` and surfaced it in `PROJECT_STATE.md`
+- updated the roadmap tracker so `TASK-INTENT-M1.1` is now `EXIT PASS` while M1 I1 overall stays `IN ARBEIT`
+- kept `CHANGELOG.md`, `WHAT_I_LEARNED.md`, backlog, and test-pipeline logs untouched with explicit skip reasons
+
+Changed files:
+- `documentation/tasks/TASK-INTENT-M1_auxiliary_action_subject_classifier.md`
+- `documentation/tasks/TASK-INTENT-M1.1_documentation_update.md`
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `documentation/Cursor specs/ROADMAP_EPIC_ORDER.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\\Users\\pruve\\.codex\\skills\\janus-documentation-update\\scripts\\validate_doc_update.py --repo C:\\KI\\Janus-Projekt --marker TASK-INTENT-M1.1 --require documentation/tasks/TASK-INTENT-M1_auxiliary_action_subject_classifier.md --require documentation/01_CENTRAL_TASK_REGISTRY.md --require PROJECT_STATE.md --require documentation/ai/CURRENT_STATE.md`: PASS
+- `git diff --check -- documentation/tasks/TASK-INTENT-M1_auxiliary_action_subject_classifier.md documentation/tasks/TASK-INTENT-M1.1_documentation_update.md documentation/01_CENTRAL_TASK_REGISTRY.md PROJECT_STATE.md "documentation/Cursor specs/ROADMAP_EPIC_ORDER.md" documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS
+
+Open risks:
+- `TASK-INTENT-M1.2` and `TASK-INTENT-M1.3` remain untouched; M1 I1 as a whole is not yet complete.
+- The auxiliary classifier is still intentionally unwired from `detect_all_intents()` until the next bounded slice.
+- No commit or push happened in this block, so no remote should be assumed to contain the latest M1.1 documentation sync or CURRENT_STATE snapshot yet.
+
+Next recommended step for ChatGPT: summarize that `TASK-INTENT-M1.1` is now implementation-, audit-, and documentation-complete, while Intent M1 remains open for the integration and benchmark-proof slices.
+
+Next recommended step for Codex: run `janus-task-breakdown` for `TASK-INTENT-M1.2` with `5.4` medium, then proceed to preimplementation check if the released slice stays bounded.
+
+Last updated: `2026-07-08 00:20:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 23:58 +02:00`, `TASK-INTENT-M1.1` has now been completed locally in Codex after the bounded Cursor runs were retained only as route evidence. Codex followed the delegation operating model, stopped backend retries after the single Composer/API comparison, and finished the contract slice in Track A locally. The auxiliary classifier contract, fail-closed schema validation, bounded default provider wrapper, config surface, and focused tests are now in place without wiring anything into `detect_all_intents()`.
+
+Current goal: close the first M1 auxiliary-classifier contract slice cleanly and hand off to final audit without widening into M1.2 integration or M1.3 benchmark-proof work.
+
+Active phase: `janus-executioner` for Intent M1.1, canonical state `HANDOFF`.
+
+Last Codex work:
+- respected the new delegation operating model and treated the prior Composer/API runs as evidence only
+- fixed the `ActionSubjectResult.evidence` contract so evidence is trimmed before validation rather than failing on overlength input
+- completed the bounded default provider wrapper for the aux classifier through `llm_gateway.call_llm` and a small response-text extractor
+- kept the slice unwired from `detect_all_intents()` and inside the exact M1.1 file cluster
+- ran the focused pytest and `py_compile` gates, wrote `TASK-INTENT-M1.1_execution_result.md`, built `TASK-INTENT-M1.1_AUDIT_PACKAGE.md`, and validator-checked the execution result
+
+Changed files:
+- `backend/services/orchestrator/intent_aux_classifier.py`
+- `backend/services/orchestrator/intent_config.py`
+- `backend/data/schemas_intent.py`
+- `backend/tests/test_intent_aux_classifier.py`
+- `backend/tests/test_intent_action_subject_mapping.py`
+- `documentation/tasks/TASK-INTENT-M1.1_execution_result.md`
+- `documentation/tasks/TASK-INTENT-M1.1_AUDIT_PACKAGE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest backend/tests/test_intent_aux_classifier.py -q`: PASS (`13 passed`)
+- `python -m pytest backend/tests/test_intent_action_subject_mapping.py -q`: PASS (`8 passed`)
+- `python -m py_compile backend/services/orchestrator/intent_aux_classifier.py backend/services/orchestrator/intent_config.py backend/data/schemas_intent.py`: PASS
+- `python C:\\Users\\pruve\\.codex\\skills\\janus-executioner\\scripts\\validate_execution_result.py documentation/tasks/TASK-INTENT-M1.1_execution_result.md`: PASS
+- `git diff --check -- backend/services/orchestrator/intent_aux_classifier.py backend/services/orchestrator/intent_config.py backend/data/schemas_intent.py backend/tests/test_intent_aux_classifier.py backend/tests/test_intent_action_subject_mapping.py documentation/tasks/TASK-INTENT-M1.1_execution_result.md documentation/tasks/TASK-INTENT-M1.1_AUDIT_PACKAGE.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS
+
+Open risks:
+- The slice is intentionally not integrated into the live intent engine yet; actual routing behavior still depends on M1.2.
+- Benchmark uplift and latency proof remain explicitly deferred to M1.3.
+- The earlier Cursor Composer/API comparison remains useful route evidence, but neither backend outcome changed the local delivered code for this slice.
+- No commit or push happened in this block, so no remote should be assumed to contain the latest M1.1 execution result, audit package, or CURRENT_STATE snapshot yet.
+
+Next recommended step for ChatGPT: summarize that M1.1 is now locally implemented and validator-clean, while the earlier Cursor runs remain evidence only and do not block the delivered slice.
+
+Next recommended step for Codex: run `janus-final-audit` on `TASK-INTENT-M1.1` using `documentation/tasks/TASK-INTENT-M1.1_AUDIT_PACKAGE.md`.
+
+Last updated: `2026-07-07 23:58:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 23:42 +02:00`, the backend comparison for the real bounded `TASK-INTENT-M1.1` execution lane is now complete on the exact same package. Codex re-used the same allowlisted M1.1 input package and ran `4 = Cursor API` after the earlier `3 = Cursor Composer` attempt. The API path did not timeout: it returned a live session id and exited with `CURSOR_WORKER_READY_FOR_CODEX_REVIEW` after about 13 seconds. However, the returned Cursor content only said that the task prompt appeared to be missing, no patch/result artifacts were materialized, and no changed files were produced. This means the shared lane and transport are working, but the API backend is not yet semantically succeeding on this execution package either.
+
+Current goal: decide whether to continue M1.1 locally or treat both live backend outcomes as sufficient evidence that the lane works mechanically but still needs prompt/runner hardening before it can carry this real intent slice productively.
+
+Active phase: `janus-executioner` for Intent M1.1, canonical state `BLOCKED`.
+
+Last Codex work:
+- re-used the same bounded M1.1 execution package to keep the backend comparison fair
+- ran the shared gate in dry-run and live mode for `4 = Cursor API`
+- captured that the API path is transport-live and fast, unlike the Composer timeout
+- inspected the API run artifacts and confirmed the returned content was a prompt-missing complaint rather than a usable patch/result package
+- compared the API run directly against the earlier Composer timeout evidence
+
+Changed files:
+- `documentation/codex/model-routing/cursor-worker-runs/WF-INTENT-M1.1-CURSOR-API-LIVE-2026-07-07-001/`
+- `documentation/codex/model-routing/cursor_delegation_log.jsonl`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane execution_patch_candidate --workflow-id WF-INTENT-M1.1-CURSOR-API-LIVE-2026-07-07-001 --operator-choice 4 --input-package-json documentation/codex/model-routing/execution-review-fixtures/intent_m1_1_execution_patch_cursor_input_package_2026-07-07.json --allowlist-file documentation/codex/model-routing/execution-review-fixtures/allowlists/intent_m1_1_execution_patch_allowlist_2026-07-07.txt --estimated-codex-saved-tokens 28000 --estimated-delegation-overhead-tokens 10000`: PASS (`CURSOR_WORKER_DRY_RUN_READY`)
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane execution_patch_candidate --workflow-id WF-INTENT-M1.1-CURSOR-API-LIVE-2026-07-07-001 --operator-choice 4 --input-package-json documentation/codex/model-routing/execution-review-fixtures/intent_m1_1_execution_patch_cursor_input_package_2026-07-07.json --allowlist-file documentation/codex/model-routing/execution-review-fixtures/allowlists/intent_m1_1_execution_patch_allowlist_2026-07-07.txt --estimated-codex-saved-tokens 28000 --estimated-delegation-overhead-tokens 10000 --execute-live-cursor`: transport PASS, semantic result BLOCKED for productive use
+- API evidence excerpt: returned session id `1f5214af-0ad0-4c09-af76-0289af25e1dc`, but `cursor_response.json` said the task prompt appeared to be missing and no `RESULT.json`/`DIFF.patch` artifacts were created
+
+Open risks:
+- `3 = Cursor Composer` still blocks on timeout for this slice.
+- `4 = Cursor API` reaches a live completion state but currently fails the real task semantically and does not emit the expected review artifacts.
+- M1.1 product code remains untouched; the implementation task itself is still open.
+- No commit or push happened in this block, so no remote should be assumed to contain the latest comparison evidence or CURRENT_STATE snapshot yet.
+
+Next recommended step for ChatGPT: summarize the live A/B result as "Composer timed out; API answered quickly but treated the prompt as missing and produced no patch artifacts."
+
+Next recommended step for Codex: continue `TASK-INTENT-M1.1` locally in Codex, while preserving both live backend outcomes as concrete execution-lane evidence for later runner/prompt hardening.
+
+Last updated: `2026-07-07 23:42:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 23:36 +02:00`, the first live `janus-executioner` operator-path attempt for `TASK-INTENT-M1.1` has now been exercised through the shared four-choice gate with the user-selected `3 = Cursor Composer` path. Codex created a bounded execution input package, worker package, and allowlist for the exact five-file M1.1 slice, validated the worker contract, proved positive ROI through `janus_delegate`, and then ran the real live Cursor worker. The live run reached the bounded Cursor worker path but ended as `CURSOR_AGENT_TIMEOUT` after the configured 180 second live timeout, without returning a session id, patch artifact, or changed files.
+
+Current goal: capture real execution-lane evidence for the M1.1 bounded Cursor path before deciding whether to retry on another backend or continue locally.
+
+Active phase: `janus-executioner` for Intent M1.1, canonical state `BLOCKED`.
+
+Last Codex work:
+- read the shared `janus-executioner` gate contract and the current four-choice routing manifest
+- confirmed that the visible execution gate for this lane is `1 Codex / 2 OpenRouter / 3 Cursor Composer / 4 Cursor API`
+- created a bounded allowlist and Cursor worker/input packages for the exact M1.1 contract slice
+- validated the worker package contract locally and ran the shared `janus_delegate` dry gate with positive ROI
+- executed the real live Cursor Composer path and captured the resulting timeout evidence under `documentation/codex/model-routing/cursor-worker-runs/WF-INTENT-M1.1-CURSOR-LIVE-2026-07-07-001/`
+
+Changed files:
+- `documentation/codex/model-routing/execution-review-fixtures/allowlists/intent_m1_1_execution_patch_allowlist_2026-07-07.txt`
+- `documentation/codex/model-routing/execution-review-fixtures/intent_m1_1_execution_patch_cursor_worker_package_2026-07-07.json`
+- `documentation/codex/model-routing/execution-review-fixtures/intent_m1_1_execution_patch_cursor_input_package_2026-07-07.json`
+- `documentation/codex/model-routing/cursor-worker-runs/WF-INTENT-M1.1-CURSOR-LIVE-2026-07-07-001/`
+- `documentation/codex/model-routing/cursor_delegation_log.jsonl`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- worker package contract validation: PASS
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane execution_patch_candidate --workflow-id WF-INTENT-M1.1-CURSOR-LIVE-2026-07-07-001 --operator-choice 3 --input-package-json documentation/codex/model-routing/execution-review-fixtures/intent_m1_1_execution_patch_cursor_input_package_2026-07-07.json --allowlist-file documentation/codex/model-routing/execution-review-fixtures/allowlists/intent_m1_1_execution_patch_allowlist_2026-07-07.txt --estimated-codex-saved-tokens 28000 --estimated-delegation-overhead-tokens 10000`: PASS (`CURSOR_WORKER_DRY_RUN_READY`)
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane execution_patch_candidate --workflow-id WF-INTENT-M1.1-CURSOR-LIVE-2026-07-07-001 --operator-choice 3 --input-package-json documentation/codex/model-routing/execution-review-fixtures/intent_m1_1_execution_patch_cursor_input_package_2026-07-07.json --allowlist-file documentation/codex/model-routing/execution-review-fixtures/allowlists/intent_m1_1_execution_patch_allowlist_2026-07-07.txt --estimated-codex-saved-tokens 28000 --estimated-delegation-overhead-tokens 10000 --execute-live-cursor`: BLOCKED (`CURSOR_AGENT_TIMEOUT`)
+- `git diff --check -- documentation/codex/model-routing/execution-review-fixtures/allowlists/intent_m1_1_execution_patch_allowlist_2026-07-07.txt documentation/codex/model-routing/execution-review-fixtures/intent_m1_1_execution_patch_cursor_worker_package_2026-07-07.json documentation/codex/model-routing/execution-review-fixtures/intent_m1_1_execution_patch_cursor_input_package_2026-07-07.json`: PASS
+
+Open risks:
+- The execution lane is proven visible and reachable, but this exact Composer live path did not yet return a bounded proposal for M1.1.
+- No product-code edit happened in this live attempt, so M1.1 itself remains unimplemented.
+- The repo worktree is already heavily dirty outside this slice; those unrelated changes still must not be touched.
+- No commit or push happened in this block, so no remote should be assumed to contain the latest live-lane evidence or CURRENT_STATE snapshot yet.
+
+Next recommended step for ChatGPT: summarize that the real `3 = Cursor Composer` path was exercised successfully up to the live worker boundary, but the worker timed out after 180 seconds and produced no patch artifact.
+
+Next recommended step for Codex: either retry the same bounded M1.1 package on `4 = Cursor API` for backend-fit comparison or continue the M1.1 implementation locally in Codex while keeping the live timeout evidence as the blocker record for Composer.
+
+Last updated: `2026-07-07 23:36:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 23:24 +02:00`, `TASK-INTENT-M1.1` has now passed preimplementation check and is ready for bounded implementation. Codex created `documentation/tasks/TASK-INTENT-M1.1_preimplementation_check.md`, aligned it to the repo validator's Codex-native precheck shape, and validated it successfully. The released execution scope remains narrow: create the auxiliary classifier contract, provider/config wrapper, schema, and focused unit tests only. `detect_all_intents()` integration, benchmark uplift proof, staged enablement, and all Memory A/B work remain explicitly outside this first execution gate.
+
+Current goal: execute the first M1 auxiliary-classifier contract slice cleanly before widening into integration or benchmark work.
+
+Active phase: `janus-preimplementation-check` for Intent M1.1, canonical state `PASS`.
+
+Last Codex work:
+- read the bound M1.1 task breakdown and source spec section 5
+- confirmed the file cluster is concrete even though the new files do not exist yet
+- wrote the formal precheck artifact `documentation/tasks/TASK-INTENT-M1.1_preimplementation_check.md`
+- adapted the artifact to the repo's validator-accepted Codex-native precheck format
+- validator-checked the precheck and kept the next step on `janus-executioner`
+
+Changed files:
+- `documentation/tasks/TASK-INTENT-M1.1_preimplementation_check.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python C:\\Users\\pruve\\.codex\\skills\\janus-preimplementation-check\\scripts\\validate_precheck.py documentation/tasks/TASK-INTENT-M1.1_preimplementation_check.md`: PASS
+- `git diff --check -- documentation/tasks/TASK-INTENT-M1.1_preimplementation_check.md`: PASS
+
+Open risks:
+- The next slice must still stay contract-only; the biggest drift risk is prematurely wiring the classifier into `detect_all_intents()` during this first execution block.
+- The skill prose and repo validator currently disagree slightly on the preferred precheck shape, so the local validator remains the safer authority.
+- No commit or push happened in this block, so no remote should be assumed to contain the latest precheck artifact or CURRENT_STATE snapshot yet.
+
+Next recommended step for ChatGPT: summarize that `TASK-INTENT-M1.1` is now precheck-passed and ready for implementation, with later integration and benchmark work still fenced off.
+
+Next recommended step for Codex: run `janus-executioner` on `TASK-INTENT-M1.1` with `5.4` medium.
+
+Last updated: `2026-07-07 23:24:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 23:18 +02:00`, the first M1 implementation lane is now refined and released for precheck. Codex took the compiled I1 task artifact and carved out exactly one atomic first slice at `documentation/tasks/TASK-INTENT-M1.1_task_breakdown.md`. The released target is `TASK-INTENT-M1.1`: classifier contract, provider wrapper, config flag surface, and focused unit coverage only. Integration into `detect_all_intents()`, benchmark uplift, staged enablement, Memory A/B, and any transport/provider-product work remain explicitly out of scope for this exact next step.
+
+Current goal: move the auxiliary classifier feature into a single precheck-ready first implementation slice without widening into the later M1 tasks.
+
+Active phase: `janus-task-breakdown` for Intent M1.1, canonical state `PASS`.
+
+Last Codex work:
+- read the task-breakdown skill contract and the compiled M1 task artifact
+- validated that `TASK-INTENT-M1.1` is the only safe first implementation target
+- wrote the dedicated breakdown handoff `documentation/tasks/TASK-INTENT-M1.1_task_breakdown.md`
+- validator-checked the handoff and kept the next step bound to `janus-preimplementation-check`
+
+Changed files:
+- `documentation/tasks/TASK-INTENT-M1.1_task_breakdown.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python C:\\Users\\pruve\\.codex\\skills\\janus-task-breakdown\\scripts\\validate_task_handoff.py --task documentation/tasks/TASK-INTENT-M1_auxiliary_action_subject_classifier.md --target TASK-INTENT-M1.1`: PASS
+- `git diff --check -- documentation/tasks/TASK-INTENT-M1.1_task_breakdown.md documentation/tasks/TASK-INTENT-M1_auxiliary_action_subject_classifier.md`: PASS
+
+Open risks:
+- No precheck has run yet; implementation authority still starts only after the next gate.
+- The first slice must stay contract-only. The most likely drift risk is accidentally pulling `detect_all_intents()` integration or benchmark uplift work into the same precheck.
+- No commit or push happened in this block, so no remote should be assumed to contain the latest breakdown handoff or CURRENT_STATE snapshot yet.
+
+Next recommended step for ChatGPT: summarize that `TASK-INTENT-M1.1` is now the released first M1 slice and that later integration and benchmark-proof work are still fenced off.
+
+Next recommended step for Codex: run `janus-preimplementation-check` on `TASK-INTENT-M1.1` with `5.4` medium.
+
+Last updated: `2026-07-07 23:18:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 23:12 +02:00`, the next Janus step after the M0 intent baseline is now formally bound. Codex compiled the M1 I1 Auxiliary Action/Subject Classifier spec into one deterministic task artifact at `documentation/tasks/TASK-INTENT-M1_auxiliary_action_subject_classifier.md` and validated it with the repo task-artifact validator. The work is intentionally split into three narrow slices: `TASK-INTENT-M1.1` for classifier contract and provider wrapper, `TASK-INTENT-M1.2` for `detect_all_intents()` integration plus merge rules, and `TASK-INTENT-M1.3` for benchmark uplift, latency guardrails, and staged enablement proof against the fresh M0 baseline.
+
+Current goal: move from M0 evidence into one clean M1 I1 implementation lane without mixing in Memory A/B or later roadmap work.
+
+Active phase: `janus-spec-to-task` for Intent M1 I1, canonical state `PASS`.
+
+Last Codex work:
+- read the M1 roadmap section and Intent Spec section 5 for the auxiliary classifier
+- confirmed there was no existing M1 I1 task artifact yet
+- compiled the approved M1 intent classifier scope into one deterministic task file with three generated execution slices
+- validator-checked the new task artifact and kept the handoff pointed at `janus-task-breakdown`
+
+Changed files:
+- `documentation/tasks/TASK-INTENT-M1_auxiliary_action_subject_classifier.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python C:\\Users\\pruve\\.codex\\skills\\janus-spec-to-task\\scripts\\validate_task_artifact.py --task documentation/tasks/TASK-INTENT-M1_auxiliary_action_subject_classifier.md`: PASS
+- `git diff --check -- documentation/tasks/TASK-INTENT-M1_auxiliary_action_subject_classifier.md`: PASS
+
+Open risks:
+- The new M1 slice is planning-only so far; no precheck or implementation has started yet.
+- Memory A/B remain intentionally out of scope for this exact next step and should not be mixed into the first I1 execution lane.
+- No commit or push happened in this block, so no remote should be assumed to contain the latest M1 task artifact or CURRENT_STATE snapshot yet.
+
+Next recommended step for ChatGPT: summarize that M1 I1 is now task-compiled and ready for `janus-task-breakdown`, while Memory A/B remain deliberately deferred.
+
+Next recommended step for Codex: run `janus-task-breakdown` on `TASK-INTENT-M1.1` with `5.4` medium and release exactly one implementation-ready slice for precheck.
+
+Last updated: `2026-07-07 23:12:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 23:05 +02:00`, Roadmap M0 for the intent upgrade is now complete as a measurement-only slice. Codex bound the work with a fresh M0 task plus precheck artifact, added a 110-case local intent benchmark corpus, implemented a CI-runnable benchmark runner and pytest suite, and generated the first baseline report at `documentation/test-runs/INTENT_BENCHMARK_BASELINE.md`. The baseline shows the current intent engine at `73.6%` overall accuracy, with the required separated subsets now measured as Contact `11/20`, Pet `8/15`, Recall `12/15`, and Calendar `8/15`. This baseline now unlocks M1 while also documenting where the current engine is still weakest before any logic change.
+
+Current goal: close Roadmap M0 cleanly and leave M1 unblocked with real baseline evidence.
+
+Active phase: `janus-executioner` closeout for Intent M0, canonical state `PASS`.
+
+Last Codex work:
+- routed the request through `janus-skill-router` and `janus-preimplementation-check`
+- created the bound M0 task artifact `documentation/tasks/TASK-INTENT-M0_benchmark_baseline.md`
+- created and validator-cleaned `documentation/tasks/TASK-INTENT-M0_preimplementation_check.md`
+- added the new benchmark corpus, runner, pytest suite, and baseline markdown report
+- updated the roadmap tracker so M0 is `EXIT PASS` and M1 is the next active milestone
+
+Changed files:
+- `backend/tests/fixtures/intent_benchmark_cases.jsonl`
+- `backend/tests/test_intent_benchmark.py`
+- `backend/scripts/run_intent_benchmark.py`
+- `documentation/test-runs/INTENT_BENCHMARK_BASELINE.md`
+- `documentation/tasks/TASK-INTENT-M0_benchmark_baseline.md`
+- `documentation/tasks/TASK-INTENT-M0_preimplementation_check.md`
+- `documentation/Cursor specs/ROADMAP_EPIC_ORDER.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python C:\\Users\\pruve\\.codex\\skills\\janus-preimplementation-check\\scripts\\validate_precheck.py documentation/tasks/TASK-INTENT-M0_preimplementation_check.md`: PASS
+- `python -m pytest backend/tests/test_intent_benchmark.py -q`: PASS (`4 passed`)
+- `python -m py_compile backend/scripts/run_intent_benchmark.py backend/tests/test_intent_benchmark.py`: PASS
+- `python -m backend.scripts.run_intent_benchmark --write-baseline`: PASS
+- `git diff --check -- backend/tests/fixtures/intent_benchmark_cases.jsonl backend/tests/test_intent_benchmark.py backend/scripts/run_intent_benchmark.py documentation/test-runs/INTENT_BENCHMARK_BASELINE.md documentation/tasks/TASK-INTENT-M0_benchmark_baseline.md documentation/tasks/TASK-INTENT-M0_preimplementation_check.md`: PASS
+
+Open risks:
+- The baseline exposes real current weaknesses before M1: Contact fact-telling, Pet-owner bridge, and Calendar-vs-Shopping are the weakest measured clusters.
+- This block intentionally did not change intent logic, so M1 remains the first implementation slice for improving the measured scores.
+- No commit or push happened in this block, so no remote should be assumed to contain the latest M0 baseline, roadmap state, or CURRENT_STATE snapshot yet.
+
+Next recommended step for ChatGPT: summarize M0 as `EXIT PASS` with a real baseline now in place and call out the measured weak clusters that should drive M1.
+
+Next recommended step for Codex: start `M1` on the first intent-improvement slice against the new benchmark baseline, staying strictly out of transport/OAuth/OpenRouter work.
+
+Last updated: `2026-07-07 23:05:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 23:14 +02:00`, the cost-aware 4-choice delegation stack has crossed its most important pre-production live threshold. The remaining GLM short-review gap is now closed with a real bounded Cursor API run: `WF-CURSOR-API-SMOKE-GLM-002` on `TASK-BH-001` used a new Cursor-shaped backlog-handoff shadow package, changed exactly one allowlisted file, and turned the focused shadow pytest from red to green. After that, Codex ran the first real non-shadow repo slice against `documentation/codex/skills/janus-executioner/SKILL.md`. The first attempt on `4 = Cursor API` (`WF-CURSOR-API-LIVEDEV-EXECUTIONER-001`, `kimi-k2.7-code`) proved transport but returned a no-task-found answer with no edit. A bounded retry on `3 = Cursor Composer` (`WF-CURSOR-COMPOSER-LIVEDEV-EXECUTIONER-002`) succeeded on the same package, updated only the allowlisted skill file, and turned the new executioner skill-surface regression green. That means the shared 4-choice gate is now validated across Mini API transport, GLM assist review, Kimi bounded code work on shadow, and one real repo-livedev fix through the shared Cursor path.
+
+Current goal: finish the OR/Cursor delegation stack so it is honest enough and stable enough for serious pre-production live testing.
+
+Active phase: approved live validation wave plus first real repo-livedev proof for the 4-choice operator gate, canonical state `PASS`.
+
+Last Codex work:
+- built a Cursor-compatible bounded shadow package for `TASK-BH-001` / `backlog_handoff_review`
+- confirmed the new GLM shadow task was red before delegation
+- ran `WF-CURSOR-API-SMOKE-GLM-002` and verified a one-file allowlisted shadow edit plus green post-run pytest
+- added a new real livedev package for `TASK-EX-001` targeting only `documentation/codex/skills/janus-executioner/SKILL.md`
+- confirmed the new executioner skill-surface regression was red before delegation
+- ran `WF-CURSOR-API-LIVEDEV-EXECUTIONER-001` on `4 = Cursor API` and captured the useful no-task-found prompt-shape miss without widening scope
+- reran the same bounded real slice on `3 = Cursor Composer` as `WF-CURSOR-COMPOSER-LIVEDEV-EXECUTIONER-002`
+- verified the Composer run changed only the allowlisted skill file and brought the focused and broader skill-surface tests back to green
+
+Changed files:
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/backlog_handoff_review/worker_package.json`
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/backlog_handoff_review/input_package.json`
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/backlog_handoff_review/allowlist.txt`
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/backlog_handoff_review/sandbox/selected_handoff_shadow.md`
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/backlog_handoff_review/sandbox/test_backlog_handoff_shadow.py`
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/backlog_handoff_review/README.md`
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/executioner_skill_surface/allowlist.txt`
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/executioner_skill_surface/worker_package.json`
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/executioner_skill_surface/input_package.json`
+- `documentation/codex/model-routing/tests/test_janus_executioner_skill_surface.py`
+- `documentation/codex/skills/janus-executioner/SKILL.md`
+- `documentation/codex/model-routing/cursor-worker-runs/WF-CURSOR-API-SMOKE-GLM-002/dispatcher_result.json`
+- `documentation/codex/model-routing/cursor-worker-runs/WF-CURSOR-API-SMOKE-GLM-002/cursor_response.json`
+- `documentation/codex/model-routing/cursor-worker-runs/WF-CURSOR-API-LIVEDEV-EXECUTIONER-001/dispatcher_result.json`
+- `documentation/codex/model-routing/cursor-worker-runs/WF-CURSOR-API-LIVEDEV-EXECUTIONER-001/cursor_response.json`
+- `documentation/codex/model-routing/cursor-worker-runs/WF-CURSOR-COMPOSER-LIVEDEV-EXECUTIONER-002/dispatcher_result.json`
+- `documentation/codex/model-routing/cursor-worker-runs/WF-CURSOR-COMPOSER-LIVEDEV-EXECUTIONER-002/cursor_response.json`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/fixtures/cursor-shadow-catalog/backlog_handoff_review/sandbox/test_backlog_handoff_shadow.py -q`: expected FAIL before live run, then PASS (`1 passed`) after `WF-CURSOR-API-SMOKE-GLM-002`
+- `python -m pytest documentation/codex/model-routing/tests/test_janus_executioner_skill_surface.py -q`: expected FAIL before live run, then PASS (`1 passed`) after `WF-CURSOR-COMPOSER-LIVEDEV-EXECUTIONER-002`
+- `python -m pytest documentation/codex/model-routing/tests/test_skill_surface_operator_mappings.py -q`: PASS (`5 passed`)
+- live Cursor API GLM shadow smoke: `WF-CURSOR-API-SMOKE-GLM-002`: PASS
+- live Cursor API executioner slice on Kimi: `WF-CURSOR-API-LIVEDEV-EXECUTIONER-001`: transport PASS, bounded no-edit result
+- live Cursor Composer executioner slice: `WF-CURSOR-COMPOSER-LIVEDEV-EXECUTIONER-002`: PASS
+
+Open risks:
+- The first real EX-001-style livedev package showed a model-fit difference inside the same shared runner: Cursor API/Kimi missed the task prompt, while Cursor Composer completed it cleanly. That is a useful operator hint, but it is not fully root-caused yet.
+- OpenRouter remains implemented and preserved as option `2`, but this block intentionally pushed the most valuable live evidence through Cursor rather than spending more OR live calls.
+- No commit or push happened in this block, so no remote should be assumed to contain this latest CURRENT_STATE or the newest live-run evidence yet.
+
+Next recommended step for ChatGPT: summarize the stack as "productively testable now": Mini API transport proven, Kimi shadow execution proven, GLM review proven, and one real repo-livedev fix proven through Cursor Composer on the shared 4-choice gate.
+
+Next recommended step for Codex: start user-directed real Janus work through the shared gate on bounded low-risk slices, while preferring `3 = Cursor Composer` first for real `TASK-EX-001` livedev work and keeping `4 = Cursor API` for cheaper assist/review lanes or comparative follow-up tests.
+
+Last updated: `2026-07-07 23:14:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 22:33 +02:00`, the first live Cursor API validation wave for the new 4-choice gate is partially complete with enough evidence to be useful. `WF-CURSOR-API-SMOKE-MINI-001` on `documentation_draft_review` passed the live route, pool, session, and cost logging checks on `gpt-5.4-mini-medium`, but the lane still needs a better bound assist package for strong output quality. `WF-CURSOR-API-SMOKE-KIMI-002` on `TASK-EX-001` passed as a real bounded code-proposal slice: the shadow fixture was reset to red first, Kimi edited exactly one allowlisted file, and the focused pytest turned green afterward. `WF-CURSOR-API-SMOKE-GLM-001` did not reach live model execution because the chosen backlog handoff package is still an old OR-style input package rather than a Cursor worker package; the block is packaging-contract related, not a GLM backend failure.
+
+Current goal: finish the OR/Cursor delegation stack so it is honest enough and stable enough for serious pre-production live testing.
+
+Active phase: first approved live Cursor API smoke wave on the new option-4 path, canonical state `PASS`.
+
+Last Codex work:
+- ran the first live mini API smoke on `documentation_draft_review` with `gpt-5.4-mini-medium`
+- sharpened the shared Cursor worker prompt opener after the first API runs showed some models over-focused on the new `Stable prefix` marker
+- reran the runner test suite after the prompt change
+- reset the EX-001 shadow fixture to a red baseline and reran the Kimi API smoke
+- proved `WF-CURSOR-API-SMOKE-KIMI-002` as a real bounded code-proposal success with green post-run pytest
+- attempted the GLM short-review smoke and confirmed the current blocker is a non-Cursor-shaped input package
+
+Changed files:
+- `documentation/codex/model-routing/scripts/janus_cursor_worker_runner.py`
+- `documentation/codex/model-routing/cursor-worker-runs/WF-CURSOR-API-SMOKE-MINI-001/dispatcher_result.json`
+- `documentation/codex/model-routing/cursor-worker-runs/WF-CURSOR-API-SMOKE-MINI-001/cursor_response.json`
+- `documentation/codex/model-routing/cursor-worker-runs/WF-CURSOR-API-SMOKE-KIMI-001/dispatcher_result.json`
+- `documentation/codex/model-routing/cursor-worker-runs/WF-CURSOR-API-SMOKE-KIMI-001/cursor_response.json`
+- `documentation/codex/model-routing/cursor-worker-runs/WF-CURSOR-API-SMOKE-KIMI-002/dispatcher_result.json`
+- `documentation/codex/model-routing/cursor-worker-runs/WF-CURSOR-API-SMOKE-KIMI-002/cursor_response.json`
+- `documentation/codex/model-routing/cursor-worker-runs/WF-CURSOR-API-SMOKE-GLM-001/dispatcher_result.json`
+- `documentation/codex/model-routing/cursor_delegation_log.jsonl`
+- `documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/gate_prompt_shadow.py`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_janus_cursor_worker_runner.py -q`: PASS (`15 passed`)
+- live mini API smoke PASS: `WF-CURSOR-API-SMOKE-MINI-001`
+- shadow reset PASS before Kimi rerun
+- red baseline confirmation PASS/expected: EX-001 shadow pytest failed before the Kimi rerun
+- real bounded Kimi API smoke PASS: `WF-CURSOR-API-SMOKE-KIMI-002`
+- post-Kimi focused pytest PASS: `1 passed`
+- GLM smoke result: `CURSOR_WORKER_INPUT_BLOCKED` before live model invocation because the package contract is not Cursor-worker compatible
+
+Open risks:
+- `documentation_draft_review` still needs a tiny real input package if we want the assist-lane output itself, not just transport, to be field-ready.
+- The GLM lane still needs a Cursor-shaped bounded short-review package before we can evaluate the actual model behavior.
+- No commit or push happened in this block, so no remote should be assumed to contain this live-smoke evidence yet.
+
+Next recommended step for ChatGPT: summarize the wave as "2 useful API proofs achieved: Mini proved route/pool logging, Kimi proved real bounded code work; GLM is blocked on package shape rather than model behavior."
+
+Next recommended step for Codex: either build one tiny Cursor-compatible backlog-handoff review package and rerun the GLM smoke, or move straight to the first user-meaningful livedev task on the now-proven Kimi option-4 execution path.
+
+Last updated: `2026-07-07 22:33:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 22:22 +02:00`, the first explicitly approved live Cursor API smoke for the new 4-choice gate has passed. Codex ran `WF-CURSOR-API-SMOKE-MINI-001` through `janus_delegate.py` on `TASK-DU-001` / `documentation_draft_review` with operator choice `4 = Cursor API` and model `gpt-5.4-mini-medium`. The run proved the live shared Cursor API path, the `cursor_pool=api` logging, the static cost logging, and the session/result artifact chain. The returned content was only a generic clarification answer because the lane was exercised without a bound task package, so the transport/billing proof is good but the assist-lane prompt packaging still needs a small follow-up before this lane is operator-friendly.
+
+Current goal: finish the OR/Cursor delegation stack so it is honest enough and stable enough for serious pre-production live testing.
+
+Active phase: first approved live Cursor API smoke on the new option-4 path, canonical state `PASS`.
+
+Last Codex work:
+- ran `WF-CURSOR-API-SMOKE-MINI-001` via `janus_delegate.py` on `documentation_draft_review`
+- confirmed live option `4` routing through the shared Cursor runner with `cursor_pool=api`
+- captured session/result artifacts and the JSONL log row with static cost and duration
+- reviewed the returned content and identified the next small improvement: bind a real assist task package so the lane yields a useful draft instead of a generic clarification
+
+Changed files:
+- `documentation/codex/model-routing/cursor-worker-runs/WF-CURSOR-API-SMOKE-MINI-001/dispatcher_result.json`
+- `documentation/codex/model-routing/cursor-worker-runs/WF-CURSOR-API-SMOKE-MINI-001/cursor_response.json`
+- `documentation/codex/model-routing/cursor-worker-runs/WF-CURSOR-API-SMOKE-MINI-001/stdout.log`
+- `documentation/codex/model-routing/cursor-worker-runs/WF-CURSOR-API-SMOKE-MINI-001/stderr.log`
+- `documentation/codex/model-routing/cursor-worker-runs/WF-CURSOR-API-SMOKE-MINI-001/session_id.txt`
+- `documentation/codex/model-routing/cursor_delegation_log.jsonl`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- live delegate run: `python documentation/codex/model-routing/scripts/janus_delegate.py --lane documentation_draft_review --task-id TASK-DU-001 --workflow-id WF-CURSOR-API-SMOKE-MINI-001 --operator-choice 4 --execute-live-cursor`: PASS
+- run artifact review PASS: `dispatcher_result.json` shows `validation_result=PASS`, `final_outcome=CURSOR_WORKER_READY_FOR_CODEX_REVIEW`
+- billing/runner log review PASS: `cursor_delegation_log.jsonl` row contains `cursor_pool=api`, `estimated_cost_usd_static=0.01515`, `duration_ms=9096`
+
+Open risks:
+- This was a transport/billing proof, not yet a high-quality assist-output proof, because no bounded documentation input package was supplied.
+- The remaining required live acceptance items from the handoff are still open: Kimi API smoke, GLM API smoke, and one real bounded slice.
+- No commit or push happened in this block, so no remote should be assumed to contain this live-smoke evidence yet.
+
+Next recommended step for ChatGPT: summarize the first live API result as "routing/billing PASS, prompt packaging still too generic for documentation_draft_review without a bound input package."
+
+Next recommended step for Codex: with explicit operator approval, either run the Kimi API smoke on `TASK-EX-001` next, or first add one tiny bound input package for `documentation_draft_review` and rerun the mini smoke so the assist lane proves useful output as well as transport.
+
+Last updated: `2026-07-07 22:22:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-07 22:05 +02:00`, the cost-aware 4-choice delegation gate slice is implemented in no-live mode. The shared routing truth now exposes `1 = Codex / 2 = OpenRouter / 3 = Cursor Composer / 4 = Cursor API`, while `TASK-EX-002` stays explicitly fenced as `1 = Codex / 2 = Deterministic Apply`. The same shared Cursor runner now serves both Cursor choices with explicit pool metadata, static cost hints, and cache-friendly stable-prefix / variable-suffix worker prompts. No live Cursor API smokes and no real bounded live slice were run in this block, per operator constraint.
+
+Current goal: finish the OR/Cursor delegation stack so it is honest enough and stable enough for serious pre-production live testing.
+
+Active phase: Lean Dev no-live implementation of the 4-choice cost-aware gate, canonical state `PASS`.
+
+Last Codex work:
+- replaced the old tri-modal routing core with a 4-choice cost-aware gate model
+- updated `janus_delegate.py` so option `3` and option `4` both route through the same Cursor runner with explicit pool selection
+- updated `janus_cursor_worker_runner.py` to accept and log `cursor_pool` plus static cost estimates
+- refreshed the manifest, task-list surfaces, and representative skill wording to the new `1/2/3/4` operator truth
+- added the compact `CURSOR_API_POOL_OPERATOR_PLAYBOOK_2026-07-07.md`
+- reran the required no-live test suite successfully
+
+Changed files:
+- `documentation/codex/model-routing/config/delegation_routing_manifest.json`
+- `documentation/codex/model-routing/config/delegation_task_list_2026-07-05.json`
+- `documentation/codex/model-routing/config/delegation_task_list_2026-07-05.md`
+- `documentation/codex/model-routing/CURSOR_API_POOL_OPERATOR_PLAYBOOK_2026-07-07.md`
+- `documentation/codex/model-routing/scripts/delegation_routing.py`
+- `documentation/codex/model-routing/scripts/janus_delegate.py`
+- `documentation/codex/model-routing/scripts/janus_cursor_worker_runner.py`
+- `documentation/codex/model-routing/tests/test_delegation_routing.py`
+- `documentation/codex/model-routing/tests/test_janus_delegate.py`
+- `documentation/codex/model-routing/tests/test_janus_cursor_worker_runner.py`
+- `documentation/codex/model-routing/tests/test_skill_surface_operator_mappings.py`
+- `documentation/codex/skills/janus-documentation-update/SKILL.md`
+- `documentation/codex/skills/janus-backlog-handoff/SKILL.md`
+- `documentation/codex/skills/janus-feature-design/SKILL.md`
+- `documentation/codex/skills/janus-preimplementation-check/SKILL.md`
+- `documentation/codex/skills/janus-quickchange/SKILL.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_delegation_routing.py -q`: PASS (`10 passed`)
+- `python -m pytest documentation/codex/model-routing/tests/test_janus_delegate.py -q`: PASS (`14 passed`)
+- `python -m pytest documentation/codex/model-routing/tests/test_janus_cursor_worker_runner.py -q`: PASS (`15 passed`)
+- `python -m pytest documentation/codex/model-routing/tests/test_skill_surface_operator_mappings.py -q`: PASS (`5 passed`)
+- combined suite PASS: `44 passed`
+
+Open risks:
+- Live acceptance from the handoff is not complete yet because the required Cursor API smokes and one real bounded live slice still need explicit operator OK.
+- The worktree contains unrelated older local changes under `documentation/codex/model-routing/`; this slice was implemented around them, not by cleaning them up.
+- No commit or push happened in this block, so no remote should be assumed to contain this 4-choice state yet.
+
+Next recommended step for ChatGPT: summarize the stack as no-live ready for the new 4-choice operator gate, but still missing the explicitly approved Cursor API smoke evidence and one real live bounded slice.
+
+Next recommended step for Codex: with explicit operator approval, run the first bounded Cursor API smoke on the new option `4` path, starting with the cheapest assist lane, then record the result before any broader live rollout.
+
+Last updated: `2026-07-07 22:05:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-07 21:16 +02:00`, the operator-surface hardening slice has been checkpointed and then followed by one more targeted rest-audit. Codex split the work into two clean local commits to satisfy Janus Git governance: `60421519b` (`docs(skill-rules): fix backlog handoff tri-modal mapping`) for the repo skill-rule correction itself, and `b5e1b4822` (`test(model-routing): add skill surface truth harness`) for the multi-skill regression plus closeout artifacts. After that checkpoint, Codex ran a final targeted scan over the remaining shared tri-modal skill surfaces and found no second concrete everyday-gate mismatch of the same class. The remaining `2 = OpenRouter` occurrences are currently confined to explicitly labeled legacy/helper paths such as `debug_hypothesis_review`, legacy `test-pipeline` review helpers, or the documentation-specific fixed-OR exception, not to the normal shared tri-modal everyday gate.
 
 Current goal: finish turning the tri-modal delegation stack from operational and promising into ready for serious livedev use with honest operator gates, Codex review ownership, and low-surprise bounded delegation.
@@ -21664,3 +22301,105 @@ Next recommended step for ChatGPT: summarize this as "new live Janus bug: cross-
 Next recommended step for Codex: run `janus-backlog-prioritization` for `BACKLOG-119` with `5.4` and medium reasoning, then decide whether it should move straight to selected handoff or sit behind the current in-progress contact/memory work.
 
 Last updated: `2026-07-02 00:11:59 +02:00`.
+## Current Snapshot Update
+As of `2026-07-08`, the first manual M1.2 recall failure is no longer treated as a valid intent regression signal. The real issue for that check was a contaminated local live DB: `Chris Gier` already carried unsupported appearance/style and homebody facts in `C:\Users\pruve\AppData\Roaming\Janus Projekt\janus.db`, so the runtime output was not a fair M1.2 validation baseline.
+
+Current goal: finish the bounded M1.2 validation path by rerunning the manual `Was weisst du ueber Chris?` check after the targeted live-DB cleanup and then either move to final audit or continue bounded debug with fresh evidence.
+
+Active phase: `janus-debug`, canonical state `HANDOFF`.
+
+Last Codex work:
+- inspected the real local Janus app DB and confirmed that the suspect Chris appearance facts were already present before treating the manual recall output as an M1.2 product failure
+- created a safety snapshot of the live DB before cleanup
+- removed the clearly unsupported `Physis`/`Stil`/`zuhausebleiben` Chris facts from the live DB and reset the corresponding contact-card residue
+- updated the M1.2 execution artifact so the manual gate now requires a clean re-test instead of carrying forward a misleading first FAIL
+
+Changed files:
+- `documentation/test-runs/TASK-INTENT-M1.2_debug_live_db_contamination_cleanup_2026-07-08.md`
+- `documentation/tasks/TASK-INTENT-M1.2_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- SQLite inspection of `C:\Users\pruve\AppData\Roaming\Janus Projekt\janus.db`: PASS
+- live DB backup created at `C:\Users\pruve\AppData\Roaming\Janus Projekt\janus_pre_chris_cleanup_20260708-010842.db`: PASS
+- SQLite cleanup verification for `Chris Gier` contact row and memory rows `107-112`: PASS
+
+Open risks:
+- the M1.2 manual runtime gate is still not complete until the post-cleanup live recall is tested again in Janus
+- this block changed local state in the live app DB only; no commit or push happened, so any remote such as GitHub or `backup` does not reflect this cleanup state
+- `documentation/ai/CURRENT_STATE.md` itself is only local until an explicit sync/commit/push path is chosen
+
+Next recommended step for ChatGPT: summarize this as "the first M1.2 manual fail was invalid because Chris recall was polluted by preexisting live DB facts; the DB is cleaned and the next required step is one fresh manual recall retest."
+
+Next recommended step for Codex: wait for the user to rerun `Was weisst du ueber Chris?` on normal Janus startup; if clean, move to `janus-final-audit` for `TASK-INTENT-M1.2`, otherwise continue `janus-debug` with the fresh post-cleanup output as the new bounded evidence.
+
+Last updated: `2026-07-08 01:10:00 +02:00`.
+## Current Snapshot Update
+As of `2026-07-08`, the M1.2 manual recall gate moved from "contaminated environment" to a real provider-path fix. After the live-DB cleanup, GPT answered `Was weisst du ueber Chris?` correctly from local contact facts, but Gemini still injected unsupported appearance/history facts. The bounded debug fix now forces the stable local `memory.read` fallback for contact-recall queries whenever local recall facts are present, so Gemini can no longer override those facts with free-text history drift.
+
+Current goal: rerun the real Janus `Was weisst du ueber Chris?` contact-recall check on GPT and Gemini after the new provider-path fix, then either move `TASK-INTENT-M1.2` to final audit or continue bounded debug if fresh evidence still fails.
+
+Active phase: `janus-debug`, canonical state `HANDOFF`.
+
+Last Codex work:
+- isolated the provider-specific split after the cleaned live-DB retest: GPT clean, Gemini still contaminated
+- traced the issue to the post-`memory.read` synthesis path rather than the local contact card
+- implemented a bounded fix so contact-recall queries with local `memory.read` facts now deterministically use the stable local recall fallback
+- added one direct unit regression and one Gemini integration regression that simulates contaminated free text being overridden by the local fallback
+
+Changed files:
+- `backend/services/orchestrator/execution_engine.py`
+- `backend/tests/test_provider_auth_fallback.py`
+- `backend/tests/integration/test_pet_recall_chat_path.py`
+- `documentation/test-runs/TASK-INTENT-M1.2_debug_gemini_contact_recall_fallback_2026-07-08.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python -m pytest backend/tests/test_provider_auth_fallback.py backend/tests/integration/test_pet_recall_chat_path.py -q`: PASS
+- `python -m py_compile backend/services/orchestrator/execution_engine.py`: PASS
+- `git diff --check -- backend/services/orchestrator/execution_engine.py backend/tests/test_provider_auth_fallback.py backend/tests/integration/test_pet_recall_chat_path.py`: PASS
+
+Open risks:
+- live Janus still needs one fresh post-fix retest on the real GPT and Gemini paths
+- the test run logged the known local vector-model dependency warning (`tokenizers>=0.21,<0.22` mismatch), but the targeted recall regressions still passed and this warning was not the root cause of the Chris recall drift
+- no commit or push happened after this debug block, so any remote such as GitHub or `backup` may not contain this newest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: summarize this as "GPT was already clean after DB cleanup; Gemini still drifted into unsupported history facts, so Codex forced deterministic local memory fallback for contact recall and now needs one real post-fix retest."
+
+Next recommended step for Codex: wait for the user to rerun `Was weisst du ueber Chris?` on GPT and Gemini; if both are clean, move straight to `janus-final-audit` for `TASK-INTENT-M1.2`.
+
+Last updated: `2026-07-08 01:25:00 +02:00`.
+## Current Snapshot Update
+As of `2026-07-08`, `TASK-INTENT-M1.2` has now passed final audit. The bounded integration slice is accepted with complete evidence: focused intent regressions are green, the startup regression from the eager import was fixed, the contaminated first manual Chris recall was neutralized via live-DB cleanup, the Gemini-specific post-`memory.read` recall drift was fixed with deterministic local fallback, and the final live retest passed on both GPT and Gemini.
+
+Current goal: close out `TASK-INTENT-M1.2` through `janus-documentation-update` without widening into M1.3 benchmark-proof or staged-enablement work.
+
+Active phase: `janus-final-audit`, canonical state `HANDOFF`.
+
+Last Codex work:
+- refreshed the M1.2 execution artifact to reflect the now-passed manual Janus gate
+- built a compact M1.2 audit package scoped to the real changed files and debug deltas
+- completed the final audit and accepted the bounded M1.2 slice as PASS
+
+Changed files:
+- `documentation/tasks/TASK-INTENT-M1.2_execution_result.md`
+- `documentation/tasks/TASK-INTENT-M1.2_validation_summary.md`
+- `documentation/tasks/TASK-INTENT-M1.2_AUDIT_PACKAGE.md`
+- `documentation/tasks/TASK-INTENT-M1.2_final_audit.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python documentation/codex/skills/codex-audit-package-builder/scripts/build_audit_package.py ...`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py documentation/tasks/TASK-INTENT-M1.2_final_audit.md`: PASS
+- scoped audit package review against execution result, precheck, validation summary, and debug deltas: PASS
+
+Open risks:
+- no blocking scope risks remain inside M1.2, but M1.3 benchmark uplift/staged enablement is still intentionally open work and must not be implied by this PASS
+- no commit or push happened after this audit block, so any remote such as GitHub or `backup` may not contain this newest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: summarize this as "M1.2 is now audit-PASS; the next correct step is documentation-update, while M1.3 benchmark proof remains separate and still open."
+
+Next recommended step for Codex: run `janus-documentation-update` for `TASK-INTENT-M1.2` with the new final audit result and package, then sync roadmap/task/project state surfaces only for this slice.
+
+Last updated: `2026-07-08 14:20:00 +02:00`.

@@ -8,6 +8,9 @@ import re
 import logging
 from typing import List, Dict, Any, Tuple, Optional, Union, Set
 from dataclasses import dataclass, field
+from backend.data.schemas_intent import ActionSubjectResult
+from backend.services.orchestrator import intent_aux_classifier
+from backend.services.orchestrator.intent_config import get_intent_aux_classifier_config, is_aux_classifier_enabled
 from backend.utils import intent_classifier
 
 logger = logging.getLogger("janus_backend")
@@ -497,6 +500,13 @@ PERSONAL_RECALL_KEYWORDS: List[str] = [
     'was habe ich', 'welches habe ich', 'wann habe ich', 'wo habe ich'
 ]
 
+CONTACT_RELATIONSHIP_RECALL_RE = re.compile(
+    r"\b(?:wer\s+ist|wie\s+hei(?:ß|ss)t)\s+"
+    r"[^\n,?.!]{1,40}?s\s+"
+    r"(?:freundin|freund|partnerin|partner|ehefrau|ehemann)\b",
+    re.IGNORECASE,
+)
+
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # FILESYSTEM INTENT KEYWORDS (TASK-001: BACKLOG-004)
@@ -858,6 +868,20 @@ _FACT_TELLING_PATTERNS: List[re.Pattern] = [
     re.compile(r'(mein\s+name\s+ist)\s+', re.IGNORECASE),   # "Mein Name ist Max..."
     re.compile(r'(ich\s+arbeite\s+als)\s+', re.IGNORECASE), # "Ich arbeite als..."
     re.compile(r'(ich\s+wohne\s+in)\s+', re.IGNORECASE),    # "Ich wohne in..."
+    re.compile(
+        r'\b(?:der|die|das)?\s*[A-ZÄÖÜ][\wäöüÄÖÜß-]{2,}\s+'
+        r'(?:mag|liebt|hasst|bevorzugt|wohnt|lebt|hat|besitzt|verbringt\s+gerne|verbringt\s+gern|spielt\s+gerne|spielt\s+gern)\b',
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r'^\s*(?:und\s+)?(?:er|sie)\s+'
+        r'(?:hat|besitzt|mag|liebt|hasst|bevorzugt|wohnt|lebt|spielt\s+gerne|spielt\s+gern)\b',
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r'^\s*[\wäöüÄÖÜß-]{2,}s\s+(?:hund|katze|haustier)\s+[\wäöüÄÖÜß-]{2,}\s+ist\b',
+        re.IGNORECASE,
+    ),
     
     # BUG-SYS-019-V2: Einleitungs-Muster
     re.compile(r'(hier\s+sind|hier\s+ist|ich\s+erzähle\s+dir|merke\s+dir|infos?\s+über\s+mich|ein\s+paar\s+infos)', re.IGNORECASE),
@@ -983,6 +1007,118 @@ class IntentEngine:
         self.filesystem_action_markers = FILESYSTEM_ACTION_MARKERS
         self.filesystem_object_markers = FILESYSTEM_OBJECT_MARKERS
         self.filesystem_path_markers = FILESYSTEM_PATH_MARKERS
+
+    @staticmethod
+    def _derive_legacy_aux_action(result: IntentDetectionResult) -> str:
+        if result.is_calendar_creation:
+            return "create"
+        if result.is_calendar_mutation:
+            return "mutate"
+        if result.is_personal_recall:
+            return "recall"
+        if result.is_fact_telling:
+            return "tell_fact"
+        if result.is_ambiguous:
+            return "clarify"
+        return "general"
+
+    @staticmethod
+    def _has_guardrail_primary_intent(result: IntentDetectionResult) -> bool:
+        return any(
+            (
+                result.is_shopping_intent,
+                result.is_local_business_intent,
+                result.is_image_intent,
+                result.is_multitask_image_pdf,
+                result.is_video_intent,
+                result.is_video_list_intent,
+                result.is_video_understanding_intent,
+                result.is_routing_geo_intent,
+                result.is_weather_intent,
+                result.is_wikipedia_intent,
+                result.is_news_intent,
+                result.is_filesystem_intent,
+            )
+        )
+
+    def _apply_aux_classifier_merge(
+        self,
+        result: IntentDetectionResult,
+        user_text: str,
+        *,
+        calendar_snapshot: Optional[Dict[str, Any]] = None,
+    ) -> Optional[ActionSubjectResult]:
+        if not is_aux_classifier_enabled():
+            return None
+
+        aux_config = get_intent_aux_classifier_config()
+        aux_result = intent_aux_classifier.classify_sync(
+            user_text,
+            calendar_snapshot=calendar_snapshot,
+            config=aux_config,
+        )
+
+        if aux_result.confidence < aux_config.medium_confidence_threshold:
+            return aux_result
+
+        if self._has_guardrail_primary_intent(result) and aux_result.action not in {"create", "mutate"}:
+            result.vetoed_intents["aux_classifier"] = "guardrail_primary_intent"
+            return aux_result
+
+        legacy_action = self._derive_legacy_aux_action(result)
+        action_conflict = (
+            legacy_action in {"recall", "tell_fact", "mutate", "create"}
+            and aux_result.action in {"recall", "tell_fact", "mutate", "create"}
+            and legacy_action != aux_result.action
+        )
+        if aux_result.confidence < aux_config.high_confidence_threshold and action_conflict:
+            result.is_ambiguous = True
+            result.ambiguity_confidence = max(result.ambiguity_confidence, aux_result.confidence)
+            result.vetoed_intents["aux_classifier"] = "aux_legacy_conflict"
+            return aux_result
+
+        mapped = intent_aux_classifier.map_action_subject_to_legacy_flags(aux_result)
+
+        if aux_result.action in {"recall", "tell_fact"}:
+            result.is_personal_recall = mapped["is_personal_recall"]
+            result.is_fact_telling = mapped["is_fact_telling"]
+            if aux_result.confidence >= aux_config.high_confidence_threshold:
+                result.is_self_referential = mapped["is_self_referential"]
+            elif aux_result.subject == "self":
+                result.is_self_referential = True
+        elif aux_result.action in {"create", "mutate"}:
+            result.is_calendar_intent = True
+            result.is_calendar_creation = mapped["is_calendar_creation"]
+            result.is_calendar_mutation = mapped["is_calendar_mutation"]
+            if result.is_calendar_mutation and not result.mutation_target:
+                result.mutation_target = _extract_mutation_target(user_text)
+
+        if aux_result.action == "clarify":
+            result.is_ambiguous = True
+            result.ambiguity_confidence = max(result.ambiguity_confidence, aux_result.confidence)
+        elif aux_result.confidence >= aux_config.high_confidence_threshold and result.is_ambiguous:
+            result.is_ambiguous = False
+            result.ambiguity_confidence = 0.0
+            result.vetoed_intents["ambiguity"] = "aux_classifier_high_confidence"
+
+        if result.is_personal_recall and result.is_wikipedia_intent:
+            result.is_wikipedia_intent = False
+            result.vetoed_intents["wikipedia"] = "personal_recall_contact_statement"
+        if result.is_fact_telling and result.is_news_intent:
+            result.is_news_intent = False
+            result.vetoed_intents["news"] = "fact_telling_contact_statement"
+        if (result.is_personal_recall or result.is_fact_telling) and result.is_ambiguous:
+            result.is_ambiguous = False
+            result.ambiguity_confidence = 0.0
+            result.vetoed_intents["ambiguity"] = (
+                "personal_recall_contact_statement"
+                if result.is_personal_recall
+                else "fact_telling_contact_statement"
+            )
+        if result.is_calendar_mutation and result.is_fact_telling:
+            result.is_fact_telling = False
+
+        return aux_result
 
     def _has_price_signal(self, text_norm: str) -> bool:
         return bool(_PRICE_RE.search(text_norm))
@@ -1176,6 +1312,15 @@ class IntentEngine:
         if self.detect_video_intent(user_text):
             return False
         text_lower = user_text.lower()
+        if re.search(
+            r"\b(?:was\s+(?:weißt|weisst)\s+du(?:\s+alles)?\s+(?:über|ueber)|"
+            r"was\s+mag|was\s+m(?:ö|oe)gen|was\s+hasst|welche\s+(?:vorlieben|abneigungen)|"
+            r"was\s+sind\s+.*(?:vorlieben|abneigungen))\b",
+            text_lower,
+        ):
+            return True
+        if CONTACT_RELATIONSHIP_RECALL_RE.search(user_text):
+            return True
         return any(kw in text_lower for kw in self.personal_recall_keywords)
     
     # ─────────────────────────────────────────────────────────────────────────
@@ -1359,6 +1504,8 @@ class IntentEngine:
         for line in lines:
             line = line.strip()
             if not line:
+                continue
+            if re.match(r"^(?:was|wer|wie|welche|welcher|welches|wann|wo|warum|wieso)\b", line.lower()):
                 continue
             for pattern in self.fact_telling_patterns:
                 if pattern.search(line):
@@ -1594,8 +1741,11 @@ class IntentEngine:
         # Was gibt es Neues-Muster
         if re.search(r"\bwas gibt es neues\b", t):
             return True
-        # Heise/Tagesschau-spezifisch
-        if re.search(r"\b(?:heise|tagesschau|spiegel|zeit)\b", t):
+        # Heise/Tagesschau-spezifisch. "Zeit" is only a source marker with
+        # context, otherwise ordinary phrases like "Zeit im Garten" become news.
+        if re.search(r"\b(?:heise|tagesschau|spiegel)\b", t):
+            return True
+        if re.search(r"\b(?:die\s+zeit|zeit\s+online)\b", t):
             return True
         # Tagesaktuelle Fragen
         if re.search(r"\b(?:heute|morgen|gestern)\s+.*\b(?:news|nachrichten)\b", t):
@@ -1756,9 +1906,24 @@ class IntentEngine:
 
         # Fact-telling detection (BUG-SYS-019)
         _is_fact_telling = self.is_fact_telling_pattern(user_text)
+        if _is_fact_telling and news_on:
+            news_on = False
+            vetoed["news"] = "fact_telling_contact_statement"
+        _is_personal_recall = self.detect_personal_recall(user_text)
+        if _is_personal_recall and wikipedia_on:
+            wikipedia_on = False
+            vetoed["wikipedia"] = "personal_recall_contact_statement"
         
         # 💎 BACKLOG-037: Ambiguity-Detection für Gemini
         _is_ambiguous, _ambiguity_confidence = detect_ambiguity_in_query(user_text)
+        if (_is_personal_recall or _is_fact_telling) and _is_ambiguous:
+            _is_ambiguous = False
+            _ambiguity_confidence = 0.0
+            vetoed["ambiguity"] = (
+                "personal_recall_contact_statement"
+                if _is_personal_recall
+                else "fact_telling_contact_statement"
+            )
         if _is_ambiguous:
             logger.info(
                 "[AMBIGUITY-DETECTION] Ambige Anfrage erkannt: confidence=%.2f, query=%r",
@@ -1784,7 +1949,7 @@ class IntentEngine:
             is_calendar_creation=_is_creation,
             mutation_target=_mutation_target,
             is_local_business_intent=self.detect_local_business_intent(user_text),
-            is_personal_recall=self.detect_personal_recall(user_text),
+            is_personal_recall=_is_personal_recall,
             is_image_intent=self.detect_image_intent(user_text),
             is_multitask_image_pdf=self.detect_multitask_image_pdf(user_text),
             has_tool_trigger=self.has_ollama_tool_trigger(user_text),
@@ -1814,6 +1979,12 @@ class IntentEngine:
             summary_global_veto=summary_global_veto,
             meta_agent_global_veto=meta_agent_global_veto,
             named_channel_video=named_channel_video,
+        )
+
+        self._apply_aux_classifier_merge(
+            result,
+            user_text,
+            calendar_snapshot=calendar_snapshot,
         )
 
         precedence = (

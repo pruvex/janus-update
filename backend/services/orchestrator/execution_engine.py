@@ -214,6 +214,23 @@ def _is_pet_overview_query_text(query: str) -> bool:
     return any(term in normalized.split() for term in ("haustier", "haustiere", "hund", "katze"))
 
 
+def _is_contact_recall_query_text(query: str) -> bool:
+    normalized = re.sub(r"[^\wäöüÄÖÜß]+", " ", str(query or "").casefold()).strip()
+    if not normalized:
+        return False
+
+    patterns = (
+        r"\bwer\s+ist\s+[^\n,?.!]{1,40}?s\s+(freundin|freund|partnerin|partner|ehefrau|ehemann)\b",
+        r"\bwie\s+heisst\s+[^\n,?.!]{1,40}?s\s+(freundin|freund|partnerin|partner|ehefrau|ehemann)\b",
+        r"\bwas\s+(weisst|weißt|weiss)\s+du(?:\s+alles)?\s+(ueber|über)\b",
+        r"\bwas\s+mag\b",
+        r"\bwelche\s+(vorlieben|hobbys)\s+hat\b",
+        r"\bwas\s+ist\s+[^\n,?.!]{1,40}lieblings",
+        r"\bwas\s+erinnert\s+dich\s+an\b",
+    )
+    return any(re.search(pattern, normalized) for pattern in patterns)
+
+
 def _collect_memory_read_facts(tool_results: Any) -> List[str]:
     facts: List[str] = []
     seen: set[str] = set()
@@ -286,9 +303,6 @@ def _build_pet_overview_memory_read_fallback(query: str, facts: List[str]) -> st
             f"ist {pet_type}",
         }:
             return
-        if " mag " in f" {predicate_norm} " or predicate_norm.startswith("mag "):
-            return
-
         existing = {
             str(item).strip().strip(".").casefold()
             for item in (state.get("details") or [])
@@ -551,6 +565,8 @@ def _should_force_memory_read_fallback(user_text: str, tool_results: Any) -> boo
     if not query:
         return False
     facts = _collect_memory_read_facts(tool_results)
+    if facts and _is_contact_recall_query_text(query):
+        return True
     if _build_pet_overview_memory_read_fallback(query, facts):
         return True
     return False
