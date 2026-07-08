@@ -4,6 +4,19 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-MEM-M1.1 - Implement Memory Phase A+B as one bounded guarded retrieval slice
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-MEM-M1.1_final_audit.md` (PASS)
+- **Spec**: `documentation/Cursor specs/MEMORY_HERMES_INSPIRED_UPGRADE_PLAN.md`
+- **Parent Task**: `documentation/tasks/TASK-MEM-M1_memory_phase_ab_hot_layer_caps_and_on_demand_injection.md`
+- **Task Breakdown**: `documentation/tasks/TASK-MEM-M1.1_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-MEM-M1.1_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-MEM-M1.1_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-MEM-M1.1_AUDIT_PACKAGE.md`
+- **Validation**: `TASK-MEM-M1.1` schliesst die erste gebuendelte Memory-MA/MB-Slice als bounded Retrieval-/Injection-Haertung ab. Allgemeine Memory-Injection wird fuer generische/externe Queries jetzt on-demand unterdrueckt, waehrend Health-/Medical-Pfade explizit aktiv bleiben; zusaetzlich begrenzt ein optionaler Hot-Layer-Cap `core_always`-Memory mit geschuetzten `health`-/`medical`-Slots und neuer Drop-Observability. Final Audit PASS mit fokussierter Compile-, Pytest-, Manual-Janus- und Validator-Evidenz. Spaetere Memory-Phasen wie Session-Search, Frozen Core und USER.md-Export bleiben dabei bewusst offen.
+- **Changed Files**: `backend/services/memory/retrieval_service.py`, `backend/services/memory_budget.py`, `backend/services/memory_observability.py`, `backend/services/chat_orchestrator.py`, `backend/tests/test_memory_hot_layer_cap.py`, `backend/tests/test_memory_on_demand_injection.py`, `documentation/tasks/TASK-MEM-M1.1_execution_result.md`, `documentation/tasks/TASK-MEM-M1.1_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-MEM-M1.1_final_audit.md`.
+
 ### TASK-INTENT-M1.3 - Prove benchmark uplift, latency guardrails, and staged enablement for the auxiliary classifier
 
 - **Status**: DONE WITH CAVEAT

@@ -53,7 +53,7 @@ _PERSONAL_SCOPE_HINT_RE = re.compile(
     r"\b(?:meine?|mein|mir|mich|my|me|"
     r"vorlieben|praeferenzen|präferenzen|preferences|"
     r"interessen|interests|allerg(?:ie|ien)|unvertraeglichkeit(?:en)?|unverträglichkeit(?:en)?|"
-    r"gesundheit|health|familie|family|wohnort|adresse|budget|kalender|termine)\b",
+    r"gesundheit|health|familie|family|wohnort|adresse|budget|kalender|termine|wo\s+ich\s+wohne|where\s+i\s+live)\b",
     re.IGNORECASE,
 )
 _STRICT_SHORT_FORMAT_REPLY_RE = re.compile(
@@ -67,6 +67,166 @@ _STRICT_SHORT_FORMAT_REPLY_RE = re.compile(
     r")\b",
     re.IGNORECASE,
 )
+
+_CONTACT_QUERY_SCOPE_PATTERNS = [
+    re.compile(r"\bwas\s+mag(?:en)?\s+(.+)$", re.IGNORECASE),
+    re.compile(r"\bwas\s+wei(?:ß|ss)t\s+du\s+über\s+(.+)$", re.IGNORECASE),
+    re.compile(r"\bich\s+will\s+mit\s+(.+)$", re.IGNORECASE),
+    re.compile(r"\bmein(?:e|en)?\s+(?:freund|freundin)\s+(.+)$", re.IGNORECASE),
+    re.compile(r"\bkorr(?:e|i)ktur:?\s+(.+)$", re.IGNORECASE),
+    re.compile(
+        r"^\s*([a-zäöüß][\wäöüß-]*(?:\s+[a-zäöüß][\wäöüß-]*){0,2})\s+"
+        r"(?:liebt|mag|ist|wohnt|hasst|verbringt|baut)\b",
+        re.IGNORECASE,
+    ),
+]
+_CONTACT_QUERY_STOPWORDS = {
+    "als",
+    "am",
+    "an",
+    "bei",
+    "bin",
+    "das",
+    "dem",
+    "den",
+    "der",
+    "die",
+    "du",
+    "ein",
+    "eine",
+    "er",
+    "essen",
+    "fuer",
+    "für",
+    "geht",
+    "gehen",
+    "heute",
+    "ich",
+    "im",
+    "in",
+    "ist",
+    "mag",
+    "mit",
+    "nicht",
+    "sie",
+    "und",
+    "was",
+    "weiss",
+    "weißt",
+    "wohnt",
+    "zu",
+    "zum",
+}
+
+
+def _normalize_contact_scope_text(value: Any) -> str:
+    normalized = str(value or "").casefold()
+    normalized = (
+        normalized.replace("ä", "ae")
+        .replace("ö", "oe")
+        .replace("ü", "ue")
+        .replace("ß", "ss")
+        .replace("Ã¤", "ae")
+        .replace("Ã¶", "oe")
+        .replace("Ã¼", "ue")
+        .replace("ÃŸ", "ss")
+    )
+    return re.sub(r"[^a-z0-9]+", " ", normalized).strip()
+
+
+def _candidate_scope_aliases_from_fragment(fragment: str) -> List[str]:
+    normalized = _normalize_contact_scope_text(fragment)
+    if not normalized:
+        return []
+
+    aliases: List[str] = []
+    for part in re.split(r"\bund\b|,|/|;", normalized):
+        tokens: List[str] = []
+        for token in part.split():
+            if token in _CONTACT_QUERY_STOPWORDS:
+                break
+            if len(token) < 3:
+                continue
+            tokens.append(token)
+            if len(tokens) >= 2:
+                break
+        if not tokens:
+            continue
+        phrase = " ".join(tokens)
+        if phrase not in aliases:
+            aliases.append(phrase)
+        for token in tokens:
+            if token not in aliases:
+                aliases.append(token)
+    return aliases
+
+
+def _extract_contact_query_scope_aliases(db: Session, query: str) -> List[str]:
+    aliases: List[str] = []
+    normalized_query = _normalize_contact_scope_text(query)
+    if not normalized_query:
+        return aliases
+
+    for contact in db.query(models.Contact).all():
+        for raw_alias in (getattr(contact, "name", None), getattr(contact, "nickname", None)):
+            alias = _normalize_contact_scope_text(raw_alias)
+            if not alias:
+                continue
+            if re.search(rf"(?<!\w){re.escape(alias)}(?!\w)", normalized_query):
+                if alias not in aliases:
+                    aliases.append(alias)
+                for token in alias.split():
+                    if len(token) >= 3 and token not in aliases:
+                        aliases.append(token)
+
+    for pattern in _CONTACT_QUERY_SCOPE_PATTERNS:
+        match = pattern.search(query or "")
+        if not match:
+            continue
+        for alias in _candidate_scope_aliases_from_fragment(match.group(1)):
+            if alias not in aliases:
+                aliases.append(alias)
+    if aliases:
+        return aliases
+
+    normalized_scope_patterns = [
+        re.compile(r"\bwas\s+mag(?:en)?\s+(.+)$"),
+        re.compile(r"\bwas\s+weisst\s+du\s+ueber\s+(.+)$"),
+        re.compile(r"\bich\s+will\s+mit\s+(.+)$"),
+        re.compile(r"\bmein(?:e|en)?\s+(?:freund|freundin)\s+(.+)$"),
+        re.compile(r"\bkorr(?:e|i)ktur\s+(.+)$"),
+        re.compile(
+            r"^\s*([a-z][a-z0-9-]*(?:\s+[a-z][a-z0-9-]*){0,2})\s+"
+            r"(?:liebt|mag|ist|wohnt|hasst|verbringt|baut)\b"
+        ),
+    ]
+    for pattern in normalized_scope_patterns:
+        match = pattern.search(normalized_query)
+        if not match:
+            continue
+        for alias in _candidate_scope_aliases_from_fragment(match.group(1)):
+            if alias not in aliases:
+                aliases.append(alias)
+    return aliases
+
+
+def _slot_matches_contact_scope(slot: MemorySlot, scope_aliases: List[str]) -> bool:
+    if not scope_aliases:
+        return True
+    haystack = " ".join(
+        part
+        for part in (
+            _normalize_contact_scope_text(getattr(slot, "text", "")),
+            _normalize_contact_scope_text(" ".join(getattr(slot, "tags", []) or [])),
+        )
+        if part
+    ).strip()
+    if not haystack:
+        return False
+    return any(
+        alias and re.search(rf"(?<!\w){re.escape(alias)}(?!\w)", haystack)
+        for alias in scope_aliases
+    )
 
 
 def _is_context_privacy_memory_suppressed_query(query: str) -> bool:
@@ -105,6 +265,44 @@ def _is_generic_memory_suppressed_query(query: str) -> bool:
     return _is_context_privacy_memory_suppressed_query(query)
 
 
+def should_inject_memory(query: str, intent_result: Optional[Any] = None) -> bool:
+    normalized = " ".join(str(query or "").strip().lower().split())
+    if not normalized:
+        return False
+    if _is_generic_memory_suppressed_query(query):
+        return False
+    if _PERSONAL_SCOPE_HINT_RE.search(normalized):
+        return True
+    if any(pattern.search(query or "") for pattern in _CONTACT_QUERY_SCOPE_PATTERNS):
+        return True
+
+    if intent_result is not None:
+        if any(
+            (
+                getattr(intent_result, "is_personal_recall", False),
+                getattr(intent_result, "is_fact_telling", False),
+                getattr(intent_result, "is_self_referential", False),
+                getattr(intent_result, "is_calendar_intent", False),
+            )
+        ):
+            return True
+        if any(
+            (
+                getattr(intent_result, "is_weather_intent", False),
+                getattr(intent_result, "is_routing_geo_intent", False),
+                getattr(intent_result, "is_wikipedia_intent", False),
+                getattr(intent_result, "is_news_intent", False),
+                getattr(intent_result, "is_local_business_intent", False),
+                getattr(intent_result, "is_shopping_intent", False),
+            )
+        ):
+            return False
+
+    if _EXTERNAL_CONTEXT_QUERY_RE.search(normalized):
+        return False
+    return True
+
+
 def _dedupe_health_memories_jaccard(memories: List[Any]) -> List[Any]:
     """Behält bevorzugt höher-priorisierte Zeilen; überspringt Fakten mit >70 % Jaccard-Ähnlichkeit zu einer behaltenen."""
     if len(memories) < 2:
@@ -139,6 +337,75 @@ def _dedupe_health_memories_jaccard(memories: List[Any]) -> List[Any]:
     return kept
 
 
+def _tier_for_priority(priority: Optional[float]) -> str:
+    value = float(priority or 0.0)
+    if value >= 0.95:
+        return "core_always"
+    if value >= 0.8:
+        return "core_identity"
+    return "global_query"
+
+
+def _load_health_slots(
+    db: Session,
+    *,
+    seen_ids: set[int],
+    title_for: Any,
+) -> List[MemorySlot]:
+    now = datetime.datetime.now()
+    batch_exclusion_filter = ~models.Memory.id.in_(seen_ids) if seen_ids else True
+    health_candidates = db.query(models.Memory).filter(
+        batch_exclusion_filter,
+        or_(
+            models.Memory.category.in_(["Gesundheit", "Health"]),
+            and_(
+                models.Memory.snippet.isnot(None),
+                or_(
+                    models.Memory.snippet.ilike("%allergie%"),
+                    models.Memory.snippet.ilike("%nuss%"),
+                    models.Memory.snippet.ilike("%krankheit%"),
+                    models.Memory.snippet.ilike("%medizin%"),
+                    models.Memory.snippet.ilike("%reaktion%"),
+                ),
+            ),
+        ),
+        or_(
+            models.Memory.expires_at == None,
+            models.Memory.expires_at > now,
+        ),
+    ).all()
+
+    _pre_dedupe = len(health_candidates)
+    health_facts = _dedupe_health_memories_jaccard(health_candidates)
+    if len(health_facts) < _pre_dedupe:
+        logger.info(
+            "[HEALTH-INJECTOR] Jaccard dedup: %d -> %d rows",
+            _pre_dedupe,
+            len(health_facts),
+        )
+
+    slots: List[MemorySlot] = []
+    injected_count = 0
+    for mem in health_facts:
+        if mem.id in seen_ids:
+            continue
+        snippet_text = str(getattr(mem, "snippet", ""))
+        if _is_meta_noise(snippet_text):
+            logger.info(f"[META-NOISE-REJECT] Slot id={mem.id} verworfen (Meta-Noise Health): {snippet_text[:80]}...")
+            memory_metrics.increment("reads_meta_noise_rejected")
+            continue
+        slot = memory_to_slot(mem, "health_mandatory", chat_title=title_for(mem.chat_id))
+        if not any(str(tag or "").strip().lower() == "health" for tag in slot.tags):
+            slot.tags.append("health")
+        slots.append(slot)
+        seen_ids.add(mem.id)
+        touch_memory_snippet(db, mem.id)
+        injected_count += 1
+
+    logger.info("[HEALTH-INJECTOR] Injected %d/%d health facts", injected_count, len(health_facts))
+    return slots
+
+
 def estimate_tokens(text: str) -> int:
     """Grobe Schätzung der Tokenanzahl (3-4 Zeichen pro Token)."""
     return len(text) // 3
@@ -149,16 +416,18 @@ def get_last_subject_from_chat(db: Session, chat_id: int) -> Optional[Dict[str, 
     Ruft den subject_name und die subject_role des jüngsten Fakts für eine chat_id ab.
     Nützlich, um den Kontext aufrechtzuerhalten, wenn der aktuelle User-Prompt keinen Namen enthält.
     """
-    latest_memory = db.query(models.Memory).filter(
+    recent_memories = db.query(models.Memory).filter(
         models.Memory.chat_id == chat_id
-    ).order_by(models.Memory.created_at.desc()).first()
+    ).order_by(models.Memory.created_at.desc()).limit(20).all()
 
-    if latest_memory and latest_memory.snippet:
+    for latest_memory in recent_memories:
+        if not latest_memory or not latest_memory.snippet:
+            continue
         try:
             fact_data = json.loads(latest_memory.snippet)
             subject_name = fact_data.get('subject_name')
             subject_role = fact_data.get('subject_role')
-            if subject_name and subject_role:
+            if subject_name and subject_role and str(subject_name).strip().lower() != "unbekannt":
                 return {"subject_name": subject_name, "subject_role": subject_role}
         except json.JSONDecodeError:
             logger.warning(f"Konnte Snippet {latest_memory.id} nicht als JSON parsen.")
@@ -355,6 +624,7 @@ def retrieve_diamond_slots(
     max_tokens: int = 8000,
     similarity_threshold: float = SIMILARITY_THRESHOLD,
     identity: "Optional[Any]" = None,  # IdentitySlot (Task 013) — injected after knapsack
+    include_general_memory: bool = True,
 ) -> List[MemorySlot]:
     """
     V3 (GLOBAL-UNLOCK): Liefert MemorySlots für Budget-Aware Selection.
@@ -373,7 +643,7 @@ def retrieve_diamond_slots(
     seen_ids: set = set()  # Deduplizierung
     now = datetime.datetime.now()
 
-    if _is_generic_memory_suppressed_query(query):
+    if include_general_memory and _is_generic_memory_suppressed_query(query):
         logger.info(
             "[MEMORY SUPPRESS] Generic/underspecified query skips memory injection: %r",
             str(query or "")[:80],
@@ -383,11 +653,6 @@ def retrieve_diamond_slots(
     # ═══════════════════════════════════════════════════════════════════════════
     # ISSUE 011: Query-Embedding EINMAL berechnen (wiederverwendbar)
     # ═══════════════════════════════════════════════════════════════════════════
-    query_embedding = vector_service.get_query_embedding(query)
-    if query_embedding is None:
-        logger.error("[RETRIEVE SLOTS] Konnte Query-Embedding nicht generieren - verwende Fallback")
-        # Fallback: Return RAM-Cache-only results (graceful degrade)
-        return slots
 
     # ═══════════════════════════════════════════════════════════════════════════
     # 0. EPISODIC MEMORY: Batch-Load aller Chat-Titel (ein Query, O(n) chats)
@@ -413,6 +678,20 @@ def retrieve_diamond_slots(
             return _active_chat_title or "Hintergrund-Extraktion"
         return _chat_title_map.get(cid, f"Chat #{cid}")
 
+    if not include_general_memory:
+        logger.info(
+            "[MEMORY ON DEMAND] General retrieval skipped for query=%r; health injector remains active",
+            str(query or "")[:120],
+        )
+        slots.extend(_load_health_slots(db, seen_ids=seen_ids, title_for=_title_for))
+        return slots
+
+    query_embedding = vector_service.get_query_embedding(query)
+    if query_embedding is None:
+        logger.error("[RETRIEVE SLOTS] Konnte Query-Embedding nicht generieren - verwende Fallback")
+        # Fallback: Return RAM-Cache-only results (graceful degrade)
+        return slots
+
     # ═══════════════════════════════════════════════════════════════════════════
     # 1. CACHE-FIRST: High-Prio Memories aus dem RAM-Cache laden (O(1), kein DB-Hit)
     # ═══════════════════════════════════════════════════════════════════════════
@@ -430,7 +709,7 @@ def retrieve_diamond_slots(
                 continue
             # ═══════════════════════════════════════════════════════════════════════════
             slot = cached_memory_to_slot(
-                cached, "core_identity",
+                cached, _tier_for_priority(getattr(cached, "priority", None)),
                 chat_title=_title_for(getattr(cached, "chat_id", None)),
             )
             slots.append(slot)
@@ -521,7 +800,7 @@ def retrieve_diamond_slots(
                 logger.info(f"[META-NOISE-REJECT] Slot id={mem.id} verworfen (Meta-Noise High-Prio): {snippet_text[:80]}...")
                 memory_metrics.increment("reads_meta_noise_rejected")
                 continue
-            slot = memory_to_slot(mem, "core_identity", chat_title=_title_for(mem.chat_id))
+            slot = memory_to_slot(mem, _tier_for_priority(mem.priority), chat_title=_title_for(mem.chat_id))
             slots.append(slot)
             seen_ids.add(mem.id)
             touch_memory_snippet(db, mem.id)
@@ -534,32 +813,7 @@ def retrieve_diamond_slots(
 
     # 1b. HARD-FACT-INJECTOR (Gesundheit/Allergien)
     logger.info("[HEALTH-INJECTOR] === INJECTOR CALLED === chat_id=%d, query='%s...'", chat_id, query[:50])
-
-    # Dedup Health-Fakten mit Jaccard
-    _pre_dedupe = len(health_candidates)
-    health_facts = _dedupe_health_memories_jaccard(health_candidates)
-    if len(health_facts) < _pre_dedupe:
-        logger.info(
-            "[HEALTH-INJECTOR] Jaccard dedup: %d -> %d rows",
-            _pre_dedupe, len(health_facts),
-        )
-
-    injected_count = 0
-    for mem in health_facts:
-        if mem.id not in seen_ids:
-            # META-NOISE FILTER
-            snippet_text = str(getattr(mem, "snippet", ""))
-            if _is_meta_noise(snippet_text):
-                logger.info(f"[META-NOISE-REJECT] Slot id={mem.id} verworfen (Meta-Noise Health): {snippet_text[:80]}...")
-                memory_metrics.increment("reads_meta_noise_rejected")
-                continue
-            slot = memory_to_slot(mem, "health_mandatory", chat_title=_title_for(mem.chat_id))
-            slots.append(slot)
-            seen_ids.add(mem.id)
-            touch_memory_snippet(db, mem.id)
-            injected_count += 1
-
-    logger.info("[HEALTH-INJECTOR] Injected %d/%d health facts", injected_count, len(health_facts))
+    slots.extend(_load_health_slots(db, seen_ids=seen_ids, title_for=_title_for))
 
     # ═══════════════════════════════════════════════════════════════════════════
     # 2. GLOBAL VECTOR SEARCH (priority 0.5-0.8) - Cross-Chat
@@ -636,6 +890,19 @@ def retrieve_diamond_slots(
         "[MEMORY RETRIEVE] chat_id=%d, query_len=%d, slots=%d (global unlock active)",
         chat_id, len(query), len(slots)
     )
+
+    scope_aliases = _extract_contact_query_scope_aliases(db, query)
+    if scope_aliases:
+        scoped_slots = [slot for slot in slots if _slot_matches_contact_scope(slot, scope_aliases)]
+        if scoped_slots:
+            logger.info(
+                "[MEMORY SUBJECT SCOPE] query=%r aliases=%s filtered_slots=%d/%d",
+                str(query or "")[:120],
+                scope_aliases,
+                len(scoped_slots),
+                len(slots),
+            )
+            slots = scoped_slots
 
     # ── Identity Preload (Task 013) ───────────────────────────────────────────
     # Note: this injection point is PRE-budget (slots returned here go through

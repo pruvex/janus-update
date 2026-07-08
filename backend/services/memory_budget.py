@@ -18,6 +18,10 @@ logger = logging.getLogger("janus_backend")
 
 # Feature-Flag für sofortigen Rollback auf alten Code
 MEMORY_V2_ENABLED = os.getenv("MEMORY_V2_ENABLED", "true").lower() == "true"
+MEMORY_HOT_LAYER_CAP_ENABLED = os.getenv("MEMORY_HOT_LAYER_CAP_ENABLED", "false").lower() == "true"
+MEMORY_ON_DEMAND_INJECTION_ENABLED = os.getenv("MEMORY_ON_DEMAND_INJECTION_ENABLED", "false").lower() == "true"
+MAX_CORE_ALWAYS_TOKENS = int(os.getenv("MAX_CORE_ALWAYS_TOKENS", "400"))
+CORE_PROTECTED_TAGS = frozenset({"health", "medical"})
 
 
 @dataclass
@@ -25,7 +29,7 @@ class MemorySlot:
     """Repräsentiert einen einzelnen Memory-Slot mit Budget-relevanten Metadaten."""
     text: str
     tokens: int
-    tier: Literal["core_always", "core_query", "ephemeral", "stm"]
+    tier: Literal["core_always", "core_identity", "core_query", "global_query", "health_mandatory", "ephemeral", "stm"]
     priority: float
     memory_id: int
     tags: List[str]
@@ -305,6 +309,54 @@ def _is_placeholder_memory_slot(slot: MemorySlot) -> bool:
     return not any(marker in text for marker in concrete_markers)
 
 
+def _slot_has_protected_tag(slot: MemorySlot) -> bool:
+    return any(str(tag or "").strip().lower() in CORE_PROTECTED_TAGS for tag in (slot.tags or []))
+
+
+def _apply_core_hot_layer_cap(slots: List[MemorySlot]) -> tuple[List[MemorySlot], List[MemorySlot]]:
+    core_slots = [slot for slot in slots if slot.tier == "core_always"]
+    if not core_slots:
+        return slots, []
+
+    protected = sorted(
+        [slot for slot in core_slots if _slot_has_protected_tag(slot)],
+        key=lambda s: (-s.priority, s.tokens, s.memory_id),
+    )
+    non_protected = sorted(
+        [slot for slot in core_slots if not _slot_has_protected_tag(slot)],
+        key=lambda s: (-s.priority, s.tokens, s.memory_id),
+    )
+
+    kept_core: List[MemorySlot] = []
+    dropped_core: List[MemorySlot] = []
+    used_tokens = 0
+
+    for slot in protected:
+        kept_core.append(slot)
+        used_tokens += slot.tokens
+
+    for slot in non_protected:
+        if used_tokens + slot.tokens <= MAX_CORE_ALWAYS_TOKENS:
+            kept_core.append(slot)
+            used_tokens += slot.tokens
+        else:
+            dropped_core.append(slot)
+
+    if not dropped_core:
+        return slots, []
+
+    kept_ids = {slot.memory_id for slot in kept_core}
+    capped_slots = [slot for slot in slots if slot.tier != "core_always" or slot.memory_id in kept_ids]
+    logger.info(
+        "[CORE-CAP] dropped=%d protected=%d budget=%d used=%d",
+        len(dropped_core),
+        len(protected),
+        MAX_CORE_ALWAYS_TOKENS,
+        used_tokens,
+    )
+    return capped_slots, dropped_core
+
+
 def select_slots_by_budget(
     slots: List[MemorySlot],
     budget: TokenBudget,
@@ -323,6 +375,18 @@ def select_slots_by_budget(
         "[KNAPSACK] Starting selection: %d candidates, budget=%d tk",
         len(slots), budget.memory_budget
     )
+
+    if MEMORY_HOT_LAYER_CAP_ENABLED:
+        slots, dropped_core_slots = _apply_core_hot_layer_cap(slots)
+        if dropped_core_slots:
+            skipped = len(dropped_core_slots)
+            try:
+                from backend.services.memory_observability import memory_metrics
+
+                memory_metrics.increment("slots_dropped_total", skipped)
+                memory_metrics.increment("slots_dropped_core_cap", skipped)
+            except Exception as obs_err:
+                logger.debug("[CORE-CAP] Observability update skipped: %s", obs_err)
 
     # Sortiere nach Priorität (absteigend), dann nach Größe (aufsteigend)
     sorted_slots = sorted(
@@ -440,6 +504,7 @@ def format_memory_context(slots: List[MemorySlot]) -> str:
     tiers: Dict[str, List[MemorySlot]] = {
         "core_always": [],
         "core_identity": [],
+        "health_mandatory": [],
         "core_query": [],
         "global_query": [],
         "ephemeral": [],
@@ -449,6 +514,7 @@ def format_memory_context(slots: List[MemorySlot]) -> str:
     tier_labels = {
         "core_always": "### CORE IDENTITY (ALWAYS ACTIVE)",
         "core_identity": "### CORE IDENTITY",
+        "health_mandatory": "### HEALTH & MEDICAL SAFETY",
         "core_query": "### RELEVANT USER TRAITS",
         "global_query": "### GLOBALE ERINNERUNGEN",
         "ephemeral": "### ACTIVE FACTS & PLANS",
@@ -459,7 +525,7 @@ def format_memory_context(slots: List[MemorySlot]) -> str:
         tiers.setdefault(slot.tier, []).append(slot)
 
     sections = []
-    _tier_order = ["core_always", "core_identity", "global_query", "core_query", "ephemeral", "stm"]
+    _tier_order = ["health_mandatory", "core_always", "core_identity", "global_query", "core_query", "ephemeral", "stm"]
 
     for tier_key in _tier_order:
         tier_slots = tiers.get(tier_key)

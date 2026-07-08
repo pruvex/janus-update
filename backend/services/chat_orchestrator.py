@@ -1369,6 +1369,12 @@ class ChatOrchestrator:
         r"(?is).*(?:netten?|freundlichen?)\s+text.*",
         re.IGNORECASE,
     )
+    _CHAT_MAIL_CONFIRM_ONLY_RE = re.compile(
+        r"(?is)^\s*(?:ja|jawohl|jap|okay|ok|yes|yep|best(?:ä|ae)tige|genau|stimmt|korrekt|"
+        r"mach\s+so|mach\s+das|richtig|passt|nein|n(?:ö|oe)|no|abbrechen|stop|verwerfen|"
+        r"lieber\s+nicht|nicht\s+speichern)\s*[!?.]*\s*$",
+        re.IGNORECASE,
+    )
 
     @staticmethod
     def _mail_accounts_prompt(accounts: list[str], *, allow_all: bool) -> str:
@@ -1379,6 +1385,10 @@ class ChatOrchestrator:
             lines.append(f"{len(accounts)+1}. all")
         lines.append("Bitte antworte mit der Nummer.")
         return "\n".join(lines)
+
+    @classmethod
+    def _is_mail_confirmation_only(cls, text: str) -> bool:
+        return bool(cls._CHAT_MAIL_CONFIRM_ONLY_RE.match(str(text or "")))
 
     @staticmethod
     def _mail_pdf_candidates_prompt(candidates: list[dict]) -> str:
@@ -3279,6 +3289,7 @@ class ChatOrchestrator:
         text_no_pending = str(wf.user_text or "").strip()
         if text_no_pending:
             confirm_probe = mgs.classify_confirmation_reply(text_no_pending)
+            is_mail_confirmation_only = self._is_mail_confirmation_only(text_no_pending)
             wants_mail_edit = any(
                 rx.match(text_no_pending)
                 for rx in (
@@ -3290,7 +3301,7 @@ class ChatOrchestrator:
                     self._CHAT_MAIL_STYLE_RE,
                 )
             )
-            if confirm_probe in {"confirm", "reject"} or wants_mail_edit:
+            if wants_mail_edit or (confirm_probe in {"confirm", "reject"} and is_mail_confirmation_only):
                 wf.execution_for_api = ExecutionResponse(
                     text=(
                         "Es gibt gerade keinen offenen Mail-Entwurf in diesem Chat. "
@@ -4589,8 +4600,9 @@ class ChatOrchestrator:
                 wf.skip_llm_generation = False
                 logger.info('Hybrid-Reporter Prompt erstellt: %s Facts', len(wf.final_facts))
         else:
-            from backend.services.memory_budget import MEMORY_V2_ENABLED, TokenBudget, select_slots_by_budget, format_memory_context, extract_fact_coupons, format_fact_coupons
+            from backend.services.memory_budget import MEMORY_ON_DEMAND_INJECTION_ENABLED, MEMORY_V2_ENABLED, TokenBudget, select_slots_by_budget, format_memory_context, extract_fact_coupons, format_fact_coupons
             from backend.services.memory_manager import retrieve_diamond_slots
+            from backend.services.memory.retrieval_service import should_inject_memory
             wf._active_directives = []
             wf._active_directive_names = set()
             wf._has_negative_preferences = False
@@ -4606,7 +4618,27 @@ class ChatOrchestrator:
                         "[MEMORY-PRECEDE] retrieve_diamond_slots (health injector + slots) before tool loop, chat_id=%s",
                         request.chat_id,
                     )
-                    wf.slots = retrieve_diamond_slots(self.db, request.chat_id, wf.user_text, max_tokens=wf.model_limit)
+                    wf._should_inject_general_memory = True
+                    if MEMORY_ON_DEMAND_INJECTION_ENABLED:
+                        wf._should_inject_general_memory = should_inject_memory(
+                            wf.user_text,
+                            intent_result=wf.intent_detection_result,
+                        )
+                        logger.info(
+                            "[MEMORY ON DEMAND] inject_general=%s primary=%s weather=%s recall=%s query=%r",
+                            wf._should_inject_general_memory,
+                            getattr(wf.intent_detection_result, "primary_intent", None),
+                            getattr(wf.intent_detection_result, "is_weather_intent", False),
+                            getattr(wf.intent_detection_result, "is_personal_recall", False),
+                            str(wf.user_text or "")[:120],
+                        )
+                    wf.slots = retrieve_diamond_slots(
+                        self.db,
+                        request.chat_id,
+                        wf.user_text,
+                        max_tokens=wf.model_limit,
+                        include_general_memory=wf._should_inject_general_memory,
+                    )
                     wf._model_lower = str(request.model or '').lower()
                     wf._is_small_model = any((tag in wf._model_lower for tag in ('nano', 'mini', 'flash')))
                     wf._memory_ratio = 0.5 if wf._is_small_model else 0.3

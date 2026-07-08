@@ -1,6 +1,139 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-08 16:30 +02:00`, `TASK-MEM-M1.1` is now documentation-synced after final audit PASS. The bounded Memory Phase A+B slice is fully closed on the tracking surfaces: the parent Memory task now records the MA/MB closeout, the central registry and roadmap tracker both show `TASK-MEM-M1.1` as complete, and `PROJECT_STATE.md` reflects the sealed local delivery while keeping later Memory phases intentionally open.
+
+Current goal: checkpoint the completed `TASK-MEM-M1.1` delivery block without widening into Session-Search, Frozen Core, release/governance work, or new delegation experiments.
+
+Active phase: `janus-documentation-update` for `TASK-MEM-M1.1`, canonical state `PASS`.
+
+Last Codex work:
+- synced the final audit result into the parent Memory task, central registry, roadmap tracker, project state, CURRENT_STATE, and SKILL_USAGE_LOG
+- wrote the bounded documentation closeout artifact `documentation/tasks/TASK-MEM-M1.1_documentation_update.md`
+- kept `CHANGELOG.md`, `WHAT_I_LEARNED.md`, backlog, dashboard, and release surfaces intentionally out of scope with explicit skip reasons
+
+Changed files:
+- `documentation/tasks/TASK-MEM-M1_memory_phase_ab_hot_layer_caps_and_on_demand_injection.md`
+- `documentation/tasks/TASK-MEM-M1.1_documentation_update.md`
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `documentation/Cursor specs/ROADMAP_EPIC_ORDER.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py documentation/tasks/TASK-MEM-M1.1_final_audit.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-documentation-update\scripts\validate_doc_update.py --repo C:\KI\Janus-Projekt --marker TASK-MEM-M1.1 --require documentation/tasks/TASK-MEM-M1_memory_phase_ab_hot_layer_caps_and_on_demand_injection.md --require documentation/01_CENTRAL_TASK_REGISTRY.md --require PROJECT_STATE.md --require documentation/ai/CURRENT_STATE.md`: PASS
+- `git diff --check -- documentation/tasks/TASK-MEM-M1_memory_phase_ab_hot_layer_caps_and_on_demand_injection.md documentation/tasks/TASK-MEM-M1.1_documentation_update.md documentation/01_CENTRAL_TASK_REGISTRY.md PROJECT_STATE.md "documentation/Cursor specs/ROADMAP_EPIC_ORDER.md" documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS
+
+Open risks:
+- The repository still contains unrelated dirty and untracked work outside this bounded Memory closeout.
+- Later Memory phases (Session-Search, Frozen Core, USER.md export) remain intentionally open and must not be implied by this completed MA/MB slice.
+- No commit or push happened in this block, so `origin`, `backup`, and `origin/codex-sync` must not be assumed to contain this newest CURRENT_STATE snapshot.
+
+Next recommended step for ChatGPT: describe `TASK-MEM-M1.1` as fully implemented, audited, and documentation-synced, while keeping later Memory phases explicitly open.
+
+Next recommended step for Codex: run `janus-git-governance` for a targeted checkpoint commit if the user wants this sealed Memory slice saved.
+
+Last updated: `2026-07-08 16:30:04 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-08 15:52 +02:00`, the next Memory slice still remains `TASK-MEM-M1.1`, but the operator chose the bounded helper path `2 = Cursor review first` instead of immediate local implementation. Codex therefore prepared a review-only Cursor handoff for the precheck-passed Memory MA/MB package while keeping final implementation authority local. The product path is unchanged: the next real code step is still `janus-executioner` on `TASK-MEM-M1.1`.
+
+Current goal: collect bounded Cursor review evidence on the Memory MA/MB package without handing off authoritative execution of the roadmap slice.
+
+Active phase: bounded review handoff preparation for `TASK-MEM-M1.1`, canonical state `HANDOFF`.
+
+Last Codex work:
+- prepared a Cursor review package for `TASK-MEM-M1.1`
+- kept the handoff strictly review/draft-only and preserved Codex as final implementation owner
+
+Changed files:
+- `documentation/codex/model-routing/HANDOFF_MEMORY_MA_MB_REVIEW_TO_CURSOR_2026-07-08.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- source package review against `TASK-MEM-M1.1` precheck and task artifacts: PASS
+- scoped `git diff --check` for the new handoff and CURRENT_STATE not yet rerun in this snapshot
+
+Open risks:
+- The repo still contains substantial unrelated dirty and untracked work outside this bounded Memory handoff.
+- `TASK-MEM-M1.1` implementation is still not started.
+- `origin` and `origin/codex-sync` still do not contain this newest CURRENT_STATE snapshot.
+
+Next recommended step for ChatGPT: describe the state as `Cursor review in front of a precheck-passed local implementation slice`, not as delegated execution.
+
+Next recommended step for Codex: consume bounded Cursor review feedback, then implement `TASK-MEM-M1.1` locally with `janus-executioner`.
+
+Last updated: `2026-07-08 15:52:18 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-08 15:48 +02:00`, the next Track-A roadmap slice is now released and precheck-ready: `Memory MA/MB` has been compiled into one bounded execution task, refined, and validated for implementation as `TASK-MEM-M1.1`. This moves the project cleanly off the sealed Intent M1.3 checkpoint without widening into M2, Session-Search, Frozen Core, Transport, OAuth, OpenRouter, or delegation hardening.
+
+Current goal: start the bounded `TASK-MEM-M1.1` implementation block for Memory Phase A+B with the validated retrieval/injection scope and explicit health-safety guardrails.
+
+Active phase: pre-implementation release for `TASK-MEM-M1.1`, canonical state `PASS`.
+
+Last Codex work:
+- compiled the Memory spec sections 4 and 5 into `documentation/tasks/TASK-MEM-M1_memory_phase_ab_hot_layer_caps_and_on_demand_injection.md`
+- released exactly one target slice in `documentation/tasks/TASK-MEM-M1.1_task_breakdown.md`
+- wrote and validated `documentation/tasks/TASK-MEM-M1.1_preimplementation_check.md`
+
+Changed files:
+- `documentation/tasks/TASK-MEM-M1_memory_phase_ab_hot_layer_caps_and_on_demand_injection.md`
+- `documentation/tasks/TASK-MEM-M1.1_task_breakdown.md`
+- `documentation/tasks/TASK-MEM-M1.1_preimplementation_check.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-spec-to-task\scripts\validate_task_artifact.py --task documentation/tasks/TASK-MEM-M1_memory_phase_ab_hot_layer_caps_and_on_demand_injection.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-task-breakdown\scripts\validate_task_handoff.py --task documentation/tasks/TASK-MEM-M1_memory_phase_ab_hot_layer_caps_and_on_demand_injection.md --target TASK-MEM-M1.1`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py documentation/tasks/TASK-MEM-M1.1_preimplementation_check.md`: PASS
+- `git diff --check -- documentation/tasks/TASK-MEM-M1_memory_phase_ab_hot_layer_caps_and_on_demand_injection.md documentation/tasks/TASK-MEM-M1.1_task_breakdown.md documentation/tasks/TASK-MEM-M1.1_preimplementation_check.md`: PASS
+
+Open risks:
+- The repo still contains substantial unrelated dirty and untracked work outside this new Memory task chain.
+- `TASK-MEM-M1.1` implementation has not started yet.
+- `origin` and `origin/codex-sync` still do not contain this newest CURRENT_STATE snapshot.
+
+Next recommended step for ChatGPT: describe Memory MA/MB as the next validated implementation slice and keep Recall as a separate Intent caveat, not part of this Memory execution block.
+
+Next recommended step for Codex: run `janus-executioner` on `TASK-MEM-M1.1` with `5.4` medium.
+
+Last updated: `2026-07-08 15:48:47 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-08 15:38 +02:00`, the completed `TASK-INTENT-M1.3` delivery block is now both locally checkpointed and pushed to `backup/develop`. The authoritative M1-I1 state is unchanged in substance: `TASK-INTENT-M1.1`, `TASK-INTENT-M1.2`, and `TASK-INTENT-M1.3` are each sealed, validated, audited, documented, committed, and backed up remotely. The binding caveat also remains unchanged: Recall did not improve in M1.3 (`80.0% -> 80.0%`), so M1 I1 must still be treated as `PASS WITH CAVEAT`, not as unrestricted staged-enable-ready completion.
+
+Current goal: hand off the exact post-push Intent state cleanly and choose the next bounded roadmap slice without mixing in unrelated dirty-tree work.
+
+Active phase: post-checkpoint sync after `janus-git-governance`, canonical state `PASS`.
+
+Last Codex work:
+- created the targeted M1.3 checkpoint commit `e580ec1941f4034f51579a92957ad99174fbddf7`
+- pushed `develop` to `backup`, advancing `backup/develop` from `8044c167c` to `e580ec194`
+- kept `origin` untouched and left the unrelated mixed worktree parked
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `git push backup develop`: PASS
+- `git rev-parse --short HEAD`: PASS (`e580ec194`)
+- `git log -1 --pretty=format:"%H%n%s"`: PASS
+
+Open risks:
+- The repository still contains substantial unrelated dirty and untracked work outside the sealed M1.3 checkpoint.
+- `origin` and `origin/codex-sync` were not updated in this step, so public/update remotes must not be assumed to contain this latest CURRENT_STATE.
+- Recall uplift remains the only binding Intent M1 follow-up caveat.
+
+Next recommended step for ChatGPT: describe M1 I1 as locally and remotely backed up on `backup/develop`, while keeping Recall caveat explicit and separate from the finished slices.
+
+Next recommended step for Codex: prepare a compact next-slice handoff; preferred Track A options are `Memory MA/MB` or a dedicated Recall follow-up decision before any M2/staging move.
+
+Last updated: `2026-07-08 15:38:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-08 15:34 +02:00`, the M1.3 package is at the Git-governance checkpoint gate and ready for one bounded local commit. Codex verified that the current worktree is heavily mixed but the intended delivery block is still cleanly isolatable: the M1.3 code/test changes, proof artifacts, audit chain, documentation closeout, `CURRENT_STATE`, and `SKILL_USAGE_LOG` can be committed together without pulling in unrelated Memory, delegation, frontend, or backlog work. No push has happened in this block.
 
 Current goal: create one targeted local checkpoint commit for the completed `TASK-INTENT-M1.3` delivery block and leave all unrelated dirty changes parked.
@@ -22683,3 +22816,115 @@ Next recommended step for ChatGPT: summarize this as "M1.2 is now audit-PASS; th
 Next recommended step for Codex: run `janus-documentation-update` for `TASK-INTENT-M1.2` with the new final audit result and package, then sync roadmap/task/project state surfaces only for this slice.
 
 Last updated: `2026-07-08 14:20:00 +02:00`.
+## Current Snapshot Update
+As of `2026-07-08`, the bounded live Cursor API review path for `TASK-MEM-M1.1` is now proven on the real local delegation stack. The first live run failed for contract reasons only, not because Cursor was unavailable: the Memory precheck package needed a valid worker package reference and the delegate call needed the explicit allowlist forwarded on the CLI. After adding the bounded worker package and rerunning with `--allowlist-file`, the live Cursor run passed and returned a read-only review package for Codex.
+
+Current goal: use the fresh Cursor review evidence to implement `TASK-MEM-M1.1` locally in Codex without widening beyond Memory Phase A Hot-Layer-Caps plus Phase B On-Demand Injection.
+
+Active phase: `janus-preimplementation-check`, canonical state `HANDOFF`.
+
+Last Codex work:
+- verified that the local Cursor path for `precheck_review` is real and available via `janus_delegate.py` with `operator-choice 4`
+- built a bounded Memory worker package plus matching allowlist for the live Cursor review route
+- reran the live Cursor API delegate successfully and captured one real bounded review result for `TASK-MEM-M1.1`
+- extracted the first concrete review findings: health injection is currently gated too early by generic suppression, the personal weather/home phrasing edge case is under-matched, and hot-layer-cap observability/protected-slot handling remains incomplete
+
+Changed files:
+- `development/openrouter-skill-tests/janus-preimplementation-check/precheck_input_package_task_mem_m1_1_2026-07-08.json`
+- `development/openrouter-skill-tests/janus-preimplementation-check/task_mem_m1_1_cursor_worker_package_2026-07-08.json`
+- `development/openrouter-skill-tests/janus-preimplementation-check/task_mem_m1_1_cursor_allowlist_2026-07-08.txt`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- direct worker contract validation for `task_mem_m1_1_cursor_worker_package_2026-07-08.json`: PASS
+- wrapper-package validation via `worker_package_json` reference: PASS
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane precheck_review --task-id TASK-PC-001 --workflow-id WF-MEM-M1-1-CURSOR-REVIEW-2026-07-08-001 --operator-choice 4 --input-package-json development/openrouter-skill-tests/janus-preimplementation-check/precheck_input_package_task_mem_m1_1_2026-07-08.json --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000 --execute-live-cursor`: BLOCKED first because the input package lacked a valid worker-contract shape
+- same `janus_delegate.py` command plus `--allowlist-file development/openrouter-skill-tests/janus-preimplementation-check/task_mem_m1_1_cursor_allowlist_2026-07-08.txt`: PASS with `final_outcome=CURSOR_WORKER_READY_FOR_CODEX_REVIEW`
+- live Cursor review artifacts written under `documentation/codex/model-routing/cursor-worker-runs/WF-MEM-M1-1-CURSOR-REVIEW-2026-07-08-001/`: PASS
+
+Open risks:
+- the live Cursor run produced a bounded review only; `TASK-MEM-M1.1` is still not implemented yet
+- the review explicitly flags three product risks to carry into execution: accidental health-injection suppression, under-matched `wo ich wohne` personal-scope phrasing, and missing hot-layer-cap drop/protected-slot observability
+- no commit or push happened after this delegation-evidence block, so any remote such as GitHub or `backup` may not contain this newest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: summarize this as "the Cursor route is real and now proven on Memory M1.1; the initial failure was a local contract/allowlist wiring issue, and the first live review surfaced three bounded implementation risks to protect during Codex execution."
+
+Next recommended step for Codex: move straight into `janus-executioner` for `TASK-MEM-M1.1`, using the new Cursor review as advisory evidence while keeping Codex as final implementation owner for the bounded Memory A+B slice.
+
+Last updated: `2026-07-08 17:20:00 +02:00`.
+## Current Snapshot Update
+As of `2026-07-08`, `TASK-MEM-M1.1` is now code-complete and locally green in Codex. The bounded Memory Phase A+B slice adds a guarded general-memory gate for external/generic queries, preserves a health-only retrieval path when general injection is skipped, and introduces a hot-layer cap for `core_always` memory with protected `health`/`medical` slots plus explicit drop observability.
+
+Current goal: complete the Manual Janus Validation Gate for `TASK-MEM-M1.1`, then route the bounded Memory A+B slice to `janus-final-audit` without widening into Session-Search, Frozen Core, USER.md export, or Intent follow-up work.
+
+Active phase: `janus-executioner`, canonical state `NEEDS_INFO`.
+
+Last Codex work:
+- implemented `should_inject_memory(...)` and wired the Orchestrator so on-demand gating can skip general retrieval while preserving the health injector
+- added a bounded `include_general_memory=False` path in `retrieve_diamond_slots()` so generic weather/external-context prompts no longer suppress the health safety path
+- introduced the Phase-A hot-layer cap in `select_slots_by_budget()` behind `MEMORY_HOT_LAYER_CAP_ENABLED`, with protected `health`/`medical` slots and the new `slots_dropped_core_cap` metric
+- added focused regression coverage for protected core-cap behavior and weather-vs-personal/health-only retrieval behavior
+
+Changed files:
+- `backend/services/memory/retrieval_service.py`
+- `backend/services/memory_budget.py`
+- `backend/services/memory_observability.py`
+- `backend/services/chat_orchestrator.py`
+- `backend/tests/test_memory_hot_layer_cap.py`
+- `backend/tests/test_memory_on_demand_injection.py`
+- `documentation/tasks/TASK-MEM-M1.1_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python -m py_compile backend/services/memory/retrieval_service.py backend/services/memory_budget.py backend/services/memory_observability.py backend/services/chat_orchestrator.py`: PASS
+- `python -m pytest backend/tests/test_memory_hot_layer_cap.py -v`: PASS
+- `python -m pytest backend/tests/test_memory_on_demand_injection.py -v`: PASS
+- `python -m pytest backend/tests/test_memory_hot_layer_cap.py -v backend/tests/test_memory_on_demand_injection.py -v backend/tests/test_memory_diamond.py backend/tests/test_memory_regression.py backend/tests/test_memory_tools.py backend/tests/test_memory_retrieval_relevance_priority.py -q`: PASS (`68 passed`)
+- `git diff --check -- backend/services/memory/retrieval_service.py backend/services/memory_budget.py backend/services/memory_observability.py backend/services/chat_orchestrator.py backend/tests/test_memory_hot_layer_cap.py backend/tests/test_memory_on_demand_injection.py backend/tests/test_memory_diamond.py backend/tests/test_memory_regression.py backend/tests/test_memory_tools.py backend/tests/test_memory_retrieval_relevance_priority.py documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS
+
+Open risks:
+- the bounded slice still needs real Janus manual validation before final audit
+- the local test environment still logs the known vector-model dependency mismatch (`tokenizers>=0.21,<0.22`), but the bound memory suites remained green and this warning was not introduced by this slice
+- no commit or push happened after this execution block, so any remote such as GitHub or `backup` may not contain this newest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: summarize this as "Memory M1.1 is implemented and locally green; the remaining gate is one real Janus manual validation for weather-with-personal-scope and allergy-safe recall before final audit."
+
+Next recommended step for Codex: wait for the user to run the Manual Janus Validation Gate from `documentation/tasks/TASK-MEM-M1.1_execution_result.md`; if both prompts pass, move directly to `janus-final-audit`.
+
+Last updated: `2026-07-08 18:20:00 +02:00`.
+## Current Snapshot Update
+As of `2026-07-08`, `TASK-MEM-M1.1` has now passed final audit. The bounded Memory Phase A+B slice is accepted with complete evidence: compile is green, the new hot-layer-cap and on-demand injection regressions are green, the wider bound memory regression block stayed green (`68 passed`), and the manual Janus gate passed on both GPT and Gemini for weather-with-personal-scope plus nut-allergy safety behavior.
+
+Current goal: close out `TASK-MEM-M1.1` through `janus-documentation-update` without widening into later memory phases, release/governance steps, or new delegation work.
+
+Active phase: `janus-final-audit`, canonical state `HANDOFF`.
+
+Last Codex work:
+- upgraded the `TASK-MEM-M1.1` execution artifact from pending manual test to recorded PASS based on the real GPT/Gemini Janus evidence
+- built a compact task-scoped audit package for the Memory A+B slice to keep the noisy worktree out of the final decision surface
+- completed the final audit and accepted the bounded Memory A+B implementation as PASS
+
+Changed files:
+- `documentation/tasks/TASK-MEM-M1.1_execution_result.md`
+- `documentation/tasks/TASK-MEM-M1.1_AUDIT_PACKAGE.md`
+- `documentation/tasks/TASK-MEM-M1.1_final_audit.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- audit package completeness review against `documentation/tasks/TASK-MEM-M1.1_AUDIT_PACKAGE.md`: PASS
+- `python -m py_compile backend/services/memory/retrieval_service.py backend/services/memory_budget.py backend/services/memory_observability.py backend/services/chat_orchestrator.py`: PASS
+- `python -m pytest backend/tests/test_memory_hot_layer_cap.py -v`: PASS
+- `python -m pytest backend/tests/test_memory_on_demand_injection.py -v`: PASS
+- `python -m pytest backend/tests/test_memory_hot_layer_cap.py -v backend/tests/test_memory_on_demand_injection.py -v backend/tests/test_memory_diamond.py backend/tests/test_memory_regression.py backend/tests/test_memory_tools.py backend/tests/test_memory_retrieval_relevance_priority.py -q`: PASS (`68 passed`)
+- `git diff --check -- backend/services/memory/retrieval_service.py backend/services/memory_budget.py backend/services/memory_observability.py backend/services/chat_orchestrator.py backend/tests/test_memory_hot_layer_cap.py backend/tests/test_memory_on_demand_injection.py backend/tests/test_memory_diamond.py backend/tests/test_memory_regression.py backend/tests/test_memory_tools.py backend/tests/test_memory_retrieval_relevance_priority.py documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS
+- Manual Janus validation on GPT and Gemini (`2026-07-08`): PASS
+
+Open risks:
+- no blocking scope risks remain inside `TASK-MEM-M1.1`, but later memory phases (Session-Search, Frozen Core, USER.md export) are still intentionally open work and must not be implied by this PASS
+- no commit or push happened after this audit block, so any remote such as GitHub or `backup` may not contain this newest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: summarize this as "Memory M1.1 is audit-PASS; the next correct step is documentation-update, while later memory phases remain separate work."
+
+Next recommended step for Codex: run `janus-documentation-update` for `TASK-MEM-M1.1` with the new final audit result and compact audit package, then sync only the bounded Memory M1.1 tracking surfaces.
+
+Last updated: `2026-07-08 18:35:00 +02:00`.

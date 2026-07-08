@@ -41,6 +41,7 @@ class MemorySystemMetrics:
     context_builds: int = 0
     slots_selected_total: int = 0
     slots_dropped_total: int = 0
+    slots_dropped_core_cap: int = 0
 
     _lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
     _started_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
@@ -81,6 +82,7 @@ class MemorySystemMetrics:
                 "builds": self.context_builds,
                 "slots_selected": self.slots_selected_total,
                 "slots_dropped": self.slots_dropped_total,
+                "slots_dropped_core_cap": self.slots_dropped_core_cap,
             },
             "uptime_since": self._started_at,
         }
