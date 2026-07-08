@@ -2,15 +2,18 @@ from pathlib import Path
 
 from backend.scripts.run_intent_benchmark import (
     DEFAULT_CASES_PATH,
+    DEFAULT_M2_PROOF_REPORT_PATH,
     DEFAULT_PROOF_REPORT_PATH,
     DEFAULT_REPORT_PATH,
     AUX_DETERMINISTIC_PROFILE,
     _benchmark_profile_context,
     load_cases,
     parse_baseline_report,
+    render_m2_proof_report,
     render_report,
     render_m1_proof_report,
     run_benchmark,
+    run_m2_proof,
     run_m1_proof,
 )
 from backend.services.orchestrator import intent_aux_classifier, intent_config
@@ -60,6 +63,9 @@ def test_default_benchmark_paths_are_repo_local():
     assert DEFAULT_REPORT_PATH == Path("documentation/test-runs/INTENT_BENCHMARK_BASELINE.md").resolve()
     assert DEFAULT_PROOF_REPORT_PATH == Path(
         "documentation/test-runs/TASK-INTENT-M1.3_benchmark_uplift_2026-07-08.md"
+    ).resolve()
+    assert DEFAULT_M2_PROOF_REPORT_PATH == Path(
+        "documentation/test-runs/TASK-INTENT-M2.1_confidence_routing_2026-07-08.md"
     ).resolve()
 
 
@@ -117,6 +123,24 @@ def test_m1_proof_report_renders_delta_on_small_case_set(tmp_path):
     assert proof_summary["flag_off_parity_pass"] is True
     assert proof_summary["aux_deterministic"]["profile"] == AUX_DETERMINISTIC_PROFILE.name
     assert "TASK-INTENT-M1.3 Benchmark Uplift Proof" in report
+    assert "## Required Subset Delta" in report
+
+
+def test_m2_proof_report_renders_delta_on_small_case_set(tmp_path):
+    all_cases = load_cases(DEFAULT_CASES_PATH)
+    selected_ids = {"INT-M0-C005", "INT-M0-P003", "INT-M0-R001", "INT-M0-K002"}
+    cases = [case for case in all_cases if case.case_id in selected_ids]
+
+    legacy_summary = run_benchmark(cases)
+    baseline_path = tmp_path / "INTENT_BENCHMARK_BASELINE.md"
+    baseline_path.write_text(render_report(legacy_summary), encoding="utf-8")
+
+    proof_summary = run_m2_proof(cases, baseline_report_path=baseline_path)
+    report = render_m2_proof_report(proof_summary)
+
+    assert proof_summary["flag_off_parity_pass"] is True
+    assert proof_summary["aux_deterministic"]["profile"] == AUX_DETERMINISTIC_PROFILE.name
+    assert "TASK-INTENT-M2.1 Confidence Routing Proof" in report
     assert "## Required Subset Delta" in report
 
 

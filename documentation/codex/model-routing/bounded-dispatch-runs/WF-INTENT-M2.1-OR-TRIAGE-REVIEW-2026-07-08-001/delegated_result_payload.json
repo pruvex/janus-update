@@ -1,0 +1,24 @@
+{
+  "escalation_trigger": "none",
+  "finding_clusters": [
+    {
+      "confidence": "HIGH",
+      "evidence": "Benchmark proof shows improved baseline performance metrics (Contact 55.0% to 95.0%, Pet 53.3% to 73.3%, Calendar 53.3% to 66.7%) and exit gates PASS for key routing improvements including false-ambiguity reduction and latency < 400ms.",
+      "title": "Performance and Routing Improvements Confirmed"
+    },
+    {
+      "confidence": "MEDIUM",
+      "evidence": "Known caveats indicate that some edge cases (Recall/Pet/Contact) remain unaddressed in this scope, but are documented for later review and not part of the current TASK-INTENT-M2.1 validation.",
+      "title": "Edge Case Documentation Required"
+    }
+  ],
+  "likely_classification": "NOT_REPRODUCIBLE",
+  "likely_subsystem": "intent_routing",
+  "notes": "The validation evidence demonstrates clear improvements in routing confidence and benchmark performance without indication of blocking issues. The known caveats are appropriately scoped to later review.",
+  "primary_outcome": "no_blocking_issue",
+  "redaction_check": "PASS",
+  "status": "PASS",
+  "suggested_next_local_verifiers": "Codex",
+  "suggested_routing": "janus-final-audit",
+  "test_run_id": "TASK-INTENT-M2.1_confidence_routing_2026-07-08"
+}

@@ -1,0 +1,119 @@
+{
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a bounded OpenRouter worker for a Janus test-result triage review. Return only JSON matching the schema. Do not run tests, do not claim release readiness, and do not claim final PASS authority. Codex remains local validation and routing owner."
+    },
+    {
+      "role": "user",
+      "content": "{\n  \"task_class\": \"test_result_triage_review\",\n  \"workflow_id\": \"WF-INTENT-M2.1-OR-TRIAGE-REVIEW-2026-07-08-001\",\n  \"bound_skill_context\": \"janus-final-audit evidence pre-review for TASK-INTENT-M2.1; Codex remains final audit and acceptance owner\",\n  \"test_run_id\": \"TASK-INTENT-M2.1_confidence_routing_2026-07-08\",\n  \"result_outcome_summary\": \"Focused validation for TASK-INTENT-M2.1 is green. Confidence-routing proof improved baseline from 81/110 (73.6%) to 91/110 (82.7%), Contact 55.0% to 95.0%, Pet 53.3% to 73.3%, Recall unchanged at 80.0%, Calendar 53.3% to 66.7%. Bound checks passed: pytest test_intent_confidence_routing, pytest test_calendar_routing_fix plus test_intent_benchmark, py_compile, m2-proof benchmark, scoped git diff --check.\",\n  \"evidence_snippets\": [\n    \"Execution result path: documentation/tasks/TASK-INTENT-M2.1_execution_result.md. Auto-Verification PASS; manual Janus evidence N/A WITH REASON because this is routing/benchmark hardening with deterministic pytest plus benchmark proof as acceptance.\",\n    \"Benchmark proof path: documentation/test-runs/TASK-INTENT-M2.1_confidence_routing_2026-07-08.md. Exit gates PASS for Calendar false-ambiguity reduction, memory-routing uplift, P95 latency < 400 ms, and flag-off parity.\",\n    \"Known caveats: benchmark command emits unrelated local vector/skill-router startup warnings while completing; remaining Recall/Pet/Contact edge cases are documented as later-slice evidence and not widened into TASK-INTENT-M2.1.\"\n  ],\n  \"classification_question\": \"Before Codex performs the authoritative final audit, classify whether the provided TASK-INTENT-M2.1 validation evidence suggests a blocking product bug, test bug, infra blocker, provider blocker, spec gap, or no blocking issue. Do not claim final PASS authority.\",\n  \"constraints\": [\n    \"At most 2 finding clusters\",\n    \"No live test execution\",\n    \"No final PASS decision\",\n    \"redaction_check must be PASS\"\n  ]\n}"
+    }
+  ],
+  "temperature": 0.0,
+  "max_tokens": 1600,
+  "response_format": {
+    "type": "json_schema",
+    "json_schema": {
+      "name": "janus_test_result_triage_review_result",
+      "strict": true,
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "status",
+          "test_run_id",
+          "primary_outcome",
+          "likely_classification",
+          "likely_subsystem",
+          "finding_clusters",
+          "suggested_next_local_verifiers",
+          "suggested_routing",
+          "escalation_trigger",
+          "redaction_check",
+          "notes"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "PASS",
+              "WEAK_SIGNAL",
+              "BLOCKED"
+            ]
+          },
+          "test_run_id": {
+            "type": "string"
+          },
+          "primary_outcome": {
+            "type": "string"
+          },
+          "likely_classification": {
+            "type": "string",
+            "enum": [
+              "AUTH_BLOCKER",
+              "DUPLICATE",
+              "INFRA_BLOCKER",
+              "NOT_REPRODUCIBLE",
+              "PRODUCT_BUG",
+              "PROVIDER_BLOCKER",
+              "SPEC_GAP",
+              "TEST_BUG"
+            ]
+          },
+          "likely_subsystem": {
+            "type": "string"
+          },
+          "finding_clusters": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 2,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "title",
+                "confidence",
+                "evidence"
+              ],
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "confidence": {
+                  "type": "string",
+                  "enum": [
+                    "LOW",
+                    "MEDIUM",
+                    "HIGH"
+                  ]
+                },
+                "evidence": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "suggested_next_local_verifiers": {
+            "type": "string"
+          },
+          "suggested_routing": {
+            "type": "string"
+          },
+          "escalation_trigger": {
+            "type": "string"
+          },
+          "redaction_check": {
+            "type": "string",
+            "enum": [
+              "PASS"
+            ]
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

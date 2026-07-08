@@ -778,7 +778,7 @@ Exit: §13 Epic 6 vollständig
 | M1 I1 / TASK-INTENT-M1.3 | **EXIT PASS WITH CAVEAT** | 2026-07-08 | Benchmark-Proof lokal/CI-lauffaehig; Flag-off PASS; Contact +35.0 pp, Pet +20.0 pp, P95 4.09 ms; Recall bleibt +0.0 pp |
 | M1 I1 Intent Classifier | CAVEAT / FOLLOW-UP | 2026-07-08 | M1.1-M1.3 task-scharf auditiert und dokumentiert; Staging-Enablement nur mit Recall-Caveat, da Recall-Uplift `80.0% -> 80.0%` bleibt |
 | M1 MA/MB Memory A+B / TASK-MEM-M1.1 | **EXIT PASS** | 2026-07-08 | Lokaler Codex-Slice abgeschlossen, final auditiert und dokumentiert; Hot-Layer-Cap + On-Demand Injection gruen, Health-/Medical-Pfade bewusst erhalten |
-| M2 Intent I2 | OFFEN | — | |
+| M2 Intent I2 | **EXIT PASS** | 2026-07-08 | `TASK-INTENT-M2.1` lokal abgeschlossen, OpenRouter-Evidence als assist-only Vorreview gesammelt, final auditiert und dokumentiert; Confidence-Routing-Proof `91/110` (`82.7%`) gegen Baseline `81/110` (`73.6%`), Calendar `53.3% -> 66.7%`; optionaler Regex-Freeze-Follow-up `TASK-INTENT-M2.2` bleibt separat offen |
 | M3 Workflows | OFFEN | — | |
 | M4 Memory C | OFFEN | — | |
 | M6 Transport T-A | OFFEN | — | nach M4 |

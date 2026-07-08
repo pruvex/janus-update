@@ -965,6 +965,8 @@ class IntentDetectionResult:
     # 💎 BACKLOG-037: Ambiguity-Detection für Gemini
     is_ambiguous: bool = False
     ambiguity_confidence: float = 0.0  # 0.0-1.0, höher = ambiger
+    routing_confidence: float = 0.0
+    routing_confidence_source: Optional[str] = None
 
     primary_intent: Optional[str] = None
     vetoed_intents: Dict[str, str] = field(default_factory=dict)
@@ -1041,6 +1043,17 @@ class IntentEngine:
             )
         )
 
+    @staticmethod
+    def _aux_can_override_guardrail(
+        aux_result: ActionSubjectResult,
+        aux_config: "IntentAuxClassifierConfig",
+    ) -> bool:
+        return (
+            aux_result.confidence >= aux_config.medium_confidence_threshold
+            and aux_result.action in {"recall", "tell_fact"}
+            and aux_result.subject in {"self", "contact", "pet"}
+        )
+
     def _apply_aux_classifier_merge(
         self,
         result: IntentDetectionResult,
@@ -1061,7 +1074,14 @@ class IntentEngine:
         if aux_result.confidence < aux_config.medium_confidence_threshold:
             return aux_result
 
-        if self._has_guardrail_primary_intent(result) and aux_result.action not in {"create", "mutate"}:
+        result.routing_confidence = max(result.routing_confidence, aux_result.confidence)
+        result.routing_confidence_source = aux_result.source or "aux_classifier"
+
+        if (
+            self._has_guardrail_primary_intent(result)
+            and aux_result.action not in {"create", "mutate"}
+            and not self._aux_can_override_guardrail(aux_result, aux_config)
+        ):
             result.vetoed_intents["aux_classifier"] = "guardrail_primary_intent"
             return aux_result
 
@@ -1096,10 +1116,23 @@ class IntentEngine:
         if aux_result.action == "clarify":
             result.is_ambiguous = True
             result.ambiguity_confidence = max(result.ambiguity_confidence, aux_result.confidence)
-        elif aux_result.confidence >= aux_config.high_confidence_threshold and result.is_ambiguous:
+        elif (
+            result.is_ambiguous
+            and (
+                aux_result.confidence >= aux_config.high_confidence_threshold
+                or (
+                    aux_result.confidence >= aux_config.medium_confidence_threshold
+                    and aux_result.action in {"recall", "tell_fact", "create", "mutate"}
+                )
+            )
+        ):
             result.is_ambiguous = False
             result.ambiguity_confidence = 0.0
-            result.vetoed_intents["ambiguity"] = "aux_classifier_high_confidence"
+            result.vetoed_intents["ambiguity"] = (
+                "aux_classifier_high_confidence"
+                if aux_result.confidence >= aux_config.high_confidence_threshold
+                else "aux_classifier_medium_confidence_routing"
+            )
 
         if result.is_personal_recall and result.is_wikipedia_intent:
             result.is_wikipedia_intent = False
@@ -1107,6 +1140,16 @@ class IntentEngine:
         if result.is_fact_telling and result.is_news_intent:
             result.is_news_intent = False
             result.vetoed_intents["news"] = "fact_telling_contact_statement"
+        if (
+            result.is_calendar_intent
+            and not result.is_calendar_mutation
+            and not result.is_calendar_creation
+            and result.is_ambiguous
+            and result.routing_confidence >= aux_config.medium_confidence_threshold
+        ):
+            result.is_ambiguous = False
+            result.ambiguity_confidence = 0.0
+            result.vetoed_intents["ambiguity"] = "calendar_read_confidence_routing"
         if (result.is_personal_recall or result.is_fact_telling) and result.is_ambiguous:
             result.is_ambiguous = False
             result.ambiguity_confidence = 0.0

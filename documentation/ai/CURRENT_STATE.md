@@ -1,6 +1,129 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-08 17:07 +02:00`, `TASK-INTENT-M2.1` is now documentation-synced after final audit PASS. The bounded M2 confidence-routing slice is fully closed on the tracking surfaces: the parent M2 task now carries the closeout, the central registry and roadmap tracker both show `TASK-INTENT-M2.1` / `M2 Intent I2` as complete, and `PROJECT_STATE.md` reflects the sealed delivery while keeping the optional Regex-Freeze follow-up `TASK-INTENT-M2.2` explicitly separate.
+
+Current goal: checkpoint the completed `TASK-INTENT-M2.1` delivery block without widening into `TASK-INTENT-M2.2`, remaining Recall follow-up, Memory work, Transport, OAuth, OpenRouter product routing, or delegation hardening.
+
+Active phase: `janus-documentation-update` for `TASK-INTENT-M2.1`, canonical state `PASS`.
+
+Last Codex work:
+- synced the final audit result into the parent M2 task, central registry, roadmap tracker, project state, CURRENT_STATE, and SKILL_USAGE_LOG
+- wrote the bounded closeout artifact `documentation/tasks/TASK-INTENT-M2.1_documentation_update.md`
+- kept `CHANGELOG.md`, `WHAT_I_LEARNED.md`, backlog, dashboard, and pipeline-log surfaces intentionally out of scope with explicit skip reasons
+
+Changed files:
+- `documentation/tasks/TASK-INTENT-M2_confidence_routing_and_regex_freeze.md`
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `documentation/Cursor specs/ROADMAP_EPIC_ORDER.md`
+- `documentation/tasks/TASK-INTENT-M2.1_documentation_update.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py documentation/tasks/TASK-INTENT-M2.1_final_audit.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-documentation-update\scripts\validate_doc_update.py --repo C:\KI\Janus-Projekt --marker TASK-INTENT-M2.1 --require documentation/tasks/TASK-INTENT-M2_confidence_routing_and_regex_freeze.md --require documentation/01_CENTRAL_TASK_REGISTRY.md --require PROJECT_STATE.md --require documentation/ai/CURRENT_STATE.md`: PASS
+- `git diff --check -- documentation/tasks/TASK-INTENT-M2_confidence_routing_and_regex_freeze.md documentation/tasks/TASK-INTENT-M2.1_documentation_update.md documentation/01_CENTRAL_TASK_REGISTRY.md PROJECT_STATE.md "documentation/Cursor specs/ROADMAP_EPIC_ORDER.md" documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS
+
+Open risks:
+- The repository still contains substantial unrelated dirty and untracked work outside this bounded M2.1 closeout.
+- No commit or push happened in this documentation-update block, so `backup`, `origin`, and `origin/codex-sync` must not be assumed to contain this newest CURRENT_STATE snapshot.
+- `TASK-INTENT-M2.2` Regex-Freeze and the separate Recall follow-up remain intentionally open.
+
+Next recommended step for ChatGPT: describe `TASK-INTENT-M2.1` as implemented, OR-evidenced, final-audited, and documentation-synced, while keeping `TASK-INTENT-M2.2` explicitly open.
+
+Next recommended step for Codex: run `janus-git-governance` for a targeted checkpoint commit if the user wants this sealed M2.1 slice saved.
+
+Last updated: `2026-07-08 17:07:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-08 17:00 +02:00`, `TASK-INTENT-M2.1` has passed final audit after the requested OpenRouter evidence pass. The live bounded OpenRouter triage review completed as assist-only evidence with `validation_result=PASS`, actual OR cost `0.00014553`, and suggested routing `janus-final-audit`; Codex then performed the authoritative final audit and recorded `FINAL AUDIT RESULT: PASS`.
+
+Current goal: sync the completed M2.1 audit result into documentation without widening into `TASK-INTENT-M2.2`, remaining Recall follow-up, Memory work, Transport, OAuth, OpenRouter product routing, or delegation hardening.
+
+Active phase: `janus-final-audit` for `TASK-INTENT-M2.1`, canonical state `PASS`.
+
+Last Codex work:
+- built the compact final-audit package `documentation/tasks/TASK-INTENT-M2.1_AUDIT_PACKAGE.md`
+- ran live bounded OpenRouter test-result triage review for evidence collection
+- corrected the M2.1 benchmark report table label from `M1.3 Proof` to `M2.1 Proof`
+- regenerated the M2.1 proof and reran focused validations
+- wrote and validated `documentation/tasks/TASK-INTENT-M2.1_final_audit.md`
+
+Changed files:
+- `backend/scripts/run_intent_benchmark.py`
+- `documentation/test-runs/TASK-INTENT-M2.1_confidence_routing_2026-07-08.md`
+- `documentation/tasks/TASK-INTENT-M2.1_AUDIT_PACKAGE.md`
+- `documentation/tasks/TASK-INTENT-M2.1_final_audit.md`
+- `documentation/codex/model-routing/test-triage-fixtures/task_intent_m2_1_or_review_input_2026-07-08.json`
+- `documentation/codex/model-routing/bounded-dispatch-runs/WF-INTENT-M2.1-OR-TRIAGE-REVIEW-2026-07-08-001/`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py --task-class test_result_triage_review ... --execute-direct-or`: PASS
+- `python -m pytest backend/tests/test_intent_confidence_routing.py -q`: PASS (`6 passed`)
+- `python -m pytest backend/tests/test_calendar_routing_fix.py backend/tests/test_intent_benchmark.py -q`: PASS (`46 passed`)
+- `python -m py_compile backend/services/orchestrator/execution_dispatcher.py backend/services/orchestrator/intent_engine.py backend/scripts/run_intent_benchmark.py`: PASS
+- `python -m backend.scripts.run_intent_benchmark --mode m2-proof --output documentation/test-runs/TASK-INTENT-M2.1_confidence_routing_2026-07-08.md --write-baseline`: PASS (`91/110`, `82.7%`)
+- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py documentation/tasks/TASK-INTENT-M2.1_final_audit.md`: PASS
+- scoped `git diff --check` on the M2.1/audit paths: PASS
+
+Open risks:
+- The repository remains broadly dirty with unrelated changes and some pre-existing same-file drift; later `janus-git-governance` must stage the M2.1 package intentionally.
+- The benchmark command still emits unrelated local vector/skill-router startup warnings while completing successfully.
+- No commit or push happened in this final-audit block, so `backup`, `origin`, and `origin/codex-sync` must not be assumed to contain this CURRENT_STATE snapshot.
+
+Next recommended step for ChatGPT: describe `TASK-INTENT-M2.1` as final-audit PASS with OpenRouter evidence collected first; keep M2.2 regex-freeze and remaining Recall follow-up separate.
+
+Next recommended step for Codex: run `janus-documentation-update` for `TASK-INTENT-M2.1` with `5.4` low in the same chat.
+
+Last updated: `2026-07-08 17:00:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-08 16:53 +02:00`, `TASK-INTENT-M2.1` is now locally implemented and evidence-complete at the execution boundary. The bounded M2 confidence-routing slice adds routing-confidence handling to the intent/dispatcher seam, keeps the existing safety and recall-web guards intact, and proves measurable ambiguity false-positive reduction against the checked-in M0 baseline: overall rises from `81/110` (`73.6%`) to `91/110` (`82.7%`), with Calendar improving from `53.3%` to `66.7%`.
+
+Current goal: close the productive `TASK-INTENT-M2.1` execution block cleanly and prepare the slice for final audit without widening into `TASK-INTENT-M2.2`, Memory follow-up work, Transport, OAuth, OpenRouter, or delegation hardening.
+
+Active phase: `janus-executioner` for `TASK-INTENT-M2.1`, canonical state `HANDOFF`.
+
+Last Codex work:
+- implemented bounded confidence-routing fields and merge behavior in the live intent-engine path
+- softened dispatcher ambiguity handling into medium-confidence soft-routing plus bounded high-confidence bypasses
+- added focused regression coverage for confidence-routing and extended the benchmark CLI with `m2-proof`
+- generated the local proof artifact `documentation/test-runs/TASK-INTENT-M2.1_confidence_routing_2026-07-08.md`
+
+Changed files:
+- `backend/services/orchestrator/intent_engine.py`
+- `backend/services/orchestrator/execution_dispatcher.py`
+- `backend/scripts/run_intent_benchmark.py`
+- `backend/tests/test_intent_confidence_routing.py`
+- `backend/tests/test_intent_benchmark.py`
+- `documentation/test-runs/TASK-INTENT-M2.1_confidence_routing_2026-07-08.md`
+- `documentation/tasks/TASK-INTENT-M2.1_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest backend/tests/test_intent_confidence_routing.py -q`: PASS
+- `python -m pytest backend/tests/test_calendar_routing_fix.py backend/tests/test_intent_benchmark.py -q`: PASS
+- `python -m py_compile backend/services/orchestrator/execution_dispatcher.py backend/services/orchestrator/intent_engine.py backend/scripts/run_intent_benchmark.py`: PASS
+- `python -m backend.scripts.run_intent_benchmark --mode m2-proof --output documentation/test-runs/TASK-INTENT-M2.1_confidence_routing_2026-07-08.md --write-baseline`: PASS
+
+Open risks:
+- The benchmark proof still leaves some deterministic Recall and Pet/Contact edge cases open; they are evidence for later slices, not for widening M2.1.
+- The benchmark command still emits unrelated local vector/skill-router startup warnings, but the proof artifact itself completes successfully.
+- No commit or push happened in this M2.1 execution block, so `backup`, `origin`, and `origin/codex-sync` must not be assumed to contain this CURRENT_STATE snapshot.
+- The repository still contains substantial unrelated dirty and untracked work outside this bounded Intent slice.
+
+Next recommended step for ChatGPT: describe `TASK-INTENT-M2.1` as locally implemented with measurable ambiguity-FP reduction and green focused regressions, while keeping `TASK-INTENT-M2.2` and remaining Recall follow-up explicitly separate.
+
+Next recommended step for Codex: run `janus-final-audit` for `TASK-INTENT-M2.1`; optional evidence lane for the user is `2 = OpenRouter review` on the bound audit package, but recommendation stays `1 = Codex` for the authoritative product audit.
+
+Last updated: `2026-07-08 16:53:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-08 16:30 +02:00`, `TASK-MEM-M1.1` is now documentation-synced after final audit PASS. The bounded Memory Phase A+B slice is fully closed on the tracking surfaces: the parent Memory task now records the MA/MB closeout, the central registry and roadmap tracker both show `TASK-MEM-M1.1` as complete, and `PROJECT_STATE.md` reflects the sealed local delivery while keeping later Memory phases intentionally open.
 
 Current goal: checkpoint the completed `TASK-MEM-M1.1` delivery block without widening into Session-Search, Frozen Core, release/governance work, or new delegation experiments.

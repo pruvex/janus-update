@@ -4,6 +4,19 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-INTENT-M2.1 - Implement confidence-based intent routing and soften ambiguity hard-blocks
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-INTENT-M2.1_final_audit.md` (PASS)
+- **Spec**: `documentation/Cursor specs/INTENT_ENGINE_HERMES_INSPIRED_UPGRADE_PLAN.md`
+- **Parent Task**: `documentation/tasks/TASK-INTENT-M2_confidence_routing_and_regex_freeze.md`
+- **Task Breakdown**: `documentation/tasks/TASK-INTENT-M2.1_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-INTENT-M2.1_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-INTENT-M2.1_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-INTENT-M2.1_AUDIT_PACKAGE.md`
+- **Validation**: `TASK-INTENT-M2.1` schliesst den ersten M2-Intent-Slice als bounded Confidence-Routing-Haertung ab. Der produktive Intent-/Dispatcher-Pfad arbeitet jetzt mit `routing_confidence`, mittlere Ambiguity wird kontrolliert weich geroutet statt pauschal hart geblockt, Calendar-Read-Faelle verlieren unnoetige Ambiguity, und bestehende Safety-/Medical-/Consent-/Personal-Recall-Web- sowie Weather-/Routing-/Realtime-/Mail-Guardrails bleiben erhalten. Der lokale M2.1-Benchmark-Proof ist reproduzierbar und verbessert die M0-Baseline von `81/110` (`73.6%`) auf `91/110` (`82.7%`), inklusive Calendar `53.3% -> 66.7%`, Contact `55.0% -> 95.0%` und Pet `53.3% -> 73.3%`, waehrend Recall bewusst unveraendert `80.0% -> 80.0%` bleibt. Vor dem finalen Codex-Audit wurde zusaetzlich bounded OpenRouter-Evidence als assist-only Vorreview gesammelt; Acceptance Authority blieb lokal bei Codex. `TASK-INTENT-M2.2` Regex-Freeze bleibt bewusst offen.
+- **Changed Files**: `backend/services/orchestrator/intent_engine.py`, `backend/services/orchestrator/execution_dispatcher.py`, `backend/scripts/run_intent_benchmark.py`, `backend/tests/test_intent_confidence_routing.py`, `backend/tests/test_intent_benchmark.py`, `documentation/test-runs/TASK-INTENT-M2.1_confidence_routing_2026-07-08.md`, `documentation/tasks/TASK-INTENT-M2.1_execution_result.md`, `documentation/tasks/TASK-INTENT-M2.1_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-INTENT-M2.1_final_audit.md`, `documentation/codex/model-routing/test-triage-fixtures/task_intent_m2_1_or_review_input_2026-07-08.json`, `documentation/codex/model-routing/bounded-dispatch-runs/WF-INTENT-M2.1-OR-TRIAGE-REVIEW-2026-07-08-001/`.
+
 ### TASK-MEM-M1.1 - Implement Memory Phase A+B as one bounded guarded retrieval slice
 
 - **Status**: DONE

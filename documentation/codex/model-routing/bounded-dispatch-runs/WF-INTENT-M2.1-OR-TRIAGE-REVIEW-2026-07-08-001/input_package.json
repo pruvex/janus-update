@@ -1,0 +1,13 @@
+{
+  "workflow_id": "WF-INTENT-M2.1-OR-TRIAGE-REVIEW-2026-07-08-001",
+  "bound_skill_context": "janus-final-audit evidence pre-review for TASK-INTENT-M2.1; Codex remains final audit and acceptance owner",
+  "test_run_id": "TASK-INTENT-M2.1_confidence_routing_2026-07-08",
+  "result_outcome_summary": "Focused validation for TASK-INTENT-M2.1 is green. Confidence-routing proof improved baseline from 81/110 (73.6%) to 91/110 (82.7%), Contact 55.0% to 95.0%, Pet 53.3% to 73.3%, Recall unchanged at 80.0%, Calendar 53.3% to 66.7%. Bound checks passed: pytest test_intent_confidence_routing, pytest test_calendar_routing_fix plus test_intent_benchmark, py_compile, m2-proof benchmark, scoped git diff --check.",
+  "evidence_snippets": [
+    "Execution result path: documentation/tasks/TASK-INTENT-M2.1_execution_result.md. Auto-Verification PASS; manual Janus evidence N/A WITH REASON because this is routing/benchmark hardening with deterministic pytest plus benchmark proof as acceptance.",
+    "Benchmark proof path: documentation/test-runs/TASK-INTENT-M2.1_confidence_routing_2026-07-08.md. Exit gates PASS for Calendar false-ambiguity reduction, memory-routing uplift, P95 latency < 400 ms, and flag-off parity.",
+    "Known caveats: benchmark command emits unrelated local vector/skill-router startup warnings while completing; remaining Recall/Pet/Contact edge cases are documented as later-slice evidence and not widened into TASK-INTENT-M2.1."
+  ],
+  "classification_question": "Before Codex performs the authoritative final audit, classify whether the provided TASK-INTENT-M2.1 validation evidence suggests a blocking product bug, test bug, infra blocker, provider blocker, spec gap, or no blocking issue. Do not claim final PASS authority.",
+  "redaction_ready": true
+}

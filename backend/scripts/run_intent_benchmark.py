@@ -20,6 +20,9 @@ DEFAULT_REPORT_PATH = PROJECT_ROOT / "documentation" / "test-runs" / "INTENT_BEN
 DEFAULT_PROOF_REPORT_PATH = (
     PROJECT_ROOT / "documentation" / "test-runs" / "TASK-INTENT-M1.3_benchmark_uplift_2026-07-08.md"
 )
+DEFAULT_M2_PROOF_REPORT_PATH = (
+    PROJECT_ROOT / "documentation" / "test-runs" / "TASK-INTENT-M2.1_confidence_routing_2026-07-08.md"
+)
 
 
 @dataclass
@@ -422,9 +425,11 @@ def render_report(summary: Dict[str, Any]) -> str:
 def _subset_delta_lines(
     baseline_subset_rows: Dict[str, Dict[str, Any]],
     proof_subset_rows: Dict[str, Dict[str, Any]],
+    *,
+    proof_label: str = "M1.3 Proof",
 ) -> List[str]:
     lines = [
-        "| Subset | Baseline | M1.3 Proof | Delta (pp) |",
+        f"| Subset | Baseline | {proof_label} | Delta (pp) |",
         "| --- | ---: | ---: | ---: |",
     ]
     for subset in ("contact", "pet", "recall", "calendar"):
@@ -522,6 +527,67 @@ def render_m1_proof_report(summary: Dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def run_m2_proof(
+    cases: Optional[Iterable[BenchmarkCase]] = None,
+    *,
+    baseline_report_path: Path = DEFAULT_REPORT_PATH,
+) -> Dict[str, Any]:
+    summary = run_m1_proof(cases, baseline_report_path=baseline_report_path)
+    summary["proof_name"] = "m2-proof"
+    return summary
+
+
+def render_m2_proof_report(summary: Dict[str, Any]) -> str:
+    legacy = summary["legacy_current"]
+    aux = summary["aux_deterministic"]
+    baseline = summary["baseline_reference"]
+    lines: List[str] = [
+        "# TASK-INTENT-M2.1 Confidence Routing Proof",
+        "",
+        f"Generated at: `{summary['generated_at']}`",
+        "",
+        "## Baseline Parity",
+        "",
+        f"- Checked-in baseline: `{summary['baseline_report_path']}`",
+        f"- Legacy current accuracy: `{legacy['overall']['accuracy'] * 100:.1f}%`",
+        f"- Baseline reference accuracy: `{baseline['overall']['accuracy'] * 100:.1f}%`",
+        f"- Flag-off parity: `{'PASS' if summary['flag_off_parity_pass'] else 'FAIL'}`",
+        "",
+        "## M2.1 Proof Summary",
+        "",
+        f"- Baseline overall: `{baseline['overall']['passed']}/{baseline['overall']['total']}` (`{baseline['overall']['accuracy'] * 100:.1f}%`)",
+        f"- Confidence-routing proof overall: `{aux['overall']['passed']}/{aux['overall']['total']}` (`{aux['overall']['accuracy'] * 100:.1f}%`)",
+        "",
+        "## Required Subset Delta",
+        "",
+    ]
+    lines.extend(_subset_delta_lines(baseline["subset_rows"], aux["subset_rows"], proof_label="M2.1 Proof"))
+    lines.extend(
+        [
+            "",
+            "## Latency",
+            "",
+            f"- P50 aux path latency: `{aux['latency_ms']['p50']:.2f} ms`",
+            f"- P95 aux path latency: `{aux['latency_ms']['p95']:.2f} ms`",
+            f"- Max aux path latency: `{aux['latency_ms']['max']:.2f} ms`",
+            "",
+            "## Exit Gates",
+            "",
+            f"- Calendar false-ambiguity reduction: `{'PASS' if aux['subset_rows']['calendar']['passed'] > baseline['subset_rows']['calendar']['passed'] else 'FAIL'}`",
+            f"- Memory-routing uplift (contact/pet/recall): `{'PASS' if all(aux['subset_rows'][subset]['passed'] >= baseline['subset_rows'][subset]['passed'] for subset in ('contact', 'pet', 'recall')) else 'FAIL'}`",
+            f"- P95 latency < 400 ms: `{'PASS' if aux['latency_ms']['p95'] < 400.0 else 'FAIL'}`",
+            f"- Flag-off parity: `{'PASS' if summary['flag_off_parity_pass'] else 'FAIL'}`",
+            "",
+            "## Notes",
+            "",
+            "- This M2.1 proof stays local and deterministic: no live provider calls are required.",
+            "- The benchmark measures confidence-routing behavior only; no transport or product-openrouter changes are involved.",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
 def write_report(path: Path = DEFAULT_REPORT_PATH) -> Dict[str, Any]:
     summary = run_benchmark()
     report = render_report(summary)
@@ -535,7 +601,7 @@ def main() -> int:
     parser.add_argument("--cases", type=Path, default=DEFAULT_CASES_PATH)
     parser.add_argument("--output", type=Path, default=DEFAULT_REPORT_PATH)
     parser.add_argument("--write-baseline", action="store_true")
-    parser.add_argument("--mode", choices=("baseline", "m1-proof"), default="baseline")
+    parser.add_argument("--mode", choices=("baseline", "m1-proof", "m2-proof"), default="baseline")
     args = parser.parse_args()
 
     cases = load_cases(args.cases)
@@ -544,6 +610,11 @@ def main() -> int:
             args.output = DEFAULT_PROOF_REPORT_PATH
         summary = run_m1_proof(cases, baseline_report_path=DEFAULT_REPORT_PATH)
         report = render_m1_proof_report(summary)
+    elif args.mode == "m2-proof":
+        if args.output == DEFAULT_REPORT_PATH:
+            args.output = DEFAULT_M2_PROOF_REPORT_PATH
+        summary = run_m2_proof(cases, baseline_report_path=DEFAULT_REPORT_PATH)
+        report = render_m2_proof_report(summary)
     else:
         summary = run_benchmark(cases)
         report = render_report(summary)

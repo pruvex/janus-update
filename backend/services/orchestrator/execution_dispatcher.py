@@ -40,6 +40,11 @@ _COMPACT_LIST_REQUEST_RE = re.compile(
     r"(?:\b(?:kurz|knapp|kurze|kompakt|in\s+kurzform|briefly|concise)\b)",
     re.IGNORECASE,
 )
+_CONTACT_RELATIONSHIP_RECALL_RE = re.compile(
+    r"\b(?:wer\s+ist|wie\s+heisst)\s+[^\n,?.!]{1,40}?s\s+"
+    r"(?:freundin|freund|partnerin|partner|ehefrau|ehemann)\b",
+    re.IGNORECASE,
+)
 
 
 def _extract_strict_short_reply(query: str) -> Optional[str]:
@@ -67,6 +72,38 @@ def _is_compact_response_request(query: str) -> bool:
         requested_items = None
     # Conservative: only bound list sizes are capped; generic "kurz" alone is not enough.
     return requested_items is not None and 1 <= requested_items <= 15
+
+
+def _suppress_identity_for_address_book_contact_recall(user_text: str, address_context: str) -> bool:
+    context = str(address_context or "")
+    if not re.search(r"\*\*Adressbuch:\*\*[\s\S]{0,4000}\bKontakt:\s+", context):
+        return False
+    query = str(user_text or "").strip().lower()
+    if re.search(r"\b(?:über|ueber)\s+(?:mich|mir|den\s+nutzer|user)\b", query):
+        return False
+    if re.search(r"\b(?:wie\s+hei[ßs]|mein(?:em?)?\s+name|was\s+ist\s+mein\s+name)\b", query):
+        return False
+    return bool(
+        re.search(
+            r"\b(?:was\s+(?:weißt|weisst)\s+du(?:\s+alles)?\s+(?:über|ueber)|"
+            r"was\s+mag|was\s+hasst|welche\s+(?:vorlieben|abneigungen))\b",
+            query,
+        )
+    )
+
+
+def _is_contact_relationship_recall_query(query: str) -> bool:
+    q = str(query or "").strip().strip('"').strip("'")
+    if not q:
+        return False
+    q_norm = (
+        q.casefold()
+        .replace("Ã¼", "ue")
+        .replace("Ã¤", "ae")
+        .replace("Ã¶", "oe")
+        .replace("ÃŸ", "ss")
+    )
+    return bool(_CONTACT_RELATIONSHIP_RECALL_RE.search(q_norm))
 
 
 def _websearch_v3_news_routing_enabled(provider: str, query: str) -> bool:
@@ -232,6 +269,51 @@ def _is_clear_sender_keyword_mail_query(query: str) -> bool:
     if not q:
         return False
     return bool(_MAIL_SENDER_KEYWORD_CLEAR_RE.match(q))
+
+
+def _should_soft_route_ambiguous_intent(
+    intent_result: Any,
+    query: str,
+    *,
+    soft_threshold: float = 0.55,
+    block_threshold: float = 0.80,
+) -> Optional[str]:
+    if not intent_result or not bool(getattr(intent_result, "is_ambiguous", False)):
+        return None
+
+    ambiguity_confidence = float(getattr(intent_result, "ambiguity_confidence", 0.0) or 0.0)
+    routing_confidence = float(getattr(intent_result, "routing_confidence", 0.0) or 0.0)
+    is_calendar_read_intent = (
+        bool(getattr(intent_result, "is_calendar_intent", False))
+        and not bool(getattr(intent_result, "is_calendar_mutation", False))
+        and not bool(getattr(intent_result, "is_calendar_creation", False))
+    )
+    is_weather_intent = bool(getattr(intent_result, "is_weather_intent", False))
+    is_routing_geo_intent = bool(getattr(intent_result, "is_routing_geo_intent", False))
+    is_personal_recall = bool(getattr(intent_result, "is_personal_recall", False))
+    is_fact_telling = bool(getattr(intent_result, "is_fact_telling", False))
+
+    if ambiguity_confidence < soft_threshold:
+        return None
+    if ambiguity_confidence < block_threshold:
+        return "medium_ambiguity_soft_route"
+    if is_calendar_read_intent:
+        return "calendar_read_bypass"
+    if is_routing_geo_intent:
+        return "routing_geo_bypass"
+    if is_weather_intent and _weather_query_has_usable_location(query):
+        return "weather_location_bypass"
+    if is_realtime_search_query(query):
+        return "realtime_search_bypass"
+    if _is_clear_sender_keyword_mail_query(query):
+        return "mail_sender_keyword_bypass"
+    if routing_confidence >= soft_threshold and is_calendar_read_intent:
+        return "calendar_routing_confidence_bypass"
+    if routing_confidence >= soft_threshold and is_personal_recall:
+        return "personal_recall_routing_confidence_bypass"
+    if routing_confidence >= soft_threshold and is_fact_telling:
+        return "fact_telling_routing_confidence_bypass"
+    return "hard_block"
 
 
 _DESTRUCTIVE_ACTION_RE = re.compile(
@@ -798,83 +880,48 @@ def _apply_pre_resolution_guards(wf: Any, request: Any) -> None:
         if intent_result:
             is_ambiguous = getattr(intent_result, 'is_ambiguous', False)
             ambiguity_confidence = getattr(intent_result, 'ambiguity_confidence', 0.0)
-            is_calendar_read_intent = (
-                bool(getattr(intent_result, 'is_calendar_intent', False))
-                and not bool(getattr(intent_result, 'is_calendar_mutation', False))
-                and not bool(getattr(intent_result, 'is_calendar_creation', False))
+            ambiguity_soft_threshold = 0.55
+            ambiguity_block_threshold = 0.80
+            ambiguity_route = _should_soft_route_ambiguous_intent(
+                intent_result,
+                query_for_ambiguity,
+                soft_threshold=ambiguity_soft_threshold,
+                block_threshold=ambiguity_block_threshold,
             )
-            is_weather_intent = bool(getattr(intent_result, 'is_weather_intent', False))
-            is_routing_geo_intent = bool(getattr(intent_result, 'is_routing_geo_intent', False))
-            # Threshold: 0.6 (kann über Konfiguration angepasst werden)
-            ambiguity_threshold = 0.6
             
             logger.info(
-                "[AMBIGUITY-DEBUG] Ambiguity values: is_ambiguous=%s, ambiguity_confidence=%.2f, threshold=%.2f",
+                "[AMBIGUITY-DEBUG] Ambiguity values: is_ambiguous=%s, ambiguity_confidence=%.2f, soft_threshold=%.2f, block_threshold=%.2f, route=%s",
                 is_ambiguous,
                 ambiguity_confidence,
-                ambiguity_threshold,
+                ambiguity_soft_threshold,
+                ambiguity_block_threshold,
+                ambiguity_route,
             )
             
-            if is_ambiguous and ambiguity_confidence >= ambiguity_threshold and is_calendar_read_intent:
+            if ambiguity_route == "medium_ambiguity_soft_route":
                 logger.info(
-                    "[AMBIGUITY-BYPASS] Calendar read intent stays tool-enabled despite ambiguity "
-                    "(confidence=%.2f >= %.2f). Query: %r",
+                    "[AMBIGUITY-SOFT-ROUTE] Keeping tools enabled for medium ambiguity "
+                    "(confidence=%.2f, query=%r).",
                     ambiguity_confidence,
-                    ambiguity_threshold,
-                    query_for_ambiguity[:50] if query_for_ambiguity else "",
-                )
-            elif is_ambiguous and ambiguity_confidence >= ambiguity_threshold and is_routing_geo_intent:
-                logger.info(
-                    "[AMBIGUITY-BYPASS] Routing/geo intent stays tool-enabled despite ambiguity "
-                    "(confidence=%.2f >= %.2f). Query: %r",
-                    ambiguity_confidence,
-                    ambiguity_threshold,
-                    query_for_ambiguity[:50] if query_for_ambiguity else "",
-                )
-            elif (
-                is_ambiguous
-                and ambiguity_confidence >= ambiguity_threshold
-                and is_weather_intent
-                and _weather_query_has_usable_location(query_for_ambiguity)
-            ):
-                logger.info(
-                    "[AMBIGUITY-BYPASS] Weather intent stays tool-enabled despite ambiguity "
-                    "(confidence=%.2f >= %.2f). Query: %r",
-                    ambiguity_confidence,
-                    ambiguity_threshold,
-                    query_for_ambiguity[:50] if query_for_ambiguity else "",
-                )
-            elif (
-                is_ambiguous
-                and ambiguity_confidence >= ambiguity_threshold
-                and is_realtime_search_query(query_for_ambiguity)
-            ):
-                logger.info(
-                    "[AMBIGUITY-BYPASS] Realtime price/market query stays tool-enabled despite ambiguity "
-                    "(confidence=%.2f >= %.2f). Query: %r",
-                    ambiguity_confidence,
-                    ambiguity_threshold,
-                    query_for_ambiguity[:50] if query_for_ambiguity else "",
-                )
-            elif (
-                is_ambiguous
-                and ambiguity_confidence >= ambiguity_threshold
-                and _is_clear_sender_keyword_mail_query(query_for_ambiguity)
-            ):
-                logger.info(
-                    "[AMBIGUITY-BYPASS] Clear sender+keyword mail query stays tool-enabled despite ambiguity "
-                    "(confidence=%.2f >= %.2f). Query: %r",
-                    ambiguity_confidence,
-                    ambiguity_threshold,
                     query_for_ambiguity[:80] if query_for_ambiguity else "",
                 )
-            elif is_ambiguous and ambiguity_confidence >= ambiguity_threshold:
+                wf.ambiguity_confidence = ambiguity_confidence
+                wf.ambiguity_soft_routed = True
+            elif ambiguity_route and ambiguity_route != "hard_block":
+                logger.info(
+                    "[AMBIGUITY-BYPASS] Keeping tools enabled despite high ambiguity via route=%s "
+                    "(confidence=%.2f, query=%r).",
+                    ambiguity_route,
+                    ambiguity_confidence,
+                    query_for_ambiguity[:80] if query_for_ambiguity else "",
+                )
+            elif ambiguity_route == "hard_block":
                 logger.info(
                     "[AMBIGUITY-BLOCK] Ambige Anfrage für %s erkannt (confidence=%.2f >= %.2f). "
                     "Tool-Ausführung blockiert, Klärungsfrage wird erzwungen. Query: %r",
                     current_provider,
                     ambiguity_confidence,
-                    ambiguity_threshold,
+                    ambiguity_block_threshold,
                     query_for_ambiguity[:50] if query_for_ambiguity else "",
                 )
                 # Tool-Ausführung blockieren
@@ -1594,6 +1641,12 @@ async def execute_generation_prepare_gateway(
                 "[GEMINI-AMBIGUITY-CONTEXT] Context isolation active: memory/fact coupons/directives cleared."
             )
         wf._identity_allowed = not _suppress_identity_for_generic_prompt(wf.user_text)
+        if _suppress_identity_for_address_book_contact_recall(
+            wf.user_text,
+            str(getattr(wf, "final_system_prompt", "") or ""),
+        ):
+            wf._identity_allowed = False
+            logger.info("[IDENTITY CONTACT-RECALL] Suppressed user identity directive for address-book contact recall.")
         if wf._identity.name and wf._identity_allowed and (not wf.is_eval_reporting) and (not wf.is_audit_request):
             wf._name_recall_re = re.compile('wie\\s+hei[ßs]|mein(?:em?)?\\s+name|wie\\s+ich\\s+hei[ßs]|was\\s+ist\\s+mein\\s+name|kennst\\s+du\\s+mein(?:en)?\\s+name|wei[sß]t\\s+du\\s+(?:noch\\s+)?(?:wie|meinen?)\\s+name', re.IGNORECASE)
             wf._is_name_recall = bool(wf._name_recall_re.search(wf.user_text))
@@ -1787,6 +1840,7 @@ async def execute_generation_prepare_gateway(
         _news = bool(getattr(_idr, "is_news_intent", False)) if _idr else False
         _external_current_research = _is_external_current_research_query(wf.user_text)
         _is_mail_query_text = _is_mail_query(wf.user_text)
+        _contact_relationship_recall = bool(getattr(_idr, "is_personal_recall", False)) and _is_contact_relationship_recall_query(wf.user_text)
 
         if _is_cal_creation:
             # ── CALENDAR-CREATE: Full model freedom — do NOT force any tool.
@@ -1820,6 +1874,17 @@ async def execute_generation_prepare_gateway(
                 }
                 wf.gateway_kwargs["force_tool_name"] = "calendar.list_events"
                 logger.info("💎 CALENDAR-LIVE-TRUTH: Forcing calendar.list_events for provider=%s", request.provider)
+
+        elif _contact_relationship_recall:
+            wf.gateway_kwargs["forced_tool"] = {
+                "skill_id": "memory.read",
+                "provider_tool_name": "memory.read",
+            }
+            wf.gateway_kwargs["force_tool_name"] = "memory.read"
+            wf.gateway_kwargs["forced_tool_args"] = {
+                "query": str(wf.user_text or "").strip(),
+            }
+            logger.info("CONTACT-RECALL: Forcing memory.read for provider=%s", request.provider)
 
         elif _wikipedia:
             wf.gateway_kwargs["forced_tool"] = {
