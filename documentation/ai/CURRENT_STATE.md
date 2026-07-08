@@ -1,6 +1,286 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-08 15:34 +02:00`, the M1.3 package is at the Git-governance checkpoint gate and ready for one bounded local commit. Codex verified that the current worktree is heavily mixed but the intended delivery block is still cleanly isolatable: the M1.3 code/test changes, proof artifacts, audit chain, documentation closeout, `CURRENT_STATE`, and `SKILL_USAGE_LOG` can be committed together without pulling in unrelated Memory, delegation, frontend, or backlog work. No push has happened in this block.
+
+Current goal: create one targeted local checkpoint commit for the completed `TASK-INTENT-M1.3` delivery block and leave all unrelated dirty changes parked.
+
+Active phase: `janus-git-governance` for `TASK-INTENT-M1.3`, canonical state `PASS`.
+
+Last Codex work:
+- loaded the Git-governance skill and reviewed branch, dirty-state, and scope rules
+- verified the repository is still on `develop`
+- isolated the exact M1.3 path set for a Lean Delivery commit in a noisy mixed worktree
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `git branch --show-current`: PASS (`develop`)
+- full `git status --short`: PASS for scope review, mixed worktree confirmed
+- targeted `git status --short -- <M1.3 paths>`: PASS, only intended M1.3 files selected
+
+Open risks:
+- The local commit has not been created yet in this snapshot.
+- No push happened in this block, so GitHub/remotes and `origin/codex-sync` must not be assumed to contain this latest CURRENT_STATE.
+
+Next recommended step for ChatGPT: report that the M1.3 changeset is commit-safe locally but not yet present on any remote.
+
+Next recommended step for Codex: record `janus-git-governance` usage, stage only the M1.3 paths, run cached diff guards, and create one local checkpoint commit.
+
+Last updated: `2026-07-08 15:34:25 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-08 15:26 +02:00`, `TASK-INTENT-M1.3` is documentation-synced after final audit PASS. The M1.3 proof slice is closed as PASS WITH CAVEAT: flag-off parity remains PASS, Calendar is unchanged, Contact improves by `+35.0 pp`, Pet improves by `+20.0 pp`, and corrected auxiliary benchmark latency is inside guardrail at `P95 4.09 ms`. The caveat is still binding: Recall remains `80.0% -> 80.0%` (`+0.0 pp`), so M1/M2 follow-up must not treat Recall uplift or unrestricted staged enablement as solved.
+
+Current goal: checkpoint the completed M1.3 documentation package without touching unrelated dirty-tree changes.
+
+Active phase: `janus-documentation-update` for `TASK-INTENT-M1.3`, canonical state `PASS`.
+
+Last Codex work:
+- synced the final audit result into the parent M1 task, central registry, project state, roadmap tracker, CURRENT_STATE, SKILL_USAGE_LOG, and WHAT_I_LEARNED
+- recorded the reusable benchmark-seam learning pattern `BenchmarkProfileMustPatchConfigReconstructionSeam`
+- kept `CHANGELOG.md`, backlog, dashboard, and release surfaces intentionally out of scope
+
+Changed files:
+- `documentation/tasks/TASK-INTENT-M1_auxiliary_action_subject_classifier.md`
+- `documentation/tasks/TASK-INTENT-M1.3_documentation_update.md`
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `documentation/Cursor specs/ROADMAP_EPIC_ORDER.md`
+- `WHAT_I_LEARNED.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py documentation/tasks/TASK-INTENT-M1.3_final_audit.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-documentation-update\scripts\validate_doc_update.py --repo C:\KI\Janus-Projekt --marker TASK-INTENT-M1.3 --require documentation/tasks/TASK-INTENT-M1_auxiliary_action_subject_classifier.md --require documentation/01_CENTRAL_TASK_REGISTRY.md --require PROJECT_STATE.md --require documentation/ai/CURRENT_STATE.md`: PASS
+- `git diff --check -- documentation/tasks/TASK-INTENT-M1_auxiliary_action_subject_classifier.md documentation/tasks/TASK-INTENT-M1.3_documentation_update.md documentation/01_CENTRAL_TASK_REGISTRY.md PROJECT_STATE.md "documentation/Cursor specs/ROADMAP_EPIC_ORDER.md" documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md WHAT_I_LEARNED.md`: PASS
+
+Open risks:
+- Recall uplift remains unresolved and must stay visible as the M1.3 caveat.
+- No commit or push happened in this block, so GitHub/remotes and `origin/codex-sync` must not be assumed to contain this latest CURRENT_STATE yet.
+
+Next recommended step for ChatGPT: treat M1.3 as closed with caveat and keep Recall uplift as the next explicit follow-up risk.
+
+Next recommended step for Codex: run final documentation validation, then use `janus-git-governance` for a targeted checkpoint commit if the user approves.
+
+Last updated: `2026-07-08 15:26:31 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-08 15:26 +02:00`, `TASK-INTENT-M1.3` has passed final audit as an evidence-complete benchmark slice. Codex audited the corrected proof package after the deterministic benchmark path was repaired: flag-off parity is PASS, Calendar remains unchanged, latency is now inside guardrail at `P95 4.09 ms`, and Contact/Pet meet uplift. The audit explicitly does not hide the remaining Recall shortfall: Recall stays `80.0% -> 80.0%` (`+0.0 pp`) and must be carried into documentation as the open follow-up / staged-enablement caveat.
+
+Current goal: sync the M1.3 audit result into the task chain and roadmap without overstating M1 enablement readiness.
+
+Active phase: `janus-final-audit` for `TASK-INTENT-M1.3`, canonical state `PASS`.
+
+Last Codex work:
+- reviewed the M1.3 audit package, execution result, debug result, and corrected benchmark proof
+- verified the local Final Audit validator contract
+- wrote `documentation/tasks/TASK-INTENT-M1.3_final_audit.md`
+- kept the audit distinction clear: M1.3 evidence slice PASS, Recall uplift shortfall still open
+
+Changed files:
+- `documentation/tasks/TASK-INTENT-M1.3_AUDIT_PACKAGE.md`
+- `documentation/tasks/TASK-INTENT-M1.3_final_audit.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python documentation/codex/scripts/search_what_i_learned.py --query "M1.3_RECALL_UPLIFT_SHORTFALL intent benchmark recall auxiliary classifier"`: PASS
+- scoped `git diff --check` for M1.3 changed files: PASS
+
+Open risks:
+- Documentation update has not run yet; M1.3 audit PASS is not yet synced into the parent task, roadmap tracker, central registry, or project state.
+- Recall uplift remains below the original target and must not be presented as staged-enable-ready without an explicit caveat or follow-up.
+- No commit or push happened in this block, so no remote should be assumed to contain this latest final audit or CURRENT_STATE snapshot yet.
+
+Next recommended step for ChatGPT: summarize that M1.3 final audit passed as an evidence slice, while Recall uplift remains the follow-up caveat.
+
+Next recommended step for Codex: run `janus-documentation-update` for `TASK-INTENT-M1.3` with `5.4` low and sync the final audit result plus Recall caveat into the task/roadmap/project-state surfaces.
+
+Last updated: `2026-07-08 15:26:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-08 15:18 +02:00`, the bounded M1.3 harness-fix execution slice is complete. Codex patched the deterministic benchmark seam so the live `detect_all_intents()` merge path no longer falls back into the real default provider callable during proof mode. The benchmark is now genuinely local and CI-runnable on the aux proof path: the earlier latency blocker collapsed from `P95 1616.44 ms` to `P95 4.09 ms`. The only remaining acceptance shortfall is Recall uplift, which still stays at `80.0%` (`+0.0 pp`).
+
+Current goal: hand the now-correct M1.3 evidence set to final audit with the remaining Recall shortfall documented explicitly.
+
+Active phase: `janus-executioner` for `TASK-INTENT-M1.3`, canonical state `HANDOFF`.
+
+Last Codex work:
+- patched the M1.3 benchmark harness so deterministic proof mode overrides both the module default classifier and the config-based default provider seam
+- added a regression test that fails if deterministic benchmark mode silently re-enters the real default provider path
+- reran the focused benchmark/test suite and regenerated the M1.3 proof report
+- prepared a compact M1.3 audit package for final audit
+
+Changed files:
+- `backend/scripts/run_intent_benchmark.py`
+- `backend/tests/test_intent_benchmark.py`
+- `documentation/test-runs/TASK-INTENT-M1.3_benchmark_uplift_2026-07-08.md`
+- `documentation/tasks/TASK-INTENT-M1.3_execution_result.md`
+- `documentation/tasks/TASK-INTENT-M1.3_debug_result.md`
+- `documentation/tasks/TASK-INTENT-M1.3_AUDIT_PACKAGE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m py_compile backend/scripts/run_intent_benchmark.py backend/tests/test_intent_benchmark.py`: PASS
+- `python -m pytest backend/tests/test_intent_benchmark.py backend/tests/test_intent_aux_classifier.py backend/tests/test_calendar_routing_fix.py -q`: PASS (`59 passed`)
+- `python -m backend.scripts.run_intent_benchmark --mode m1-proof --output documentation/test-runs/TASK-INTENT-M1.3_benchmark_uplift_2026-07-08.md --write-baseline`: PASS
+
+Open risks:
+- M1.3 still does not meet the Recall uplift gate: `80.0% -> 80.0%` (`+0.0 pp`).
+- The remaining blocker is now real benchmark behavior, not a contaminated latency path.
+- No commit or push happened in this block, so no remote should be assumed to contain this latest M1.3 handoff or CURRENT_STATE snapshot yet.
+
+Next recommended step for ChatGPT: summarize that the latency blocker is resolved and only the Recall shortfall remains for final audit judgment.
+
+Next recommended step for Codex: run `janus-final-audit` on `TASK-INTENT-M1.3` with the audit package and decide `BLOCKED` vs evidence-complete closeout.
+
+Last updated: `2026-07-08 15:18:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-08 15:10 +02:00`, the first bounded `janus-debug` pass for `TASK-INTENT-M1.3` has isolated a concrete root cause behind the misleading latency evidence. The supposed deterministic proof path was not actually deterministic inside the live `detect_all_intents()` merge seam: the benchmark passed only `config=...` into `intent_aux_classifier.classify_sync()`, which created a fresh classifier on the real default provider callable and therefore hit `llm_gateway` / `openai` / `asyncio.run` during the proof run. That explains the high latency and event-loop cleanup noise. A second independent finding remains: even the intended regex-style deterministic fallback only scores `12/15` on the Recall subset, so Recall likely stays blocked after the harness seam is corrected.
+
+Current goal: convert the M1.3 blocker from vague benchmark failure into one exact execution reroute: fix the harness seam first, then rerun the proof on the true deterministic path.
+
+Active phase: `janus-debug` for `TASK-INTENT-M1.3`, canonical state `REROUTE`.
+
+Last Codex work:
+- profiled a single aux-enabled `detect_all_intents()` call and proved that `_default_provider_callable` plus `llm_gateway.call_llm()` were still on the hot path
+- measured direct patched `classify_sync()` latency separately and showed it is sub-millisecond, so the benchmark P95 inflation is not the auxiliary seam itself
+- confirmed the regex-fallback Recall subset still reaches only `12/15`, missing `INT-M0-R012`, `INT-M0-R014`, and `INT-M0-R015`
+- wrote a bounded debug handoff that routes the next step to one harness-only execution slice
+
+Changed files:
+- `documentation/tasks/TASK-INTENT-M1.3_debug_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- targeted `search_what_i_learned.py` query: PASS
+- targeted cProfile on aux-enabled `detect_all_intents()`: PASS with root-cause evidence
+- direct patched `classify_sync()` timing probe: PASS (`p95 < 1 ms`)
+- direct Recall regex-fallback subset probe: PASS with isolated `12/15` evidence
+
+Open risks:
+- The checked-in M1.3 proof report still reflects the contaminated provider path until the harness seam is fixed and rerun.
+- Even after the seam fix, Recall uplift likely remains below the acceptance gate because the current deterministic fallback misses three recall phrasings.
+- No commit or push happened in this block, so no remote should be assumed to contain this latest debug reroute or CURRENT_STATE snapshot yet.
+
+Next recommended step for ChatGPT: summarize that the latency blocker was primarily a benchmark-seam bug, while Recall still has a separate heuristic coverage gap.
+
+Next recommended step for Codex: run `janus-executioner` on one bounded M1.3 harness-only fix that patches the provider seam used by `classify_sync(..., config=...)`, then rerun the benchmark proof.
+
+Last updated: `2026-07-08 15:10:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-08 15:00 +02:00`, `TASK-INTENT-M1.3` has been executed to evidence-complete closure and is now formally blocked by measured acceptance, not by missing tests. Codex finished the bounded benchmark-harness slice, kept all changes inside the benchmark/test artifact cluster, and produced a reproducible proof report that confirms two truths at once: flag-off parity is preserved and Contact/Pet improve strongly, but Recall does not move and the measured auxiliary-path latency is far above the M1.3 guardrail.
+
+Current goal: close the M1.3 execution block with explicit evidence and hand the remaining acceptance failure to debug instead of drifting into M2 or product logic edits.
+
+Active phase: `janus-executioner` for `TASK-INTENT-M1.3`, canonical state `BLOCKED`.
+
+Last Codex work:
+- extended the benchmark runner so it can compare legacy baseline parity versus a deterministic auxiliary-classifier proof mode
+- added focused pytest coverage for baseline parsing and the M1.3 proof report path
+- generated `documentation/test-runs/TASK-INTENT-M1.3_benchmark_uplift_2026-07-08.md`
+- wrote a validator-ready execution result that records the measured blocker instead of forcing a false PASS
+
+Changed files:
+- `backend/scripts/run_intent_benchmark.py`
+- `backend/tests/test_intent_benchmark.py`
+- `documentation/test-runs/TASK-INTENT-M1.3_benchmark_uplift_2026-07-08.md`
+- `documentation/tasks/TASK-INTENT-M1.3_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m py_compile backend/scripts/run_intent_benchmark.py backend/tests/test_intent_benchmark.py`: PASS
+- `python -m pytest backend/tests/test_intent_benchmark.py backend/tests/test_intent_aux_classifier.py backend/tests/test_calendar_routing_fix.py -q`: PASS (`58 passed`)
+- `python -m backend.scripts.run_intent_benchmark --mode m1-proof --output documentation/test-runs/TASK-INTENT-M1.3_benchmark_uplift_2026-07-08.md --write-baseline`: PASS with blocker evidence
+
+Open risks:
+- M1.3 did not meet the bound acceptance gates: Recall stayed at `80.0%` (`+0.0 pp` vs baseline) and auxiliary-path latency measured `P95 1616.44 ms`, above the required `< 400 ms`.
+- The proof run emits repeated `Event loop is closed` cleanup noise from the auxiliary async-provider bridge; this does not fail pytest, but it is part of the measured evidence and may be related to the latency story.
+- No commit or push happened in this block, so no remote should be assumed to contain this latest blocked-state snapshot or CURRENT_STATE update yet.
+
+Next recommended step for ChatGPT: summarize that M1.3 is now evidence-complete but blocked on measured Recall uplift and latency, not on missing verification.
+
+Next recommended step for Codex: route the exact M1.3 artifact set to `janus-debug` with `5.4` medium and investigate the Recall flatline plus the synchronous auxiliary benchmark latency path.
+
+Last updated: `2026-07-08 15:00:09 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-08 14:42 +02:00`, `TASK-INTENT-M1.3` has now passed preimplementation check. Codex took the validator-clean task-breakdown handoff, verified the M1.3 scope against the Intent spec acceptance gates and the checked-in M0 baseline, and wrote a strict execution gate that keeps authority only on benchmark uplift proof, latency guardrails, flag-off parity, and the evidence bundle for final audit. The next live step is now the bounded execution slice, not another planning or routing pass.
+
+Current goal: start the M1.3 evidence-only closure slice cleanly without reopening routing logic or drifting into M2.
+
+Active phase: `janus-preimplementation-check` for `TASK-INTENT-M1.3`, canonical state `PASS`.
+
+Last Codex work:
+- validated the released `TASK-INTENT-M1.3` handoff against the source spec sections 5.6, 5.8, and 5.9 plus the M0 baseline artifact
+- wrote `documentation/tasks/TASK-INTENT-M1.3_preimplementation_check.md`
+- aligned the precheck output to the repo validator's accepted Codex-native format
+
+Changed files:
+- `documentation/tasks/TASK-INTENT-M1.3_preimplementation_check.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py documentation/tasks/TASK-INTENT-M1.3_preimplementation_check.md`: PASS
+- scoped `git diff --check` for the M1.3 precheck/task-breakdown artifacts: PASS
+
+Open risks:
+- Implementation has not started yet; M1.3 is precheck-passed but still execution-open.
+- The main drift risk is widening the evidence slice into new routing logic, M2 confidence behavior, or non-benchmark roadmap work.
+- `origin` still does not contain the latest state; only `backup/develop` has the pushed M1.2 checkpoint.
+
+Next recommended step for ChatGPT: summarize that M1.3 is now precheck-passed as an evidence-only benchmark/latency slice and that implementation can begin cleanly.
+
+Next recommended step for Codex: run `janus-executioner` on `TASK-INTENT-M1.3` with `5.4` medium.
+
+Last updated: `2026-07-08 14:42:13 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-08 14:38 +02:00`, the `TASK-INTENT-M1.2` checkpoint is now safely pushed to `backup/develop`, and the next bounded Intent slice is released. Codex tested the operator-requested OpenRouter path for `janus-task-breakdown` on `TASK-INTENT-M1.3`: the delegated review completed live with real cost capture, but its payload failed one bounded validator condition because it cited only the parent task file as source of truth. Codex kept that run as evidence, corrected the source-of-truth framing locally, and wrote a validator-clean `TASK-INTENT-M1.3` handoff for preimplementation check.
+
+Current goal: move from the sealed M1.2 slice into one clean M1.3 precheck gate with benchmark/latency proof scope only.
+
+Active phase: `janus-task-breakdown` for `TASK-INTENT-M1.3`, canonical state `PASS`.
+
+Last Codex work:
+- pushed commit `8044c167cfb5baa8381ba473ef95fde1e5d72cdd` to `backup/develop`
+- created a bounded OR input package for the M1.3 task-breakdown assist lane
+- ran a live OpenRouter task-breakdown review and captured telemetry plus artifacts under `documentation/codex/model-routing/task-breakdown-runs/WF-TASK-BREAKDOWN-TASK-INTENT-M1.3-2026-07-08/`
+- wrote `documentation/tasks/TASK-INTENT-M1.3_task_breakdown.md` locally and validated it for the exact next precheck target
+
+Changed files:
+- `development/openrouter-skill-tests/janus-task-breakdown/task_breakdown_input_package_task_intent_m1_3.json`
+- `documentation/tasks/TASK-INTENT-M1.3_task_breakdown.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `git push backup develop`: PASS
+- live OR task-breakdown run `WF-TASK-BREAKDOWN-TASK-INTENT-M1.3-2026-07-08`: PASS as evidence capture, FAIL as final delegated handoff because `source_of_truth invalid`
+- `python C:\Users\pruve\.codex\skills\janus-task-breakdown\scripts\validate_task_handoff.py --task documentation/tasks/TASK-INTENT-M1_auxiliary_action_subject_classifier.md --target TASK-INTENT-M1.3`: PASS
+- scoped `git diff --check` for the M1.3 handoff and OR-input artifacts: PASS
+
+Open risks:
+- `TASK-INTENT-M1.3` is only task-breakdown-ready; preimplementation check has not started yet.
+- The OR run is useful evidence, but this lane still required Codex to correct and finalize the authoritative handoff locally.
+- `origin` still does not contain the newest state; only `backup/develop` has the pushed M1.2 checkpoint.
+
+Next recommended step for ChatGPT: summarize that M1.2 is now backed up remotely and M1.3 is released for precheck, with OR evidence retained but final task authority kept local.
+
+Next recommended step for Codex: run `janus-preimplementation-check` on `TASK-INTENT-M1.3` with `5.4` medium.
+
+Last updated: `2026-07-08 14:38:13 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-08 14:21 +02:00`, `TASK-INTENT-M1.2` is now fully closed at the documentation layer as well. After the final PASS audit, Codex synced the task-level closure into the active Intent M1 task chain, central registry, project state, and roadmap tracker without widening into M1.3. The canonical truth is now: M1.1 and M1.2 are both sealed, while M1.3 remains the single next bound Intent slice.
 
 Current goal: finish the M1.2 closeout cleanly and leave the repo with one unambiguous next Intent step.

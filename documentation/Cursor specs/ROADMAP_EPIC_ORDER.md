@@ -775,7 +775,8 @@ Exit: §13 Epic 6 vollständig
 | Codex Delegation 4-Choice | **EXIT PASS** | 2026-07-07 | Gate live; Operating Model `HANDOFF_DELEGATION_ROUTE_HARDENING_OPERATING_MODEL_2026-07-07.md` |
 | M1 I1 / TASK-INTENT-M1.1 | **EXIT PASS** | 2026-07-08 | Cursor Composer/API nur als Evidence behalten; Slice lokal in Codex abgeschlossen, final auditiert und dokumentiert |
 | M1 I1 / TASK-INTENT-M1.2 | **EXIT PASS** | 2026-07-08 | Integrationskern lokal in Codex abgeschlossen; Live-DB-Kontamination bereinigt, Gemini-Recall-Fallback gehaertet, final auditiert und dokumentiert |
-| M1 I1 Intent Classifier | IN ARBEIT | 2026-07-08 | M1.1 und M1.2 PASS; M1.3 Benchmark-/Latency-Proof und Staging-Enablement noch offen |
+| M1 I1 / TASK-INTENT-M1.3 | **EXIT PASS WITH CAVEAT** | 2026-07-08 | Benchmark-Proof lokal/CI-lauffaehig; Flag-off PASS; Contact +35.0 pp, Pet +20.0 pp, P95 4.09 ms; Recall bleibt +0.0 pp |
+| M1 I1 Intent Classifier | CAVEAT / FOLLOW-UP | 2026-07-08 | M1.1-M1.3 task-scharf auditiert und dokumentiert; Staging-Enablement nur mit Recall-Caveat, da Recall-Uplift `80.0% -> 80.0%` bleibt |
 | M1 MA/MB Memory A+B | OFFEN | — | parallel zu I1 |
 | M2 Intent I2 | OFFEN | — | |
 | M3 Workflows | OFFEN | — | |

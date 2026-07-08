@@ -4,6 +4,19 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-INTENT-M1.3 - Prove benchmark uplift, latency guardrails, and staged enablement for the auxiliary classifier
+
+- **Status**: DONE WITH CAVEAT
+- **Final Audit**: `documentation/tasks/TASK-INTENT-M1.3_final_audit.md` (PASS)
+- **Spec**: `documentation/Cursor specs/INTENT_ENGINE_HERMES_INSPIRED_UPGRADE_PLAN.md`
+- **Parent Task**: `documentation/tasks/TASK-INTENT-M1_auxiliary_action_subject_classifier.md`
+- **Task Breakdown**: `documentation/tasks/TASK-INTENT-M1.3_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-INTENT-M1.3_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-INTENT-M1.3_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-INTENT-M1.3_AUDIT_PACKAGE.md`
+- **Validation**: `TASK-INTENT-M1.3` schliesst den Benchmark-/Latency-/Flag-Off-Proof als Evidence-Slice ab. Der korrigierte M1.3-Proof ist lokal und CI-lauffaehig, Flag-`off`-Paritaet ist PASS, Calendar bleibt unveraendert, Contact verbessert sich von `55.0%` auf `90.0%`, Pet von `53.3%` auf `73.3%`, und die Aux-P95-Latenz liegt bei `4.09 ms`. Der urspruengliche Latenzblocker wurde als Benchmark-Harness-Seam isoliert und korrigiert. Caveat: Recall bleibt bei `80.0% -> 80.0%` (`+0.0 pp`), daher darf dieser PASS nicht als uneingeschraenkte Staging-Enablement-Freigabe gelesen werden.
+- **Changed Files**: `backend/scripts/run_intent_benchmark.py`, `backend/tests/test_intent_benchmark.py`, `documentation/test-runs/TASK-INTENT-M1.3_benchmark_uplift_2026-07-08.md`, `documentation/tasks/TASK-INTENT-M1.3_execution_result.md`, `documentation/tasks/TASK-INTENT-M1.3_debug_result.md`, `documentation/tasks/TASK-INTENT-M1.3_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-INTENT-M1.3_final_audit.md`.
+
 ### TASK-INTENT-M1.2 - Integrate the auxiliary classifier into detect_all_intents with merge rules and flag-off parity
 
 - **Status**: DONE

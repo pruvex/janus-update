@@ -231,3 +231,15 @@
 - **Epic:** TASK-SPEC27
 - **Confidence:** High
 - **Tags:** aider,openrouter,worker,poc,sandbox,allowlist,repo-hygiene
+
+
+## [PATTERN] #BenchmarkProfileMustPatchConfigReconstructionSeam "Benchmark profiles must patch config-based service reconstruction seams"
+- **Kontext:** TASK-INTENT-M1.3 / auxiliary intent classifier benchmark proof (2026-07-08).
+- **Problem:** The deterministic benchmark patched the module default classifier, but the production merge path called classify_sync(..., config=...), rebuilt a fresh classifier, and used the real default provider path; this contaminated latency and provider isolation evidence.
+- **Loesung:** Patch the provider callable used by config-based reconstruction as well as the module singleton, and add a regression test proving deterministic benchmark mode does not call the real default provider path.
+- **Haertung:** Focused pytest suite passed with 59 tests; corrected M1.3 proof report shows flag-off parity PASS and auxiliary latency P95 4.09 ms after the seam fix.
+- **Tripwire:** If a future deterministic benchmark emits provider/httpx/event-loop cleanup noise or unexpectedly high latency, check whether only a singleton was patched while the live path reconstructs services from config.
+- **Location:** backend/scripts/run_intent_benchmark.py; backend/tests/test_intent_benchmark.py; backend/services/orchestrator/intent_aux_classifier.py; backend/services/orchestrator/intent_engine.py
+- **Epic:** TASK-INTENT-M1.3
+- **Confidence:** High
+- **Tags:** intent,benchmark,deterministic-provider,latency,config-reconstruction

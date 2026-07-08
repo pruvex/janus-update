@@ -103,6 +103,9 @@ TASK-INTENT-M1
 - Model: 5.4
 - Reason:
   - Die dritte Slice schliesst M1 erst mit echter M0-vs-M1-Evidenz statt nur mit lokal gruener Implementierung.
+- Closeout:
+  - Final Audit PASS ist in `documentation/tasks/TASK-INTENT-M1.3_final_audit.md` dokumentiert. Der dritte M1-I1-Slice ist damit als Evidence-Slice abgeschlossen: der Benchmark-Proof ist nach Debug-Korrektur der deterministischen Provider-Seam lokal, CI-lauffaehig und reproduzierbar; Flag-`off`-Paritaet ist PASS, Calendar bleibt unveraendert, Contact verbessert sich um `+35.0 pp`, Pet um `+20.0 pp`, und die Aux-P95-Latenz liegt bei `4.09 ms`.
+  - Der Slice schliesst kein uneingeschraenktes Staging-Enablement: Recall bleibt bei `80.0% -> 80.0%` (`+0.0 pp`) und ist als offener Follow-up-/Caveat fuer M1 I1 dokumentiert. M2 darf diesen Recall-Shortfall nicht als geloest interpretieren.
 
 @janus-task-breakdown
 Spec: documentation/Cursor specs/INTENT_ENGINE_HERMES_INSPIRED_UPGRADE_PLAN.md
