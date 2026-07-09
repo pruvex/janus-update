@@ -25,10 +25,12 @@ from delegation_routing import (  # noqa: E402
     DEFAULT_MANIFEST_PATH,
     DEFAULT_TASK_LIST_PATH,
     build_gate,
+    estimate_run_cost_usd,
     find_lane,
     find_task,
     is_never_delegate,
     lane_model,
+    lane_cursor_model,
     load_manifest,
     load_task_list,
     normalize_operator_choice,
@@ -213,6 +215,7 @@ def build_cursor_command(
     lane_id: str,
     workflow_id: str,
     selected_model: str,
+    cursor_pool: str,
     input_package_json: Path | None,
     allowlist_file: Path | None,
     accepted_source_run_dir: Path | None,
@@ -227,6 +230,8 @@ def build_cursor_command(
         workflow_id,
         "--model",
         selected_model,
+        "--cursor-pool",
+        cursor_pool,
     ]
     command.append("--execute-live" if execute_live else "--dry-run")
     cursor_config = lane.get("cursor") if isinstance(lane.get("cursor"), dict) else {}
@@ -273,11 +278,12 @@ def build_deterministic_apply_command(
 
 
 def route(args: argparse.Namespace) -> dict[str, Any]:
-    if args.execute_live_cursor and normalize_operator_choice(args.operator_choice, load_manifest(args.manifest)) != "cursor":
+    normalized_choice = normalize_operator_choice(args.operator_choice, load_manifest(args.manifest))
+    if args.execute_live_cursor and normalized_choice not in {"3", "4"}:
         return {
             "validation_result": "FAIL",
             "final_outcome": "CURSOR_LIVE_EXECUTION_REQUIRES_CURSOR_CHOICE",
-            "operator_message": "Use --execute-live-cursor only together with operator choice 2=Cursor.",
+            "operator_message": "Use --execute-live-cursor only together with operator choice 3=Cursor Composer or 4=Cursor API.",
             "codex_review_required": True,
         }
 
@@ -295,8 +301,8 @@ def route(args: argparse.Namespace) -> dict[str, Any]:
     task = find_task(task_list, task_id=args.task_id, lane_id=args.lane)
     lane_id = args.lane or (task.get("lane_id") if isinstance(task, dict) else None)
     if not lane_id:
-        choice = normalize_operator_choice(args.operator_choice, manifest)
-        if isinstance(task, dict) and choice in {"prompt", "codex"}:
+        choice = normalized_choice
+        if isinstance(task, dict) and choice in {"prompt", "1"}:
             return {
                 "validation_result": "PASS",
                 "status": "CODEX_ONLY_TASK",
@@ -349,17 +355,39 @@ def route(args: argparse.Namespace) -> dict[str, Any]:
         estimated_delegation_overhead_tokens=args.estimated_delegation_overhead_tokens,
         minimum_net_codex_saved_tokens=args.minimum_net_codex_saved_tokens,
     )
-    choice = normalize_operator_choice(args.operator_choice, manifest)
+    choice = normalized_choice
 
     if choice == "prompt":
+        visible_lines = []
+        for choice_row in gate["visible_choices"]:
+            model = choice_row.get("model")
+            cost_hint = choice_row.get("cost_hint")
+            line = f'{choice_row["choice_id"]}. {choice_row["label"]}'
+            if isinstance(model, str) and model.strip():
+                line += f" - {model}"
+            if isinstance(cost_hint, str) and cost_hint.strip():
+                line += f" - {cost_hint}"
+            if choice_row.get("recommended") is True:
+                line += " <- Empfehlung"
+            visible_lines.append(line)
+        operator_message = "Wie soll ich delegieren?\n\n" + "\n".join(visible_lines) + f"\n\nEmpfehlung: {gate['recommended_choice']}"
+        if gate.get("roi", {}).get("status") == "NEGATIVE" and len(gate["visible_choices"]) > 1:
+            visibility_reason = str(gate.get("negative_roi_visibility_reason") or "").strip()
+            note = (
+                visibility_reason
+                if visibility_reason
+                else "Externe Optionen bleiben als verfuegbare Ausweichlane sichtbar, sind aber aktuell nicht kostenoptimiert empfohlen."
+            )
+            operator_message += f"\nHinweis: {note}"
         gate.update({
             "validation_result": "PASS",
             "final_outcome": "AWAITING_OPERATOR_CHOICE",
-            "operator_message": f"Choose {' / '.join(gate['operator_gate_lines'])}. Codex remains final reviewer.",
+            "operator_message": operator_message,
         })
         return gate
 
-    if choice not in gate["visible_backends"]:
+    visible_choice_ids = {item["choice_id"] for item in gate["visible_choices"]}
+    if choice not in visible_choice_ids:
         return {
             **gate,
             "backend": choice,
@@ -368,17 +396,20 @@ def route(args: argparse.Namespace) -> dict[str, Any]:
             "operator_message": f"{choice} is hidden or disabled for this task because eligibility, governance, or ROI did not pass.",
         }
 
-    selected_model = lane_model(lane, task, choice)
+    selected_choice = next(item for item in gate["visible_choices"] if item["choice_id"] == choice)
+    selected_backend = str(selected_choice["backend"])
+    selected_model = selected_choice.get("model")
     base = {
         **gate,
-        "backend": choice,
+        "backend": selected_backend,
         "selected_model": selected_model,
+        "selected_choice": choice,
         "codex_review_required": True,
         "codex_final_owner": True,
         "validation_result": "PASS",
     }
 
-    if choice == "codex" or is_never_delegate(task, lane_id):
+    if selected_backend == "codex" or is_never_delegate(task, lane_id):
         return {
             **base,
             "backend": "codex",
@@ -388,7 +419,7 @@ def route(args: argparse.Namespace) -> dict[str, Any]:
             "operator_message": "Codex local path selected. No external delegation will run.",
         }
 
-    if choice == "cursor":
+    if selected_backend == "deterministic_apply":
         deterministic_apply = (
             lane_id == "execution_write_apply_candidate"
             and isinstance(lane.get("deterministic_apply_worker"), dict)
@@ -413,16 +444,22 @@ def route(args: argparse.Namespace) -> dict[str, Any]:
                 "live_execution_allowed": False,
                 "operator_message": "Option 2 uses the sealed deterministic apply worker for this accepted-source lane; no Cursor live call is executed.",
             }
+    if selected_backend == "cursor":
+        cursor_pool = str(selected_choice.get("pool") or "auto_composer")
+        if not isinstance(selected_model, str) or not selected_model:
+            selected_model = lane_cursor_model(lane, manifest, cursor_pool) or "auto"
         command = build_cursor_command(
             lane=lane,
             lane_id=lane_id,
             workflow_id=args.workflow_id,
-            selected_model=selected_model or "auto",
+            selected_model=selected_model,
+            cursor_pool=cursor_pool,
             input_package_json=args.input_package_json,
             allowlist_file=args.allowlist_file,
             accepted_source_run_dir=args.accepted_source_run_dir,
             execute_live=args.execute_live_cursor,
         )
+        cost_estimate = estimate_run_cost_usd(selected_model, manifest)
         if args.execute_live_cursor:
             completed = run_command(command)
             try:
@@ -434,6 +471,8 @@ def route(args: argparse.Namespace) -> dict[str, Any]:
                     "final_outcome": "CURSOR_WORKER_OUTPUT_UNREADABLE",
                     "validation_result": "FAIL",
                     "planned_command": command,
+                    "cursor_pool": cursor_pool,
+                    "cost_estimate_usd_static": cost_estimate,
                     "live_execution_allowed": True,
                     "downstream_exit_code": completed.returncode,
                     "downstream_stderr": completed.stderr,
@@ -444,6 +483,8 @@ def route(args: argparse.Namespace) -> dict[str, Any]:
                 **downstream,
                 "selected_path": "cursor_worker_live_via_delegate",
                 "planned_command": command,
+                "cursor_pool": cursor_pool,
+                "cost_estimate_usd_static": cost_estimate,
                 "live_execution_allowed": True,
                 "downstream_exit_code": completed.returncode,
                 "downstream_stderr": completed.stderr,
@@ -453,11 +494,13 @@ def route(args: argparse.Namespace) -> dict[str, Any]:
             "selected_path": "cursor_worker_planned_no_live",
             "final_outcome": "CURSOR_WORKER_DRY_RUN_READY",
             "planned_command": command,
+            "cursor_pool": cursor_pool,
+            "cost_estimate_usd_static": cost_estimate,
             "live_execution_allowed": False,
-            "operator_message": "Cursor is option 2. This run only plans the bounded cursor worker command; no live Cursor call is executed.",
+            "operator_message": f"Cursor option {choice} is planned through the shared bounded worker; no live Cursor call is executed.",
         }
 
-    if choice == "openrouter":
+    if selected_backend == "openrouter":
         plan = build_openrouter_plan(
             lane_id=lane_id,
             workflow_id=args.workflow_id,

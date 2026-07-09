@@ -82,11 +82,208 @@ Dashboard-Regeln:
 ## NEEDS INFO
 
 ## IN PROGRESS
+
+### BACKLOG-120 - Neue Kontakt-Hobbyfakten fuer bestehenden Kontakt werden als unverifizierbare Wissensfrage abgewehrt
+
+- **Typ:** BUG
+- **Status:** IN PROGRESS
+- **Quelle:** User Intake
+- **Erstellt:** 2026-07-02
+- **Aktualisiert:** 2026-07-02
+- **Kurzbeschreibung:** Wenn ein bestehender Kontakt bereits sauber bekannt ist, behandelt Janus einen neuen klaren Hobby-/Vorliebenfakt wie `Nathan spielt gerne League of Legends` nicht als speicherbares lokales Kontaktwissen. Statt den Fakt zu merken, antwortet Janus mit einer Rueckfrage nach "ueberpruefbaren Fakten", als waere eine externe Wissensrecherche gemeint.
+- **Erwartetes Verhalten:** Ein klar formulierter neuer Kontaktfakt ueber einen bereits bekannten Kontakt, etwa `Nathan spielt gerne League of Legends`, wird als lokales Kontaktwissen erkannt, passend gespeichert und mit einer knappen lokalen Merkbestaetigung quittiert.
+- **Tatsaechliches Verhalten:** Auf `nathan spielt gerne league of legends` antwortete Janus: `Ich habe dazu keine überprüfbaren Fakten. Welche Information benötigst du genau über Nathan und League of Legends ...?` Damit wird der neue Kontaktfakt weder sauber als lokales Wissen behandelt noch als neuer Vorlieben-/Hobbyfakt fuer Nathan gespeichert.
+- **Reproduktion / Kontext:** Live-Repro vom 2026-07-02 direkt nach dem erfolgreichen Nathan/Elena-Fix. Nathan ist bereits als bestehender Kontakt bekannt und seine Beziehungsdaten koennen inzwischen korrekt gefunden werden. Danach fuehrt die neue Aussage `nathan spielt gerne league of legends` aber in einen falschen Wissens-/Verifikationsmodus statt in den Kontaktfakt-Pfad.
+- **Betroffener Bereich:** Orchestrierung / Kontaktfakt-Erkennung / Memory-Write / Kontaktvorlieben / bestehende Kontakte
+- **Nachweise:** User-Live-Repro vom 2026-07-02 mit der exakten Janus-Antwort auf `nathan spielt gerne league of legends`.
+- **Akzeptanzkriterien:**
+  - [ ] Ein klarer neuer Hobby-, Vorlieben- oder Freizeitfakt fuer einen bereits bekannten Kontakt wird als lokales Kontaktwissen erkannt statt als externe Wissensfrage behandelt.
+  - [ ] Die Aussage `Nathan spielt gerne League of Legends` fuehrt zu einer passenden lokalen Merkbestaetigung oder einer gleichwertig klaren Speicherbestaetigung.
+  - [ ] Der neue Fakt landet fuer Nathan in einem konsistenten lokalen Kontakt-/Vorliebenpfad und ist spaeter chatuebergreifend recallbar.
+  - [ ] Die Loesung bleibt auf klare Kontaktfaktaussagen begrenzt und fuehrt nicht dazu, dass unklare oder generische Gaming-/Wissensanfragen ueberaggressiv als Kontaktwissen gespeichert werden.
+- **Fehlende Informationen:**
+  - Keine
+- **Wichtigkeit:** HIGH
+- **Umsetzungsrisiko:** MEDIUM
+- **Aufwand:** S
+- **Umsetzungsreife:** READY
+- **Empfehlung:** DO NOW
+- **Entry Point:** EXECUTION_READY
+- **Routing reason:** Gebundener Skill-3-Precheck ist bestanden; die Umsetzung bleibt ein kleiner klarer Bugfix auf dem bestehenden Kontakt-/Memory-Faktpfad fuer Kontaktfakt-Erkennung, Kontakt-Subjekt-Extraktion und Vorlieben-Persistenz.
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-07-02
+- **Handoff:** documentation/tasks/backlog_BACKLOG-120_kontakt_hobbyfakten_fallen_in_wissensmodus.md
+- **Recommended next skill:** SKILL 4
+- **Handoff created:** 2026-07-02
+- **Precheck artifact:** documentation/tasks/backlog_BACKLOG-120_preimplementation_check.md
+- **Target Task:** BACKLOG-120
+- **Notizen:** Verwandt mit `BACKLOG-119`, aber anderer Fehler-Slice: `119` betraf Beziehungsfakten und Recall-Routing, dieser Befund betrifft neue Hobby-/Vorliebenfakten fuer bereits bekannte Kontakte.
+
+### BACKLOG-119 - Kontakt-Beziehungsfakten werden nicht provider- und chatuebergreifend persistiert
+
+- **Typ:** BUG
+- **Status:** IN PROGRESS
+- **Quelle:** User Intake
+- **Erstellt:** 2026-07-02
+- **Aktualisiert:** 2026-07-02
+- **Follow-up zu:** BACKLOG-108 - Bestaetigtes Kontaktwissen aus Chat landet nicht im bestehenden Adressbuchkontakt
+- **Kurzbeschreibung:** Wenn Janus einen klaren Kontakt-Beziehungsfakt wie `Nathans Freundin heisst Elena` in einem anderen Chat und ueber einen anderen Provider erhaelt, behauptet das System teils, die Information sei gemerkt, schreibt sie aber nicht in einen konsistenten Adressbuch-/Beziehungspfad. Dadurch ist der Fakt spaeter weder sauber im Adressbuch sichtbar noch provider- und chatuebergreifend recallbar.
+- **Erwartetes Verhalten:** Ein klarer Kontakt-Beziehungsfakt wie `Nathans Freundin heisst Elena` wird in einem konsistenten Kontakt-/Beziehungspfad persistiert, so dass spaetere Rueckfragen wie `Wer ist Nathans Freundin?` den Fakt chat- und provideruebergreifend verlaesslich finden. Die Information soll sichtbar im passenden Adressbuch-/Kontaktkontext landen oder in einem gleichwertig konsistenten lokalen Kontaktwissen-Pfad.
+- **Tatsaechliches Verhalten:** GPT konnte `Nathan Raimann wohnt in Berlin` korrekt als neuen Kontakteintrag anlegen. Gemini bestaetigte in einem anderen Chat auf `Nathans Freundin heisst Elena`, es habe sich gemerkt, dass Elena die Freundin von Nathan sei. Der Fakt landete aber laut Nutzer nicht im Adressbuch, und GPT konnte in einem weiteren Chat auf `Wer ist Nathans Freundin?` keine verlaessliche Auskunft geben.
+- **Reproduktion / Kontext:** Live-Repro vom 2026-07-02. Chat A mit GPT: `mein bester freund, der nathan raimann wohnt in berlin` -> Nathan wird korrekt angelegt. Chat B mit Gemini: `nathans freundin heisst elena` -> Gemini bestaetigt den Fakt als gemerkt. Danach in einem anderen GPT-Chat: `wer ist nathans freundin?` -> Janus antwortet, dass keine verlaessliche Information dazu vorliege.
+- **Betroffener Bereich:** Adressbuch / Kontaktpersistenz / Kontaktbeziehungen / Memory-Recall / Provider-Paritaet
+- **Nachweise:** User-Live-Repro vom 2026-07-02 mit GPT-Chat fuer Nathan-Anlage, Gemini-Chat fuer Elena-Beziehungsfakt und GPT-Recall-Fehlschlag in einem weiteren Chat.
+- **Akzeptanzkriterien:**
+  - [ ] Klare Kontakt-Beziehungsfakten wie `Xs Freundin/Freund heisst Y` werden in einem konsistenten lokalen Kontakt-/Beziehungspfad persistiert statt nur im fluechtigen Chat-/Providerkontext bestaetigt.
+  - [ ] Nach dem Merken kann Janus in einem anderen Chat und mit einem anderen Modell eine Rueckfrage wie `Wer ist Nathans Freundin?` korrekt aus lokalem Wissen beantworten.
+  - [ ] Die Information landet im passenden Adressbuch-/Kontaktkontext oder in einem gleichwertig konsistenten lokalen Beziehungspfad, statt unsichtbar zu bleiben.
+  - [ ] Die Loesung fuehrt nicht zu ueberaggressiver Kontaktanlage oder Beziehungszuordnung bei unklaren oder mehrdeutigen Aussagen.
+- **Fehlende Informationen:**
+  - Keine
+- **Wichtigkeit:** HIGH
+- **Umsetzungsrisiko:** MEDIUM
+- **Aufwand:** M
+- **Umsetzungsreife:** READY
+- **Empfehlung:** DO NOW
+- **Entry Point:** EXECUTION_READY
+- **Routing reason:** Gebundener Skill-3-Precheck ist bestanden; die Umsetzung bleibt ein kleiner bis mittlerer Bugfix auf dem bestehenden Kontakt-/Memory-Persistenzpfad fuer Beziehungsextraktion, Persistenz und Recall.
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-07-02
+- **Handoff:** documentation/tasks/backlog_BACKLOG-119_kontakt_beziehungsfakten_provider_und_chatuebergreifend_persistieren.md
+- **Recommended next skill:** SKILL 4
+- **Handoff created:** 2026-07-02
+- **Precheck artifact:** documentation/tasks/backlog_BACKLOG-119_preimplementation_check.md
+- **Target Task:** BACKLOG-119
+- **Notizen:** Der Repro zeigt sowohl einen Persistenzfehler fuer Beziehungswissen als auch eine Provider-/Chat-Paritaetsluecke zwischen Gemini-Write-Bestaetigung und GPT-Recall.
+
+### BACKLOG-117 - Strong OR Agent Lane fuer echte ausgelagerte Testarbeit
+
+- **Typ:** TECH_DEBT
+- **Status:** IN PROGRESS
+- **Quelle:** User Intake
+- **Erstellt:** 2026-07-01
+- **Aktualisiert:** 2026-07-05
+- **Kurzbeschreibung:** Die OR-Integration soll echte bounded Dev-/Testarbeit auslagern koennen statt nur kleine Review- oder Patch-Vorschlaege zu liefern. Fuer geeignete Testpipeline-Arbeit soll eine starke isolierte OR-Agent-Lane Tests schreiben, erlaubte Checks mehrfach fahren und Ergebnisartefakte fuer Codex zusammenfassen.
+- **Erwartetes Verhalten:** Bei bounded Testarbeit kann Codex ein sichtbares `1 = Codex / 2 = OR` Gate anbieten, das eine starke OR-Worker-Lane in einem isolierten Temp-Workspace nutzt. OR darf nur allowlisted Dateien bearbeiten und nur whitelisted Commands ausfuehren; Codex behaelt finale Auswertung, Akzeptanz, Git- und Routing-Hoheit.
+- **Tatsaechliches Verhalten:** Die bisherigen OR-Lanes sind ueberwiegend assistiv oder proposal-first. Testpipeline-OR ist fuer Generator-Review und Triage sichtbar, aber nicht sauber als echte Agentenarbeit `Test schreiben, N-mal fahren, Ergebnisse buendeln` gefasst.
+- **Reproduktion / Kontext:** BACKLOG-116 OR-Lauf mit `qwen/qwen3-coder-30b-a3b-instruct` scheiterte an malformed/repetitivem Patch. User-Feedback vom 2026-07-01: Die OR-Integration soll langfristig echte Arbeit auslagern, sonst spart sie keine Codex-Tokens und bleibt unflexibel.
+- **Betroffener Bereich:** Dev-Infrastruktur / OR-Model-Routing / janus-test-pipeline / janus-executioner
+- **Nachweise:** User-Feedback vom 2026-07-01; OR-Artefakte unter `documentation/codex/model-routing/execution-direct-or-runs/BACKLOG-116-EXECUTION-OR-001/`.
+- **Akzeptanzkriterien:**
+  - [ ] Execution-Patch-Kandidaten nutzen nicht mehr das kleine Qwen-Coder-Modell als Default fuer komplexere produktive OR-Arbeit.
+  - [ ] Die Testpipeline beschreibt eine sichtbare Strong-OR-Testworker-Lane fuer isolierte Test-Authoring-/Run-/Summary-Arbeit.
+  - [ ] Der Testpipeline-Helper kann bei vorhandenem isolated-worker package die OR-Gate-Ausgabe an den isolierten Worker weiterreichen statt nur den Generator-Pilot zu zeigen.
+  - [ ] Regressionstests decken Modellvertrag und Strong-Testworker-Gate ab.
+  - [ ] Codex bleibt finaler Reviewer; keine Git-, Release-, Produkt- oder finale Test-PASS-Autoritaet wird delegiert.
+- **Fehlende Informationen:**
+  - Keine
+- **Wichtigkeit:** HIGH
+- **Umsetzungsrisiko:** MEDIUM
+- **Aufwand:** M
+- **Umsetzungsreife:** READY
+- **Empfehlung:** DO NOW
+- **Entry Point:** EXECUTION_READY
+- **Routing reason:** Lean-Dev-Slice fuer OR-Infrastruktur, keine Janus-Produktlogik; Scope ist auf Modellvertrag, Testpipeline-Gate und Regressionstests begrenzt.
+- **Routing confidence:** HIGH
+- **Routing decided by:** CODEX LEAN DEV
+- **Routing decided at:** 2026-07-01
+- **Handoff:** documentation/tasks/backlog_BACKLOG-117_strong_or_agent_lane.md
+- **Recommended next skill:** SKILL 4
+- **Handoff created:** 2026-07-01
+- **Completed by task:** documentation/tasks/backlog_BACKLOG-117_execution_result.md
+- **Validation evidence:** `python -m pytest documentation\codex\model-routing\tests\test_codex_dev_workhorse_runner.py -q` PASS; `python -m pytest documentation\codex\model-routing\tests\test_bounded_or_worker_eligibility.py -q` PASS; `python -m pytest documentation\codex\model-routing\tests\test_test_pipeline_sidecar_write_pilot_runner.py -q` PASS; `python -m py_compile documentation\codex\model-routing\scripts\test_pipeline_sidecar_write_pilot_runner.py documentation\codex\model-routing\scripts\bounded_or_worker_eligibility.py documentation\codex\model-routing\scripts\codex_dev_workhorse_runner.py` PASS; Strong OR prompt gate fixture PASS; backlog validator PASS WITH LEGACY WARNINGS; `npm run sync:backlog` PASS.
+
   - [ ] Codex behaelt explizit die finale Accept-/Reject-Autoritaet und der delegated Pfad claimt keine Task-Fertigstellung, Git-, Release- oder Routing-Hoheit.
   - [ ] Ein erster echter Mini-Quickchange kann nachweisbar ueber diesen Pfad laufen oder sauber bounded auf Codex-local zurueckfallen.
 - **Fehlende Informationen:**
   - Keine
 - **Notizen:** Das ist kein breiter `janus-executioner`-Delegationswunsch, sondern der fehlende letzte Infrastruktur-/Governance-Schritt vor dem ersten echten bounded OR-Quickchange-Pilot.
+
+### BACKLOG-118 - Bounded OR Lane fuer LIVE_TEST_EXECUTION in der Testpipeline
+
+- **Typ:** IMPROVEMENT
+- **Status:** IN PROGRESS
+- **Quelle:** User Intake
+- **Erstellt:** 2026-07-01
+- **Aktualisiert:** 2026-07-05
+- **Follow-up zu:** BACKLOG-117 - Strong OR Agent Lane fuer echte ausgelagerte Testarbeit
+- **Kurzbeschreibung:** Die Janus-Testpipeline soll fuer geeignete Live-Retests eine sichtbare bounded OR-Lane bekommen, damit Codex den echten Lauf nicht immer selbst ausfuehren muss. Die Lane soll lokale API-/Health-/Prompt-Retests inklusive Evidenzsammlung delegierbar machen, waehrend Codex finale PASS/FAIL-Hoheit behaelt.
+- **Erwartetes Verhalten:** Bei eligible `LIVE_TEST_EXECUTION`-Slices zeigt `janus-test-pipeline` ein sichtbares `1 = Codex / 2 = OR` Gate. Wenn der Nutzer `2 = OR` waehlt, darf ein bounded Worker den allowlisted lokalen Retest-Ablauf ausfuehren, Evidenz erzeugen und Codex die Ergebnisse zur finalen Bewertung zurueckgeben.
+- **Tatsaechliches Verhalten:** PARTIAL - `TASK-SPEC28.1` hat die sichtbare `1 = Codex / 2 = OR`-Wahl fuer eligible lokale bounded `LIVE_TEST_EXECUTION`-Retests audit-clean geoeffnet; `TASK-SPEC28.2` hat danach den bounded Worker/Auth/Evidence-Vertrag inklusive runtime-only Auth-Metadaten, Secret-Rejection, reviewbarem Evidence-Paket und package-backed Prompt-Evidenz audit-clean geliefert. Offen bleibt der Codex-owned Accept/Reject-Abschluss mit den letzten Lane-Regressionen aus `TASK-SPEC28.3`.
+- **Reproduktion / Kontext:** Im `BACKLOG-116`-Retest am 2026-07-01 wurde nach erfolgreichem Debug-Fix erneut `OK START LIVE TEST` ausgefuehrt. Der Retest lief gruen, musste aber komplett von Codex ueber den lokalen Dev-API-Pfad inklusive internem Header, Chat-Erzeugung, Prompt-Ausfuehrung und Evidenzablage gefahren werden. Nutzerfrage danach: warum dieser Test nicht durch ein OR-Modell gelaufen ist; Folgeentscheidung: eine eigene bounded OR-Lane fuer diesen Modus aufbauen.
+- **Betroffener Bereich:** Dev-Infrastruktur / OR-Model-Routing / janus-test-pipeline / lokale Live-Retests
+- **Nachweise:** `documentation/test-runs/BACKLOG-116_live_retest_after_debug_2026-07-01.md`; `documentation/test-results/BACKLOG-116-live-retest-after-debug-2026-07-01/BACKLOG-116_live_retest_after_debug_api_evidence.json`; User-Entscheidung vom 2026-07-01; `documentation/tasks/TASK-SPEC28.1_final_audit.md`; `documentation/tasks/TASK-SPEC28.2_final_audit.md`; `documentation/codex/model-routing/sidecar-runs/TP-LIVE-GATE-AUDIT-PROMPT-001/operator_choice_prompt.json`; `documentation/codex/model-routing/sidecar-runs/TP-LIVE-GATE-AUDIT-PROMPT-002/operator_choice_prompt.json`; `documentation/codex/model-routing/sidecar-runs/TP-LIVE-RETEST-AUDIT-PROMPT-002/operator_choice_prompt.json`; `documentation/codex/model-routing/strong-or-fixtures/strong_live_retest_worker_package_2026-07-05.json`.
+- **Akzeptanzkriterien:**
+  - [x] `janus-test-pipeline` beschreibt eine sichtbare bounded OR-Lane fuer eligible `LIVE_TEST_EXECUTION`-Retests mit `1 = Codex / 2 = OR`.
+  - [x] Die Lane definiert einen klaren allowlisted Worker-Vertrag fuer lokale Health-/Chat-/Prompt-/Evidenz-Schritte statt breiter Shell-Freiheit.
+  - [x] Lokale Auth-/Header-Anforderungen fuer den Dev-API-Pfad sind bounded im Worker-Paket oder gleichwertig abgesichert, ohne Secrets in versionierte Artefakte zu schreiben.
+  - [x] OR darf den Lauf ausfuehren und Evidenz buendeln, aber keine finale PASS-/Release-/Git-/Routing-Autoritaet beanspruchen.
+  - [ ] Regressionstests decken Eligibility, Gate-Ausgabe, Paketvertrag und Review-Handoff dieser Lane ab.
+- **Fehlende Informationen:**
+  - Keine
+- **Wichtigkeit:** HIGH
+- **Umsetzungsrisiko:** MEDIUM
+- **Aufwand:** M
+- **Umsetzungsreife:** READY
+- **Empfehlung:** DO NOW
+- **Entry Point:** EXECUTION_READY
+- **Routing reason:** Lean-Dev OR-Infrastruktur mit audit-cleanem Gate- und Worker-Vertrag; der naechste verbleibende Slice ist jetzt die fail-closed Accept/Reject- und Review-Handoff-Haertung fuer echte delegierte Live-Retests.
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-07-01
+- **Handoff:** documentation/tasks/TASK-SPEC28.3_task_breakdown.md
+- **Recommended next skill:** SKILL 3
+- **Handoff created:** 2026-07-05
+- **Precheck artifact:** documentation/tasks/TASK-SPEC28.2_preimplementation_check.md
+- **Target Task:** TASK-SPEC28.3
+- **Completed Task:** TASK-SPEC28.2 - `documentation/tasks/TASK-SPEC28.2_final_audit.md`
+- **Audit Package:** `documentation/tasks/TASK-SPEC28.2_AUDIT_PACKAGE.md`
+- **Documentation Update:** `documentation/tasks/TASK-SPEC28.2_documentation_update.md`
+- **Next Target Task:** TASK-SPEC28.3
+- **Notizen:** Lean-Dev-Infrastrukturarbeit, aber kein Quickchange: die Lane beruehrt Governance, lokalen Auth-Pfad, Worker-Grenzen, Evidenzschema und Testpipeline-UX. `TASK-SPEC28.1` hat die sichtbare Gate-Wahl geoeffnet, `TASK-SPEC28.2` den bounded Worker/Auth/Evidence-Vertrag audit-clean geliefert. `TASK-SPEC28.3` muss jetzt den Codex-owned Accept/Reject-Abschluss, Fail-Closed-Fallbacks und die letzten Lane-Regressionen liefern, bevor der erste echte delegierte Live-Retest produktiv bewertet werden kann.
+
+### BACKLOG-116 - Garfield-Thunfisch-Fakt wird bei Haustieruebersicht nicht pet-spezifisch genannt
+
+- **Typ:** BUG
+- **Status:** IN PROGRESS
+- **Quelle:** User Intake
+- **Erstellt:** 2026-07-01
+- **Aktualisiert:** 2026-07-01
+- **Follow-up zu:** BACKLOG-115 - Oliver-Kontaktkarte zeigt Duplikate und unsaubere Haustierdetails
+- **Kurzbeschreibung:** Janus kann den neu gemerkten Fakt `Garfield mag Thunfisch ueberhaupt nicht` auf direkte Nachfrage korrekt wiedergeben, nennt ihn aber nicht in der aggregierten Antwort auf `was weisst du alles ueber olis haustiere?`. Zusaetzlich steht der Fakt laut Nutzer im Adressbuch bei Olis allgemeinen Informationen statt unten bei den Haustierinformationen.
+- **Erwartetes Verhalten:** Wenn ein bekannter Fakt eindeutig zu einem Haustier gehoert, wird er in Haustieruebersichten beim passenden Tier genannt und im Adressbuch unter dem Haustier bzw. den Haustierdetails eingeordnet. Die Antwort zu Olis Haustieren soll Tasso- und Garfield-Fakten vollstaendig und korrekt getrennt wiedergeben.
+- **Tatsaechliches Verhalten:** Die aggregierte Haustierantwort nennt `Tasso (Hund): ist ein podenco; frisst gerne thunfisch` und `Garfield (Katze)`, laesst aber `Garfield mag Thunfisch ueberhaupt nicht` aus. Auf die direkte Frage `und was mag garfield nicht?` antwortet Janus korrekt, dass Garfield Thunfisch ueberhaupt nicht mag. Im Adressbuch ist der Fakt bei Oli statt in den Haustierinformationen sichtbar.
+- **Reproduktion / Kontext:** User-Live-Befund vom 2026-07-01: Nach `garfield mag thunfisch ueberhaupt nicht` bestaetigt Janus das Speichern. Danach fragt der Nutzer `ok, also was weisst du alles ueber olis haustiere?`; Janus nennt Tasso-Details und nur `Garfield (Katze)`. Die Detailfrage nach Garfield findet den Fakt wieder.
+- **Betroffener Bereich:** Adressbuch / Kontaktpersistenz / Pet-Detail-Normalisierung / Memory-Recall / Haustieruebersicht
+- **Nachweise:** User-Live-Chat vom 2026-07-01 mit Tasso/Garfield/Thunfisch-Repro und Hinweis auf falsche Adressbuch-Einordnung.
+- **Akzeptanzkriterien:**
+  - [ ] Ein pet-spezifischer Fakt wie `Garfield mag Thunfisch ueberhaupt nicht` wird nicht als allgemeiner Oli-Fakt persistiert oder angezeigt, sondern dem Haustier `Garfield` zugeordnet.
+  - [ ] Die aggregierte Antwort auf `was weisst du alles ueber olis haustiere?` nennt bekannte relevante Details zu Garfield inklusive negativer Praeferenz/Futter-Abneigung.
+  - [ ] Die direkte Detailfrage `was mag Garfield nicht?` bleibt korrekt.
+  - [ ] Tasso-Fakten und Garfield-Fakten werden in der Antwort nicht vermischt, ueberschrieben oder wegen gleicher Objektklasse `Thunfisch` dedupliziert.
+  - [ ] Bestehende BACKLOG-115-Dedupe-/Normalisierungstests bleiben gruen oder werden mit einem fokussierten Regressionstest fuer diesen Fall erweitert.
+- **Fehlende Informationen:**
+  - Keine
+- **Wichtigkeit:** HIGH
+- **Umsetzungsrisiko:** LOW
+- **Aufwand:** S
+- **Umsetzungsreife:** READY
+- **Empfehlung:** DO NOW
+- **Entry Point:** EXECUTION_READY
+- **Routing reason:** Kleiner klarer Adressbuch-/Pet-Detail-Bug auf bekanntem Oliver/Tasso/Garfield-Pfad mit bestandenem Precheck und klarer Repro.
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-07-01
+- **Handoff:** documentation/tasks/backlog_BACKLOG-116_garfield_thunfisch_fakt_haustieruebersicht.md
+- **Recommended next skill:** SKILL 4
+- **Handoff created:** 2026-07-01
+- **Precheck artifact:** documentation/tasks/backlog_BACKLOG-116_preimplementation_check.md
+- **Target Task:** BACKLOG-116
+- **Completed by task:** documentation/tasks/backlog_BACKLOG-116_execution_result.md
+- **Validation evidence:** `python -m pytest backend/tests/test_contact_manager.py -q -k "pet"` PASS; `python -m pytest backend/tests/test_contact_card_normalization.py -q` PASS; `python -m pytest backend/tests/test_provider_auth_fallback.py -q -k "pet_overview or memory_read_fallback_v2"` PASS; `python -m pytest backend/tests/test_memory_tools.py -q -k "pet_overview"` PASS; `python -m pytest backend/tests/integration/test_pet_recall_chat_path.py -q` PASS; `python -m py_compile backend/services/contact_manager.py backend/data/crud.py backend/services/orchestrator/execution_engine.py backend/tests/test_contact_manager.py backend/tests/test_contact_card_normalization.py backend/tests/test_provider_auth_fallback.py backend/tests/test_memory_tools.py backend/tests/integration/test_pet_recall_chat_path.py` PASS; OR patch candidate rejected via `documentation/codex/model-routing/execution-direct-or-runs/BACKLOG-116-EXECUTION-OR-001/validation_summary.json`.
+- **Notizen:** Enger Follow-up zum abgeschlossenen Oliver/Tasso/Garfield-Strang. Der Fehler wirkt wie ein Zuordnungs-/Aggregatorproblem, nicht wie ein komplett neues Feature.
 
 ### BACKLOG-111 - Kontaktfakt-Feedback bestaetigt neue Fakten nicht sauber und erkennt Wiederholungen nicht als bereits bekannt
 
@@ -247,6 +444,46 @@ Dashboard-Regeln:
 - **Notizen:** False Positives aus TEST-RUN-2026-05-19-007 - TestPlan-Expectations muessen verfeinert werden
 
 ## DONE
+
+### BACKLOG-121 - Shared-Delegation-Gate versteckt Cursor-Alternativen zu aggressiv bei negativer ROI
+
+- **Typ:** CHANGE
+- **Status:** DONE
+- **Quelle:** User Intake
+- **Erstellt:** 2026-07-09
+- **Aktualisiert:** 2026-07-09
+- **Kurzbeschreibung:** Das aktuelle Shared-Delegation-Gate behandelte Tokenersparnis zu stark als Primaerziel und blendete technisch verfuegbare Cursor-Alternativen komplett aus, sobald `minimum_net_codex_saved_tokens` knapp verfehlt wurde. Dadurch verlor der Operator genau dann eine wichtige Ausweichmoeglichkeit, wenn Codex-Kontingent knapp oder aufgebraucht war und Cursor-Kapazitaet bewusst als produktive Alternative genutzt werden sollte.
+- **Erwartetes Verhalten:** Wenn eine Lane technisch freigegeben, bounded und sonst eligibel ist, soll die Gate-Logik zwischen Empfehlung und Sichtbarkeit unterscheiden. Schlechte oder nur leicht negative ROI darf die Empfehlung auf Codex verschieben, aber nicht automatisch alle externen Alternativen unsichtbar machen, wenn deren Hauptnutzen die alternative Arbeitskapazitaet ist.
+- **Tatsaechliches Verhalten:** `execution_patch_candidate` kann jetzt bei negativer ROI bounded externe Optionen sichtbar halten, waehrend `Codex` die Empfehlung bleibt. `Cursor API` scheitert in diesem Fall nicht mehr schon an `DELEGATION_BACKEND_NOT_AVAILABLE`, nur weil die Sichtbarkeit vorher durch ROI-Hiding unterdrueckt wurde.
+- **Reproduktion / Kontext:** Reale Gate-Probe vom 2026-07-09 fuer `TASK-SPEC29.1` mit `janus_delegate.py --lane execution_patch_candidate --workflow-id WF-EXEC-SPEC29-1-2026-07-09-002 --operator-choice prompt --estimated-codex-saved-tokens 14000 --estimated-delegation-overhead-tokens 4500`. Das fruehere Ergebnis zeigte `roi.status = NEGATIVE`, `minimum_net_codex_saved_tokens = 10000`, `net_codex_saved_tokens = 9500` und nur Codex als sichtbare Wahl. Nach dem Fix bleiben `1 = Codex`, `2 = OpenRouter`, `3 = Cursor Composer` und `4 = Cursor API` sichtbar; die Empfehlung bleibt `1 = Codex`.
+- **Betroffener Bereich:** Codex model-routing / shared delegation gate / janus-executioner / Cursor-Lane-Sichtbarkeit / Operator-UX
+- **Nachweise:** `documentation/codex/model-routing/config/delegation_routing_manifest.json`; `documentation/codex/model-routing/config/delegation_task_list_2026-07-05.md`; `documentation/tasks/backlog_BACKLOG-121_execution_result.md`; `documentation/tasks/backlog_BACKLOG-121_AUDIT_PACKAGE.md`; `documentation/tasks/backlog_BACKLOG-121_final_audit.md`
+- **Akzeptanzkriterien:**
+  - [x] Die Shared-Gate-Policy trennt sichtbar zwischen `Empfehlung` und `sichtbare Alternative`, statt externe Optionen bei leicht negativer ROI pauschal zu verstecken.
+  - [x] Fuer bounded technisch freigegebene Cursor-Lanes kann Alternativkapazitaet ein legitimer Sichtbarkeitsgrund sein, auch wenn die reine Netto-Codex-Ersparnis den Lane-Schwellwert knapp verfehlt.
+  - [x] Die Operator-Ausgabe erklaert klar, wenn eine externe Option als verfuegbare Ausweichlane sichtbar bleibt, aber nicht die kostenoptimierte Empfehlung ist.
+  - [x] Ein bounded `execution_patch_candidate`-Slice mit sonst gueltiger Cursor-Konfiguration scheitert nicht mehr allein deshalb an `DELEGATION_BACKEND_NOT_AVAILABLE`, weil die Sichtbarkeit zuvor nur durch ROI-Hiding unterdrueckt wurde.
+  - [x] Die Loesung bleibt fail-closed fuer wirklich unfreie, unsichere oder nicht validierte Lanes und oeffnet nicht pauschal alle externen Backends.
+- **Fehlende Informationen:**
+  - Keine
+- **Wichtigkeit:** HIGH
+- **Umsetzungsrisiko:** MEDIUM
+- **Aufwand:** M
+- **Umsetzungsreife:** DONE
+- **Empfehlung:** DONE
+- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
+- **Routing reason:** Lean-Dev routing-hardening slice fuer die bestehende Shared-Gate-Policy; Scope blieb auf bounded Sichtbarkeits-/Empfehlungslogik, Operator-Messaging und Regressionstests begrenzt.
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-07-09
+- **Handoff:** documentation/tasks/backlog_BACKLOG-121_shared_delegation_gate_versteckt_cursor_alternativen_zu_aggressiv_bei_negativer_roi.md
+- **Recommended next skill:** DONE
+- **Handoff created:** 2026-07-09
+- **Completed by task:** `documentation/tasks/backlog_BACKLOG-121_shared_delegation_gate_versteckt_cursor_alternativen_zu_aggressiv_bei_negativer_roi.md`
+- **Completed at:** 2026-07-09
+- **Final audit:** PASS
+- **Validation evidence:** `python -m pytest documentation/codex/model-routing/tests/test_delegation_routing.py -q` PASS; `python -m pytest documentation/codex/model-routing/tests/test_janus_delegate.py -q` PASS; `python -m py_compile documentation/codex/model-routing/scripts/delegation_routing.py documentation/codex/model-routing/scripts/janus_delegate.py` PASS; `python documentation/codex/model-routing/scripts/janus_delegate.py --lane execution_patch_candidate --task-id TASK-EX-001 --workflow-id WF-BACKLOG-121-AUDIT-2026-07-09-001 --operator-choice prompt --input-package-json development/openrouter-skill-tests/janus-executioner/spec29_1_candidate_lifecycle_2026-07-09/input_package.json --allowlist-file development/openrouter-skill-tests/janus-executioner/spec29_1_candidate_lifecycle_2026-07-09/allowlist.txt --estimated-codex-saved-tokens 14000 --estimated-delegation-overhead-tokens 4500` PASS; `python documentation/codex/model-routing/scripts/janus_delegate.py --lane execution_patch_candidate --task-id TASK-EX-001 --workflow-id WF-BACKLOG-121-AUDIT-2026-07-09-002 --operator-choice 4 --input-package-json development/openrouter-skill-tests/janus-executioner/spec29_1_candidate_lifecycle_2026-07-09/input_package.json --allowlist-file development/openrouter-skill-tests/janus-executioner/spec29_1_candidate_lifecycle_2026-07-09/allowlist.txt --estimated-codex-saved-tokens 14000 --estimated-delegation-overhead-tokens 4500` PASS; `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py documentation/tasks/backlog_BACKLOG-121_final_audit.md` PASS
+- **Notizen:** Das war bewusst keine reine Threshold-Tuning-Aufgabe. Primaerziel bleibt alternative Arbeitskapazitaet bei bounded technisch freigegebenen Lanes; reine Tokenersparnis ist nachrangig, solange die Recommendation weiter fail-closed auf `Codex` bleiben kann.
 
 ### BACKLOG-115 - Oliver-Kontaktkarte zeigt Duplikate und unsaubere Haustierdetails
 

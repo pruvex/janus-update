@@ -4,6 +4,19 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-WORKFLOW-M3.1 - Implement Workflow Phase 1+2 as one bounded store-and-detector slice
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-WORKFLOW-M3.1_final_audit.md` (PASS)
+- **Spec**: `documentation/Cursor specs/LEARNED_WORKFLOWS_SPEC.md`
+- **Parent Task**: `documentation/tasks/TASK-WORKFLOW-M3_learned_workflows_phase_1_2.md`
+- **Task Breakdown**: `documentation/tasks/TASK-WORKFLOW-M3.1_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-WORKFLOW-M3.1_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-WORKFLOW-M3.1_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-WORKFLOW-M3.1_AUDIT_PACKAGE.md`
+- **Validation**: `TASK-WORKFLOW-M3.1` schliesst den ersten Workflow-MVP-Foundation-Slice als bounded Store-/Detector-Block ab. `user_routines` und `user_routine_offer_log` sind jetzt im Datenmodell verankert, `RoutineStore` validiert gegen echte `CapabilityRegistry`-Skills und dedupliziert ueber Step-Fingerprints pro User, und der Detector extrahiert erfolgreiche Multi-Step-Spuren deterministisch in Routine-Steps und bounded Offer-Kandidaten. Die gebundene lokale Evidenz ist gruen (`pytest test_routine_store.py`, `pytest test_workflow_detector.py`, `py_compile`), und vor dem finalen Codex-Audit wurde zusaetzlich assist-only OpenRouter-Precheck-Evidence gesammelt. M3 Phase 3/4/5 bleiben dabei bewusst offen.
+- **Changed Files**: `backend/data/models.py`, `backend/data/database.py`, `backend/services/workflow/__init__.py`, `backend/services/workflow/routine_schema.py`, `backend/services/workflow/routine_store.py`, `backend/services/workflow/step_trace_extractor.py`, `backend/services/workflow/workflow_detector.py`, `backend/tests/test_routine_store.py`, `backend/tests/test_workflow_detector.py`, `development/openrouter-skill-tests/janus-preimplementation-check/precheck_input_package_task_workflow_m3_1_2026-07-08.json`, `documentation/tasks/TASK-WORKFLOW-M3.1_execution_result.md`, `documentation/tasks/TASK-WORKFLOW-M3.1_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-WORKFLOW-M3.1_final_audit.md`.
+
 ### TASK-INTENT-M2.1 - Implement confidence-based intent routing and soften ambiguity hard-blocks
 
 - **Status**: DONE
@@ -467,6 +480,17 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 - **Changed Files**: `backend/api/routers/contacts.py`, `backend/data/contact_schemas.py`, `backend/data/crud.py`, `backend/data/database.py`, `backend/data/models.py`, `backend/services/chat_orchestrator.py`, `backend/services/contact_manager.py`, `backend/services/memory_extractor.py`, `backend/tests/integration/test_error_resilience.py`, `backend/tests/test_calendar_tools.py`, `backend/tests/test_contact_manager.py`, `backend/tests/test_memory_tools.py`, `backend/tests/test_memory_write_update_conflict_handling.py`, `backend/tools/calendar_tools.py`, `backend/tools/contact_tools.py`, `backend/tools/memory_tools.py`, `frontend/css/settings.css`, `frontend/index.html`, `frontend/js/settings.js`, `tests/e2e/generated/TASK-SPEC15-address-book-ui-evidence.spec.js`, `documentation/tasks/TASK-SPEC15_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC15_final_audit_validation.md`, `documentation/tasks/TASK-SPEC15_final_audit.md`.
 
 ## Backlog Closures
+
+### BACKLOG-121 - Shared-Delegation-Gate versteckt Cursor-Alternativen zu aggressiv bei negativer ROI
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/backlog_BACKLOG-121_final_audit.md` (PASS)
+- **Task**: `documentation/tasks/backlog_BACKLOG-121_shared_delegation_gate_versteckt_cursor_alternativen_zu_aggressiv_bei_negativer_roi.md`
+- **Precheck**: `documentation/tasks/backlog_BACKLOG-121_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/backlog_BACKLOG-121_execution_result.md`
+- **Audit Package**: `documentation/tasks/backlog_BACKLOG-121_AUDIT_PACKAGE.md`
+- **Validation**: `BACKLOG-121` schliesst den bounded Lean-Dev routing-hardening slice fuer die shared delegation visibility policy ab. `execution_patch_candidate` kann bei negativer ROI bounded externe Optionen jetzt sichtbar halten, ohne die Recommendation von `Codex` wegzunehmen; nicht optierte Lanes bleiben weiter fail-closed Codex-only. Validation: focused routing pytest PASS (`11 passed` + `16 passed`), `py_compile` PASS, negative-ROI prompt gate PASS mit sichtbaren choices `1/2/3/4` und Recommendation `1 = Codex`, direkter `operator-choice 4` PASS mit `CURSOR_WORKER_DRY_RUN_READY`, final-audit validator PASS.
+- **Changed Files**: `documentation/codex/model-routing/config/delegation_routing_manifest.json`, `documentation/codex/model-routing/scripts/delegation_routing.py`, `documentation/codex/model-routing/scripts/janus_delegate.py`, `documentation/codex/model-routing/tests/test_delegation_routing.py`, `documentation/codex/model-routing/tests/test_janus_delegate.py`, `documentation/codex/model-routing/config/delegation_task_list_2026-07-05.md`, `documentation/tasks/backlog_BACKLOG-121_execution_result.md`, `documentation/tasks/backlog_BACKLOG-121_AUDIT_PACKAGE.md`, `documentation/tasks/backlog_BACKLOG-121_final_audit.md`.
 
 ### BACKLOG-115 - Oliver-Kontaktkarte zeigt Duplikate und unsaubere Haustierdetails
 
