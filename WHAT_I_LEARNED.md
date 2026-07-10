@@ -243,3 +243,15 @@
 - **Epic:** TASK-INTENT-M1.3
 - **Confidence:** High
 - **Tags:** intent,benchmark,deterministic-provider,latency,config-reconstruction
+
+
+## [PATTERN] #CodexPickerVisibilityNeedsRuntimeEntitlementCheck "Codex model picker visibility requires a runtime entitlement check"
+- **Kontext:** BACKLOG-124 GPT-5.6 model-matrix closeout (2026-07-10).
+- **Problem:** A model can be selectable in the Codex picker while backend execution for the active ChatGPT account rejects it, so a hard model requirement can dead-end a bound audit.
+- **Loesung:** Treat picker availability as a candidate signal only. Attempt the required run, record the exact entitlement failure, and use the documented local fallback without changing audit authority.
+- **Haertung:** Official Codex availability guidance was checked; the active account returned the Sol unsupported error; governance, audit templates, and final-audit PASS now require SOL_UNAVAILABLE_FOR_CHATGPT_CODEX_ACCOUNT with 5.6 Terra/high fallback.
+- **Tripwire:** If a skill requires Sol merely because it is visible in the picker, or a Sol rejection stops a valid audit instead of producing the explicit Terra fallback, the model-routing contract has drifted.
+- **Location:** AGENTS.md, documentation/codex/CODEX_PROJECT_PROFILE.md, documentation/codex/CODEX_WORKFLOW_PLAYBOOK.md, documentation/tasks/BACKLOG-124_final_audit.md
+- **Epic:** BACKLOG-124
+- **Confidence:** High
+- **Tags:** codex,gpt56,model-routing,runtime-entitlement,audit-fallback

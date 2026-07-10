@@ -1,0 +1,62 @@
+{
+  "task_id": "TASK-EX-001",
+  "lane_id": "execution_patch_candidate",
+  "workflow_id": "WF-BACKLOG-124-START-GATE-001",
+  "bound_skill_context": "janus-executioner",
+  "target_task": "BACKLOG-124 / GPT56_CODEX_START_GATE_DRIFT",
+  "precheck_path": "documentation/tasks/BACKLOG-124_start_gate_preimplementation_check.md",
+  "precheck_status": "PRE-CHECK PASSED",
+  "task_label": "Replace the Codex start-gate 5.4 default with the approved GPT-5.6 low-risk lane",
+  "worker_profile": "cursor-agent",
+  "allowlist_file": "documentation/codex/model-routing/execution-review-runs/WF-BACKLOG-124-START-GATE-001/allowlist.txt",
+  "allowed_edit_paths": [
+    "documentation/codex/skills/codex-start-of-work-check/SKILL.md"
+  ],
+  "max_touched_files": 1,
+  "acceptance_criteria": [
+    "Only the allowlisted versioned skill file may change.",
+    "The due-reminder output must no longer require an unconditional 5.4/low switch.",
+    "The replacement must follow the approved GPT-5.6 cache strategy for a separated low-risk reminder gate.",
+    "No workflow, healthcheck, Git, or handoff semantics may change beyond the model recommendation wording."
+  ],
+  "checks": [
+    {
+      "label": "targeted old-default scan",
+      "command": [
+        "rg",
+        "-n",
+        "5\\.4/low",
+        "documentation/codex/skills/codex-start-of-work-check/SKILL.md"
+      ]
+    }
+  ],
+  "forbidden_actions": [
+    "commit",
+    "push",
+    "tag",
+    "merge",
+    "release",
+    "publish",
+    "dependency",
+    "secret",
+    "auth",
+    "security",
+    "privacy",
+    "migration",
+    "architecture",
+    "installed_skill_write",
+    "product_code_edit",
+    "broad_shell"
+  ],
+  "requested_actions": [
+    "edit",
+    "run_checks"
+  ],
+  "task_prompt": "Edit only the allowlisted versioned SKILL.md. Replace the active due-reminder model recommendation and its matching prose so it uses the approved GPT-5.6 low-risk lane instead of 5.4/low. Keep all workflow behavior, wording not required for this substitution, and unrelated uncommitted edits intact. Do not edit the installed copy, tests, task artifacts, or any other file. Do not commit. Run only the declared targeted scan and return concise JSON-compatible output with status, changed_files, command_results, summary, and blockers.",
+  "cursor_prompt_contract": "Operate only inside the exact allowlist. Preserve unrelated uncommitted changes. Do not write outside the repository. Codex will review the source diff, mirror the accepted model wording to the installed skill copy, and run final validation.",
+  "redaction_ready": true,
+  "recommended_backend": "cursor",
+  "recommended_model": "composer-2.5",
+  "estimated_codex_saved_tokens": 12000,
+  "estimated_delegation_overhead_tokens": 3000
+}

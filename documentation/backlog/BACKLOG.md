@@ -360,33 +360,6 @@ Dashboard-Regeln:
 
 ## READY
 
-### BACKLOG-124 - Codex-/Janus-Modellmatrix auf neue lokale GPT-5.6-Modelle auditieren und gezielt aktualisieren
-
-- **Typ:** IMPROVEMENT
-- **Status:** READY
-- **Quelle:** User Intake
-- **Erstellt:** 2026-07-10
-- **Aktualisiert:** 2026-07-10
-- **Kurzbeschreibung:** In Codex stehen jetzt drei neue lokale `GPT-5.6`-Modelle zur Verfuegung, waehrend die aktuelle Janus-Governance, Skill-Routing-Matrix und Cache-Strategie noch explizit auf `5.4`, `5.4 mini` und `5.5` ausgerichtet sind. Bevor die neuen Modelle still ignoriert oder vorschnell als Ersatz benutzt werden, soll ein gebundener Lean-Dev-Audit klaeren, ob und wo eines der neuen `5.6`-Modelle sinnvoll die bestehende Matrix ersetzt oder ergaenzt.
-- **Erwartetes Verhalten:** Janus hat eine bewusst aktualisierte, evidenzgestuetzte Modellmatrix fuer Codex-Arbeit. Wenn eines der neuen `GPT-5.6`-Modelle fuer Workhorse-, Mini- oder Audit-Rollen besser geeignet ist, wird das kontrolliert in Governance, Routing-Doku und betroffenen Skills uebernommen. Wenn nicht, bleibt die bestehende Matrix explizit begruendet bestehen.
-- **Tatsaechliches Verhalten:** Die verbindlichen Routing-/Governance-Dateien nennen aktuell weiter `5.4`, `5.4 mini`, `5.5` und teils `5.2` als feste Arbeitsverteilung. Es gibt noch keinen Repo-gebundenen Audit, der die drei neuen `GPT-5.6`-Modelle gegen die bestehende Matrix, Cache-Strategie, Skill-Empfehlungen und operator-facing Handhabung prueft.
-- **Reproduktion / Kontext:** User-Hinweis am 2026-07-10: In Codex sind drei neue `GPT-5.6`-Modelle sichtbar. Repo-Befund vom selben Tag: Die operative Modellmatrix in `AGENTS.md`, `documentation/codex/CODEX_PROJECT_PROFILE.md`, `documentation/codex/CODEX_WORKFLOW_PLAYBOOK.md` und `documentation/codex/CODEX_MODEL_MIGRATION_2026-06-02.md` referenziert weiterhin die bisherige `5.4`-/`5.5`-Generation. Die Frage war explizit, ob wir sofort weiterarbeiten oder zuerst die Skills/Pipeline auf die neuen Modelle vorbereiten sollen.
-- **Betroffener Bereich:** Codex-Governance / Janus Skill-Routing / Model-Matrix / Cache-Strategie / Lean-Dev-Infrastruktur
-- **Nachweise:** `AGENTS.md`; `documentation/codex/CODEX_PROJECT_PROFILE.md`; `documentation/codex/CODEX_WORKFLOW_PLAYBOOK.md`; `documentation/codex/CODEX_MODEL_MIGRATION_2026-06-02.md`
-- **Akzeptanzkriterien:**
-  - [ ] Es gibt einen gebundenen Audit, der die drei neuen lokalen `GPT-5.6`-Modelle gegen die aktuellen Rollen `5.4`, `5.4 mini` und `5.5` bewertet statt blind umzuschalten.
-  - [ ] Die Entscheidung behandelt mindestens Workhorse-, Mini-/mechanische und Audit-/Risiko-Rollen getrennt.
-  - [ ] Falls ein oder mehrere `GPT-5.6`-Modelle uebernommen werden, werden die betroffenen Governance-/Routing-Dateien und Skill-Empfehlungen konsistent aktualisiert.
-  - [ ] Falls die bestehende Matrix vorerst bestehen bleibt, wird das explizit mit Evidenz und klarer Revisit-Regel dokumentiert.
-- **Fehlende Informationen:**
-  - Exakte Namen und Verhalten der drei neuen lokalen `GPT-5.6`-Modelle sind noch nicht als Repo-Evidenz erfasst.
-- **Wichtigkeit:** MEDIUM
-- **Umsetzungsrisiko:** LOW
-- **Aufwand:** S
-- **Umsetzungsreife:** READY
-- **Empfehlung:** SCHEDULE
-- **Notizen:** Empfohlene Haltung: laufende Janus-Produktarbeit nicht blockieren, aber den Modell-Audit als eigenen kleinen Lean-Dev-Slice bald nachziehen. Erst nach Evidenz sollten Routing-Matrix, Skill-Texte oder Standardempfehlungen geaendert werden.
-
 ### BACKLOG-122 - system.country_info haengt an deprecated Rest-Countries-Legacypfad und driftet zur Live-Runtime
 
 - **Typ:** BUG
@@ -493,6 +466,46 @@ Dashboard-Regeln:
 - **Notizen:** False Positives aus TEST-RUN-2026-05-19-007 - TestPlan-Expectations muessen verfeinert werden
 
 ## DONE
+
+### BACKLOG-124 - Codex-/Janus-Modellmatrix auf neue lokale GPT-5.6-Modelle auditieren und gezielt aktualisieren
+
+- **Typ:** IMPROVEMENT
+- **Status:** DONE
+- **Quelle:** User Intake
+- **Erstellt:** 2026-07-10
+- **Aktualisiert:** 2026-07-10
+- **Abgeschlossen:** 2026-07-10
+- **Kurzbeschreibung:** Die Codex-/Janus-Modellmatrix war noch auf die vorherige `5.4`-/`5.5`-Generation ausgerichtet, obwohl in Codex drei lokale `GPT-5.6`-Modelle sichtbar geworden waren.
+- **Erwartetes Verhalten:** Eine evidenzgestuetzte, rollengetrennte Modellmatrix steuert Workhorse-, mechanische und Audit-Arbeit, ohne sichtbare Picker-Optionen mit garantierter Laufzeitberechtigung zu verwechseln.
+- **Tatsaechliches Verhalten:** RESOLVED - `5.6 Luna` ist fuer mechanische Doku-/Statusarbeit, `5.6 Terra` fuer Workhorse-Arbeit und `5.6 Sol` fuer hochriskante Audit-Eskalation dokumentiert. Wenn `gpt-5.6-sol` im aktuellen ChatGPT-basierten Codex-Run abgelehnt wird, bleibt der Audit lokal auf `5.6 Terra/high` mit `SOL_UNAVAILABLE_FOR_CHATGPT_CODEX_ACCOUNT` statt unbemerkt zu scheitern.
+- **Reproduktion / Kontext:** User-Hinweis am 2026-07-10; offizielle Codex-Verfuegbarkeitspruefung und lokale Runtime-Evidenz zeigten, dass Picker-Sichtbarkeit und backendseitiger Ausfuehrungszugang voneinander abweichen koennen.
+- **Betroffener Bereich:** Codex-Governance / Janus Skill-Routing / Model-Matrix / Cache-Strategie / Lean-Dev-Infrastruktur
+- **Nachweise:** `documentation/tasks/BACKLOG-124_AUDIT_PACKAGE.md`; `documentation/tasks/BACKLOG-124_start_gate_preimplementation_check.md`; `documentation/tasks/BACKLOG-124_start_gate_execution_result.md`; `documentation/tasks/BACKLOG-124_final_audit.md`; `documentation/tasks/BACKLOG-124_documentation_update.md`
+- **Akzeptanzkriterien:**
+  - [x] Es gibt einen gebundenen Audit fuer die drei lokalen `GPT-5.6`-Modelle gegen die bisherigen Rollen.
+  - [x] Workhorse-, mechanische und Audit-/Risiko-Rollen sind getrennt bewertet und konsistent aktualisiert.
+  - [x] Die Sol-Runtime-Grenze und der lokale Terra-Fallback sind verbindlich dokumentiert.
+  - [x] Der Slice bleibt Lean-Dev ohne Janus-Produktlogik, Release- oder Publish-Schritt.
+- **Fehlende Informationen:**
+  - Keine fuer den Abschluss; Sol-Ausfuehrbarkeit wird pro aktuellem Codex-Run geprueft.
+- **Wichtigkeit:** HIGH
+- **Umsetzungsrisiko:** MEDIUM
+- **Aufwand:** M
+- **Umsetzungsreife:** DONE
+- **Empfehlung:** DONE
+- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
+- **Routing reason:** Bounded Lean-Dev-Audit nach Spec 31, um neue Modelle nicht ad hoc in die Governance einsickern zu lassen.
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-07-10
+- **Handoff:** `documentation/tasks/backlog_BACKLOG-124_codex_janus_modellmatrix_gpt_5_6_audit_und_update.md`
+- **Recommended next skill:** DONE
+- **Handoff created:** 2026-07-10
+- **Completed by task:** `documentation/tasks/BACKLOG-124_final_audit.md`
+- **Completed at:** 2026-07-10
+- **Final audit:** PASS
+- **Validation evidence:** `validate_precheck.py` PASS; `validate_execution_result.py` PASS; `validate_final_audit.py` PASS; targeted model-drift scans PASS; scoped `git diff --check` PASS.
+- **Notizen:** Cursor Composer wurde als evidence-first Kandidat genutzt, lieferte aber wegen Timeout und einer ausserhalb der Allowlist beruehrten installierten Kopie keine autonome Abschlussautoritaet. Die akzeptierte Matrix und der Abschluss blieben lokal bei Codex.
 
 ### BACKLOG-123 - Allgemeines semantisches, parameterisiertes Routine-Reuse fuer mehrschrittige Routinen fehlt noch
 

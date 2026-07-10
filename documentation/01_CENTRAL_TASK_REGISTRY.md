@@ -507,6 +507,18 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Backlog Closures
 
+### BACKLOG-124 - Codex-/Janus-Modellmatrix auf neue lokale GPT-5.6-Modelle auditieren und gezielt aktualisieren
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/BACKLOG-124_final_audit.md` (PASS)
+- **Task**: `documentation/tasks/backlog_BACKLOG-124_codex_janus_modellmatrix_gpt_5_6_audit_und_update.md`
+- **Precheck**: `documentation/tasks/BACKLOG-124_start_gate_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/BACKLOG-124_start_gate_execution_result.md`
+- **Audit Package**: `documentation/tasks/BACKLOG-124_AUDIT_PACKAGE.md`
+- **Documentation Update**: `documentation/tasks/BACKLOG-124_documentation_update.md`
+- **Validation**: Der bounded Lean-Dev-Modellmatrix-Audit ordnet `5.6 Luna` der mechanischen Dokumentations-/Statusarbeit, `5.6 Terra` der Workhorse-Rolle und `5.6 Sol` der hochriskanten Audit-Eskalation zu. Weil die Codex-Picker-Sicht keine Ausfuehrungsberechtigung garantiert, gilt bei der beobachteten ChatGPT-Konto-Ablehnung von Sol der lokale Fallback `SOL_UNAVAILABLE_FOR_CHATGPT_CODEX_ACCOUNT` auf `5.6 Terra/high`. Precheck-, Execution-Result- und Final-Audit-Validator sowie die gezielten Drift-Scans sind PASS; keine Janus-Produktlogik oder Release-Autoritaet wurde geaendert.
+- **Changed Files**: `AGENTS.md`, `documentation/codex/CODEX_PROJECT_PROFILE.md`, `documentation/codex/CODEX_WORKFLOW_PLAYBOOK.md`, `documentation/codex/CODEX_MODEL_MIGRATION_2026-06-02.md`, aktive Codex-/Janus-Skill-Quellen, `documentation/tasks/BACKLOG-124_*`, `documentation/ai/CURRENT_STATE.md`, `documentation/codex/SKILL_USAGE_LOG.md`.
+
 ### BACKLOG-121 - Shared-Delegation-Gate versteckt Cursor-Alternativen zu aggressiv bei negativer ROI
 
 - **Status**: DONE

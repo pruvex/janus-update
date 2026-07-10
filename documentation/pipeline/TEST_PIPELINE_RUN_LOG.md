@@ -11,6 +11,20 @@ Zweck: Dieses Log sammelt kompakte, auswertbare Beobachtungen aus echten Janus T
 - **Security/Privacy/Prompt-Injection immer dokumentieren**: Auch bei PASS muessen die Gates explizit aufgefuehrt werden.
 - **Nebenbefunde außerhalb TestScope immer erfassen**: Seitliche Findings duerfen nicht unter den Tisch fallen.
 
+### BACKLOG-124 - GPT-5.6 Modellmatrix - Documentation Sync Note
+
+- **Datum**: 2026-07-10
+- **Quelle**: Final Audit / Documentation Update
+- **Artefakte**: `documentation/tasks/BACKLOG-124_AUDIT_PACKAGE.md`, `documentation/tasks/BACKLOG-124_final_audit.md`, `documentation/tasks/BACKLOG-124_documentation_update.md`
+- **Getestete Faehigkeit**: Dokumentationsabschluss fuer die lokale Codex-/Janus-Modellmatrix
+- **Pipeline-Route**: final audit -> documentation update
+- **Status**: PASS
+- **Summary**: BACKLOG-124 ist als bounded Lean-Dev-Governance-Slice abgeschlossen. Dies ist kein eigener Janus-TestRun; die gebundene Evidenz besteht aus Precheck-, Execution-Result-, Final-Audit- und Drift-Scan-Validierung.
+- **Security Gate**: PASS - keine Produktlogik oder neue Produktionsroute in diesem Schritt.
+- **Provider-/Model-Matrix**: `5.6 Luna` mechanisch, `5.6 Terra` Workhorse, `5.6 Sol` nur bei realer Laufzeitverfuegbarkeit fuer Audit-Eskalation; Sol-Ablehnung -> `SOL_UNAVAILABLE_FOR_CHATGPT_CODEX_ACCOUNT` -> `5.6 Terra/high`.
+- **Findings**: Picker-Sichtbarkeit und backendseitige Ausfuehrungsberechtigung koennen abweichen.
+- **Abschluss**: PASS
+
 ### TASK-SPEC16 - Adressbuch-Karten Redesign und Spitzname/Besonderheiten-Struktur - Documentation Sync Note
 
 - **Datum**: 2026-06-07
