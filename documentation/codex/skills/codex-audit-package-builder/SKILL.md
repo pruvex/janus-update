@@ -1,6 +1,6 @@
 ---
 name: codex-audit-package-builder
-description: Use before a final independent review to create or refresh a compact AUDIT_PACKAGE.md from implementation artifacts, changed files, validation output, known risks, and re-audit blocker deltas. Optimized for fresh 5.5/high final audit handoff without carrying development chat history.
+description: Use before a final independent review to create or refresh a compact AUDIT_PACKAGE.md from implementation artifacts, changed files, validation output, known risks, and re-audit blocker deltas. Optimized for fresh final audit handoff without carrying development chat history.
 metadata:
   short-description: Build compact final audit packages
 ---
@@ -88,7 +88,7 @@ The generated package ends with this handoff block:
 ```text
 NEW_CHAT_HANDOFF
 NEXT: janus-final-audit
-MODEL: 5.5/high
+MODEL: 5.6 Sol/high if runtime-supported; otherwise 5.6 Terra/high
 PASS: <AUDIT_PACKAGE.md>
 ASK: Lade nur dieses Paket im neuen Chat und starte dann den Final Audit.
 DROP: dev chat history
@@ -96,6 +96,6 @@ DROP: dev chat history
 
 When presenting the next repo-skill step to the user, route that handoff to `janus-final-audit` without widening scope or turning the builder itself into a final-audit decision step.
 
-For bounded same-thread re-audits after a local blocker fix, `5.4/high` is acceptable when the package stays compact and the risk did not escalate.
+If Codex reports `gpt-5.6-sol` is unsupported for the active ChatGPT account, use `5.6 Terra/high` and record `SOL_UNAVAILABLE_FOR_CHATGPT_CODEX_ACCOUNT`. For bounded same-thread re-audits after a local blocker fix, `5.6 Terra/high` is acceptable when the package stays compact and the risk did not escalate.
 
 For same-context handoff, naming `NEXT: janus-final-audit` with the package path is enough. For any actor or fresh-chat boundary, emit exactly one compact fenced `text` block.

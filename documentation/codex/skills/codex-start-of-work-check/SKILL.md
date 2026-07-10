@@ -53,11 +53,11 @@ If multiple checks are due, list both.
 If due:
 
 NEXT: run-due-healthcheck
-MODEL: 5.4/low
+MODEL: 5.6 Terra/low
 PASS: due reminder id
 DROP: unrelated work until user confirms
 
-Change the model/reasoning to `5.4/low`, reply `ok` only to confirm the next gate, then continue in `janus-health-check` for the actual hygiene or drift scan.
+Use `5.6 Terra` low when the current `5.6 Terra` project context is warm; use `5.6 Luna` only when this separated low-risk reminder gate is still likely cheaper than staying on warm `5.6 Terra`. Reply `ok` only to confirm the next gate, then continue in `janus-health-check` for the actual hygiene or drift scan.
 If no reminder is due, keep the answer short and continue with the current work without loading more context.
 
 ## CURRENT_STATE Requirement

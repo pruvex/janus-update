@@ -22,9 +22,10 @@ Read only when exact legacy wording is needed:
 
 Before auditing, recommend model/intelligence:
 
-- Low/local deterministic scope: `5.4` or current capable coding model, medium.
-- Medium risk or multiple files: `5.4`, high.
-- High/critical risk, security, privacy, provider routing, memory, release-critical, unclear evidence, contradictory artifacts, or missing tests: `5.5`, high.
+- Low/local deterministic scope: `5.6 Terra` or current capable coding model, medium.
+- Medium risk or multiple files: `5.6 Terra`, high.
+- High/critical risk, security, privacy, provider routing, memory, release-critical, unclear evidence, contradictory artifacts, or missing tests: `5.6 Sol`, high, when the current Codex run can actually start it.
+- If Codex reports `gpt-5.6-sol` is not supported with the active ChatGPT account, continue with `5.6 Terra`, high, and record `SOL_UNAVAILABLE_FOR_CHATGPT_CODEX_ACCOUNT` in the audit result or handoff.
 
 If current setup is weaker than required, stop with a model-switch handoff. Do not perform the audit.
 
@@ -52,7 +53,7 @@ If the package is incomplete, return `FINAL AUDIT RESULT: BLOCKED`.
 
 ## Audit Package Rule
 
-Before a fresh final audit in a new chat, prefer `codex-audit-package-builder` to create or refresh the package. For single-task or bounded Backlog audits inside a still-warm `5.4` thread, a fresh chat is optional if the audit package is already compact and current.
+Before a fresh final audit in a new chat, prefer `codex-audit-package-builder` to create or refresh the package. For single-task or bounded Backlog audits inside a still-warm `5.6 Terra` thread, a fresh chat is optional if the audit package is already compact and current.
 
 Do not re-read broad development history when the package already contains:
 
