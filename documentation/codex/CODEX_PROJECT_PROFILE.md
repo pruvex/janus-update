@@ -48,16 +48,21 @@ repository unless a bound artifact explicitly requires it.
 
 ## Model Defaults
 
-- `5.4 mini`: separated low-risk mechanical blocks when cheaper than staying on warm `5.4`.
-- `5.4`: Janus workhorse for feature design, specs, TestSpecs, implementation, tests, local debugging, and artifact review.
-- `5.5`: security, privacy, architecture risk, final audit, release gates.
-- `5.2`: simple status or short summaries.
+- `5.6 Luna`: separated low-risk mechanical blocks and simple status/short-summary work when cheaper than staying on warm `5.6 Terra`.
+- `5.6 Terra`: Janus workhorse for feature design, specs, TestSpecs, implementation, tests, local debugging, and artifact review.
+- `5.6 Sol`: security, privacy, architecture risk, final audit, release gates, and the hardest deep-review or escalation slices when the current Codex run can actually start `gpt-5.6-sol`.
+- `5.5` plus `5.4` / `5.4-mini`: legacy fallbacks when an existing warm context or older handoff makes a same-model finish more efficient than an immediate switch.
 
-Cache strategy: stay on `5.4` when possible and change only reasoning effort.
-If the `5.4` context is warm, handle short mechanical side steps with `5.4`
-low unless switching to `5.4 mini` is still likely cheaper after accounting for
-context loss and the return to `5.4`. Escalate to `5.5` only when confidence or
-risk justifies the cost.
+Cache strategy: stay on `5.6 Terra` when possible and change only reasoning
+effort. If the `5.6 Terra` context is warm, handle short mechanical side steps
+with `5.6 Terra` low unless switching to `5.6 Luna` is still likely cheaper
+after accounting for context loss and the return to `5.6 Terra`. Escalate to
+`5.6 Sol` only when confidence or risk justifies the cost and runtime support is
+confirmed. If Codex reports `gpt-5.6-sol` is unsupported for the active ChatGPT
+account, use `5.6 Terra` high and record
+`SOL_UNAVAILABLE_FOR_CHATGPT_CODEX_ACCOUNT`. Older warm `5.5` or `5.4`
+contexts may still be finished in place when the remaining block is shorter and
+cheaper than a fresh model migration.
 
 ## Completion Checklist
 

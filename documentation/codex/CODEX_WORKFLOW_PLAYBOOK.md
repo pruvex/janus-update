@@ -108,13 +108,13 @@ Heuristik:
 
 | Aufgabe | Modell | Intelligenz | Neuer Chat |
 | --- | --- | --- | --- |
-| Status, kleine Doku, Commit-Governance | warmes `5.4` low oder eigener `5.4 mini`-Block | niedrig | nein |
-| Backlog, Dashboard, Normalisierung, Health DAILY | warmes `5.4` low oder eigener `5.4 mini`-Block | niedrig bis mittel | nein |
-| Feature-Design, Spec, Review, Task Breakdown | `5.4` | mittel | bei langem Chat ja |
-| Code, Tests, lokale Debugging-Arbeit | `5.4` | mittel bis hoch | meist nein |
-| Final Audit, Security, Privacy, Release-Risiko | `5.5` | hoch | ja |
+| Status, kleine Doku, Commit-Governance | warmes `5.6 Terra` low oder eigener `5.6 Luna`-Block | niedrig | nein |
+| Backlog, Dashboard, Normalisierung, Health DAILY | warmes `5.6 Terra` low oder eigener `5.6 Luna`-Block | niedrig bis mittel | nein |
+| Feature-Design, Spec, Review, Task Breakdown | `5.6 Terra` | mittel | bei langem Chat ja |
+| Code, Tests, lokale Debugging-Arbeit | `5.6 Terra` | mittel bis hoch | meist nein |
+| Final Audit, Security, Privacy, Release-Risiko | `5.6 Sol` wenn runtime-unterstuetzt, sonst `5.6 Terra` | hoch bis maximal; Fallback hoch | ja |
 
-`5.4` ist das Janus-Workhorse. Fuer Prompt-Cache-Freundlichkeit moeglichst im selben Modell bleiben und nur die Intelligenz/Reasoning-Stufe anpassen. Wenn der aktuelle `5.4`-Kontext warm ist, kurze mechanische Nebenaufgaben bevorzugt mit `5.4` und niedriger Intelligenz erledigen. Zu `5.4 mini` nur wechseln, wenn der Block klar getrennt, risikoarm und trotz warmem `5.4`-Cache voraussichtlich guenstiger ist als `5.4 low` plus weiter warmem Kontext; zu `5.5` nur bei Audit-, Security-, Privacy-, Architektur- oder Release-Risiko eskalieren.
+`5.6 Terra` ist das neue Janus-Workhorse. Fuer Prompt-Cache-Freundlichkeit moeglichst im selben Modell bleiben und nur die Intelligenz/Reasoning-Stufe anpassen. Wenn der aktuelle `5.6 Terra`-Kontext warm ist, kurze mechanische Nebenaufgaben bevorzugt mit `5.6 Terra` und niedriger Intelligenz erledigen. Zu `5.6 Luna` nur wechseln, wenn der Block klar getrennt, risikoarm und trotz warmem `5.6 Terra`-Cache voraussichtlich guenstiger ist als `5.6 Terra low` plus weiter warmem Kontext; zu `5.6 Sol` nur bei Audit-, Security-, Privacy-, Architektur- oder Release-Risiko eskalieren und nur, wenn Codex `gpt-5.6-sol` im aktuellen Account-Kontext wirklich starten kann. Wenn Codex `gpt-5.6-sol` als nicht unterstuetzt meldet, mit `5.6 Terra/high` fortfahren und `SOL_UNAVAILABLE_FOR_CHATGPT_CODEX_ACCOUNT` dokumentieren. Bereits warme `5.5`-/`5.4`-Kontexte koennen fuer kleine Restbloecke bewusst zu Ende gefahren werden, wenn das token- oder zeitguenstiger ist als ein frischer Modellwechsel.
 
 Codex soll proaktiv eine Umstellung empfehlen, wenn der naechste Schritt deutlich guenstiger oder sicherer mit einem anderen Modell ist. Jede Empfehlung fuer `ok`, `weiter`, Modellwechsel, neuen Chat oder Gate nennt immer Modell und Intelligenz/Reasoning-Stufe.
 

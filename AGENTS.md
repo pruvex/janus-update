@@ -32,10 +32,11 @@ User-Antworten:
 
 | Modell | Standardnutzung | Intelligenz |
 | --- | --- | --- |
-| `5.5` | Architektur, Security, Privacy, Prompt-Injection, komplexe Fehleranalyse, Release-Gates, finale Audits | hoch bis sehr hoch |
-| `5.4` | Janus-Workhorse: Feature-Design, Specs, TestSpecs, Implementierung, Refactoring, Tests, Debugging, Pipeline-Reviews | mittel bis hoch |
-| `5.4 mini` | Backlog-Pflege, Doku-Normalisierung, Snapshot-/Dashboard-Sync, mechanische Checks nur als eigener guenstiger Block | niedrig bis mittel |
-| `5.2` | einfache Zusammenfassungen, kleine Textaenderungen, Statusberichte | niedrig |
+| `5.6 Sol` | Architektur, Security, Privacy, Prompt-Injection, komplexe Fehleranalyse, Release-Gates, finale Audits, haerteste Forschung-/Review-/Escalation-Slices, wenn der aktuelle Codex-Run dieses Modell wirklich starten kann | hoch bis maximal |
+| `5.6 Terra` | Janus-Workhorse: Feature-Design, Specs, TestSpecs, Implementierung, Refactoring, Tests, Debugging, Pipeline-Reviews | mittel bis hoch |
+| `5.6 Luna` | Backlog-Pflege, Doku-Normalisierung, Snapshot-/Dashboard-Sync, mechanische Checks und einfache Status-/Kurztexte als eigener guenstiger Block | niedrig bis mittel |
+| `5.5` | Legacy-Fallback-Eskalation, wenn ein bestehender laufender Kontext bewusst auf `5.5` gehalten werden soll | mittel bis hoch |
+| `5.4` / `5.4 mini` | Legacy-Fallbacks fuer bestehende warme Kontexte oder aeltere Handoffs; nicht mehr Standardempfehlung fuer neue Janus-Slices | niedrig bis hoch |
 
 ## Janus Skill Map
 
@@ -80,7 +81,7 @@ User-Antworten:
 - Nur bindende Artefakte laden: Backlog-Item, Spec, TestSpec, Handoff, direkt betroffene Dateien.
 - Lange Historie nur als Archiv behandeln, nicht als aktive Anforderung.
 - Bei neuem Feature, langem Chat oder unabhaengigem Audit neuen Chat empfehlen.
-- Cache-Strategie nach Codex-Update: moeglichst auf `5.4` bleiben und nur die Intelligenz/Reasoning-Stufe wechseln. Wenn der `5.4`-Kontext warm ist und die Aufgabe kurz, mechanisch oder direkt an dieselben Janus-Artefakte gebunden ist, bevorzugt `5.4` mit niedriger Intelligenz statt `5.4 mini` nutzen. Zu `5.4 mini` nur wechseln, wenn der mechanische Block trotz warmem `5.4`-Cache voraussichtlich guenstiger bleibt und danach kein teurer Rueckwechsel/Neuladen dominiert; zu `5.5` nur bei Risiko eskalieren.
+- Cache-Strategie nach dem `GPT-5.6`-Update: fuer neue Janus-Arbeit moeglichst auf `5.6 Terra` bleiben und nur die Intelligenz/Reasoning-Stufe wechseln. Wenn der `5.6 Terra`-Kontext warm ist und die Aufgabe kurz, mechanisch oder direkt an dieselben Janus-Artefakte gebunden ist, bevorzugt `5.6 Terra` mit niedriger Intelligenz statt `5.6 Luna` nutzen. Zu `5.6 Luna` nur wechseln, wenn der mechanische Block trotz warmem `5.6 Terra`-Cache voraussichtlich guenstiger bleibt und danach kein teurer Rueckwechsel/Neuladen dominiert; zu `5.6 Sol` nur bei echter Risiko-, Audit-, Security-, Privacy-, Architektur- oder Release-Eskalation wechseln und nur, wenn der aktuelle Codex-Run `gpt-5.6-sol` wirklich starten kann. Wenn Codex meldet, dass `gpt-5.6-sol` mit dem ChatGPT-Konto nicht unterstuetzt wird, `5.6 Terra/high` als dokumentierten Fallback nutzen und `SOL_UNAVAILABLE_FOR_CHATGPT_CODEX_ACCOUNT` als Grund notieren. Bereits warme `5.5`-/`5.4`-Kontexte duerfen fuer kurze Restbloecke bewusst weitergenutzt werden, wenn ein Wechsel teurer waere als der verbleibende Nutzen.
 
 ## Codex Plugins
 
