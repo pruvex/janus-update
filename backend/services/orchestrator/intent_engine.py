@@ -228,6 +228,19 @@ SHOPPING_VENDOR_MARKERS: Tuple[str, ...] = (
     "dm",
 )
 
+_ROUTINE_SAVE_CONFIRM_RE = re.compile(
+    r"\b(?:ja|ok|okay|gerne|speicher(?:e|n)?(?:\s+das)?|mach(?:\s+das)?|klar)\b",
+    re.IGNORECASE,
+)
+_ROUTINE_SAVE_REQUEST_RE = re.compile(
+    r"\b(?:speicher(?:e|n)?.*(?:routine|ablauf)|merk(?:e|en)?.*(?:ablauf|routine)|als\s+routine)\b",
+    re.IGNORECASE,
+)
+_ROUTINE_DECLINE_RE = re.compile(
+    r"\b(?:nein|nein danke|lieber nicht|nicht mehr fragen|frag mich nicht mehr)\b",
+    re.IGNORECASE,
+)
+
 CALENDAR_COMMAND_MARKERS: Tuple[str, ...] = (
     "termin erstellen",
     "termin anlegen",
@@ -1262,6 +1275,59 @@ class IntentEngine:
             return False
         return self._has_calendar_command_signal(text_norm)
 
+    def detect_routine_save_confirm(self, user_text: str) -> bool:
+        text = str(user_text or "").strip()
+        return bool(text and _ROUTINE_SAVE_CONFIRM_RE.search(text))
+
+    def detect_routine_save_request(self, user_text: str) -> bool:
+        text = str(user_text or "").strip()
+        return bool(text and _ROUTINE_SAVE_REQUEST_RE.search(text))
+
+    def detect_routine_decline(self, user_text: str) -> bool:
+        text = str(user_text or "").strip()
+        return bool(text and _ROUTINE_DECLINE_RE.search(text))
+
+    def detect_routine_trigger(self, user_text: str, trigger_phrases: List[str]) -> Optional[str]:
+        text_norm = _normalize_text(user_text)
+        if not text_norm:
+            return None
+        for phrase in sorted((trigger_phrases or []), key=lambda item: len(str(item or "")), reverse=True):
+            normalized_phrase = str(phrase or "").strip()
+            if not normalized_phrase:
+                continue
+            phrase_norm = _normalize_text(normalized_phrase)
+            if text_norm == phrase_norm or _contains_phrase(text_norm, normalized_phrase):
+                return normalized_phrase
+        return None
+
+    def detect_routine_request_skills(self, user_text: str) -> frozenset[str]:
+        """Infer a bounded skill signature from a natural user request."""
+        text = str(user_text or "").strip()
+        if not text:
+            return frozenset()
+        skills: set[str] = set()
+        if self.detect_calendar_intent(text):
+            skills.add("calendar.list_events")
+        if self.detect_weather_intent(text):
+            skills.add("system.weather")
+        if self.detect_routing_geo_intent(text):
+            skills.add("system.routing")
+        return frozenset(skills)
+
+    def match_routine_semantic_signature(
+        self,
+        user_text: str,
+        routine_skill_ids: frozenset[str],
+    ) -> Optional[str]:
+        """Return a semantic match label when the request matches a saved routine signature."""
+        if not routine_skill_ids or len(routine_skill_ids) < 2:
+            return None
+        request_skills = self.detect_routine_request_skills(user_text)
+        if request_skills != routine_skill_ids:
+            return None
+        ordered = sorted(routine_skill_ids)
+        return f"semantic:{','.join(ordered)}"
+
     # ─────────────────────────────────────────────────────────────────────────
     # Filesystem Intent (TASK-001: BACKLOG-004)
     # ─────────────────────────────────────────────────────────────────────────
@@ -1707,6 +1773,42 @@ class IntentEngine:
             or _ROUTING_ZWISCHEN_UND.search(t)
             or re.search(r"\bvon\s+[^\n,?\.!]{1,52}\b", t)  # BACKLOG-036: Einfaches "von X" Muster
         )
+
+    @staticmethod
+    def extract_routing_origin_destination(user_text: str) -> Tuple[Optional[str], Optional[str]]:
+        """Extract bounded origin/destination places from a routing-style request."""
+        text = str(user_text or "").strip()
+        if not text:
+            return None, None
+
+        def _clean_place(value: str) -> str:
+            cleaned = re.split(
+                r"[?!.;,]|\s+und\s+(?:wie|was|wieviel|welche)\b",
+                value,
+                maxsplit=1,
+            )[0].strip()
+            return cleaned
+
+        patterns = (
+            re.compile(
+                r"\bvon\s+([A-Za-zÄÖÜäöüß][\wÄÖÜäöüß .'-]{0,48}?)\s+nach\s+"
+                r"([A-Za-zÄÖÜäöüß][\wÄÖÜäöüß .'-]{0,48})(?=\s*[?!.;,]|$)",
+                re.IGNORECASE,
+            ),
+            re.compile(
+                r"\bfrom\s+([A-Za-zÄÖÜäöüß][\wÄÖÜäöüß .'-]{0,48}?)\s+to\s+"
+                r"([A-Za-zÄÖÜäöüß][\wÄÖÜäöüß .'-]{0,48})(?=\s*[?!.;,]|$)",
+                re.IGNORECASE,
+            ),
+        )
+        for pattern in patterns:
+            match = pattern.search(text)
+            if match:
+                origin = _clean_place(match.group(1))
+                destination = _clean_place(match.group(2))
+                if origin and destination:
+                    return origin, destination
+        return None, None
 
     @staticmethod
     def detect_weather_intent(user_text: str) -> bool:

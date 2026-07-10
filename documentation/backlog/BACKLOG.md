@@ -360,6 +360,55 @@ Dashboard-Regeln:
 
 ## READY
 
+### BACKLOG-124 - Codex-/Janus-Modellmatrix auf neue lokale GPT-5.6-Modelle auditieren und gezielt aktualisieren
+
+- **Typ:** IMPROVEMENT
+- **Status:** READY
+- **Quelle:** User Intake
+- **Erstellt:** 2026-07-10
+- **Aktualisiert:** 2026-07-10
+- **Kurzbeschreibung:** In Codex stehen jetzt drei neue lokale `GPT-5.6`-Modelle zur Verfuegung, waehrend die aktuelle Janus-Governance, Skill-Routing-Matrix und Cache-Strategie noch explizit auf `5.4`, `5.4 mini` und `5.5` ausgerichtet sind. Bevor die neuen Modelle still ignoriert oder vorschnell als Ersatz benutzt werden, soll ein gebundener Lean-Dev-Audit klaeren, ob und wo eines der neuen `5.6`-Modelle sinnvoll die bestehende Matrix ersetzt oder ergaenzt.
+- **Erwartetes Verhalten:** Janus hat eine bewusst aktualisierte, evidenzgestuetzte Modellmatrix fuer Codex-Arbeit. Wenn eines der neuen `GPT-5.6`-Modelle fuer Workhorse-, Mini- oder Audit-Rollen besser geeignet ist, wird das kontrolliert in Governance, Routing-Doku und betroffenen Skills uebernommen. Wenn nicht, bleibt die bestehende Matrix explizit begruendet bestehen.
+- **Tatsaechliches Verhalten:** Die verbindlichen Routing-/Governance-Dateien nennen aktuell weiter `5.4`, `5.4 mini`, `5.5` und teils `5.2` als feste Arbeitsverteilung. Es gibt noch keinen Repo-gebundenen Audit, der die drei neuen `GPT-5.6`-Modelle gegen die bestehende Matrix, Cache-Strategie, Skill-Empfehlungen und operator-facing Handhabung prueft.
+- **Reproduktion / Kontext:** User-Hinweis am 2026-07-10: In Codex sind drei neue `GPT-5.6`-Modelle sichtbar. Repo-Befund vom selben Tag: Die operative Modellmatrix in `AGENTS.md`, `documentation/codex/CODEX_PROJECT_PROFILE.md`, `documentation/codex/CODEX_WORKFLOW_PLAYBOOK.md` und `documentation/codex/CODEX_MODEL_MIGRATION_2026-06-02.md` referenziert weiterhin die bisherige `5.4`-/`5.5`-Generation. Die Frage war explizit, ob wir sofort weiterarbeiten oder zuerst die Skills/Pipeline auf die neuen Modelle vorbereiten sollen.
+- **Betroffener Bereich:** Codex-Governance / Janus Skill-Routing / Model-Matrix / Cache-Strategie / Lean-Dev-Infrastruktur
+- **Nachweise:** `AGENTS.md`; `documentation/codex/CODEX_PROJECT_PROFILE.md`; `documentation/codex/CODEX_WORKFLOW_PLAYBOOK.md`; `documentation/codex/CODEX_MODEL_MIGRATION_2026-06-02.md`
+- **Akzeptanzkriterien:**
+  - [ ] Es gibt einen gebundenen Audit, der die drei neuen lokalen `GPT-5.6`-Modelle gegen die aktuellen Rollen `5.4`, `5.4 mini` und `5.5` bewertet statt blind umzuschalten.
+  - [ ] Die Entscheidung behandelt mindestens Workhorse-, Mini-/mechanische und Audit-/Risiko-Rollen getrennt.
+  - [ ] Falls ein oder mehrere `GPT-5.6`-Modelle uebernommen werden, werden die betroffenen Governance-/Routing-Dateien und Skill-Empfehlungen konsistent aktualisiert.
+  - [ ] Falls die bestehende Matrix vorerst bestehen bleibt, wird das explizit mit Evidenz und klarer Revisit-Regel dokumentiert.
+- **Fehlende Informationen:**
+  - Exakte Namen und Verhalten der drei neuen lokalen `GPT-5.6`-Modelle sind noch nicht als Repo-Evidenz erfasst.
+- **Wichtigkeit:** MEDIUM
+- **Umsetzungsrisiko:** LOW
+- **Aufwand:** S
+- **Umsetzungsreife:** READY
+- **Empfehlung:** SCHEDULE
+- **Notizen:** Empfohlene Haltung: laufende Janus-Produktarbeit nicht blockieren, aber den Modell-Audit als eigenen kleinen Lean-Dev-Slice bald nachziehen. Erst nach Evidenz sollten Routing-Matrix, Skill-Texte oder Standardempfehlungen geaendert werden.
+
+### BACKLOG-122 - system.country_info haengt an deprecated Rest-Countries-Legacypfad und driftet zur Live-Runtime
+
+- **Typ:** BUG
+- **Status:** READY
+- **Quelle:** Log
+- **Erstellt:** 2026-07-09
+- **Aktualisiert:** 2026-07-09
+- **Kurzbeschreibung:** `system.country_info` ist derzeit kein verlaesslicher Produktpfad mehr. Ein Live-Janus-Test fuer Japan-Landesdaten plus Routing zeigte, dass die Laenderfakten im echten Lauf ausfallen, weil der Skill am deprecated Rest-Countries-Legacypfad haengt; zusaetzlich verhielt sich die Live-Runtime dabei anders als der aktuelle Repo-Worktree.
+- **Erwartetes Verhalten:** Fragen nach Landfakten wie Hauptstadt, Bevoelkerung, Region, Waehrung und Sprachen liefern wieder belastbare Daten. Mixed-Turns mit `system.country_info` plus einem zweiten erfolgreichen Geo-Skill sollen beide Antwortteile korrekt ausgeben.
+- **Tatsaechliches Verhalten:** Beim Live-Prompt `Ich plane eine Reise nach Japan. Was ist die Hauptstadt und Waehrung von Japan und wie weit ist es von Tokio nach Kyoto?` lieferte Janus nur den Routing-Teil. Laut Backend-Log wurde `system.routing` erfolgreich ausgefuehrt, `system.country_info` aber zweimal versucht und im Live-Lauf mit `PARSE_ERROR` beendet. Die aktuelle Repo-Version behandelt denselben Upstream-Zustand lokal bereits als `API_ERROR`, was auf Runtime-/Deploy-Drift zusaetzlich zum Providerproblem hinweist.
+- **Reproduktion / Kontext:** Live-Repro am 2026-07-09 waehrend der Spec-29.2-Verifikation. `restcountries.com/v3.1/translation/<country>` und `.../name/<country>` leiten aktuell auf `files-03.restcountries.com/.../legacy.json` um und liefern eine Deprecation-Antwort statt nutzbarer Länderdaten. Der Befund wurde danach lokal gegen `backend/tools/geo_service.py`, den fokussierten Country-Tests und die direkte Tool-Funktion gegengeprueft.
+- **Betroffener Bereich:** Backend / System Skills / Geo / Provider-Integration / Runtime-Drift
+- **Nachweise:** `documentation/tasks/TASK-SPEC29.2_debug_result_country_info_parse_2026-07-09.md`; `documentation/logs/janus_backend.log`; `backend/tools/geo_service.py`; `backend/tests/tools/test_geo_service.py`
+- **Akzeptanzkriterien:**
+  - [ ] `system.country_info` liefert fuer gueltige Laenderanfragen wieder nutzbare Produktdaten statt am deprecated Legacypfad zu scheitern.
+  - [ ] Der Live-Produktpfad und der aktuelle Repo-Worktree verhalten sich fuer dieselbe Upstream-Antwort konsistent; unbegruendete Drift zwischen Runtime und Source ist beseitigt oder klar dokumentiert.
+  - [ ] Mixed-Geo-Prompts mit `system.country_info` plus einem zweiten erfolgreichen Skill koennen beide Antwortteile wieder ausgeben, statt still auf den zweiten Teil zu kollabieren.
+  - [ ] Die Loesung bleibt fail-closed und fuehrt nicht dazu, dass falsche Landdaten aus einem unzuverlaessigen Fallback beantwortet werden.
+- **Fehlende Informationen:**
+  - Keine
+- **Notizen:** Nicht Teil des eigentlichen Spec-29-Routine-Lernens, aber dort als echter Produktblocker entdeckt. Fuer die spaetere Umsetzung ist wahrscheinlich eher ein eigener Provider-/Migrationsslice als ein Mini-Fix sinnvoll.
+
 ### BACKLOG-109 - Lokale DB-Snapshots vor riskanten Debug-, Repair- und Migrationsschritten anlegen
 
 - **Typ:** IMPROVEMENT
@@ -444,6 +493,45 @@ Dashboard-Regeln:
 - **Notizen:** False Positives aus TEST-RUN-2026-05-19-007 - TestPlan-Expectations muessen verfeinert werden
 
 ## DONE
+
+### BACKLOG-123 - Allgemeines semantisches, parameterisiertes Routine-Reuse fuer mehrschrittige Routinen fehlt noch
+
+- **Typ:** ENHANCEMENT
+- **Status:** DONE
+- **Quelle:** User Intake
+- **Erstellt:** 2026-07-09
+- **Aktualisiert:** 2026-07-10
+- **Abgeschlossen:** 2026-07-10
+- **Kurzbeschreibung:** Gespeicherte mehrschrittige Routinen koennen aktuell nur in engen Sonderfaellen semantisch wiederverwendet werden. Der bestehende Produktpfad deckt `calendar.list_events + system.weather` mit hart verdrahteten Wetter-Constraints ab, generalisiert aber nicht auf andere gleichartige Routinen wie `calendar.list_events + system.routing` oder spaetere weitere Multi-Skill-Kombinationen.
+- **Erwartetes Verhalten:** Janus erkennt passende gespeicherte mehrschrittige Routinen ueber ihre semantische Struktur und bindet die konkret angefragten Parameter aus der neuen Nutzeranfrage neu ein. Das Reuse-Verhalten bleibt transparent, fail-closed und ist nicht auf einen einzelnen Skill-Sonderfall begrenzt.
+- **Tatsaechliches Verhalten:** RESOLVED - Spec 31 ist vollstaendig umgesetzt. Der Produktpfad erkennt jetzt passende gespeicherte mehrschrittige Routinen ueber einen allgemeinen semantischen Reuse-Kern, bindet frische Nutzerparameter fuer den ersten evidenzgestuetzten Pilotfall `calendar.list_events + system.routing` neu und faellt bei fehlenden, widerspruechlichen oder oberflaechlich mehrdeutigen Parametern konservativ auf den normalen Anfragepfad zurueck. Der bestehende `calendar.list_events + system.weather`-Pfad blieb regressionsfrei erhalten.
+- **Reproduktion / Kontext:** Waehend der Spec-29.2-Live-Debugkette am 2026-07-09 wurde sichtbar, dass `calendar+routing` nur ueber mehrere Debug-Fixes bis zur Candidate-Promotion gebracht werden konnte, aber weiterhin kein allgemeiner semantischer Reuse-Pfad fuer Varianten wie `heute Berlin->Hamburg` versus `morgen Berlin->Koeln` existiert. Die Nutzerfrage dazu war explizit, dass dieses Verhalten kein `calendar+routing`-Spezialfall bleiben soll. Mit den final auditierten Slices `TASK-SPEC31.1` und `TASK-SPEC31.2` ist diese Produktluecke jetzt geschlossen.
+- **Betroffener Bereich:** Backend / Workflow / Routine Runner / Intent-Erkennung / Produktverhalten
+- **Nachweise:** `documentation/tasks/TASK-SPEC31.1_final_audit.md`; `documentation/tasks/TASK-SPEC31.2_final_audit.md`; `documentation/tasks/TASK-SPEC31.1_execution_result.md`; `documentation/tasks/TASK-SPEC31.2_execution_result.md`; `documentation/tasks/TASK-SPEC31.2_cursor_execution_probe_2026-07-10.md`; `backend/services/orchestrator/intent_engine.py`; `backend/services/workflow/routine_runner.py`
+- **Akzeptanzkriterien:**
+  - [x] Mehrschrittige gespeicherte Routinen werden ueber einen allgemeinen semantischen Reuse-Pfad erkannt, nicht nur ueber explizite Triggerphrasen oder einen einzigen hartcodierten Skill-Fall.
+  - [x] Der Reuse-Pfad unterstuetzt parameterisierte Wiederverwendung: konkrete Werte wie Datum, Stadt, Origin, Destination oder andere skill-spezifische Argumente werden aus der neuen Anfrage neu gebunden statt blind aus der alten gespeicherten Routine uebernommen.
+  - [x] Das Constraint-Matching ist skill-spezifisch erweiterbar und deckt als ersten Pilot mindestens `calendar.list_events + system.routing` ab, ohne die bestehende `calendar.list_events + system.weather`-Funktionalitaet zu regressieren.
+  - [x] Bei fehlenden, widerspruechlichen oder nicht sicher extrahierbaren Parametern bleibt Janus fail-closed und fuehrt keine unpassende alte Routine mit veralteten Werten aus.
+- **Fehlende Informationen:**
+  - Keine
+- **Wichtigkeit:** HIGH
+- **Umsetzungsrisiko:** MEDIUM
+- **Aufwand:** M
+- **Umsetzungsreife:** READY
+- **Empfehlung:** SPEC FIRST
+- **Entry Point:** TASK_BREAKDOWN
+- **Routing reason:** Historischer Routing-Pfad; umgesetzt ueber die gebundene Spec-31-Pipeline.
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-07-09
+- **Handoff:** documentation/tasks/TASK-SPEC31.1_task_breakdown.md
+- **Recommended next skill:** SKILL 7
+- **Handoff created:** 2026-07-09
+- **Completed by task:** `documentation/tasks/TASK-SPEC31.2_final_audit.md`
+- **Final audit:** PASS
+- **Validation evidence:** `python -m pytest backend/tests/test_routine_runner.py -v` PASS (`19 passed`); `python -m pytest backend/tests/test_workflow_offer_service.py -v` PASS (`18 passed`); `python -m pytest backend/tests/unit/test_chat_orchestrator_routine_execution.py -v` PASS (`3 passed` auf Slice 31.1); `python -m py_compile backend/services/orchestrator/intent_engine.py backend/services/workflow/routine_runner.py backend/tests/test_workflow_offer_service.py backend/tests/test_routine_runner.py` PASS; reale Janus GPT-/Gemini-PASS-Nachweise fuer Routing-Pilot, Weather-Regression und fail-closed Ambiguitaetsfall; `validate_final_audit.py` PASS fuer `TASK-SPEC31.1_final_audit.md` und `TASK-SPEC31.2_final_audit.md`
+- **Notizen:** `calendar+routing` bleibt bewusst der erste evidenzgestuetzte Produktpilot. Die eigentliche Produktfaehigkeit ist aber jetzt nicht mehr als enger Sonderfall formuliert, sondern als allgemeiner semantischer Multi-Step-Reuse-Pfad mit konservativen Sicherheitsgrenzen.
 
 ### BACKLOG-121 - Shared-Delegation-Gate versteckt Cursor-Alternativen zu aggressiv bei negativer ROI
 

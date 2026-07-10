@@ -1,0 +1,89 @@
+{
+  "task_label": "Implement semantic multi-step routine reuse core with calendar+routing pilot",
+  "worker_profile": "cursor-agent",
+  "allowed_edit_paths": [
+    "backend/services/orchestrator/intent_engine.py",
+    "backend/services/workflow/routine_runner.py",
+    "backend/services/chat_orchestrator.py",
+    "backend/tests/test_routine_runner.py",
+    "backend/tests/test_workflow_offer_service.py",
+    "backend/tests/unit/test_chat_orchestrator_routine_execution.py"
+  ],
+  "acceptance_criteria": [
+    "A natural request from the calendar+routing pilot family can reuse a matching saved routine through a general semantic multi-step reuse core.",
+    "Current request values for date, start, or destination override historical routine-run values.",
+    "The existing calendar+weather natural reuse path remains supported.",
+    "Successful reuse still shows only the short passive routine-used hint.",
+    "Only allowlisted paths are modified."
+  ],
+  "checks": [
+    {
+      "label": "pytest_routine_runner",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "backend/tests/test_routine_runner.py",
+        "-v"
+      ]
+    },
+    {
+      "label": "pytest_workflow_offer_service",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "backend/tests/test_workflow_offer_service.py",
+        "-v"
+      ]
+    },
+    {
+      "label": "pytest_chat_orchestrator_routine_execution",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "backend/tests/unit/test_chat_orchestrator_routine_execution.py",
+        "-v"
+      ]
+    },
+    {
+      "label": "py_compile",
+      "command": [
+        "python",
+        "-m",
+        "py_compile",
+        "backend/services/orchestrator/intent_engine.py",
+        "backend/services/workflow/routine_runner.py",
+        "backend/services/chat_orchestrator.py"
+      ]
+    }
+  ],
+  "forbidden_actions": [
+    "commit",
+    "push",
+    "tag",
+    "merge",
+    "release",
+    "publish",
+    "dependency",
+    "secret",
+    "auth",
+    "security",
+    "privacy",
+    "migration",
+    "architecture",
+    "ui",
+    "transport",
+    "oauth",
+    "openrouter_product",
+    "session_search",
+    "embedding",
+    "vector_search"
+  ],
+  "requested_actions": [
+    "edit",
+    "run_checks"
+  ],
+  "task_prompt": "Implement TASK-SPEC31.1 only. Current behavior already has a narrow natural reuse path for calendar+weather, but Spec 31 now requires a general semantic multi-step routine reuse core on the existing saved-routine path plus the first safe calendar.list_events + system.routing pilot. A later natural request from that pilot family must reuse a matching saved routine when the semantic structure matches and current request values can be rebound safely. Current request values for date, start, or destination must override historical routine-run values. Preserve the existing calendar+weather natural reuse behavior and keep the short passive routine-used hint. Add focused regression tests. Do not add UI, routine management, embeddings, vector search, provider fallback, transport changes, OAuth, product OpenRouter, migrations, commits, or broader architecture changes. Return concise JSON-compatible output with status, root_cause, changed_files, command_results, summary, and blockers."
+}

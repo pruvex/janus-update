@@ -1,0 +1,82 @@
+TASK-SPEC31
+- Source Spec: `documentation/SPEC/Spec Done/31_semantisches_parameterisiertes_routine_reuse_mehrschrittige_routinen.md`
+- Backlog Item: `BACKLOG-123`
+- Feature: Semantisches, parameterisiertes Routine-Reuse fuer mehrschrittige Routinen
+- Generated At: 2026-07-09
+
+## Generated Tasks
+
+### TASK-SPEC31.1 Allgemeiner semantischer Reuse-Kern mit `calendar.list_events + system.routing` Pilot
+- Ziel:
+  - Den bestehenden gespeicherten Routinen-Pfad so erweitern, dass mehrschrittige Routinen aus natuerlicher Sprache wiederverwendet werden koennen, wenn eine sichere semantische Strukturuebereinstimmung plus frische Parameterbindung vorliegt.
+- Scope:
+  - Bestehenden semantischen Routinen-Match-Pfad von der engen `calendar.list_events + system.weather`-Spezialbehandlung auf einen allgemeinen mehrschrittigen Reuse-Kern erweitern.
+  - Ersten abgesicherten Product Slice fuer `calendar.list_events + system.routing` binden.
+  - Frische Nutzerparameter gegen die gespeicherte Routinenstruktur zur Laufzeit neu binden, statt alte Routinenlaufwerte blind zu uebernehmen.
+  - Bestehenden passiven Transparenzhinweis bei erfolgreichem Reuse beibehalten.
+  - Keine neue Routinen-UI, keine Embedding-/Vektorsuche, keine allgemeine Freischaltung weiterer Skill-Familien ohne Evidenz.
+- Files:
+  - `backend/services/orchestrator/intent_engine.py`
+  - `backend/services/workflow/routine_runner.py`
+  - `backend/services/chat_orchestrator.py`
+  - `backend/tests/test_routine_runner.py`
+  - `backend/tests/test_workflow_offer_service.py`
+  - `backend/tests/unit/test_chat_orchestrator_routine_execution.py`
+- Steps:
+  - Allgemeinen semantischen Signature-/Skill-Familien-Abgleich fuer mehrschrittige gespeicherte Routinen an den bestehenden Runner-Pfad anbinden.
+  - Skill-spezifische Parameterbindung fuer den ersten Pilotfall `calendar.list_events + system.routing` definieren, sodass aktuelle Anfragewerte Vorrang vor historischen Routinenwerten haben.
+  - Bestehenden `calendar.list_events + system.weather`-Pfad als Regression erhalten.
+  - Transparente erfolgreiche Routinenutzung weiterhin ueber den bestehenden passiven Hinweisspfad ausgeben.
+  - Fokus-Tests fuer erfolgreichen Routing-Pilot und Weather-Regression ergaenzen.
+- Acceptance Criteria:
+  - Eine natuerliche Anfrage aus der Pilotfamilie `calendar.list_events + system.routing` kann eine passende gespeicherte Routine mit aktuellen Nutzerwerten wiederverwenden.
+  - Aktuelle Anfragewerte fuer Datum, Start oder Ziel schlagen historische Routinenlaufwerte.
+  - Der bestehende natuerliche Reuse-Pfad fuer `calendar.list_events + system.weather` bleibt intakt.
+  - Erfolgreiches Reuse zeigt weiterhin nur einen kurzen passiven Routinenutzungshinweis.
+- Tests:
+  - `python -m pytest backend/tests/test_routine_runner.py -v`
+  - `python -m pytest backend/tests/test_workflow_offer_service.py -v`
+  - `python -m pytest backend/tests/unit/test_chat_orchestrator_routine_execution.py -v`
+  - `python -m py_compile backend/services/orchestrator/intent_engine.py backend/services/workflow/routine_runner.py backend/services/chat_orchestrator.py`
+- Model: 5.4
+- Reason:
+  - Produktrelevanter, aber klar gebundener Backend-Slice auf dem bestehenden Routine-Reuse-Pfad; guter erster Implementierungsblock fuer den Piloten ohne Scope-Drift in spaetere Familien.
+- Closeout:
+  - Final Audit PASS ist in `documentation/tasks/TASK-SPEC31.1_final_audit.md` dokumentiert. Der erste Spec-31-Slice ist damit task-scharf abgeschlossen: der bestehende natuerliche Routinen-Reuse-Pfad arbeitet jetzt mit einem allgemeinen semantischen Mehrschritt-Kern fuer den ersten Pilotfall `calendar.list_events + system.routing`, bindet aktuelle Nutzerparameter frisch und behaelt den kurzen passiven Transparenzhinweis bei.
+  - Die gebundene Evidenz umfasst die Cursor-first Execution-Probe mit produktivem Resume-Follow-up, `python -m pytest backend/tests/test_routine_runner.py -v` PASS (`12 passed`), `python -m pytest backend/tests/test_workflow_offer_service.py -v` PASS (`18 passed`), `python -m pytest backend/tests/unit/test_chat_orchestrator_routine_execution.py -v` PASS (`3 passed`), `python -m py_compile backend/services/orchestrator/intent_engine.py backend/services/workflow/routine_runner.py backend/services/chat_orchestrator.py` PASS sowie reale Janus-PASS-Nachweise fuer den neuen Routing-Pilot und den bestehenden Weather-Regressionspfad.
+  - `TASK-SPEC31.2` bleibt bewusst offen und ist weiterhin erforderlich, um Fail-Closed-Guards, Ambiguitaetsgrenzen und breitere Regressionshaertung fuer denselben allgemeinen Reuse-Pfad nachzuliefern. Dieser PASS schliesst daher nur den ersten bounded Pilot-Slice, nicht die gesamte Spec 31.
+
+### TASK-SPEC31.2 Fail-Closed Guards, Mehrdeutigkeitsgrenzen und Regressionshaertung fuer parameterisiertes Routine-Reuse
+- Ziel:
+  - Den erweiterten Reuse-Pfad fail-closed haerten, wenn Parameter fehlen, widerspruechlich sind oder mehrere Routinen nur oberflaechlich passen.
+- Scope:
+  - Mehrdeutige oder unvollstaendige semantische Reuse-Faelle deterministisch auf den normalen Anfragepfad zurueckfallen lassen.
+  - Mehrfachkandidaten und nur oberflaechlich aehnliche Routinen konservativ behandeln.
+  - Regressionen gegen aggressive Fehlmatches und unsichere Altwert-Wiederverwendung absichern.
+  - Keine neuen Produktentscheidungen, keine UI, keine freie Erweiterung auf weitere Skill-Familien jenseits expliziter Regressionen.
+- Files:
+  - `backend/services/orchestrator/intent_engine.py`
+  - `backend/services/workflow/routine_runner.py`
+  - `backend/tests/test_routine_runner.py`
+  - `backend/tests/test_workflow_offer_service.py`
+- Steps:
+  - Fail-closed Guard-Logik fuer fehlende, mehrdeutige oder widerspruechliche Parameter am erweiterten Reuse-Pfad ergaenzen.
+  - Verhalten bei mehreren nur teilweise passenden gespeicherten Routinen konservativ absichern.
+  - Regressionen gegen unsichere Altwert-Wiederverwendung und oberflaechliche Fehlmatches ergaenzen.
+  - Negative Tests fuer Parameterluecken, Konflikte und Ambiguitaet auf dem Routing-Pilot und dem bestehenden Weather-Pfad ergaenzen.
+- Acceptance Criteria:
+  - Wenn erforderliche Parameter fehlen oder nicht sicher extrahierbar sind, fuehrt Janus keine unpassende alte Routine mit Altwerten aus.
+  - Wenn eine Anfrage ausdruecklich widerspruechliche oder abweichende Werte enthaelt, werden diese nicht still von historischen Routinenwerten ueberschrieben.
+  - Wenn mehrere Routinen nur oberflaechlich passen, bleibt Janus im normalen Anfragepfad statt aggressiv fehlzumatchen.
+  - Regressionsschutz deckt Routing-Pilot plus bestehenden Weather-Reuse-Pfad ab.
+- Tests:
+  - `python -m pytest backend/tests/test_routine_runner.py -v`
+  - `python -m pytest backend/tests/test_workflow_offer_service.py -v`
+  - `python -m py_compile backend/services/orchestrator/intent_engine.py backend/services/workflow/routine_runner.py`
+- Model: 5.4
+- Reason:
+  - Getrennter Hardening-Slice verhindert, dass der erste positive Pilot-Implementierungsblock zugleich alle Negativ- und Ambiguitaetsfaelle unscharf miterledigen muss.
+- Closeout:
+  - Final Audit PASS ist in `documentation/tasks/TASK-SPEC31.2_final_audit.md` dokumentiert. Der zweite Spec-31-Slice haertet den bereits produktiven allgemeinen semantischen Reuse-Pfad jetzt fail-closed gegen fehlende, widerspruechliche und oberflaechlich mehrdeutige `calendar.list_events + system.routing`-Anfragen, ohne den bestehenden `calendar.list_events + system.weather`-Pfad zu regressieren.
+  - Die gebundene Evidenz umfasst die Cursor-first Execution-Probe mit dokumentiertem Composer-Timeout und Cursor-API-Output-Fehler, `python -m pytest backend/tests/test_routine_runner.py -v` PASS (`19 passed`), `python -m pytest backend/tests/test_workflow_offer_service.py -v` PASS (`18 passed`), `python -m py_compile backend/services/orchestrator/intent_engine.py backend/services/workflow/routine_runner.py backend/tests/test_workflow_offer_service.py backend/tests/test_routine_runner.py` PASS, reale Janus-GPT-/Gemini-PASS-Nachweise fuer den neuen fail-closed Ambiguitaetsfall sowie Final-Audit-Validator PASS.
+  - Mit `TASK-SPEC31.1` und `TASK-SPEC31.2` zusammen ist Spec 31 jetzt task-scharf abgeschlossen: der Produktpfad bietet allgemeinen semantischen parameterisierten Multi-Step-Routine-Reuse fuer den ersten evidenzgestuetzten Pilotfall `calendar.list_events + system.routing`, behaelt den kurzen passiven Transparenzhinweis bei erfolgreichem sicheren Reuse bei und faellt bei unsicheren Parametern konservativ auf den normalen Anfragepfad zurueck.

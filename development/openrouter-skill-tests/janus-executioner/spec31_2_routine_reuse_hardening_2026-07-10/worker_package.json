@@ -1,0 +1,76 @@
+{
+  "task_label": "Harden semantic multi-step routine reuse with fail-closed and ambiguity guards",
+  "worker_profile": "cursor-agent",
+  "allowed_edit_paths": [
+    "backend/services/orchestrator/intent_engine.py",
+    "backend/services/workflow/routine_runner.py",
+    "backend/tests/test_routine_runner.py",
+    "backend/tests/test_workflow_offer_service.py"
+  ],
+  "acceptance_criteria": [
+    "Missing required semantic reuse parameters fail closed instead of reusing stale saved-routine values.",
+    "Conflicting or changed request values are not silently overwritten by historical routine-run values.",
+    "Multiple superficially matching saved routines fail closed instead of aggressive false-match reuse.",
+    "The accepted calendar+routing pilot and the existing calendar+weather natural reuse path remain protected by focused regression tests.",
+    "Only allowlisted paths are modified."
+  ],
+  "checks": [
+    {
+      "label": "pytest_routine_runner",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "backend/tests/test_routine_runner.py",
+        "-v"
+      ]
+    },
+    {
+      "label": "pytest_workflow_offer_service",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "backend/tests/test_workflow_offer_service.py",
+        "-v"
+      ]
+    },
+    {
+      "label": "py_compile",
+      "command": [
+        "python",
+        "-m",
+        "py_compile",
+        "backend/services/orchestrator/intent_engine.py",
+        "backend/services/workflow/routine_runner.py"
+      ]
+    }
+  ],
+  "forbidden_actions": [
+    "commit",
+    "push",
+    "tag",
+    "merge",
+    "release",
+    "publish",
+    "dependency",
+    "secret",
+    "auth",
+    "security",
+    "privacy",
+    "migration",
+    "architecture",
+    "ui",
+    "transport",
+    "oauth",
+    "openrouter_product",
+    "session_search",
+    "embedding",
+    "vector_search"
+  ],
+  "requested_actions": [
+    "edit",
+    "run_checks"
+  ],
+  "task_prompt": "Implement TASK-SPEC31.2 only. The accepted TASK-SPEC31.1 pilot already introduced general semantic multi-step routine reuse plus the first safe calendar.list_events + system.routing pilot. This second slice must harden that productive path so missing parameters, conflicting values, and multiple superficially matching saved routines fail closed instead of reusing stale saved-routine values. Protect both the calendar+routing pilot and the existing calendar+weather path with focused negative regressions. Do not reopen the accepted positive pilot behavior, add new routine families, add UI, embeddings, vector search, provider fallback, transport changes, OAuth, migrations, commits, or broader architecture changes. Return concise JSON-compatible output with status, root_cause, changed_files, command_results, summary, and blockers."
+}

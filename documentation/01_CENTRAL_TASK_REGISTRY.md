@@ -4,6 +4,32 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-SPEC31.2 - Fail-Closed Guards, Mehrdeutigkeitsgrenzen und Regressionshaertung fuer parameterisiertes Routine-Reuse
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-SPEC31.2_final_audit.md` (PASS)
+- **Spec**: `documentation/SPEC/Spec Done/31_semantisches_parameterisiertes_routine_reuse_mehrschrittige_routinen.md`
+- **Parent Task**: `documentation/tasks/TASK-SPEC31_semantisches_parameterisiertes_routine_reuse_mehrschrittige_routinen.md`
+- **Task Breakdown**: `documentation/tasks/TASK-SPEC31.2_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-SPEC31.2_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-SPEC31.2_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-SPEC31.2_AUDIT_PACKAGE.md`
+- **Validation**: `TASK-SPEC31.2` schliesst den Hardening-Slice von Spec 31 ab. Der produktive semantische Reuse-Pfad fuer mehrschrittige gespeicherte Routinen verlangt jetzt fuer `calendar.list_events + system.routing` genau einen eindeutigen Tagesbezug und genau ein eindeutiges Start-/Zielpaar, blockiert mehrdeutige oder lueckenhafte Wiederverwendung fail-closed und behaelt zugleich den bestehenden `calendar.list_events + system.weather`-Pfad regressionsfrei bei. Final Audit PASS mit fokussierter Cursor-first-Execution-Evidence, Pytest-/Compile-Evidence und realer Janus-PASS-Evidence fuer den neuen fail-closed Ambiguitaetsfall.
+- **Changed Files**: `backend/services/workflow/routine_runner.py`, `backend/tests/test_routine_runner.py`, `backend/tests/test_workflow_offer_service.py`, `development/openrouter-skill-tests/janus-executioner/spec31_2_routine_reuse_hardening_2026-07-10/input_package.json`, `development/openrouter-skill-tests/janus-executioner/spec31_2_routine_reuse_hardening_2026-07-10/worker_package.json`, `development/openrouter-skill-tests/janus-executioner/spec31_2_routine_reuse_hardening_2026-07-10/allowlist.txt`, `documentation/tasks/TASK-SPEC31.2_cursor_execution_probe_2026-07-10.md`, `documentation/tasks/TASK-SPEC31.2_execution_result.md`, `documentation/tasks/TASK-SPEC31.2_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC31.2_final_audit.md`.
+
+### TASK-SPEC31.1 - Allgemeiner semantischer Reuse-Kern mit `calendar.list_events + system.routing` Pilot
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-SPEC31.1_final_audit.md` (PASS)
+- **Spec**: `documentation/SPEC/Spec Done/31_semantisches_parameterisiertes_routine_reuse_mehrschrittige_routinen.md`
+- **Parent Task**: `documentation/tasks/TASK-SPEC31_semantisches_parameterisiertes_routine_reuse_mehrschrittige_routinen.md`
+- **Task Breakdown**: `documentation/tasks/TASK-SPEC31.1_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-SPEC31.1_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-SPEC31.1_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-SPEC31.1_AUDIT_PACKAGE.md`
+- **Validation**: `TASK-SPEC31.1` schliesst den ersten eng gebundenen Spec-31-Slice als allgemeinen semantischen Reuse-Kern fuer mehrschrittige gespeicherte Routinen mit dem ersten Pilotfall `calendar.list_events + system.routing` ab. Der produktive Pfad erkennt jetzt passende gespeicherte Routinen nicht mehr nur ueber den bisherigen engen Weather-Sonderfall, bindet aktuelle Nutzerwerte fuer Datum/Start/Ziel frisch an die gespeicherte Struktur und behaelt den kurzen passiven Routinenutzungshinweis bei. Final Audit PASS mit fokussierter Cursor-first-Execution-Evidence, Pytest-/Compile-Evidence und realer Janus-PASS-Evidence fuer den neuen Routing-Pilot plus den bestehenden Weather-Regressionspfad. Zusammen mit `TASK-SPEC31.2` ist der allgemeine Spec-31-Pfad jetzt vollstaendig abgeschlossen.
+- **Changed Files**: `backend/services/orchestrator/intent_engine.py`, `backend/services/workflow/routine_runner.py`, `development/openrouter-skill-tests/janus-executioner/spec31_1_semantic_routine_reuse_2026-07-09/input_package.json`, `development/openrouter-skill-tests/janus-executioner/spec31_1_semantic_routine_reuse_2026-07-09/worker_package.json`, `development/openrouter-skill-tests/janus-executioner/spec31_1_semantic_routine_reuse_2026-07-09/allowlist.txt`, `documentation/codex/model-routing/cursor-worker-runs/WF-SPEC31.1-EXEC-PATCH-2026-07-09-002/resume_followup_response.json`, `documentation/tasks/TASK-SPEC31.1_cursor_execution_probe_2026-07-09.md`, `documentation/tasks/TASK-SPEC31.1_execution_result.md`, `documentation/tasks/TASK-SPEC31.1_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC31.1_final_audit.md`.
+
 ### TASK-WORKFLOW-M3.1 - Implement Workflow Phase 1+2 as one bounded store-and-detector slice
 
 - **Status**: DONE

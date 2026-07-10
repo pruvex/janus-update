@@ -1,0 +1,38 @@
+{
+  "task_id": "TASK-SPEC31.1",
+  "lane_id": "execution_patch_candidate",
+  "bound_skill_context": "janus-executioner",
+  "task_label": "Implement semantic multi-step routine reuse core with calendar+routing pilot",
+  "task_file": "documentation/tasks/TASK-SPEC31_semantisches_parameterisiertes_routine_reuse_mehrschrittige_routinen.md",
+  "task_breakdown": "documentation/tasks/TASK-SPEC31.1_task_breakdown.md",
+  "precheck": "documentation/tasks/TASK-SPEC31.1_preimplementation_check.md",
+  "spec": "documentation/SPEC/31_semantisches_parameterisiertes_routine_reuse_mehrschrittige_routinen.md",
+  "worker_package_json": "development/openrouter-skill-tests/janus-executioner/spec31_1_semantic_routine_reuse_2026-07-09/worker_package.json",
+  "allowlist_file": "development/openrouter-skill-tests/janus-executioner/spec31_1_semantic_routine_reuse_2026-07-09/allowlist.txt",
+  "problem_statement": "The approved Spec 31 requires the existing saved-routine path to reuse a matching multi-step routine from natural language when a safe semantic structure match and fresh parameter binding are available. This first slice must generalize the narrow weather-only semantic reuse path into a reusable core, add the first safe calendar.list_events + system.routing pilot, preserve the existing weather path, and ensure current request values override historical routine-run values.",
+  "latest_user_evidence": {
+    "timestamp_local": "2026-07-09",
+    "actual": "Spec 31 is approved and prechecked, but the current execution path still needs the bounded semantic multi-step reuse core and first routing pilot implemented.",
+    "expected": "A natural request from the calendar+routing pilot family reuses a matching saved routine with current request values, the weather reuse path still works, and Janus shows only the short passive routine-used hint."
+  },
+  "acceptance_criteria": [
+    "Only allowlisted backend routine/orchestrator files and focused tests may change.",
+    "A natural request from the pilot family calendar.list_events + system.routing can reuse a matching saved routine through the general semantic multi-step reuse core.",
+    "Current request values for date, start, or destination override historical routine-run values.",
+    "The existing natural reuse path for calendar.list_events + system.weather remains intact.",
+    "Successful reuse still shows only the short passive routine-used hint.",
+    "Do not add UI, routine management, embeddings, vector search, provider fallback, transport changes, OAuth, Git, release, or broader architecture changes."
+  ],
+  "local_validation_commands": [
+    "python -m pytest backend/tests/test_routine_runner.py -v",
+    "python -m pytest backend/tests/test_workflow_offer_service.py -v",
+    "python -m pytest backend/tests/unit/test_chat_orchestrator_routine_execution.py -v",
+    "python -m py_compile backend/services/orchestrator/intent_engine.py backend/services/workflow/routine_runner.py backend/services/chat_orchestrator.py"
+  ],
+  "redaction_ready": true,
+  "estimated_codex_saved_tokens": 18000,
+  "estimated_delegation_overhead_tokens": 5000,
+  "recommended_backend": "cursor",
+  "recommended_model": "composer-2.5",
+  "cursor_prompt_contract": "Use Cursor for one bounded execution patch. Inspect only allowlisted files, implement the smallest safe semantic multi-step routine reuse core plus the calendar+routing pilot with fresh parameter precedence, preserve the weather regression path, run the listed checks, and return concise JSON-compatible output."
+}
