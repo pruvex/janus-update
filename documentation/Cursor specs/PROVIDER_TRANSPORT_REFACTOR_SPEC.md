@@ -433,6 +433,8 @@ class ExecutionContext:
 
 **Flag:** `TRANSPORT_LAYER_ENABLED=false` (default).
 
+**T-B1/T-B2 implementation status (2026-07-11):** `TASK-M6B.1` final audit is `PASS` (`documentation/tasks/TASK-M6B.1_final_audit.md`). The first Phase-B vertical slice adds the abstract `BaseTransport` contract and an injected-service `OpenAICompatTransport` adapter only. It preserves canonical tool IDs through the existing ToolCallAdapter boundary and does not alter any existing gateway, service, runner, resolver, feature-flag consumer, or production route. Focused transport (`6/6`), existing ToolCallAdapter (`12/12`), combined audit (`18/18`), syntax, diff, Cursor allowlist, and manual default-off OpenAI Berlin-weather evidence passed. `T-B3` through `T-B6` remain separate open Phase-B work.
+
 **Exit B:**
 - `llm_gateway.reason_and_respond()` nutzt Transport + Runner
 - Alte Service-Pfade nur noch von Transporten aufgerufen
