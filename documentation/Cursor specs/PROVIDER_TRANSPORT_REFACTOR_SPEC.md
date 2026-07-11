@@ -205,6 +205,13 @@ InternalToolCall = {
 
 `tool_manager.get_tool_definitions()` liefert künftig **kanonische** IDs; der Transport entscheidet über `llm_name`.
 
+### 2.4.1 T-A2 implementation status
+
+- `TASK-M6.2` final audit: `PASS WITH FIXES` (`documentation/tasks/TASK-M6.2_final_audit.md`).
+- Completed scope: `ToolManager` preserves canonical dotted skill IDs while `ToolCallAdapter` owns the OpenAI/Gemini outbound, inbound, history, and schema adaptation seams. Focused adapter/OpenAI/Gemini checks and manual Gemini weather-tool evidence passed.
+- Non-blocking follow-up: Cursor Composer execution remains proposal-first only. Its shared delegate/worker wrapper contract and structured-output timeout require a separate infrastructure debug slice before Cursor can be treated as autonomous/productive.
+- Spec status remains in progress: `T-A3` through `T-A5` remain separate, open Phase-A tasks.
+
 ---
 
 ## 3. Komponenten (neu / refactored)

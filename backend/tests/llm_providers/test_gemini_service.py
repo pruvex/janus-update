@@ -250,10 +250,8 @@ async def test_provider_generate_response_with_tool_call(
 def test_gemini_name_mapping_resolves_provider_safe_names_to_canonical_skill():
     provider = GeminiServiceProvider()
 
-    with patch("backend.services.skill_router.skill_router.resolve_tool_name", return_value="calendar.create_event"), \
-         patch("backend.services.tool_manager.tool_manager.get_skill_id", return_value="calendar.create_event"):
-        assert provider._resolve_gemini_response_tool_name("calendar_create_event") == "calendar.create_event"
-        assert provider._gemini_api_function_name_for_history("calendar.create_event") == "calendar_create_event"
+    assert provider._resolve_gemini_response_tool_name("calendar_create_event") == "calendar.create_event"
+    assert provider._gemini_api_function_name_for_history("calendar.create_event") == "calendar_create_event"
 
 
 @patch("google.generativeai.GenerativeModel")

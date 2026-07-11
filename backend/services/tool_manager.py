@@ -553,23 +553,17 @@ class ToolManager:
                     continue
 
             canonical_name = self.get_skill_id(tool.name)
-            # Guard: Sanitize tool name and description for Gemini compatibility
-            # Gemini requires alphanumeric (a-z, A-Z, 0-9) or underscores (_) in tool names
-            safe_name = canonical_name if canonical_name and isinstance(canonical_name, str) else "unknown_tool"
-            # Replace dots with underscores to ensure alphanumeric compliance
-            safe_name = safe_name.replace(".", "_").replace("-", "_")
-            if not safe_name or not safe_name.replace("_", "").isalnum():
-                safe_name = f"tool_{len(definitions)}"
-            
-            safe_description = tool.description if tool.description and isinstance(tool.description, str) else "No description available"
+            if not canonical_name or not isinstance(canonical_name, str):
+                canonical_name = "unknown_tool"
 
-            if canonical_name != safe_name:
-                logger.warning(f"[D21-TOOL-DEF-GUARD] Tool name '{canonical_name}' sanitized to '{safe_name}' for Gemini compatibility")
+            safe_description = (
+                tool.description if tool.description and isinstance(tool.description, str) else "No description available"
+            )
 
             definitions.append({
                 "type": "function",
                 "function": {
-                    "name": safe_name,
+                    "name": canonical_name,
                     "description": safe_description,
                     "parameters": tool.llm_definition["parameters"],
                 },

@@ -1,0 +1,88 @@
+{
+  "backend": "cursor",
+  "lane_id": "execution_patch_candidate",
+  "workflow_id": "WF-M6.2-EXECUTION-GATE-2026-07-11-001",
+  "selected_model": "composer-2.5",
+  "session_id": null,
+  "validation_result": "BLOCKED",
+  "selected_path": "cursor_worker_blocked",
+  "final_outcome": "CURSOR_WORKER_INPUT_BLOCKED",
+  "package_validation": {
+    "validation_result": "FAIL",
+    "contract_status": "TASK_PACKAGE_INVALID",
+    "issues": [
+      "missing worker_profile",
+      "allowed_edit_paths must contain at least one path",
+      "checks must be a list",
+      "forbidden_actions missing required boundaries: architecture, auth, commit, dependency, merge, migration, privacy, publish, push, release, secret, security, tag",
+      "task_prompt or task_prompt_path is required"
+    ],
+    "task_label": "Introduce the bounded M6.2 ToolCallAdapter",
+    "worker_profile": "N_A",
+    "allowed_edit_paths": [],
+    "required_result_artifacts": [
+      "RESULT.json",
+      "RESULT.md",
+      "DIFF.patch",
+      "FILES_CHANGED.txt",
+      "CHECKS.log",
+      "COST.json"
+    ]
+  },
+  "allowlist_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "allowlist": [
+      "backend/llm_providers/shared/tool_call_adapter.py",
+      "backend/services/tool_manager.py",
+      "backend/llm_providers/openai/service.py",
+      "backend/llm_providers/gemini/service.py",
+      "backend/llm_providers/shared/utils.py",
+      "backend/tests/test_tool_call_adapter.py",
+      "backend/tests/test_tool_name_aliasing.py",
+      "backend/tests/test_backlog_007_tool_routing_performance.py",
+      "backend/tests/llm_providers/test_openai_service.py",
+      "backend/tests/llm_providers/test_gemini_service.py"
+    ]
+  },
+  "allowlist_consistency_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "package_allowed_edit_paths": [],
+    "allowlist": [
+      "backend/llm_providers/shared/tool_call_adapter.py",
+      "backend/services/tool_manager.py",
+      "backend/llm_providers/openai/service.py",
+      "backend/llm_providers/gemini/service.py",
+      "backend/llm_providers/shared/utils.py",
+      "backend/tests/test_tool_call_adapter.py",
+      "backend/tests/test_tool_name_aliasing.py",
+      "backend/tests/test_backlog_007_tool_routing_performance.py",
+      "backend/tests/llm_providers/test_openai_service.py",
+      "backend/tests/llm_providers/test_gemini_service.py"
+    ],
+    "declared_allowlist_file": "C:\\KI\\Janus-M6-Transport-Prep\\development\\openrouter-skill-tests\\janus-executioner\\m6_2_tool_call_adapter_2026-07-11\\allowlist.txt"
+  },
+  "codex_review_required": true,
+  "operator_message": "Cursor worker input was blocked before invocation.",
+  "accepted_source_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "accepted_source_run_dir": null,
+    "recognized_artifacts": []
+  },
+  "planned_command": [
+    "C:\\Users\\pruve\\AppData\\Local\\cursor-agent\\agent.CMD",
+    "-p",
+    "--workspace",
+    "C:\\KI\\Janus-M6-Transport-Prep",
+    "--model",
+    "composer-2.5",
+    "--output-format",
+    "json",
+    "--force",
+    "--trust",
+    "--approve-mcps",
+    "Implement TASK-M6.2 only. Add the shared ToolCallAdapter and move existing OpenAI and Gemini tool-name adaptation plus adapter-bound schema conversion to that boundary. ToolManager must emit canonical dotted skill IDs. Preserve OpenAI forced-tool behavior, Gemini function-call history and inbound canonical restoration, existing shared prevalidation behavior, and executor alias fallback. Do not add a ToolLoopRunner, transport classes, runtime resolver, streaming, OAuth, OpenRouter product work, feature flags, provider policy, commits, or broader architecture changes. Return concise JSON-compatible output with status, changed_files, command_results, summary, and blockers.\n\nTask label: Introduce the bounded M6.2 ToolCallAdapter\n\nInspect and edit only allowlisted files. Implement the one bounded ToolCallAdapter slice, run only the listed checks, do not commit, and return concise JSON-compatible output.\n\nAcceptance criteria:\n- Only allowlisted files may change.\n- Canonical dotted skill IDs remain internal.\n- OpenAI and Gemini provider names normalize at the adapter boundary.\n- OpenAI forced tools, Gemini history, and executor alias fallback remain compatible.\n- Do not add loop extraction, transport classes, streaming, OAuth, OpenRouter product work, provider policy, or Git actions.\n\nAllowed edit paths:\n- backend/llm_providers/shared/tool_call_adapter.py\n- backend/services/tool_manager.py\n- backend/llm_providers/openai/service.py\n- backend/llm_providers/gemini/service.py\n- backend/llm_providers/shared/utils.py\n- backend/tests/test_tool_call_adapter.py\n- backend/tests/test_tool_name_aliasing.py\n- backend/tests/test_backlog_007_tool_routing_performance.py\n- backend/tests/llm_providers/test_openai_service.py\n- backend/tests/llm_providers/test_gemini_service.py\n\nReturn status, changed_files, command_results, summary, and blockers as concise JSON-compatible output."
+  ]
+}

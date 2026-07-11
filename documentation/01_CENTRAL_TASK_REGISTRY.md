@@ -4,6 +4,19 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-M6.2 - Introduce the transport-boundary ToolCallAdapter
+
+- **Status**: DONE WITH NON-BLOCKING FOLLOW-UP
+- **Final Audit**: `documentation/tasks/TASK-M6.2_final_audit.md` (PASS WITH FIXES)
+- **Spec**: `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md` (Section 2.4 / Phase-A T-A2 only; parent Spec remains in progress)
+- **Parent Task**: `documentation/tasks/TASK-M6_transport_phase_a.md`
+- **Task Breakdown**: `documentation/tasks/TASK-M6.2_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-M6.2_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-M6.2_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-M6.2_AUDIT_PACKAGE.md`
+- **Validation**: `ToolManager` now retains canonical dotted IDs and `ToolCallAdapter` centralizes provider naming/schema adaptation. Focused adapter (`12/12`), OpenAI (`2/2`), Gemini (`12/12`), syntax, scoped diff, and manual Gemini weather-tool evidence passed. Full collection remains independently blocked by the local ChromaDB SQLite panic before collection.
+- **Follow-up**: Cursor Composer proposal-first evidence reached a valid direct start but timed out without structured output; the shared delegate and outer-package wrapper seams also need a bounded Cursor-infrastructure debug slice. `T-A3` through `T-A5` remain open.
+
 ### TASK-M6.1 - Unify the model hierarchy as the single MoA source
 
 - **Status**: DONE WITH NON-BLOCKING FOLLOW-UP

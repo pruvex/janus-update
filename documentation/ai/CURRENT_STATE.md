@@ -1,6 +1,198 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-11 16:40 +02:00`, `TASK-M6.2` documentation is synchronized after its `PASS WITH FIXES` final audit. The canonical ToolCallAdapter product slice is closed with focused automated and manual Gemini evidence; Cursor Composer remains a separate non-blocking infrastructure follow-up and is not accepted as autonomous productive execution. The parent M6 transport Spec remains in progress because `T-A3` through `T-A5` are separate tasks.
+
+Current goal: preserve the documented M6.2 slice in one local checkpoint; explicit commit approval is granted, with no push requested.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- synchronized the M6.2 closeout into the parent task, provider transport Spec, central registry, and project state
+- recorded the canonical-boundary learning pattern and documentation-skill usage
+- prepared the single coherent M6.2 code, test, evidence, and closeout changeset for a local checkpoint
+- no push, release, or remote CURRENT_STATE sync is requested
+
+Changed files in this block:
+- `documentation/tasks/TASK-M6_transport_phase_a.md`
+- `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md`
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `WHAT_I_LEARNED.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- M6.2 final audit evidence retained: adapter `12/12`, OpenAI `2/2`, Gemini `12/12`, syntax, scoped diff, manual Gemini weather-tool PASS
+- documentation-marker validator: PASS
+- scoped whitespace check: PASS
+
+Open risks:
+- Cursor shared delegate/worker integration is not yet productive: unsupported cursor-pool argument, outer-package reference mismatch, and Composer timeout remain a separate P2 infrastructure follow-up
+- full pytest collection remains independently blocked by the local ChromaDB SQLite panic
+- M6.2 changes remain local until the approved checkpoint completes; remotes, including `origin/codex-sync`, do not contain this CURRENT_STATE
+
+Next recommended step for ChatGPT: do not mark the parent M6 Spec or Phase A complete; only `TASK-M6.2` is documented closed.
+
+Next recommended step for Codex: run `janus-git-governance` for a scoped checkpoint recommendation on `5.6 Terra`, `medium`; commit and remote CURRENT_STATE sync still require explicit user approval.
+
+Last updated: `2026-07-11 16:40 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-11 16:33 +02:00`, `TASK-M6.2` has passed final audit with a non-blocking Cursor-infrastructure follow-up. The ToolCallAdapter now owns canonical-to-provider adaptation, focused adapter/OpenAI/Gemini regressions pass, and the manual Gemini weather-tool validation passed. The parent M6 transport Spec remains in progress because `T-A3` through `T-A5` are separate tasks.
+
+Current goal: synchronize the audited M6.2 closeout, then create an intentional checkpoint when explicitly approved.
+
+Active phase: `janus-final-audit`, canonical state `HANDOFF`.
+
+Last Codex work:
+- recorded the manual Gemini weather-tool PASS in the M6.2 execution result
+- built the M6.2 audit package and reran the focused adapter, OpenAI, Gemini, syntax, and diff checks
+- recorded `TASK-M6.2_final_audit.md` as `PASS WITH FIXES`
+- made no staging, commit, push, release, or remote CURRENT_STATE sync
+
+Changed files in this block:
+- `documentation/tasks/TASK-M6.2_execution_result.md`
+- `documentation/tasks/TASK-M6.2_AUDIT_PACKAGE.md`
+- `documentation/tasks/TASK-M6.2_final_audit.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- adapter regression: PASS, `12/12`
+- OpenAI provider regression: PASS, `2/2`
+- Gemini provider regression: PASS, `12/12`
+- syntax and scoped whitespace checks: PASS
+- manual Gemini weather-tool validation: PASS
+- final-audit artifact validator: PASS
+- legacy alias/registry suites: N/A for this audit because the independent ChromaDB SQLite panic occurs before collection
+
+Open risks:
+- Cursor shared delegate/worker integration is not yet productive: unsupported cursor-pool argument, outer-package reference mismatch, and Composer timeout remain a separate P2 infrastructure follow-up
+- full pytest collection remains independently blocked by the local ChromaDB SQLite panic
+- the M6.2 worktree changes remain local and uncommitted; remotes, including `origin/codex-sync`, do not contain this CURRENT_STATE
+
+Next recommended step for ChatGPT: do not mark the parent M6 Spec or Phase A complete; only `TASK-M6.2` passed audit.
+
+Next recommended step for Codex: run `janus-documentation-update` for `TASK-M6.2` on `5.6 Terra`, `medium`, then request explicit commit approval through `janus-git-governance`.
+
+Last updated: `2026-07-11 16:33 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-11 16:08 +02:00`, `TASK-M6.2` implementation has passed focused automated verification and awaits one manual Gemini tool-call validation. Cursor Composer was used for the intended bounded proposal-first execution attempt; its valid worker run timed out after 180 seconds without structured output, so Codex reviewed the allowlisted candidate patch, completed two bounded compatibility corrections, and retained final acceptance ownership.
+
+Current goal: complete the manual Gemini weather-tool validation for `TASK-M6.2`, then run the bounded final audit.
+
+Active phase: `janus-executioner`, canonical state `NEEDS_INFO`.
+
+Last Codex work:
+- prepared and ran the bounded Cursor Composer package and allowlist for M6.2
+- recorded two worker-wrapper integration blockers and one real Composer timeout, with no out-of-allowlist changes
+- reviewed the Cursor candidate, completed the adapter's canonical-name fast paths, and validated the bound adapter and provider regressions
+- made no staging, commit, push, release, or remote CURRENT_STATE sync
+
+Changed files in this block:
+- `backend/llm_providers/shared/tool_call_adapter.py`
+- `backend/services/tool_manager.py`
+- `backend/llm_providers/openai/service.py`
+- `backend/llm_providers/gemini/service.py`
+- `backend/llm_providers/shared/utils.py`
+- `backend/tests/test_tool_call_adapter.py`
+- `backend/tests/llm_providers/test_gemini_service.py`
+- `backend/tests/test_backlog_007_tool_routing_performance.py`
+- `development/openrouter-skill-tests/janus-executioner/m6_2_tool_call_adapter_2026-07-11/`
+- `documentation/tasks/TASK-M6.2_cursor_execution_probe_2026-07-11.md`
+- `documentation/tasks/TASK-M6.2_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- adapter regression: PASS, `12/12`
+- OpenAI provider regression: PASS, `2/2`
+- Gemini provider regression: PASS, `12/12`
+- Python syntax compilation and scoped whitespace check: PASS
+- existing alias and ToolManager registry suites: BLOCKED before collection by the independent local ChromaDB SQLite panic
+- Cursor worker package and allowlist validation: PASS; live Composer result: `CURSOR_AGENT_TIMEOUT` after 180 seconds with no structured output
+
+Open risks:
+- manual Gemini weather-tool validation remains required before final audit
+- full pytest collection and two legacy alias/registry suites remain blocked by the independent local ChromaDB SQLite panic
+- Cursor shared delegate passes an unsupported argument and its outer-package path validates the wrong package; the direct valid worker starts but Composer times out, so Cursor remains proposal-only and not autonomous
+- the M6.2 worktree changes remain local and uncommitted; remotes, including `origin/codex-sync`, do not contain this CURRENT_STATE
+
+Next recommended step for ChatGPT: run `Wie ist das Wetter heute in Berlin?` in a Gemini chat and report whether it returns a normal weather answer without a tool/provider error.
+
+Next recommended step for Codex: after manual PASS, run `janus-final-audit` for `TASK-M6.2` on `5.6 Terra`, `high`; route a manual failure to `janus-debug`.
+
+Last updated: `2026-07-11 16:08 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-11 15:26 +02:00`, `TASK-M6.2` has passed preimplementation check. The adapter extraction is bound to canonical ToolManager output, OpenAI and Gemini provider-name adaptation, shared prevalidation, and focused compatibility regressions. OpenRouter review selection produced only a documented dry-run plan; Codex made the local PASS decision.
+
+Current goal: implement `TASK-M6.2` only in the clean M6 worktree, then collect focused adapter and provider-compatibility evidence.
+
+Active phase: `janus-preimplementation-check`, canonical state `HANDOFF`.
+
+Last Codex work:
+- confirmed target/spec/task identity and inspected the actual ToolManager, OpenAI, Gemini, prevalidation, and compatibility-test seams
+- recorded an exact PASS precheck with explicit scope exclusions, files, and evidence commands
+- made no product-code edit, test execution, staging, commit, push, or remote CURRENT_STATE sync
+
+Changed files in this block:
+- `documentation/tasks/TASK-M6.2_preimplementation_check.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `validate_precheck.py documentation/tasks/TASK-M6.2_preimplementation_check.md`: PASS
+- scoped `git diff --check`: PASS
+- bounded OpenRouter review selection: `OPENROUTER_WORKER_DRY_RUN_READY`, no delegated live review
+
+Open risks:
+- forced-tool and Gemini history/function-call compatibility must be preserved at the new adapter boundary
+- full pytest collection remains independently blocked by the local ChromaDB SQLite panic before collection
+- the M6.2 handoff remains local and uncommitted; remotes, including `origin/codex-sync`, do not contain this CURRENT_STATE
+
+Next recommended step for ChatGPT: present only `TASK-M6.2` as precheck-PASS and keep `T-A3` through `T-A5` out of scope.
+
+Next recommended step for Codex: execute `TASK-M6.2` through `janus-executioner` on `5.6 Terra`, `medium`.
+
+Last updated: `2026-07-11 15:26 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-11 15:26 +02:00`, `TASK-M6.2` is released for one preimplementation check. The task breakdown binds the ToolCallAdapter to canonical ToolManager output, OpenAI and Gemini name adaptation, shared prevalidation, and focused compatibility regressions. No implementation or test execution was performed in this task-breakdown block.
+
+Current goal: run `janus-preimplementation-check` for `TASK-M6.2` only.
+
+Active phase: `janus-task-breakdown`, canonical state `HANDOFF`.
+
+Last Codex work:
+- selected local Codex through the bounded task-breakdown delegation gate
+- inspected the current global Gemini-safe ToolManager conversion, OpenAI conversion, Gemini name restoration, and executor alias regression surface
+- created and validated the single-target M6.2 task breakdown
+- made no product-code edit, implementation test run, staging, commit, push, or remote CURRENT_STATE sync
+
+Changed files in this block:
+- `documentation/tasks/TASK-M6.2_task_breakdown.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `validate_task_handoff.py --task documentation/tasks/TASK-M6.2_task_breakdown.md --target TASK-M6.2`: PASS
+- scoped `git diff --check`: PASS
+
+Open risks:
+- provider name and schema conversion are compatibility-sensitive for OpenAI forced tools and Gemini history/function calls
+- full pytest collection remains independently blocked by the local ChromaDB SQLite panic before collection
+- the M6.2 handoff remains local and uncommitted; remotes, including `origin/codex-sync`, do not contain this CURRENT_STATE
+
+Next recommended step for ChatGPT: keep M6.2 limited to the adapter boundary; do not combine it with `ToolLoopRunner` or transport-class work.
+
+Next recommended step for Codex: run `janus-preimplementation-check` for `TASK-M6.2` on `5.6 Terra`, `medium`.
+
+Last updated: `2026-07-11 15:26 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-11 15:26 +02:00`, the non-blocking M6.1 audit follow-up is complete: the `moa.py` module documentation and mapping comment now correctly describe the approved Ollama tier hierarchy. No model mapping, resolver behavior, provider policy, or runtime route changed.
 
 Current goal: prepare `TASK-M6.2` for its own preimplementation check after the M6.1 comment-correction checkpoint.

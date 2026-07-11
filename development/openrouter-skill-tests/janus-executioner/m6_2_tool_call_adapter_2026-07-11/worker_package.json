@@ -1,0 +1,59 @@
+{
+  "task_label": "Introduce the bounded M6.2 ToolCallAdapter",
+  "worker_profile": "cursor-agent",
+  "allowed_edit_paths": [
+    "backend/llm_providers/shared/tool_call_adapter.py",
+    "backend/services/tool_manager.py",
+    "backend/llm_providers/openai/service.py",
+    "backend/llm_providers/gemini/service.py",
+    "backend/llm_providers/shared/utils.py",
+    "backend/tests/test_tool_call_adapter.py",
+    "backend/tests/test_tool_name_aliasing.py",
+    "backend/tests/test_backlog_007_tool_routing_performance.py",
+    "backend/tests/llm_providers/test_openai_service.py",
+    "backend/tests/llm_providers/test_gemini_service.py"
+  ],
+  "acceptance_criteria": [
+    "ToolManager emits canonical dotted skill IDs without global provider-specific rewriting.",
+    "ToolCallAdapter owns provider-safe outbound naming and inbound canonical restoration for OpenAI and Gemini.",
+    "OpenAI forced-tool naming and Gemini function-call history remain compatible.",
+    "Executor alias fallback remains unchanged.",
+    "Only allowlisted paths are modified."
+  ],
+  "checks": [
+    {
+      "label": "adapter_tests",
+      "command": ["python", "-m", "pytest", "--noconftest", "backend/tests/test_tool_call_adapter.py", "-q"]
+    },
+    {
+      "label": "name_aliasing_tests",
+      "command": ["python", "-m", "pytest", "--noconftest", "backend/tests/test_tool_name_aliasing.py", "-q"]
+    },
+    {
+      "label": "py_compile",
+      "command": ["python", "-m", "py_compile", "backend/llm_providers/shared/tool_call_adapter.py", "backend/services/tool_manager.py", "backend/llm_providers/openai/service.py", "backend/llm_providers/gemini/service.py", "backend/llm_providers/shared/utils.py"]
+    }
+  ],
+  "forbidden_actions": [
+    "commit",
+    "push",
+    "tag",
+    "merge",
+    "release",
+    "publish",
+    "dependency",
+    "secret",
+    "auth",
+    "architecture",
+    "security",
+    "privacy",
+    "migration",
+    "ui",
+    "oauth",
+    "openrouter_product",
+    "streaming",
+    "tool_loop_runner"
+  ],
+  "requested_actions": ["edit", "run_checks"],
+  "task_prompt": "Implement TASK-M6.2 only. Add the shared ToolCallAdapter and move existing OpenAI and Gemini tool-name adaptation plus adapter-bound schema conversion to that boundary. ToolManager must emit canonical dotted skill IDs. Preserve OpenAI forced-tool behavior, Gemini function-call history and inbound canonical restoration, existing shared prevalidation behavior, and executor alias fallback. Do not add a ToolLoopRunner, transport classes, runtime resolver, streaming, OAuth, OpenRouter product work, feature flags, provider policy, commits, or broader architecture changes. Return concise JSON-compatible output with status, changed_files, command_results, summary, and blockers."
+}

@@ -267,3 +267,15 @@
 - **Epic:** EPIC-ARCH-TRANSPORT-001
 - **Confidence:** High
 - **Tags:** provider-routing,moa,drift,architecture
+
+
+## [PATTERN] #ProviderToolNamesNeedCanonicalBoundary "Provider tool names need a canonical boundary"
+- **Kontext:** TASK-M6.2 provider transport Phase-A ToolCallAdapter consolidation, 2026-07-11. (2026-07-11).
+- **Problem:** ToolManager globally rewrote tool names for Gemini while OpenAI and Gemini each maintained their own name and schema conversions, allowing provider-specific naming drift across internal paths.
+- **Loesung:** Keep dotted skill IDs canonical inside Janus and centralize outbound names, inbound restoration, history conversion, and provider-specific schema adaptation in ToolCallAdapter at the transport boundary.
+- **Haertung:** Cover canonical ToolManager output plus OpenAI and Gemini name/schema/history conversion in focused adapter and provider regressions; retain manual provider tool-call evidence before audit closure.
+- **Tripwire:** If ToolManager begins provider sanitization again, or a provider service adds direct dot/underscore replacement or ad-hoc schema cleanup outside ToolCallAdapter, stop and route through precheck/spec review.
+- **Location:** backend/llm_providers/shared/tool_call_adapter.py, backend/services/tool_manager.py, backend/llm_providers/openai/service.py, backend/llm_providers/gemini/service.py, backend/tests/test_tool_call_adapter.py
+- **Epic:** EPIC-ARCH-TRANSPORT-001
+- **Confidence:** High
+- **Tags:** provider-routing,tool-adapter,gemini,openai,canonical-boundary

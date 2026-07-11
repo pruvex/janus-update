@@ -63,6 +63,13 @@ TASK-M6
 - Model: 5.6 Terra
 - Reason:
   - This is the explicit next Phase-A seam after hierarchy consolidation and stays transport-boundary only.
+- Closeout:
+  - Final Audit: `PASS WITH FIXES` in `documentation/tasks/TASK-M6.2_final_audit.md`.
+  - `ToolManager` now emits canonical dotted skill IDs; `ToolCallAdapter` owns OpenAI/Gemini outbound naming, inbound canonical restoration, and provider-specific schema adaptation.
+  - Focused adapter (`12/12`), OpenAI (`2/2`), and Gemini (`12/12`) regressions, syntax, scoped diff, and manual Gemini Berlin-weather evidence passed.
+  - Non-blocking follow-up: Cursor Composer proposal-first execution is not autonomous/productive yet because the shared delegate has wrapper-contract defects and the valid direct run timed out without structured output. Track it as a separate Cursor-infrastructure debug slice.
+  - `T-A3` through `T-A5` remain open and are not covered by this task closeout.
+  - Changelog skipped: internal provider-routing consolidation with no new user-facing feature or release.
 
 ### TASK-M6.3 Extract the OpenAI ToolLoopRunner behind a default-off flag
 - Ziel:

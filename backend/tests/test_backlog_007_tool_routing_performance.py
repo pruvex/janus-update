@@ -61,8 +61,8 @@ def test_tool_manager_definition_cache_canonicalizes_aliases():
     alias_names = _function_names(alias_defs)
     canonical_names = _function_names(canonical_defs)
 
-    assert alias_names == ["filesystem_list_directory"]
-    assert canonical_names == ["filesystem_list_directory"]
+    assert alias_names == ["filesystem.list_directory"]
+    assert canonical_names == ["filesystem.list_directory"]
     assert len(alias_names) == len(set(alias_names))
 
 

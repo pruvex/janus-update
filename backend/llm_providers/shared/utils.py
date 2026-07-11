@@ -410,15 +410,12 @@ def _repair_hallucinated_name(requested_name: str) -> Optional[str]:
 
 
 def _normalize_requested_tool_name(requested_name: str) -> str:
+    from backend.llm_providers.shared.tool_call_adapter import get_tool_call_adapter
+
     normalized = str(requested_name or "").strip()
     if not normalized or "." in normalized or "_" not in normalized:
         return normalized
-
-    for skill_id in tool_manager.get_skill_mapping().values():
-        sid = str(skill_id or "").strip()
-        if sid and sid.replace(".", "_") == normalized:
-            return sid
-    return normalized
+    return get_tool_call_adapter("openai").inbound_name(normalized)
 
 
 def _build_skill_error_response(
