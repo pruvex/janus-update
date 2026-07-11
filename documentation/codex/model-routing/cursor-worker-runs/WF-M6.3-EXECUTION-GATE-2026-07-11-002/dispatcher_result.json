@@ -1,0 +1,86 @@
+{
+  "backend": "cursor",
+  "lane_id": "execution_patch_candidate",
+  "workflow_id": "WF-M6.3-EXECUTION-GATE-2026-07-11-002",
+  "selected_model": "composer-2.5",
+  "session_id": null,
+  "validation_result": "BLOCKED",
+  "selected_path": "cursor_worker_blocked",
+  "final_outcome": "CURSOR_AGENT_TIMEOUT",
+  "package_validation": {
+    "validation_result": "PASS",
+    "contract_status": "TASK_PACKAGE_VALID",
+    "issues": [],
+    "task_label": "Extract the bounded M6.3 OpenAI ToolLoopRunner behind a default-off flag",
+    "worker_profile": "cursor-agent",
+    "allowed_edit_paths": [
+      "backend/llm_providers/shared/tool_loop_runner.py",
+      "backend/llm_providers/openai/gateway.py",
+      "backend/tests/test_openai_tool_loop_runner.py",
+      "backend/tests/test_backlog_007_tool_routing_performance.py"
+    ],
+    "required_result_artifacts": [
+      "RESULT.json",
+      "RESULT.md",
+      "DIFF.patch",
+      "FILES_CHANGED.txt",
+      "CHECKS.log",
+      "COST.json"
+    ]
+  },
+  "allowlist_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "allowlist": [
+      "backend/llm_providers/shared/tool_loop_runner.py",
+      "backend/llm_providers/openai/gateway.py",
+      "backend/tests/test_openai_tool_loop_runner.py",
+      "backend/tests/test_backlog_007_tool_routing_performance.py"
+    ]
+  },
+  "allowlist_consistency_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "package_allowed_edit_paths": [
+      "backend/llm_providers/shared/tool_loop_runner.py",
+      "backend/llm_providers/openai/gateway.py",
+      "backend/tests/test_openai_tool_loop_runner.py",
+      "backend/tests/test_backlog_007_tool_routing_performance.py"
+    ],
+    "allowlist": [
+      "backend/llm_providers/shared/tool_loop_runner.py",
+      "backend/llm_providers/openai/gateway.py",
+      "backend/tests/test_openai_tool_loop_runner.py",
+      "backend/tests/test_backlog_007_tool_routing_performance.py"
+    ],
+    "declared_allowlist_file": null
+  },
+  "codex_review_required": true,
+  "operator_message": "Cursor agent exceeded the bounded live timeout (180s) before producing a final result.",
+  "accepted_source_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "accepted_source_run_dir": null,
+    "recognized_artifacts": []
+  },
+  "planned_command": [
+    "C:\\Users\\pruve\\AppData\\Local\\cursor-agent\\agent.CMD",
+    "-p",
+    "--workspace",
+    "C:\\KI\\Janus-M6-Transport-Prep",
+    "--model",
+    "composer-2.5",
+    "--output-format",
+    "json",
+    "--force",
+    "--trust",
+    "--approve-mcps",
+    "Implement TASK-M6.3 only. Extract the provider-neutral OpenAI tool-loop responsibilities into ToolLoopRunner behind TRANSPORT_TOOL_LOOP_RUNNER_ENABLED=false by default. Preserve the disabled path exactly. When enabled, the runner may resolve the MoA model, prepare tools, prevalidate calls, run bounded tool rounds, execute calls, and prepare second-call history. Keep forced-tool fallback construction, synthesis, routing guards, link repair, cost accumulation/persistence, and final response shaping in OpenAIGateway. Do not change Gemini, streaming, transport classes, runtime resolver, OAuth, OpenRouter product behavior, ToolCallAdapter, provider policy, MoA hierarchy, commits, or Git state. Return concise JSON-compatible output with status, changed_files, command_results, summary, and blockers.\n\nTask label: Extract the bounded M6.3 OpenAI ToolLoopRunner behind a default-off flag\n\nAcceptance criteria:\n- TRANSPORT_TOOL_LOOP_RUNNER_ENABLED defaults to false and preserves the existing OpenAI loop path.\n- When enabled, ToolLoopRunner owns only model resolution, tool preparation, prevalidation, bounded rounds, tool execution, history preparation, and max-round handling.\n- Forced-tool fallback construction, synthesis, routing guards, link repair, response shaping, and cost persistence remain in OpenAIGateway.\n- Flag-off and flag-on deterministic OpenAI tool-loop regressions pass.\n- ToolLoopRunner has no Gemini-specific imports or behavior.\n- Only allowlisted paths are modified.\n\nAllowed edit paths:\n- backend/llm_providers/shared/tool_loop_runner.py\n- backend/llm_providers/openai/gateway.py\n- backend/tests/test_openai_tool_loop_runner.py\n- backend/tests/test_backlog_007_tool_routing_performance.py\n\nReturn status, changed_files, command_results, summary, and blockers as concise JSON-compatible output."
+  ],
+  "live_execution_allowed": true,
+  "mode": "proposal_first",
+  "workspace_root": "C:\\KI\\Janus-M6-Transport-Prep",
+  "timeout_seconds": 180,
+  "changed_files": [],
+  "changed_outside_allowlist": []
+}

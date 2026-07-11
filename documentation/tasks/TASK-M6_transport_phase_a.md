@@ -94,6 +94,13 @@ TASK-M6
 - Model: 5.6 Terra
 - Reason:
   - The Spec explicitly stages OpenAI extraction before Gemini migration to keep behavior risk bounded.
+- Closeout:
+  - Final Audit: `PASS WITH FIXES` in `documentation/tasks/TASK-M6.3_final_audit.md`.
+  - `ToolLoopRunner` now owns the declared provider-neutral OpenAI loop responsibilities behind `TRANSPORT_TOOL_LOOP_RUNNER_ENABLED=false`; the legacy OpenAI loop remains the default path.
+  - Focused runner (`4/4`), syntax, scoped diff, execution-result, and final-audit validation passed.
+  - Non-blocking follow-up: the broad OpenAI regression remains blocked by the independent local ChromaDB SQLite panic; Cursor Composer proposal-first evidence also timed out without structured output and needs a separate Cursor-infrastructure debug slice.
+  - `T-A4` and `T-A5` remain open and are not covered by this task closeout.
+  - Changelog skipped: internal default-off provider-routing consolidation with no new user-facing feature or release.
 
 ### TASK-M6.4 Migrate the Gemini gateway to the shared ToolLoopRunner
 - Ziel:

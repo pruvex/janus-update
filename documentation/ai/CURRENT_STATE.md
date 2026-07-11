@@ -1,6 +1,191 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-11 17:45 +02:00`, `TASK-M6.3` documentation is synchronized after its `PASS WITH FIXES` final audit. The default-off OpenAI ToolLoopRunner slice is recorded closed with focused automated evidence; Chroma and Cursor remain separate non-blocking infrastructure follow-ups. The parent M6 transport Spec remains in progress because `T-A4` and `T-A5` are separate tasks.
+
+Current goal: preserve the documented M6.3 slice in one local checkpoint; explicit commit approval is granted, with no push requested.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- synchronized the M6.3 closeout into the parent task, provider transport Spec, central registry, and project state
+- recorded the default-off extraction learning pattern and documentation-skill usage
+- prepared the single coherent M6.3 code, test, evidence, and closeout changeset for a local checkpoint
+- no push, release, or remote CURRENT_STATE sync is requested
+
+Changed files in this block:
+- `documentation/tasks/TASK-M6_transport_phase_a.md`
+- `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md`
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `WHAT_I_LEARNED.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- M6.3 final-audit evidence retained: runner `4/4`, syntax, execution-result, final-audit, and scoped diff PASS
+- documentation-marker validator: PASS
+- scoped whitespace check: PASS
+
+Open risks:
+- Cursor shared delegate/worker integration is not yet productive: unsupported cursor-pool argument and Composer timeout remain a separate P2 infrastructure follow-up
+- full pytest collection and the broad OpenAI tool-loop regression remain independently blocked by the local ChromaDB SQLite panic
+- M6.3 changes remain local until the approved checkpoint completes; remotes, including `origin/codex-sync`, do not contain this CURRENT_STATE
+
+Next recommended step for ChatGPT: do not mark the parent M6 Spec or Phase A complete; only `TASK-M6.3` is documented closed.
+
+Next recommended step for Codex: run `janus-git-governance` for a scoped checkpoint recommendation on `5.6 Terra`, `medium`; commit and remote CURRENT_STATE sync still require explicit user approval.
+
+Last updated: `2026-07-11 17:45 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-11 17:35 +02:00`, `TASK-M6.3` passed final audit with two non-blocking infrastructure follow-ups. The default-off OpenAI ToolLoopRunner extraction is covered by focused runner, syntax, execution-result, and scope evidence. The parent M6 transport Spec remains in progress because `T-A4` and `T-A5` are separate tasks.
+
+Current goal: synchronize the audited M6.3 closeout, then create an intentional checkpoint when explicitly approved.
+
+Active phase: `janus-final-audit`, canonical state `HANDOFF`.
+
+Last Codex work:
+- built the compact M6.3 audit package and reran focused runner, syntax, execution-result, and scope checks
+- recorded `TASK-M6.3_final_audit.md` as `PASS WITH FIXES`
+- made no staging, commit, push, release, or remote CURRENT_STATE sync
+
+Changed files in this block:
+- `documentation/tasks/TASK-M6.3_AUDIT_PACKAGE.md`
+- `documentation/tasks/TASK-M6.3_final_audit.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- focused runner regression: PASS, `4/4`
+- Python syntax and scoped whitespace checks: PASS
+- execution-result validator: PASS
+- final-audit artifact validator: PASS
+- broad existing OpenAI tool-loop regression: N/A WITH REASON - independent ChromaDB SQLite panic before collection
+
+Open risks:
+- Cursor is not yet an autonomous productive worker: shared delegate argument mismatch and Composer timeout remain a separate P2 infrastructure follow-up
+- full pytest collection and the broad existing OpenAI tool-loop regression remain independently blocked by the local ChromaDB SQLite panic
+- the M6.3 worktree changes remain local and uncommitted; remotes, including `origin/codex-sync`, do not contain this CURRENT_STATE
+
+Next recommended step for ChatGPT: do not mark the parent M6 Spec or Phase A complete; only `TASK-M6.3` passed audit.
+
+Next recommended step for Codex: run `janus-documentation-update` for `TASK-M6.3` on `5.6 Terra`, `medium`, then request explicit commit approval through `janus-git-governance`.
+
+Last updated: `2026-07-11 17:35 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-11 17:25 +02:00`, `TASK-M6.3` implementation has focused PASS evidence and is ready for final audit. Cursor Composer was selected and started through the valid direct worker package, but it timed out after 180 seconds without structured output; Codex reviewed its allowlisted candidate, made bounded testability corrections, and retained final acceptance ownership. The parent M6 Spec remains in progress because `T-A4` and `T-A5` are separate tasks.
+
+Current goal: run the bounded final audit for `TASK-M6.3` without marking the parent M6 Spec complete.
+
+Active phase: `janus-executioner`, canonical state `HANDOFF`.
+
+Last Codex work:
+- created the default-off ToolLoopRunner and routed only the OpenAI flag-on path through it
+- preserved the legacy default path and kept gateway-only fallback, synthesis, and persistence responsibilities outside the runner
+- captured the live Cursor Composer timeout, reviewed its allowlisted candidate, and ran focused validation
+- made no staging, commit, push, release, or remote CURRENT_STATE sync
+
+Changed files in this block:
+- `backend/llm_providers/shared/tool_loop_runner.py`
+- `backend/llm_providers/openai/gateway.py`
+- `backend/tests/test_openai_tool_loop_runner.py`
+- `development/openrouter-skill-tests/janus-executioner/m6_3_tool_loop_runner_2026-07-11/`
+- `documentation/codex/model-routing/cursor-worker-runs/WF-M6.3-EXECUTION-GATE-2026-07-11-002/`
+- `documentation/codex/model-routing/cursor_delegation_log.jsonl`
+- `documentation/tasks/TASK-M6.3_cursor_execution_probe_2026-07-11.md`
+- `documentation/tasks/TASK-M6.3_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- focused runner regression: PASS, `4/4`
+- Python syntax and scoped whitespace checks: PASS
+- existing broad OpenAI tool-loop regression: BLOCKED before collection by the independent local ChromaDB SQLite panic
+- Cursor worker package and allowlist validation: PASS; live Composer result: `CURSOR_AGENT_TIMEOUT` after 180 seconds with no structured output
+
+Open risks:
+- full pytest collection and the broad existing OpenAI tool-loop regression remain independently blocked by the local ChromaDB SQLite panic
+- Cursor shared delegate/worker integration is not yet productive: unsupported cursor-pool argument and Composer timeout remain a separate P2 infrastructure follow-up
+- M6.3 changes remain local and uncommitted; remotes, including `origin/codex-sync`, do not contain this CURRENT_STATE
+
+Next recommended step for ChatGPT: do not mark the parent M6 Spec or Phase A complete; only the M6.3 execution handoff is ready for audit.
+
+Next recommended step for Codex: run `janus-final-audit` for `TASK-M6.3` on `5.6 Terra`, `high`.
+
+Last updated: `2026-07-11 17:25 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-11 17:05 +02:00`, `TASK-M6.3` passed preimplementation check for the OpenAI-only, default-off ToolLoopRunner extraction. The responsibility matrix keeps forced-tool fallback, synthesis, routing guards, link repair, and cost persistence out of the shared runner. OpenRouter review selection produced only a documented dry-run; Codex made the local PASS decision.
+
+Current goal: execute `TASK-M6.3` only in the clean M6 worktree, then collect focused flag-off/flag-on OpenAI tool-loop evidence.
+
+Active phase: `janus-preimplementation-check`, canonical state `HANDOFF`.
+
+Last Codex work:
+- confirmed target/spec/task identity and inspected the actual OpenAI full-loop, existing deterministic regression, flag patterns, and reusable learning matches
+- recorded the exact PASS precheck with a runner/gateway responsibility matrix, scope exclusions, and evidence commands
+- made no product-code edit, test execution, staging, commit, push, release, or remote CURRENT_STATE sync
+
+Changed files in this block:
+- `documentation/tasks/TASK-M6.3_preimplementation_check.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `search_what_i_learned.py` scoped search: PASS
+- task/spec/source identity and scope inspection: PASS
+- OpenRouter precheck-review selection: `OPENROUTER_WORKER_DRY_RUN_READY`, no delegated live review
+- precheck validator: PASS
+- scoped whitespace check: PASS
+
+Open risks:
+- forced-tool fallback, MoA synthesis, cost persistence, and second-call history must remain behaviorally stable when the loop seam is extracted
+- full pytest collection remains independently blocked by the local ChromaDB SQLite panic
+- the M6.3 handoff remains local and uncommitted; remotes, including `origin/codex-sync`, do not contain this CURRENT_STATE
+
+Next recommended step for ChatGPT: keep M6.3 limited to the OpenAI path and default-off flag; do not combine Gemini or streaming migration.
+
+Next recommended step for Codex: execute `TASK-M6.3` through `janus-executioner` on `5.6 Terra`, `medium`.
+
+Last updated: `2026-07-11 17:05 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-11 16:55 +02:00`, `TASK-M6.3` has a single-target task breakdown for the default-off OpenAI ToolLoopRunner extraction. The bounded Cursor API selection was recorded as `CURSOR_WORKER_DRY_RUN_READY`; it did not execute a live review, so Codex retained task-refinement authority. M6.3 is ready only for preimplementation check; no product code or test execution occurred.
+
+Current goal: run one strict preimplementation check for `TASK-M6.3` before changing the OpenAI gateway or adding a shared runner.
+
+Active phase: `janus-task-breakdown`, canonical state `HANDOFF`.
+
+Last Codex work:
+- inspected the existing OpenAI `_run_full_tool_loop` and its deterministic tool-routing regression seam
+- recorded the Cursor API dry-run outcome and released the bounded M6.3 task handoff
+- made no product-code edit, test execution, staging, commit, push, release, or remote CURRENT_STATE sync
+
+Changed files in this block:
+- `documentation/tasks/TASK-M6.3_task_breakdown.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- source and bound-task scope inspection: PASS
+- Cursor API delegation gate: `CURSOR_WORKER_DRY_RUN_READY`, no live worker execution
+- task-handoff validator: PASS
+- scoped whitespace check: PASS
+
+Open risks:
+- forced-tool fallback, MoA synthesis, cost persistence, and second-call history must remain behaviorally stable when the loop seam is extracted
+- full pytest collection remains independently blocked by the local ChromaDB SQLite panic
+- M6.3 handoff is local and uncommitted; remotes, including `origin/codex-sync`, do not contain this CURRENT_STATE
+
+Next recommended step for ChatGPT: keep M6.3 limited to the OpenAI path and default-off flag; do not combine Gemini or streaming migration.
+
+Next recommended step for Codex: run `janus-preimplementation-check` for `TASK-M6.3` on `5.6 Terra`, `medium`.
+
+Last updated: `2026-07-11 16:55 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-11 16:40 +02:00`, `TASK-M6.2` documentation is synchronized after its `PASS WITH FIXES` final audit. The canonical ToolCallAdapter product slice is closed with focused automated and manual Gemini evidence; Cursor Composer remains a separate non-blocking infrastructure follow-up and is not accepted as autonomous productive execution. The parent M6 transport Spec remains in progress because `T-A3` through `T-A5` are separate tasks.
 
 Current goal: preserve the documented M6.2 slice in one local checkpoint; explicit commit approval is granted, with no push requested.

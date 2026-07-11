@@ -291,6 +291,14 @@ class ToolLoopRunner:
 - Prompt-Compiler (bleibt Transport/Domain-Hook)
 - Provider-spezifische Synthesis (Post-Processor, siehe §3.5)
 
+### 3.3.1 T-A3 implementation status
+
+- `TASK-M6.3` final audit: `PASS WITH FIXES` (`documentation/tasks/TASK-M6.3_final_audit.md`).
+- Completed scope: the OpenAI path has a default-off `ToolLoopRunner` extraction for the declared provider-neutral responsibilities. The legacy path remains the default; forced-tool fallback, synthesis, routing guards, link repair, response shaping, and cost persistence remain in the OpenAI gateway.
+- Focused runner (`4/4`), syntax, execution-result, and final-audit evidence passed. The broader OpenAI regression remains independently blocked before collection by the local ChromaDB SQLite panic.
+- Non-blocking follow-up: Cursor Composer started through the valid direct worker package but timed out without structured output; the shared delegate/worker contract requires a separate infrastructure debug slice before Cursor can be treated as autonomous/productive.
+- Spec status remains in progress: `T-A4` and `T-A5` remain separate, open Phase-A tasks.
+
 ### 3.4 Eine `MODEL_HIERARCHY`
 
 **Entscheidung:** `MOA_MODEL_HIERARCHY` in `shared/moa.py` wird **einzige Quelle**.

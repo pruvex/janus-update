@@ -4,6 +4,19 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-M6.3 - Extract the OpenAI ToolLoopRunner behind a default-off flag
+
+- **Status**: DONE WITH NON-BLOCKING FOLLOW-UP
+- **Final Audit**: `documentation/tasks/TASK-M6.3_final_audit.md` (PASS WITH FIXES)
+- **Spec**: `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md` (Section 3.3 / Phase-A T-A3 only; parent Spec remains in progress)
+- **Parent Task**: `documentation/tasks/TASK-M6_transport_phase_a.md`
+- **Task Breakdown**: `documentation/tasks/TASK-M6.3_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-M6.3_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-M6.3_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-M6.3_AUDIT_PACKAGE.md`
+- **Validation**: The default-off OpenAI runner extraction passed focused runner (`4/4`), syntax, scoped diff, execution-result, and final-audit validation. The legacy path remains default and the runner keeps gateway-only fallback, synthesis, guards, link repair, response shaping, and persistence out of the shared loop.
+- **Follow-up**: The broad OpenAI regression is independently blocked by the local ChromaDB SQLite panic. Cursor Composer timed out after a valid direct worker start and the shared delegate has an argument-contract defect; both are separate infrastructure work. `T-A4` and `T-A5` remain open.
+
 ### TASK-M6.2 - Introduce the transport-boundary ToolCallAdapter
 
 - **Status**: DONE WITH NON-BLOCKING FOLLOW-UP

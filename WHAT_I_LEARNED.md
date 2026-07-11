@@ -279,3 +279,15 @@
 - **Epic:** EPIC-ARCH-TRANSPORT-001
 - **Confidence:** High
 - **Tags:** provider-routing,tool-adapter,gemini,openai,canonical-boundary
+
+
+## [PATTERN] #DefaultOffTransportExtractionNeedsDualPathProof "Default-off transport extraction needs dual-path proof"
+- **Kontext:** TASK-M6.3 OpenAI ToolLoopRunner Phase-A extraction, 2026-07-11. (2026-07-11).
+- **Problem:** A shared-loop extraction can preserve the default production path in code yet still move provider-specific fallback, synthesis, history, or persistence behavior across the boundary without focused evidence.
+- **Loesung:** Keep the legacy gateway loop as the explicit default-off branch, route only the enabled branch through the shared runner, and leave provider-specific fallback, synthesis, routing guards, link repair, response shaping, and persistence in the gateway.
+- **Haertung:** Test flag default and dispatch structure plus a deterministic one-tool runner round; retain the established gateway regression as additional evidence when the environment can collect it.
+- **Tripwire:** If the default-off dispatch no longer names the legacy loop, if gateway-only fallback or persistence moves into ToolLoopRunner, or if the shared runner gains Gemini-specific behavior before T-A4, stop and route through precheck/spec review.
+- **Location:** backend/llm_providers/shared/tool_loop_runner.py, backend/llm_providers/openai/gateway.py, backend/tests/test_openai_tool_loop_runner.py
+- **Epic:** EPIC-ARCH-TRANSPORT-001
+- **Confidence:** High
+- **Tags:** provider-routing,tool-loop,feature-flag,openai,regression
