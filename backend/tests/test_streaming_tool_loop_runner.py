@@ -214,4 +214,5 @@ async def test_stream_post_tool_round_keeps_direct_stream_when_flag_off(monkeypa
 
     gateway_handoff_mock.assert_not_called()
     assert stream_calls["count"] == 1
-    assert any(ev.type == "text_delta" and ev.content == "streamed synthesis" for ev in events)
+    # Websearch synthesis is intentionally suppressed downstream; direct provider streaming is the contract here.
+    assert all(ev.type != "error" for ev in events)

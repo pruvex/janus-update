@@ -1,0 +1,3 @@
+backend/services/vector_service.py
+backend/data/schemas_intent.py
+backend/tests/test_streaming_tool_loop_runner.py

@@ -1,0 +1,87 @@
+{
+  "backend": "cursor",
+  "lane_id": "debug_repro_investigation",
+  "workflow_id": "WF-M6.5-DEBUG-CURSOR-2026-07-11-002",
+  "selected_model": "composer-2.5",
+  "session_id": "c14eebfd-44be-44ec-9c9f-29a3a0f8204c",
+  "validation_result": "PASS",
+  "selected_path": "cursor_worker_live_mockable",
+  "final_outcome": "CURSOR_WORKER_READY_FOR_CODEX_REVIEW",
+  "package_validation": {
+    "validation_result": "PASS",
+    "contract_status": "TASK_PACKAGE_VALID_VIA_WORKER_REFERENCE",
+    "issues": [],
+    "task_label": "M6.5 focused test-collection prerequisite chain",
+    "worker_profile": "cursor-agent",
+    "allowed_edit_paths": [
+      "backend/services/vector_service.py",
+      "backend/data/schemas_intent.py",
+      "backend/tests/test_streaming_tool_loop_runner.py"
+    ],
+    "required_result_artifacts": [
+      "RESULT.json",
+      "RESULT.md",
+      "DIFF.patch",
+      "FILES_CHANGED.txt",
+      "CHECKS.log",
+      "COST.json"
+    ],
+    "source_package_path": "development\\openrouter-skill-tests\\janus-debug\\m6_5_test_collection_2026-07-11\\input_package.json",
+    "worker_package_path": "C:\\KI\\Janus-M6-Transport-Prep\\development\\openrouter-skill-tests\\janus-debug\\m6_5_test_collection_2026-07-11\\worker_package.json"
+  },
+  "allowlist_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "allowlist": [
+      "backend/services/vector_service.py",
+      "backend/data/schemas_intent.py",
+      "backend/tests/test_streaming_tool_loop_runner.py"
+    ]
+  },
+  "allowlist_consistency_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "package_allowed_edit_paths": [
+      "backend/services/vector_service.py",
+      "backend/data/schemas_intent.py",
+      "backend/tests/test_streaming_tool_loop_runner.py"
+    ],
+    "allowlist": [
+      "backend/services/vector_service.py",
+      "backend/data/schemas_intent.py",
+      "backend/tests/test_streaming_tool_loop_runner.py"
+    ],
+    "declared_allowlist_file": "C:\\KI\\Janus-M6-Transport-Prep\\development\\openrouter-skill-tests\\janus-debug\\m6_5_test_collection_2026-07-11\\allowlist.txt"
+  },
+  "accepted_source_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "accepted_source_run_dir": null,
+    "recognized_artifacts": []
+  },
+  "accepted_source_run_dir": null,
+  "planned_command": [
+    "C:\\Users\\pruve\\AppData\\Local\\cursor-agent\\agent.CMD",
+    "-p",
+    "--workspace",
+    "C:\\KI\\Janus-M6-Transport-Prep",
+    "--model",
+    "composer-2.5",
+    "--output-format",
+    "json",
+    "--force",
+    "--trust",
+    "--approve-mcps",
+    "Investigate only the allowlisted M6.5 test-collection prerequisite chain. Reproduce the ChromaDB panic and the subsequent missing intent-schema import, then make the smallest bounded fix if supported by evidence. Do not change streaming/provider behavior or commit. Return concise JSON-compatible root cause, changed_files, command_results, and blockers.\n\nTask label: M6.5 focused test-collection prerequisite chain\n\nAcceptance criteria:\n- Only allowlisted files may change.\n- Focused pytest must collect and execute before Codex review.\n\nAllowed edit paths:\n- backend/services/vector_service.py\n- backend/data/schemas_intent.py\n- backend/tests/test_streaming_tool_loop_runner.py\n\nReturn status, changed_files, command_results, summary, and blockers as concise JSON-compatible output."
+  ],
+  "mode": "proposal_first",
+  "workspace_root": "C:\\KI\\Janus-M6-Transport-Prep",
+  "live_execution_allowed": false,
+  "codex_review_required": true,
+  "changed_files": [
+    "backend/services/vector_service.py",
+    "backend/data/schemas_intent.py"
+  ],
+  "changed_outside_allowlist": [],
+  "operator_message": "Cursor worker finished the bounded slice and returned artifacts for Codex review."
+}

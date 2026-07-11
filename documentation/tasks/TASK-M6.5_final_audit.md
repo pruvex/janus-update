@@ -1,6 +1,6 @@
 # FINAL AUDIT - TASK-M6.5 Streaming Gateway/Runner Boundary
 
-FINAL AUDIT RESULT: PASS WITH FIXES
+FINAL AUDIT RESULT: PASS
 
 Audit Model To Use: 5.6 Terra/high (`SOL_UNAVAILABLE_FOR_CHATGPT_CODEX_ACCOUNT` fallback)
 
@@ -17,13 +17,12 @@ Canonical State: PASS
 - `python -m py_compile backend/services/orchestrator/execution_engine.py backend/tests/test_streaming_tool_loop_runner.py`: PASS.
 - `git diff --check`: PASS.
 - `validate_precheck.py documentation/tasks/TASK-M6.5_preimplementation_check.md`: PASS.
-- `pytest --noconftest backend/tests/test_streaming_tool_loop_runner.py -q`: BLOCKED during collection by existing ChromaDB SQLite panic; isolated retry then BLOCKED by missing `backend.data.schemas_intent`.
-- Manual Janus evidence: N/A WITH REASON - production remains default-off and local focused execution cannot collect due unrelated environment blockers.
+- `python -m pytest --noconftest backend/tests/test_streaming_tool_loop_runner.py backend/tests/test_intent_aux_classifier.py backend/tests/test_intent_action_subject_mapping.py -q`: PASS, `28 passed`.
+- Manual Janus evidence: N/A WITH REASON - production remains default-off; manual enabled-flag provider smokes are an enablement prerequisite, not an implementation blocker.
 
 ## Findings
 - P1 fixed before audit: Cursor's candidate initially allowed the gateway runner's default round limit to exceed the outer streaming loop. The accepted implementation passes the remaining outer-loop budget as `max_tool_rounds`.
-- P2, non-blocking: focused test execution is unavailable in this worktree because of the pre-existing ChromaDB panic and missing intent schema module.
-- P2, non-blocking: Cursor Composer timed out without structured output after 180 seconds; its partial allowlisted diff was reviewed locally and not accepted blindly.
+- P2, non-blocking: the shared Cursor delegate still passes unsupported `--cursor-pool auto_composer`; direct bounded Cursor execution succeeded and produced the reviewed prerequisite fix.
 
 ## Residual Risks
 - `TRANSPORT_TOOL_LOOP_RUNNER_ENABLED` remains default-off; no production behavior is enabled by this slice.

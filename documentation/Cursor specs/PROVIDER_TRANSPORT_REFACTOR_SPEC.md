@@ -324,7 +324,7 @@ class ToolLoopRunner:
 
 **Consequences for T-A5:** preserve stream behavior by default, do not move OpenAI/Gemini stream parsing into the runner, and add focused flag-off/flag-on consistency coverage around the handoff boundary.
 
-**T-A5 implementation status (2026-07-11):** `TASK-M6.5` final audit is `PASS WITH FIXES` (`documentation/tasks/TASK-M6.5_final_audit.md`). The default-off native streaming path is unchanged. With the Phase-A flag enabled, only post-tool non-streaming continuations for OpenAI/Gemini reach the existing gateway/runner boundary, bounded by the remaining outer stream-round limit. Focused test execution is blocked in this worktree by the independent ChromaDB SQLite panic and missing `backend.data.schemas_intent`; syntax and scope checks pass. Phase A implementation tasks are complete; manual enabled-flag provider smoke evidence remains required before broad enablement.
+**T-A5 implementation status (2026-07-11):** `TASK-M6.5` re-audit is `PASS` (`documentation/tasks/TASK-M6.5_final_audit.md`). The default-off native streaming path is unchanged. With the Phase-A flag enabled, only post-tool non-streaming continuations for OpenAI/Gemini reach the existing gateway/runner boundary, bounded by the remaining outer stream-round limit. Cursor-first debug unblocked test collection; focused streaming plus intent-contract coverage passes `28/28`. Phase A implementation tasks are complete; manual enabled-flag provider smoke evidence remains required before broad enablement.
 
 ### 3.4 Eine `MODEL_HIERARCHY`
 

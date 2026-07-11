@@ -1,6 +1,23 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-11 21:10 +02:00`, the M6.5 re-audit is `PASS`. Direct Cursor Composer debug fixed the test-collection prerequisite chain; focused streaming and intent-contract evidence now passes `28/28`.
+
+Current goal: commit the M6.5 re-audit/debug closeout, then collect manual enabled-flag OpenAI and Gemini streaming smoke evidence before Phase B.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work: reviewed a successful allowlist-bounded Cursor debug run, accepted the Chroma panic degrade guard and restored intent schema contract, corrected the flag-off test oracle, and re-audited M6.5 to PASS.
+
+Checks: debug-result validator PASS; final-audit validator PASS; `pytest --noconftest` focused M6.5 streaming plus intent suites PASS (`28 passed`); `py_compile` and `git diff --check` PASS.
+
+Open risks: the shared Cursor delegate still passes unsupported `--cursor-pool`; manual enabled-flag OpenAI/Gemini streaming smokes remain required before broad enablement; the re-audit changes are local and uncommitted, so remotes do not contain this CURRENT_STATE.
+
+Next recommended step for Codex: run `janus-git-governance` on `5.6 Terra`, medium, for one scoped re-audit checkpoint after explicit commit approval.
+
+Last updated: `2026-07-11 21:10 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-11 20:10 +02:00`, `TASK-M6.5` is implemented, final-audited `PASS WITH FIXES`, and documentation-synchronized locally. The default-off streaming path is unchanged. With `TRANSPORT_TOOL_LOOP_RUNNER_ENABLED=true`, only an OpenAI/Gemini post-tool non-streaming continuation is delegated through the existing gateway/ToolLoopRunner boundary; the continuation receives the remaining outer stream-round budget.
 
 Current goal: prepare the complete M6 Phase-A checkpoint for explicit commit approval, then collect manual enabled-flag OpenAI/Gemini smoke evidence before any broad flag enablement.
