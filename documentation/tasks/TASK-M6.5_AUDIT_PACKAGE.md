@@ -1,3 +1,37 @@
+# AUDIT_PACKAGE
+
+Generated: 2026-07-11 19:16:24 UTC
+
+## Goal
+
+TASK-M6.5 streaming gateway/ToolLoopRunner boundary
+
+## Scope Rules
+
+- Audit the provided package and changed artifacts only.
+- Do not rely on development chat history.
+- Verify cost, caching, skill quality, safety scope, and validation evidence.
+- On re-audit, review the blocker delta first before widening scope.
+- If scoped paths were provided, treat them as the audit diff boundary.
+
+## Bound Audit Inputs
+
+- Spec: Phase-A T-A5 implementation complete; parent M6 Spec is ready for separate parent closeout review.
+- Task File: documentation/tasks/TASK-M6_transport_phase_a.md
+- Backlog Item: N/A WITH REASON - No backlog marker provided.
+- Pre-Implementation Check: documentation/tasks/TASK-M6.5_preimplementation_check.md
+- Manual Janus Evidence: N/A WITH REASON: default-off flag and local collection blockers.
+- Pipeline Completion Status: Implementation complete; final audit PASS WITH FIXES; no remaining Phase-A implementation task.
+
+## Backlog Item
+
+```text
+N/A WITH REASON - No backlog source or marker provided.
+```
+
+## Task Acceptance Scope
+
+```text
 TASK-M6
 - Source Spec: `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md`
 - Backlog Item: `N/A`
@@ -159,3 +193,185 @@ TASK-M6
   - Flag-off retains the provider-native StreamEvent path. Flag-on sends only post-tool non-streaming OpenAI/Gemini continuations to the existing gateway/ToolLoopRunner boundary and passes the remaining outer-loop budget as the runner limit.
   - Syntax, scoped diff, precheck, execution-result, and final-audit validation passed. The focused pytest is blocked before collection by independent ChromaDB SQLite and missing `backend.data.schemas_intent` defects.
   - Phase-A implementation tasks `T-A1` through `T-A5` are complete. Manual enabled-flag streaming smoke evidence is required before broad flag enablement; changelog skipped because this remains internal default-off provider-routing work.
+```
+
+## Pre-Implementation Check
+
+```text
+PRE-CHECK RESULT
+PRE-CHECK PASSED
+
+legacy handoff start
+NEXT: janus-executioner
+Target Task: TASK-M6.5
+Target Subtask: N/A
+Task: documentation/tasks/TASK-M6_transport_phase_a.md
+Spec: documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md
+Backlog Item: N/A
+Assigned Model: 5.6 Terra
+Mode: SINGLE_TASK_EXECUTION
+Pre-Check: PRE-CHECK PASSED
+Pre-Check Context:
+- Implement only the confirmed streaming boundary: StreamEvent protocol, auth isolation, forced-tool start, delta normalization, and stream-final cost remain in execution_engine.
+- Flag-on may route only non-streaming tool-round handoff through existing gateway/runner seams; flag-off remains unchanged.
+- OpenRouter review is planned-only; Codex owns the final precheck decision.
+Affected Files:
+- backend/services/orchestrator/execution_engine.py
+- backend/tests/test_streaming_tool_loop_runner.py
+Evidence Focus:
+- focused streaming flag-off/flag-on regression
+- provider stream regression selected during execution
+- python -m py_compile backend/services/orchestrator/execution_engine.py
+Scope-Regel:
+- Implement only TASK-M6.5. No StreamEvent rewrite, delta parser migration, auth-isolation change, forced-tool policy change, Gemini grounding-policy change, transport classes, resolver, OAuth, or Phase-B work.
+Automated Evidence Gate:
+- focused streaming regression
+- python -m py_compile backend/services/orchestrator/execution_engine.py
+- npx playwright test <runner> --headed --workers=1 --reporter=list
+Artifact Identity Check:
+- Task, Target Task, Backlog Item, Spec, and task-breakdown handoff verified.
+Oracle-/TestPlan-Regel:
+- Do not manually patch generated TestPlan/TestResult artifacts. Route TestSpec changes to janus-test-pipeline.
+Keep Context:
+- M6.5 task, Spec Section 3.3.3, execution_engine streaming loop, gateway/runner boundaries.
+Drop Context:
+- completed M6.1 through M6.4 implementation history and Phase-B work.
+Completion Rule:
+- End with PASS, BLOCKED, or HANDOFF and concrete evidence paths.
+Expected Output:
+- Implementation result, executed checks, changed files, and next-skill handoff.
+legacy handoff end
+
+NEXT STEP
+Recommended Skill: janus-executioner
+Recommended Model: 5.6 Terra
+Recommended Intelligence: high
+Reason: M6.5 has an explicit stream ownership boundary and no remaining architecture decision.
+User Action: Execution proceeds in this approved M6 chain.
+```
+
+## Changed Files
+
+```text
+M backend/services/orchestrator/execution_engine.py
+?? backend/tests/test_streaming_tool_loop_runner.py
+?? documentation/tasks/TASK-M6.5_execution_result.md
+?? documentation/tasks/TASK-M6.5_final_audit.md
+?? documentation/tasks/TASK-M6.5_preimplementation_check.md
+?? documentation/tasks/TASK-M6.5_task_breakdown.md
+?? documentation/tasks/TASK-M6.5_validation.md
+```
+
+## Artifact Inventory
+
+```text
+DIR C:\KI\Janus-M6-Transport-Prep\documentation\codex\model-routing\cursor-worker-runs\WF-M6.5-EXECUTION-2026-07-11-001 (5 files)
+  FILE C:\KI\Janus-M6-Transport-Prep\documentation\codex\model-routing\cursor-worker-runs\WF-M6.5-EXECUTION-2026-07-11-001\changed_files.txt (0 bytes)
+  FILE C:\KI\Janus-M6-Transport-Prep\documentation\codex\model-routing\cursor-worker-runs\WF-M6.5-EXECUTION-2026-07-11-001\cursor_response.json (52 bytes)
+  FILE C:\KI\Janus-M6-Transport-Prep\documentation\codex\model-routing\cursor-worker-runs\WF-M6.5-EXECUTION-2026-07-11-001\dispatcher_result.json (3154 bytes)
+  FILE C:\KI\Janus-M6-Transport-Prep\documentation\codex\model-routing\cursor-worker-runs\WF-M6.5-EXECUTION-2026-07-11-001\stderr.log (0 bytes)
+  FILE C:\KI\Janus-M6-Transport-Prep\documentation\codex\model-routing\cursor-worker-runs\WF-M6.5-EXECUTION-2026-07-11-001\stdout.log (0 bytes)
+```
+
+## Diff Summary
+
+```text
+backend/services/orchestrator/execution_engine.py | 122 +++++++++++++++++++++-
+ 1 file changed, 121 insertions(+), 1 deletion(-)
+```
+
+## Validation
+
+```text
+# TASK-M6.5 Validation Evidence
+
+## PASS
+- `python -m py_compile backend/services/orchestrator/execution_engine.py backend/tests/test_streaming_tool_loop_runner.py`
+- `git diff --check`
+
+## BLOCKED (external environment)
+- `python -m pytest --noconftest backend/tests/test_streaming_tool_loop_runner.py -q`
+  - collection stops in ChromaDB Rust SQLite with `range start index 10 out of range for slice of length 9`.
+- Retry after replacing `chromadb.PersistentClient` for the test process only
+  - collection reaches and stops at `ModuleNotFoundError: No module named 'backend.data.schemas_intent'`.
+
+## Scope Review
+- The enabled handoff is limited to an already completed tool round and OpenAI/Gemini providers.
+- Flag-off still uses the original provider-native streaming call.
+- `max_tool_rounds` is derived from the streaming loop's remaining budget.
+- No StreamEvent protocol, delta parser, auth isolation, forced-tool start, Gemini policy, or Phase-B transport files changed.
+```
+
+## Notes
+
+# TASK EXECUTION RESULT - TASK-M6.5
+
+Canonical State: HANDOFF
+Target Task: TASK-M6.5
+
+Auto-Verification:
+- Status: PASS
+- Scope and syntax checks pass; the focused test runner is externally blocked before collection, as recorded below.
+
+## Implementation
+- `execution_engine.py` retains StreamEvent parsing, stream auth isolation, forced-tool start, provider delta normalization, and stream-final cost handling.
+- With `TRANSPORT_TOOL_LOOP_RUNNER_ENABLED=true`, only a post-tool non-streaming continuation for OpenAI/Gemini is routed through `llm_gateway.reason_and_respond`, which reaches the existing gateway/ToolLoopRunner boundary.
+- The continuation strips forced-tool and stream-only cache controls and inherits the remaining streaming round budget, so the gateway runner cannot exceed the outer streaming limit.
+- The flag-off path remains the existing provider-native `_async_iter_llm_stream` path.
+
+## Executed Checks
+- `python -m py_compile backend/services/orchestrator/execution_engine.py backend/tests/test_streaming_tool_loop_runner.py`: PASS.
+- `git diff --check`: PASS.
+- `python -m pytest --noconftest backend/tests/test_streaming_tool_loop_runner.py -q`: BLOCKED during collection by the existing ChromaDB SQLite panic (`range start index 10 out of range for slice of length 9`).
+- Isolated retry with a harmless Chroma client stub: BLOCKED during collection by the pre-existing missing module `backend.data.schemas_intent`.
+
+## Cursor Evidence
+- Workflow `WF-M6.5-EXECUTION-2026-07-11-001` used a validated allowlist and package, then started a live Cursor Composer worker.
+- The worker timed out after 180 seconds and returned no structured result. It left an allowlisted partial candidate in the worktree; Codex reviewed it, added the missing remaining-round budget guard, and owns the validation and completion decision.
+- Evidence: `documentation/codex/model-routing/cursor-worker-runs/WF-M6.5-EXECUTION-2026-07-11-001/`.
+
+## Manual Janus Validation Gate:
+- Status: N/A WITH REASON.
+- Test Example: In a controlled development session, enable `TRANSPORT_TOOL_LOOP_RUNNER_ENABLED` and issue one OpenAI and one Gemini tool-backed streaming request.
+- Expected Result: first stream/tool event remains native; post-tool continuation reaches the gateway/runner and returns the final text without exceeding the configured round cap.
+- If Failed: route to janus-debug with backend stream logs and the provider/model used.
+- If Passed: route to janus-final-audit.
+- Reason: production remains default-off; automated focused execution is currently blocked by unrelated local import/runtime defects.
+
+NEXT_STEP
+Target Skill: janus-final-audit
+Canonical State: HANDOFF
+Required Artifacts: `documentation/tasks/TASK-M6.5_task_breakdown.md`, `documentation/tasks/TASK-M6.5_preimplementation_check.md`, `documentation/tasks/TASK-M6.5_execution_result.md`
+Evidence Paths: `backend/services/orchestrator/execution_engine.py`, `backend/tests/test_streaming_tool_loop_runner.py`, `documentation/codex/model-routing/cursor-worker-runs/WF-M6.5-EXECUTION-2026-07-11-001/`
+Failure Code: N/A
+Changed Files: streaming execution engine, focused streaming regression, bounded Cursor worker evidence
+Decision: HANDOFF
+Reason: implementation is scope-conformant and syntax-validated; final audit must record the external test-collection blockers.
+Recommended Model: 5.6 Terra
+Recommended Intelligence: high
+Next User Action: Say `ok` to start janus-final-audit for TASK-M6.5.
+
+## Risks
+
+Focused pytest is blocked by pre-existing ChromaDB and missing schemas_intent; flag remains default-off.
+
+## Open Issues
+
+Collect OpenAI and Gemini manual enabled-flag streaming smoke evidence before broad enablement.
+
+## Re-Audit Delta
+
+No re-audit delta provided.
+
+## Final Audit Handoff
+
+```text
+NEW_CHAT_HANDOFF
+NEXT: janus-final-audit
+MODEL: 5.6 Sol/high if runtime-supported; otherwise 5.6 Terra/high
+PASS: C:\KI\Janus-M6-Transport-Prep\documentation\tasks\TASK-M6.5_AUDIT_PACKAGE.md
+ASK: Lade nur dieses Paket im neuen Chat und starte dann den Final Audit.
+DROP: dev chat history
+```
+
+If Codex reports `gpt-5.6-sol` is unsupported for the active ChatGPT account, use `5.6 Terra/high` and record `SOL_UNAVAILABLE_FOR_CHATGPT_CODEX_ACCOUNT`. For bounded same-thread re-audits after a local blocker fix, `5.6 Terra/high` is acceptable when the package stays compact and the risk did not escalate.

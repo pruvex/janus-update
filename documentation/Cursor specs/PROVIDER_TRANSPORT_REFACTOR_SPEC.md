@@ -318,6 +318,14 @@ class ToolLoopRunner:
 
 **T-A4 implementation status (2026-07-11):** `TASK-M6.4` final audit is `PASS WITH FIXES` (`documentation/tasks/TASK-M6.4_final_audit.md`). Focused Gemini runner evidence (`6/6`) preserves the gateway-owned policy, grounding, attribution, native history, and synthesis boundary. `T-A5` remains the only open Phase-A task.
 
+### 3.3.3 Phase-A T-A5 streaming-boundary decision
+
+**Decision (2026-07-11):** `execution_engine.py` retains StreamEvent protocol ownership, stream auth isolation, forced-tool start, provider delta normalization, and stream-final cost handling. When the Phase-A flag is enabled, only non-streaming tool rounds may delegate through the existing gateway/`ToolLoopRunner` boundary; streaming is not converted into the synchronous runner contract.
+
+**Consequences for T-A5:** preserve stream behavior by default, do not move OpenAI/Gemini stream parsing into the runner, and add focused flag-off/flag-on consistency coverage around the handoff boundary.
+
+**T-A5 implementation status (2026-07-11):** `TASK-M6.5` final audit is `PASS WITH FIXES` (`documentation/tasks/TASK-M6.5_final_audit.md`). The default-off native streaming path is unchanged. With the Phase-A flag enabled, only post-tool non-streaming continuations for OpenAI/Gemini reach the existing gateway/runner boundary, bounded by the remaining outer stream-round limit. Focused test execution is blocked in this worktree by the independent ChromaDB SQLite panic and missing `backend.data.schemas_intent`; syntax and scope checks pass. Phase A implementation tasks are complete; manual enabled-flag provider smoke evidence remains required before broad enablement.
+
 ### 3.4 Eine `MODEL_HIERARCHY`
 
 **Entscheidung:** `MOA_MODEL_HIERARCHY` in `shared/moa.py` wird **einzige Quelle**.

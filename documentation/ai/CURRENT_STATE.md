@@ -1,6 +1,47 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-11 20:10 +02:00`, `TASK-M6.5` is implemented, final-audited `PASS WITH FIXES`, and documentation-synchronized locally. The default-off streaming path is unchanged. With `TRANSPORT_TOOL_LOOP_RUNNER_ENABLED=true`, only an OpenAI/Gemini post-tool non-streaming continuation is delegated through the existing gateway/ToolLoopRunner boundary; the continuation receives the remaining outer stream-round budget.
+
+Current goal: prepare the complete M6 Phase-A checkpoint for explicit commit approval, then collect manual enabled-flag OpenAI/Gemini smoke evidence before any broad flag enablement.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- ran Cursor-first M6.5 execution with an allowlisted worker package; Composer timed out, then Codex reviewed and completed the bounded candidate
+- preserved StreamEvent parsing, auth isolation, forced-tool start, delta normalization, and stream-final cost handling in `execution_engine.py`
+- added the remaining-round budget guard, focused streaming regression, execution/audit package, final audit, and M6 documentation closeout
+- made no commit, push, release, or remote CURRENT_STATE sync
+
+Changed files in this block:
+- `backend/services/orchestrator/execution_engine.py`
+- `backend/tests/test_streaming_tool_loop_runner.py`
+- `documentation/tasks/TASK-M6.5_*`
+- `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md`
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- M6.5 precheck validator: PASS
+- `python -m py_compile backend/services/orchestrator/execution_engine.py backend/tests/test_streaming_tool_loop_runner.py`: PASS
+- `git diff --check`: PASS
+- focused pytest: BLOCKED before collection by ChromaDB SQLite panic; isolated retry then BLOCKED by missing `backend.data.schemas_intent`
+- execution-result and final-audit validators: PASS
+
+Open risks:
+- focused test execution and broader backend collection remain blocked by independent worktree environment defects
+- Cursor Composer is still not a productive autonomous worker for this lane; the direct run timed out without structured output
+- the flag remains default-off; manual enabled-flag OpenAI/Gemini streaming smoke evidence is required before broad enablement
+- changes are local and uncommitted; remotes, including `origin/codex-sync`, do not contain this CURRENT_STATE
+
+Next recommended step for ChatGPT: do not assume a remote contains this state until a scoped commit and `origin/codex-sync` update are explicitly approved and completed.
+
+Next recommended step for Codex: run `janus-git-governance` on `5.6 Terra`, `medium` and create one scoped M6.5/Phase-A checkpoint after explicit commit approval.
+
+Last updated: `2026-07-11 20:10 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-11 19:25 +02:00`, `TASK-M6.4` implementation is complete locally. Gemini `_run_simple_tool_loop` now dispatches through `ToolLoopRunner` when `TRANSPORT_TOOL_LOOP_RUNNER_ENABLED=true`; the legacy path remains default-off and behavior-preserving. Gemini gateway callbacks own model/Flash override policy, list-query round caps, grounding query-cost accumulation, synthesis, attribution, and native history bridging.
 
 Current goal: manual Janus validation and `janus-final-audit` for `TASK-M6.4`.

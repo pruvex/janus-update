@@ -4,13 +4,26 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-M6.5 - Route streaming through the gateway and ToolLoopRunner path
+
+- **Status**: DONE WITH NON-BLOCKING FOLLOW-UP
+- **Final Audit**: `documentation/tasks/TASK-M6.5_final_audit.md` (PASS WITH FIXES)
+- **Spec**: `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md` (Section 3.3.3 / Phase-A T-A5; Phase-A implementation tasks are complete)
+- **Parent Task**: `documentation/tasks/TASK-M6_transport_phase_a.md`
+- **Task Breakdown**: `documentation/tasks/TASK-M6.5_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-M6.5_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-M6.5_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-M6.5_AUDIT_PACKAGE.md`
+- **Validation**: Flag-off retains the native StreamEvent provider path. Flag-on routes only the post-tool non-streaming OpenAI/Gemini continuation through the gateway/runner and preserves the remaining stream-round budget. Syntax, scoped diff, precheck, execution-result, and final-audit validation passed.
+- **Follow-up**: Focused pytest is independently blocked by the local ChromaDB SQLite panic and missing `backend.data.schemas_intent`. Cursor Composer timed out after a valid live start; manual enabled-flag OpenAI/Gemini streaming smoke evidence is required before broad enablement.
+
 ### TASK-M6.4 - Migrate the Gemini gateway to the shared ToolLoopRunner
 
 - **Status**: DONE WITH NON-BLOCKING FOLLOW-UP
 - **Final Audit**: `documentation/tasks/TASK-M6.4_final_audit.md` (PASS WITH FIXES)
 - **Spec**: `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md` (Section 3.3.2 / Phase-A T-A4 only; parent Spec remains in progress)
 - **Validation**: Gemini runner `6/6`, syntax, execution-result, and final-audit validation passed; gateway-owned policy, grounding, attribution, history, and synthesis remain intact.
-- **Follow-up**: Cursor Windows output decoding and the local ChromaDB SQLite panic remain separate infrastructure work. `T-A5` remains open.
+- **Follow-up**: Cursor Windows output decoding and the local ChromaDB SQLite panic remain separate infrastructure work. The later `T-A5` closeout completes the Phase-A implementation chain.
 
 ### TASK-M6.3 - Extract the OpenAI ToolLoopRunner behind a default-off flag
 
@@ -23,7 +36,7 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 - **Execution Result**: `documentation/tasks/TASK-M6.3_execution_result.md`
 - **Audit Package**: `documentation/tasks/TASK-M6.3_AUDIT_PACKAGE.md`
 - **Validation**: The default-off OpenAI runner extraction passed focused runner (`4/4`), syntax, scoped diff, execution-result, and final-audit validation. The legacy path remains default and the runner keeps gateway-only fallback, synthesis, guards, link repair, response shaping, and persistence out of the shared loop.
-- **Follow-up**: The broad OpenAI regression is independently blocked by the local ChromaDB SQLite panic. Cursor Composer timed out after a valid direct worker start and the shared delegate has an argument-contract defect; both are separate infrastructure work. `T-A4` and `T-A5` remain open.
+- **Follow-up**: The broad OpenAI regression is independently blocked by the local ChromaDB SQLite panic. Cursor Composer timed out after a valid direct worker start and the shared delegate has an argument-contract defect; both are separate infrastructure work. The later `T-A4`/`T-A5` closeouts complete Phase-A implementation.
 
 ### TASK-M6.2 - Introduce the transport-boundary ToolCallAdapter
 
@@ -36,7 +49,7 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 - **Execution Result**: `documentation/tasks/TASK-M6.2_execution_result.md`
 - **Audit Package**: `documentation/tasks/TASK-M6.2_AUDIT_PACKAGE.md`
 - **Validation**: `ToolManager` now retains canonical dotted IDs and `ToolCallAdapter` centralizes provider naming/schema adaptation. Focused adapter (`12/12`), OpenAI (`2/2`), Gemini (`12/12`), syntax, scoped diff, and manual Gemini weather-tool evidence passed. Full collection remains independently blocked by the local ChromaDB SQLite panic before collection.
-- **Follow-up**: Cursor Composer proposal-first evidence reached a valid direct start but timed out without structured output; the shared delegate and outer-package wrapper seams also need a bounded Cursor-infrastructure debug slice. `T-A3` through `T-A5` remain open.
+- **Follow-up**: Cursor Composer proposal-first evidence reached a valid direct start but timed out without structured output; the shared delegate and outer-package wrapper seams also need a bounded Cursor-infrastructure debug slice. The later `T-A3` through `T-A5` closeouts complete Phase-A implementation.
 
 ### TASK-M6.1 - Unify the model hierarchy as the single MoA source
 
@@ -49,7 +62,7 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 - **Execution Result**: `documentation/tasks/TASK-M6.1_execution_result.md`
 - **Audit Package**: `documentation/tasks/TASK-M6.1_AUDIT_PACKAGE.md`
 - **Validation**: `TASK-M6.1` consolidates the active OpenAI, Gemini, and Ollama tier matrix into `MOA_MODEL_HIERARCHY`, removes the orchestrator duplicate, and moves the Gemini websearch override to the shared source. Isolated hierarchy (`3/3`) and MoA routing (`13/13`) regressions, syntax, scoped diff, and manual Gemini current-news evidence passed. Full pytest collection remains independently blocked by the local ChromaDB SQLite panic before collection.
-- **Follow-up**: Correct the obsolete Ollama-no-tier source comment before `TASK-M6.2`; `T-A2` through `T-A5` remain open.
+- **Follow-up**: Correct the obsolete Ollama-no-tier source comment before `TASK-M6.2`; the later `T-A2` through `T-A5` closeouts complete Phase-A implementation.
 
 ### TASK-MEM-M4.1 - Implement Memory Phase C Session-Search as one bounded FTS5 slice
 
