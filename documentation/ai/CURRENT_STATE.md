@@ -1,6 +1,48 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-12 01:05:00 +02:00`, Solo Git v2 migration **completed**. Archive commit on legacy develop, fast-forward merge to `master`, clean worktree, pushed `backup/master`, published CURRENT_STATE to `origin/codex-sync`.
+
+Current goal: use `master` + one `feature/*` branch per slice; no new work on `develop`.
+
+Active phase: Solo Git v2 operational, canonical state `PASS`.
+
+Last Codex/Cursor work:
+- archived ~4657 mixed WIP files as `79f56b71c chore: archive mixed WIP before solo-git v2`
+- merged develop → master (ff-only); tip `cd6b11ba2`
+- `git push backup master` OK
+- `sync_codex_current_state.ps1` → `origin/codex-sync` OK
+
+Changed files in this block:
+- entire archived WIP now on `master` (one-time)
+- `documentation/codex/scripts/migrate_solo_git_once.ps1` (fixed order + `--no-verify` for archive)
+
+Checks / validation performed:
+- worktree clean on `master` (0 dirty entries)
+- backup remote updated
+- codex-sync remote updated
+
+Open risks:
+- legacy branch `develop` still exists locally (optional delete: `git branch -d develop`)
+- M6 worktree `C:\KI\Janus-M6-Transport-Prep` still separate on `codex/m6-transport-prep`
+
+Next recommended step for ChatGPT: read `origin/codex-sync` — Solo Git v2 is active; advise operator to start next slice on `feature/<name>`.
+
+Next recommended step for Codex: new work only on `feature/*`; merge to `master` when validated; recommend codex-sync after substantive blocks.
+
+Daily flow:
+```powershell
+git checkout master && git pull backup master
+git checkout -b feature/<slice>
+# work …
+git checkout master && git merge feature/<slice> --no-ff
+git push backup master
+.\documentation\codex\scripts\sync_codex_current_state.ps1
+```
+
+Last updated: `2026-07-12 01:05:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-12 00:45:00 +02:00`, Janus Solo Git v2 is defined and wired into governance. Operator requested simpler Git (`master` + `feature/*`), keep `origin/codex-sync` for ChatGPT, stop dirty-worktree archaeology by default.
 
 Current goal: operator runs one-time migration to clean legacy mixed state, then all new work uses Solo Git v2.

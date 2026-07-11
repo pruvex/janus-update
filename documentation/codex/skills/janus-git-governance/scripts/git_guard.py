@@ -202,8 +202,10 @@ def main():
     for line in remotes.splitlines():
         print(f"  {line}")
 
-    if branch == "master":
-        print("BLOCKER: normal development commits are not allowed on master.")
+    if branch == "develop":
+        print("WARNING: develop is legacy/deprecated. Prefer master + feature/* (Solo Git v2).")
+    elif branch and not (branch == "master" or branch.startswith("feature/")):
+        print(f"WARNING: branch '{branch}' is outside Solo Git v2 defaults (master or feature/*).")
     if "backup" not in remotes:
         print("BLOCKER: backup remote is missing.")
     if "origin" not in remotes:
@@ -241,7 +243,7 @@ def main():
         print("- Recommendation: no commit needed; worktree clean")
 
     mixed_blocker = mixed_blocker_message is not None and len(entries) > 0
-    return 1 if branch == "master" or large or "backup" not in remotes or mixed_blocker else 0
+    return 1 if large or "backup" not in remotes or mixed_blocker else 0
 
 
 if __name__ == "__main__":
