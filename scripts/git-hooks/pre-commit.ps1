@@ -14,7 +14,7 @@ python $guard $repoRoot --staged-only
 if ($LASTEXITCODE -ne 0) {
     Write-Host ""
     Write-Host "[PRE-COMMIT BLOCKED] git_guard.py rejected the staged changes."
-    Write-Host "Review staged paths, split the changeset, or switch away from master for normal work."
+    Write-Host "Review staged paths or split unrelated scope before committing."
     exit $LASTEXITCODE
 }
 
