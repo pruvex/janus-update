@@ -3,14 +3,15 @@
 ## Current Snapshot Update
 As of `2026-07-11 15:26 +02:00`, the non-blocking M6.1 audit follow-up is complete: the `moa.py` module documentation and mapping comment now correctly describe the approved Ollama tier hierarchy. No model mapping, resolver behavior, provider policy, or runtime route changed.
 
-Current goal: create an optional small checkpoint for the completed M6.1 comment correction, then prepare `TASK-M6.2` for its own preimplementation check.
+Current goal: prepare `TASK-M6.2` for its own preimplementation check after the M6.1 comment-correction checkpoint.
 
-Active phase: `janus-quickchange`, canonical state `HANDOFF`.
+Active phase: `janus-git-governance`, canonical state `PASS`.
 
 Last Codex work:
 - corrected the two obsolete Ollama-no-tier text statements in `backend/llm_providers/shared/moa.py`
 - reran the single-source hierarchy regression and Python syntax compilation
-- made no mapping, resolver, product, staging, commit, push, or remote CURRENT_STATE change
+- created local checkpoint `1c5ac301a` (`docs(moa): correct Ollama tier guidance`)
+- made no mapping, resolver, product, push, or remote CURRENT_STATE change
 
 Changed files in this block:
 - `backend/llm_providers/shared/moa.py`
@@ -24,11 +25,11 @@ Checks / validation performed:
 
 Open risks:
 - full pytest collection remains independently blocked by the local ChromaDB SQLite panic before collection
-- the quickchange remains local and uncommitted; remotes, including `origin/codex-sync`, do not contain this CURRENT_STATE
+- checkpoint `1c5ac301a` remains local; remotes, including `origin/codex-sync`, do not contain this CURRENT_STATE
 
 Next recommended step for ChatGPT: keep the parent M6 transport Spec open; this only clears the M6.1 audit follow-up.
 
-Next recommended step for Codex: on explicit approval, commit the three-file quickchange checkpoint, then run `janus-preimplementation-check` for `TASK-M6.2` on `5.6 Terra`, `medium`.
+Next recommended step for Codex: commit this final CURRENT_STATE delta only after explicit approval, then run `janus-preimplementation-check` for `TASK-M6.2` on `5.6 Terra`, `medium`.
 
 Last updated: `2026-07-11 15:26 +02:00`.
 
