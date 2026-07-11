@@ -6,7 +6,7 @@ Löst für einen gegebenen Provider + Tier das optimale Modell auf.
 Regeln:
   - Routing ist strikt provider-intern (nie Provider-Mix).
   - Wenn kein Tier gesetzt oder der Provider das Tier nicht kennt → Fallback auf user_base_model.
-  - Ollama hat keine Tier-Hierarchie → immer Fallback.
+  - Ollama follows the approved local model tier hierarchy.
 """
 
 import logging
@@ -37,7 +37,7 @@ MOA_MODEL_HIERARCHY: Dict[str, Dict[str, str]] = {
         "fast": "llama3.1:8b",
         "balanced": "qwen2.5:14b",
     },
-    # Ollama: bewusst leer – lokale Modelle haben keine Tier-Hierarchie.
+    # Ollama uses the approved local model tier hierarchy.
 }
 
 _VALID_TIERS = frozenset({"speed", "fast", "balanced", "logic", "vision"})

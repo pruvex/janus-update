@@ -1,6 +1,38 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-11 15:26 +02:00`, the non-blocking M6.1 audit follow-up is complete: the `moa.py` module documentation and mapping comment now correctly describe the approved Ollama tier hierarchy. No model mapping, resolver behavior, provider policy, or runtime route changed.
+
+Current goal: create an optional small checkpoint for the completed M6.1 comment correction, then prepare `TASK-M6.2` for its own preimplementation check.
+
+Active phase: `janus-quickchange`, canonical state `HANDOFF`.
+
+Last Codex work:
+- corrected the two obsolete Ollama-no-tier text statements in `backend/llm_providers/shared/moa.py`
+- reran the single-source hierarchy regression and Python syntax compilation
+- made no mapping, resolver, product, staging, commit, push, or remote CURRENT_STATE change
+
+Changed files in this block:
+- `backend/llm_providers/shared/moa.py`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest --noconftest backend/tests/test_model_hierarchy_single_source.py -q`: PASS, `3/3`
+- `python -m py_compile backend/llm_providers/shared/moa.py`: PASS
+- `git diff --check`: PASS
+
+Open risks:
+- full pytest collection remains independently blocked by the local ChromaDB SQLite panic before collection
+- the quickchange remains local and uncommitted; remotes, including `origin/codex-sync`, do not contain this CURRENT_STATE
+
+Next recommended step for ChatGPT: keep the parent M6 transport Spec open; this only clears the M6.1 audit follow-up.
+
+Next recommended step for Codex: on explicit approval, commit the three-file quickchange checkpoint, then run `janus-preimplementation-check` for `TASK-M6.2` on `5.6 Terra`, `medium`.
+
+Last updated: `2026-07-11 15:26 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-11 15:26 +02:00`, the `TASK-M6.1` audit closure is synchronized across the task, parent M6 Spec progress note, central registry, project state, and reusable learning memory. Only this Phase-A T-A1 slice is closed; the parent provider-transport Spec and `T-A2` through `T-A5` remain open.
 
 Current goal: keep the audited `TASK-M6.1` checkpoint locally recoverable and prepare the bounded prerequisite for `TASK-M6.2` when selected.
