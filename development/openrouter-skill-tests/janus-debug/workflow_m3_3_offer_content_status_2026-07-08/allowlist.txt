@@ -1,0 +1,3 @@
+backend/services/workflow/step_trace_extractor.py
+backend/tests/test_workflow_detector.py
+backend/tests/test_workflow_offer_service.py

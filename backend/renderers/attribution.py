@@ -16,6 +16,21 @@ _SUGGESTION_BLOCK_START = re.compile(
 )
 
 
+def _matches_skill_alias(
+    *,
+    name: str,
+    skill_id: str,
+    canonical: str,
+    aliases: tuple[str, ...] = (),
+) -> bool:
+    accepted = {str(canonical or "").strip().lower()}
+    for alias in aliases:
+        value = str(alias or "").strip().lower()
+        if value:
+            accepted.add(value)
+    return str(name or "").strip().lower() in accepted or str(skill_id or "").strip().lower() in accepted
+
+
 def append_quelle_line(body: str, label: str) -> str:
     """Hängt unter dem Markdown-Body eine Absatzzeile „Quelle: …“ an."""
     text = (label or "").strip()
@@ -94,7 +109,12 @@ def append_weather_attribution_from_tools(final_text: str, tool_results: List[Di
             continue
         name = str(tr.get("name") or "").strip().lower()
         skill_id = str(tr.get("_skill_id") or "").strip().lower()
-        if name != "system.weather" and skill_id != "system.weather":
+        if not _matches_skill_alias(
+            name=name,
+            skill_id=skill_id,
+            canonical="system.weather",
+            aliases=("system_weather",),
+        ):
             continue
         raw = tr.get("_raw_content") or tr.get("content") or "{}"
         try:
@@ -131,7 +151,12 @@ def render_weather_forecast_from_tools(tool_results: List[Dict[str, Any]]) -> st
             continue
         name = str(tr.get("name") or "").strip().lower()
         skill_id = str(tr.get("_skill_id") or tr.get("skill_id") or "").strip().lower()
-        if name != "system.weather" and skill_id != "system.weather":
+        if not _matches_skill_alias(
+            name=name,
+            skill_id=skill_id,
+            canonical="system.weather",
+            aliases=("system_weather",),
+        ):
             continue
         raw = tr.get("_raw_content") or tr.get("content") or "{}"
         try:

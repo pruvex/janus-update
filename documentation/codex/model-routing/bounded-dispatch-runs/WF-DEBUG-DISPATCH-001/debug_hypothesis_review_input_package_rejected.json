@@ -1,0 +1,15 @@
+{
+  "workflow_id": "WF-DEBUG-DISPATCH-001",
+  "bound_skill_context": "janus-debug",
+  "expected_behavior": "Delegated review should stay bounded.",
+  "actual_behavior": "Legacy fixture leaked changed files.",
+  "evidence_snippets": [
+    "one bounded snippet"
+  ],
+  "iteration_number": 1,
+  "explicit_question": "What verifier should Codex run?",
+  "redaction_ready": true,
+  "changed_files": [
+    "backend/services/chat_orchestrator.py"
+  ]
+}

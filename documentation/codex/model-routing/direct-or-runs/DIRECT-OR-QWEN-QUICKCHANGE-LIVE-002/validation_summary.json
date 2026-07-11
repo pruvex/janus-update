@@ -1,0 +1,18 @@
+{
+  "workflow_id": "DIRECT-OR-QWEN-QUICKCHANGE-LIVE-002",
+  "validation_result": "FAIL",
+  "budget_profile": "quickchange_patch_review",
+  "issues": [
+    "status must be PATCH_PROPOSAL, NO_CHANGE, or BLOCKED",
+    "changed_files must be a list",
+    "unified_diff must be a string"
+  ],
+  "changed_files": [],
+  "editable_paths": [
+    "frontend/index.html"
+  ],
+  "max_touched_files": 1,
+  "finish_reason": "stop",
+  "actual_or_cost": 0.00018681,
+  "cost_cap": 0.002
+}

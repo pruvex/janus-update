@@ -32,6 +32,28 @@ REPO_ROOT = Path(__file__).resolve().parents[4]
 DEFAULT_RUN_ROOT = REPO_ROOT / "development" / "openrouter-skill-tests" / "isolated-aider-worker-runs"
 CENTRAL_USAGE_LOG_PATH = REPO_ROOT / "documentation" / "codex" / "model-routing" / "or_operator_usage_log.jsonl"
 TASK_PACKAGE_FILENAME = "worker_task_package.json"
+SECRET_VALUE_MARKERS = (
+    "bearer ",
+    "sk-",
+    "x-janus-internal:",
+    "api-key:",
+    "password=",
+    "token=",
+)
+LIVE_RETEST_ALLOWED_STEPS = (
+    "api_health_check",
+    "create_chat",
+    "run_bound_prompt",
+    "collect_evidence",
+)
+LIVE_RETEST_FORBIDDEN_AUTHORITY = {
+    "final_pass",
+    "release",
+    "git",
+    "routing",
+    "broad_shell",
+    "secret_write",
+}
 
 
 def write_text(path: Path, content: str) -> None:
@@ -51,6 +73,55 @@ def append_jsonl(path: Path, payload: dict[str, Any]) -> None:
 
 def output(payload: dict[str, Any]) -> None:
     print(json.dumps(payload, indent=2, ensure_ascii=False))
+
+
+def iter_string_values(value: Any):
+    if isinstance(value, str):
+        yield value
+    elif isinstance(value, dict):
+        for nested in value.values():
+            yield from iter_string_values(nested)
+    elif isinstance(value, list):
+        for nested in value:
+            yield from iter_string_values(nested)
+
+
+def package_contains_secret_value(package: dict[str, Any]) -> bool:
+    for value in iter_string_values(package):
+        lowered = value.lower()
+        if any(marker in lowered for marker in SECRET_VALUE_MARKERS):
+            return True
+    return False
+
+
+def validate_live_retest_contract(package: dict[str, Any]) -> list[str]:
+    contract = package.get("live_retest_contract")
+    if contract is None:
+        return []
+    issues: list[str] = []
+    if not isinstance(contract, dict):
+        return ["live_retest_contract must be an object"]
+    if contract.get("mode") != "LIVE_TEST_EXECUTION":
+        issues.append("live_retest_contract.mode must be LIVE_TEST_EXECUTION")
+    if contract.get("live_test_scope") != "local_bounded_retest":
+        issues.append("live_retest_contract.live_test_scope must be local_bounded_retest")
+    if contract.get("allowed_steps") != list(LIVE_RETEST_ALLOWED_STEPS):
+        issues.append("live_retest_contract.allowed_steps must exactly match the bounded allowlist")
+    local_auth = contract.get("local_auth")
+    if not isinstance(local_auth, dict):
+        issues.append("live_retest_contract.local_auth must be an object")
+    else:
+        if local_auth.get("mode") != "runtime_only":
+            issues.append("live_retest_contract.local_auth.mode must be runtime_only")
+        if local_auth.get("secret_material_included") is not False:
+            issues.append("live_retest_contract.local_auth.secret_material_included must be false")
+    forbidden_authority = set(contract.get("forbidden_authority") or [])
+    missing = sorted(LIVE_RETEST_FORBIDDEN_AUTHORITY - forbidden_authority)
+    if missing:
+        issues.append("live_retest_contract.forbidden_authority missing: " + ", ".join(missing))
+    if package_contains_secret_value(package):
+        issues.append("package contains a forbidden secret-like value")
+    return issues
 
 
 def normalize_choice(choice: str) -> str:
@@ -204,6 +275,9 @@ def validate_package(package: dict[str, Any], package_path: Path) -> dict[str, A
     post_commands = package.get("post_commands") or []
     if not isinstance(pre_commands, list) or not isinstance(post_commands, list):
         raise SystemExit(f"{package_path} pre_commands/post_commands must be lists.")
+    live_retest_issues = validate_live_retest_contract(package)
+    if live_retest_issues:
+        raise SystemExit(f"{package_path} live retest contract invalid: {'; '.join(live_retest_issues)}")
 
     return {
         "task_label": task_label,

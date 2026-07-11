@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-06-09-003",
+  "testCaseId": "TC-004-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Seed Chris vegetarian + Star Wars and Oli Big Bang Theory; ask `was mögen chris und oli?`",
+  "response": "Hallo Rolf Adam, hier ist eine Zusammenfassung dessen, was ich über die Vorlieben von Chris und Oli gespeichert habe:Chris Gier:*   Vegetarier: Das hast du mir gestern um 21:53 Uhr im Chat „Chris ist Vegetarier“ erzählt.*   Star Wars: Er liebt Star Wars und baut leidenschaftlich gerne Star-Wars-Modelle. Diese Information stammt ebenfalls von gestern (21:53 Uhr) aus dem Chat „Informationen über Oliver Schwab“.Oli (Oliver Schwab):*   The Big Bang Theory: Er ist ein großer Fan dieser Serie. Das hast du mir heute um 16:37 Uhr im Chat „Chris Giers Vorlieben“ mitgeteilt.💡 Passende nächste Schritte:• Soll ich nach vegetarischen Rezepten für einen Star-Wars-Themenabend mit Chris suchen?• Suchst du nach Geschenkideen zu „The Big Bang Theory“ für Oli?• Möchtest du weitere Details zu den Modellen von Chris oder anderen Interessen der beiden ergänzen?19:16",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-06-09T17:16:28.508Z"
+}

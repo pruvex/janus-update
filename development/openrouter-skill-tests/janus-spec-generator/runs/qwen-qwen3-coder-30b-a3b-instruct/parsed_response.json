@@ -1,0 +1,70 @@
+{
+  "status": "PASS",
+  "source_type": "LATEST_DECISION_SUMMARY",
+  "source_path": "documentation/codex/model-routing/codex_first_real_or_pilot_decision_summary_2026-06-16.md",
+  "target_spec_path": "documentation/SPEC/first_real_or_pilot_for_bounded_janus_delegation.md",
+  "recommended_next_skill": "janus-spec-review",
+  "mechanical_cleanup_required": "NO",
+  "notes": [
+    "Feature scope is well-defined and low-risk",
+    "Clear success and failure behaviors specified",
+    "Out of scope items properly documented",
+    "Routing recommendation aligns with feature complexity"
+  ],
+  "structured_spec": {
+    "routing": {
+      "target_skill": "janus-spec-review",
+      "recommended_model": "5.4",
+      "recommended_reasoning": "medium",
+      "new_chat": "no",
+      "complexity_score": 3,
+      "confidence": "HIGH",
+      "dashboard_hint": "SAFE",
+      "reason": "Low-risk bounded delegation task with clear success/failure criteria and well-defined artifacts"
+    },
+    "feature_identity": "First Real OR Pilot for Bounded Janus Delegation",
+    "user_value": "Enables cheaper external worker path for low-risk Janus work while maintaining local validation, diff review, and final acceptance control",
+    "target_surface": "janus-quickchange bounded delegated write candidate",
+    "user_action_surface": "Delegated write task submission through bounded janus interface",
+    "system_behavior": "One tiny allowlisted quickchange returns a reviewable diff, changed-files list, validation evidence, and explicit Codex-owned accept-or-reject handoff. Any missing artifact, allowlist escape, or validation failure falls back to local Codex handling.",
+    "data_persistence": "Changes are tracked through diff, changed-files list, and validation evidence artifacts",
+    "constraints": [
+      "Only one tiny allowlisted quickchange allowed",
+      "All artifacts must be present for successful delegation",
+      "No authority drift in delegation process",
+      "Touched-file-cap must not be exceeded"
+    ],
+    "security_privacy": "No sensitive data handling required; all artifacts are reviewable and traceable",
+    "edge_cases": [
+      "Missing artifact in delegation result",
+      "Allowlist escape during delegation",
+      "Touched-file-cap escape during delegation",
+      "Delete/rename/move activity during delegation",
+      "Failed validation during delegation"
+    ],
+    "definition_of_done": [
+      "One tiny allowlisted quickchange completed",
+      "Reviewable diff generated",
+      "Changed-files list provided",
+      "Validation evidence collected",
+      "Explicit Codex accept-or-reject handoff completed",
+      "No authority drift in delegation process"
+    ],
+    "test_strategy": "Validate delegation process with one real quickchange, verify all artifacts are generated, test failure scenarios with missing artifacts or validation failures",
+    "out_of_scope": [
+      "Broad janus-executioner code delegation",
+      "Test-pipeline write retries",
+      "Auto Router implementation",
+      "Production routing decisions",
+      "Canonical routing-table updates",
+      "Git or release actions",
+      "Multi-task or architecture-changing write attempts"
+    ],
+    "internal_complexity_breakdown": [
+      "Bounded delegation interface implementation",
+      "Artifact generation and validation",
+      "Failure handling and fallback logic",
+      "Allowlist enforcement and tracking"
+    ]
+  }
+}

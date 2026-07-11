@@ -1,0 +1,12 @@
+{
+  "summary_header": "ISOLATED AIDER WORKER RESULT",
+  "workflow_id": "ISO-AIDER-PRECHECK-001",
+  "skill": "lean-dev-worker",
+  "task_label": "Fix precheck prompt token mismatch",
+  "selected_path": "codex_only_operator_choice",
+  "normal_target_model": "5.4 medium",
+  "or_model_provider": "OpenRouter / openrouter/qwen/qwen3-coder-30b-a3b-instruct",
+  "final_outcome": "LOCAL_CODEX_PATH_SELECTED",
+  "validation_result": "PASS",
+  "operator_message": "Operator chose the local Codex path. No isolated OR worker run was made."
+}

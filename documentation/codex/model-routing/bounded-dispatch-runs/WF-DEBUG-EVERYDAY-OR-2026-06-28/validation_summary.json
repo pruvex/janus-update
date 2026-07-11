@@ -1,0 +1,13 @@
+{
+  "workflow_id": "WF-DEBUG-EVERYDAY-OR-2026-06-28",
+  "task_class": "debug_hypothesis_review",
+  "input_validation_pass": true,
+  "result_validation_pass": true,
+  "telemetry_validation_pass": true,
+  "input_issues": [],
+  "result_issues": [],
+  "telemetry_issues": [],
+  "redaction_ready": true,
+  "redaction_check": "PASS",
+  "accepted_for_local_codex_validation": true
+}

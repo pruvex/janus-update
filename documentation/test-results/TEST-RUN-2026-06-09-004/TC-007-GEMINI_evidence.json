@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-06-09-004",
+  "testCaseId": "TC-007-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "was weißt du über olix?",
+  "response": "Hallo Rolf Adam. Über deinen Freund Olix Quarz weiß ich aktuell Folgendes:*   Wohnort: Er lebt in Köln-Stammheim.*   Interessen: Olix liebt Strategiespiele, insbesondere Klassiker wie Panzer General.*   Korrektur: Ich habe mir gemerkt, dass er entgegen der ersten Annahme *kein* Fan von „The Big Bang Theory“ ist.Diese Informationen hast du mir heute, am 9. Juni 2026, in unserem aktuellen Gespräch anvertraut.💡 Passende nächste Schritte:• Möchtest du Olix Quarz als Kontakt mit seiner Adresse in Köln speichern?• Soll ich nach weiteren Strategiespielen suchen, die Olix gefallen könnten?• Gibt es noch weitere Details zu Olix, die ich mir merken soll?20:44",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-06-09T18:44:37.388Z"
+}

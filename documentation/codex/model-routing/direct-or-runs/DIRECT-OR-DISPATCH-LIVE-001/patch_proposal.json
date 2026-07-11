@@ -1,0 +1,10 @@
+{
+  "changed_files": [
+    "frontend/index.html"
+  ],
+  "risk_notes": [],
+  "status": "PATCH_PROPOSAL",
+  "summary": "Changed the placeholder text in both chat input fields from \"Nachricht an Janus senden...\" to \"Nachricht an Janus schreiben...\". No other files or wording were modified.",
+  "unified_diff": "diff --git a/frontend/index.html b/frontend/index.html\nindex 1234567..89abcdef 100644\n--- a/frontend/index.html\n+++ b/frontend/index.html\n@@\n-<input type=\"text\" placeholder=\"Nachricht an Janus senden...\" id=\"windowAInput\">\n+<input type=\"text\" placeholder=\"Nachricht an Janus schreiben...\" id=\"windowAInput\">\n@@\n-<input type=\"text\" placeholder=\"Nachricht an Janus senden...\" id=\"windowBInput\">\n+<input type=\"text\" placeholder=\"Nachricht an Janus schreiben...\" id=\"windowBInput\">\n",
+  "validation_notes": []
+}

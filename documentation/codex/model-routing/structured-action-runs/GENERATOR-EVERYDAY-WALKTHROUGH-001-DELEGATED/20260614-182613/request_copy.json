@@ -1,0 +1,22 @@
+{
+  "schema_version": "codex_delegated_action_request.v1",
+  "workflow_id": "GENERATOR-EVERYDAY-WALKTHROUGH-001-DELEGATED",
+  "skill_id": "janus-test-pipeline",
+  "action_type": "run_generator",
+  "summary": "Run bounded generator-backed structured action review flow for Everyday generator review walkthrough.",
+  "requires_codex_review": true,
+  "non_goals": [
+    "No prompt-level shell delegation",
+    "No production routing activation"
+  ],
+  "action_payload": {
+    "generator_id": "generate_live_runner_v1",
+    "inputs": {
+      "plan_path": "documentation/test-runs/TEST-RUN-2026-05-15-005_plan.json",
+      "output_runner_path": "__RUN_DIR__/generated/TEST-RUN-2026-05-15-005_generated_from_builder.spec.js"
+    },
+    "declared_output_artifacts": [
+      "__RUN_DIR__/generated/TEST-RUN-2026-05-15-005_generated_from_builder.spec.js"
+    ]
+  }
+}

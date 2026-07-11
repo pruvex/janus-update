@@ -1,0 +1,39 @@
+{
+  "task_id": "TASK-SPEC29.2-DBG-GEMINI-ROUTING-LOOP",
+  "lane_id": "debug_repro_investigation",
+  "bound_skill_context": "janus-debug",
+  "task_label": "Debug Gemini mixed calendar-routing loop breaker",
+  "worker_package_json": "development/openrouter-skill-tests/janus-debug/workflow_spec29_2_gemini_routing_loop_breaker_2026-07-09/worker_package.json",
+  "allowlist_file": "development/openrouter-skill-tests/janus-debug/workflow_spec29_2_gemini_routing_loop_breaker_2026-07-09/allowlist.txt",
+  "failure_code": "SPEC29_2_GEMINI_ROUTING_LOOP_BREAKER_BLOCKS_PROMOTION",
+  "latest_user_evidence": {
+    "timestamp_local": "2026-07-09 18:52 +02:00",
+    "prompt": "Welche Termine habe ich heute und wie weit ist es von Berlin nach Hamburg?",
+    "actual": "GPT created a silent internal routine candidate, but Gemini repeated system.routing calls and ended with the loop-breaker warning instead of promoting the candidate.",
+    "expected": "The second matching run should complete the same mixed two-skill trace and append `Ich habe dafuer eine passende Routine gespeichert.`"
+  },
+  "bounded_root_cause": {
+    "log_summary": [
+      "chat 4235 produced exactly two successful tool results: system.routing then calendar.list_events, and DB candidate count increased to 1",
+      "chat 4236 repeatedly emitted system.routing function calls under Gemini and then hit [HARD-LOOP-BREAKER] duplicate blocked: system.routing",
+      "the user-visible Gemini answer was only the loop-breaker warning, so no passive promotion occurred"
+    ],
+    "source_code_summary": [
+      "execution_dispatcher applies routing-only force and action guidance whenever is_routing_geo_intent is true",
+      "the same mixed user prompt also has calendar intent, so routing-only bans or force may be too aggressive for Gemini on this path",
+      "a bounded fix likely needs to preserve combined calendar-plus-routing behavior while keeping true routing-only forcing intact"
+    ]
+  },
+  "acceptance_criteria": [
+    "Fix only the mixed calendar-plus-routing dispatch seam on the allowlisted files.",
+    "Mixed calendar-plus-routing questions must not be trapped in routing-only repeated calls.",
+    "Pure routing-only questions must still force system.routing.",
+    "Run the focused pytest command before returning."
+  ],
+  "local_validation_command": "python -m pytest backend/tests/test_calendar_routing_fix.py -q",
+  "redaction_ready": true,
+  "estimated_codex_saved_tokens": 9000,
+  "estimated_delegation_overhead_tokens": 3000,
+  "recommended_backend": "cursor",
+  "recommended_model": "composer-2.5"
+}

@@ -1,0 +1,24 @@
+{
+  "summary_header": "CODEX SIDECAR WRITE RESULT",
+  "workflow_id": "BOUNDED-QUICKCHANGE-DISPATCH-LIVE-001",
+  "skill": "janus-quickchange",
+  "task_label": "Dispatcher quickchange delegated review",
+  "selected_path": "sidecar_workspace_write_dry_run",
+  "validation_result": "PASS",
+  "final_outcome": "DRY_RUN_VALIDATED_AND_STRUCTURED_REVIEW_READY",
+  "runner_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-DISPATCH-LIVE-001\\summary.json",
+  "validation_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-DISPATCH-LIVE-001\\validation_summary.json",
+  "allowlist_ok": true,
+  "touched_file_cap_ok": true,
+  "delete_rename_move_ok": true,
+  "operator_message": "Dry-run succeeded and the structured patch review flow captured the proposed patch for Codex review.",
+  "structured_bridge_status": "PASS",
+  "structured_bridge_summary": {
+    "status": "PASS",
+    "bridge_mode": "patch",
+    "sidecar_run_dir": "documentation/codex/model-routing/sidecar-runs/SIDECAR-QUICKCHANGE-LIVE-001",
+    "built_request_json": "documentation/codex/model-routing/structured-action-fixtures/BOUNDED-QUICKCHANGE-DISPATCH-LIVE-001-STRUCTURED_built_from_sidecar.json",
+    "builder_status": "PASS",
+    "executor_status": "PASS"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 9273,
+  "duration_api_ms": 9273,
+  "result": "I need the actual task prompt/instructions to execute this bounded Janus delegated worker task. The message references a \"full prompt below,\" but no task content was included in your message.\n\nPlease paste the delegated worker task prompt, and I'll execute it immediately without further clarifying questions.",
+  "session_id": "ebd644f6-bb14-409b-93b7-ad9d76384609",
+  "request_id": "166c6374-de48-4feb-9cae-5cbc73605ddf",
+  "usage": {
+    "inputTokens": 24546,
+    "outputTokens": 360,
+    "cacheReadTokens": 918,
+    "cacheWriteTokens": 0
+  }
+}

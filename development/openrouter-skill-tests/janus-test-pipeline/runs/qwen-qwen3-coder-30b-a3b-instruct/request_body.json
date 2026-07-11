@@ -1,0 +1,15 @@
+{
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a bounded test-result triage reviewer. Use only the redacted input package. Return exactly one JSON object and no prose. Do not claim a fix is implemented, do not mutate results, do not execute commands, and do not claim release, production, routing, Git, or policy authority."
+    },
+    {
+      "role": "user",
+      "content": "Return a JSON object with these exact top-level fields: status, test_run_id, primary_outcome, likely_classification, likely_subsystem, finding_clusters, suggested_next_local_verifiers, suggested_routing, escalation_trigger, redaction_check, notes.\n\nRules:\n- status must be PASS, WEAK_SIGNAL, or BLOCKED\n- likely_classification must be one of PRODUCT_BUG, SPEC_GAP, TEST_BUG, INFRA_BLOCKER, PROVIDER_BLOCKER, AUTH_BLOCKER, DUPLICATE, NOT_REPRODUCIBLE\n- finding_clusters must contain 1 to 2 items\n- each finding_clusters item must contain title, confidence, evidence\n- confidence must be LOW, MEDIUM, or HIGH\n- redaction_check must be PASS\n- suggested_next_local_verifiers must stay local to Codex-side validation\n- do not claim any final PASS/release decision\n- do not propose delegated live execution\n\nRedacted input package JSON:\n{\n  \"workflow_id\": \"WF-TRIAGE-EVERYDAY-PACKAGE-001\",\n  \"bound_skill_context\": \"janus-test-pipeline\",\n  \"test_run_id\": \"TEST-RUN-TRIAGE-EVERYDAY-001\",\n  \"result_outcome_summary\": \"One bounded local result bundle needs assist-only classification review.\",\n  \"evidence_snippets\": [\n    \"Result bundle already redacted.\",\n    \"One bounded classification question only.\",\n    \"Codex keeps rerun and routing ownership.\"\n  ],\n  \"classification_question\": \"Is this more likely an INFRA_BLOCKER or TEST_BUG?\",\n  \"redaction_ready\": true,\n  \"candidate_blocker_category\": \"INFRA_BLOCKER\"\n}"
+    }
+  ],
+  "temperature": 0,
+  "max_tokens": 900
+}

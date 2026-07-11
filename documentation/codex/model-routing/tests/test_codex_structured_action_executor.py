@@ -60,6 +60,37 @@ class StructuredActionExecutorTests(unittest.TestCase):
             self.assertTrue((run_dir / "stderr.log").exists())
             self.assertTrue((run_dir / "exit_code.txt").exists())
 
+    def test_runs_bound_compile_testspec_generator_with_skill2_handover(self) -> None:
+        request = executor.load_json(FIXTURE_DIR / "delegated_request_compile_testspec_to_testplan_2026-06-15.json")
+        test_run_id = "TEST-RUN-2099-12-31-996"
+        output_paths = [
+            Path("documentation/test-runs") / f"{test_run_id}_plan.json",
+            Path("documentation/test-runs") / f"{test_run_id}_generated.spec.js",
+            Path("documentation/test-runs") / f"{test_run_id}_skill2_handover.txt",
+        ]
+        request["action_payload"]["inputs"]["test_run_id"] = test_run_id
+        request["action_payload"]["inputs"]["output_dir"] = "documentation/test-runs"
+        request["action_payload"]["declared_output_artifacts"] = [
+            str(path).replace("\\", "/")
+            for path in output_paths
+        ]
+
+        try:
+            with tempfile.TemporaryDirectory() as temp_dir:
+                run_dir = Path(temp_dir)
+                result = executor.handle_request(request, run_dir)
+
+                self.assertEqual(result.executor_status, "PASS")
+                self.assertEqual(result.action_summary["generator_id"], "compile_testspec_to_testplan_v1")
+                output_artifacts = result.action_summary["output_artifacts"]
+                self.assertEqual(len(output_artifacts), 3)
+                self.assertTrue(any(path.endswith("_skill2_handover.txt") for path in output_artifacts))
+        finally:
+            for path in output_paths:
+                absolute_path = executor.REPO_ROOT / path
+                if absolute_path.exists():
+                    absolute_path.unlink()
+
     def test_runs_bound_validate_runner_validator(self) -> None:
         request = executor.load_json(FIXTURE_DIR / "delegated_request_validate_runner_2026-06-14.json")
 

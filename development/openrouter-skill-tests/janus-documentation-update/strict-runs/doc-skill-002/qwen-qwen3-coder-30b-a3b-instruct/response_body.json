@@ -1,0 +1,9 @@
+﻿
+         
+
+         
+
+         
+
+         
+{"id":"gen-1782397342-YNr4APN7KcZjJzjqj9Xn","object":"chat.completion","created":1782397342,"model":"qwen/qwen3-coder-30b-a3b-instruct","provider":"Novita","system_fingerprint":null,"service_tier":null,"choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"stop","message":{"role":"assistant","content":"- No production routing is approved.\n- No canonical routing-table update is made.\n- No global OpenRouter approval exists.\n- Price metadata is not quality evidence.\n\nHOLD, UNKNOWN, EXPERIMENT_ONLY, and CANDIDATE_NOT_APPROVED labels are preserved as required.\n\nNext step: Conduct fixture or baseline work to establish live evidence before any live comparison.","refusal":null,"reasoning":null}}],"usage":{"prompt_tokens":682,"completion_tokens":72,"total_tokens":754,"cost":0.00006718,"is_byok":false,"prompt_tokens_details":{"cached_tokens":0,"cache_write_tokens":0,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.00006718,"upstream_inference_prompt_cost":0.00004774,"upstream_inference_completions_cost":0.00001944},"completion_tokens_details":{"reasoning_tokens":0,"image_tokens":0,"audio_tokens":0}}}

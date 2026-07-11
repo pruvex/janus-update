@@ -1,0 +1,9 @@
+{
+  "allowlist_ok": true,
+  "touched_file_cap_ok": true,
+  "delete_rename_move_ok": true,
+  "touched_files": [
+    "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/sandbox/test_gate_prompt_apply_shadow.py"
+  ],
+  "patch_issues": []
+}

@@ -1,0 +1,14 @@
+{
+  "summary_header": "QUICKCHANGE WRITE APPLY RESULT",
+  "workflow_id": "WF-QUICKCHANGE-WRITE-APPLY-CURRENT-005",
+  "skill": "janus-quickchange",
+  "task_label": "Quickchange write apply delegated current-shape proof",
+  "selected_path": "delegated_quickchange_write_apply",
+  "normal_target_model": "5.4 medium",
+  "delegated_model_label": "bounded workspace-write sidecar / accepted evidence path",
+  "validation_result": "PASS",
+  "final_outcome": "QUICKCHANGE_WRITE_APPLY_READY_FOR_CODEX_ACCEPTANCE",
+  "accepted_source_run_dir": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-source-bridges\\EXEC-WRITE-APPLY-SOURCE-BRIDGE-003",
+  "source_validation_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\quickchange-apply-runs\\WF-QUICKCHANGE-WRITE-APPLY-CURRENT-005\\source_validation.json",
+  "operator_message": "Delegated quickchange write apply is backed by an accepted bounded workspace-write evidence package. Codex must still validate the diff and accept the final quickchange."
+}

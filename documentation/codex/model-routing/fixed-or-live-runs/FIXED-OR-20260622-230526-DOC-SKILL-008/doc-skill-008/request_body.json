@@ -1,0 +1,15 @@
+{
+  "model": "qwen/qwen3.5-flash-02-23",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are assisting with DOC-SKILL-008. Use only the sanitized input. Return concise Markdown only. Do not imply release readiness or any production, routing, Git, repo-write, or release authority."
+    },
+    {
+      "role": "user",
+      "content": "You are assisting with DOC-SKILL-008: Write Changelog-Style Summary.\n\nDraft sanitized changelog bullets from the validated facts for local reviewer use.\n\nRequirements:\n- Use only the sanitized input.\n- Summarize validated facts only.\n- Preserve no-release-readiness boundaries.\n- Preserve no-production approval and no-routing approval boundaries.\n- Do not invent behavior.\n- Do not expand product scope.\n- Do not grant implementation, Git, release, repo-write, routing, or production authority.\n- Do not imply release readiness.\n- Keep the changelog concise.\n\nReturn:\n1. Short title\n2. Bullets for validated facts\n3. Governance note\n\nSanitized input JSON:\n{\n  \"fixture_id\": \"DOC-SKILL-008-GPT54-MINI-LIVE-EVAL-001\",\n  \"task_id\": \"DOC-SKILL-008\",\n  \"task_name\": \"Write Changelog-Style Summary\",\n  \"sanitized\": true,\n  \"contains_private_evidence\": false,\n  \"production_approved\": false,\n  \"routing_approved\": false,\n  \"summary_target\": \"sanitized_changelog_bullets\",\n  \"source_notes\": [\n    {\n      \"item\": \"DOC-SKILL-006 reduced live evaluation\",\n      \"facts\": [\n        \"default candidate held on a fixed exclusion detail\",\n        \"backup_1 passed and was selected\",\n        \"backup_2 and backup_3 were not needed\",\n        \"no routing table update\",\n        \"no production approval\"\n      ]\n    },\n    {\n      \"item\": \"DOC-SKILL-003 reduced live evaluation\",\n      \"facts\": [\n        \"selected external candidate openai/gpt-oss-20b\",\n        \"backups retained as extra evidence\",\n        \"no production routing activation\",\n        \"no canonical routing-table update\"\n      ]\n    }\n  ],\n  \"changelog_goals\": [\n    \"summarize validated facts only\",\n    \"avoid release readiness claims\",\n    \"avoid invented behavior\",\n    \"avoid product-scope expansion\",\n    \"preserve no-production boundaries\"\n  ],\n  \"constraints\": {\n    \"must_preserve\": [\n      \"validated facts only\",\n      \"no release-readiness implication\",\n      \"no production approval\",\n      \"no routing approval\",\n      \"no repo-write delegation\",\n      \"no invented behavior\",\n      \"no product-scope expansion\",\n      \"no production routing activation\"\n    ],\n    \"must_not_do\": [\n      \"claim release readiness\",\n      \"invent behavior\",\n      \"expand product scope\",\n      \"approve production routing\",\n      \"activate production routing\",\n      \"grant repo-write authority\",\n      \"grant Git authority\",\n      \"grant release authority\"\n    ]\n  }\n}"
+    }
+  ],
+  "temperature": 0,
+  "max_tokens": 1200
+}

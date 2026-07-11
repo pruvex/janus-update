@@ -1,0 +1,13 @@
+{
+  "workflow_id": "TASK-SPEC21-4-INSTALLED-TRIAGE-001",
+  "bound_skill_context": "installed janus-test-pipeline skill copy",
+  "test_run_id": "TEST-RUN-SPEC21-4",
+  "result_outcome_summary": "The bounded triage review should stay assist-only and Codex-owned.",
+  "evidence_snippets": [
+    "Installed janus-test-pipeline skill now references build_consumer_input_package(...)",
+    "Installed janus-test-pipeline skill now references run_consumer_flow(...)"
+  ],
+  "classification_question": "Which bounded classification direction should Codex verify next?",
+  "redaction_ready": true,
+  "candidate_blocker_category": "workflow_visibility_evidence"
+}

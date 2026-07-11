@@ -1,0 +1,19 @@
+{
+  "summary_header": "BOUNDED DELEGATION DISPATCH RESULT",
+  "workflow_id": "AUDIT-SPEC21-4-TRIAGE-LOCAL",
+  "task_class": "test_result_triage_review",
+  "task_label": "audit triage local",
+  "selected_path": "codex_only_operator_choice",
+  "eligibility_result": "OR_ALLOWED",
+  "eligibility_reason_code": "ELIGIBILITY_CONFIRMED",
+  "evidence_status": "PILOT_SCOPE_ALLOWED",
+  "validation_result": "PASS",
+  "final_outcome": "LOCAL_CODEX_PATH_SELECTED",
+  "operator_result_lines": [
+    "Ergebnis: Codex lokal ausgewaehlt",
+    "Route: test_result_triage_review bleibt lokal"
+  ],
+  "operator_message": "Operator chose the normal Codex-only path. No delegated helper was invoked.",
+  "codex_owned_outcome_status": "CODEX_LOCAL_PATH",
+  "codex_owned_outcome_final": false
+}

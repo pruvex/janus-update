@@ -1,0 +1,24 @@
+{
+  "schema_version": "codex_delegated_action_request.v1",
+  "workflow_id": "BOUNDED-DISPATCH-GENERATOR-SPEC17-3-PASS",
+  "skill_id": "janus-test-pipeline",
+  "action_type": "run_generator",
+  "summary": "Run bounded compile-testspec generator plus validator path for TASK-SPEC17.3.",
+  "requires_codex_review": true,
+  "non_goals": [
+    "No prompt-level shell delegation",
+    "No production routing activation"
+  ],
+  "action_payload": {
+    "generator_id": "compile_testspec_to_testplan_v1",
+    "inputs": {
+      "spec_path": "documentation/TEST_SPEC/07_regression_suite/18_testspec_testplan_generator_regression.md",
+      "test_run_id": "TEST-RUN-2099-12-31-998",
+      "output_dir": "__RUN_DIR__/generated"
+    },
+    "declared_output_artifacts": [
+      "__RUN_DIR__/generated/TEST-RUN-2099-12-31-998_plan.json",
+      "__RUN_DIR__/generated/TEST-RUN-2099-12-31-998_generated.spec.js"
+    ]
+  }
+}

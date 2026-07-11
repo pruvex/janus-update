@@ -1,0 +1,18 @@
+{
+  "schema_version": "codex_delegated_action_request.v1",
+  "workflow_id": "STRUCTURED-BUILDER-VALIDATOR-001",
+  "skill_id": "janus-test-pipeline",
+  "action_type": "run_validator",
+  "summary": "Translate bounded validator payload into executor request.",
+  "requires_codex_review": true,
+  "non_goals": [
+    "No live test execution",
+    "No repo writes outside validator logs"
+  ],
+  "action_payload": {
+    "validator_id": "validate_test_plan_v1",
+    "inputs": {
+      "plan_path": "documentation/test-runs/TEST-RUN-2026-05-15-005_plan.json"
+    }
+  }
+}

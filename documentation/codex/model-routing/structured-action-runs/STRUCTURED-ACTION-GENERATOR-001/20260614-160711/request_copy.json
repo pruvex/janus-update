@@ -1,0 +1,22 @@
+{
+  "schema_version": "codex_delegated_action_request.v1",
+  "workflow_id": "STRUCTURED-ACTION-GENERATOR-001",
+  "skill_id": "janus-test-pipeline",
+  "action_type": "run_generator",
+  "summary": "Generate one Playwright live runner from an existing validated plan into the executor run directory.",
+  "requires_codex_review": true,
+  "non_goals": [
+    "No live Playwright execution",
+    "No product code edits"
+  ],
+  "action_payload": {
+    "generator_id": "generate_live_runner_v1",
+    "inputs": {
+      "plan_path": "documentation/test-runs/TEST-RUN-2026-05-15-005_plan.json",
+      "output_runner_path": "__RUN_DIR__/generated/TEST-RUN-2026-05-15-005_generated.spec.js"
+    },
+    "declared_output_artifacts": [
+      "__RUN_DIR__/generated/TEST-RUN-2026-05-15-005_generated.spec.js"
+    ]
+  }
+}

@@ -5,7 +5,6 @@ import numpy as np
 import io
 import cv2
 import torch
-import clip
 from PIL import Image, UnidentifiedImageError
 from sqlalchemy.orm import Session
 from backend.data import crud_vision
@@ -15,6 +14,19 @@ import sys
 import os
 from pathlib import Path
 from backend.services.vision.model_loader import get_model_loader, start_clip_model_download
+
+logger = logging.getLogger("janus_backend")
+
+try:
+    import clip  # type: ignore
+    _CLIP_IMPORT_ERROR = None
+except Exception as exc:  # pragma: no cover - depends on local native deps
+    clip = None  # type: ignore
+    _CLIP_IMPORT_ERROR = exc
+    logger.warning(
+        "VISION: CLIP import failed during vision_service import; local vision analysis will be skipped."
+    )
+    logger.debug("VISION: vision_service CLIP import error details: %s", exc, exc_info=True)
 
 # PyInstaller: Setze Pfad für CLIP Datei
 if getattr(sys, 'frozen', False):
@@ -228,6 +240,9 @@ class LocalVisionService:
                             result["unknown_encodings"].append(encoding)
                     
             # 2. CLIP Inference (Zentralisiert)
+            if clip is None:
+                logger.info("VISION: CLIP import unavailable - ueberspringe lokale Bildanalyse.")
+                return result
             # Lazy-Loading: Model vom Loader holen
             if not self.model_loader.is_ready():
                 logger.info("VISION: CLIP-Modell noch nicht geladen - ueberspringe Bildsuche.")

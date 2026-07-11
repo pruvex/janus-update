@@ -1,0 +1,9 @@
+{
+  "model": "deepseek/deepseek-v4-flash",
+  "returncode": 0,
+  "finish_reason": "stop",
+  "actual_or_cost": 0.000333536,
+  "validation_issues": [],
+  "status": "PASS",
+  "response_path": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-spec-generator\\runs\\deepseek-deepseek-v4-flash\\response_body.json"
+}

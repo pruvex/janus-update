@@ -1,0 +1,61 @@
+{
+  "manifest_version": "2026-07-07",
+  "operator_gate_version": "4choice_cost_aware_2026-07-07",
+  "status": "OPERATOR_CHOICE_READY",
+  "lane_id": "debug_repro_investigation",
+  "task_id": "TASK-DBG-002",
+  "skill": "janus-debug",
+  "lane_class": "TOOL_WORKER",
+  "operator_gate_lines": [
+    "1 = Codex",
+    "3 = Cursor Composer"
+  ],
+  "visible_backends": [
+    "codex",
+    "cursor"
+  ],
+  "visible_choices": [
+    {
+      "choice_id": "1",
+      "label": "Codex",
+      "backend": "codex",
+      "pool": null,
+      "model": "5.4",
+      "cost_hint": "Codex-Tokens",
+      "cost_estimate_usd_static": null,
+      "recommended": false,
+      "operator_gate_line": "1 = Codex"
+    },
+    {
+      "choice_id": "3",
+      "label": "Cursor Composer",
+      "backend": "cursor",
+      "pool": "auto_composer",
+      "model": "composer-2.5",
+      "cost_hint": "0.4-0.8 % Monatskontingent",
+      "cost_estimate_usd_static": 0.0104,
+      "recommended": true,
+      "operator_gate_line": "3 = Cursor Composer"
+    }
+  ],
+  "recommended_backend": "cursor",
+  "recommended_choice": "3",
+  "models": {
+    "codex": "5.4",
+    "cursor_composer": "composer-2.5"
+  },
+  "roi": {
+    "status": "POSITIVE",
+    "estimated_codex_saved_tokens": 18000,
+    "estimated_delegation_overhead_tokens": 7000,
+    "minimum_net_codex_saved_tokens": 5000,
+    "net_codex_saved_tokens": 11000
+  },
+  "negative_roi_visibility_mode": null,
+  "negative_roi_visibility_reason": null,
+  "codex_final_owner": true,
+  "no_production_routing": true,
+  "validation_result": "PASS",
+  "final_outcome": "AWAITING_OPERATOR_CHOICE",
+  "operator_message": "Wie soll ich delegieren?\n\n1. Codex - 5.4 - Codex-Tokens\n3. Cursor Composer - composer-2.5 - 0.4-0.8 % Monatskontingent <- Empfehlung\n\nEmpfehlung: 3"
+}

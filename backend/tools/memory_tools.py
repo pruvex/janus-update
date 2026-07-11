@@ -24,7 +24,7 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field, validator
 from sqlalchemy.orm import Session
 
-from backend.data import models
+from backend.data import crud, models
 from backend.data.schemas_tools import ToolResultV1
 from backend.services import vector_service
 from backend.services.memory_cache import memory_cache
@@ -52,6 +52,11 @@ _NO_DURABLE_MEMORY_RE = re.compile(
 _CONTACT_QUERY_SCOPE_PATTERNS = [
     re.compile(r"\bwas\s+mag(?:en)?\s+(.+)$", re.IGNORECASE),
     re.compile(r"\bwas\s+wei(?:ß|ss)t\s+du\s+über\s+(.+)$", re.IGNORECASE),
+    re.compile(
+        r"\b(?:wer\s+ist|wie\s+hei(?:ÃŸ|ss)t)\s+(.+?)s\s+"
+        r"(?:freundin|freund|partnerin|partner|ehefrau|ehemann)\b",
+        re.IGNORECASE,
+    ),
     re.compile(r"\bich\s+will\s+mit\s+(.+)$", re.IGNORECASE),
     re.compile(r"\b(?:vorlieben|praeferenzen|prÃ¤ferenzen|interessen|hobbys)\s+von\s+(.+)$", re.IGNORECASE),
     re.compile(r"\bmein(?:e|en)?\s+(?:freund|freundin)\s+(.+)$", re.IGNORECASE),
@@ -242,6 +247,10 @@ def _extract_contact_query_subject_aliases(db: Session, query: str) -> set[str]:
     normalized_scope_patterns = [
         re.compile(r"\bwas\s+mag(?:en)?\s+(.+)$"),
         re.compile(r"\bwas\s+weisst\s+du\s+ueber\s+(.+)$"),
+        re.compile(
+            r"\b(?:wer\s+ist|wie\s+heisst)\s+(.+?)s\s+"
+            r"(?:freundin|freund|partnerin|partner|ehefrau|ehemann)\b"
+        ),
         re.compile(r"\bich\s+will\s+mit\s+(.+)$"),
         re.compile(r"\b(?:vorlieben|praeferenzen|interessen|hobbys)\s+von\s+(.+)$"),
         re.compile(r"\bmein(?:e|en)?\s+(?:freund|freundin)\s+(.+)$"),
@@ -410,6 +419,7 @@ def _build_contact_pet_detail_memories(
     supplemental: List[Dict[str, Any]] = []
     query_norm = _normalize_memory_search_text(query)
     for contact in db.query(models.Contact).all():
+        crud._normalize_contact_structured_fields(contact, db)
         aliases = {
             _normalize_memory_search_text(getattr(contact, "name", None)),
             _normalize_memory_search_text(getattr(contact, "nickname", None)),

@@ -65,7 +65,12 @@ export default defineConfig({
       reuseExistingServer: true,
       timeout: 300000,
       cwd: process.cwd(),
-      env: { PYTHONIOENCODING: 'UTF-8', NODE_ENV: 'development', JANUS_E2E_FAST_MODE: '1' },
+      env: {
+        PYTHONIOENCODING: 'UTF-8',
+        NODE_ENV: 'development',
+        JANUS_E2E_FAST_MODE: '1',
+        JANUS_E2E_ENABLE_FACT_EXTRACTION: '1',
+      },
       stdout: 'pipe',
       stderr: 'pipe',
     },

@@ -1,0 +1,20 @@
+{
+  "workflow_id": "WF-SHADOW-LOCAL-APPLY-COMPARE-LIVE-001",
+  "mode": "execution_write_apply_candidate_local_apply_live",
+  "accepted_source_run_dir": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\fixtures\\cursor-shadow-catalog\\execution_write_apply_candidate\\accepted_source\\WF-SHADOW-LOCAL-APPLY-COMPARE-001",
+  "source_validation_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-runs\\WF-SHADOW-LOCAL-APPLY-COMPARE-LIVE-001\\source_validation.json",
+  "local_apply_run_dir": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-runs\\WF-SHADOW-LOCAL-APPLY-COMPARE-LIVE-001\\local_apply_run",
+  "expected_changed_files": [
+    "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/sandbox/test_gate_prompt_apply_shadow.py"
+  ],
+  "touched_files": [
+    "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/sandbox/test_gate_prompt_apply_shadow.py"
+  ],
+  "pre_run_status": "?? documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/sandbox/test_gate_prompt_apply_shadow.py",
+  "post_run_status": "?? documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/sandbox/test_gate_prompt_apply_shadow.py",
+  "apply_succeeded": true,
+  "last_message_excerpt": "Apply succeeded: yes.\nTouched files: documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/sandbox/test_gate_prompt_apply_shadow.py",
+  "issues": [],
+  "local_apply_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-runs\\WF-SHADOW-LOCAL-APPLY-COMPARE-LIVE-001\\local_apply_run\\summary.json",
+  "local_apply_validation_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-runs\\WF-SHADOW-LOCAL-APPLY-COMPARE-LIVE-001\\local_apply_run\\validation_summary.json"
+}

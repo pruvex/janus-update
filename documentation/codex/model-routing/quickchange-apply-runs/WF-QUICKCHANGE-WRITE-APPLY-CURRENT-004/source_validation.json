@@ -1,0 +1,50 @@
+{
+  "summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-DISPATCH-LIVE-001\\summary.json",
+  "validation_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-DISPATCH-LIVE-001\\validation_summary.json",
+  "diff_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-DISPATCH-LIVE-001\\git_diff.patch",
+  "changed_files_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-DISPATCH-LIVE-001\\changed_files.txt",
+  "last_message_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-DISPATCH-LIVE-001\\last_message.md",
+  "delegated_result_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-DISPATCH-LIVE-001\\delegated_result.md",
+  "changed_files": [],
+  "issues": [
+    "summary status is not PASS",
+    "accepted_for_codex_patch_review is not true",
+    "changed_files.txt is empty"
+  ],
+  "summary": {
+    "status": "DRY_RUN",
+    "exit_code": null,
+    "command_json": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-DISPATCH-LIVE-001\\command.json",
+    "stdout_log": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-DISPATCH-LIVE-001\\stdout.log",
+    "stderr_log": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-DISPATCH-LIVE-001\\stderr.log",
+    "last_message": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-DISPATCH-LIVE-001\\last_message.md",
+    "event_stream": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-DISPATCH-LIVE-001\\event_stream.jsonl",
+    "editable_paths": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-DISPATCH-LIVE-001\\editable_paths.txt",
+    "pre_run_status": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-DISPATCH-LIVE-001\\pre_run_status.txt",
+    "post_run_status": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-DISPATCH-LIVE-001\\post_run_status.txt",
+    "changed_files": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-DISPATCH-LIVE-001\\changed_files.txt",
+    "git_diff": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-DISPATCH-LIVE-001\\git_diff.patch",
+    "validation_summary": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-DISPATCH-LIVE-001\\validation_summary.json"
+  },
+  "validation": {
+    "status": "DRY_RUN",
+    "sandbox": "workspace-write",
+    "editable_paths": [
+      "frontend/index.html"
+    ],
+    "touched_files": [],
+    "touched_file_count": 0,
+    "max_touched_files": 1,
+    "deleted_paths": [],
+    "renamed_paths": [],
+    "moved_paths": [],
+    "allowlist_ok": true,
+    "touched_file_cap_ok": true,
+    "delete_rename_move_ok": true
+  },
+  "normalized_tripwires": {
+    "allowlist_ok": true,
+    "touched_file_cap_ok": true,
+    "delete_rename_move_ok": true
+  }
+}

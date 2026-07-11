@@ -1,0 +1,7 @@
+{
+  "validator_id": "validate_runner_v1",
+  "inputs": {
+    "plan_path": "documentation/codex/model-routing/structured-action-runs/WF-TEST-PIPELINE-STRUCTURED-BRIDGE-2026-06-27B/20260627-195933/generated/TEST-RUN-2026-06-27-901_plan.json",
+    "runner_path": "documentation/codex/model-routing/structured-action-runs/WF-TEST-PIPELINE-STRUCTURED-BRIDGE-2026-06-27B/20260627-195933/generated/TEST-RUN-2026-06-27-901_generated.spec.js"
+  }
+}

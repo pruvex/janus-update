@@ -1,0 +1,7 @@
+{
+  "validator_id": "validate_runner_v1",
+  "inputs": {
+    "plan_path": "documentation/test-runs/TEST-RUN-2026-05-15-005_plan.json",
+    "runner_path": "documentation/codex/model-routing/structured-action-runs/GENERATOR-EVERYDAY-WALKTHROUGH-001-DELEGATED/20260614-182613/generated/TEST-RUN-2026-05-15-005_generated_from_builder.spec.js"
+  }
+}

@@ -1,0 +1,1 @@
+{"workflow_id": "WF-SPEC-NORMALIZER-DELEGATED-2026-06-29-001", "skill": "janus-spec-normalizer", "selected_path": "OR", "operator_choice": "delegated", "final_outcome": "OR_NORMALIZATION", "validation_result": "PASS", "model": "5.4 medium", "issue_count": 0}

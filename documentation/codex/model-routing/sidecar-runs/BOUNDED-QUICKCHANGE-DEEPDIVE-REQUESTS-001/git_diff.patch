@@ -1,0 +1,57 @@
+﻿diff --git a/frontend/js/cost-visualizer.js b/frontend/js/cost-visualizer.js
+index fd1b4163a..5cdaee90e 100644
+--- a/frontend/js/cost-visualizer.js
++++ b/frontend/js/cost-visualizer.js
+@@ -142,13 +142,13 @@ document.addEventListener("DOMContentLoaded", () => {
+           <div class="deep-dive-anomaly-header">
+             <div>
+               <div class="deep-dive-kicker">Details auf Nachfrage</div>
+-              <h4>Kostenquellen zuerst, Requests nur bei Bedarf</h4>
++              <h4>Kostenquellen zuerst, Anfragen nur bei Bedarf</h4>
+             </div>
+             <div class="deep-dive-provider-summary-note">
+               ${
+                 hasSelectedGroup
+-                  ? "Quelle gewaehlt. Jetzt kannst du darunter einzelne Requests oeffnen."
+-                  : "Starte mit einer Kostenquelle, um einzelne Requests und Kostenbestandteile zu sehen."
++                  ? "Quelle gewaehlt. Jetzt kannst du darunter einzelne Anfragen oeffnen."
++                  : "Starte mit einer Kostenquelle, um einzelne Anfragen und Kostenbestandteile zu sehen."
+               }
+             </div>
+           </div>
+@@ -168,7 +168,7 @@ document.addEventListener("DOMContentLoaded", () => {
+ 
+             <section class="deep-dive-panel deep-dive-requests-panel ${hasSelectedGroup ? "" : "is-inactive"}">
+               <div class="deep-dive-panel-header">
+-                <h4>Requests</h4>
++                <h4>Anfragen</h4>
+                 <span>${selectedGroup ? selectedGroup.request_count : 0} Eintraege</span>
+               </div>
+               ${
+@@ -307,7 +307,7 @@ document.addEventListener("DOMContentLoaded", () => {
+         <article class="deep-dive-metric-card">
+           <span class="deep-dive-metric-label">Klar zugeordnet</span>
+           <strong>${formatCurrency(summary.internal_attributed_total)}</strong>
+-          <small>${summary.request_count || 0} Requests</small>
++          <small>${summary.request_count || 0} Anfragen</small>
+         </article>
+         <article class="deep-dive-metric-card deep-dive-metric-card--warning">
+           <span class="deep-dive-metric-label">Noch offen</span>
+@@ -537,7 +537,7 @@ document.addEventListener("DOMContentLoaded", () => {
+   function renderRequestList(group, selectedRequestId) {
+     const requests = Array.isArray(group.requests) ? group.requests : [];
+     if (!requests.length) {
+-      return '<div class="deep-dive-empty-state deep-dive-panel-empty">Keine Requests in dieser Gruppe.</div>';
++      return '<div class="deep-dive-empty-state deep-dive-panel-empty">Keine Anfragen in dieser Gruppe.</div>';
+     }
+ 
+     return `
+@@ -1047,7 +1047,7 @@ function formatGroupMetaLine(group) {
+   const providerLabel = Array.isArray(group.providers) && group.providers.length
+     ? group.providers.map((provider) => formatProviderLabel(provider)).join(", ")
+     : "ohne Provider";
+-  return `${group.request_count || 0} Requests | ${providerLabel}`;
++  return `${group.request_count || 0} Anfragen | ${providerLabel}`;
+ }
+ 
+ function formatRequestCostNarrative(request, historicalReconciliation) {

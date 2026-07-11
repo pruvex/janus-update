@@ -1,0 +1,19 @@
+{
+  "schema_version": "codex_delegated_action_request.v1",
+  "workflow_id": "WF-TEST-PIPELINE-STRUCTURED-BRIDGE-2026-06-27B-VALIDATOR",
+  "skill_id": "janus-test-pipeline",
+  "action_type": "run_validator",
+  "summary": "Validate generated output for WF-TEST-PIPELINE-STRUCTURED-BRIDGE-2026-06-27B",
+  "requires_codex_review": true,
+  "non_goals": [
+    "No live Playwright execution",
+    "No delegated local shell execution inside sidecar"
+  ],
+  "action_payload": {
+    "validator_id": "validate_runner_v1",
+    "inputs": {
+      "plan_path": "documentation/codex/model-routing/structured-action-runs/WF-TEST-PIPELINE-STRUCTURED-BRIDGE-2026-06-27B/20260627-195933/generated/TEST-RUN-2026-06-27-901_plan.json",
+      "runner_path": "documentation/codex/model-routing/structured-action-runs/WF-TEST-PIPELINE-STRUCTURED-BRIDGE-2026-06-27B/20260627-195933/generated/TEST-RUN-2026-06-27-901_generated.spec.js"
+    }
+  }
+}

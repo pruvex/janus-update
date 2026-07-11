@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-06-09-002",
+  "testCaseId": "TC-004-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Seed Chris vegetarian + Star Wars and Oli Big Bang Theory; ask `was mögen chris und oli?`",
+  "response": "Hallo Rolf Adam! Ich habe die neuen Informationen für dich gespeichert. Hier ist eine Übersicht darüber, was Chris und Oli mögen:Chris*   Ernährung: Er ist Vegetarier und isst gerne Kimchi.*   Interessen: Er ist ein großer Star-Wars-Fan und baut leidenschaftlich gerne Star-Wars-Modelle.*   Freizeit: Er verbringt sehr gerne Zeit im Garten.Oli*   Serien & Spiele: Er liebt die Serie *The Big Bang Theory* und mag Strategiespiele wie *Panzer General*.*   Ernährung: Genau wie Chris mag er vegetarisches Essen und Kimchi.*   Freizeit: Er verbringt ebenfalls gerne Zeit im Garten und baut Star-Wars-Modelle.Das hast du mir am 8. und 9. Juni 2026 in den Chats \"Vorlieben von Chris Gier\" und hier im aktuellen Gespräch erzählt.💡 Passende nächste Schritte:• Möchtest du, dass ich die Gemeinsamkeiten der beiden für eine gemeinsame Aktivität zusammenfasse?• Soll ich nach vegetarischen Rezepten mit Kimchi für ein Treffen suchen?• Suchst du nach weiteren Serienempfehlungen für Oli, die ähnlich wie Big Bang Theory sind?18:35",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-06-09T16:35:23.826Z"
+}

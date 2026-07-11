@@ -15,6 +15,10 @@ from backend.services.workflow.placeholder_resolver import (
     resolve_routine_step_args,
 )
 from backend.services.workflow.routine_schema import RoutineStep, RoutineStepsDocument
+from backend.services.workflow.calendar_wikipedia_presenter import (
+    resolve_routine_wikipedia_display_message,
+    sanitize_wikipedia_display_text,
+)
 
 
 @dataclass
@@ -161,6 +165,8 @@ class RoutineRunner:
             routine.name,
             tool_results,
             semantic_match=_is_semantic_routine_match(matched_trigger),
+            steps=document.steps,
+            user_text=user_text,
         )
         return self._finalize_run(
             routine,
@@ -313,25 +319,22 @@ def _routine_constraints_match_user_text(
         origin, destination = _extract_safe_routing_origin_destination(user_text)
         return bool(date_ref and origin and destination)
 
+    if skill_ids == frozenset({"calendar.list_events", "system.weather"}):
+        date_ref = _extract_calendar_weather_combo_date_reference(user_text)
+        requested_city = _extract_requested_weather_city(user_text)
+        return bool(date_ref and requested_city)
+
+    if skill_ids == frozenset({"calendar.list_events", "system.wikipedia_summary"}):
+        date_ref = _extract_calendar_context_date_reference(user_text)
+        query = _extract_requested_wikipedia_query(user_text)
+        return bool(date_ref and query)
+
     weather_step = next((step for step in document.steps if step.skill_id == "system.weather"), None)
     if weather_step is None:
         return True
 
     requested_city = _extract_requested_weather_city(user_text)
-    if not requested_city:
-        return False
-
-    routine_city = _resolve_routine_weather_city(weather_step, memory_context=memory_context)
-    if not routine_city:
-        return False
-    if _normalize_city_name(routine_city) != _normalize_city_name(requested_city):
-        return False
-
-    requested_date = _normalize_date_reference(_extract_requested_weather_date_str(user_text))
-    routine_date = _normalize_date_reference(
-        _resolve_routine_weather_date_str(weather_step, memory_context=memory_context)
-    )
-    return requested_date == routine_date
+    return bool(requested_city)
 
 
 def _resolve_routine_weather_city(
@@ -389,22 +392,9 @@ def _extract_requested_weather_date_str(user_text: str) -> str | None:
     if not weather_match:
         return None
 
-    start = max(0, weather_match.start() - 60)
-    end = min(len(text), weather_match.end() + 40)
-    segment = text[start:end]
-    relative_markers = (
-        (r"\buebermorgen\b", "uebermorgen"),
-        (r"\bübermorgen\b", "uebermorgen"),
-        (r"\bmorgen\b", "morgen"),
-        (r"\bheute\b", "heute"),
-        (r"\bgestern\b", "gestern"),
-        (r"\btoday\b", "heute"),
-        (r"\btomorrow\b", "morgen"),
-    )
-    for pattern, normalized in relative_markers:
-        if re.search(pattern, segment, flags=re.IGNORECASE):
-            return normalized
-    return None
+    head = text[max(0, weather_match.start() - 20): weather_match.start()]
+    tail = text[weather_match.end(): min(len(text), weather_match.end() + 50)]
+    return _extract_single_relative_date_from_text(f"{head} {tail}")
 
 
 def _normalize_date_reference(value: str | None) -> str:
@@ -438,6 +428,18 @@ def _extract_requested_weather_city(user_text: str) -> str | None:
         text,
         flags=re.IGNORECASE,
     )
+    if not match:
+        match = re.search(
+            r"\bund\s+wetter\s+([A-Za-zÄÖÜäöüß][\wÄÖÜäöüß.-]{1,48})(?:\s+(?:heute|morgen|uebermorgen|übermorgen))?\b",
+            text,
+            flags=re.IGNORECASE,
+        )
+    if not match:
+        match = re.search(
+            r"\bwetter\s+([A-Za-zÄÖÜäöüß][\wÄÖÜäöüß.-]{1,48})(?:\s+(?:heute|morgen|uebermorgen|übermorgen))?\b",
+            text,
+            flags=re.IGNORECASE,
+        )
     if not match:
         return None
     city = re.split(r"[?!.;,]|\s+und\b|\s+oder\b", match.group(1), maxsplit=1)[0].strip()
@@ -477,16 +479,24 @@ def _semantic_reuse_block_reason(
         if not (origin and destination):
             return "Fuer die gespeicherte Routing-Routine fehlen eindeutige Start- und Zielangaben in der Anfrage."
 
+    if skill_ids == frozenset({"calendar.list_events", "system.weather"}):
+        date_ref = _extract_calendar_weather_combo_date_reference(user_text)
+        if not date_ref:
+            return "Fuer die gespeicherte Kalender-Wetter-Routine fehlt ein eindeutiger Tagesbezug in der Anfrage."
+        if not _extract_requested_weather_city(user_text):
+            return "Fuer die gespeicherte Wetter-Routine fehlt der Ort in der Anfrage."
+
+    if skill_ids == frozenset({"calendar.list_events", "system.wikipedia_summary"}):
+        date_ref = _extract_calendar_context_date_reference(user_text)
+        if not date_ref:
+            return "Fuer die gespeicherte Kalender-Wikipedia-Routine fehlt ein eindeutiger Tagesbezug in der Anfrage."
+        if not _extract_requested_wikipedia_query(user_text):
+            return "Fuer die gespeicherte Wikipedia-Routine fehlt ein eindeutiges Thema in der Anfrage."
+
     weather_step = next((step for step in document.steps if step.skill_id == "system.weather"), None)
     if weather_step is not None:
-        requested_city = _extract_requested_weather_city(user_text)
-        if not requested_city:
+        if not _extract_requested_weather_city(user_text):
             return "Fuer die gespeicherte Wetter-Routine fehlt der Ort in der Anfrage."
-        routine_city = _resolve_routine_weather_city(weather_step, memory_context=memory_context)
-        if not routine_city:
-            return "Der gespeicherten Wetter-Routine ist kein sicherer Ort zugeordnet."
-        if _normalize_city_name(routine_city) != _normalize_city_name(requested_city):
-            return "Der angefragte Wetter-Ort passt nicht zur gespeicherten Routine."
 
     return None
 
@@ -506,7 +516,11 @@ def _rebind_semantic_step_args(
             )
         _apply_routing_rebind(args, origin, destination)
     elif step.skill_id == "calendar.list_events":
-        date_ref = _extract_requested_calendar_date_reference(user_text)
+        date_ref = (
+            _extract_calendar_context_date_reference(user_text)
+            or _extract_calendar_weather_combo_date_reference(user_text)
+            or _extract_requested_calendar_date_reference(user_text)
+        )
         if date_ref:
             _apply_calendar_date_rebind(args, date_ref)
     elif step.skill_id == "system.weather":
@@ -516,6 +530,16 @@ def _rebind_semantic_step_args(
                 "Wetter-Ort konnte nicht sicher aus der Anfrage gelesen werden."
             )
         args["city"] = requested_city
+        requested_date = _extract_requested_weather_date_str(user_text)
+        if requested_date:
+            args["date_str"] = requested_date
+    elif step.skill_id == "system.wikipedia_summary":
+        query = _extract_requested_wikipedia_query(user_text)
+        if not query:
+            raise PlaceholderResolutionError(
+                "Wikipedia-Thema konnte nicht sicher aus der Anfrage gelesen werden."
+            )
+        args["query"] = query
     return args
 
 
@@ -547,27 +571,99 @@ def _apply_calendar_date_rebind(args: dict[str, Any], date_ref: str) -> None:
         args["date_str"] = date_ref
 
 
-def _extract_requested_calendar_date_reference(user_text: str) -> str | None:
-    text = str(user_text or "").strip()
-    if not text:
+_RELATIVE_DATE_MARKERS = (
+    (r"\buebermorgen\b", "uebermorgen"),
+    (r"\bübermorgen\b", "uebermorgen"),
+    (r"\bmorgen\b", "morgen"),
+    (r"\bheute\b", "heute"),
+    (r"\bgestern\b", "gestern"),
+    (r"\btoday\b", "heute"),
+    (r"\btomorrow\b", "morgen"),
+)
+
+
+def _extract_single_relative_date_from_text(text: str) -> str | None:
+    segment = str(text or "").strip()
+    if not segment:
         return None
-    relative_markers = (
-        (r"\buebermorgen\b", "uebermorgen"),
-        (r"\bübermorgen\b", "uebermorgen"),
-        (r"\bmorgen\b", "morgen"),
-        (r"\bheute\b", "heute"),
-        (r"\bgestern\b", "gestern"),
-        (r"\btoday\b", "heute"),
-        (r"\btomorrow\b", "morgen"),
-    )
     matches: list[str] = []
-    for pattern, normalized in relative_markers:
-        if re.search(pattern, text, flags=re.IGNORECASE):
+    for pattern, normalized in _RELATIVE_DATE_MARKERS:
+        if re.search(pattern, segment, flags=re.IGNORECASE):
             if normalized not in matches:
                 matches.append(normalized)
     if len(matches) != 1:
         return None
     return matches[0]
+
+
+def _extract_calendar_context_date_reference(user_text: str) -> str | None:
+    text = str(user_text or "").strip()
+    if not text:
+        return None
+    boundary_match = re.search(
+        r"\b(?:wetter|wikipedia|routing|entfernung|strecke|nachrichten|news)\b",
+        text,
+        flags=re.IGNORECASE,
+    )
+    calendar_segment = text[: boundary_match.start()] if boundary_match else text
+    calendar_segment = re.split(
+        r"\bund\s+(?:wie|was|gib|gibt)\b",
+        calendar_segment,
+        maxsplit=1,
+        flags=re.IGNORECASE,
+    )[0]
+    return _extract_single_relative_date_from_text(calendar_segment)
+
+
+def _extract_calendar_weather_combo_date_reference(user_text: str) -> str | None:
+    date_ref = _extract_calendar_context_date_reference(user_text)
+    if date_ref:
+        return date_ref
+    return _extract_single_relative_date_from_text(str(user_text or "").strip())
+
+
+def _extract_requested_calendar_date_reference(user_text: str) -> str | None:
+    return _extract_single_relative_date_from_text(str(user_text or "").strip())
+
+
+def _extract_requested_wikipedia_query(user_text: str) -> str | None:
+    text = str(user_text or "").strip()
+    if not text:
+        return None
+
+    def _clean_topic(value: str) -> str:
+        cleaned = re.split(
+            r"[?!.;,]|\s+und\s+(?:was|wie|gib|gibt)\b",
+            value.strip(),
+            maxsplit=1,
+        )[0].strip()
+        return cleaned
+
+    patterns = (
+        re.compile(
+            r"(?i)wikipedia(?:-|\s*)zusammenfassung(?:\s+(?:zu|über|ueber|von))?\s+"
+            r"([A-Za-zÄÖÜäöüß][\wÄÖÜäöüß .'-]{0,60}?)(?=\s*[?.!,]|$)"
+        ),
+        re.compile(
+            r"(?i)(?:zusammenfassung|summary)\s+(?:zu|über|ueber|von)\s+"
+            r"([A-Za-zÄÖÜäöüß][\wÄÖÜäöüß .'-]{0,60}?)(?=\s*[?.!,]|$)"
+        ),
+        re.compile(
+            r"(?i)wikipedia.*?\b(?:zu|über|ueber|von)\s+"
+            r"([A-Za-zÄÖÜäöüß][\wÄÖÜäöüß .'-]{0,60}?)(?=\s*[?.!,]|$)"
+        ),
+    )
+    topics: list[str] = []
+    for pattern in patterns:
+        match = pattern.search(text)
+        if not match:
+            continue
+        topic = _clean_topic(match.group(1))
+        if topic and topic not in topics:
+            topics.append(topic)
+    if len(topics) != 1:
+        return None
+    return topics[0]
 
 
 def _extract_safe_routing_origin_destination(user_text: str) -> tuple[str | None, str | None]:
@@ -619,6 +715,8 @@ def _build_success_summary(
     tool_results: list[dict[str, Any]],
     *,
     semantic_match: bool = False,
+    steps: list[RoutineStep] | None = None,
+    user_text: str | None = None,
 ) -> str:
     combo_summary = _build_calendar_weather_success_summary(tool_results)
     if combo_summary:
@@ -627,6 +725,16 @@ def _build_success_summary(
         return combo_summary
 
     combo_summary = _build_calendar_routing_success_summary(tool_results)
+    if combo_summary:
+        if semantic_match:
+            return f"Ich habe deine passende gespeicherte Routine genutzt.\n\n{combo_summary}"
+        return combo_summary
+
+    combo_summary = _build_calendar_wikipedia_success_summary(
+        tool_results,
+        steps=steps,
+        user_text=user_text,
+    )
     if combo_summary:
         if semantic_match:
             return f"Ich habe deine passende gespeicherte Routine genutzt.\n\n{combo_summary}"
@@ -702,6 +810,74 @@ def _build_calendar_routing_success_summary(tool_results: list[dict[str, Any]]) 
     if calendar_message:
         return f"{calendar_message}\n\n{routing_message}"
     return routing_message
+
+
+def _build_calendar_wikipedia_success_summary(
+    tool_results: list[dict[str, Any]],
+    *,
+    steps: list[RoutineStep] | None = None,
+    user_text: str | None = None,
+) -> str:
+    calendar_message = ""
+    wikipedia_message = ""
+    wikipedia_error_message = ""
+    saw_calendar = False
+    saw_wikipedia = False
+    saw_wikipedia_tool = False
+    wiki_step = next((step for step in steps or [] if step.skill_id == "system.wikipedia_summary"), None)
+    requested_query = _extract_requested_wikipedia_query(user_text or "") if user_text else None
+
+    for item in tool_results:
+        if not isinstance(item, dict):
+            continue
+        skill_id = str(item.get("skill_id") or "").strip().lower()
+        result = item.get("result") if isinstance(item.get("result"), dict) else {}
+        status = str(result.get("status") or "").strip().lower()
+        if status not in {"ok", "dry_run_success"}:
+            if skill_id in {"system.wikipedia_summary", "system_wikipedia_summary"}:
+                saw_wikipedia_tool = True
+                error_obj = result.get("error") if isinstance(result.get("error"), dict) else {}
+                wikipedia_error_message = (
+                    str(error_obj.get("message") or "").strip()
+                    or str(result.get("message") or "").strip()
+                )
+            continue
+
+        if skill_id == "calendar.list_events":
+            saw_calendar = True
+            calendar_message = _extract_calendar_success_message(result)
+        elif skill_id in {"system.wikipedia_summary", "system_wikipedia_summary"}:
+            saw_wikipedia_tool = True
+            saw_wikipedia = True
+            wikipedia_message = resolve_routine_wikipedia_display_message(
+                wiki_step=wiki_step,
+                requested_query=requested_query,
+                tool_result=result,
+            )
+
+    if saw_calendar and saw_wikipedia and calendar_message and wikipedia_message:
+        return f"{calendar_message}\n\n{wikipedia_message}"
+
+    parts = [part for part in (calendar_message, wikipedia_message) if part]
+    if parts:
+        return "\n\n".join(parts)
+    if saw_calendar and saw_wikipedia_tool and wikipedia_error_message:
+        if calendar_message:
+            return f"{calendar_message}\n\n{wikipedia_error_message}"
+        return wikipedia_error_message
+    return ""
+
+
+def _extract_wikipedia_success_message(result: dict[str, Any]) -> str:
+    data = result.get("data") if isinstance(result.get("data"), dict) else {}
+    candidate = (
+        str(data.get("summary") or "").strip()
+        or str(result.get("message") or "").strip()
+        or str(result.get("output") or "").strip()
+    )
+    if candidate:
+        return sanitize_wikipedia_display_text(candidate)
+    return _summarize_data(data)
 
 
 def _extract_routing_success_message(result: dict[str, Any]) -> str:

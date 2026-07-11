@@ -1,0 +1,28 @@
+{
+  "summary_header": "CODEX SIDECAR DELEGATION GATE",
+  "workflow_id": "SIDECAR-DOC-FLOW-20260614-024858",
+  "task_label": "Record sidecar workflow milestone note",
+  "selected_path": "operator_choice_pending",
+  "skill": "janus-documentation-update",
+  "normal_target_model": "gpt-5.4 / medium",
+  "choice_1": "Codex",
+  "choice_2": "Sidecar",
+  "sidecar_model_provider": "Codex CLI sidecar / gpt-5.4",
+  "sandbox": "read-only",
+  "timeout_seconds": 180,
+  "estimated_cost_quota_impact": "separate local Codex CLI run; direct dollar cost N/A in current local path; main value is shifting draft work out of the main Codex App loop",
+  "expected_delegation_value": "non-binding documentation draft only",
+  "codex_app_review_after_sidecar": "Codex App reviews the draft, decides acceptance, and performs any binding documentation writes locally.",
+  "final_outcome": "AWAITING_OPERATOR_CHOICE",
+  "validation_result": "PASS",
+  "operator_prompt_lines": [
+    "Willst du 1 Codex das machen lassen?",
+    "Oder 2 das ueber den Sidecar laufen lassen (read-only, non-binding Draft)?"
+  ],
+  "boundaries": [
+    "No production routing",
+    "No Git or release authority",
+    "No file writes by the sidecar",
+    "Codex App remains reviewer and governance owner"
+  ]
+}

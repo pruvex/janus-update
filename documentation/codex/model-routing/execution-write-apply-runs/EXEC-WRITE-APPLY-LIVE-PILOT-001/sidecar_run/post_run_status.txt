@@ -1,0 +1,2 @@
+﻿ M backend/services/contact_manager.py
+ M backend/tools/memory_tools.py

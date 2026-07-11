@@ -1,0 +1,48 @@
+﻿{
+    "codex_path":  "codex",
+    "arguments":  [
+                      "exec",
+                      "--cd",
+                      "C:\\KI\\Janus-Projekt",
+                      "--model",
+                      "gpt-5.4",
+                      "--sandbox",
+                      "workspace-write",
+                      "--output-last-message",
+                      "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-TEST-ARTIFACT-LIVE-2026-06-27-124\\last_message.md",
+                      "-"
+                  ],
+    "process_executable":  "C:\\nvm4w\\nodejs\\node.exe",
+    "process_arguments":  [
+                              "C:\\nvm4w\\nodejs\\node_modules\\@openai\\codex\\bin\\codex.js",
+                              "exec",
+                              "--cd",
+                              "C:\\KI\\Janus-Projekt",
+                              "--model",
+                              "gpt-5.4",
+                              "--sandbox",
+                              "workspace-write",
+                              "--output-last-message",
+                              "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-TEST-ARTIFACT-LIVE-2026-06-27-124\\last_message.md",
+                              "-"
+                          ],
+    "run_directory":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-TEST-ARTIFACT-LIVE-2026-06-27-124",
+    "prompt_path":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-TEST-ARTIFACT-LIVE-2026-06-27-124\\generated_prompt.md",
+    "working_directory":  "C:\\KI\\Janus-Projekt",
+    "model":  "gpt-5.4",
+    "sandbox":  "workspace-write",
+    "approval_policy":  "never",
+    "timeout_seconds":  180,
+    "use_oss":  false,
+    "local_provider":  "",
+    "json_events":  false,
+    "editable_paths":  [
+                           "documentation/test-runs/TEST-RUN-2026-06-27-124_plan.json",
+                           "documentation/test-runs/TEST-RUN-2026-06-27-124_generated.spec.js",
+                           "documentation/test-runs/TEST-RUN-2026-06-27-124_skill2_handover.txt"
+                       ],
+    "max_touched_files":  3,
+    "capture_git_diff":  true,
+    "fail_on_delete_rename_move":  true,
+    "execute":  true
+}

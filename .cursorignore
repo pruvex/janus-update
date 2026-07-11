@@ -1,0 +1,7 @@
+documentation/codex/model-routing/cursor-worker-runs/
+documentation/codex/model-routing/bounded-dispatch-runs/
+documentation/codex/model-routing/execution-direct-or-runs/
+documentation/codex/model-routing/productive-dev-workhorse-runs/
+documentation/codex/model-routing/sidecar-runs/
+documentation/codex/openrouter-delegation/benchmark_result_*.json
+development/openrouter-skill-tests/**/runs/

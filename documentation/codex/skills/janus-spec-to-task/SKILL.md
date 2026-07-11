@@ -32,6 +32,66 @@ If approval evidence is missing, contradictory, or the Spec is not final, block 
 - If deterministic decomposition is impossible, stop and route back to `janus-spec-review` with a model escalation recommendation.
 - Do not treat a vague `ok` as approval evidence or as a valid handoff substitute.
 
+## Tri-Modal Rollout Note
+
+Global delegation vocabulary across Janus is now:
+
+- `1 = Codex`
+- `2 = Cursor`
+- `3 = OpenRouter`
+
+This skill's bounded approved-Spec compilation lane is now wired through the shared manifest-backed `documentation/codex/model-routing/scripts/janus_delegate.py` entry. OpenRouter remains the recommended backend for this assist-only review slice; Cursor is visible as option `2` but is not the recommended backend here.
+
+## Bounded Delegation Gate
+
+For a narrowly bounded approved-Spec compilation slice, this skill now has the shared tri-modal operator gate:
+
+- `1 = Codex`
+- `2 = Cursor`
+- `3 = OpenRouter`
+
+Use the shared delegate entry first:
+
+```powershell
+python documentation/codex/model-routing/scripts/janus_delegate.py --lane spec_to_task_review --task-id TASK-ST-001 --workflow-id <WORKFLOW-ID> --operator-choice prompt --input-package-json development/openrouter-skill-tests/janus-spec-to-task/spec_to_task_input_package.json --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000
+```
+
+For a narrowly bounded approved-Spec compilation slice, this skill may offer one operator-facing delegated choice only when all of the following are true:
+
+- exactly one approved final Spec file is bound
+- the delegated task is draft-only task compilation and bounded to a structured task artifact proposal
+- no authoritative repo write, task release, Git action, release action, or product decision is delegated
+- Codex remains the final reviewer and local writer of any accepted task artifact
+
+Binding implementation artifact:
+
+- `C:\KI\Janus-Projekt\documentation\codex\model-routing\scripts\codex_spec_to_task_runner.py`
+
+Current bounded winner for the representative Spec 21 compilation slice:
+
+- `qwen/qwen3-coder-30b-a3b-instruct`
+
+Current lane behavior:
+
+- OpenRouter remains the recommended backend for this bounded assist-only review slice.
+- Cursor is visible as option `2`, but not the recommended backend.
+- The existing `codex_spec_to_task_runner.py` remains the downstream OR helper planned by `janus_delegate.py`.
+
+Gate rules:
+
+- if the user chooses `1`, `local`, or `codex`, stay local in Codex
+- if the user chooses `2`, `cursor`, or `Cursor`, do not imply a live Cursor spec-to-task path unless a later migration artifact explicitly adds one
+- if the user chooses `3`, `or`, `opr`, or `openrouter`, the shared delegate currently plans the bounded spec-to-task helper path and hands off to the existing runner
+- use only a bounded task-compilation input package; do not delegate the authoritative task-file write
+- accepted delegated output remains draft material only; Codex must still perform any real task-artifact write locally
+
+Forbidden inside this path:
+
+- delegated authoritative task-file writes
+- delegated implementation, architecture, or product decisions
+- delegated next-skill authority beyond draft suggestion
+- delegated Git, release, routing-table, or `CURRENT_STATE` writes
+
 ## Task Eligibility
 
 Every execution task must produce at least one of:
@@ -70,11 +130,11 @@ TASK-XXX
 - Steps:
 - Acceptance Criteria:
 - Tests:
-- Model: 5.4 | 5.4 mini | 5.5
+- Model: 5.6 Terra | 5.6 Luna | 5.6 Sol | 5.5 fallback | legacy fallback
 - Reason:
 ```
 
-Use `5.4` as the normal Janus workhorse for implementation/refactor/test execution tasks. Use `5.4` low for deterministic single-file text/data/test artifact edits when the `5.4` context is warm or follow-up implementation will return to `5.4`. Use `5.4 mini` only for separated mechanical edits that are still likely cheaper than staying on warm `5.4`. Recommend `5.5` as escalation when decomposition is ambiguous, security-sensitive, architecture-heavy, or high-risk.
+Use `5.6 Terra` as the normal Janus workhorse for implementation/refactor/test execution tasks. Use `5.6 Terra` low for deterministic single-file text/data/test artifact edits when the `5.6 Terra` context is warm or follow-up implementation will return to `5.6 Terra`. Use `5.6 Luna` only for separated mechanical edits that are still likely cheaper than staying on warm `5.6 Terra`. Recommend `5.6 Sol` as escalation when decomposition is ambiguous, security-sensitive, architecture-heavy, or high-risk.
 
 Validate task structure when useful:
 
@@ -93,7 +153,7 @@ Task: <generated task file>
 Backlog Item: <BACKLOG-XXX | N/A>
 Target Task: <first generated task id>
 Mode: TASK_REFINEMENT
-Execution Model: 5.4
+Execution Model: 5.6 Terra
 Rules: USE_SPEC_AND_TASK_AS_SOURCE_OF_TRUTH_NO_IMPLEMENTATION_RELEASE_ONE_TARGET_TASK
 Expected Output: TASK_REFINED_PLUS_PRECHECK_HANDOFF
 ```

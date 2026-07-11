@@ -1,0 +1,43 @@
+{
+  "summary_header": "TEST RESULT TRIAGE REVIEW GATE",
+  "workflow_id": "WF-TRIAGE-ROI-POS-SMOKE-2026-06-30-002",
+  "skill": "janus-test-pipeline",
+  "task_label": "Triage ROI positive smoke",
+  "selected_path": "operator_choice_pending",
+  "normal_target_model": "5.4 medium",
+  "selected_or_model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "estimated_or_cost": 0.0003,
+  "cost_estimate_confidence_percent": 80.0,
+  "or_roi": {
+    "status": "POSITIVE",
+    "missing_fields": [],
+    "estimated_codex_saved_tokens": 3000,
+    "estimated_codex_or_overhead_tokens": 900,
+    "minimum_net_codex_saved_tokens": 500,
+    "net_codex_saved_tokens": 2100,
+    "message": "OR ROI POSITIVE: estimated saved Codex tokens 3000, OR orchestration/review overhead 900, net 2100, minimum required 500."
+  },
+  "choice_1": "Codex",
+  "choice_2": "OR",
+  "delegated_model_label": "qwen/qwen3-coder-30b-a3b-instruct",
+  "expected_delegation_value": "bounded assist-only triage review with no live execution and no final PASS decision",
+  "operator_prompt_lines": [
+    "1 = Codex",
+    "2 = OR",
+    "OR ist hier die externe Option, um Codex-Guthaben zu sparen.",
+    "Fest empfohlenes OR-Modell: qwen/qwen3-coder-30b-a3b-instruct",
+    "Voraussichtliche OR-Kosten 0.000300000, Evidenzgenauigkeit 80%",
+    "OR ROI Gate: POSITIVE (geschaetzte Codex-Ersparnis 3000 Tokens, OR-Overhead 900 Tokens, netto 2100 Tokens)"
+  ],
+  "boundaries": [
+    "No delegated live test execution",
+    "No delegated runner generation",
+    "No delegated final PASS or release decision",
+    "Codex remains validation and routing owner"
+  ],
+  "final_outcome": "AWAITING_OPERATOR_CHOICE",
+  "validation_result": "PASS",
+  "eligibility_result": "OR_ALLOWED",
+  "eligibility_reason_code": "ELIGIBILITY_CONFIRMED",
+  "evidence_status": "PILOT_SCOPE_ALLOWED"
+}

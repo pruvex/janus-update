@@ -1,0 +1,46 @@
+﻿{
+    "codex_path":  "codex",
+    "arguments":  [
+                      "exec",
+                      "--cd",
+                      "C:\\KI\\Janus-Projekt",
+                      "--model",
+                      "gpt-5.4",
+                      "--sandbox",
+                      "workspace-write",
+                      "--output-last-message",
+                      "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-DEEPDIVE-REQUESTS-001\\last_message.md",
+                      "-"
+                  ],
+    "process_executable":  "C:\\nvm4w\\nodejs\\node.exe",
+    "process_arguments":  [
+                              "C:\\nvm4w\\nodejs\\node_modules\\@openai\\codex\\bin\\codex.js",
+                              "exec",
+                              "--cd",
+                              "C:\\KI\\Janus-Projekt",
+                              "--model",
+                              "gpt-5.4",
+                              "--sandbox",
+                              "workspace-write",
+                              "--output-last-message",
+                              "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-DEEPDIVE-REQUESTS-001\\last_message.md",
+                              "-"
+                          ],
+    "run_directory":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-DEEPDIVE-REQUESTS-001",
+    "prompt_path":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-fixtures\\quickchange_cost_deepdive_requests_to_anfragen_2026-06-16.md",
+    "working_directory":  "C:\\KI\\Janus-Projekt",
+    "model":  "gpt-5.4",
+    "sandbox":  "workspace-write",
+    "approval_policy":  "never",
+    "timeout_seconds":  120,
+    "use_oss":  false,
+    "local_provider":  "",
+    "json_events":  false,
+    "editable_paths":  [
+                           "frontend/js/cost-visualizer.js"
+                       ],
+    "max_touched_files":  1,
+    "capture_git_diff":  true,
+    "fail_on_delete_rename_move":  true,
+    "execute":  true
+}

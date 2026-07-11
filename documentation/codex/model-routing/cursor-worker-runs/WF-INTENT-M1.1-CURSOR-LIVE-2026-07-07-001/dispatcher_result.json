@@ -1,0 +1,94 @@
+{
+  "backend": "cursor",
+  "lane_id": "execution_patch_candidate",
+  "workflow_id": "WF-INTENT-M1.1-CURSOR-LIVE-2026-07-07-001",
+  "selected_model": "composer-2.5",
+  "cursor_pool": "auto_composer",
+  "estimated_cost_usd_static": 0.0104,
+  "session_id": null,
+  "validation_result": "BLOCKED",
+  "selected_path": "cursor_worker_blocked",
+  "final_outcome": "CURSOR_AGENT_TIMEOUT",
+  "package_validation": {
+    "validation_result": "PASS",
+    "contract_status": "TASK_PACKAGE_VALID_VIA_WORKER_REFERENCE",
+    "issues": [],
+    "task_label": "Build the intent auxiliary classifier contract and focused tests for TASK-INTENT-M1.1",
+    "worker_profile": "cursor-agent",
+    "allowed_edit_paths": [
+      "backend/services/orchestrator/intent_aux_classifier.py",
+      "backend/services/orchestrator/intent_config.py",
+      "backend/data/schemas_intent.py",
+      "backend/tests/test_intent_aux_classifier.py",
+      "backend/tests/test_intent_action_subject_mapping.py"
+    ],
+    "required_result_artifacts": [
+      "RESULT.json",
+      "RESULT.md",
+      "DIFF.patch",
+      "FILES_CHANGED.txt",
+      "CHECKS.log",
+      "COST.json"
+    ],
+    "source_package_path": "documentation\\codex\\model-routing\\execution-review-fixtures\\intent_m1_1_execution_patch_cursor_input_package_2026-07-07.json",
+    "worker_package_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-review-fixtures\\intent_m1_1_execution_patch_cursor_worker_package_2026-07-07.json"
+  },
+  "allowlist_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "allowlist": [
+      "backend/services/orchestrator/intent_aux_classifier.py",
+      "backend/services/orchestrator/intent_config.py",
+      "backend/data/schemas_intent.py",
+      "backend/tests/test_intent_aux_classifier.py",
+      "backend/tests/test_intent_action_subject_mapping.py"
+    ]
+  },
+  "allowlist_consistency_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "package_allowed_edit_paths": [
+      "backend/services/orchestrator/intent_aux_classifier.py",
+      "backend/services/orchestrator/intent_config.py",
+      "backend/data/schemas_intent.py",
+      "backend/tests/test_intent_aux_classifier.py",
+      "backend/tests/test_intent_action_subject_mapping.py"
+    ],
+    "allowlist": [
+      "backend/services/orchestrator/intent_aux_classifier.py",
+      "backend/services/orchestrator/intent_config.py",
+      "backend/data/schemas_intent.py",
+      "backend/tests/test_intent_aux_classifier.py",
+      "backend/tests/test_intent_action_subject_mapping.py"
+    ],
+    "declared_allowlist_file": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-review-fixtures\\allowlists\\intent_m1_1_execution_patch_allowlist_2026-07-07.txt"
+  },
+  "codex_review_required": true,
+  "operator_message": "Cursor agent exceeded the bounded live timeout (180s) before producing a final result.",
+  "accepted_source_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "accepted_source_run_dir": null,
+    "recognized_artifacts": []
+  },
+  "planned_command": [
+    "C:\\Users\\pruve\\AppData\\Local\\cursor-agent\\agent.CMD",
+    "-p",
+    "--workspace",
+    "C:\\KI\\Janus-Projekt",
+    "--model",
+    "composer-2.5",
+    "--output-format",
+    "json",
+    "--force",
+    "--trust",
+    "--approve-mcps",
+    "Execute this bounded Janus delegated worker task now. Treat the full prompt below as instructions, not as text to analyze. Do not ask clarifying questions unless the task is impossible with the provided files and rules.\n\nStable prefix:\n- lane: execution_patch_candidate\n- worker_contract: janus-delegated-worker\n- output_schema: status, changed_files, command_results, summary, blockers\n- hard_rules: stay bounded, do not commit, do not leave the allowlist\n\nVariable suffix:\nEdit only the allowlisted files for TASK-INTENT-M1.1. Introduce the ActionSubjectResult contract, the bounded auxiliary classifier/provider wrapper, the flag and config surface, and the focused tests. Do not integrate into detect_all_intents(). Do not widen into transport, OAuth, OpenRouter product routing, benchmark work, or unrelated intent cleanup. Run only the listed checks. Do not commit. Return concise JSON-compatible output.\nTask label: Build the intent auxiliary classifier contract and focused tests for TASK-INTENT-M1.1\nStay inside the five-file allowlist, do not integrate into detect_all_intents(), preserve Janus boundaries, run only the bounded checks, and return concise JSON-friendly output.\nAcceptance criteria:\n- Only the allowlisted source and test files may change.\n- Implement the ActionSubjectResult contract and auxiliary classifier wrapper without integrating into detect_all_intents().\n- Provider or parsing failures must fail closed and stay inside deterministic fallback behavior for this slice.\n- The focused pytest and py_compile checks must pass before Codex review.\nAllowed edit paths:\n- backend/services/orchestrator/intent_aux_classifier.py\n- backend/services/orchestrator/intent_config.py\n- backend/data/schemas_intent.py\n- backend/tests/test_intent_aux_classifier.py\n- backend/tests/test_intent_action_subject_mapping.py\nReturn status, changed_files, command_results, summary, and blockers as concise JSON-compatible output."
+  ],
+  "live_execution_allowed": true,
+  "mode": "proposal_first",
+  "workspace_root": "C:\\KI\\Janus-Projekt",
+  "timeout_seconds": 180,
+  "changed_files": [],
+  "changed_outside_allowlist": []
+}

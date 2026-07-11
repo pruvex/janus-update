@@ -1,0 +1,30 @@
+{
+  "summary_header": "BACKLOG HANDOFF REVIEW GATE",
+  "workflow_id": "WF-BACKLOG-HANDOFF-EVERYDAY-PROMPT-2026-06-28",
+  "skill": "janus-backlog-handoff",
+  "task_label": "Backlog handoff everyday prompt proof current-shape",
+  "selected_path": "operator_choice_pending",
+  "normal_target_model": "5.4 medium",
+  "selected_or_model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "estimated_or_cost": 0.00018,
+  "cost_estimate_confidence_percent": 76.0,
+  "choice_1": "Codex",
+  "choice_2": "OR",
+  "delegated_model_label": "qwen/qwen3-coder-30b-a3b-instruct",
+  "expected_delegation_value": "bounded handoff recommendation with no backlog move or final artifact write authority",
+  "operator_prompt_lines": [
+    "1 = Codex",
+    "2 = OR",
+    "OR ist hier die externe Option, um Codex-Guthaben zu sparen.",
+    "Fest empfohlenes OR-Modell: qwen/qwen3-coder-30b-a3b-instruct",
+    "Voraussichtliche OR-Kosten 0.000180000, Evidenzgenauigkeit 76%"
+  ],
+  "boundaries": [
+    "No delegated backlog move or status write",
+    "No delegated final handoff artifact write",
+    "No delegated next-skill authority",
+    "Codex remains final handoff owner"
+  ],
+  "final_outcome": "AWAITING_OPERATOR_CHOICE",
+  "validation_result": "PASS"
+}

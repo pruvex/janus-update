@@ -1,0 +1,84 @@
+{
+  "status": "PASS",
+  "source_type": "LATEST_DECISION_SUMMARY",
+  "source_path": "documentation/codex/model-routing/codex_first_real_or_pilot_decision_summary_2026-06-16.md",
+  "target_spec_path": "documentation/SPEC/first_real_or_pilot_for_bounded_janus_delegation.md",
+  "recommended_next_skill": "janus-spec-review",
+  "mechanical_cleanup_required": "NO",
+  "structured_spec": {
+    "routing": {
+      "target_skill": "janus-spec-review",
+      "recommended_model": "5.4",
+      "recommended_reasoning": "medium",
+      "new_chat": "no",
+      "complexity_score": 44,
+      "confidence": "MEDIUM",
+      "dashboard_hint": "SAFE",
+      "reason": "Bounded delegation pilot with moderate cross-surface workflow complexity."
+    },
+    "feature_identity": {
+      "Feature Name": "First Real OR Pilot for Bounded Janus Delegation",
+      "Primary Goal": "Prove one real bounded OR-assisted write task under Codex-owned review and acceptance."
+    },
+    "user_value": [
+      "Operators can choose a bounded external worker path for one low-risk Janus task without giving up local review or acceptance."
+    ],
+    "target_surface": {
+      "Primary Surface": "janus-quickchange bounded delegated write candidate",
+      "Entry Type": "Operator-facing bounded OR pilot"
+    },
+    "user_action_surface": {
+      "Trigger": "Operator selects the bounded OR option for a tiny allowlisted quickchange slice.",
+      "Observed Outcome": "The flow returns reviewable diff and validation evidence before any local acceptance."
+    },
+    "system_behavior": [
+      "The delegated path must produce one bounded patch proposal with changed-files evidence and explicit Codex-owned accept-or-reject handoff.",
+      "If any validation artifact is missing or unsafe, the flow must discard the delegated result and fall back to local Codex handling."
+    ],
+    "data_persistence": {
+      "Persistence Required": "YES",
+      "Stored Artifacts": "Patch diff, changed-files list, validation evidence, operator handoff summary"
+    },
+    "constraints": [
+      "No broad janus-executioner delegation.",
+      "No production routing or canonical routing-table updates.",
+      "No Git or release authority leaves Codex."
+    ],
+    "security_privacy": {
+      "Boundary": "Delegated output stays bounded to one allowlisted task slice.",
+      "Authority": "Codex remains final reviewer, validator, and acceptance owner."
+    },
+    "edge_cases": [
+      "Allowlist escape, touched-file-cap escape, delete intent, or rename intent forces immediate fallback.",
+      "Missing generation evidence or failed validation artifacts block delegated acceptance."
+    ],
+    "definition_of_done": [
+      "Wenn ein tiny allowlisted quickchange delegiert wird, dann entsteht ein reviewbarer Diff mit gepruefter Changed-Files-Liste und Codex-owned Accept-or-Reject-Handoff.",
+      "Wenn ein Sicherheits- oder Validierungsfehler auftritt, dann wird das delegierte Ergebnis verworfen und der lokale Codex-Pfad bleibt autoritativ."
+    ],
+    "test_strategy": {
+      "Primary Validation": "Bounded delegated pilot run with artifact, diff, and fallback validation.",
+      "Failure Validation": "Negative-path checks for allowlist escape, missing artifacts, and invalid validation evidence."
+    },
+    "out_of_scope": [
+      "Broad janus-executioner code delegation.",
+      "Test-pipeline write retries, Auto Router, production routing, and multi-task architecture changes."
+    ],
+    "internal_complexity_breakdown": {
+      "Scope Size": 8,
+      "Architectural Risk": 9,
+      "State / Persistence Complexity": 8,
+      "Cross-System Dependencies": 10,
+      "Ambiguity Level": 9,
+      "Total Complexity Score": 44,
+      "Routing Decision": "5.4",
+      "Routing Reasoning": "medium",
+      "Routing Confidence": "MEDIUM",
+      "Dashboard Hint": "SAFE"
+    }
+  },
+  "notes": [
+    "Structured draft is complete and review-ready.",
+    "Codex still owns final spec file write and review."
+  ]
+}

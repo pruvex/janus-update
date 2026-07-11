@@ -1,0 +1,17 @@
+{
+  "summary_header": "CODEX SIDECAR TEST-ARTIFACT WRITE RESULT",
+  "workflow_id": "SIDECAR-TEST-ARTIFACT-LIVE-RETRY-PRECHECK-001",
+  "skill": "janus-test-pipeline",
+  "mode": "TESTSPEC_TO_TEST_PLAN",
+  "testspec_path": "documentation/TEST_SPEC/07_regression_suite/17_memory_recall_placeholder_regression.md",
+  "test_run_id": "TEST-RUN-2026-06-14-901",
+  "selected_path": "sidecar_workspace_write_dry_run",
+  "validation_result": "PASS",
+  "final_outcome": "DRY_RUN_VALIDATED",
+  "runner_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-TEST-ARTIFACT-LIVE-RETRY-PRECHECK-001\\summary.json",
+  "validation_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-TEST-ARTIFACT-LIVE-RETRY-PRECHECK-001\\validation_summary.json",
+  "allowlist_ok": true,
+  "touched_file_cap_ok": true,
+  "delete_rename_move_ok": true,
+  "operator_message": "Dry-run only. No delegated test-artifact write was performed."
+}

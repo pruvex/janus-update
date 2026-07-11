@@ -1,0 +1,19 @@
+{
+  "schema_version": "codex_delegated_action_request.v1",
+  "workflow_id": "STRUCTURED-ACTION-PATCH-001",
+  "skill_id": "janus-quickchange",
+  "action_type": "propose_patch",
+  "summary": "Capture one bounded patch for Codex review.",
+  "requires_codex_review": true,
+  "non_goals": [
+    "No auto apply",
+    "No repo authority update"
+  ],
+  "action_payload": {
+    "patch_format": "unified_diff",
+    "allowed_files": [
+      "documentation/ai/CURRENT_STATE.md"
+    ],
+    "patch_text": "--- a/documentation/ai/CURRENT_STATE.md\n+++ b/documentation/ai/CURRENT_STATE.md\n@@\n-Old\n+New\n"
+  }
+}

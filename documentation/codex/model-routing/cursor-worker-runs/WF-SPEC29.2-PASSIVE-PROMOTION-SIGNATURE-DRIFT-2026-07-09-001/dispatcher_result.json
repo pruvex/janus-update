@@ -1,0 +1,100 @@
+{
+  "backend": "cursor",
+  "lane_id": "debug_repro_investigation",
+  "workflow_id": "WF-SPEC29.2-PASSIVE-PROMOTION-SIGNATURE-DRIFT-2026-07-09-001",
+  "selected_model": "composer-2.5",
+  "cursor_pool": "auto_composer",
+  "estimated_cost_usd_static": 0.0104,
+  "session_id": "c441725d-c829-4567-a696-5262e1e7c9ee",
+  "validation_result": "PASS",
+  "selected_path": "cursor_worker_live_mockable",
+  "final_outcome": "CURSOR_WORKER_READY_FOR_CODEX_REVIEW",
+  "package_validation": {
+    "validation_result": "PASS",
+    "contract_status": "TASK_PACKAGE_VALID_VIA_WORKER_REFERENCE",
+    "issues": [],
+    "task_label": "Fix passive promotion signature drift for equivalent mixed calendar-routing traces",
+    "worker_profile": "cursor-agent",
+    "allowed_edit_paths": [
+      "backend/services/workflow/workflow_offer_service.py",
+      "backend/services/workflow/routine_store.py",
+      "backend/services/workflow/routine_schema.py",
+      "backend/services/workflow/workflow_detector.py",
+      "backend/tests/test_workflow_offer_service.py"
+    ],
+    "required_result_artifacts": [
+      "RESULT.json",
+      "RESULT.md",
+      "DIFF.patch",
+      "FILES_CHANGED.txt",
+      "CHECKS.log",
+      "COST.json"
+    ],
+    "source_package_path": "development\\openrouter-skill-tests\\janus-debug\\workflow_spec29_2_passive_promotion_signature_drift_2026-07-09\\input_package.json",
+    "worker_package_path": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-debug\\workflow_spec29_2_passive_promotion_signature_drift_2026-07-09\\worker_package.json"
+  },
+  "allowlist_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "allowlist": [
+      "backend/services/workflow/workflow_offer_service.py",
+      "backend/services/workflow/routine_store.py",
+      "backend/services/workflow/routine_schema.py",
+      "backend/services/workflow/workflow_detector.py",
+      "backend/tests/test_workflow_offer_service.py"
+    ]
+  },
+  "allowlist_consistency_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "package_allowed_edit_paths": [
+      "backend/services/workflow/workflow_offer_service.py",
+      "backend/services/workflow/routine_store.py",
+      "backend/services/workflow/routine_schema.py",
+      "backend/services/workflow/workflow_detector.py",
+      "backend/tests/test_workflow_offer_service.py"
+    ],
+    "allowlist": [
+      "backend/services/workflow/workflow_offer_service.py",
+      "backend/services/workflow/routine_store.py",
+      "backend/services/workflow/routine_schema.py",
+      "backend/services/workflow/workflow_detector.py",
+      "backend/tests/test_workflow_offer_service.py"
+    ],
+    "declared_allowlist_file": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-debug\\workflow_spec29_2_passive_promotion_signature_drift_2026-07-09\\allowlist.txt"
+  },
+  "accepted_source_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "accepted_source_run_dir": null,
+    "recognized_artifacts": []
+  },
+  "accepted_source_run_dir": null,
+  "planned_command": [
+    "C:\\Users\\pruve\\AppData\\Local\\cursor-agent\\agent.CMD",
+    "-p",
+    "--workspace",
+    "C:\\KI\\Janus-Projekt\\backend",
+    "--model",
+    "composer-2.5",
+    "--output-format",
+    "json",
+    "--force",
+    "--trust",
+    "--approve-mcps",
+    "Execute this bounded Janus delegated worker task now. Treat the full prompt below as instructions, not as text to analyze. Do not ask clarifying questions unless the task is impossible with the provided files and rules.\n\nStable prefix:\n- lane: debug_repro_investigation\n- worker_contract: janus-delegated-worker\n- output_schema: status, changed_files, command_results, summary, blockers\n- hard_rules: stay bounded, do not commit, do not leave the allowlist\n\nVariable suffix:\nInvestigate only the allowlisted passive routine-learning files. Live Janus evidence on 2026-07-09 19:55 shows the user-visible Gemini mixed-turn bug is already fixed: the prompt `Welche Termine habe ich heute und wie weit ist es von Berlin nach Hamburg?` now executes cleanly with exactly two successful tool calls and no loop-breaker. However passive promotion still fails one layer later. DB evidence shows Janus created a new active candidate from chat 4239 instead of promoting the earlier clean candidate from chat 4235. The two candidates differ only in workflow signature details that should likely be treated as equivalent for this mixed intent family: one trace is `system.routing -> calendar.list_events` with args including start_date/end_date, the other is `calendar.list_events -> system.routing` with a leaner arg shape. The current code appears to require an exact fingerprint match for promotion, and build_step_fingerprint depends on step order plus arg keys. Apply the smallest bounded product fix so semantically equivalent mixed calendar+routing traces can promote the earlier candidate instead of creating duplicate active candidates. Add focused regression coverage in backend/tests/test_workflow_offer_service.py. Run only the listed pytest check. Do not commit. Return concise JSON-compatible output with status, root_cause, changed_files, command_results, summary, and blockers.\nTask label: Debug passive promotion signature drift for mixed calendar-routing routine learning\nAcceptance criteria:\n- Fix only the passive-promotion signature/equivalence seam on the allowlisted files.\n- A second semantically equivalent mixed calendar.list_events + system.routing trace must promote the earlier candidate instead of creating a new one.\n- Equivalent mixed traces must tolerate order flips and minor optional-arg shape drift such as start_date/end_date variants when they represent the same intent family.\n- Run the focused pytest command before returning.\nAllowed edit paths:\n- backend/services/workflow/workflow_offer_service.py\n- backend/services/workflow/routine_store.py\n- backend/services/workflow/routine_schema.py\n- backend/services/workflow/workflow_detector.py\n- backend/tests/test_workflow_offer_service.py\nReturn status, changed_files, command_results, summary, and blockers as concise JSON-compatible output.\n\nWorkspace root: C:\\KI\\Janus-Projekt\\backend\nWorkspace-relative edit paths:\n- services/workflow/workflow_offer_service.py\n- services/workflow/routine_store.py\n- services/workflow/routine_schema.py\n- services/workflow/workflow_detector.py\n- tests/test_workflow_offer_service.py"
+  ],
+  "mode": "proposal_first",
+  "workspace_root": "C:\\KI\\Janus-Projekt\\backend",
+  "live_execution_allowed": false,
+  "codex_review_required": true,
+  "changed_files": [
+    "backend/services/workflow/workflow_offer_service.py",
+    "backend/services/workflow/routine_store.py",
+    "backend/services/workflow/routine_schema.py",
+    "backend/services/workflow/workflow_detector.py",
+    "backend/tests/test_workflow_offer_service.py"
+  ],
+  "changed_outside_allowlist": [],
+  "operator_message": "Cursor worker finished the bounded slice and returned artifacts for Codex review."
+}

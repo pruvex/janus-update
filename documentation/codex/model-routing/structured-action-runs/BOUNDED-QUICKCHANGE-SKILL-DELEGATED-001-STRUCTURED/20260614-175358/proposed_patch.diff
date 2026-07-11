@@ -1,0 +1,22 @@
+diff --git a/frontend/index.html b/frontend/index.html
+index 661c104ee..e95112af7 100644
+--- a/frontend/index.html
++++ b/frontend/index.html
+@@ -430,7 +430,7 @@
+                       <textarea
+                         id="user-input-A"
+                         rows="1"
+-                        placeholder="Nachricht an Janus senden..."
++                        placeholder="Nachricht an Janus schreiben..."
+                         autocomplete="off"
+                         spellcheck="true"
+                       ></textarea>
+@@ -526,7 +526,7 @@
+                       <textarea
+                         id="user-input-B"
+                         rows="1"
+-                        placeholder="Nachricht an Janus senden..."
++                        placeholder="Nachricht an Janus schreiben..."
+                         autocomplete="off"
+                         spellcheck="true"
+                       ></textarea>

@@ -1,0 +1,15 @@
+{
+  "workflow_id": "DIRECT-OR-QUICKCHANGE-FIXTURE-001",
+  "validation_result": "PASS",
+  "issues": [],
+  "changed_files": [
+    "frontend/index.html"
+  ],
+  "editable_paths": [
+    "frontend/index.html"
+  ],
+  "max_touched_files": 1,
+  "finish_reason": "stop",
+  "actual_or_cost": 5.15e-05,
+  "cost_cap": 0.002
+}

@@ -1,0 +1,11 @@
+{
+  "skill_id": "DOC-SKILL-002",
+  "model": "moonshotai/kimi-k2.5",
+  "pass": true,
+  "failures": [],
+  "finish_reason": "stop",
+  "actual_or_cost": 0.0,
+  "latency_ms": 47179,
+  "generation_id": "gen-1782397293-OIil5hPMLpMTv39KJB3j",
+  "response_path": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-documentation-update\\strict-runs\\doc-skill-002\\moonshotai-kimi-k2.5\\response_body.json"
+}

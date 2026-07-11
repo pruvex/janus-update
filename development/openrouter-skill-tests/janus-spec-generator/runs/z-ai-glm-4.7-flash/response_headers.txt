@@ -1,0 +1,15 @@
+﻿Name                           Value                                                                                   
+----                           -----                                                                                   
+Transfer-Encoding              chunked                                                                                 
+Connection                     keep-alive                                                                              
+Server-Timing                  cfEdge;dur=38,cfOrigin;dur=0,cfWorker;dur=410                                           
+Access-Control-Allow-Origin    *                                                                                       
+X-Generation-Id                gen-1782484221-49vU80v4Lm76kh7HAX0z                                                     
+access-control-expose-headers  X-Generation-Id,cf-ray                                                                  
+Permissions-Policy             payment=(self "https://checkout.stripe.com" "https://connect-js.stripe.com" "https://...
+Referrer-Policy                no-referrer, strict-origin-when-cross-origin                                            
+X-Content-Type-Options         nosniff                                                                                 
+CF-RAY                         a11ce8ceed1acf30-DUS                                                                    
+Content-Type                   application/json                                                                        
+Date                           Fri, 26 Jun 2026 14:30:21 GMT                                                           
+Server                         cloudflare

@@ -1,0 +1,38 @@
+﻿{
+    "capture_mode":  "live_http",
+    "http_status":  200,
+    "api_shape":  "chat_completions",
+    "response_object":  "chat.completion",
+    "response_status":  null,
+    "generation_id":  "gen-1782397391-P6kWwhjeK0w3B8NB321T",
+    "model":  "moonshotai/kimi-k2.5-0127",
+    "finish_reason":  "length",
+    "usage":  {
+                  "prompt_tokens":  484,
+                  "completion_tokens":  900,
+                  "total_tokens":  1384,
+                  "cost":  0.002004,
+                  "is_byok":  false,
+                  "prompt_tokens_details":  {
+                                                "cached_tokens":  0,
+                                                "cache_write_tokens":  0,
+                                                "audio_tokens":  0,
+                                                "video_tokens":  0
+                                            },
+                  "cost_details":  {
+                                       "upstream_inference_cost":  0.002004,
+                                       "upstream_inference_prompt_cost":  0.0001815,
+                                       "upstream_inference_completions_cost":  0.0018225
+                                   },
+                  "completion_tokens_details":  {
+                                                    "reasoning_tokens":  1167,
+                                                    "image_tokens":  0,
+                                                    "audio_tokens":  0
+                                                }
+              },
+    "actual_or_cost":  0.002004,
+    "output_item_count":  0,
+    "output_item_types":  {
+
+                          }
+}

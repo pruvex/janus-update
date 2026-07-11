@@ -1,0 +1,12 @@
+{
+  "workflow_id": "WF-BACKLOG-PRIO-EVERYDAY-OR-2026-06-27",
+  "task_label": "Backlog prioritization everyday delegated fixture proof current-shape",
+  "input_validation_pass": true,
+  "result_validation_pass": true,
+  "telemetry_validation_pass": true,
+  "input_issues": [],
+  "result_issues": [],
+  "telemetry_issues": [],
+  "redaction_ready": true,
+  "accepted_for_local_codex_validation": true
+}

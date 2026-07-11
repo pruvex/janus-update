@@ -1,0 +1,27 @@
+{
+  "workflow_id": "LIVE-GATE-CHECK-DOC008-2026-06-25",
+  "skill_id": "DOC-SKILL-008",
+  "local_codex_option": "handle locally with Codex and spend Codex quota",
+  "or_option": "handle with OR using fixed model qwen/qwen3-coder-30b-a3b-instruct and preserve Codex quota",
+  "estimated_or_cost": 0.0009685,
+  "operator_recommendation": "OR_OPTIONAL",
+  "operator_recommendation_reason": "valide und bounded, aber nicht unter den staerksten Sparspuren",
+  "confidence_status": {
+    "cost_estimate_confidence_percent": 55,
+    "cost_estimate_sample_count": 1,
+    "cost_estimate_mean_abs_error_percent": 41.05,
+    "cost_estimate_p50_error_percent": 41.05,
+    "cost_estimate_p90_error_percent": 41.05,
+    "cost_estimate_basis": "qwen/qwen3.5-flash-02-23+DOC-SKILL-008+prompt_template_hash+summary_short",
+    "prompt_template_hash": "sha256:6799dced31ee9e3855eff7dbf64d32b4929dd588093c2c8e175b036736c2b75e",
+    "task_variant": "summary_short",
+    "price_snapshot_source": "documentation/codex/openrouter-delegation/model_price_inventory_2026-06-12.json",
+    "price_snapshot_timestamp": "2026-06-13T17:32:59.4069295+02:00"
+  },
+  "per_call_cap_usd": 0.002,
+  "session_cap_usd": 0.006,
+  "note": "Operator-invoked fixed OR use only. No Auto Router. Not production routing.",
+  "eligibility_result": "OR_ALLOWED",
+  "eligibility_reason_code": "ELIGIBILITY_CONFIRMED",
+  "evidence_status": "LIVE_EVIDENCE_CONFIRMED"
+}

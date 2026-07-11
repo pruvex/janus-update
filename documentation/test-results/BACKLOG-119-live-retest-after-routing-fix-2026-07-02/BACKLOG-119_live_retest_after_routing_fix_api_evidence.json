@@ -1,0 +1,69 @@
+{
+  "testRunId": "BACKLOG-119-live-retest-after-routing-fix-2026-07-02",
+  "mode": "janus-debug/live-api-retest-after-routing-fix",
+  "status": "PASS",
+  "steps": [
+    {
+      "step": "gpt_write",
+      "provider": "openai",
+      "model": "gpt-5.4-nano",
+      "chatId": 4188,
+      "prompt": "mein bester freund, der korbinian elstorf wohnt in berlin",
+      "responseText": "Verstanden - Korbinian Elstorf wohnt in Berlin.",
+      "result": "PASS"
+    },
+    {
+      "step": "gemini_write",
+      "provider": "gemini",
+      "model": "gemini-3-flash-preview",
+      "chatId": 4189,
+      "prompt": "korbinians freundin heisst ylvie nordmann",
+      "responseText": "Alles klar, das habe ich im lokalen Gedaechtnis und im Adressbuch vermerkt: Korbinians Freundin heisst Ylvie Nordmann.",
+      "result": "PASS"
+    },
+    {
+      "step": "gpt_recall",
+      "provider": "openai",
+      "model": "gpt-5.4-nano",
+      "chatId": 4190,
+      "prompt": "wer ist korbinians freundin?",
+      "responseText": "Korbinian hat als Freundin Ylvie Nordmann.",
+      "result": "PASS"
+    }
+  ],
+  "assertions": {
+    "gptWriteAccepted": true,
+    "geminiWriteAccepted": true,
+    "contactExists": true,
+    "contactAddressBerlin": true,
+    "contactContainsRelationshipDetail": true,
+    "freshGptRecallAnswersPartner": true,
+    "freshGptRecallUsesMemoryRead": true
+  },
+  "contactEvidence": {
+    "id": 13,
+    "name": "Korbinian Elstorf",
+    "address": "berlin",
+    "personal_details": [
+      "Freundin heisst Ylvie Nordmann"
+    ],
+    "proposal_status": "confirmed",
+    "proposal_last_outcome": "applied_from_confirmed_chat_fact",
+    "memory_sync_status": "synced"
+  },
+  "memoryEvidence": {
+    "relevant_memory_ids": [
+      145,
+      146,
+      147,
+      148,
+      149
+    ],
+    "relationship_memory_keys": [
+      "korbinian|korbinians_freundin_heisst_ylvie_nordmann.",
+      "contact:person:korbinian_elstorf:detail:freundin_heisst_ylvie_nordmann"
+    ],
+    "recallTool": "memory.read"
+  },
+  "note": "Fresh local Janus live API retest after the recall-routing fix. Internal API key and provider secrets intentionally omitted."
+}

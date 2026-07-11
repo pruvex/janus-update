@@ -1,0 +1,24 @@
+{
+  "summary_header": "QUICKCHANGE WRITE APPLY GATE",
+  "workflow_id": "QUICKCHANGE-WRITE-APPLY-PROMPT-001",
+  "skill": "janus-quickchange",
+  "task_label": "Quickchange write apply prompt validation",
+  "selected_path": "operator_choice_pending",
+  "normal_target_model": "5.4/medium",
+  "choice_1": "Codex",
+  "choice_2": "Delegated",
+  "delegated_model_label": "bounded workspace-write sidecar / accepted evidence path",
+  "expected_delegation_value": "bounded workspace-write quickchange with exact allowlist, exact file cap, and Codex-owned acceptance",
+  "operator_prompt_lines": [
+    "Willst du 1 Codex das machen lassen?",
+    "Oder 2 den bounded quickchange_write_apply Delegation-Pfad nutzen?"
+  ],
+  "boundaries": [
+    "No production routing",
+    "No canonical routing-table update",
+    "No delegated Git or release authority",
+    "Codex remains validation and acceptance owner"
+  ],
+  "final_outcome": "AWAITING_OPERATOR_CHOICE",
+  "validation_result": "PASS"
+}

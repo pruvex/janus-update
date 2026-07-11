@@ -1,0 +1,52 @@
+{
+  "task_label": "Debug routine semantic reuse date guard for calendar plus weather",
+  "worker_profile": "cursor-agent",
+  "allowed_edit_paths": [
+    "backend/services/workflow/routine_runner.py",
+    "backend/tests/test_routine_runner.py"
+  ],
+  "acceptance_criteria": [
+    "Only the allowlisted routine runner and focused routine tests may change.",
+    "A saved calendar-plus-weather routine must not semantically match when the requested weather time reference differs from the stored routine arguments.",
+    "The existing city guard must keep working.",
+    "Natural saved-routine reuse for the same date/time intent must keep working.",
+    "Run only the focused pytest command before returning."
+  ],
+  "checks": [
+    {
+      "label": "pytest",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "backend/tests/test_routine_runner.py",
+        "-q"
+      ]
+    }
+  ],
+  "forbidden_actions": [
+    "commit",
+    "push",
+    "tag",
+    "merge",
+    "release",
+    "publish",
+    "dependency",
+    "secret",
+    "auth",
+    "security",
+    "privacy",
+    "migration",
+    "architecture",
+    "ui",
+    "transport",
+    "oauth",
+    "provider_switch",
+    "intent_widening"
+  ],
+  "requested_actions": [
+    "edit",
+    "run_checks"
+  ],
+  "task_prompt": "Investigate only the allowlisted semantic routine reuse path. Live Janus behavior shows that a saved calendar-plus-weather routine created for weather today can still be reused when the user asks for weather tomorrow, which is incorrect. Apply the smallest bounded fix in routine_runner.py so semantic reuse remains allowed for the same natural request shape but is rejected when the requested date/time reference (for example today vs tomorrow) differs from the stored weather-step args. Keep the existing city guard and the normal saved-routine success messaging intact. Add focused regression coverage in backend/tests/test_routine_runner.py. Do not broaden into intent engine redesign, UI, transport, OAuth, or provider changes. Run only the listed pytest check. Return concise JSON-compatible output with status, root_cause, changed_files, command_results, summary, and blockers."
+}

@@ -1,0 +1,45 @@
+{
+  "skill_id": "DOC-SKILL-006",
+  "generation_id": "gen-1781391107-vc0cvBUQckx3VHxkM4dk",
+  "model": "qwen/qwen3.5-flash-20260224",
+  "finish_reason": "stop",
+  "actual_or_cost": 0.00045279,
+  "common_checks": {
+    "generation_id_present": true,
+    "usage_present": true,
+    "actual_cost_present": true,
+    "finish_reason_not_length": true
+  },
+  "content_evaluation": {
+    "skill_id": "DOC-SKILL-006",
+    "validation_result": "FAIL",
+    "checks": {
+      "required_structure": {
+        "planning only": true,
+        "no production routing": true,
+        "allowed scope": true,
+        "blocked scope": true,
+        "operator reminder": true
+      },
+      "allowed_scope_preserved": {
+        "summarize sanitized text": true,
+        "preserve hold and unknown": true,
+        "propose the next fixture work": false
+      },
+      "blocked_scope_preserved": {
+        "update the routing table": false,
+        "approve production routing": false,
+        "run live calls": true,
+        "decide audit or release readiness": true
+      },
+      "live_call_gate_preserved": false,
+      "semantic_expansion_guard": true,
+      "authority_violation_free": true
+    },
+    "reason_for_escalation": "",
+    "violations": [],
+    "violation_sentences": []
+  },
+  "postcheck_validation_result": "FAIL",
+  "accepted_for_local_batch_use": false
+}

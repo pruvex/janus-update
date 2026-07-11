@@ -1,7 +1,7 @@
 # Janus Agent Upgrade — Master-Roadmap (Intent → Learn → Memory → Provider)
 
-**Version:** 1.2.1  
-**Datum:** 2026-07-07  
+**Version:** 1.2.3  
+**Datum:** 2026-07-10  
 **Zielgruppe:** Codex / Cursor / Operator  
 **Status:** BINDING EXECUTION ORDER + CODEX PLANNING SOURCE OF TRUTH  
 
@@ -14,14 +14,26 @@ Dieses Dokument ist die **einzige Einstiegsdatei** für Codex zur Umsetzungsplan
 ### 0.1 Aktueller Auftrag (verbindlich)
 
 ```text
-STANDARD-PFAD (empfohlen, Operator-bestätigt 2026-07-07):
+STANDARD-PFAD (empfohlen, Operator-bestätigt 2026-07-10, Sync mit Tracker §16):
 
-  JETZT:     M1 — Intent Phase 1 + Memory A+B (parallel erlaubt)
-  DANN:      M2 — Intent Phase 2 abschließen
-  DANN:      M3 — Learned Workflows
-  DANN:      M4 — Memory Session-Search
+  JETZT:     M4 — Memory Session-Search (MC) starten
   DANN:      M6 — Provider Transport Refactor
   DANN:      Epic 5 OAuth + Epic 6 OpenRouter (nach Transport Phase B)
+
+ABGESCHLOSSEN (EXIT PASS):
+  M0, M1.1–M1.3, MA/MB, M2.1, M3.1–M3.4, Codex Delegation 4-Choice
+  Spec 29.1/29.2 — stilles Routinenlernen (Kandidat + passive Promotion)
+  Spec 31.1/31.2 — semantisches Routine-Reuse (calendar+weather, calendar+routing)
+  Block 2 — Kalender+Wikipedia Combo LIVE PASS (GPT/Gemini, Routine, Rebind, Snapshot)
+
+OFFENE CAVEATS (dokumentiert, nicht blockierend für M4):
+  M1 Recall +0 pp (80% → 80%) — Follow-up: BACKLOG-125 (formalisierter Slice)
+  M2.2 Regex-Freeze optional — separat offen
+  Wikipedia-Snapshot Polish (beste LLM-Formulierung) — BACKLOG-126, optional
+  Routinen-UI (Settings CRUD) — M5 LU, noch offen
+
+VOR M4-CODE (Doku only):
+  BACKLOG-127 — Roadmap/CURRENT_STATE-Sync für Spec 29/31 + Block 2
 
 NICHT JETZT:
   - Transport / OAuth / OpenRouter vor M4 (außer Operator-Go, siehe §0.4)
@@ -132,12 +144,15 @@ Wenn Codex an **Cursor-Integration** arbeitet und keinen Slot für Intent hat:
 
 | Prio | Aktion | Wer |
 |------|--------|-----|
-| **1** | M1 I1 + TASK-INTENT-M1.1 lokal in Codex | Codex (**JETZT**) |
-| **2** | Memory A+B parallel zu M1 | Codex |
-| **3** | M2 Intent PASS abwarten vor M3 Offer | — |
-| **4** | M3 + M4 Kern-MVP | Codex |
-| **5** | M6 Transport | Nach M4 |
-| **6** | Epic 5 + 6 | Nach Transport T-B |
+| **0** | BACKLOG-127 Roadmap-/CURRENT_STATE-Sync (Spec 29/31, Block 2) | Codex (`janus-documentation-update`) |
+| **1** | M4 Memory C (Session-Search FTS5) starten | Codex (**JETZT** nach Prio 0) |
+| **2** | M6 Transport T-A vorbereiten | Codex (nach M4) |
+| **3** | BACKLOG-125 Recall Follow-up Slice (bounded) | Codex (parallel zu M4 möglich) |
+| **4** | M2.2 Regex-Freeze optional | Codex (niedrige Prio) |
+| **5** | BACKLOG-126 Wikipedia-Snapshot Polish optional | Codex (nach M4 oder parallel) |
+| **6** | M6 Transport | Nach M4 |
+| **7** | Epic 5 + 6 | Nach Transport T-B |
+| **—** | M5 LU Routinen-UI | Optional, nicht M4-Blocker |
 | **—** | Codex-Delegation 4-Choice | **EXIT PASS** 2026-07-07 |
 | **—** | Delegation Route-Härtung (Track B) | Background, max. 1 Slice/Woche, §0.8 |
 
@@ -150,6 +165,7 @@ Wenn Codex an **Cursor-Integration** arbeitet und keinen Slot für Intent hat:
 | Codex Delegation Operating Model | [../codex/model-routing/HANDOFF_DELEGATION_ROUTE_HARDENING_OPERATING_MODEL_2026-07-07.md](../codex/model-routing/HANDOFF_DELEGATION_ROUTE_HARDENING_OPERATING_MODEL_2026-07-07.md) | `HANDOFF-DELEGATION-OPS` | **bei janus-executioner** |
 | Intent Engine Upgrade | [INTENT_ENGINE_HERMES_INSPIRED_UPGRADE_PLAN.md](./INTENT_ENGINE_HERMES_INSPIRED_UPGRADE_PLAN.md) | `EPIC-INTENT-HERMES-001` | **1** |
 | Learned Workflows | [LEARNED_WORKFLOWS_SPEC.md](./LEARNED_WORKFLOWS_SPEC.md) | `EPIC-WORKFLOW-001` | **2** |
+| Block 2 Handoff (Kalender+Wikipedia) | [../codex/HANDOFF_BLOCK2_CALENDAR_WIKIPEDIA_TO_CODEX_2026-07-10.md](../codex/HANDOFF_BLOCK2_CALENDAR_WIKIPEDIA_TO_CODEX_2026-07-10.md) | `HANDOFF-BLOCK2-001` | **2b (delivered)** |
 | Memory Upgrade | [MEMORY_HERMES_INSPIRED_UPGRADE_PLAN.md](./MEMORY_HERMES_INSPIRED_UPGRADE_PLAN.md) | `EPIC-MEM-HERMES-001` | **3** |
 | Provider Transport Refactor | [PROVIDER_TRANSPORT_REFACTOR_SPEC.md](./PROVIDER_TRANSPORT_REFACTOR_SPEC.md) | `EPIC-ARCH-TRANSPORT-001` | **4 (Infrastruktur)** |
 | ChatGPT OAuth Provider | [CHATGPT_OAUTH_PROVIDER_SPEC.md](./CHATGPT_OAUTH_PROVIDER_SPEC.md) | `EPIC-AUTH-CHATGPT-001` | **5 (später)** |
@@ -225,7 +241,7 @@ flowchart TD
 
 ## 4. Meilenstein-Plan (verbindlich)
 
-### M0 — Messbarkeit (Woche 1) ← **JETZT**
+### M0 — Messbarkeit (Woche 1) — **EXIT PASS**
 
 | ID | Arbeit | Spec | Aufwand | Risiko | Flag Default |
 |----|--------|------|---------|--------|--------------|
@@ -317,6 +333,11 @@ flowchart TD
 - „Was haben wir über X besprochen?“ funktioniert
 - Sanitizer aktiv, Flag Staging `true`
 
+**Status (2026-07-11): EXIT PASS**
+- `TASK-MEM-M4.1` liefert den separaten FTS5-Store, kanonischen Message-Write-Hook, `session_search`-Tool, Backfill-Script und bounded Recall-Routing.
+- Der enabled-runtime Janus-Proof bestaetigt Chat-uebergreifenden `Acme GmbH`-Recall ueber den echten Toolpfad sowie Passwort-Verweigerung; fokussierte Tests, Memory-Regression, Compile- und Final-Audit-Evidenz sind PASS.
+- `MEMORY_SESSION_SEARCH_ENABLED` bleibt produktiv standardmaessig `false`; der Flag-on-Nachweis lief auf einer separaten lokalen Runtime. Passwort-Paraphrasen mit `calendar.list_events`-Drift bleiben als angrenzende Routing-Schuld offen.
+
 **Go/No-Go für M6 Transport:** M4 MC Exit PASS (Standard) oder Operator-Go mit Risiko.
 
 **Codex-Prompt:** → §15.7
@@ -331,6 +352,7 @@ flowchart TD
 | **I4** | Entity-First Routing | Intent §8 | 1–1,5 Wo. | Mittel |
 | **LU** | Routinen-UI | Workflows §7 Ph.5 | 1 Wo. | Niedrig |
 | **I5** | `/skipdetect` Bypass | Intent §9 | 1 Tag | Niedrig |
+| **B2P** | Wikipedia-Snapshot Polish (BACKLOG-126) | Block-2-Handoff | 1–2 Tage | Niedrig |
 
 **MD Go/No-Go:** Nur wenn MC 1 Woche stabil + Prefix-Cache-Gewinn gemessen.
 
@@ -520,13 +542,13 @@ Codex und Operator nutzen diese Tabelle **vor** Skill- oder Provider-Änderungen
 
 | Situation | Nächster Schritt |
 |-----------|------------------|
-| **Normal (empfohlen)** | M0 Intent Benchmark → §15.1 |
-| Codex frei, Cursor fast fertig | M0 auf `feature/intent-m0` |
-| Codex nur Cursor-Integration | Cursor fertig machen; M0 vorbereiten |
-| M0 fertig | M1 I1 + parallel MA/MB → §15.2–15.3 |
-| M2 PASS, Wartezeit bis M4 | Optional: Transport T-A Branch → §15.8 |
+| **Normal (empfohlen, 2026-07-11)** | M6 Transport T-A vorbereiten → §15.8 |
+| M4 MC Audit PASS | M6 Transport T-A vorbereiten → §15.8 |
+| Recall-Caveat offen | Bounded Recall-Slice oder Operator-Go mit Caveat |
 | M4 fertig | M6 Transport T-A → §15.8 |
+| M2 PASS, Wartezeit bis M4 | Optional: Transport T-A Branch → §15.8 |
 | Transport T-B fertig | Epic 5 + 6 planen → §15.11–15.13 |
+| Codex nur Cursor-Integration | Track B Härtung; Produkt = §0.1 JETZT |
 
 ---
 
@@ -769,6 +791,16 @@ Exit: §13 Epic 6 vollständig
 
 ## 16. Fortschritts-Tracker (von Codex/Operator pflegen)
 
+**Fortschritt (geschätzt, Stand 2026-07-10):**
+
+| Scope | Fortschritt | Offen |
+|-------|-------------|-------|
+| Gesamt-Roadmap (bis Epic 6) | ~60–70 % | M6, Epic 5/6 |
+| Kern-MVP (Intent + Workflows + Memory C) | 100 % | M5 optional / M6 Infrastruktur |
+| Intent (M0–M2) | ~85 % | Recall-Caveat, M2.2 optional |
+| Workflows (M3) | 100 % | M5 LU; BACKLOG-126 optional |
+| Track-A Extensions | ~100 % | Spec 29/31 + Block 2 LIVE PASS; Doku-Sync BACKLOG-127 |
+
 | Meilenstein | Status | Datum | Notizen |
 |-------------|--------|-------|---------|
 | M0 Intent Benchmark | **EXIT PASS** | 2026-07-07 | Baseline `documentation/test-runs/INTENT_BENCHMARK_BASELINE.md`, pytest suite gruen, go fuer M1 |
@@ -779,8 +811,18 @@ Exit: §13 Epic 6 vollständig
 | M1 I1 Intent Classifier | CAVEAT / FOLLOW-UP | 2026-07-08 | M1.1-M1.3 task-scharf auditiert und dokumentiert; Staging-Enablement nur mit Recall-Caveat, da Recall-Uplift `80.0% -> 80.0%` bleibt |
 | M1 MA/MB Memory A+B / TASK-MEM-M1.1 | **EXIT PASS** | 2026-07-08 | Lokaler Codex-Slice abgeschlossen, final auditiert und dokumentiert; Hot-Layer-Cap + On-Demand Injection gruen, Health-/Medical-Pfade bewusst erhalten |
 | M2 Intent I2 | **EXIT PASS** | 2026-07-08 | `TASK-INTENT-M2.1` lokal abgeschlossen, OpenRouter-Evidence als assist-only Vorreview gesammelt, final auditiert und dokumentiert; Confidence-Routing-Proof `91/110` (`82.7%`) gegen Baseline `81/110` (`73.6%`), Calendar `53.3% -> 66.7%`; optionaler Regex-Freeze-Follow-up `TASK-INTENT-M2.2` bleibt separat offen |
-| M3 Workflows | OFFEN | — | |
-| M4 Memory C | OFFEN | — | |
+| M3 Workflows / TASK-WORKFLOW-M3.1 | EXIT PASS | 2026-07-08 | Workflow-Foundation lokal abgeschlossen, final auditiert und dokumentiert; Routine-Store + Detector gruen, OpenRouter-Precheck-Evidence assist-only gesammelt |
+| M3 Workflows / TASK-WORKFLOW-M3.2 | EXIT PASS | 2026-07-08 | Proaktives Offer und Save-Dialog lokal abgeschlossen; produktiver Offer-/Save-Pfad mit bounded Evidence und Validierung gruen |
+| M3 Workflows / TASK-WORKFLOW-M3.3 | EXIT PASS | 2026-07-08 | Routine-Runner, Placeholder-Aufloesung und Live-Debug-Kette abgeschlossen; produktiver Save-/Reuse-Pfad bis zur natuerlichen Wiederverwendung vorbereitet |
+| M3 Workflows / TASK-WORKFLOW-M3.4 | **EXIT PASS** | 2026-07-10 | Final Audit PASS: gespeicherte Kalender-plus-Wetter-Routine wird auf beiden Providern aus natuerlicher Anfrage wiederverwendet, transparent angezeigt und bei unpassender Stadt/Datum fail-closed abgewiesen. |
+| M3 Workflows | **EXIT PASS** | 2026-07-10 | M3.1–M3.4 final auditiert; Spec 29/31 + Block 2 als Track-A-Erweiterungen LIVE PASS; M5 LU + BACKLOG-126 optional |
+| Spec 29 Passive Learning | **EXIT PASS** | 2026-07-09/10 | `TASK-SPEC29.1/29.2`; Kandidat + passive Promotion |
+| Spec 31 Semantic Reuse | **EXIT PASS** | 2026-07-10 | `TASK-SPEC31.1/31.2`; `BACKLOG-123` DONE |
+| Block 2 Calendar+Wikipedia | **LIVE PASS** | 2026-07-10 | GPT/Gemini Combo + Routine + Rebind; `HANDOFF_BLOCK2_CALENDAR_WIKIPEDIA_TO_CODEX_2026-07-10.md` |
+| BACKLOG-125 Recall Follow-up | OFFEN | — | Formalisierter M1-Caveat-Slice; parallel zu M4 |
+| BACKLOG-126 Snapshot Polish | OFFEN | — | Optional M5-adjacent |
+| BACKLOG-127 Roadmap Sync | OFFEN | — | Doku only; Prio 0 vor M4-Code |
+| M4 Memory C / TASK-MEM-M4.1 | **EXIT PASS** | 2026-07-11 | Session-Search FTS5 final auditiert und dokumentiert; enabled-runtime Recall- und Secret-Refusal-Evidenz PASS, Flag bleibt default-off. |
 | M6 Transport T-A | OFFEN | — | nach M4 |
 | M6 Transport T-B | OFFEN | — | |
 | M6 Transport T-C | OFFEN | — | |
@@ -810,6 +852,10 @@ Exit: §13 Epic 6 vollständig
 | 2026-07-07 | Codex-Delegation 4-Choice EXIT PASS; Härtung = Track B, Produkt = Track A |
 | 2026-07-07 | M1.1: Multi-File-Backend-Slices → Codex lokal; Cursor nur ≤2 allowlistete Dateien |
 | 2026-07-07 | `HANDOFF_DELEGATION_ROUTE_HARDENING_OPERATING_MODEL_2026-07-07.md` bindend bei live Cursor |
+| 2026-07-10 | Roadmap §0.1 + §16 auf echten Stand synchronisiert: JETZT = M3.4 Final Audit → M4; M0–M3.3 als EXIT PASS markiert |
+| 2026-07-10 | M3.4 Final Audit PASS: JETZT = M4 Memory C; M3 ist EXIT PASS. Cursor-Timeout-Härtung H-003 bleibt Track B und blockiert die Produkt-Roadmap nicht. |
+| 2026-07-10 | Cursor-Handoff `HANDOFF_ROADMAP_STATUS_TO_CODEX_2026-07-10.md` — Stand + naechste Schritte fuer Codex |
+| 2026-07-10 | Roadmap v1.2.3: Spec 29/31 + Block 2 als EXIT/LIVE PASS; BACKLOG-125/126/127 in §0.1, §0.7, §16; Handoff `HANDOFF_BLOCK2_*` verlinkt |
 
 ---
 

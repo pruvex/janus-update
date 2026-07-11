@@ -1,0 +1,49 @@
+{
+  "workflow_id": "WF-TASK-BREAKDOWN-TASK-INTENT-M1.3-2026-07-08",
+  "bound_skill_context": "janus-task-breakdown",
+  "mode": "SINGLE_TARGET_TASK_REFINEMENT_ONLY",
+  "spec_path": "documentation/Cursor specs/INTENT_ENGINE_HERMES_INSPIRED_UPGRADE_PLAN.md",
+  "task_file_path": "documentation/tasks/TASK-INTENT-M1_auxiliary_action_subject_classifier.md",
+  "backlog_item": "N/A",
+  "candidate_target_tasks": [
+    "TASK-INTENT-M1.3"
+  ],
+  "expected_target_task": "TASK-INTENT-M1.3",
+  "expected_target_subtask": "N/A",
+  "expected_next_skill": "janus-preimplementation-check",
+  "expected_execution_model": "5.4",
+  "expected_decision": "TASK DESIGN COMPLETE",
+  "selection_rationale": [
+    "TASK-INTENT-M1.1 and TASK-INTENT-M1.2 are already sealed and must be reused unchanged",
+    "Intent M1 I1 remains open only for the benchmark uplift, latency guardrails, and staged enablement proof in TASK-INTENT-M1.3",
+    "The next atomic precheck-ready slice is the evidence-only M1.3 closure against the M0 baseline without adding new intent features"
+  ],
+  "required_files": [
+    "backend/scripts/run_intent_benchmark.py",
+    "backend/tests/test_intent_benchmark.py",
+    "backend/tests/test_intent_aux_classifier.py",
+    "backend/tests/test_calendar_routing_fix.py",
+    "documentation/test-runs/INTENT_BENCHMARK_BASELINE.md",
+    "documentation/test-runs/"
+  ],
+  "required_acceptance_focus": [
+    "Contact/Pet/Recall show at least +12 pp against the M0 baseline or the blocker is documented clearly",
+    "backend/tests/test_calendar_routing_fix.py stays green",
+    "P95 latency of the auxiliary classifier stays below 400 ms or a credible blocker is documented",
+    "flag off remains identical to legacy behavior"
+  ],
+  "required_test_focus": [
+    "rerun the intent benchmark with the auxiliary classifier enabled and compare Contact/Pet/Recall explicitly to the M0 baseline",
+    "keep focused regression coverage for auxiliary classifier and calendar routing intact",
+    "capture a targeted latency or telemetry check for the auxiliary classifier execution path",
+    "preserve a scoped git diff check across the touched benchmark, test, and task-chain artifacts"
+  ],
+  "forbidden_behaviors": [
+    "No implementation",
+    "No precheck execution",
+    "No code generation",
+    "No implicit selection of multiple target tasks",
+    "No widening into M2 confidence routing, Memory A/B, transport, OAuth, or delegation hardening",
+    "No production routing activation"
+  ]
+}

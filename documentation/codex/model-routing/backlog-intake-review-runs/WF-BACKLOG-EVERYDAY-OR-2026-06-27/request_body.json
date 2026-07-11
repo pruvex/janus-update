@@ -1,0 +1,15 @@
+{
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a bounded Janus backlog-intake assistant. Use only the redacted input package. Return exactly one JSON object and no prose. Do not claim prioritization, implementation, routing authority, Git authority, or release authority."
+    },
+    {
+      "role": "user",
+      "content": "Return a JSON object with these exact top-level fields: status, backlog_type, suggested_status, title, kurzbeschreibung, erwartetes_verhalten, tatsaechliches_verhalten, reproduktion_kontext, betroffener_bereich, nachweise, akzeptanzkriterien, fehlende_informationen, notes.\n\nRules:\n- status must be PASS, WEAK_SIGNAL, or BLOCKED\n- backlog_type must be BUG, CHANGE, ENHANCEMENT, IMPROVEMENT, TECH_DEBT, or UNCLEAR\n- suggested_status must be READY, NEEDS_INFO, or BLOCKED\n- akzeptanzkriterien must contain 1 to 4 short checklist-style strings\n- fehlende_informationen must contain 0 to 3 short strings\n- do not claim prioritization, implementation, or direct execution handoff\n- keep the output bounded to one backlog candidate only\n\nRedacted input package JSON:\n{\n  \"workflow_id\": \"WF-BACKLOG-INTAKE-PACKAGE-001\",\n  \"bound_skill_context\": \"janus-backlog-intake\",\n  \"raw_user_request\": \"Wenn man im DeepDive-Fenster die Kostenansicht oeffnet, ist der Hinweis auf die Janus-Caching-Ersparnis manchmal verwirrend. Ich will, dass die Beschreibung klarer wird und dass bei fehlenden Daten kein irrefuehrender Prozentwert angezeigt wird.\",\n  \"source_type\": \"User Intake\",\n  \"suspected_type\": \"IMPROVEMENT\",\n  \"target_area\": \"Frontend/UX\",\n  \"evidence_snippets\": [\n    \"User reports confusing savings wording in DeepDive cost view.\",\n    \"Problem scope is one existing UI surface, no new feature requested.\",\n    \"No implementation requested yet; intake only.\"\n  ],\n  \"expected_output\": \"One bounded READY backlog item draft with acceptance criteria and missing-info assessment.\",\n  \"redaction_ready\": true\n}"
+    }
+  ],
+  "temperature": 0,
+  "max_tokens": 1100
+}

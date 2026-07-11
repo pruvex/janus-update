@@ -1,0 +1,11 @@
+﻿
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1782164179-ZwwplNyDIrnlqWLO2e5D","object":"chat.completion","created":1782164179,"model":"openai/gpt-oss-20b","provider":"Amazon Bedrock","system_fingerprint":null,"service_tier":null,"choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"end_turn","message":{"role":"assistant","content":"# DOC-SKILL-003: Draft Codex Handoff\n\n## Bound Artifacts  \n- `sanitized-validation-summary.md`  \n- `sanitized-evidence-index.md`  \n- `sanitized-scope-note.md`\n\n## Next Skill & Allowed Action  \n- **Next Skill:** `janus-documentation-update`  \n- **Allowed Action:** Record validated documentation evidence only\n\n## Gate & Stop Conditions  \n- Verify bound artifacts before editing.  \n- Stop if required evidence is missing.  \n- Do not expand scope beyond the listed artifacts.  \n- Do not run implementation, Git, release, or production‑routing actions.\n\n## Fixed Exclusions  \n- No product implementation.  \n- No architecture decision.  \n- No Git commit or push authority.  \n- No release authority.  \n- No production routing approval.  \n- No OpenRouter production activation.  \n- No raw private prompt or evidence exposure.","refusal":null,"reasoning":null}}],"usage":{"prompt_tokens":689,"completion_tokens":239,"total_tokens":928,"cost":0.00008408,"is_byok":false,"prompt_tokens_details":{"cached_tokens":0,"cache_write_tokens":0,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.00008408,"upstream_inference_prompt_cost":0.00004823,"upstream_inference_completions_cost":0.00003585},"completion_tokens_details":{"reasoning_tokens":61,"image_tokens":0,"audio_tokens":0}}}

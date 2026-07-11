@@ -1,79 +1,67 @@
 TASK EXECUTION RESULT
-Canonical State: PASS
+Canonical State: NEEDS_INFO
 Target Task: TASK-SPEC29.2
-
 Changed Files:
-- documentation/codex/model-routing/scripts/isolated_aider_workspace_runner.py
-- documentation/codex/model-routing/scripts/janus_worker_contract.py
-- documentation/codex/model-routing/scripts/janus_worker_gateway.py
-- documentation/codex/model-routing/tests/test_isolated_aider_workspace_runner.py
-- documentation/codex/model-routing/tests/test_janus_worker_gateway.py
-- documentation/tasks/TASK-SPEC29.2_task_breakdown.md
-- documentation/tasks/TASK-SPEC29.2_preimplementation_check.md
-- documentation/tasks/TASK-SPEC29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md
-- documentation/SPEC/29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md
-
+- backend/services/workflow/workflow_offer_service.py
+- backend/services/workflow/routine_store.py
+- backend/services/orchestrator/response_finalizer.py
+- backend/tests/test_workflow_offer_service.py
+- backend/tests/test_routine_store.py
+- documentation/tasks/TASK-SPEC29.2_execution_result.md
 Executed Checks:
-- `python -m pytest documentation/codex/model-routing/tests/test_isolated_aider_workspace_runner.py -q`: PASS, 3 tests
-- `python -m pytest documentation/codex/model-routing/tests/test_janus_worker_gateway.py -q`: PASS, 5 tests
-- `python -m py_compile documentation/codex/model-routing/scripts/isolated_aider_workspace_runner.py documentation/codex/model-routing/scripts/janus_worker_contract.py documentation/codex/model-routing/scripts/janus_worker_gateway.py`: PASS
-- `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py documentation\tasks\TASK-SPEC29.2_preimplementation_check.md`: PASS
-- `git diff --check -- documentation/codex/model-routing/scripts/isolated_aider_workspace_runner.py documentation/codex/model-routing/scripts/janus_worker_contract.py documentation/codex/model-routing/scripts/janus_worker_gateway.py documentation/codex/model-routing/tests/test_isolated_aider_workspace_runner.py documentation/codex/model-routing/tests/test_janus_worker_gateway.py documentation/tasks/TASK-SPEC29.2_preimplementation_check.md documentation/tasks/TASK-SPEC29.2_task_breakdown.md documentation/tasks/TASK-SPEC29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md documentation/SPEC/29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md`: PASS
-
+- python -m pytest backend/tests/test_workflow_offer_service.py -v
+- python -m pytest backend/tests/test_routine_store.py -v
+- python -m pytest backend/tests/test_routine_runner.py -v
+- python -m py_compile backend/services/workflow/workflow_offer_service.py backend/services/workflow/routine_store.py backend/services/orchestrator/response_finalizer.py backend/services/workflow/routine_runner.py backend/services/chat_orchestrator.py
+- git diff --check -- backend/services/workflow/workflow_offer_service.py backend/services/workflow/routine_store.py backend/services/orchestrator/response_finalizer.py backend/tests/test_workflow_offer_service.py backend/tests/test_routine_store.py documentation/tasks/TASK-SPEC29.2_preimplementation_check.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md
 Auto-Verification:
 - Status: PASS
 - Evidence:
-  - The isolated Aider runner now writes a normalized task package file and always emits the normalized result artifacts expected by the gateway contract.
-  - Successful delegated runs produce a reviewable `success` package with diff, changed-files list, checks log, and gateway validation metadata.
-  - Missing `OPENROUTER_API_KEY` and invalid profile values now produce structurally reviewable blocked packages instead of falling out without normalized artifacts.
-  - Prompt/local and delegated paths all pass through the same gateway contract validation, keeping the result surface consistent for Codex review.
-
+  - the visible finalize path now calls passive routine learning before the legacy explicit offer append, so first-hit qualifying workflows stay silent and second-hit matching workflows promote to a saved routine with a short passive hint
+  - `workflow_offer_service` now reuses the existing candidate store for hidden first-hit creation and adds bounded promotion through `promote_candidate_to_routine(...)`
+  - focused regression coverage proves silent first hit, second-hit promotion, candidate confirmation, and saved-routine reuse behavior
 Manual Janus Validation Gate:
-- Status: N/A WITH REASON
-- Test Example: N/A
-- Expected Result: N/A
+- Status: PENDING_USER_TEST
+- Test Example:
+  - In Janus, run `Pruefe meine Termine fuer heute und gib mir dazu das Wetter in Berlin.` once in a fresh or routine-clean chat, then run the same prompt a second time.
+- Expected Result:
+  - First run: normal result text only, with no visible `Ja/Nein/Nicht mehr fragen` save question and no routine-save hint.
+  - Second matching run: normal result text plus one short passive sentence that Janus stored a matching routine; still no explicit save question.
 - If Failed: route to janus-debug
 - If Passed: route to janus-final-audit
-- Reason: This slice changes only internal Codex/Janus worker-routing scripts and tests. It does not change Janus product runtime behavior, frontend behavior, backend chat behavior, providers visible to users, persistence, or UI.
-
-Implementation Notes:
-- Extended `isolated_aider_workspace_runner.py` so all operator paths emit the normalized worker package and result artifacts into the run directory.
-- Added contract writer helpers to `janus_worker_contract.py` for normalized task/result package emission.
-- Wired gateway validation into the isolated runner so success, local, and blocked outcomes all produce one consistent review surface.
-- Added focused runner tests for success, missing key, and invalid-profile blocked behavior.
-- Kept TASK-SPEC29.2 bounded. No OpenCode/OpenHands backend, no broad skill activation, no changelog/release/Git authority, and no first bounded live-dev pilot yet.
 
 NEXT_STEP
-Target Skill: janus-final-audit
+Target Skill: janus-debug
 Canonical State: HANDOFF
 Required Artifacts:
-- documentation/SPEC/29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md
-- documentation/tasks/TASK-SPEC29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md
+- documentation/SPEC/29_stilles_routinenlernen_mit_kandidatenphase.md
+- documentation/tasks/TASK-SPEC29_stilles_routinenlernen_mit_kandidatenphase.md
 - documentation/tasks/TASK-SPEC29.2_task_breakdown.md
 - documentation/tasks/TASK-SPEC29.2_preimplementation_check.md
 - documentation/tasks/TASK-SPEC29.2_execution_result.md
-Audit Package: documentation/tasks/TASK-SPEC29.2_AUDIT_PACKAGE.md
+Audit Package: N/A
 Evidence Paths:
-- documentation/codex/model-routing/scripts/isolated_aider_workspace_runner.py
-- documentation/codex/model-routing/scripts/janus_worker_contract.py
-- documentation/codex/model-routing/scripts/janus_worker_gateway.py
-- documentation/codex/model-routing/tests/test_isolated_aider_workspace_runner.py
-- documentation/codex/model-routing/tests/test_janus_worker_gateway.py
-Failure Code: N/A
+- backend/services/workflow/workflow_offer_service.py
+- backend/services/workflow/routine_store.py
+- backend/services/orchestrator/response_finalizer.py
+- backend/tests/test_workflow_offer_service.py
+- backend/tests/test_routine_store.py
+- backend/tests/test_routine_runner.py
+Failure Code:
+- TASK-SPEC29.2_MANUAL_JANUS_VALIDATION_PENDING
 Changed Files:
-- documentation/codex/model-routing/scripts/isolated_aider_workspace_runner.py
-- documentation/codex/model-routing/scripts/janus_worker_contract.py
-- documentation/codex/model-routing/scripts/janus_worker_gateway.py
-- documentation/codex/model-routing/tests/test_isolated_aider_workspace_runner.py
-- documentation/codex/model-routing/tests/test_janus_worker_gateway.py
+- backend/services/workflow/workflow_offer_service.py
+- backend/services/workflow/routine_store.py
+- backend/services/orchestrator/response_finalizer.py
+- backend/tests/test_workflow_offer_service.py
+- backend/tests/test_routine_store.py
 - documentation/tasks/TASK-SPEC29.2_execution_result.md
-- documentation/tasks/TASK-SPEC29.2_preimplementation_check.md
-- documentation/tasks/TASK-SPEC29.2_task_breakdown.md
-- documentation/tasks/TASK-SPEC29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md
-- documentation/SPEC/29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md
-Decision: HANDOFF
-Reason: TASK-SPEC29.2 is locally implemented and auto-verified. Final audit should review the first real isolated Aider/OpenRouter gateway wiring before TASK-SPEC29.3 adds operator guidance and the first bounded live-dev pilot.
+Decision:
+- Local implementation and auto-verification are complete, but product-relevant runtime acceptance still requires one live Janus manual validation of first-hit silence and second-hit passive promotion.
+Reason:
+- This slice changes the real user-visible chat/runtime behavior, so final closure must wait for explicit Janus confirmation instead of test-only evidence.
 Recommended Model: 5.4
 Recommended Intelligence: high
 New Chat: no
-Next User Action: Say `ok` to run `janus-final-audit` for `TASK-SPEC29.2`, or `weiter` after audit to start `TASK-SPEC29.3`.
+Next User Action:
+- Run the two-step Janus test above and report whether the first run stayed silent and the second run showed only the short passive saved-routine hint.

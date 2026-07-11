@@ -1,0 +1,15 @@
+{
+  "status": "BLOCKED",
+  "target_task": "TASK-EX-001-shadow-session-budget-line",
+  "patch_text": "",
+  "changed_files": [],
+  "risk_list": [
+    "Could not parse model content as JSON: Invalid control character at: line 9 column 144 (char 870)"
+  ],
+  "suggested_validation_steps": [
+    "python -m pytest documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/test_gate_prompt_shadow.py -q"
+  ],
+  "manual_validation_note": "Codex must manually validate this patch locally before task completion.",
+  "codex_acceptance_rule": "Codex must review and apply or reject locally.",
+  "notes": "Parser fallback result"
+}

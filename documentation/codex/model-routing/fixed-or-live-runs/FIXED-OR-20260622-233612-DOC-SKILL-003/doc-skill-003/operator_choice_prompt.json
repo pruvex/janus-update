@@ -1,0 +1,25 @@
+{
+  "workflow_id": "FIXED-OR-20260622-233612-DOC-SKILL-003",
+  "skill_id": "DOC-SKILL-003",
+  "local_codex_option": "handle locally with Codex",
+  "or_option": "handle with OR using fixed model openai/gpt-oss-20b",
+  "estimated_or_cost": 0.000205178,
+  "confidence_status": {
+    "cost_estimate_confidence_percent": 55,
+    "cost_estimate_sample_count": 1,
+    "cost_estimate_mean_abs_error_percent": 39.47,
+    "cost_estimate_p50_error_percent": 39.47,
+    "cost_estimate_p90_error_percent": 39.47,
+    "cost_estimate_basis": "openai/gpt-oss-20b+DOC-SKILL-003+sha256:doc-skill-003-live-batch-v1+copy_safe_handoff",
+    "prompt_template_hash": "sha256:doc-skill-003-live-batch-v1",
+    "task_variant": "copy_safe_handoff",
+    "price_snapshot_source": "documentation/codex/openrouter-delegation/model_price_inventory_2026-06-12.json",
+    "price_snapshot_timestamp": "2026-06-13T18:27:44.8768420+02:00"
+  },
+  "per_call_cap_usd": 0.002,
+  "session_cap_usd": 0.006,
+  "note": "Operator-invoked fixed OR use only. No Auto Router. Not production routing.",
+  "eligibility_result": "OR_ALLOWED",
+  "eligibility_reason_code": "ELIGIBILITY_CONFIRMED",
+  "evidence_status": "LIVE_EVIDENCE_CONFIRMED"
+}

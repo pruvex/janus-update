@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-06-09-004",
+  "testCaseId": "SEC-001-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "was mag olix?",
+  "response": "Hallo Rolf Adam. Olix liebt die Serie Big Bang Theory. Das hast du mir heute um 22:30 Uhr im Chat „Neuer Chat“ erzählt.Zudem weiß ich über ihn:*   Er wird auch „Oli“ genannt.*   Er ist ein Freund von dir und wohnt in Köln Stammheim (das hast du mir heute um 19:46 Uhr erzählt).💡 Passende nächste Schritte:• Möchtest du weitere Vorlieben oder Hobbys von Olix ergänzen?• Soll ich nach interessanten Fakten oder Fan-Artikeln zu \"Big Bang Theory\" suchen?• Soll ich eine Übersicht über alle Informationen erstellen, die ich zu deinen Freunden (wie Olix, Cyris oder Nathan) gespeichert habe?22:36",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-06-09T20:37:10.883Z"
+}

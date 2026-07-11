@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-06-09-003",
+  "testCaseId": "TC-003-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "`was mag oli?`",
+  "response": "Oli mag The Big Bang Theory.💡 Passende nächste Schritte:• Soll ich dir 2–3 Geschenkideen nennen, die zu seiner Big-Bang-Theory-Liebe passen?  • Möchtest du eine kurze Nachricht an Oli formulieren („Hey Oli, hast du…“) passend zu der Serie?19:10",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-06-09T17:10:57.112Z"
+}

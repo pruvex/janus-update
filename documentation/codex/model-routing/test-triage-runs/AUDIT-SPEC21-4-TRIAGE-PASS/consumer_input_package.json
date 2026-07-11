@@ -1,0 +1,11 @@
+{
+  "workflow_id": "AUDIT-SPEC21-4-TRIAGE-PASS",
+  "bound_skill_context": "janus-test-pipeline",
+  "test_run_id": "TEST-RUN-AUDIT",
+  "result_outcome_summary": "one bounded triage result",
+  "evidence_snippets": [
+    "bounded evidence"
+  ],
+  "classification_question": "Which bounded classification?",
+  "redaction_ready": true
+}

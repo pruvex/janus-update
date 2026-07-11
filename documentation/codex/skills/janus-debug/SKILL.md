@@ -48,9 +48,9 @@ Do not load the full file. Apply a learned pattern only if it directly matches t
 
 ## Model Gate
 
-Default: `5.4`, high.
+Default: `5.6 Terra`, high.
 
-Recommend `5.5`, high/very high, when:
+Recommend `5.6 Sol`, high/very high, when:
 
 - root cause is non-deterministic
 - multiple plausible causes remain
@@ -64,7 +64,7 @@ Recommend `5.5`, high/very high, when:
 - Each iteration needs new or updated evidence.
 - From iteration 2 onward, compare failure code and evidence with previous iteration.
 - Before iteration 5, stop and escalate if there are 3 unchanged transitions or 4 identical failure snapshots.
-- After iteration 5 without valid fix, escalate to `5.5`.
+- After iteration 5 without valid fix, escalate to `5.6 Sol`.
 - If evidence becomes contradictory, stale, or no longer points to one failure slice, stop with `BLOCKED` instead of widening scope.
 
 ## Verification Chain
@@ -106,7 +106,43 @@ SKILL 5 OUTPUT BLOCKED: SECRET_REDACTION_REQUIRED
 
 ## Bounded Delegation Gate
 
-This skill now has one bounded assist-only delegation class:
+Operator-facing entry for the current tri-modal rollout:
+
+- `1 = Codex`
+- `2 = Cursor`
+- `3 = OpenRouter`
+
+Use the shared delegate entry first for the bounded debug lanes that are live in the manifest:
+
+- `debug_hypothesis_review`
+- `debug_repro_investigation`
+
+Prompt-mode entry:
+
+```powershell
+python documentation/codex/model-routing/scripts/janus_delegate.py --lane <debug_hypothesis_review|debug_repro_investigation> --workflow-id <WORKFLOW-ID> --operator-choice prompt --input-package-json <bounded-package.json> --allowlist-file <allowlist.txt> --estimated-codex-saved-tokens <n> --estimated-delegation-overhead-tokens <n>
+```
+
+Notes:
+
+- use `debug_hypothesis_review` for assist-only review slices
+- use `debug_repro_investigation` only for bounded tool/shell/file work with an explicit allowlist
+- default behavior stays plan-only; explicit live Cursor execution requires separate operator approval and the shared delegate live flag
+- OpenRouter remains option `3` where the manifest allows it; older OR helpers remain downstream, not the first visible entry
+- show the normal visible shared gate only for the manifest-backed approved debug lane in play; helper-specific legacy wording below does not create a second everyday gate
+
+After the first shared live Cursor shadow wave, treat Cursor as the primary bounded worker for `debug_repro_investigation`. The older `1 = Codex / 2 = OpenRouter` wording below applies only to the legacy assist-only `debug_hypothesis_review` helper path, not to the normal everyday debug operator surface.
+
+Reference everyday proof for this lane:
+
+- `C:\KI\Janus-Projekt\documentation\codex\model-routing\DEBUG_REPRO_INVESTIGATION_GOLDEN_PATH_2026-07-07.md`
+
+Reference live evidence:
+
+- `WF-CURSOR-SHADOW-DEBUG-LIVE-001`
+- `WF-CURSOR-SHADOW-DEBUG-LIVE-002`
+
+This skill still has one older bounded assist-only OpenRouter helper class:
 
 - `debug_hypothesis_review`
 
@@ -124,7 +160,7 @@ Offer the operator choice only when all are true:
 Operator wording:
 
 - `1 = Codex`
-- `2 = OR`
+- `2 = OpenRouter`
 
 Current delegated meaning:
 
@@ -136,10 +172,10 @@ Current delegated meaning:
 
 Productive role:
 
-- Use OR when the debug package is large enough that outside hypothesis review will save meaningful Codex work.
-- OR may identify likely root cause, rank hypotheses, suggest local verifiers, and prepare a compact `janus-executioner` or `janus-test-pipeline` handoff.
-- OR must not apply a fix inside `janus-debug`; if code should change, route the bounded fix through `janus-executioner` and its write-capable OR path when eligible.
-- Keep tiny or obvious debug steps on Codex when OR briefing/review would cost more than solving the failure locally.
+- Use OpenRouter when the debug package is large enough that outside hypothesis review will save meaningful Codex work.
+- OpenRouter may identify likely root cause, rank hypotheses, suggest local verifiers, and prepare a compact `janus-executioner` or `janus-test-pipeline` handoff.
+- OpenRouter must not apply a fix inside `janus-debug`; if code should change, route the bounded fix through `janus-executioner` and its write-capable OpenRouter path when eligible.
+- Keep tiny or obvious debug steps on Codex when OpenRouter briefing/review would cost more than solving the failure locally.
 
 Current preferred OR candidate for this bounded lane:
 
@@ -148,18 +184,18 @@ Current preferred OR candidate for this bounded lane:
 Use the real operator-facing helper for this lane first:
 
 ```powershell
-python documentation/codex/model-routing/scripts/codex_debug_hypothesis_review_runner.py --task-label "<short bounded debug review task>" --normal-target-model "5.4 medium" --operator-choice prompt --workflow-id <WORKFLOW-ID> --estimated-or-cost 0.0004 --cost-estimate-confidence-percent 81 --estimated-codex-saved-tokens <n> --estimated-codex-or-overhead-tokens <n> --minimum-net-codex-saved-tokens <n> --input-package-json <bounded-package.json>
+python documentation/codex/model-routing/scripts/codex_debug_hypothesis_review_runner.py --task-label "<short bounded debug review task>" --normal-target-model "5.6 Terra medium" --operator-choice prompt --workflow-id <WORKFLOW-ID> --estimated-or-cost 0.0004 --cost-estimate-confidence-percent 81 --estimated-codex-saved-tokens <n> --estimated-codex-or-overhead-tokens <n> --minimum-net-codex-saved-tokens <n> --input-package-json <bounded-package.json>
 ```
 
 Consumer integration path for everyday `janus-debug` work:
 
 - build one redacted package with `codex_debug_hypothesis_review_runner.build_consumer_input_package(...)`
 - enter the operator gate through `codex_debug_hypothesis_review_runner.run_consumer_flow(...)`
-- keep the visible everyday operator wording aligned with the productive Dev-workhorse convention: `1 = Codex`, `2 = OR`
+- if this older direct helper path is used instead of the shared `janus_delegate.py` tri-modal gate above, keep its local operator wording explicit as `1 = Codex`, `2 = OpenRouter`
 - if the user chooses `1`, `local`, or `codex`, invoke the helper with `--operator-choice local`
 - if the user chooses `2`, `or`, `delegated`, or `sidecar`, invoke the helper with `--operator-choice delegated --input-package-json <bounded-package.json> --fixture-result-json <fixture.json> --use-local-or-fixture` for the bounded fixture-backed path, or with the explicitly approved live runtime mode when that path is intended
-- if the productive gate or ROI gate rejects the slice, do not show an OR choice; keep the step deterministically Codex-only
-- for the released `TASK-SPEC23.2` rollout, the OR branch may execute exactly one bounded hypothesis-review run with file-first capture or fixture validation; the delegated branch must resolve to exactly one runtime mode before dispatch
+- if the productive gate or ROI gate rejects the slice, do not show an OpenRouter choice; keep the step deterministically Codex-only
+- for the released `TASK-SPEC23.2` rollout, the OpenRouter branch may execute exactly one bounded hypothesis-review run with file-first capture or fixture validation; the delegated branch must resolve to exactly one runtime mode before dispatch
 - if no bounded runtime mode is present, or if capture, usage, validation, or healthcheck gates fail, fall back directly to a visible Codex-only continuation
 
 Do not treat this as production routing, broad sidecar debug authority, or a replacement for the normal `janus-debug` evidence chain.
@@ -191,7 +227,7 @@ On iteration 5, stagnation, or non-deterministic root cause:
 
 - create compact escalation package under `.windsurf/tmp/skill5_escalation_<task>_<YYYYMMDD-HHMM>.md`
 - no raw secrets or full logs
-- include evidence paths, failure codes, attempted fixes, changed files, and exact ask for `5.5`
+- include evidence paths, failure codes, attempted fixes, changed files, and exact ask for `5.6 Sol`
 - output `SKILL 5 ESCALATION REQUIRED`
 
 ## Output Skeleton

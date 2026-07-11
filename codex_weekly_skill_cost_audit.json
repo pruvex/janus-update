@@ -1,0 +1,92 @@
+[
+  {
+    "name": "codex-audit-package-builder",
+    "path": "C:\\Users\\pruve\\.codex\\skills\\codex-audit-package-builder\\SKILL.md",
+    "class": "editable-personal",
+    "words": 381,
+    "lines": 63,
+    "description_words": 38,
+    "has_references": false,
+    "has_scripts": true,
+    "handoff_keys": [
+      "NEXT:",
+      "MODEL:",
+      "PASS:",
+      "DROP:"
+    ],
+    "issues": [],
+    "priority": 0
+  },
+  {
+    "name": "codex-dev-skill-template",
+    "path": "C:\\Users\\pruve\\.codex\\skills\\codex-dev-skill-template\\SKILL.md",
+    "class": "editable-personal",
+    "words": 345,
+    "lines": 73,
+    "description_words": 28,
+    "has_references": true,
+    "has_scripts": false,
+    "handoff_keys": [
+      "NEXT:",
+      "MODEL:",
+      "PASS:",
+      "DROP:"
+    ],
+    "issues": [],
+    "priority": 0
+  },
+  {
+    "name": "codex-health-check",
+    "path": "C:\\Users\\pruve\\.codex\\skills\\codex-health-check\\SKILL.md",
+    "class": "editable-personal",
+    "words": 198,
+    "lines": 41,
+    "description_words": 31,
+    "has_references": false,
+    "has_scripts": true,
+    "handoff_keys": [
+      "NEXT:",
+      "MODEL:",
+      "PASS:",
+      "DROP:"
+    ],
+    "issues": [],
+    "priority": 0
+  },
+  {
+    "name": "codex-skill-cost-auditor",
+    "path": "C:\\Users\\pruve\\.codex\\skills\\codex-skill-cost-auditor\\SKILL.md",
+    "class": "editable-personal",
+    "words": 251,
+    "lines": 59,
+    "description_words": 31,
+    "has_references": false,
+    "has_scripts": true,
+    "handoff_keys": [
+      "NEXT:",
+      "MODEL:",
+      "PASS:",
+      "DROP:"
+    ],
+    "issues": [],
+    "priority": 0
+  },
+  {
+    "name": "codex-start-of-work-check",
+    "path": "C:\\Users\\pruve\\.codex\\skills\\codex-start-of-work-check\\SKILL.md",
+    "class": "editable-personal",
+    "words": 231,
+    "lines": 42,
+    "description_words": 48,
+    "has_references": false,
+    "has_scripts": true,
+    "handoff_keys": [
+      "NEXT:",
+      "MODEL:",
+      "PASS:",
+      "DROP:"
+    ],
+    "issues": [],
+    "priority": 0
+  }
+]

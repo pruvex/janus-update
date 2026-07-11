@@ -1,0 +1,34 @@
+{
+  "summary_header": "BOUNDED OR ROI GATE RESULT",
+  "workflow_id": "WF-DEBUG-ROI-NEG-SMOKE-2026-06-30-001",
+  "task_label": "Debug ROI negative smoke",
+  "selected_path": "codex_only_or_roi_gate",
+  "normal_target_model": "5.4 medium",
+  "operator_gate_visibility": "HIDDEN_ROI_GATE",
+  "validation_result": "PASS",
+  "final_outcome": "LOCAL_CODEX_PATH_SELECTED",
+  "or_roi": {
+    "status": "NEGATIVE",
+    "missing_fields": [],
+    "estimated_codex_saved_tokens": 800,
+    "estimated_codex_or_overhead_tokens": 1200,
+    "minimum_net_codex_saved_tokens": 250,
+    "net_codex_saved_tokens": -400,
+    "message": "OR ROI NEGATIVE: estimated saved Codex tokens 800, OR orchestration/review overhead 1200, net -400, minimum required 250."
+  },
+  "choice_1": "Codex",
+  "operator_result_lines": [
+    "Ergebnis: OR ROI Gate negativ oder unvollstaendig",
+    "Route: Codex direkt, weil OR voraussichtlich keine Netto-Codex-Ersparnis bringt",
+    "OR ROI NEGATIVE: estimated saved Codex tokens 800, OR orchestration/review overhead 1200, net -400, minimum required 250."
+  ],
+  "operator_message": "The task stays on Codex because the estimated Codex savings do not clearly exceed the Codex overhead for OR briefing, orchestration, and review.",
+  "skill": "janus-debug",
+  "task_class": "debug_hypothesis_review",
+  "eligibility_result": "OR_ALLOWED",
+  "eligibility_reason_code": "ELIGIBILITY_CONFIRMED",
+  "evidence_status": "BOUNDED_LIVE_EVIDENCE_CONFIRMED",
+  "budget_profile": "debug_hypothesis_review",
+  "per_call_cap_usd": 0.03,
+  "session_cap_usd": 0.09
+}

@@ -1,0 +1,7 @@
+{
+  "workflow_id": "WF-SPEC-GEN-LIVE-FIXTURE-2026-06-26",
+  "task_label": "Spec generator delegated fixture check",
+  "validation_issues": [],
+  "finish_reason": "stop",
+  "actual_or_cost": 0.00071
+}

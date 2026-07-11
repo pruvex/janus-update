@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "primary_failure_code": "RUNNER_ARTIFACT_MISMATCH",
+  "likely_subsystem": "test-runner packaging",
+  "hypotheses": [
+    {
+      "title": "The runner consumed an older package shape.",
+      "confidence": "HIGH",
+      "evidence": "Current bounded package uses allowlist-only fields while the failing slice mentions legacy payload assumptions."
+    }
+  ],
+  "suggested_local_verifiers": "Compare the installed skill wording and rerun the bounded consumer helper with the refreshed package.",
+  "instrumentation_suggestion": "Inspect the generated input package and validation summary before any broader debug action.",
+  "escalation_trigger": "Escalate only if the installed skill copy still diverges after sync or the prompt gate stops showing cost/confidence.",
+  "redaction_check": "PASS",
+  "notes": "Local fixture only; no delegated command execution and no final fix claim."
+}

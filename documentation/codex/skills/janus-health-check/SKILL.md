@@ -40,7 +40,7 @@ If the user asks which mode to use, recommend:
 - In `WEEKLY` or `MONTHLY`, create Backlog items only after concrete evidence and only via `janus-backlog-intake`.
 - Auto-fixes are proposal-only unless the user explicitly approves exact paths/actions.
 - Never propose deleting non-empty scripts, executables, databases, logs, release artifacts, or unknown generated files as low risk.
-- If uncertain, route to `janus-backlog-intake`, `janus-debug`, `janus-git-governance`, or `5.5` escalation instead of changing files.
+- If uncertain, route to `janus-backlog-intake`, `janus-debug`, `janus-git-governance`, or `5.6 Sol` escalation instead of changing files.
 
 ## Bounded Scan Rules
 
@@ -81,6 +81,50 @@ Use `--mode WEEKLY` or `--mode MONTHLY` when selected. The script is read-only.
 
 If a quick reminder check is all that is needed at session start, prefer `codex-start-of-work-check` instead of this skill.
 
+## Tri-Modal Rollout Note
+
+Global delegation vocabulary across Janus is now:
+
+- `1 = Codex`
+- `2 = Cursor`
+- `3 = OpenRouter`
+
+This skill's bounded health-check interpretation lane is now wired through the shared manifest-backed `documentation/codex/model-routing/scripts/janus_delegate.py` entry. OpenRouter remains the recommended backend for this assist-only review slice; Cursor is visible as option `2` but is not the recommended backend here.
+
+## Bounded Delegation Gate
+
+For one bounded read-only health-check interpretation slice, this skill now has the shared tri-modal operator gate:
+
+- `1 = Codex`
+- `2 = Cursor`
+- `3 = OpenRouter`
+
+Use the shared delegate entry first:
+
+```powershell
+python documentation/codex/model-routing/scripts/janus_delegate.py `
+  --lane health_check_review `
+  --task-id TASK-HC-001 `
+  --workflow-id WF-HEALTH-CHECK-GATE-001 `
+  --operator-choice prompt `
+  --input-package-json development/openrouter-skill-tests/janus-health-check/health_check_input_package.json `
+  --estimated-codex-saved-tokens 12000 `
+  --estimated-delegation-overhead-tokens 4000
+```
+
+Current lane behavior:
+
+- OpenRouter remains the recommended backend for this bounded assist-only review slice.
+- Cursor is visible as option `2`, but not the recommended backend.
+- The existing `codex_health_check_review_runner.py` remains the downstream OR helper planned by `janus_delegate.py`.
+
+Boundaries:
+
+- no delegated file deletion
+- no delegated Git or release action
+- no delegated auto-fix authority
+- Codex remains the final health-check owner
+
 ## DAILY Checklist
 
 Check:
@@ -120,7 +164,7 @@ Includes WEEKLY plus bounded architecture review:
 - long-term maintainability risks
 - repeated skill usage friction that suggests router or skill changes
 
-Do not perform large fixes. Route to Backlog or recommend `5.5` review for high-risk ambiguity.
+Do not perform large fixes. Route to Backlog or recommend `5.6 Sol` review for high-risk ambiguity.
 Do not execute fixes, tests, builds, or Git actions as part of the scan.
 
 ## Ampel
@@ -141,10 +185,10 @@ If the working tree is dirty and cleanup candidates exist, max is `GELB`/89. If 
 
 ## Model Routing
 
-- Use `5.4` low for DAILY checks when the current `5.4` project context is warm.
-- Use `5.4 mini` only for separated low-risk healthcheck runs that are still likely cheaper than staying on warm `5.4`.
-- Use `5.4` medium/high for WEEKLY or MONTHLY analysis with meaningful judgment.
-- Recommend `5.5` only for security, privacy, architecture, release, or destructive ambiguity.
+- Use `5.6 Terra` low for DAILY checks when the current `5.6 Terra` project context is warm.
+- Use `5.6 Luna` only for separated low-risk healthcheck runs that are still likely cheaper than staying on warm `5.6 Terra`.
+- Use `5.6 Terra` medium/high for WEEKLY or MONTHLY analysis with meaningful judgment.
+- Recommend `5.6 Sol` only for security, privacy, architecture, release, or destructive ambiguity.
 
 ## Output
 

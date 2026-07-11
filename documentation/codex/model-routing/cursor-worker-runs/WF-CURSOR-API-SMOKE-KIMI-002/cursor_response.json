@@ -1,0 +1,16 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 46768,
+  "duration_api_ms": 46768,
+  "result": "I'll check the sandbox directory for the delegated worker task package and then route it.Done. The shadow prompt fixture now emits the `Session-Budget:` line expected by the test, and the test passes.\n\n```json\n{\n  \"status\": \"PASS\",\n  \"changed_files\": [\n    \"documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/gate_prompt_shadow.py\"\n  ],\n  \"command_results\": {\n    \"pytest test_gate_prompt_shadow.py -v\": \"1 passed\"\n  },\n  \"summary\": \"Added Session-Budget line using the existing session_cap_usd parameter; removed the unused placeholder assignment.\",\n  \"blockers\": []\n}\n```",
+  "session_id": "0b9093b9-6b8b-4207-849c-892eac383662",
+  "request_id": "32bedb35-6241-441e-bfce-34a654f81200",
+  "usage": {
+    "inputTokens": 32686,
+    "outputTokens": 1556,
+    "cacheReadTokens": 150633,
+    "cacheWriteTokens": 0
+  }
+}

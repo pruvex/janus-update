@@ -10,6 +10,50 @@ description: Review and prioritize open Janus Backlog items with a token-saving 
 Evaluate open items in `C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md`, persist missing evaluation fields, and recommend the next best item. Do not implement, create handoff files, or route directly to execution.
 This is primarily a ChatGPT-led prioritization skill. Codex should only consume a bounded prioritization handoff when a cross-actor backlog review or file update is explicitly needed.
 
+## Tri-Modal Rollout Note
+
+Global delegation vocabulary across Janus is now:
+
+- `1 = Codex`
+- `2 = Cursor`
+- `3 = OpenRouter`
+
+This skill's bounded DELTA prioritization review lane is now wired through the shared manifest-backed `documentation/codex/model-routing/scripts/janus_delegate.py` entry. OpenRouter remains the recommended backend for this assist-only review slice; Cursor is available as option `2` but is not the preferred backend here.
+
+## Bounded Delegation Gate
+
+For one bounded DELTA prioritization slice, this skill now has the shared tri-modal operator gate:
+
+- `1 = Codex`
+- `2 = Cursor`
+- `3 = OpenRouter`
+
+Use the shared delegate entry first:
+
+```powershell
+python documentation/codex/model-routing/scripts/janus_delegate.py `
+  --lane backlog_prioritization_review `
+  --task-id TASK-BP-001 `
+  --workflow-id WF-BACKLOG-PRIO-REVIEW-001 `
+  --operator-choice prompt `
+  --input-package-json development/openrouter-skill-tests/janus-backlog-prioritization/backlog_prioritization_input_package.json `
+  --estimated-codex-saved-tokens 12000 `
+  --estimated-delegation-overhead-tokens 4000
+```
+
+Current lane behavior:
+
+- OpenRouter remains the recommended backend for this bounded assist-only review slice.
+- Cursor is visible as option `2`, but not the recommended backend.
+- The existing `codex_backlog_prioritization_review_runner.py` remains the downstream OR helper planned by `janus_delegate.py`.
+
+Boundaries:
+
+- no delegated final backlog write acceptance
+- no delegated handoff creation
+- no delegated implementation routing
+- Codex remains the final prioritization and backlog owner
+
 ## Source Reference
 
 Legacy source:
@@ -22,11 +66,11 @@ Read only if exact wording is needed.
 
 Default recommendation:
 
-- Model: `5.4` for meaningful prioritization.
+- Model: `5.6 Terra` for meaningful prioritization.
 - Intelligence: `medium`.
-- Use `5.4` `low` for purely mechanical cache-field cleanup when the current `5.4` context is warm or prioritization continues in `5.4`.
-- Use `5.4 mini` only for separated mechanical cleanup batches that are still likely cheaper than staying on warm `5.4`.
-- Use `5.5` only for release/security/privacy-critical prioritization.
+- Use `5.6 Terra` `low` for purely mechanical cache-field cleanup when the current `5.6 Terra` context is warm or prioritization continues in `5.6 Terra`.
+- Use `5.6 Luna` only for separated mechanical cleanup batches that are still likely cheaper than staying on warm `5.6 Terra`.
+- Use `5.6 Sol` only for release/security/privacy-critical prioritization.
 
 ## Mode
 

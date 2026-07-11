@@ -139,19 +139,22 @@ Kleine, klare Verbesserungen gehen standardmaessig in `janus-backlog-intake`, da
 
 Wenn der Wunsch groesser, produktentscheidend, mehrdeutig, surface-uebergreifend, persistenzrelevant oder riskant wirkt, geht Codex automatisch zuerst in `janus-feature-design`. Dort wird der Wunsch mit dem Nutzer entschieden und fixiert. Erst danach entstehen Spec, normalisierte Spec, Review, Tasks und Backlog-/Dashboard-Sichtbarkeit.
 
-## Git/GitHub Governance
+## Git/GitHub Governance (Solo Git v2)
 
-- Normalarbeit findet auf `develop` statt.
-- `master` ist nur fuer Releases.
-- `backup` ist der private Sicherheits-Remote fuer Entwicklungscommits.
-- `origin` ist der oeffentliche/update Remote und bekommt nur `master` plus explizite Release-Tags.
+Canonical doc: `documentation/codex/JANUS_SOLO_GIT.md`
+
+- Normalarbeit: `master` + ein aktiver `feature/*`-Branch; nach Validierung merge nach `master`.
+- `develop` ist legacy/deprecated — nicht fuer neue Arbeit.
+- VM-Snapshot des Operators bleibt das primaere Rollback-Sicherheitsnetz; Git ist Historie + Remote-Backup.
+- `backup/master` ist der private Sicherheits-Remote nach fertigem Feature-Merge.
+- `origin` bekommt nur `master` plus explizite Release-Tags sowie den ChatGPT-Sync-Branch `codex-sync`.
+- Keine Git-Worktrees als Standard; keine Worktree-Archaeologie, ausser der Operator fragt explizit danach.
 - Wenn ein Schritt direkt auf GitHub laeuft, bevorzuge den GitHub-Connector fuer PRs, Reviews, Issues, CI-Checks und Publish-Flows statt sofort auf CLI-Fallbacks zu gehen.
-- Nie blind `git add .` verwenden, wenn der Worktree nicht vollstaendig als ein Changeset geprueft wurde.
-- Vor Commit/Push immer `janus-git-governance` verwenden.
-- Vor unabhaengigen Audits muss ein sauberer Checkpoint-Commit empfohlen werden.
-- Commit-Gruppen muessen fachlich zusammenhaengen: Code + passende Tests + passende Doku/Evidenz.
+- Nie blind `git add .` verwenden, ausser beim einmaligen Migrations-Archiv mit expliziter Freigabe.
+- Vor Commit/Push/Merge/Sync immer `janus-git-governance` verwenden.
+- Ein validierter Delivery-Block darf ein Commit sein; nicht automatisch in viele Micro-Commits splitten.
 - Keine Secrets, lokalen DBs, Build-Artefakte, privaten Logs oder grossen Dateien committen, ausser explizit geprueft und begruendet.
-- Commit/Push/Tag/Merge nur nach expliziter User-Freigabe ausfuehren.
+- Commit/Push/Tag/Merge/codex-sync nur nach expliziter User-Freigabe ausfuehren.
 - Janus-Codex-Skills muessen im Repo unter `documentation/codex/skills/` versioniert werden; die Kopien unter `C:\Users\pruve\.codex\skills` gelten als installierte Arbeitskopien.
 
 ## Versioning And Electron Auto-Update Releases
@@ -205,9 +208,9 @@ Wenn kein Push erfolgt oder der Push fehlschlaegt, muss der Abschluss explizit s
 Wenn ChatGPT den aktuellen CURRENT_STATE-Stand jederzeit zuverlaessig kennen soll, gilt zusaetzlich diese Sync-Regel:
 
 - die verbindliche ChatGPT-Remote-Wahrheit fuer `documentation/ai/CURRENT_STATE.md` ist `origin/codex-sync`
-- nach jedem substantielle Janus-Arbeitsblock soll Codex einen zusaetzlichen CURRENT_STATE-Sync zu `origin/codex-sync` empfehlen
-- ohne diesen Sync darf ChatGPT keinen aktuellen Remote-Stand annehmen, selbst wenn `backup/develop` oder andere Branches neuer sind
-- diese Regel betrifft nur den ChatGPT-Sync-Punkt fuer `CURRENT_STATE.md`; sie ersetzt nicht die normale Git-Governance fuer Entwicklungs-, Release- oder Produkt-Branches
+- nach jedem substantiellen Janus-Arbeitsblock soll Codex den Sync zu `origin/codex-sync` empfehlen; bevorzugt `documentation/codex/scripts/sync_codex_current_state.ps1`
+- ohne diesen Sync darf ChatGPT keinen aktuellen Remote-Stand annehmen, selbst wenn `backup/master` oder andere Branches neuer sind
+- diese Regel betrifft nur den ChatGPT-Sync-Punkt fuer `CURRENT_STATE.md`; sie ersetzt nicht die normale Git-Governance fuer Backup-, Release- oder Produkt-Branches
 
 ## Completion Rules
 

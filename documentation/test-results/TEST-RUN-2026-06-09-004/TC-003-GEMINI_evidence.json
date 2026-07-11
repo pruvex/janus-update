@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-06-09-004",
+  "testCaseId": "TC-003-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "was mag olix?",
+  "response": "Hallo Rolf Adam. Olix Quarz ist ein großer Fan der Serie „The Big Bang Theory“ und er wird auch gerne „Oli“ genannt.Das hast du mir heute, am 9. Juni 2026, gegen 20:30 Uhr im Chat „Neuer Chat“ erzählt.💡 Passende nächste Schritte:• Soll ich nach Geschenkideen oder Merchandising zu „The Big Bang Theory“ für Oli suchen?• Möchtest du weitere Hobbys oder Vorlieben von ihm ergänzen?• Soll ich nach Fakten oder Trivia zur Serie suchen, um ihn zu überraschen?22:50",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-06-09T20:50:38.670Z"
+}

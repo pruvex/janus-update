@@ -1,0 +1,83 @@
+{
+  "mode": "DAILY",
+  "repo": "C:\\KI\\Janus-Projekt",
+  "branch": "develop",
+  "dirty_total": 338,
+  "staged": 0,
+  "unstaged": 53,
+  "untracked": 285,
+  "core_artifacts": {
+    "AGENTS.md": true,
+    "documentation/CODEX_MIGRATION_PLAN.md": true,
+    "documentation/backlog/BACKLOG.md": true,
+    "documentation/pipeline/PIPELINE_CONTRACT.md": true,
+    "janus-dashboard/data/backlog.snapshot.json": true
+  },
+  "backlog": {
+    "exists": "YES",
+    "in_progress": 4,
+    "ready": 41,
+    "needs_info": 5,
+    "blocked": 9
+  },
+  "migration_gaps": [],
+  "root_suspicious": [],
+  "root_runtime_db_artifacts": [
+    "chat_history.db: legacy local split-chat DB artifact; not the intended active Janus runtime DB path",
+    "costs.db: legacy local split-cost DB artifact; not the intended active Janus runtime DB path",
+    "janus.db: stray root copy; active Janus runtime DB belongs under %APPDATA%/Janus Projekt/janus.db"
+  ],
+  "root_legacy_log_artifacts": [
+    ".codex-vite-err.log: legacy root Vite error log; current versioned dev start path writes Vite logs under documentation/logs/dev-runtime/",
+    ".codex-vite-out.log: legacy root Vite output log; current versioned dev start path writes Vite logs under documentation/logs/dev-runtime/",
+    "backend_hotfix.err.log: legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/",
+    "backend_hotfix.out.log: legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/",
+    "backend_live.err.log: legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/",
+    "backend_live.out.log: legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/",
+    "backend_persist.err.log: legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/",
+    "backend_persist.out.log: legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/",
+    "backend_restart.err.log: legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/",
+    "backend_restart.out.log: legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/",
+    "backend_start.log: legacy root backend start log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/",
+    "backend_start_manual.err.log: legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/",
+    "backend_start_manual.log: legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/",
+    "backend_verify.err.log: legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/",
+    "backend_verify.out.log: legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/",
+    "startdev.log: legacy root start-dev log; current versioned startup telemetry belongs under documentation/logs and dev runtime logs under documentation/logs/dev-runtime/",
+    "tmp_uv8011_err.log: legacy root temporary backend log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/",
+    "tmp_uv8011_out.log: legacy root temporary backend log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/"
+  ],
+  "skill_usage": {
+    "exists": true,
+    "entries": 641
+  },
+  "or_telemetry": {
+    "source": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\or_healthcheck_telemetry_direct_or_quickchange_2026-06-23_BOUNDED-QUICKCHANGE-OR-LIVE-001.jsonl",
+    "record_count": 1,
+    "models_seen": [
+      "deepseek/deepseek-v4-flash"
+    ],
+    "skills_seen": [
+      "janus-quickchange"
+    ],
+    "routing_mode_counts": {
+      "Direct-OR": 1
+    },
+    "estimated_cost_total": 0.00025,
+    "actual_cost_total": 0.00011984,
+    "confidence_average": 68.0,
+    "fallback_count": 0,
+    "validation_result_counts": {
+      "PASS": 1
+    },
+    "recommendation_signal_counts": {
+      "OR_PREFERRED": 1
+    },
+    "final_outcome_counts": {
+      "DIRECT_OR_PATCH_PROPOSAL_READY_FOR_CODEX_REVIEW": 1
+    },
+    "codex_owned_outcome_status_counts": {
+      "N_A": 1
+    }
+  }
+}

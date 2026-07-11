@@ -1,0 +1,77 @@
+# Delegated Result
+
+Accepted proposal-first execution patch candidate normalized for write-apply validation.
+
+```diff
+--- a/backend/services/contact_manager.py
++++ b/backend/services/contact_manager.py
+@@ -1,5 +1,6 @@
+ from typing import Optional, List, Dict, Any
+ from backend.data.crud import update_contact, get_contact_by_id
++from backend.data.crud import create_contact_proposal
+ from backend.models.contact import Contact
+ from backend.models.memory import MemoryFact
+ 
+@@ -20,6 +21,7 @@ class ContactManager:
+         self._memory_extractor = memory_extractor
+         self._contact_store = contact_store
+         self._proposal_store = proposal_store
++        self._memory_tools = None  # lazy import to avoid circular
+ 
+     def match_contact(self, query: str) -> Optional[Contact]:
+         """Match a contact by name or email."""
+@@ -42,6 +44,7 @@ class ContactManager:
+         if not contact:
+             return None
+         confirmed_facts = self._memory_extractor.extract_confirmed_facts(chat_context, contact)
++        self._persist_or_propose_confirmed_facts(contact, confirmed_facts)
+         return contact
+ 
+     def _extract_and_persist_facts(self, contact: Contact, chat_context: str) -> List[MemoryFact]:
+@@ -55,6 +58,24 @@ class ContactManager:
+         self._memory_tools.store_facts(contact.id, facts)
+         return facts
+ 
++    def _persist_or_propose_confirmed_facts(self, contact: Contact, facts: List[MemoryFact]) -> None:
++        """Persist confirmed facts directly if possible, otherwise create a proposal."""
++        if not facts:
++            return
++        # Attempt direct persistence via memory tools
++        if self._memory_tools is None:
++            from backend.tools.memory_tools import MemoryTools
++            self._memory_tools = MemoryTools()
++        try:
++            self._memory_tools.store_facts(contact.id, facts)
++        except Exception:
++            # Fallback: create a contact update proposal
++            proposal_data = {
++                "contact_id": contact.id,
++                "proposed_facts": [f.dict() for f in facts],
++                "source": "chat_confirmed"
++            }
++            create_contact_proposal(self._proposal_store, proposal_data)
++
+     def propose_contact_update(self, contact: Contact, facts: List[MemoryFact]) -> str:
+         """Create a proposal for updating a contact with new facts."""
+         proposal_id = self._proposal_store.create_proposal(contact.id, facts)
+--- a/backend/tools/memory_tools.py
++++ b/backend/tools/memory_tools.py
+@@ -1,5 +1,6 @@
+ from typing import List, Optional
+ from backend.models.memory import MemoryFact
++from backend.data.crud import store_memory_facts
+ 
+ class MemoryTools:
+     """Tools for storing and retrieving memory facts."""
+@@ -12,6 +13,7 @@ class MemoryTools:
+     def store_facts(self, contact_id: str, facts: List[MemoryFact]) -> bool:
+         """Store memory facts for a contact."""
+         if not facts:
+             return False
+-        # Placeholder: actual storage logic
+-        return True
++        # Delegate to CRUD layer for persistence
++        for fact in facts:
++            store_memory_facts(contact_id, fact)
++        return True
+```

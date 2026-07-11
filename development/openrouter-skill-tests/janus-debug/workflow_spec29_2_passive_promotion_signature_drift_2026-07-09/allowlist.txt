@@ -1,0 +1,5 @@
+backend/services/workflow/workflow_offer_service.py
+backend/services/workflow/routine_store.py
+backend/services/workflow/routine_schema.py
+backend/services/workflow/workflow_detector.py
+backend/tests/test_workflow_offer_service.py

@@ -260,10 +260,18 @@ def handle_run_generator(request: dict[str, Any], run_dir: Path) -> ExecutionRes
 
     plan_path = (output_dir / f"{test_run_id}_plan.json").resolve()
     runner_path = (output_dir / f"{test_run_id}_generated.spec.js").resolve()
-    expected_outputs = [plan_path, runner_path]
-    if declared_outputs != expected_outputs:
+    handover_path = (output_dir / f"{test_run_id}_skill2_handover.txt").resolve()
+    expected_outputs_without_handover = [plan_path, runner_path]
+    expected_outputs_with_handover = [plan_path, runner_path, handover_path]
+
+    include_skill2_handover = False
+    if declared_outputs == expected_outputs_without_handover:
+        include_skill2_handover = False
+    elif declared_outputs == expected_outputs_with_handover:
+        include_skill2_handover = True
+    else:
         raise RequestValidationError(
-            "declared_output_artifacts must exactly match the plan and generated runner paths for compile_testspec_to_testplan_v1."
+            "declared_output_artifacts must exactly match the compile_testspec_to_testplan_v1 expected output set with or without skill2 handover."
         )
 
     command = [
@@ -275,13 +283,15 @@ def handle_run_generator(request: dict[str, Any], run_dir: Path) -> ExecutionRes
         test_run_id,
         "--output-dir",
         rel_repo(output_dir),
-        "--skip-skill2-handover",
     ]
+    if not include_skill2_handover:
+        command.append("--skip-skill2-handover")
     completed = run_command(command, REPO_ROOT)
     write_text(stdout_path, completed.stdout)
     write_text(stderr_path, completed.stderr)
     write_text(exit_code_path, f"{completed.returncode}\n")
 
+    expected_outputs = expected_outputs_with_handover if include_skill2_handover else expected_outputs_without_handover
     missing_outputs = [path for path in expected_outputs if not path.exists()]
     if completed.returncode != 0 or missing_outputs:
         raise RequestValidationError(

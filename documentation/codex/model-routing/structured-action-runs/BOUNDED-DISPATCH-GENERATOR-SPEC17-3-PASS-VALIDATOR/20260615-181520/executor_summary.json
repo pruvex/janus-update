@@ -1,0 +1,27 @@
+{
+  "workflow_id": "BOUNDED-DISPATCH-GENERATOR-SPEC17-3-PASS-VALIDATOR",
+  "skill_id": "janus-test-pipeline",
+  "action_type": "run_validator",
+  "executor_status": "PASS",
+  "schema_validation": "PASS",
+  "mapping_resolution": "PASS",
+  "allowlist_status": "PASS",
+  "output_artifact_status": "PASS",
+  "codex_review_required": true,
+  "detail": "Validator executed through deterministic local mapping.",
+  "action_summary": {
+    "validator_id": "validate_runner_v1",
+    "command": [
+      "C:\\nvm4w\\nodejs\\node.exe",
+      "tests/e2e/generator/validate-runner.mjs",
+      "--plan",
+      "documentation/codex/model-routing/structured-action-runs/BOUNDED-DISPATCH-GENERATOR-SPEC17-3-PASS/20260615-181519/generated/TEST-RUN-2099-12-31-998_plan.json",
+      "--runner",
+      "documentation/codex/model-routing/structured-action-runs/BOUNDED-DISPATCH-GENERATOR-SPEC17-3-PASS/20260615-181519/generated/TEST-RUN-2099-12-31-998_generated.spec.js"
+    ],
+    "stdout_path": "documentation/codex/model-routing/structured-action-runs/BOUNDED-DISPATCH-GENERATOR-SPEC17-3-PASS-VALIDATOR/20260615-181520/stdout.log",
+    "stderr_path": "documentation/codex/model-routing/structured-action-runs/BOUNDED-DISPATCH-GENERATOR-SPEC17-3-PASS-VALIDATOR/20260615-181520/stderr.log",
+    "exit_code_path": "documentation/codex/model-routing/structured-action-runs/BOUNDED-DISPATCH-GENERATOR-SPEC17-3-PASS-VALIDATOR/20260615-181520/exit_code.txt"
+  },
+  "run_directory": "documentation/codex/model-routing/structured-action-runs/BOUNDED-DISPATCH-GENERATOR-SPEC17-3-PASS-VALIDATOR/20260615-181520"
+}

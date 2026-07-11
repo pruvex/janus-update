@@ -1,0 +1,15 @@
+{
+  "workflow_id": "WF-DEBUG-EVERYDAY-PACKAGE-001",
+  "bound_skill_context": "janus-debug",
+  "expected_behavior": "Codex may offer exactly one bounded redacted hypothesis review.",
+  "actual_behavior": "We want to validate the visible everyday OR gate with an allowlisted redacted package.",
+  "evidence_snippets": [
+    "Failure code already isolated.",
+    "One bounded slice only.",
+    "No local command execution will be delegated."
+  ],
+  "iteration_number": 1,
+  "explicit_question": "Which local verifier should Codex run next?",
+  "redaction_ready": true,
+  "failure_code": "RUNNER_ARTIFACT_MISMATCH"
+}

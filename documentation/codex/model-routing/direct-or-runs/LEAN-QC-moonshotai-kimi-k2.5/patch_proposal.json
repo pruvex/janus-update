@@ -1,0 +1,18 @@
+{
+  "status": "PATCH_PROPOSAL",
+  "summary": "Modified chat input placeholder text in both windows as requested.",
+  "changed_files": [
+    "frontend/index.html"
+  ],
+  "unified_diff": "--- a/frontend/index.html\n+++ b/frontend/index.html\n@@ -42,7 +42,7 @@\n       <div class=\"input-area\">\n         <input \n           type=\"text\" \n-          placeholder=\"Nachricht an Janus senden...\"\n+          placeholder=\"Nachricht an Janus schreiben...\"\n           id=\"chat-input-a\"\n           class=\"chat-input\"\n         />\n@@ -85,7 +85,7 @@\n       <div class=\"input-area\">\n         <input \n           type=\"text\" \n-          placeholder=\"Nachricht an Janus senden...\"\n+          placeholder=\"Nachricht an Janus schreiben...\"\n           id=\"chat-input-b\"\n           class=\"chat-input\"\n         />",
+  "validation_notes": [
+    "Changed: 'Nachricht an Janus senden...' → 'Nachricht an Janus schreiben...'",
+    "Location: Window A chat input placeholder (id='chat-input-a')",
+    "Location: Window B chat input placeholder (id='chat-input-b')",
+    "Unchanged: API key placeholder, all IDs, classes, structure, button labels, and settings labels",
+    "Files touched: 1 (frontend/index.html only)"
+  ],
+  "risk_notes": [
+    "Trivial string change in HTML placeholder attributes only."
+  ]
+}

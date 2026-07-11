@@ -1,0 +1,36 @@
+{
+  "model": "qwen/qwen3-coder-flash",
+  "input": [
+    {
+      "role": "system",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "You are a bounded OpenRouter worker for a Janus patch-proposal task. You must not claim git, release, routing, production, registry, or CURRENT_STATE authority. Use the apply_patch tool to propose a patch only inside the allowlisted files. Do not add, delete, rename, or move files. Codex will validate and decide whether to apply or reject the proposal locally. Use non-thinking mode for this turn. /no_think Produce exactly one final completed tool proposal. Do not emit excerpt snapshots or rewritten content blocks as the diff payload. The tool payload must contain unified diff hunks only."
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "{\n  \"task_label\": \"Qwen apply_patch hardened sliced fixture validation\",\n  \"allowed_files\": [\n    \"frontend/index.html\"\n  ],\n  \"max_touched_files\": 1,\n  \"prompt\": \"# Qwen Responses Apply Patch Fixture Prompt - 2026-06-19\\n\\nThis is a fixture-only bounded patch-proposal prompt for the Qwen Responses API\\n`apply_patch` lane.\\n\\nTask:\\n\\n- Edit only `frontend/index.html`.\\n- Change the two chat placeholders from `Nachricht an Janus schreiben...` to\\n  `Nachricht an Janus senden...`.\\n- Do not change any other text, attributes, IDs, classes, structure, or files.\\n- Return the proposal through the apply_patch tool only.\\n\",\n  \"file_inputs\": [\n    {\n      \"path\": \"frontend/index.html\",\n      \"content\": \"# excerpt lines 430-436\\n                      <textarea\\n                        id=\\\"user-input-A\\\"\\n                        rows=\\\"1\\\"\\n                        placeholder=\\\"Nachricht an Janus schreiben...\\\"\\n                        autocomplete=\\\"off\\\"\\n                        spellcheck=\\\"true\\\"\\n                      ></textarea>\\n\\n# excerpt lines 526-532\\n                      <textarea\\n                        id=\\\"user-input-B\\\"\\n                        rows=\\\"1\\\"\\n                        placeholder=\\\"Nachricht an Janus schreiben...\\\"\\n                        autocomplete=\\\"off\\\"\\n                        spellcheck=\\\"true\\\"\\n                      ></textarea>\",\n      \"content_mode\": \"excerpt\",\n      \"excerpt_line_ranges\": [\n        {\n          \"start_line\": 430,\n          \"end_line\": 436\n        },\n        {\n          \"start_line\": 526,\n          \"end_line\": 532\n        }\n      ],\n      \"full_line_count\": 2548\n    }\n  ],\n  \"file_input_mode\": \"excerpt_preferred\",\n  \"required_output_behavior\": [\n    \"Use the apply_patch tool for the proposal.\",\n    \"Touch only allowlisted files.\",\n    \"Do not emit prose-only answers instead of a patch.\",\n    \"Assume omitted file regions are unchanged.\",\n    \"Return one final tool call only.\",\n    \"Inside the tool payload, return unified diff hunks rather than excerpt snapshots.\"\n  ]\n}"
+        }
+      ]
+    }
+  ],
+  "tools": [
+    {
+      "type": "openrouter:apply_patch",
+      "parameters": {
+        "engine": "openrouter"
+      }
+    }
+  ],
+  "tool_choice": "auto",
+  "parallel_tool_calls": false,
+  "max_tool_calls": 1,
+  "temperature": 0.0,
+  "max_output_tokens": 1800
+}

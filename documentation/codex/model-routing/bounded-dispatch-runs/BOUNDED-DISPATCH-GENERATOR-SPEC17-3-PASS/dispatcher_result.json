@@ -1,0 +1,26 @@
+{
+  "summary_header": "BOUNDED GENERATOR REVIEW RESULT",
+  "status": "PASS",
+  "workflow_id": "BOUNDED-DISPATCH-GENERATOR-SPEC17-3-PASS",
+  "skill_id": "janus-test-pipeline",
+  "selected_path": "delegated_intent_local_structured_executor",
+  "generator_manifest": "documentation/codex/model-routing/structured-action-fixtures/builder_generator_payload_compile_testspec_2026-06-15.json",
+  "generator_request_json": "documentation/codex/model-routing/structured-action-fixtures/BOUNDED-DISPATCH-GENERATOR-SPEC17-3-PASS_generator_request.json",
+  "generator_builder_status": "PASS",
+  "generator_executor_status": "PASS",
+  "generator_run_directory": "documentation/codex/model-routing/structured-action-runs/BOUNDED-DISPATCH-GENERATOR-SPEC17-3-PASS/20260615-181519",
+  "validation_result": "PASS",
+  "final_outcome": "GENERATOR_REVIEW_AND_VALIDATION_READY",
+  "operator_result_lines": [
+    "Ergebnis: Generator-Review erfolgreich",
+    "Route: Delegated intent -> builder -> executor -> validator"
+  ],
+  "validator_manifest": "documentation/codex/model-routing/structured-action-fixtures/BOUNDED-DISPATCH-GENERATOR-SPEC17-3-PASS_validator_manifest.json",
+  "validator_request_json": "documentation/codex/model-routing/structured-action-fixtures/BOUNDED-DISPATCH-GENERATOR-SPEC17-3-PASS_validator_request.json",
+  "validator_builder_status": "PASS",
+  "validator_executor_status": "PASS",
+  "validator_run_directory": "documentation/codex/model-routing/structured-action-runs/BOUNDED-DISPATCH-GENERATOR-SPEC17-3-PASS-VALIDATOR/20260615-181520",
+  "operator_message": "Generator review stayed bounded: delegated intent was converted into local builder/executor/validator steps.",
+  "task_class": "generator_review",
+  "task_label": "TASK-SPEC17.3 validator pass path"
+}

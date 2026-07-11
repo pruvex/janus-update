@@ -1,0 +1,16 @@
+﻿{
+    "capture_mode":  "local_fixture",
+    "http_status":  200,
+    "api_shape":  "unknown",
+    "response_object":  null,
+    "response_status":  "PASS",
+    "generation_id":  null,
+    "model":  null,
+    "finish_reason":  "PASS",
+    "usage":  null,
+    "actual_or_cost":  null,
+    "output_item_count":  0,
+    "output_item_types":  {
+
+                          }
+}

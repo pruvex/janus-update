@@ -269,6 +269,24 @@ def _ensure_sqlite_schema_migrations() -> None:
             from backend.data.models import ContextArchive
             ContextArchive.__table__.create(bind=engine)
             logger.info("Migration: context_archives table created.")
+
+        if not insp.has_table("user_routines"):
+            from backend.data.models import UserRoutine
+
+            UserRoutine.__table__.create(bind=engine)
+            logger.info("Migration: user_routines table created.")
+
+        if not insp.has_table("user_routine_offer_log"):
+            from backend.data.models import UserRoutineOfferLog
+
+            UserRoutineOfferLog.__table__.create(bind=engine)
+            logger.info("Migration: user_routine_offer_log table created.")
+
+        if not insp.has_table("user_routine_candidates"):
+            from backend.data.models import UserRoutineCandidate
+
+            UserRoutineCandidate.__table__.create(bind=engine)
+            logger.info("Migration: user_routine_candidates table created.")
     except Exception:
         logger.warning(
             "SQLite schema migration skipped or failed (non-fatal).",

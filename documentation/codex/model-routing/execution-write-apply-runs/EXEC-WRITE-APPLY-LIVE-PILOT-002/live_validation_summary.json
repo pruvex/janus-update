@@ -1,0 +1,21 @@
+{
+  "workflow_id": "EXEC-WRITE-APPLY-LIVE-PILOT-002",
+  "mode": "execution_write_apply_candidate_sidecar_live",
+  "accepted_source_run_dir": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-source-bridges\\EXEC-WRITE-APPLY-SOURCE-BRIDGE-002",
+  "source_validation_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-runs\\EXEC-WRITE-APPLY-LIVE-PILOT-002\\source_validation.json",
+  "sidecar_run_dir": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-runs\\EXEC-WRITE-APPLY-LIVE-PILOT-002\\sidecar_run",
+  "expected_changed_files": [
+    "backend/services/contact_manager.py"
+  ],
+  "touched_files": "backend/services/contact_manager.py",
+  "pre_run_status": "M backend/services/contact_manager.py",
+  "post_run_status": "M backend/services/contact_manager.py",
+  "last_message_excerpt": "Apply succeeded.\n\nChanged files:\n- `backend/services/contact_manager.py`\n\nBlocker:\n- none",
+  "issues": [
+    "sidecar artifact_success is not true",
+    "sidecar touched_files do not match expected changed_files",
+    "sidecar pre_run_status and post_run_status are identical"
+  ],
+  "sidecar_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-runs\\EXEC-WRITE-APPLY-LIVE-PILOT-002\\sidecar_run\\summary.json",
+  "sidecar_validation_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-runs\\EXEC-WRITE-APPLY-LIVE-PILOT-002\\sidecar_run\\validation_summary.json"
+}

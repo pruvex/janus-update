@@ -1,0 +1,12 @@
+{
+  "summary_header": "SPEC REVIEW RESULT",
+  "workflow_id": "WF-SPEC-REVIEW-LOCAL-PROOF-2026-06-28",
+  "skill": "janus-spec-review",
+  "task_label": "Spec review local proof",
+  "selected_path": "codex_only_operator_choice",
+  "normal_target_model": "5.4 medium",
+  "delegated_model_label": "qwen/qwen3-coder-30b-a3b-instruct",
+  "final_outcome": "LOCAL_CODEX_PATH_SELECTED",
+  "validation_result": "PASS",
+  "operator_message": "Operator chose the local Codex spec-review path. No delegated spec review was used."
+}

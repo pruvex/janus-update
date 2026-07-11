@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "target_task": "TASK-EX-001-shadow-session-budget-line",
+  "patch_text": "--- a/documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/gate_prompt_shadow.py+++ b/documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/gate_prompt_shadow.py@@ -10,5 +10,6 @@ def build_shadow_operator_prompt_lines(     ]     if selected_model.strip():         lines.append(f",
+  "changed_files": [
+    "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/gate_prompt_shadow.py"
+  ],
+  "risk_list": [
+    "Session-Budget line format may need alignment with downstream parsers if they expect different currency formatting",
+    "Placement at end of lines list is correct per test but verify no ordering assumptions in other consumers"
+  ],
+  "suggested_validation_steps": [
+    "Run: python -m pytest documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/test_gate_prompt_shadow.py -q",
+    "Verify output contains exactly one line starting with 'Session-Budget:'",
+    "Confirm '1 = Codex' and '2 = Cursor' remain first two lines"
+  ],
+  "manual_validation_note": "Codex must manually validate this patch locally before task completion.",
+  "codex_acceptance_rule": "Codex must review and apply or reject locally.",
+  "notes": "Minimal single-line addition after the cost line. Uses the previously ignored session_cap_usd parameter. No test file changes needed—the existing assertion already passes once the line is present."
+}

@@ -1,0 +1,18 @@
+---
+description: Bounded delegated worker contract when invoked by Codex janus_cursor_worker_runner
+alwaysApply: false
+globs:
+  - "**/*"
+---
+
+# Janus Delegated Worker (Cursor)
+
+When acting as an external worker invoked by Codex:
+
+- Change only files explicitly listed in the current task allowlist.
+- Run only commands explicitly listed in the current task package.
+- Do not commit, push, tag, merge, release, or publish.
+- Do not declare final audit PASS, release readiness, or Backlog closure.
+- Do not output secrets, tokens, cookies, API keys, or auth header values.
+- Prefer minimal diffs over broad refactors.
+- End with a concise JSON summary: status, changed_files, command_results, summary, blockers.

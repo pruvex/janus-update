@@ -1,0 +1,14 @@
+{
+  "model": "z-ai/glm-4.7-flash",
+  "pass": false,
+  "failures": [
+    "finish_reason_length",
+    "json_parse_failed"
+  ],
+  "finish_reason": "length",
+  "actual_or_cost": 0.00050125,
+  "latency_ms": null,
+  "generation_id": "gen-1782398349-o0SV8XvarFPjDXQBzoFA",
+  "parse_error": "Expecting value: line 1 column 1 (char 0)",
+  "response_path": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-test-pipeline\\runs\\z-ai-glm-4.7-flash\\response_body.json"
+}

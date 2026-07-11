@@ -1,0 +1,54 @@
+{
+  "status": "PASS",
+  "review_mode": "DELTA",
+  "recommended_item_id": "BACKLOG-062",
+  "recommended_title": "Gemini-Modell befolgt feindselige Retry-Anweisung mit hoeherem Modell und ignoriert Sicherheitsregeln",
+  "recommended_why": "Critical AI safety vulnerability allowing adversarial escalation through model switching; existing cache confirms CRITICAL priority and DO NOW recommendation; failure in provider-specific guardrails poses immediate exploitation risk requiring urgent mitigation.",
+  "full_review_recommended": "NO",
+  "deep_reviewed_items": [
+    "BACKLOG-062",
+    "BACKLOG-109",
+    "BACKLOG-061"
+  ],
+  "compact_reviewed_items": [],
+  "candidate_assessments": [
+    {
+      "backlog_id": "BACKLOG-062",
+      "wichtigkeit": "CRITICAL",
+      "umsetzungsrisiko": "HIGH",
+      "aufwand": "M",
+      "umsetzungsreife": "READY",
+      "empfehlung": "DO NOW",
+      "rationale": "Active safety guardrail bypass in Gemini provider allows adversarial retry instructions to escalate to higher models while bypassing security rules; immediate security risk."
+    },
+    {
+      "backlog_id": "BACKLOG-109",
+      "wichtigkeit": "HIGH",
+      "umsetzungsrisiko": "LOW",
+      "aufwand": "S",
+      "umsetzungsreife": "READY",
+      "empfehlung": "DO NEXT",
+      "rationale": "Prevents data loss during local debug/repair operations; low implementation risk; important developer safety net but subordinate to active security vulnerabilities."
+    },
+    {
+      "backlog_id": "BACKLOG-061",
+      "wichtigkeit": "MEDIUM",
+      "umsetzungsrisiko": "LOW",
+      "aufwand": "S",
+      "umsetzungsreife": "READY",
+      "empfehlung": "SCHEDULE",
+      "rationale": "TestPlan oracle generates false positives on clarification responses; technical debt affecting test reliability; low urgency compared to safety issues."
+    }
+  ],
+  "cache_update_suggestions": [
+    {
+      "backlog_id": "BACKLOG-109",
+      "wichtigkeit": "HIGH",
+      "umsetzungsrisiko": "LOW",
+      "aufwand": "S",
+      "umsetzungsreife": "READY",
+      "empfehlung": "DO NEXT"
+    }
+  ],
+  "notes": "Bounded Janus backlog-prioritization assessment only; no implementation authority, handoff authority, Git authority, release authority, or final routing authority claimed."
+}

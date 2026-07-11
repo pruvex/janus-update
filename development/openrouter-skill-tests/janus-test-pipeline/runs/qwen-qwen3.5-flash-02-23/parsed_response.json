@@ -1,0 +1,27 @@
+{
+  "status": "BLOCKED",
+  "test_run_id": "TEST-RUN-TRIAGE-EVERYDAY-001",
+  "primary_outcome": "Infrastructure Blocker Candidate Identified",
+  "likely_classification": "INFRA_BLOCKER",
+  "likely_subsystem": "Test Infrastructure",
+  "finding_clusters": [
+    {
+      "title": "Candidate Blocker Category",
+      "confidence": "MEDIUM",
+      "evidence": "Input package specifies candidate_blocker_category as INFRA_BLOCKER"
+    },
+    {
+      "title": "Evidence Redaction Status",
+      "confidence": "HIGH",
+      "evidence": "Evidence snippets confirm bundle is redacted and ready for review"
+    }
+  ],
+  "suggested_next_local_verifiers": [
+    "Inspect local test harness logs",
+    "Validate environment configuration locally"
+  ],
+  "suggested_routing": "Suggest routing to Infrastructure Team for root cause analysis",
+  "escalation_trigger": "Confirmed infrastructure dependency failure",
+  "redaction_check": "PASS",
+  "notes": "Triage review based on redacted package. Classification pending local verification."
+}

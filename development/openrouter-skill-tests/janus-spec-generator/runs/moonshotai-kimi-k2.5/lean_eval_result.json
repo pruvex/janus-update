@@ -1,0 +1,9 @@
+{
+  "model": "moonshotai/kimi-k2.5",
+  "returncode": 0,
+  "finish_reason": "stop",
+  "actual_or_cost": 0.00780894,
+  "validation_issues": [],
+  "status": "PASS",
+  "response_path": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-spec-generator\\runs\\moonshotai-kimi-k2.5\\response_body.json"
+}

@@ -8,6 +8,7 @@ und dieses Projekt folgt der [Semantic Versioning](https://semver.org/spec/v2.0.
 ## [Unreleased]
 
 ### Documentation
+- **TASK-WORKFLOW-M3.4 / Semantische Routinenutzung abgeschlossen:** Gespeicherte Kalender-plus-Wetter-Routinen werden jetzt bei einer passenden natuerlichen Folgeanfrage ohne Kenntnis des Routinenamens wiederverwendet, mit transparentem Nutzungshinweis und fail-closed Schutz bei unpassender Stadt/Datum oder Mehrdeutigkeit. Validation: GPT-/Gemini-Live-Evidence PASS; fokussierte Routine-/Offer-/Chat-Finalize-Regression PASS (`40 passed`); Final Audit PASS.
 - **BACKLOG-124 / Codex-/Janus-GPT-5.6-Modellmatrix abgeschlossen:** Interne Codex-Governance, Skill-Routing und Audit-Handhabung sind auf die getrennten Rollen Luna/Terra/Sol ausgerichtet. Die Picker-Sicht gilt dabei nicht als Ausfuehrungszusage: Wird Sol im aktuellen ChatGPT-basierten Codex-Run abgelehnt, dokumentiert `SOL_UNAVAILABLE_FOR_CHATGPT_CODEX_ACCOUNT` den lokalen Fallback auf `5.6 Terra/high`. Kein Janus-Nutzerverhalten, keine Produktlogik und kein Release wurden geaendert. Validation: Precheck-, Execution-Result- und Final-Audit-Validator PASS; targeted Drift-Scans PASS.
 
 ### Fixed

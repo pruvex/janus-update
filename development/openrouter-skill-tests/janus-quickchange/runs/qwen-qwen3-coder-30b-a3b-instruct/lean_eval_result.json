@@ -1,0 +1,16 @@
+{
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "pass": true,
+  "validation_result": "PASS",
+  "final_outcome": "DIRECT_OR_PATCH_PROPOSAL_READY_FOR_CODEX_REVIEW",
+  "actual_or_cost": 8.652e-05,
+  "generation_id": "gen-1782399522-1gzEo1uBP69nSokTVFci",
+  "finish_reason": "stop",
+  "changed_files": [
+    "frontend/index.html"
+  ],
+  "proposal_status": "PATCH_PROPOSAL",
+  "issues": [],
+  "response_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\direct-or-runs\\LEAN-QC-qwen-qwen3-coder-30b-a3b-instruct\\response_summary.json",
+  "operator_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\direct-or-runs\\LEAN-QC-qwen-qwen3-coder-30b-a3b-instruct\\operator_summary.json"
+}

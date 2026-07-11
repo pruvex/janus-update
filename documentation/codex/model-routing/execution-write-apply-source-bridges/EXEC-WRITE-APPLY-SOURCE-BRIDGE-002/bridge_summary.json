@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "source_run_dir": "documentation/codex/model-routing/execution-direct-or-runs/DIRECT-OR-DEEPSEEK-EXECUTION-CURRENT-SHAPE-007",
+  "output_dir": "documentation/codex/model-routing/execution-write-apply-source-bridges/EXEC-WRITE-APPLY-SOURCE-BRIDGE-002",
+  "changed_files": [
+    "backend/services/contact_manager.py"
+  ],
+  "source_snapshot_count": 1,
+  "source_snapshot_missing_files": [],
+  "artifacts": {
+    "input_package": "documentation/codex/model-routing/execution-write-apply-source-bridges/EXEC-WRITE-APPLY-SOURCE-BRIDGE-002/input_package.json",
+    "validation_summary": "documentation/codex/model-routing/execution-write-apply-source-bridges/EXEC-WRITE-APPLY-SOURCE-BRIDGE-002/validation_summary.json",
+    "operator_summary": "documentation/codex/model-routing/execution-write-apply-source-bridges/EXEC-WRITE-APPLY-SOURCE-BRIDGE-002/operator_summary.json",
+    "summary": "documentation/codex/model-routing/execution-write-apply-source-bridges/EXEC-WRITE-APPLY-SOURCE-BRIDGE-002/summary.json",
+    "delegated_result": "documentation/codex/model-routing/execution-write-apply-source-bridges/EXEC-WRITE-APPLY-SOURCE-BRIDGE-002/delegated_result.md",
+    "git_diff": "documentation/codex/model-routing/execution-write-apply-source-bridges/EXEC-WRITE-APPLY-SOURCE-BRIDGE-002/git_diff.patch",
+    "changed_files": "documentation/codex/model-routing/execution-write-apply-source-bridges/EXEC-WRITE-APPLY-SOURCE-BRIDGE-002/changed_files.txt",
+    "stdout": "documentation/codex/model-routing/execution-write-apply-source-bridges/EXEC-WRITE-APPLY-SOURCE-BRIDGE-002/stdout.log",
+    "stderr": "documentation/codex/model-routing/execution-write-apply-source-bridges/EXEC-WRITE-APPLY-SOURCE-BRIDGE-002/stderr.log",
+    "exit_code": "documentation/codex/model-routing/execution-write-apply-source-bridges/EXEC-WRITE-APPLY-SOURCE-BRIDGE-002/exit_code.txt"
+  }
+}

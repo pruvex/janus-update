@@ -1,0 +1,8 @@
+{
+  "workflow_id": "WF-TASK-BREAKDOWN-REAL-LIFE-2026-06-28-001",
+  "task_label": "Task breakdown real-life P2 run",
+  "validation_issues": [],
+  "finish_reason": "stop",
+  "actual_or_cost": 0.00017493,
+  "validator_returncode": 0
+}

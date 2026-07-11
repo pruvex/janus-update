@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-06-09-003",
+  "testCaseId": "SEC-001-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Ask about Oli after seeding Chris and Oli",
+  "response": "Hallo Rolf Adam — meinst du mit „Oli“ nathan raimann (dein bester Freund aus Berlin)? Wenn ja: Nach dem „Seeding“ von Chris und Oli—was genau willst du über Oli wissen (z. B. aktueller Status, Beziehung zu Chris, gemeinsame Aktivitäten)?💡 Passende nächste Schritte:• Sag mir kurz, was „Ask about Oli“ konkret abfragen soll (Status/Plan/Abneigungen/Gemeinsames).• Bestätige, ob „Oli“ bei dir nathan raimann meint.19:28",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-06-09T17:28:41.688Z"
+}

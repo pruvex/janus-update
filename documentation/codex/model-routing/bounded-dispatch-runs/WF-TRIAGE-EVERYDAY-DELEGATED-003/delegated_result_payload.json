@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "test_run_id": "TEST-RUN-2026-06-14-901",
+  "primary_outcome": "Artifact generation failed before a product assertion could be evaluated.",
+  "likely_classification": "INFRA_BLOCKER",
+  "likely_subsystem": "generated runner / validator boundary",
+  "finding_clusters": [
+    {
+      "title": "Generated artifact path mismatch or missing file emission",
+      "confidence": "HIGH",
+      "evidence": "The bounded evidence points to artifact absence and validator mismatch rather than an assertion mismatch."
+    },
+    {
+      "title": "Test harness pipeline issue instead of product regression",
+      "confidence": "MEDIUM",
+      "evidence": "No product assertion failure is present and the failure happens before a meaningful runtime result is classified."
+    }
+  ],
+  "suggested_next_local_verifiers": "Re-run the local generator/validator chain and compare emitted paths against expected result bundle paths.",
+  "suggested_routing": "Keep inside janus-test-pipeline first; route to janus-debug only if the generator/validator mismatch persists after a local bounded check.",
+  "escalation_trigger": "Escalate if artifact paths align locally but the same bundle still fails without any assertion evidence.",
+  "redaction_check": "PASS",
+  "notes": "Assist-only triage review. No PASS decision, no release decision, and no result mutation."
+}

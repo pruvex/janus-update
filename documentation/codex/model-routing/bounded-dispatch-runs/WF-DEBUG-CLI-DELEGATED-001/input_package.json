@@ -1,0 +1,12 @@
+{
+  "workflow_id": "WF-DEBUG-CLI-DELEGATED-001",
+  "bound_skill_context": "janus-debug",
+  "expected_behavior": "One bounded hypothesis review only.",
+  "actual_behavior": "CLI delegated selection should execute the bounded review path.",
+  "evidence_snippets": [
+    "snippet one"
+  ],
+  "iteration_number": 1,
+  "explicit_question": "What verifier next?",
+  "redaction_ready": true
+}

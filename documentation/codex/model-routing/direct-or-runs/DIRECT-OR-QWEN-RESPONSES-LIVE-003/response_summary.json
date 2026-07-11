@@ -1,0 +1,30 @@
+﻿{
+    "capture_mode":  "live_http",
+    "http_status":  200,
+    "api_shape":  "responses",
+    "response_object":  "response",
+    "response_status":  "completed",
+    "generation_id":  "gen-1781875981-8RpEqIvMSkD1M8Ei3kOv",
+    "model":  "qwen/qwen3-coder-flash",
+    "finish_reason":  "stop",
+    "usage":  {
+                  "input_tokens":  1024,
+                  "input_tokens_details":  {
+                                               "cached_tokens":  0
+                                           },
+                  "output_tokens":  200,
+                  "output_tokens_details":  {
+                                                "reasoning_tokens":  0
+                                            },
+                  "total_tokens":  1224,
+                  "cost":  0.00039468,
+                  "cost_details":  {
+                                       "upstream_inference_cost":  0.00039468,
+                                       "upstream_inference_input_cost":  0.00019968,
+                                       "upstream_inference_output_cost":  0.000195
+                                   }
+              },
+    "actual_or_cost":  0.00039468,
+    "output_item_count":  1,
+    "output_item_types":  "openrouter:apply_patch"
+}

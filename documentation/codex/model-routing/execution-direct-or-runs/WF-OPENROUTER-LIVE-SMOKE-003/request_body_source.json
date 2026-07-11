@@ -1,0 +1,90 @@
+{
+  "model": "deepseek/deepseek-v4-flash",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a bounded OpenRouter worker for a Janus execution patch candidate. Return only JSON matching the required schema. This is proposal-only work. Do not claim completion, release readiness, routing authority, git authority, or final validation authority. Codex will review and decide whether to apply or reject. Return the smallest viable unified diff for the smallest viable subset of the allowlist. If you cannot anchor a real unified diff against exact current file context, return BLOCKED with empty patch_text. Preserve patch_text as newline-separated unified diff lines; never compress the diff into one line. Do not invent simplified file structure, placeholder headers, ellipses, or fake helper skeletons. Keep the JSON compact: short notes, short risk bullets, no repeated restatement of the task. Do not include explanatory prose outside the JSON object. Prefer backend-first minimal change shape over broad test or cleanup expansion."
+    },
+    {
+      "role": "user",
+      "content": "{\n  \"target_task\": \"TASK-EXAMPLE-001A\",\n  \"allowed_files\": [\n    \"documentation/codex/model-routing/scripts/bounded_or_worker_gate_prompt.py\",\n    \"documentation/codex/model-routing/tests/test_bounded_or_worker_gate_prompt.py\"\n  ],\n  \"max_touched_files\": 2,\n  \"manual_validation_gate\": \"Codex must verify the patch only adds bounded session-budget wording to operator gate output and does not widen delegation authority.\",\n  \"delegation_question\": \"Produce one minimal bounded patch candidate that appends one session-budget summary line to build_operator_prompt_lines without changing gate semantics, and update the focused unit test accordingly.\",\n  \"current_seam_context\": \"build_operator_prompt_lines currently renders choice labels, optional live evidence, optional OR model, optional pre-call cost basis, and one final cost/confidence line. The bounded task is to add exactly one new session-budget summary line in that same function, using the existing compact operator wording style, while keeping the rest of the gate structure intact.\",\n  \"signature_context\": \"def build_operator_prompt_lines(*, choice_2_label: str = \\\"OR\\\", selected_or_model: str = \\\"\\\", pre_call_cost_basis: str = \\\"\\\", estimated_or_cost: float, cost_estimate_confidence_percent: float, operator_recommendation: str = \\\"\\\", operator_recommendation_reason: str = \\\"\\\") -> list[str]:\",\n  \"call_shape_examples\": [\n    \"lines = gate_prompt.build_operator_prompt_lines(choice_2_label=\\\"OR\\\", selected_or_model=\\\"openai/gpt-oss-20b\\\", estimated_or_cost=0.000321, cost_estimate_confidence_percent=88.0, operator_recommendation=\\\"PREFER_OR\\\", operator_recommendation_reason=\\\"sehr guenstige deterministische Spur\\\")\",\n    \"self.assertEqual(lines[0], \\\"1 = Codex\\\")\",\n    \"self.assertEqual(lines[1], \\\"2 = OR\\\")\",\n    \"self.assertIn(\\\"Codex-Guthaben\\\", lines[2])\"\n  ],\n  \"exact_code_context_blocks\": [\n    \"def build_operator_prompt_lines(\\\\n    *,\\\\n    choice_2_label: str = \\\\\\\"OR\\\\\\\",\\\\n    selected_or_model: str = \\\\\\\"\\\\\\\",\\\\n    pre_call_cost_basis: str = \\\\\\\"\\\\\\\",\\\\n    estimated_or_cost: float,\\\\n    cost_estimate_confidence_percent: float,\\\\n    operator_recommendation: str = \\\\\\\"\\\\\\\",\\\\n    operator_recommendation_reason: str = \\\\\\\"\\\\\\\",\\\\n) -> list[str]:\\\\n    lines = [\\\\n        \\\\\\\"1 = Codex\\\\\\\",\\\\n        f\\\\\\\"2 = {choice_2_label}\\\\\\\",\\\\n        \\\\\\\"OR ist hier die externe Option, um Codex-Guthaben zu sparen.\\\\\\\",\\\\n    ]\\\\n    if str(operator_recommendation).strip():\\\\n        lines.append(f\\\\\\\"Live-Evidenz: {operator_recommendation}\\\\\\\")\\\\n    if str(operator_recommendation_reason).strip():\\\\n        lines.append(f\\\\\\\"Einordnung: {operator_recommendation_reason}\\\\\\\")\\\\n    if str(selected_or_model).strip():\\\\n        lines.append(f\\\\\\\"Fest empfohlenes OR-Modell: {selected_or_model}\\\\\\\")\\\\n    if str(pre_call_cost_basis).strip():\\\\n        lines.append(f\\\\\\\"Pre-Call-Kostenbasis: {pre_call_cost_basis}\\\\\\\")\\\\n    lines.append(\\\\n        (\\\\n            f\\\\\\\"Voraussichtliche OR-Kosten {estimated_or_cost:.9f}, \\\\\\\"\\\\n            f\\\\\\\"Evidenzgenauigkeit {cost_estimate_confidence_percent:.0f}%\\\\\\\"\\\\n        )\\\\n    )\\\\n    return lines\",\n    \"def test_build_operator_prompt_lines_include_quota_recommendation_model_cost_and_confidence(self) -> None:\\\\n    lines = gate_prompt.build_operator_prompt_lines(\\\\n        choice_2_label=\\\\\\\"OR\\\\\\\",\\\\n        selected_or_model=\\\\\\\"openai/gpt-oss-20b\\\\\\\",\\\\n        estimated_or_cost=0.000321,\\\\n        cost_estimate_confidence_percent=88.0,\\\\n        operator_recommendation=\\\\\\\"PREFER_OR\\\\\\\",\\\\n        operator_recommendation_reason=\\\\\\\"sehr guenstige deterministische Spur\\\\\\\",\\\\n    )\\\\n\\\\n    self.assertEqual(lines[0], \\\\\\\"1 = Codex\\\\\\\")\\\\n    self.assertEqual(lines[1], \\\\\\\"2 = OR\\\\\\\")\\\\n    self.assertIn(\\\\\\\"Codex-Guthaben\\\\\\\", lines[2])\\\\n    self.assertIn(\\\\\\\"PREFER_OR\\\\\\\", lines[3])\\\\n    self.assertIn(\\\\\\\"sehr guenstige deterministische Spur\\\\\\\", lines[4])\\\\n    self.assertIn(\\\\\\\"openai/gpt-oss-20b\\\\\\\", lines[5])\\\\n    self.assertIn(\\\\\\\"0.000321000\\\\\\\", lines[6])\\\\n    self.assertIn(\\\\\\\"88%\\\\\\\", lines[6])\"\n  ],\n  \"forbidden_anchors\": [\n    \"production routing activation\",\n    \"canonical routing-table update\",\n    \"delegated git authority\",\n    \"broad write approval\"\n  ],\n  \"required_current_anchors\": [\n    \"lines = [\",\n    \"\\\"OR ist hier die externe Option, um Codex-Guthaben zu sparen.\\\",\",\n    \"lines.append(f\\\"Fest empfohlenes OR-Modell: {selected_or_model}\\\")\",\n    \"lines.append(f\\\"Pre-Call-Kostenbasis: {pre_call_cost_basis}\\\")\",\n    \"f\\\"Voraussichtliche OR-Kosten {estimated_or_cost:.9f}, \\\"\",\n    \"self.assertIn(\\\"0.000321000\\\", lines[6])\",\n    \"self.assertIn(\\\"88%\\\", lines[6])\"\n  ],\n  \"task_contract\": {\n    \"goal\": \"\",\n    \"acceptance\": \"\",\n    \"risk\": \"\",\n    \"context_bullets\": \"\"\n  },\n  \"validation_bundle\": {\n    \"validation_bundle_id\": \"bundle-2-steps\",\n    \"validation_summary\": \"Codex will run the known local validation bundle after review: python -m pytest documentation/codex/model-routing/tests/test_bounded_or_worker_gate_prompt.py -q; python -m py_compile documentation/codex/model-routing/scripts/bounded_or_worker_gate_prompt.py\"\n  },\n  \"return_contract\": {\n    \"required_fields\": [\n      \"status\",\n      \"target_task\",\n      \"patch_text\",\n      \"changed_files\",\n      \"risk_list\",\n      \"suggested_validation_steps\",\n      \"manual_validation_note\",\n      \"codex_acceptance_rule\",\n      \"notes\"\n    ],\n    \"empty_allowed_fields\": [\n      \"changed_files\",\n      \"risk_list\",\n      \"suggested_validation_steps\"\n    ],\n    \"patch_rule\": \"patch_text must be unified diff text touching only the smallest necessary subset of the allowlist\",\n    \"newline_rule\": \"patch_text must preserve newline-separated unified diff headers and hunk lines; never collapse the diff into one line\",\n    \"anchor_rule\": \"do not target forbidden_anchors; prefer required_current_anchors when present\",\n    \"signature_rule\": \"preserve real local function signatures and call shapes when signature_context or call_shape_examples are provided\",\n    \"context_rule\": \"when exact_code_context_blocks are provided, keep imports, surrounding control flow, and local helper usage aligned to those real excerpts instead of inventing simplified file structure\",\n    \"blocked_rule\": \"if you cannot produce a real hunk anchored to current local code, return status BLOCKED with empty patch_text and explain why in notes/risk_list\",\n    \"placeholder_rule\": \"never use placeholder context like '# existing header', '...', or 'existing artifact-oriented summary logic'\"\n  },\n  \"full_spec_excerpt_for_reference_only\": \"\"\n}"
+    }
+  ],
+  "temperature": 0.0,
+  "max_tokens": 2200,
+  "response_format": {
+    "type": "json_schema",
+    "json_schema": {
+      "name": "janus_execution_patch_candidate_result",
+      "strict": true,
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "status",
+          "target_task",
+          "patch_text",
+          "changed_files",
+          "risk_list",
+          "suggested_validation_steps",
+          "manual_validation_note",
+          "codex_acceptance_rule",
+          "notes"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "PASS",
+              "WEAK_SIGNAL",
+              "BLOCKED"
+            ]
+          },
+          "target_task": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "patch_text": {
+            "type": "string",
+            "maxLength": 5000
+          },
+          "changed_files": {
+            "type": "array",
+            "maxItems": 5,
+            "items": {
+              "type": "string"
+            }
+          },
+          "risk_list": {
+            "type": "array",
+            "maxItems": 4,
+            "items": {
+              "type": "string",
+              "maxLength": 220
+            }
+          },
+          "suggested_validation_steps": {
+            "type": "array",
+            "maxItems": 4,
+            "items": {
+              "type": "string",
+              "maxLength": 220
+            }
+          },
+          "manual_validation_note": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "codex_acceptance_rule": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 320
+          }
+        }
+      }
+    }
+  }
+}

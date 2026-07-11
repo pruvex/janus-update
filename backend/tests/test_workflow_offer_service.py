@@ -51,7 +51,7 @@ def test_maybe_append_workflow_offer_adds_marker_for_candidate():
     assert "als Routine" in text
     pending = find_pending_offer([{"role": "assistant", "content": text}])
     assert pending is not None
-    assert pending.suggested_name.startswith("Routine")
+    assert pending.suggested_name == "Routine Kalender Wetter"
     assert [step.skill_id for step in pending.steps] == ["calendar.list_events", "system.weather"]
 
 

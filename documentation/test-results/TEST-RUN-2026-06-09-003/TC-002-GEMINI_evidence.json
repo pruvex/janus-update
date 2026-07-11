@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-06-09-003",
+  "testCaseId": "TC-002-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "`Oli liebt Big Bang Theory`",
+  "response": "Das habe ich bereits notiert, Rolf Adam. Du hast mir heute um 16:37 Uhr im Chat „Chris Giers Vorlieben“ zum ersten Mal erzählt, dass Oliver die Serie „The Big Bang Theory“ liebt. Ich habe diese Vorliebe fest in seinem Profil hinterlegt.💡 Passende nächste Schritte:• Soll ich nach aktuellem Merchandising oder Box-Sets der Serie suchen?• Möchtest du weitere Interessen oder Abneigungen von Oliver Schwab ergänzen?• Suchst du nach ähnlichen Serien-Empfehlungen, die ihm gefallen könnten?19:09",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-06-09T17:09:54.134Z"
+}

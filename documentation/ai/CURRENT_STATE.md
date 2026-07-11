@@ -1,6 +1,52 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-12 00:45:00 +02:00`, Janus Solo Git v2 is defined and wired into governance. Operator requested simpler Git (`master` + `feature/*`), keep `origin/codex-sync` for ChatGPT, stop dirty-worktree archaeology by default.
+
+Current goal: operator runs one-time migration to clean legacy mixed state, then all new work uses Solo Git v2.
+
+Active phase: governance simplification, canonical state `HANDOFF`.
+
+Last Codex/Cursor work:
+- added `documentation/codex/JANUS_SOLO_GIT.md` (canonical Solo Git v2 doc, German)
+- rewrote `documentation/codex/skills/janus-git-governance/SKILL.md` + installed copy under `C:\Users\pruve\.codex\skills\janus-git-governance\`
+- added `documentation/codex/scripts/sync_codex_current_state.ps1` (codex-sync helper)
+- added `documentation/codex/scripts/migrate_solo_git_once.ps1` (one-time develop→master + optional WIP archive)
+- updated `AGENTS.md`, `documentation/codex/CODEX_WORKFLOW_PLAYBOOK.md`, `scripts/save.ps1`
+
+Changed files in this block:
+- `documentation/codex/JANUS_SOLO_GIT.md`
+- `documentation/codex/skills/janus-git-governance/SKILL.md`
+- `documentation/codex/scripts/sync_codex_current_state.ps1`
+- `documentation/codex/scripts/migrate_solo_git_once.ps1`
+- `AGENTS.md`
+- `documentation/codex/CODEX_WORKFLOW_PLAYBOOK.md`
+- `scripts/save.ps1`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- scripts written; migration not executed yet (requires VM snapshot + operator approval)
+
+Open risks:
+- repo still on legacy `develop` with ~1028 dirty entries until migration runs
+- M6 worktree `Janus-M6-Transport-Prep` still separate; decide merge before/after migration
+- no commit/push/codex-sync yet for this governance block
+
+Next recommended step for ChatGPT: after operator migration + sync, read `origin/codex-sync` CURRENT_STATE and confirm Solo Git v2 is active.
+
+Next recommended step for Codex: after operator says `commit: YES`, commit governance files on `feature/solo-git-v2`, merge to `master`, `push: YES` to backup, `sync: YES` to codex-sync. Do not classify dirty worktree unless operator asks.
+
+One-time migration (operator, VM snapshot first):
+```powershell
+.\documentation\codex\scripts\migrate_solo_git_once.ps1 -ArchiveMixedWip -IHaveVmSnapshot
+git push backup master
+.\documentation\codex\scripts\sync_codex_current_state.ps1
+git checkout -b feature/<next-slice>
+```
+
+Last updated: `2026-07-12 00:45:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-11 22:52:00 +02:00`, DBG-002 golden-path rerun PASS after shadow re-seed (`executed_runner_shadow.json` mismatch). All three skills now have end-to-end PASS live evidence on the hardened runner: EX-001, DBG-002 rerun, TP-003. Still uncommitted; Codex owns commit.
 
 Current goal: hand full smoke + hardening evidence to Codex for review/commit.

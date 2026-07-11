@@ -1,0 +1,22 @@
+{
+  "workflow_id": "DIRECT-OR-QWEN-RESPONSES-FIXTURE-003",
+  "request_body_bytes": 3436,
+  "file_inputs": [
+    {
+      "path": "frontend/index.html",
+      "content_mode": "excerpt",
+      "full_line_count": 2548,
+      "excerpt_line_ranges": [
+        {
+          "start_line": 430,
+          "end_line": 436
+        },
+        {
+          "start_line": 526,
+          "end_line": 532
+        }
+      ],
+      "content_chars": 642
+    }
+  ]
+}

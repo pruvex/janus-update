@@ -1,0 +1,38 @@
+﻿{
+    "capture_mode":  "live_http",
+    "http_status":  200,
+    "api_shape":  "chat_completions",
+    "response_object":  "chat.completion",
+    "response_status":  null,
+    "generation_id":  "gen-1782164179-ZwwplNyDIrnlqWLO2e5D",
+    "model":  "openai/gpt-oss-20b",
+    "finish_reason":  "stop",
+    "usage":  {
+                  "prompt_tokens":  689,
+                  "completion_tokens":  239,
+                  "total_tokens":  928,
+                  "cost":  0.00008408,
+                  "is_byok":  false,
+                  "prompt_tokens_details":  {
+                                                "cached_tokens":  0,
+                                                "cache_write_tokens":  0,
+                                                "audio_tokens":  0,
+                                                "video_tokens":  0
+                                            },
+                  "cost_details":  {
+                                       "upstream_inference_cost":  0.00008408,
+                                       "upstream_inference_prompt_cost":  0.00004823,
+                                       "upstream_inference_completions_cost":  0.00003585
+                                   },
+                  "completion_tokens_details":  {
+                                                    "reasoning_tokens":  61,
+                                                    "image_tokens":  0,
+                                                    "audio_tokens":  0
+                                                }
+              },
+    "actual_or_cost":  0.00008408,
+    "output_item_count":  0,
+    "output_item_types":  {
+
+                          }
+}

@@ -1,0 +1,58 @@
+{
+  "backend": "cursor",
+  "lane_id": "documentation_draft_review",
+  "workflow_id": "WF-CURSOR-API-SMOKE-MINI-001",
+  "selected_model": "gpt-5.4-mini-medium",
+  "cursor_pool": "api",
+  "estimated_cost_usd_static": 0.01515,
+  "session_id": "b5f7d01c-3758-4fdb-895f-237fd7d1200f",
+  "validation_result": "PASS",
+  "selected_path": "cursor_worker_live_mockable",
+  "final_outcome": "CURSOR_WORKER_READY_FOR_CODEX_REVIEW",
+  "package_validation": {
+    "validation_result": "PASS",
+    "contract_status": "TASK_PACKAGE_NOT_BOUND",
+    "issues": [],
+    "task_label": "N_A"
+  },
+  "allowlist_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "allowlist": []
+  },
+  "allowlist_consistency_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "package_allowed_edit_paths": [],
+    "allowlist": [],
+    "declared_allowlist_file": null
+  },
+  "accepted_source_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "accepted_source_run_dir": null,
+    "recognized_artifacts": []
+  },
+  "accepted_source_run_dir": null,
+  "planned_command": [
+    "C:\\Users\\pruve\\AppData\\Local\\cursor-agent\\agent.CMD",
+    "-p",
+    "--workspace",
+    "C:\\KI\\Janus-Projekt",
+    "--model",
+    "gpt-5.4-mini-medium",
+    "--output-format",
+    "json",
+    "--force",
+    "--trust",
+    "--approve-mcps",
+    "Stable prefix:\n- lane: documentation_draft_review\n- worker_contract: janus-delegated-worker\n- output_schema: status, changed_files, command_results, summary, blockers\n- hard_rules: stay bounded, do not commit, do not leave the allowlist\n\nVariable suffix:\nRun the bounded Cursor delegated worker for this lane. Keep changes inside the allowlist, run only bounded checks, and return a concise JSON summary."
+  ],
+  "mode": "review_only",
+  "workspace_root": "C:\\KI\\Janus-Projekt",
+  "live_execution_allowed": false,
+  "codex_review_required": true,
+  "changed_files": [],
+  "changed_outside_allowlist": [],
+  "operator_message": "Cursor worker finished the bounded slice and returned artifacts for Codex review."
+}

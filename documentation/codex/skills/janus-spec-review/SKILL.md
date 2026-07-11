@@ -137,7 +137,7 @@ Risk:
 - 61-80: `HIGH`
 - 81-100: `CRITICAL`
 
-Recommend `5.4` for normal Spec review. Recommend `5.5` only for score above 70, central security/privacy/persistence/IPC risk, or multiple plausible interpretations. Use `5.4` low for mechanical metadata checks when the current `5.4` context is warm or review continues in `5.4`; use `5.4 mini` only for separated metadata batches that are still likely cheaper than staying on warm `5.4`.
+Recommend `5.6 Terra` for normal Spec review. Recommend `5.6 Sol` only for score above 70, central security/privacy/persistence/IPC risk, or multiple plausible interpretations. Use `5.6 Terra` low for mechanical metadata checks when the current `5.6 Terra` context is warm or review continues in `5.6 Terra`; use `5.6 Luna` only for separated metadata batches that are still likely cheaper than staying on warm `5.6 Terra`.
 
 ## Required Metadata Block
 
@@ -149,7 +149,7 @@ Write or update this block in the Spec when the review decision is clear:
 - **Review Status:** APPROVED | NEEDS_REVISION | BLOCKED
 - **Complexity Score:** <0-100>
 - **Risk:** LOW | MEDIUM | HIGH | CRITICAL
-- **Recommended Review Model:** 5.4 | 5.5
+- **Recommended Review Model:** 5.6 Terra | 5.6 Sol
 - **Skill-1 Ready:** YES | NO
 - **Split Required:** YES | NO
 - **Reviewed At:** YYYY-MM-DD

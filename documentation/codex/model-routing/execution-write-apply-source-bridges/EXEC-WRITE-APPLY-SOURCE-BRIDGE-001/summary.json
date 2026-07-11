@@ -1,0 +1,7 @@
+{
+  "status": "PASS",
+  "artifact_success": true,
+  "git_diff": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-source-bridges\\EXEC-WRITE-APPLY-SOURCE-BRIDGE-001\\git_diff.patch",
+  "changed_files": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-source-bridges\\EXEC-WRITE-APPLY-SOURCE-BRIDGE-001\\changed_files.txt",
+  "normalized_from": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DEV-WORKHORSE-EXECUTION-GATE-003"
+}

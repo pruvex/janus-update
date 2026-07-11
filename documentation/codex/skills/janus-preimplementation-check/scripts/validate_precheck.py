@@ -5,7 +5,6 @@ from pathlib import Path
 REQUIRED = [
     "PRE-CHECK RESULT",
     "PRE-CHECK PASSED",
-    "BEGIN COPY FOR SKILL 4",
     "Pre-Check: PRE-CHECK PASSED",
     "Pre-Check Context:",
     "Scope-Regel:",
@@ -13,7 +12,11 @@ REQUIRED = [
     "npx playwright test <runner> --headed --workers=1 --reporter=list",
     "Artifact Identity Check:",
     "Oracle-/TestPlan-Regel:",
-    "END COPY FOR SKILL 4",
+    "NEXT STEP",
+    "Recommended Skill: janus-executioner",
+    "Recommended Model:",
+    "Recommended Intelligence:",
+    "User Action:",
 ]
 
 FORBIDDEN = [
@@ -21,7 +24,10 @@ FORBIDDEN = [
     "PRE-CHECK ERGEBNIS",
     "Pre-Check Decision:",
     "Skill 4 Handover",
+    "BEGIN COPY FOR SKILL 4",
     "BEGIN COPY FOR @[/SKILL 4",
+    "END COPY FOR SKILL 4",
+    "Copy Prompt:",
     "Manual Janus Validation Gate",
     "Stop at Manual Janus Validation Gate",
     "Execution Model:",
@@ -52,12 +58,8 @@ def validate(text):
         if len([line for line in between if line.strip()]) > 1:
             errors.append("PRE-CHECK PASSED must directly follow PRE-CHECK RESULT.")
 
-    begin = text.find("BEGIN COPY FOR SKILL 4")
-    end = text.find("END COPY FOR SKILL 4")
-    if begin == -1 or end == -1 or end < begin:
-        errors.append("Copyblock boundaries are invalid.")
-    if text.count("```text") != 1:
-        errors.append("PASS output must contain exactly one fenced text codeblock.")
+    if "BEGIN COPY" in text or "Copy Prompt:" in text:
+        errors.append("Codex-native precheck output must not contain copy-paste handoff prompts.")
 
     return errors
 

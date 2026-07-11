@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "backlog_type": "IMPROVEMENT",
+  "suggested_status": "READY",
+  "title": "Klarere Darstellung der Janus-Caching-Ersparnis in DeepDive-Kostenansicht",
+  "kurzbeschreibung": "Die Beschreibung der Janus-Caching-Ersparnis in der DeepDive-Kostenansicht soll klarer formuliert werden, um Verwirrung zu vermeiden. Bei fehlenden Daten soll kein irreführender Prozentwert angezeigt werden.",
+  "erwartetes_verhalten": "Die Beschreibung der Caching-Ersparnis ist verständlich und präzise formuliert. Bei unvollständigen Daten wird kein Prozentwert angezeigt, sondern eine klare Meldung, dass die Daten nicht verfügbar sind.",
+  "tatsaechliches_verhalten": "Die aktuelle Darstellung der Caching-Ersparnis ist verwirrend. Bei fehlenden Daten wird ein Prozentwert angezeigt, der irreführend wirken kann.",
+  "reproduktion_kontext": "Öffne das DeepDive-Fenster und wechsle zur Kostenansicht. Beobachte die Darstellung der Janus-Caching-Ersparnis.",
+  "betroffener_bereich": "Frontend/UX",
+  "nachweise": [
+    "User berichtet von verwirrender Formulierung",
+    "Problem betrifft nur bestehende UI-Oberfläche",
+    "Keine neue Funktionalität gewünscht"
+  ],
+  "akzeptanzkriterien": [
+    "Die Beschreibung der Caching-Ersparnis ist verständlich und präzise",
+    "Bei fehlenden Daten wird kein Prozentwert angezeigt",
+    "Es wird eine klare Meldung bei unvollständigen Daten angezeigt",
+    "Die Änderung betrifft nur die Darstellung, keine Funktionalität"
+  ],
+  "fehlende_informationen": [],
+  "notes": "Intake nur, keine Implementierung gewünscht. Fokus auf Verbesserung der Benutzererfahrung durch klare Darstellung."
+}

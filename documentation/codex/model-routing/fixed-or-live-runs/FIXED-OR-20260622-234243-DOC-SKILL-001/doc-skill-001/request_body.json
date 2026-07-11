@@ -1,0 +1,15 @@
+{
+  "model": "openai/gpt-oss-20b",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are assisting with DOC-SKILL-001. Use only the sanitized input. Return concise Markdown only. Do not imply release readiness or any production, routing, Git, repo-write, or release authority."
+    },
+    {
+      "role": "user",
+      "content": "You are assisting with DOC-SKILL-001: Summarize benchmark JSON.\n\nSummarize the sanitized benchmark JSON for local reviewer use.\n\nRequirements:\n- Preserve the overall HOLD/PASS state accurately.\n- Explicitly state that production_approved=false.\n- Mention that no production routing decision is approved.\n- Do not infer production readiness.\n- Do not approve any model for production use.\n- Do not expose or invent raw private prompts.\n- Do not propose repository writes or Git actions.\n- Keep the summary concise.\n\nReturn:\n1. Overall status\n2. Per-model summary\n3. Blocking notes\n4. Final governance note\n\nSanitized input JSON:\n{\n  \"benchmark_id\": \"DOC-SKILL-001-GPT54-MINI-LIVE-EVAL-001\",\n  \"sanitized\": true,\n  \"contains_private_prompts\": false,\n  \"production_approved\": false,\n  \"overall_status\": \"HOLD\",\n  \"summary_target\": \"benchmark_result_summary\",\n  \"models\": [\n    {\n      \"model\": \"model_alpha\",\n      \"status\": \"PASS\",\n      \"score\": 0.86,\n      \"notes\": [\n        \"Completed schema projection\",\n        \"No policy violations detected\",\n        \"Requires reviewer confirmation before production use\"\n      ]\n    },\n    {\n      \"model\": \"model_beta\",\n      \"status\": \"HOLD\",\n      \"score\": 0.71,\n      \"notes\": [\n        \"Output preserved required fields\",\n        \"One ambiguity in disabled-state wording\",\n        \"Not eligible for production routing\"\n      ]\n    },\n    {\n      \"model\": \"model_gamma\",\n      \"status\": \"PASS\",\n      \"score\": 0.79,\n      \"notes\": [\n        \"Summarized benchmark evidence correctly\",\n        \"No raw prompt exposure\",\n        \"Still blocked from production approval\"\n      ]\n    }\n  ],\n  \"constraints\": {\n    \"must_preserve\": [\n      \"HOLD\",\n      \"PASS\",\n      \"production_approved=false\"\n    ],\n    \"must_not_do\": [\n      \"make routing decisions\",\n      \"approve production use\",\n      \"expose raw private prompts\",\n      \"write repository changes\"\n    ]\n  }\n}"
+    }
+  ],
+  "temperature": 0,
+  "max_tokens": 1200
+}

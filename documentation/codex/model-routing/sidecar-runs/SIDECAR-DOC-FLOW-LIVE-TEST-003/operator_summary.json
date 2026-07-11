@@ -1,0 +1,20 @@
+{
+  "summary_header": "CODEX SIDECAR DELEGATION RESULT",
+  "workflow_id": "SIDECAR-DOC-FLOW-LIVE-TEST-003",
+  "task_label": "Everyday documentation skill live test variant",
+  "selected_path": "sidecar_read_only_draft",
+  "skill": "janus-documentation-update",
+  "normal_target_model": "5.4/medium",
+  "sidecar_model_provider": "Codex CLI sidecar / gpt-5.4",
+  "sandbox": "read-only",
+  "timeout_seconds": 180,
+  "validation_result": "PASS",
+  "final_outcome": "SIDECAR_DRAFT_ACCEPTED_FOR_REVIEW",
+  "runner_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-DOC-FLOW-LIVE-TEST-003\\summary.json",
+  "last_message_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-DOC-FLOW-LIVE-TEST-003\\last_message.md",
+  "operator_result_lines": [
+    "Ergebnis: Sidecar-Draft erfolgreich",
+    "Tatsaechliche Kosten: N/A (lokaler Codex CLI Sidecar-Pfad)"
+  ],
+  "operator_message": "Read-only sidecar draft completed. Codex App must still review and perform any binding documentation writes locally."
+}

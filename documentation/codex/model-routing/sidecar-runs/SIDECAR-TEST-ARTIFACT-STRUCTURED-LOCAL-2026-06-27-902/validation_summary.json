@@ -1,0 +1,28 @@
+{
+  "status": "PASS",
+  "sandbox": "structured_local_executor",
+  "editable_paths": [
+    "documentation/test-runs/TEST-RUN-2026-06-27-902_plan.json",
+    "documentation/test-runs/TEST-RUN-2026-06-27-902_generated.spec.js",
+    "documentation/test-runs/TEST-RUN-2026-06-27-902_skill2_handover.txt"
+  ],
+  "touched_files": [
+    "documentation/test-runs/TEST-RUN-2026-06-27-902_generated.spec.js",
+    "documentation/test-runs/TEST-RUN-2026-06-27-902_plan.json",
+    "documentation/test-runs/TEST-RUN-2026-06-27-902_skill2_handover.txt"
+  ],
+  "touched_file_count": 3,
+  "max_touched_files": 3,
+  "deleted_paths": [],
+  "renamed_paths": [],
+  "moved_paths": [],
+  "allowlist_ok": true,
+  "touched_file_cap_ok": true,
+  "delete_rename_move_ok": true,
+  "pre_run_status_lines": [],
+  "post_run_status_lines": [
+    "?? documentation/test-runs/TEST-RUN-2026-06-27-902_generated.spec.js",
+    "?? documentation/test-runs/TEST-RUN-2026-06-27-902_plan.json",
+    "?? documentation/test-runs/TEST-RUN-2026-06-27-902_skill2_handover.txt"
+  ]
+}

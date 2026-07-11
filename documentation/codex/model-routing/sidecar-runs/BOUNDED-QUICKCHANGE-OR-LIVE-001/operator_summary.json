@@ -1,0 +1,15 @@
+{
+  "summary_header": "CODEX SIDECAR WRITE RESULT",
+  "workflow_id": "BOUNDED-QUICKCHANGE-OR-LIVE-001",
+  "skill": "janus-quickchange",
+  "task_label": "chat placeholder wording senden -> schreiben",
+  "selected_path": "sidecar_workspace_write_live",
+  "validation_result": "FAIL",
+  "final_outcome": "LIVE_WRITE_INVALID",
+  "runner_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-OR-LIVE-001\\summary.json",
+  "validation_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-OR-LIVE-001\\validation_summary.json",
+  "allowlist_ok": true,
+  "touched_file_cap_ok": true,
+  "delete_rename_move_ok": true,
+  "operator_message": "Live delegated quickchange write was attempted."
+}

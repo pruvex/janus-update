@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-06-09-003",
+  "testCaseId": "TC-001-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "`mein freund oli (oliver schwab) wohnt in köln stammheim`",
+  "response": "Das habe ich notiert, Rolf Adam. Dass dein Freund Oliver Schwab in Köln-Stammheim wohnt, hast du mir zum ersten Mal gestern um 21:12 Uhr im Chat „Vorlieben von Chris Gier“ erzählt.💡 Passende nächste Schritte:• Soll ich nach Restaurants oder Cafés in Köln-Stammheim suchen, falls du ihn besuchst?• Möchtest du weitere Details zu Oli (z. B. Hobbys oder seinen Geburtstag) ergänzen?• Soll ich nachsehen, wie das Wetter aktuell bei ihm in Köln ist?19:07",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-06-09T17:07:53.140Z"
+}

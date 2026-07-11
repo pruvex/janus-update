@@ -1,0 +1,49 @@
+{
+  "summary_header": "CODEX SIDECAR TEST-ARTIFACT WRITE GATE",
+  "workflow_id": "SIDECAR-TEST-ARTIFACT-PROMPT-2026-06-27-903",
+  "skill": "janus-test-pipeline",
+  "mode": "TESTSPEC_TO_TEST_PLAN",
+  "testspec_path": "documentation/TEST_SPEC/07_regression_suite/18_testspec_testplan_generator_regression.md",
+  "test_run_id": "TEST-RUN-2026-06-27-903",
+  "selected_path": "operator_choice_pending",
+  "normal_target_model": "5.4 medium",
+  "choice_1": "Codex",
+  "choice_2": "OR",
+  "sidecar_model_provider": "Structured local executor / gpt-5.4",
+  "node_executable": "C:\\nvm4w\\nodejs\\node.exe",
+  "sandbox": "workspace-write",
+  "editable_paths": [
+    "documentation/test-runs/TEST-RUN-2026-06-27-903_plan.json",
+    "documentation/test-runs/TEST-RUN-2026-06-27-903_generated.spec.js",
+    "documentation/test-runs/TEST-RUN-2026-06-27-903_skill2_handover.txt"
+  ],
+  "operator_prompt_lines": [
+    "1 = Codex",
+    "2 = OR",
+    "OR ist hier die externe Option, um Codex-Guthaben zu sparen.",
+    "Live-Evidenz: bounded test-artifact generator lane on structured local executor surface",
+    "Einordnung: deterministische Generator-Ausgabe bleibt lokal validiert; Codex behaelt finale Review- und Akzeptanzhoheit",
+    "Technischer Delegationspfad: structured local executor / gpt-5.4",
+    "Pre-Call-Kostenbasis: bounded test-artifact generation for TEST-RUN-2026-06-27-903",
+    "Voraussichtliche OR-Kosten noch nicht belastbar kalibriert, Evidenzgenauigkeit 100% fuer den lokalen strukturierten Ausfuehrungspfad"
+  ],
+  "validation_after_run": [
+    "validate-test-plan.mjs on generated plan",
+    "node --check on generated runner",
+    "validate-runner.mjs on plan plus generated runner"
+  ],
+  "abort_rules": [
+    "Abort if any file outside exact output allowlist changes.",
+    "Abort if any file in documentation/test-results changes.",
+    "Abort if product code changes.",
+    "Abort if generated outputs do not validate."
+  ],
+  "boundaries": [
+    "No live Playwright execution.",
+    "No result JSON or result markdown generation.",
+    "No product code edits.",
+    "Codex App remains final reviewer and acceptance owner."
+  ],
+  "final_outcome": "AWAITING_OPERATOR_CHOICE",
+  "validation_result": "PASS"
+}

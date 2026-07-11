@@ -1,8 +1,13 @@
 """Test calendar routing fix - shopping guardrail bypass for calendar intents."""
 
 import pytest
+from types import SimpleNamespace
+
 from backend.services.orchestrator.execution_dispatcher import (
+    _build_routing_turn_skill_ids,
+    _is_calendar_routing_combo,
     _is_contact_relationship_recall_query,
+    _should_force_routing_tool_choice,
     _suppress_identity_for_address_book_contact_recall,
 )
 from backend.services.capability_registry import CapabilityRegistry
@@ -301,6 +306,22 @@ class TestContactKnowledgeRecallIntent:
         assert not result.is_ambiguous
         assert result.primary_intent == "personal_recall"
 
+    def test_calendar_wikipedia_combo_is_not_video_understanding_or_personal_recall(self, intent_engine):
+        query = (
+            "Was steht heute in meinem Kalender und gib mir eine Wikipedia-Zusammenfassung zu Berlin."
+        )
+
+        result = intent_engine.detect_all_intents(query)
+
+        assert result.is_calendar_intent
+        assert result.is_wikipedia_intent
+        assert not result.is_personal_recall
+        assert not result.is_video_understanding_intent
+        assert result.primary_intent == "calendar"
+        assert intent_engine.detect_routine_request_skills(query) == frozenset(
+            {"calendar.list_events", "system.wikipedia_summary"}
+        )
+
     def test_relationship_contact_recall_helper_detects_possessive_question(self):
         assert _is_contact_relationship_recall_query("wer ist nathans freundin?")
         assert _is_contact_relationship_recall_query("wie heisst nathans freundin?")
@@ -425,6 +446,84 @@ class TestDiamondPdfToolPolicy:
         assert "memory.read" in pol["mandatory"]
         assert "system.websearch" in pol["forbidden"]
         assert "system.rss_news" in pol["forbidden"]
+
+
+class TestCalendarRoutingDispatchGuard:
+    """Mixed calendar+routing turns must not trap Gemini in routing-only force loops."""
+
+    MIXED_PROMPT = (
+        "Welche Termine habe ich heute und wie weit ist es von Berlin nach Hamburg?"
+    )
+
+    def test_mixed_prompt_detects_calendar_and_routing_intents(self):
+        engine = IntentEngine()
+        result = engine.detect_all_intents(self.MIXED_PROMPT)
+
+        assert result.is_calendar_intent
+        assert result.is_routing_geo_intent
+        assert result.primary_intent == "calendar"
+
+    def test_is_calendar_routing_combo_true_only_for_calendar_read_turn(self):
+        assert _is_calendar_routing_combo(
+            SimpleNamespace(
+                is_calendar_intent=True,
+                is_calendar_mutation=False,
+                is_calendar_creation=False,
+            )
+        ) is True
+        assert _is_calendar_routing_combo(
+            SimpleNamespace(
+                is_calendar_intent=True,
+                is_calendar_mutation=True,
+                is_calendar_creation=False,
+            )
+        ) is False
+        assert _is_calendar_routing_combo(None) is False
+
+    def test_build_routing_turn_skill_ids_keeps_calendar_skills_for_mixed_turn(self):
+        result = _build_routing_turn_skill_ids(
+            [
+                "calendar.list_events",
+                "calendar.find_and_update_event",
+                "system.routing",
+                "knowledge.query",
+            ],
+            calendar_intent=True,
+        )
+
+        assert result == [
+            "calendar.list_events",
+            "calendar.find_and_update_event",
+            "system.routing",
+        ]
+
+    def test_build_routing_turn_skill_ids_clamps_to_routing_for_pure_routing(self):
+        assert _build_routing_turn_skill_ids(
+            ["calendar.list_events", "system.routing"],
+            calendar_intent=False,
+        ) == ["system.routing"]
+
+    def test_should_force_routing_tool_choice_false_for_mixed_calendar_routing(self):
+        assert _should_force_routing_tool_choice(
+            SimpleNamespace(
+                primary_intent="calendar",
+                is_routing_geo_intent=True,
+                is_calendar_intent=True,
+                is_calendar_mutation=False,
+                is_calendar_creation=False,
+            )
+        ) is False
+
+    def test_should_force_routing_tool_choice_true_for_pure_routing(self):
+        assert _should_force_routing_tool_choice(
+            SimpleNamespace(
+                primary_intent="routing_geo",
+                is_routing_geo_intent=True,
+                is_calendar_intent=False,
+                is_calendar_mutation=False,
+                is_calendar_creation=False,
+            )
+        ) is True
 
 
 if __name__ == "__main__":

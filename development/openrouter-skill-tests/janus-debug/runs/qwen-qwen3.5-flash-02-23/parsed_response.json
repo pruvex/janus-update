@@ -1,0 +1,31 @@
+{
+  "status": "WEAK_SIGNAL",
+  "primary_failure_code": "RUNNER_ARTIFACT_MISMATCH",
+  "likely_subsystem": "runner-artifact-handling",
+  "hypotheses": [
+    {
+      "title": "Artifact Version Mismatch",
+      "confidence": "MEDIUM",
+      "evidence": "Failure code explicitly indicates mismatch between runner and expected artifact."
+    },
+    {
+      "title": "Local Cache Corruption",
+      "confidence": "LOW",
+      "evidence": "Bounded slice suggests isolated failure potentially due to stale local state."
+    },
+    {
+      "title": "Permission Scope Restriction",
+      "confidence": "LOW",
+      "evidence": "No local command execution delegated implies restricted access context."
+    }
+  ],
+  "suggested_local_verifiers": [
+    "Verify artifact registry metadata against local cache checksums.",
+    "Inspect local build logs for download error codes.",
+    "Check runner environment variable configuration for artifact paths."
+  ],
+  "instrumentation_suggestion": "Enable verbose logging on artifact download phase.",
+  "escalation_trigger": "If mismatch persists after local cache purge.",
+  "redaction_check": "PASS",
+  "notes": "Bounded review completed based on provided package."
+}

@@ -1,0 +1,21 @@
+{
+  "task_id": "TASK-EX-001",
+  "lane_id": "execution_patch_candidate",
+  "bound_skill_context": "janus-executioner",
+  "task_label": "Update janus-executioner to the cost-aware four-choice gate wording",
+  "worker_package_json": "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/executioner_skill_surface/worker_package.json",
+  "allowlist_file": "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/executioner_skill_surface/allowlist.txt",
+  "acceptance_criteria": [
+    "Only documentation/codex/skills/janus-executioner/SKILL.md may change.",
+    "The bounded delegation gate must mention 1 = Codex, 2 = OpenRouter, 3 = Cursor Composer, and 4 = Cursor API.",
+    "The TASK-EX-002 deterministic apply exception must remain explicit.",
+    "The focused executioner skill surface pytest command must pass before Codex review."
+  ],
+  "local_validation_command": "python -m pytest documentation/codex/model-routing/tests/test_janus_executioner_skill_surface.py -q",
+  "redaction_ready": true,
+  "estimated_codex_saved_tokens": 18000,
+  "estimated_delegation_overhead_tokens": 7000,
+  "recommended_backend": "cursor",
+  "recommended_model": "kimi-k2.7-code",
+  "cursor_prompt_contract": "Edit only the allowlisted janus-executioner skill document. Preserve TASK-EX-002 deterministic apply wording. Do not commit. Return concise JSON-friendly output."
+}

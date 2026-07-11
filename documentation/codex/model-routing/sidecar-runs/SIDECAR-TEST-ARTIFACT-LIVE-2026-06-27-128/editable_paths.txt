@@ -1,0 +1,3 @@
+﻿documentation/test-runs/TEST-RUN-2026-06-27-128_plan.json
+documentation/test-runs/TEST-RUN-2026-06-27-128_generated.spec.js
+documentation/test-runs/TEST-RUN-2026-06-27-128_skill2_handover.txt

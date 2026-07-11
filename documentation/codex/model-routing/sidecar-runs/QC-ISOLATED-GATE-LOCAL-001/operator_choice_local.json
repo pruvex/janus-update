@@ -1,0 +1,12 @@
+{
+  "summary_header": "CODEX SIDECAR WRITE RESULT",
+  "workflow_id": "QC-ISOLATED-GATE-LOCAL-001",
+  "skill": "janus-quickchange",
+  "task_label": "Quickchange gate local smoke",
+  "selected_path": "codex_only_operator_choice",
+  "normal_target_model": "5.4 medium",
+  "sidecar_model_provider": "Codex CLI sidecar / gpt-5.4",
+  "final_outcome": "LOCAL_CODEX_PATH_SELECTED",
+  "validation_result": "PASS",
+  "operator_message": "Operator chose the local Codex quickchange path. No OpenRouter write attempt was made."
+}

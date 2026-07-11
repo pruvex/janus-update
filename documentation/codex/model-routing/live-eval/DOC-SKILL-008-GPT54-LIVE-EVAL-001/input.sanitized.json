@@ -1,0 +1,32 @@
+{
+  "fixture_id": "DOC-SKILL-008-GPT54-LIVE-EVAL-001",
+  "skill_id": "DOC-SKILL-008",
+  "skill_name": "Write changelog-style summary",
+  "target_local_baseline": {
+    "model": "5.4",
+    "reasoning": "medium"
+  },
+  "task_intent": "Draft changelog-style bullets from validated documentation workflow facts.",
+  "source_status": "sanitized_fixture_only",
+  "validated_facts": [
+    "A bounded fixed-model mini documentation-skill path was integrated for seven approved mini skills.",
+    "The operator prompt offers 1 = Codex and 2 = OpenRouter for eligible mini documentation tasks.",
+    "The runner reports actual OR cost after completion when telemetry is accepted.",
+    "A seven-skill live batch completed with validation_result=PASS for all accepted rows.",
+    "The 5.4 candidate phase remains planning-only and starts with fixture preparation."
+  ],
+  "must_include_caveats": [
+    "No production routing was enabled.",
+    "No canonical routing-table update was made.",
+    "Auto Router remains experiment-only.",
+    "The 5.4 phase has not run live OR evaluations yet."
+  ],
+  "forbidden_claims": [
+    "release-ready",
+    "production routing enabled",
+    "global OR approval",
+    "5.4 replacement confirmed",
+    "canonical routing-table updated"
+  ],
+  "desired_style": "concise internal changelog bullets under a neutral heading"
+}

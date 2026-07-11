@@ -1,0 +1,31 @@
+{
+  "status": "PASS",
+  "selected_backlog_id": "BACKLOG-109",
+  "mode": "SELECTED_HANDOFF",
+  "recommended_entry_point": "PRE_IMPLEMENTATION_VERIFICATION",
+  "routing_reason": "Backlog item is ready and matches expected criteria for handoff.",
+  "routing_confidence": 0.95,
+  "required_artifact_path": "documentation/tasks/backlog_BACKLOG-109_lokale_db_snapshots_vor_riskanten_debug_repair_und_migrationsschritten.md",
+  "artifact_action": "CREATE_NEW",
+  "recommended_next_skill": "janus-preimplementation-check",
+  "next_skill_copy_prompt": "Prepare pre-implementation verification for BACKLOG-109: Lokale DB-Snapshots vor riskanten Debug-, Repair- und Migrationsschritten anlegen",
+  "handoff_scope": {
+    "backlog_item": "BACKLOG-109",
+    "entry_point": "PRE_IMPLEMENTATION_VERIFICATION",
+    "required_artifact": "documentation/tasks/backlog_BACKLOG-109_lokale_db_snapshots_vor_riskanten_debug_repair_und_migrationsschritten.md",
+    "required_next_skill": "janus-preimplementation-check",
+    "evidence_paths": [
+      "documentation/backlog/BACKLOG.md#BACKLOG-109",
+      "documentation/backlog/BACKLOG_ACTIVE_SUMMARY.md",
+      "documentation/codex/SKILL_USAGE_LOG.md#2026-06-08-janus-debug"
+    ],
+    "dropped_context": []
+  },
+  "manual_review_needed": "NO",
+  "notes": [
+    "as local security/workflow hardening",
+    "not a regular end-user feature",
+    "ready for pre-implementation verification",
+    "clear snapshot mechanism required"
+  ]
+}

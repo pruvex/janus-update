@@ -1,20 +1,20 @@
 TASK BREAKDOWN RESULT
-- Spec: documentation/SPEC/29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md
-- Task File: documentation/tasks/TASK-SPEC29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md
+- Spec: documentation/SPEC/29_stilles_routinenlernen_mit_kandidatenphase.md
+- Task File: documentation/tasks/TASK-SPEC29_stilles_routinenlernen_mit_kandidatenphase.md
 - Target Task: TASK-SPEC29.1
 - Decision: TASK DESIGN COMPLETE
-- Source Of Truth: approved Spec 29 plus generated TASK-SPEC29 artifact; the first released slice is the normalized worker task/result contract only, and must not widen into real Aider/OpenRouter execution, live model calls, copy-back of worker changes, or OpenCode/OpenHands support that belong outside TASK-SPEC29.1
-- Files: documentation/codex/model-routing/scripts/janus_worker_contract.py, documentation/codex/model-routing/scripts/janus_worker_gateway.py, documentation/codex/model-routing/tests/test_janus_worker_contract.py, documentation/codex/model-routing/tests/test_janus_worker_gateway.py, documentation/codex/model-routing/strong-or-fixtures/
-- Acceptance Criteria: valid task packages and result directories are deterministically accepted; missing required fields, forbidden actions, empty allowlists, or missing result artifacts are deterministically rejected; `success` is only possible when status, diff, changed files, checks, and cost/usage metadata are contract-consistent; the contract grants the worker no Git, release, publish, dependency, security, privacy, or architecture authority
-- Tests: add focused contract fixtures for valid success, blocked, failed, scope drift, missing artifact, forbidden action, and empty allowlist cases; run `python -m pytest documentation/codex/model-routing/tests/test_janus_worker_contract.py -q`; run `python -m pytest documentation/codex/model-routing/tests/test_janus_worker_gateway.py -q -k "contract or result or fail_closed"`; run `python -m py_compile documentation/codex/model-routing/scripts/janus_worker_contract.py documentation/codex/model-routing/scripts/janus_worker_gateway.py`; run `git diff --check` on touched scripts, tests, fixtures, and task artifacts
+- Source Of Truth: Approved Spec 29 plus generated TASK-SPEC29 artifact. This slice is limited to the hidden candidate lifecycle, 30-day expiry, and fail-closed learning guards for v1. It must not widen into automatic promotion, passive chat transparency, settings management, routine management UI, new transport paths, OAuth, or broader autonomous learning behavior.
+- Files: backend/data/models.py, backend/data/database.py, backend/services/workflow/workflow_detector.py, backend/services/workflow/step_trace_extractor.py, backend/services/workflow/routine_store.py, backend/tests/test_workflow_detector.py, backend/tests/test_routine_store.py
+- Tests: run `python -m pytest backend/tests/test_workflow_detector.py -v`; run `python -m pytest backend/tests/test_routine_store.py -v`; run `python -m py_compile backend/data/models.py backend/data/database.py backend/services/workflow/workflow_detector.py backend/services/workflow/step_trace_extractor.py backend/services/workflow/routine_store.py`; run scoped `git diff --check`
 - Execution Model: 5.4
-- Readiness: Scope is bounded to schema, validators, fixture contract, and fail-closed classification. This target task must not run Aider, must not call OpenRouter, must not alter copied-back repo files from a worker, and must not add broader skill integration. The output should make TASK-SPEC29.2 implementation possible by defining the contract it must satisfy.
+- Readiness: Scope is atomic and precheck-ready. The slice only establishes internal candidate persistence, suitability guards, and 30-day expiry; it does not yet create visible saved routines or user-facing settings controls.
 - Next Skill: janus-preimplementation-check
-- Model Recommendation: 5.4, high
+- Model Recommendation: 5.4, medium
 
+```text
 @janus-preimplementation-check
-Spec: documentation/SPEC/29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md
-Task: documentation/tasks/TASK-SPEC29_janus_worker_gateway_fuer_isolierte_aider_openrouter_delegation.md
+Spec: documentation/SPEC/29_stilles_routinenlernen_mit_kandidatenphase.md
+Task: documentation/tasks/TASK-SPEC29_stilles_routinenlernen_mit_kandidatenphase.md
 Backlog Item: N/A
 Target Task: TASK-SPEC29.1
 Target Subtask: N/A
@@ -22,3 +22,4 @@ Mode: SINGLE_TASK_PRECHECK
 Execution Model: 5.4
 Rules: VALIDATE_ONE_TARGET_TASK_NO_IMPLEMENTATION_NO_CODE_CHANGES_RELEASE_EXECUTION_HANDOFF_ONLY_IF_SCOPE_FILES_TESTS_RISKS_ARE_CLEAR
 Expected Output: PRE_CHECK_PASSED_PLUS_EXECUTION_HANDOFF_OR_PRE_CHECK_BLOCKED
+```

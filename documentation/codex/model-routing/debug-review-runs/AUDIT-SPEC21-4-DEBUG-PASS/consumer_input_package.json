@@ -1,0 +1,12 @@
+{
+  "workflow_id": "AUDIT-SPEC21-4-DEBUG-PASS",
+  "bound_skill_context": "janus-debug",
+  "expected_behavior": "one bounded review",
+  "actual_behavior": "one observed mismatch",
+  "evidence_snippets": [
+    "bounded evidence"
+  ],
+  "iteration_number": 1,
+  "explicit_question": "Which verifier next?",
+  "redaction_ready": true
+}

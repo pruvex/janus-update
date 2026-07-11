@@ -1,0 +1,16 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 135280,
+  "duration_api_ms": 135280,
+  "result": "Searching for the delegated worker task instructions and related artifacts.\nFound the worker package. Investigating the routine runner semantic reuse path and applying a bounded date/time guard fix.\nImplementing a weather date-reference guard in `_routine_constraints_match_user_text`, mirroring the existing city guard.\nBounded fix applied. Semantic routine reuse now compares the weather date reference near the user's weather question against the stored routine weather step args (defaulting missing values to `heute`), while the existing city guard and same-date success paths are unchanged.\n\n**Root cause:** `_routine_constraints_match_user_text` only validated city, so a calendar-plus-weather routine saved for today's weather still matched requests like \"heute Termine und morgen Wetter in KÃ¶ln\".\n\n**Fix:** Added weather date extraction, resolution from routine args, normalization (`heute`/`morgen`/etc.), and rejection when references differ.\n\n```json\n{\n  \"status\": \"PASS\",\n  \"root_cause\": \"Semantic routine reuse in routine_runner.py only enforced weather city matching; it ignored mismatched weather date/time references such as today vs tomorrow.\",\n  \"changed_files\": [\n    \"backend/services/workflow/routine_runner.py\",\n    \"backend/tests/test_routine_runner.py\"\n  ],\n  \"command_results\": [\n    {\n      \"label\": \"pytest\",\n      \"command\": \"python -m pytest backend/tests/test_routine_runner.py -q\",\n      \"exit_code\": 0,\n      \"result\": \"9 passed in 0.18s\"\n    }\n  ],\n  \"summary\": \"Added a bounded weather date-reference guard to semantic routine reuse. Saved calendar-plus-weather routines no longer match when the user asks for a different weather day (e.g. tomorrow) than the stored routine args imply (today). City guard and same-date semantic reuse remain green.\",\n  \"blockers\": []\n}\n```",
+  "session_id": "1ba01032-d973-480d-9671-7ff1bc14039f",
+  "request_id": "1c2be3e2-6d4a-49bd-9075-d0f35887325d",
+  "usage": {
+    "inputTokens": 42619,
+    "outputTokens": 5950,
+    "cacheReadTokens": 456525,
+    "cacheWriteTokens": 0
+  }
+}

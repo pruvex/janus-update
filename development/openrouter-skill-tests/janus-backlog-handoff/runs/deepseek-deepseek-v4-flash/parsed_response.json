@@ -1,0 +1,29 @@
+{
+  "status": "PASS",
+  "selected_backlog_id": "BACKLOG-109",
+  "mode": "SELECTED_HANDOFF",
+  "recommended_entry_point": "PRE_IMPLEMENTATION_VERIFICATION",
+  "routing_reason": "BACKLOG-109 is READY with clear acceptance criteria, no missing info, and expected artifact does not exist; pre-implementation verification is the recommended entry point.",
+  "routing_confidence": "HIGH",
+  "required_artifact_path": "documentation/tasks/backlog_BACKLOG-109_lokale_db_snapshots_vor_riskanten_debug_repair_und_migrationsschritten.md",
+  "artifact_action": "CREATE_NEW",
+  "recommended_next_skill": "janus-preimplementation-check",
+  "next_skill_copy_prompt": "Führe die Pre-Implementation-Check für BACKLOG-109 durch: 'Lokale DB-Snapshots vor riskanten Debug-, Repair- und Migrationsschritten anlegen'. Überprüfe die Anforderungen: definierter Pre-Action-DB-Snapshot-Mechanismus, definierter Backup-Pfad mit Benennung und Rotation, manueller Restore, Dokumentation. Berücksichtige den Kontext: Nutzer wünscht Snapshot-first-Schutz nach riskanten Debug-/Repair-Erfahrungen.",
+  "handoff_scope": {
+    "backlog_item": "BACKLOG-109: Lokale DB-Snapshots vor riskanten Debug-, Repair- und Migrationsschritten anlegen",
+    "entry_point": "PRE_IMPLEMENTATION_VERIFICATION",
+    "required_artifact": "documentation/tasks/backlog_BACKLOG-109_lokale_db_snapshots_vor_riskanten_debug_repair_und_migrationsschritten.md",
+    "required_next_skill": "janus-preimplementation-check",
+    "evidence_paths": [
+      "documentation/backlog/BACKLOG.md#BACKLOG-109",
+      "documentation/backlog/BACKLOG_ACTIVE_SUMMARY.md",
+      "documentation/codex/SKILL_USAGE_LOG.md#2026-06-08-janus-debug"
+    ],
+    "dropped_context": "Der Nutzer wollte nach riskanten Live-Debug- und Repair-Erfahrungen einen Snapshot-first-Schutz fuer die lokale produktive Janus-DB."
+  },
+  "manual_review_needed": "NO",
+  "notes": [
+    "als lokale Sicherheits-/Workflow-Haertung behandeln",
+    "kein normales Endnutzer-Feature"
+  ]
+}

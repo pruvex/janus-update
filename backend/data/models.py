@@ -288,6 +288,9 @@ class User(Base):
     suggestion_mode = Column(Integer, default=1, nullable=False)
     # Dark Mode preference (false = Light Mode, true = Dark Mode)
     dark_mode_enabled = Column(Boolean, default=False, nullable=False)
+    routines = relationship("UserRoutine", back_populates="user", cascade="all, delete-orphan")
+    routine_candidates = relationship("UserRoutineCandidate", back_populates="user", cascade="all, delete-orphan")
+    routine_offer_logs = relationship("UserRoutineOfferLog", back_populates="user", cascade="all, delete-orphan")
 
 class APIKey(Base):
     __tablename__ = "api_keys"
@@ -399,3 +402,55 @@ class ContextArchive(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     compression = relationship("ContextCompression", back_populates="archives")
+
+
+class UserRoutine(Base):
+    __tablename__ = "user_routines"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    name = Column(String(100), nullable=False)
+    description = Column(Text, nullable=True)
+    trigger_phrases = Column(JSON, nullable=False, default=list)
+    steps_json = Column(JSON, nullable=False)
+    step_fingerprint = Column(String(64), nullable=False, index=True)
+    source_chat_id = Column(Integer, nullable=True)
+    source_turn_id = Column(Integer, nullable=True)
+    user_approved = Column(Boolean, default=False, nullable=False)
+    offer_state = Column(String(20), default="saved", nullable=False)
+    run_count = Column(Integer, default=0, nullable=False)
+    last_run_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    user = relationship("User", back_populates="routines")
+
+
+class UserRoutineCandidate(Base):
+    __tablename__ = "user_routine_candidates"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    steps_json = Column(JSON, nullable=False)
+    step_fingerprint = Column(String(64), nullable=False, index=True)
+    source_chat_id = Column(Integer, nullable=True)
+    source_turn_id = Column(Integer, nullable=True)
+    status = Column(String(20), default="active", nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    expires_at = Column(DateTime, nullable=False)
+    confirmed_at = Column(DateTime, nullable=True)
+
+    user = relationship("User", back_populates="routine_candidates")
+
+
+class UserRoutineOfferLog(Base):
+    __tablename__ = "user_routine_offer_log"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    step_fingerprint = Column(String(64), nullable=False, index=True)
+    offer_state = Column(String(20), nullable=False)
+    chat_id = Column(Integer, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User", back_populates="routine_offer_logs")

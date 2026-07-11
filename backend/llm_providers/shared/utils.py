@@ -25,6 +25,107 @@ from backend.services.tool_result_renderer import (
 logger = logging.getLogger("janus_backend")
 
 
+_CONTACT_SCOPE_PATTERNS = [
+    re.compile(r"\bwas\s+mag(?:en)?\s+(.+)$", re.IGNORECASE),
+    re.compile(r"\bwas\s+wei(?:ß|ss)t\s+du\s+über\s+(.+)$", re.IGNORECASE),
+    re.compile(r"\bich\s+will\s+mit\s+(.+)$", re.IGNORECASE),
+    re.compile(
+        r"\b(?:vorlieben(?:\s+und\s+abneigungen)?|abneigungen|praeferenzen|präferenzen|interessen|hobbys)\s+von\s+(.+)$",
+        re.IGNORECASE,
+    ),
+    re.compile(r"\bmein(?:e|en)?\s+(?:freund|freundin)\s+(.+)$", re.IGNORECASE),
+    re.compile(r"\bkorr(?:e|i)ktur:?\s+(.+)$", re.IGNORECASE),
+    re.compile(
+        r"^\s*([a-zäöüß][\wäöüß-]*(?:\s+[a-zäöüß][\wäöüß-]*){0,2})\s+"
+        r"(?:liebt|mag|ist|wohnt|hasst|verbringt|baut)\b",
+        re.IGNORECASE,
+    ),
+]
+_CONTACT_SCOPE_STOPWORDS = {
+    "als",
+    "am",
+    "an",
+    "bei",
+    "bin",
+    "das",
+    "dem",
+    "den",
+    "der",
+    "die",
+    "du",
+    "ein",
+    "eine",
+    "er",
+    "essen",
+    "fuer",
+    "für",
+    "geht",
+    "gehen",
+    "heute",
+    "ich",
+    "im",
+    "in",
+    "ist",
+    "mag",
+    "mit",
+    "nicht",
+    "oder",
+    "sie",
+    "und",
+    "was",
+    "weiss",
+    "weißt",
+    "wohnt",
+    "zu",
+    "zum",
+}
+
+
+def _normalize_contact_scope_text(value: Any) -> str:
+    normalized = str(value or "").casefold()
+    normalized = (
+        normalized.replace("ä", "ae")
+        .replace("ö", "oe")
+        .replace("ü", "ue")
+        .replace("ß", "ss")
+    )
+    return re.sub(r"[^a-z0-9]+", " ", normalized).strip()
+
+
+def _extract_contact_scope_fragments(text: Any) -> List[str]:
+    normalized = _normalize_contact_scope_text(text)
+    if not normalized:
+        return []
+
+    fragments: List[str] = []
+    for pattern in _CONTACT_SCOPE_PATTERNS:
+        match = pattern.search(str(text or ""))
+        if not match:
+            match = pattern.search(normalized)
+        if not match:
+            continue
+        for part in re.split(r"\bund\b|,|/|;", _normalize_contact_scope_text(match.group(1))):
+            tokens: List[str] = []
+            for token in part.split():
+                if token in _CONTACT_SCOPE_STOPWORDS:
+                    break
+                if len(token) < 3:
+                    continue
+                tokens.append(token)
+            if 0 < len(tokens) <= 3:
+                fragments.append(" ".join(tokens))
+        if fragments:
+            break
+    return fragments
+
+
+def _extract_single_primary_contact_scope(text: Any) -> Optional[str]:
+    fragments = _extract_contact_scope_fragments(text)
+    if len(fragments) != 1:
+        return None
+    return fragments[0]
+
+
 def _extract_fact_candidates_from_pdf_content(content: str) -> List[str]:
     text = str(content or "").strip()
     if not text:
@@ -894,6 +995,17 @@ def _prevalidate_tool_calls(tool_calls: List[Dict[str, Any]], user_prompt: str =
                 )
                 continue
             websearch_call_kept = True
+        elif canonical_skill_id == "memory.read":
+            user_scope = _extract_single_primary_contact_scope(user_prompt)
+            query_scope = _extract_single_primary_contact_scope(parsed_args.get("query") or "")
+            if user_scope and query_scope and query_scope != user_scope:
+                parsed_args["query"] = str(user_prompt or "").strip()
+                system_hints.append(
+                    "Kontakt-Recall-Hinweis: In dieser Runde ist der Primärkontakt bereits festgelegt. "
+                    "memory.read wurde auf den ursprünglichen Kontaktfokus zurückgebunden."
+                )
+            elif user_scope and not query_scope and str(user_prompt or "").strip():
+                parsed_args["query"] = str(user_prompt or "").strip()
         target_name = canonical_skill_id or corrected_request_name
 
         prepared_call = dict(tool_call)

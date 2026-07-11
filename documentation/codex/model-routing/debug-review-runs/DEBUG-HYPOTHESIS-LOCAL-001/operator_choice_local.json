@@ -1,0 +1,12 @@
+{
+  "summary_header": "DEBUG HYPOTHESIS REVIEW RESULT",
+  "workflow_id": "DEBUG-HYPOTHESIS-LOCAL-001",
+  "skill": "janus-debug",
+  "task_label": "Debug hypothesis local validation",
+  "selected_path": "codex_only_operator_choice",
+  "normal_target_model": "5.4/medium",
+  "delegated_model_label": "bounded delegated review / fixture mode",
+  "final_outcome": "LOCAL_CODEX_PATH_SELECTED",
+  "validation_result": "PASS",
+  "operator_message": "Operator chose the local Codex debug path. No delegated hypothesis review was used."
+}

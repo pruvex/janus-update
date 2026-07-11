@@ -1,0 +1,8 @@
+1 = Codex
+2 = OR
+OR ist hier die externe Option, um Codex-Guthaben zu sparen.
+Live-Evidenz: bounded OR lane ready
+Einordnung: structured normalization only; Codex keeps final review ownership
+Fest empfohlenes OR-Modell: qwen/qwen3-coder-30b-a3b-instruct
+Pre-Call-Kostenbasis: Spec normalizer bounded lane for Spec normalizer productive OR pilot
+Voraussichtliche OR-Kosten 0.000220000, Evidenzgenauigkeit 72%

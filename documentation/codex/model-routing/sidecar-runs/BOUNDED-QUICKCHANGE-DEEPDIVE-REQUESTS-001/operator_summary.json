@@ -1,0 +1,15 @@
+{
+  "summary_header": "CODEX SIDECAR WRITE RESULT",
+  "workflow_id": "BOUNDED-QUICKCHANGE-DEEPDIVE-REQUESTS-001",
+  "skill": "janus-quickchange",
+  "task_label": "DeepDive Requests labels to Anfragen",
+  "selected_path": "sidecar_workspace_write_live",
+  "validation_result": "PASS",
+  "final_outcome": "LIVE_WRITE_ACCEPTED",
+  "runner_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-DEEPDIVE-REQUESTS-001\\summary.json",
+  "validation_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-DEEPDIVE-REQUESTS-001\\validation_summary.json",
+  "allowlist_ok": true,
+  "touched_file_cap_ok": true,
+  "delete_rename_move_ok": true,
+  "operator_message": "Live delegated quickchange write was attempted."
+}

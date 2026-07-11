@@ -1,0 +1,161 @@
+{
+  "task_root_id": "TASK-SPEC21",
+  "source_spec": "documentation/SPEC/Spec Done/21_assisted_or_workhorse_mode_for_janus_skills.md",
+  "task_file_path": "documentation/tasks/TASK-SPEC21_assisted_or_workhorse_mode_for_janus_skills.md",
+  "backlog_item": "N/A",
+  "feature_name": "Assistierter OR-Arbeitspferd-Modus fuer Janus-Skills",
+  "generated_at": "2026-06-26T00:00:00Z",
+  "generated_tasks": [
+    {
+      "task_id": "TASK-SPEC21.1",
+      "title": "Implement Eligibility and Redaction Gate for OR Mode",
+      "ziel": "Establish safety boundaries determining when a bounded task qualifies for OpenRouter workhorse mode versus local Codex execution, ensuring sensitive data is redacted before transmission",
+      "scope": "Define eligibility criteria for OR path activation, implement input sanitization and redaction layer, create validation checkpoint that restricts OR access to approved bounded contexts only",
+      "files": [
+        "janus/gates/eligibility.py",
+        "janus/gates/redaction.py",
+        "config/or_eligibility.yaml",
+        "janus/security/boundary_validator.py"
+      ],
+      "steps": [
+        "Implement boundedness criteria validator to identify eligible tasks",
+        "Build redaction engine for sensitive data before OR transmission",
+        "Create eligibility decision tree with reason codes",
+        "Integrate validation checkpoint into task initiation flow",
+        "Add logging for eligibility decisions"
+      ],
+      "acceptance_criteria": [
+        "Only tasks from janus-debug and janus-test-pipeline can pass eligibility gate",
+        "Sensitive data (API keys, PII) is automatically redacted before OR transmission",
+        "Eligibility check returns boolean with explicit reason code for rejection",
+        "Non-bounded tasks are automatically routed to Codex path",
+        "Redaction is irreversible and logged for audit"
+      ],
+      "tests": [
+        "Unit test: Eligibility passes for approved skills only",
+        "Unit test: Redaction removes all sensitive patterns",
+        "Integration test: Blocked skills cannot trigger OR gate",
+        "Security test: Verify redaction cannot be bypassed"
+      ],
+      "model": "5.4",
+      "reason": "Safety boundary must be established first to prevent unauthorized OR usage and data leakage",
+      "slice_theme": "eligibility_redaction_gate"
+    },
+    {
+      "task_id": "TASK-SPEC21.2",
+      "title": "Build Operator Choice Gate with Cost and Confidence Display",
+      "ziel": "Create normalized interaction layer presenting clear Codex vs OR choice with predictive cost estimates and confidence metrics before execution commitment",
+      "scope": "Implement the selection interface (1=Codex, 2=OR), cost prediction display, confidence scoring visualization, and operator input handling",
+      "files": [
+        "janus/gates/operator_choice.py",
+        "janus/ui/cost_display.py",
+        "janus/models/confidence_scorer.py",
+        "janus/interfaces/selection_prompt.py"
+      ],
+      "steps": [
+        "Implement binary choice prompt with clear 1/2 mapping",
+        "Integrate cost prediction API for OR path estimation",
+        "Add confidence scoring algorithm for both execution paths",
+        "Build input validation and retry logic for invalid selections",
+        "Ensure display appears only after eligibility confirmation"
+      ],
+      "acceptance_criteria": [
+        "Operator sees explicit '1 = Codex / 2 = OR-Arbeitspferd' choice",
+        "Predicted cost displayed prominently before OR selection",
+        "Confidence score visible for both Codex and OR paths",
+        "Invalid inputs trigger retry without crashing workflow",
+        "Choice gate blocks execution until operator confirms"
+      ],
+      "tests": [
+        "UI test: Verify correct display of 1/2 options",
+        "Accuracy test: Cost prediction within 20% of actual",
+        "Validation test: Reject invalid inputs (0, 3, text)",
+        "Integration test: Gate appears only for eligible tasks"
+      ],
+      "model": "5.4",
+      "reason": "Central decision point requiring transparent cost disclosure and clear UX to prevent accidental expensive OR invocations",
+      "slice_theme": "operator_gate_normalization"
+    },
+    {
+      "task_id": "TASK-SPEC21.3",
+      "title": "Implement Telemetry, Cost Capture and Fallback Handling",
+      "ziel": "Capture actual OpenRouter costs, execution health metrics, and telemetry post-run, with automatic fallback to manual review on OR gate failures",
+      "scope": "Build telemetry pipeline for OR executions, actual cost tracking, healthcheck validation, failure detection, and fallback workflow activation",
+      "files": [
+        "janus/telemetry/or_tracker.py",
+        "janus/health/cost_validator.py",
+        "janus/logging/or_audit.py",
+        "janus/fallback/manual_review.py"
+      ],
+      "steps": [
+        "Implement OR API response parser for actual cost extraction",
+        "Create telemetry storage schema for bounded OR steps",
+        "Build healthcheck validator for OR response integrity",
+        "Implement fallback trigger for failed OR gates",
+        "Add manual review queue for fallback cases",
+        "Create post-run cost display component"
+      ],
+      "acceptance_criteria": [
+        "Actual OR cost captured and displayed to operator after run completion",
+        "Health check validates response integrity and boundedness",
+        "Telemetry includes latency, token usage, and error codes",
+        "Failed OR gates automatically trigger fallback to manual review",
+        "Exactly one bounded OR step is tracked per invocation",
+        "Fallback workflow preserves context for human operator"
+      ],
+      "tests": [
+        "Integration test: Accurate cost capture from OR API",
+        "Health test: Detect corrupted or unbounded responses",
+        "Fallback test: Verify manual review trigger on failure",
+        "Telemetry test: Complete data capture and storage",
+        "End-to-end test: Single step enforcement"
+      ],
+      "model": "5.4",
+      "reason": "Required for financial auditing, operational monitoring, and ensuring system resilience through fallback mechanisms",
+      "slice_theme": "telemetry_healthcheck_capture"
+    },
+    {
+      "task_id": "TASK-SPEC21.4",
+      "title": "Integrate OR Mode into Approved Skills with Boundary Enforcement",
+      "ziel": "Wire the OR workhorse capability into janus-debug and janus-test-pipeline skills while enforcing strict boundaries to prevent scope widening to other skills",
+      "scope": "Modify approved skills to invoke OR gate, implement skill boundary enforcement ensuring no other janus skills can access OR mode, maintain default Codex path",
+      "files": [
+        "skills/janus-debug/or_integration.py",
+        "skills/janus-test-pipeline/or_integration.py",
+        "janus/router/skill_boundary.py",
+        "janus/config/skill_whitelist.yaml"
+      ],
+      "steps": [
+        "Add OR gate invocation points to janus-debug bounded steps",
+        "Add OR gate invocation points to janus-test-pipeline bounded steps",
+        "Implement whitelist enforcement at router level",
+        "Add boundary violation alerts and blocking",
+        "Ensure Codex remains default path unless OR explicitly chosen",
+        "Validate no other skills can import or invoke OR modules"
+      ],
+      "acceptance_criteria": [
+        "janus-debug presents OR option for eligible bounded tasks",
+        "janus-test-pipeline presents OR option for eligible bounded tasks",
+        "janus-spec-to-task and other skills cannot access OR mode",
+        "Boundary violation attempts are logged and blocked",
+        "Integration maintains existing Codex behavior as default",
+        "No code paths allow OR invocation outside approved skills"
+      ],
+      "tests": [
+        "Integration test: janus-debug full OR workflow",
+        "Integration test: janus-test-pipeline full OR workflow",
+        "Security test: Verify other skills blocked at import and runtime",
+        "Regression test: Codex path unchanged when OR not selected",
+        "Boundary test: Attempted bypass detection"
+      ],
+      "model": "5.4",
+      "reason": "Final integration ensuring the feature remains constrained to approved skills only, preventing scope creep and unauthorized usage",
+      "slice_theme": "consumer_integration_without_scope_widening"
+    }
+  ],
+  "execution_model": "5.4",
+  "next_skill": "janus-task-breakdown",
+  "notes": [
+    "Task compilation covers all four required slice themes: eligibility/redaction safety, operator gate normalization, telemetry/healthcheck capture, and consumer integration within strict skill boundaries. Tasks are implementation-ready and exclude review-only or analysis-only work."
+  ]
+}

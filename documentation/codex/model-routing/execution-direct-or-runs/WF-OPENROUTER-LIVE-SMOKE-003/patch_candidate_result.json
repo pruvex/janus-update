@@ -1,0 +1,16 @@
+{
+  "status": "BLOCKED",
+  "target_task": "TASK-EXAMPLE-001A",
+  "patch_text": "",
+  "changed_files": [],
+  "risk_list": [
+    "Cannot produce a valid unified diff because the provided exact_code_context_blocks contain no anchor points where a session-budget line can be inserted without causing a mismatch with the surrounding code, which is not 1"
+  ],
+  "suggested_validation_steps": [
+    "python -m pytest documentation/codex/model-routing/tests/test_bounded_or_worker_gate_prompt.py -q",
+    "python -m py_compile documentation/codex/model-routing/scripts/bounded_or_worker_gate_prompt.py"
+  ],
+  "manual_validation_note": "Codex must manually validate this patch locally before task completion.",
+  "codex_acceptance_rule": "Codex must review and apply or reject locally.",
+  "notes": "The exact_code_context_block shows build_operator_prompt_lines returning lines. There is no surrounding code to diff against cleanly without inventing a file path position for the hunk. The context tail after the function is missing, so a unified diff would be incomplete or misaligned. BLOCKED to avoid a malformed diff"
+}

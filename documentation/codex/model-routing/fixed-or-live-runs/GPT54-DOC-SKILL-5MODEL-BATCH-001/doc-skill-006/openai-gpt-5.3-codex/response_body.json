@@ -1,0 +1,21 @@
+﻿
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1781390085-zY0bKj8z4biw7c8mgsKy","object":"chat.completion","created":1781390085,"model":"openai/gpt-5.3-codex-20260224","provider":"OpenAI","system_fingerprint":null,"service_tier":"default","choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"completed","message":{"role":"assistant","content":"# Routing Note\n\n## Status\n- **PLANNING ONLY**\n- **NO PRODUCTION ROUTING**\n\n## Purpose\n- Compare cheaper candidates for 5.4 documentation assist.\n- Do not approve anything.\n\n## Allowed Scope\n- Summarize sanitized text.\n- Preserve `HOLD` and `UNKNOWN`.\n- Propose next fixture work.\n\n## Blocked Scope\n- Update routing table.\n- Approve production.\n- Run live calls.\n- Decide audit or release readiness.\n\n## Operator Reminder\n- If a future live test is explicitly approved, show estimate first, use file-first capture, and record actual cost after completion.","refusal":null,"reasoning":null,"reasoning_details":[{"type":"reasoning.encrypted","data":"gAAAAABqLdsHBq2rpfakI3LBYtk8r_vO0efKj3BlFZZ8d7yzBJUIxvjiXKiaXNeakyX_6QzNLGO0Lqs6oXe_AiX_mAjXIgq3Z7C_-87cY3dv_769MY9uSoecpPboJ0vNGm-mfYIKNwt7ipi9jSOMbaBIyCMVLUg1OHiK43pWuTrcjoI5NcnGQmXGsg825AKL3ql6UBpqlvnp_O-yYhnzVv0egtIFuJWSh6Y4JYtfAtmNfpdOYwW5YTF_Ktvrtz6z1PdGk5RNQGDqDMr6Qq6RrulLIDfd48z1a_s4bdo8CJjFbeAFhD0lrF45nUVS4utxKhHev2mnoe0zmnga0NAIdgrFFnqlP-8ThZZG7CeeoMvb6LGQZ_GzuLKaJVrP3zoFWu-c-bBXNfftlZpP55tSgsfQjVeoA-I9hHJ4PTMhc8_wwmgNAEpXTpeiqc8L2xpQ6zUkEEuFRlcpv9sCzBgltknto_rjWct3bRqWmnlwXTTIwGIx5gTGJGqnfY1AEpKgjwSYrkbOfVvLLjzSoeoM3PH6E4RGZN4ZD-PoLKJ2ND5rlK8VZUIIhItQtU0v0icAT2_aM8Aow0zxD5lJn_B3EACFr_8t3wMuVn54z9lPZ9F-2otDYbXfHnMcbcfg90WwxjhBVqTnMIgAilLxJcvU2Wd0vQyfa0SSWgBQ5RwTITYKs8JtLtWNYfwsCSOI4XsTPXeHtEymd7uIpBRugTjpEmhqGEKDkZ57NlEa8UtKuZKtOf0avvMsdcR0Z32iC5EcESoTZCN0WxlJyPPQLTx-zqnbpZ3zykWVa1i7xEFuO4WjoCYZp_qyDSueXve3XBMl0M39BlsUJrdeaGo9Sb9pXN88z7q0Mi2LPeijnDytIpC-t3t72VCxVX9LNyUd2f8z-3hxUHz38M-ejGQR6m8BgNeK7lCM_bhRHpYfKhg8iKn63P1ll-KrTQ9qfuNJlDI1VkzKxRDkqG11yjRMNaMS9WAgqnITps5GqkNsxI66L8AgAUJdHg_Zf_sjraai0ZIN8NzOfKVfgXWcDwvFatS3qAobQnKhrj9CV2gT0g3Q860fgMbE7x7XIIrRPU27H8eq-tVu8t6O_rrbMl3TPFU8CzuhttkSRdY2YLH2ZcOvJFD9CJg0hUlUKGoGnPPqEs6mmt893b3cmbgaxOf6An4xeBpMZcP3pXdgf14dEX_PFK9xqgaTm6YRZEFfUudZMY3xQBLY10YxZtc1imsGuELGmT8L8DkzDdfPyeYhKo9M2qe8O9lcmEhQ2NraIxG9gS8woSCPIqB_R_pmvi1Vn2n0Y9-4bU4-5evuJO3rfylsaNSLM0qdYJ73grFESA7Ven-lFnYOUKAihrfssK0ritiJ0ftdJ7yvMmorce3YVlT0wqAABqPwB1kt9c7H9bUiSsBn894QKvtIRiADiCrrRk_pjpKWglWgaATtbfresjFdyS-0Q2jIm0z5xGfet29Qd1VSXi0Jz5j6sKcQi6F7embqZveR01rUs9W-c4ff1L_wfVJrCOEyGbWSVuhp6bTQy6pqVm2zMUXUQhWZMUzCuYM5HTLxozgtEUD5lp88Q46IgbJzih5rdaCyuh-YmPZQk89uH5boVOqGBCa6dcH7JkZsE34CV1B17KAU3v5owMqsJc2-Svo2g3bv4pCcNeLxVk7uTXK1wM3_PgQ_And8xUuaMTc0bfFcWn8yR_gb26Tgyz7I7QhuCKv1I9wLpLi4-WDCL2Zwe__YzZA0gxKaQg0UkNOVhGFBLbH9h6hIH_UsPjsiseL_crz-N7g9aLnyT08D1_WVkoAxDV2MgDFQgVGwXsNASVcOdNotD1EkFNralkMWDSIHeJ2SmwjzwQfR_e7c0uGdJsOscdHEHEYvmYTmx7fLeTlGkjGfP5AmNm0zZjMNuzUORBa33B-vUryTBHPIx1Wj0ZbDMg_PCydkPN7-ieRe25353VyVbR-SomHhlG72IsABWDtMCoOyD7b4JRgTxa16tbCmzf0Bt8u5FlGyjjxDmE0n8RUBTv01yhRm00O1uiGvE52HwSmFAxSY9sllczwXXcH0x5YwmzHopa_7bHkL8WQULPIu4DBWd86ncgDG9f5IMBpiRisOqTUqgVHmNEr79Z35AbQEPPEnFdMHlyzvEFJ2koBtnjFNtwk9vQdAC9Vvzq7Ga8RdBDbzvyfvVrZKns1w-Qh20dNdH8E64enHFqAAKk0jdLpGLe7vrCADGUOUaswOTbUS75_z9toqdZCS5mPyPOLTNsEUfZiDY3YfC56CjKphdlkgZjBYQgg5-DbM1FT3oPxU7Dpiqsnf8COnm1KevaZ_0li9iG3b9URG_84wJMg4JhR3lbf6yDdmngYZ3jas4GZIMD7mzybfkuWrW2u77uOs","format":"openai-responses-v1","id":"rs_049c48a1d350ca90016a2ddb059ab8819493b1169aa0005bff","index":0}]}}],"usage":{"prompt_tokens":705,"completion_tokens":332,"total_tokens":1037,"cost":0.00588175,"is_byok":false,"prompt_tokens_details":{"cached_tokens":0,"cache_write_tokens":0,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.00588175,"upstream_inference_prompt_cost":0.00123375,"upstream_inference_completions_cost":0.004648},"completion_tokens_details":{"reasoning_tokens":198,"image_tokens":0,"audio_tokens":0}}}

@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "route_type": "DIRECT_NEXT_SKILL",
+  "recommended_skill": "janus-backlog-intake",
+  "recommended_model": "5.4",
+  "recommended_reasoning": "medium",
+  "new_chat": "nein",
+  "context_strategy": "nur kompakte Backlog-Uebersicht plus den gemeldeten Wunsch",
+  "reason": "Kleiner klarer Verbesserungs- oder Bugwunsch ohne neue Produktentscheidung; zuerst als Backlog-Kandidat erfassen.",
+  "next_artifact_hint": "documentation/backlog/BACKLOG_ACTIVE_SUMMARY.md",
+  "manual_review_needed": "NO",
+  "notes": [
+    "Gebundene Router-Empfehlung nur fuer einen kleinen klaren Wunsch.",
+    "Codex behaelt die finale Prozess- und Gate-Verantwortung."
+  ]
+}

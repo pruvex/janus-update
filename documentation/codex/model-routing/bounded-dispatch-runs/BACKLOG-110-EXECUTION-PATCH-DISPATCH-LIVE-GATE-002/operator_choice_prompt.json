@@ -1,0 +1,23 @@
+{
+  "summary_header": "BOUNDED DELEGATION DISPATCH GATE",
+  "workflow_id": "BACKLOG-110-EXECUTION-PATCH-DISPATCH-LIVE-GATE-002",
+  "task_class": "execution_patch_candidate",
+  "task_label": "BACKLOG-110 real execution patch candidate",
+  "normal_target_model": "5.4/medium",
+  "choice_1": "Codex",
+  "choice_2": "Delegated",
+  "delegated_meaning": "Delegated proposal-only execution patch candidate, but Codex still owns patch review, apply/reject, and final task completion.",
+  "route_note": "Uses the bounded execution patch-candidate helper with precheck binding, file-cluster allowlist, and Codex-owned apply/reject authority.",
+  "final_outcome": "AWAITING_OPERATOR_CHOICE",
+  "validation_result": "PASS",
+  "operator_prompt_lines": [
+    "Willst du 1 Codex das machen lassen?",
+    "Oder 2 den bounded execution_patch_candidate Delegation-Pfad nutzen?"
+  ],
+  "boundaries": [
+    "No production routing",
+    "No canonical routing-table update",
+    "No Git/release authority by delegated path",
+    "Codex App remains final reviewer"
+  ]
+}

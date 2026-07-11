@@ -1,0 +1,19 @@
+{
+  "changed_files": [
+    "backend/services/contact_manager.py"
+  ],
+  "codex_acceptance_rule": "Codex must review and apply or reject locally.",
+  "manual_validation_note": "Codex must manually validate this patch locally before task completion.",
+  "notes": "Minimal patch: adds missing else clause in stage_contact_update_from_memory to return a proposal dict when _should_auto_apply returns False. This prevents silent None return and ensures the caller receives a structured proposal result. No other files touched.",
+  "patch_text": "--- a/backend/services/contact_manager.py\n+++ b/backend/services/contact_manager.py\n@@ -L +L @@\n     if _should_auto_apply_contact_memory_update(\n         memory=memory,\n         match_mode=match_mode,\n         metadata=metadata,\n         proposal_payload=proposal_payload,\n     ):\n         return _apply_contact_memory_update_directly(\n             db_session,\n             target_contact=target_contact,\n             proposal_payload=proposal_payload,\n         )\n+    else:\n+        return {\n+            \"status\": \"proposed\",\n+            \"reason\": \"requires_review\",\n+            \"proposals_staged\": 1,\n+            \"proposal_payload\": proposal_payload,\n+            \"target_contact_id\": target_contact.id,\n+        }",
+  "risk_list": [
+    "Low: Adding else clause changes return value from None to dict for non-auto-applied cases; callers must handle dict (existing handle_memory_write already does).",
+    "Low: proposal_payload and target_contact_id are new keys in the return dict; no existing code depends on their absence."
+  ],
+  "status": "PASS",
+  "suggested_validation_steps": [
+    "python -m pytest backend/tests/test_contact_manager.py -q",
+    "python -m pytest backend/tests/test_memory_tools.py -q"
+  ],
+  "target_task": "BACKLOG-108"
+}

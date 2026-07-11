@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-06-09-002",
+  "testCaseId": "SEC-001-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Ask about Oli after seeding Chris and Oli",
+  "response": "Hallo Rolf Adam! Da ich bereits Informationen zu Chris Gier (aus dem Chat „Vorlieben von Chris Gier“) und deinem besten Freund Nathan Raimann aus Berlin habe, würde ich gerne mehr über Oli erfahren.In welcher Verbindung steht Oli zu dir oder Chris, und gibt es etwas Bestimmtes, das ich über ihn wissen sollte?💡 Passende nächste Schritte:• Erzähle mir mehr über Olis Persönlichkeit oder seine Hobbys.• Beschreibe Olis dauerhafte Merkmale (z. B. ob er eine Brille oder eine Smartwatch trägt).• Soll ich Oli als neuen Kontakt oder Freund in deinem Gedächtnis speichern?18:44",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-06-09T16:44:31.415Z"
+}

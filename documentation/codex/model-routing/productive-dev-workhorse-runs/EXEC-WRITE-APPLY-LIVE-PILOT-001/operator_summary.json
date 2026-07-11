@@ -1,0 +1,30 @@
+{
+  "summary_header": "EXECUTION WRITE APPLY CANDIDATE RESULT",
+  "workflow_id": "EXEC-WRITE-APPLY-LIVE-PILOT-001",
+  "skill": "janus-executioner",
+  "task_label": "BACKLOG-108 first live write-apply pilot",
+  "selected_path": "delegated_execution_write_apply_candidate_sidecar_live",
+  "normal_target_model": "5.4 medium",
+  "delegated_model_label": "Codex CLI sidecar / gpt-5.4",
+  "validation_result": "PASS",
+  "final_outcome": "EXECUTION_WRITE_APPLY_LIVE_WRITE_READY_FOR_CODEX_ACCEPT_REJECT",
+  "accepted_source_run_dir": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-source-bridges\\EXEC-WRITE-APPLY-SOURCE-BRIDGE-001",
+  "source_validation_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-runs\\EXEC-WRITE-APPLY-LIVE-PILOT-001\\source_validation.json",
+  "live_validation_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-runs\\EXEC-WRITE-APPLY-LIVE-PILOT-001\\live_validation_summary.json",
+  "sidecar_prompt_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-runs\\EXEC-WRITE-APPLY-LIVE-PILOT-001\\sidecar_prompt.md",
+  "sidecar_run_dir": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-runs\\EXEC-WRITE-APPLY-LIVE-PILOT-001\\sidecar_run",
+  "runner_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-runs\\EXEC-WRITE-APPLY-LIVE-PILOT-001\\sidecar_run\\summary.json",
+  "operator_message": "Delegated bounded live write completed inside the exact accepted-source allowlist. Codex still owns diff review, acceptance, and final task completion. Session telemetry and healthcheck visibility were finalized for the dedicated Dev-workhorse path.",
+  "codex_owned_outcome_status": "CODEX_REVIEW_REQUIRED",
+  "codex_owned_outcome_final": false,
+  "session_run_dir": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\productive-dev-workhorse-runs\\EXEC-WRITE-APPLY-LIVE-PILOT-001",
+  "session_telemetry_jsonl_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\or_healthcheck_telemetry_productive_dev_workhorse_2026-06-23_EXEC-WRITE-APPLY-LIVE-PILOT-001.jsonl",
+  "session_telemetry_row_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\productive-dev-workhorse-runs\\EXEC-WRITE-APPLY-LIVE-PILOT-001\\session_telemetry_row.json",
+  "dev_workhorse_healthcheck_status": "PASS",
+  "dev_workhorse_healthcheck_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\productive-dev-workhorse-runs\\EXEC-WRITE-APPLY-LIVE-PILOT-001\\healthcheck_summary.json",
+  "actual_or_cost": 0.0,
+  "generation_id": "",
+  "operator_result_lines": [
+    "Tatsaechliche Kosten: N/A (usage missing, fallback documented)"
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "backend": "cursor",
+  "lane_id": "execution_patch_candidate",
+  "workflow_id": "WF-CURSOR-M3.4-SEMANTIC-ROUTINE-REUSE-2026-07-09-001",
+  "selected_model": "composer-2.5",
+  "cursor_pool": "auto_composer",
+  "estimated_cost_usd_static": 0.0104,
+  "session_id": "f7977118-ebc2-4b85-ac5e-2c5c39ca7190",
+  "validation_result": "PASS",
+  "selected_path": "cursor_worker_live_mockable",
+  "final_outcome": "CURSOR_WORKER_READY_FOR_CODEX_REVIEW",
+  "package_validation": {
+    "validation_result": "PASS",
+    "contract_status": "TASK_PACKAGE_VALID_VIA_WORKER_REFERENCE",
+    "issues": [],
+    "task_label": "Implement semantic routine reuse from natural user phrasing",
+    "worker_profile": "cursor-agent",
+    "allowed_edit_paths": [
+      "backend/services/workflow/routine_runner.py",
+      "backend/services/orchestrator/intent_engine.py",
+      "backend/services/chat_orchestrator.py",
+      "backend/tests/test_routine_runner.py",
+      "backend/tests/test_workflow_offer_service.py"
+    ],
+    "required_result_artifacts": [
+      "RESULT.json",
+      "RESULT.md",
+      "DIFF.patch",
+      "FILES_CHANGED.txt",
+      "CHECKS.log",
+      "COST.json"
+    ],
+    "source_package_path": "development\\openrouter-skill-tests\\janus-executioner\\workflow_m3_4_semantic_routine_reuse_2026-07-09\\input_package.json",
+    "worker_package_path": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-executioner\\workflow_m3_4_semantic_routine_reuse_2026-07-09\\worker_package.json"
+  },
+  "allowlist_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "allowlist": [
+      "backend/services/workflow/routine_runner.py",
+      "backend/services/orchestrator/intent_engine.py",
+      "backend/services/chat_orchestrator.py",
+      "backend/tests/test_routine_runner.py",
+      "backend/tests/test_workflow_offer_service.py"
+    ]
+  },
+  "allowlist_consistency_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "package_allowed_edit_paths": [
+      "backend/services/workflow/routine_runner.py",
+      "backend/services/orchestrator/intent_engine.py",
+      "backend/services/chat_orchestrator.py",
+      "backend/tests/test_routine_runner.py",
+      "backend/tests/test_workflow_offer_service.py"
+    ],
+    "allowlist": [
+      "backend/services/workflow/routine_runner.py",
+      "backend/services/orchestrator/intent_engine.py",
+      "backend/services/chat_orchestrator.py",
+      "backend/tests/test_routine_runner.py",
+      "backend/tests/test_workflow_offer_service.py"
+    ],
+    "declared_allowlist_file": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-executioner\\workflow_m3_4_semantic_routine_reuse_2026-07-09\\allowlist.txt"
+  },
+  "accepted_source_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "accepted_source_run_dir": null,
+    "recognized_artifacts": []
+  },
+  "accepted_source_run_dir": null,
+  "planned_command": [
+    "C:\\Users\\pruve\\AppData\\Local\\cursor-agent\\agent.CMD",
+    "-p",
+    "--workspace",
+    "C:\\KI\\Janus-Projekt\\backend",
+    "--model",
+    "composer-2.5",
+    "--output-format",
+    "json",
+    "--force",
+    "--trust",
+    "--approve-mcps",
+    "Execute this bounded Janus delegated worker task now. Treat the full prompt below as instructions, not as text to analyze. Do not ask clarifying questions unless the task is impossible with the provided files and rules.\n\nStable prefix:\n- lane: execution_patch_candidate\n- worker_contract: janus-delegated-worker\n- output_schema: status, changed_files, command_results, summary, blockers\n- hard_rules: stay bounded, do not commit, do not leave the allowlist\n\nVariable suffix:\nImplement TASK-WORKFLOW-M3.4 only. Current behavior: RoutineRunner.execute_by_trigger only matches explicit trigger_phrases via IntentEngine.detect_routine_trigger, so users would need to remember generated names like `Routine List Events`. Required behavior: after a user saves a calendar+weather routine, a later natural request like `Was steht heute in meinem Kalender und wie wird das Wetter in Koeln?` must match the saved routine by bounded semantics/step signature and execute it. Keep explicit trigger matching. Add focused regression tests. Prefer deterministic intent/step-signature matching over embeddings or broad LLM calls. Do not add UI, APIs, transport, OAuth, product OpenRouter, Session-Search, migrations, commits, or dependencies. Return concise JSON-compatible output with status, root_cause, changed_files, command_results, summary, and blockers.\nTask label: Implement semantic routine reuse from natural user phrasing\nUse Cursor Composer for one bounded execution patch. Inspect only allowlisted files, implement the smallest safe semantic routine reuse matcher, run listed checks, and return concise JSON-compatible output.\nAcceptance criteria:\n- Only allowlisted backend routine/intent/orchestrator files and focused tests may change.\n- A saved routine with steps `calendar.list_events` then `system.weather` must execute when a later natural request asks for calendar plus weather, even when the routine name or generated trigger phrase is not present.\n- Existing explicit trigger phrase execution must still pass.\n- An unrelated natural request must not execute the routine.\n- The successful routine response must transparently say that a saved or matching routine was used.\n- Do not add UI, transport APIs, OAuth, product OpenRouter, Memory Session-Search, embeddings, migration, Git, or broad architecture changes.\nAllowed edit paths:\n- backend/services/workflow/routine_runner.py\n- backend/services/orchestrator/intent_engine.py\n- backend/services/chat_orchestrator.py\n- backend/tests/test_routine_runner.py\n- backend/tests/test_workflow_offer_service.py\nReturn status, changed_files, command_results, summary, and blockers as concise JSON-compatible output.\n\nWorkspace root: C:\\KI\\Janus-Projekt\\backend\nWorkspace-relative edit paths:\n- services/workflow/routine_runner.py\n- services/orchestrator/intent_engine.py\n- services/chat_orchestrator.py\n- tests/test_routine_runner.py\n- tests/test_workflow_offer_service.py"
+  ],
+  "mode": "proposal_first",
+  "workspace_root": "C:\\KI\\Janus-Projekt\\backend",
+  "live_execution_allowed": false,
+  "codex_review_required": true,
+  "changed_files": [
+    "backend/services/workflow/routine_runner.py",
+    "backend/services/orchestrator/intent_engine.py",
+    "backend/services/chat_orchestrator.py",
+    "backend/tests/test_routine_runner.py",
+    "backend/tests/test_workflow_offer_service.py"
+  ],
+  "changed_outside_allowlist": [],
+  "operator_message": "Cursor worker finished the bounded slice and returned artifacts for Codex review."
+}

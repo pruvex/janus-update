@@ -1,0 +1,30 @@
+﻿{
+  "id": "gen-direct-or-execution-current-shape-fixture-001",
+  "object": "chat.completion",
+  "created": 1782264047,
+  "model": "deepseek/deepseek-v4-flash-20260423",
+  "provider": "Morph",
+  "choices": [
+    {
+      "index": 0,
+      "finish_reason": "stop",
+      "message": {
+        "role": "assistant",
+        "content": "{\n  \"status\": \"PASS\",\n  \"target_task\": \"BACKLOG-108\",\n  \"patch_text\": \"--- a/backend/services/contact_manager.py\\n+++ b/backend/services/contact_manager.py\\n@@ -X,XX +X,XX @@ def stage_contact_update_from_memory(\\n     else:\\n         return {\\n             \\\"status\\\": \\\"proposed\\\",\\n             \\\"reason\\\": \\\"requires_review\\\",\\n             \\\"proposals_staged\\\": 1,\\n             \\\"proposal_payload\\\": proposal_payload,\\n             \\\"target_contact_id\\\": target_contact.id,\\n         }\\n-\\n-    proposal_payload[\\\"memory_sync_status\\\"] = \\\"ready\\\"\\n-    proposal_payload[\\\"proposal_metadata\\\"] = {\\n-        \\\"memory_id\\\": getattr(memory, \\\"id\\\", None),\\n-        \\\"memory_category\\\": metadata.get(\\\"category\\\"),\\n-        \\\"memory_fact\\\": metadata.get(\\\"fact\\\"),\\n-        \\\"sensitive\\\": bool(metadata.get(\\\"sensitive\\\")),\\n-        \\\"source_context\\\": _MEMORY_PROPOSAL_SOURCE,\\n-    }\",\n  \"changed_files\": [\"backend/services/contact_manager.py\"],\n  \"risk_list\": [\"Removes dead code that was unreachable after the return in the else branch; no functional change.\"],\n  \"suggested_validation_steps\": [\"python -m pytest backend/tests/test_contact_manager.py -q\", \"python -m pytest backend/tests/test_memory_tools.py -q\"],\n  \"manual_validation_note\": \"Codex must manually validate this patch locally before task completion.\",\n  \"codex_acceptance_rule\": \"Codex must review and apply or reject locally.\",\n  \"notes\": \"Current-shape fixture derived from the accepted DIRECT-OR-DEEPSEEK-EXECUTION-POST-WRITE-008 response for bounded local validation only.\"\n}"
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 3478,
+    "completion_tokens": 541,
+    "total_tokens": 4019,
+    "cost": 0.00063384,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  }
+}
+

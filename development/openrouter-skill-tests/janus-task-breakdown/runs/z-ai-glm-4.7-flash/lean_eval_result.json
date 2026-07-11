@@ -1,0 +1,12 @@
+{
+  "model": "z-ai/glm-4.7-flash",
+  "returncode": 0,
+  "finish_reason": "length",
+  "actual_or_cost": 0.0007787,
+  "validation_issues": [
+    "parse_failed: response content is not a JSON object"
+  ],
+  "status": "FAIL",
+  "validator_returncode": null,
+  "response_path": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-task-breakdown\\runs\\z-ai-glm-4.7-flash\\response_body.json"
+}

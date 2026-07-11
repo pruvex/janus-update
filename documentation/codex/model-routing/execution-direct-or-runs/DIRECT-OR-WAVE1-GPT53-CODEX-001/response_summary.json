@@ -1,0 +1,16 @@
+﻿{
+    "capture_mode":  "live_http",
+    "http_status":  400,
+    "api_shape":  "unknown",
+    "response_object":  null,
+    "response_status":  null,
+    "generation_id":  null,
+    "model":  null,
+    "finish_reason":  null,
+    "usage":  null,
+    "actual_or_cost":  null,
+    "output_item_count":  0,
+    "output_item_types":  {
+
+                          }
+}

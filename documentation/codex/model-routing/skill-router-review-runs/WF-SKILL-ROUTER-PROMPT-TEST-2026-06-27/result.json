@@ -1,0 +1,31 @@
+{
+  "summary_header": "SKILL ROUTER GATE",
+  "workflow_id": "WF-SKILL-ROUTER-PROMPT-TEST-2026-06-27",
+  "skill": "janus-skill-router",
+  "task_label": "Skill router prompt gate",
+  "selected_path": "operator_choice_pending",
+  "normal_target_model": "5.4 medium",
+  "choice_1": "Codex",
+  "choice_2": "OR",
+  "selected_or_model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "estimated_or_cost": 0.00018,
+  "cost_estimate_confidence_percent": 70.0,
+  "operator_prompt_lines": [
+    "1 = Codex",
+    "2 = OR",
+    "OR ist hier die externe Option, um Codex-Guthaben zu sparen.",
+    "Live-Evidenz: bounded router review lane in fixture-validation mode",
+    "Einordnung: routing recommendation only; Codex keeps final process authority",
+    "Fest empfohlenes OR-Modell: qwen/qwen3-coder-30b-a3b-instruct",
+    "Pre-Call-Kostenbasis: Skill-router bounded lane for Skill router prompt gate",
+    "Voraussichtliche OR-Kosten 0.000180000, Evidenzgenauigkeit 70%"
+  ],
+  "boundaries": [
+    "No delegated implementation",
+    "No delegated Git or release authority",
+    "No delegated final process authority",
+    "Codex remains final router and gate owner"
+  ],
+  "final_outcome": "AWAITING_OPERATOR_CHOICE",
+  "validation_result": "PASS"
+}

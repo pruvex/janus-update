@@ -1,0 +1,16 @@
+{
+  "summary_header": "EXECUTION WRITE APPLY CANDIDATE RESULT",
+  "workflow_id": "WF-EXEC-WRITE-LIVE-LOCAL-2026-06-28-001",
+  "skill": "janus-executioner",
+  "task_label": "Execution write-apply local validation",
+  "selected_path": "delegated_execution_write_apply_candidate",
+  "normal_target_model": "5.4 medium",
+  "delegated_model_label": "bounded workspace-write execution candidate / accepted proposal-first evidence path",
+  "validation_result": "PASS",
+  "final_outcome": "EXECUTION_WRITE_APPLY_CANDIDATE_READY_FOR_CODEX_ACCEPT_REJECT",
+  "accepted_source_run_dir": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-source-bridges\\WF-EXEC-WRITE-BRIDGE-2026-06-28-001",
+  "source_validation_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-runs\\WF-EXEC-WRITE-LIVE-LOCAL-2026-06-28-001\\source_validation.json",
+  "operator_message": "Delegated execution write-apply candidate is backed by an accepted proposal-first execution package with required validation artifacts present. Codex still owns the explicit accept-or-reject decision, any future live write approval, and final task acceptance.",
+  "codex_owned_outcome_status": "CODEX_REVIEW_REQUIRED",
+  "codex_owned_outcome_final": false
+}

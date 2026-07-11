@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "artifact_success": true,
+  "mode": "deterministic_local_patch_apply",
+  "patch_target_files": [
+    "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/sandbox/test_gate_prompt_apply_shadow.py"
+  ],
+  "expected_files": [
+    "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/sandbox/test_gate_prompt_apply_shadow.py"
+  ]
+}

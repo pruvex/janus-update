@@ -1,0 +1,39 @@
+{
+  "task_id": "TASK-SPEC29.2-DBG-GEMINI-FORCE-OVERRIDE",
+  "lane_id": "debug_repro_investigation",
+  "bound_skill_context": "janus-debug",
+  "task_label": "Debug late Gemini routing force override",
+  "worker_package_json": "development/openrouter-skill-tests/janus-debug/workflow_spec29_2_gemini_force_override_2026-07-09/worker_package.json",
+  "allowlist_file": "development/openrouter-skill-tests/janus-debug/workflow_spec29_2_gemini_force_override_2026-07-09/allowlist.txt",
+  "failure_code": "SPEC29_2_GEMINI_LATE_ROUTING_FORCE_OVERRIDE",
+  "latest_user_evidence": {
+    "timestamp_local": "2026-07-09 19:46 +02:00",
+    "prompt": "Welche Termine habe ich heute und wie weit ist es von Berlin nach Hamburg?",
+    "actual": "The mixed calendar+routing patch is active, but Gemini still ends with the loop-breaker warning because a later dispatcher seam re-forces system.routing.",
+    "expected": "The mixed turn should keep the combined tool path and reach second-hit passive promotion."
+  },
+  "bounded_root_cause": {
+    "log_summary": [
+      "19:46:50 log shows `Mixed calendar+routing turn detected. Preserving combined tool set`",
+      "the same request then logs `DIAMOND-CORE-ROUTING-FORCE: Routing intent detected. Forcing tool_choice for system.routing`",
+      "Gemini emits repeated system_routing function calls and hits the hard loop breaker before calendar.list_events ever runs"
+    ],
+    "source_code_summary": [
+      "execution_dispatcher has an early mixed-turn routing preservation block",
+      "later in the same function a generic DIAMOND-CORE-ROUTING-FORCE override still sets force_tool_name whenever routing intent is present",
+      "the remaining fix should only gate or suppress that late override for mixed calendar-read plus routing turns"
+    ]
+  },
+  "acceptance_criteria": [
+    "Fix only the late routing-force override seam on the allowlisted files.",
+    "Mixed calendar-plus-routing turns must not end with force_tool_name system.routing.",
+    "Pure routing-only turns must still force system.routing.",
+    "Run the focused pytest command before returning."
+  ],
+  "local_validation_command": "python -m pytest backend/tests/test_calendar_routing_fix.py -q",
+  "redaction_ready": true,
+  "estimated_codex_saved_tokens": 7000,
+  "estimated_delegation_overhead_tokens": 2500,
+  "recommended_backend": "cursor",
+  "recommended_model": "composer-2.5"
+}

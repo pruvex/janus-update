@@ -1,0 +1,35 @@
+{
+  "workflow_id": "WF-SPEC-GENERATOR-PACKAGE-001",
+  "bound_skill_context": "janus-spec-generator",
+  "source_type": "LATEST_DECISION_SUMMARY",
+  "source_path": "documentation/codex/model-routing/codex_first_real_or_pilot_decision_summary_2026-06-16.md",
+  "target_spec_path": "documentation/SPEC/first_real_or_pilot_for_bounded_janus_delegation.md",
+  "feature_name": "First Real OR Pilot for Bounded Janus Delegation",
+  "locked_summary_lines": [
+    "Primary Goal: Prove one real bounded OR-assisted write task under Codex-owned review and acceptance.",
+    "User Problem: Suitable low-risk Janus work should be delegable to a cheaper external worker path without losing local validation, diff review, or final acceptance control.",
+    "Primary Target Surface: janus-quickchange bounded delegated write candidate",
+    "Success Behavior: One tiny allowlisted quickchange returns a reviewable diff, changed-files list, validation evidence, and an explicit Codex-owned accept-or-reject handoff with no authority drift.",
+    "Failure Behavior: Any missing artifact, allowlist escape, touched-file-cap escape, delete or rename or move activity, or failed validation discards the delegated result and falls back to local Codex handling without claiming task completion.",
+    "Out of Scope: Broad janus-executioner code delegation, test-pipeline write retries, Auto Router, production routing, canonical routing-table updates, Git or release actions, and any multi-task or architecture-changing write attempt."
+  ],
+  "required_headings": [
+    "# JANUS FEATURE SPEC - DIAMANTSTANDARD v4.4.3",
+    "## SPEC REVIEW EXECUTION ROUTING",
+    "## FEATURE IDENTITY",
+    "## USER VALUE",
+    "## TARGET SURFACE",
+    "## USER ACTION SURFACE",
+    "## SYSTEM BEHAVIOR",
+    "## DATA / PERSISTENCE",
+    "## CONSTRAINTS",
+    "## SECURITY / PRIVACY",
+    "## EDGE CASES",
+    "## DEFINITION OF DONE",
+    "## TEST STRATEGY",
+    "## OUT OF SCOPE",
+    "## INTERNAL COMPLEXITY BREAKDOWN"
+  ],
+  "expected_output": "One bounded feature spec draft from the locked decision summary, with exact required headings and routing block, but no authoritative repo write claim.",
+  "redaction_ready": true
+}

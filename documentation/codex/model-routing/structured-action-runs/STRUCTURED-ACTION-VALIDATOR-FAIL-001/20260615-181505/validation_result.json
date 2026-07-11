@@ -1,0 +1,5 @@
+{
+  "status": "FAIL",
+  "error": "Validator execution failed for validate_runner_v1. exit_code=1",
+  "schema_path": "documentation/codex/model-routing/schemas/codex_delegated_action_request.schema.json"
+}

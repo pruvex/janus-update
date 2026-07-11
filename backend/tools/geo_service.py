@@ -2,7 +2,7 @@ import asyncio
 import logging
 import re
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urljoin
 from urllib.parse import urlparse
 from urllib.parse import urlencode
@@ -474,6 +474,47 @@ def _fallback_businesses_from_osm(
             exc,
         )
         return []
+
+
+def _extract_country_info_records(payload: object) -> Tuple[Optional[List[Dict[str, Any]]], Optional[str], Optional[str]]:
+    """Normalize Rest Countries list and deprecation-envelope payloads."""
+    if isinstance(payload, list):
+        if not payload:
+            return None, "NOT_FOUND", "Leere API-Antwort."
+        records = [item for item in payload if isinstance(item, dict)]
+        if not records:
+            return None, "PARSE_ERROR", "Unerwartetes API-Format."
+        return records, None, None
+
+    if not isinstance(payload, dict):
+        return None, "PARSE_ERROR", "Unerwartetes API-Format."
+
+    if payload.get("success") is False:
+        errors = payload.get("errors")
+        messages: List[str] = []
+        if isinstance(errors, list):
+            for item in errors:
+                if isinstance(item, dict):
+                    message = item.get("message")
+                    if message:
+                        messages.append(str(message))
+        detail = (
+            " | ".join(messages)
+            if messages
+            else "Der Länderdaten-Anbieter hat die API-Version eingestellt."
+        )
+        return None, "API_ERROR", detail
+
+    data = payload.get("data")
+    if isinstance(data, list):
+        if not data:
+            return None, "NOT_FOUND", "Leere API-Antwort."
+        records = [item for item in data if isinstance(item, dict)]
+        if not records:
+            return None, "PARSE_ERROR", "Unerwartetes API-Format."
+        return records, None, None
+
+    return None, "PARSE_ERROR", "Unerwartetes API-Format."
 
 
 def _country_error(
@@ -2389,15 +2430,30 @@ def get_country_info_tool(country: str, language: str = "de", **kwargs) -> ToolR
             )
 
         payload = response.json()
-        if not isinstance(payload, list) or not payload:
+        records, error_code, error_detail = _extract_country_info_records(payload)
+        if records is None:
+            if error_code == "NOT_FOUND":
+                return _country_error(
+                    started_at,
+                    "NOT_FOUND",
+                    f"Keine Daten für das Land '{normalized_country}' gefunden.",
+                    error_detail,
+                )
+            if error_code == "API_ERROR":
+                return _country_error(
+                    started_at,
+                    "API_ERROR",
+                    "Die Länder-Datenbank ist derzeit nicht verfügbar.",
+                    error_detail,
+                )
             return _country_error(
                 started_at,
                 "PARSE_ERROR",
                 "Die Länder-Daten konnten nicht gelesen werden.",
-                "Unerwartetes API-Format.",
+                error_detail or "Unerwartetes API-Format.",
             )
 
-        country_data = payload[0] if isinstance(payload[0], dict) else {}
+        country_data = records[0]
 
         translations = country_data.get("translations") if isinstance(country_data.get("translations"), dict) else {}
         default_name = country_data.get("name", {}).get("common", normalized_country)

@@ -1,0 +1,27 @@
+{
+  "workflow_id": "WF-TEST-PIPELINE-STRUCTURED-BRIDGE-2026-06-27B-VALIDATOR",
+  "skill_id": "janus-test-pipeline",
+  "action_type": "run_validator",
+  "executor_status": "PASS",
+  "schema_validation": "PASS",
+  "mapping_resolution": "PASS",
+  "allowlist_status": "PASS",
+  "output_artifact_status": "PASS",
+  "codex_review_required": true,
+  "detail": "Validator executed through deterministic local mapping.",
+  "action_summary": {
+    "validator_id": "validate_runner_v1",
+    "command": [
+      "C:\\nvm4w\\nodejs\\node.exe",
+      "tests/e2e/generator/validate-runner.mjs",
+      "--plan",
+      "documentation/codex/model-routing/structured-action-runs/WF-TEST-PIPELINE-STRUCTURED-BRIDGE-2026-06-27B/20260627-195933/generated/TEST-RUN-2026-06-27-901_plan.json",
+      "--runner",
+      "documentation/codex/model-routing/structured-action-runs/WF-TEST-PIPELINE-STRUCTURED-BRIDGE-2026-06-27B/20260627-195933/generated/TEST-RUN-2026-06-27-901_generated.spec.js"
+    ],
+    "stdout_path": "documentation/codex/model-routing/structured-action-runs/WF-TEST-PIPELINE-STRUCTURED-BRIDGE-2026-06-27B-VALIDATOR/20260627-195933/stdout.log",
+    "stderr_path": "documentation/codex/model-routing/structured-action-runs/WF-TEST-PIPELINE-STRUCTURED-BRIDGE-2026-06-27B-VALIDATOR/20260627-195933/stderr.log",
+    "exit_code_path": "documentation/codex/model-routing/structured-action-runs/WF-TEST-PIPELINE-STRUCTURED-BRIDGE-2026-06-27B-VALIDATOR/20260627-195933/exit_code.txt"
+  },
+  "run_directory": "documentation/codex/model-routing/structured-action-runs/WF-TEST-PIPELINE-STRUCTURED-BRIDGE-2026-06-27B-VALIDATOR/20260627-195933"
+}

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-06-09-002",
+  "testCaseId": "TC-003-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "`was mag oli?`",
+  "response": "Hallo Rolf Adam, dazu habe ich hier keine Information zu Oli.💡 Passende nächste Schritte:• Wenn du willst, kann ich dir sagen, was ich zu einer bestimmten Person schon weiß.• Du kannst mir auch direkt Infos zu Oli geben, dann halte ich sie knapp und sauber fest.18:32",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-06-09T16:32:50.473Z"
+}

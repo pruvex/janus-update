@@ -1,0 +1,102 @@
+{
+  "backend": "cursor",
+  "lane_id": "execution_patch_candidate",
+  "workflow_id": "WF-SPEC29-1-EXEC-GATE-2026-07-09-003",
+  "selected_model": "composer-2.5",
+  "cursor_pool": "auto_composer",
+  "estimated_cost_usd_static": 0.0104,
+  "session_id": null,
+  "validation_result": "BLOCKED",
+  "selected_path": "cursor_worker_blocked",
+  "final_outcome": "CURSOR_AGENT_TIMEOUT",
+  "package_validation": {
+    "validation_result": "PASS",
+    "contract_status": "TASK_PACKAGE_VALID_VIA_WORKER_REFERENCE",
+    "issues": [],
+    "task_label": "Implement hidden routine candidate lifecycle and fail-closed guards",
+    "worker_profile": "cursor-agent",
+    "allowed_edit_paths": [
+      "backend/data/models.py",
+      "backend/data/database.py",
+      "backend/services/workflow/workflow_detector.py",
+      "backend/services/workflow/step_trace_extractor.py",
+      "backend/services/workflow/routine_store.py",
+      "backend/tests/test_workflow_detector.py",
+      "backend/tests/test_routine_store.py"
+    ],
+    "required_result_artifacts": [
+      "RESULT.json",
+      "RESULT.md",
+      "DIFF.patch",
+      "FILES_CHANGED.txt",
+      "CHECKS.log",
+      "COST.json"
+    ],
+    "source_package_path": "development\\openrouter-skill-tests\\janus-executioner\\spec29_1_candidate_lifecycle_2026-07-09\\input_package.json",
+    "worker_package_path": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-executioner\\spec29_1_candidate_lifecycle_2026-07-09\\worker_package.json"
+  },
+  "allowlist_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "allowlist": [
+      "backend/data/models.py",
+      "backend/data/database.py",
+      "backend/services/workflow/workflow_detector.py",
+      "backend/services/workflow/step_trace_extractor.py",
+      "backend/services/workflow/routine_store.py",
+      "backend/tests/test_workflow_detector.py",
+      "backend/tests/test_routine_store.py"
+    ]
+  },
+  "allowlist_consistency_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "package_allowed_edit_paths": [
+      "backend/data/models.py",
+      "backend/data/database.py",
+      "backend/services/workflow/workflow_detector.py",
+      "backend/services/workflow/step_trace_extractor.py",
+      "backend/services/workflow/routine_store.py",
+      "backend/tests/test_workflow_detector.py",
+      "backend/tests/test_routine_store.py"
+    ],
+    "allowlist": [
+      "backend/data/models.py",
+      "backend/data/database.py",
+      "backend/services/workflow/workflow_detector.py",
+      "backend/services/workflow/step_trace_extractor.py",
+      "backend/services/workflow/routine_store.py",
+      "backend/tests/test_workflow_detector.py",
+      "backend/tests/test_routine_store.py"
+    ],
+    "declared_allowlist_file": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-executioner\\spec29_1_candidate_lifecycle_2026-07-09\\allowlist.txt"
+  },
+  "codex_review_required": true,
+  "operator_message": "Cursor agent exceeded the bounded live timeout (180s) before producing a final result.",
+  "accepted_source_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "accepted_source_run_dir": null,
+    "recognized_artifacts": []
+  },
+  "planned_command": [
+    "C:\\Users\\pruve\\AppData\\Local\\cursor-agent\\agent.CMD",
+    "-p",
+    "--workspace",
+    "C:\\KI\\Janus-Projekt\\backend",
+    "--model",
+    "composer-2.5",
+    "--output-format",
+    "json",
+    "--force",
+    "--trust",
+    "--approve-mcps",
+    "Execute this bounded Janus delegated worker task now. Treat the full prompt below as instructions, not as text to analyze. Do not ask clarifying questions unless the task is impossible with the provided files and rules.\n\nStable prefix:\n- lane: execution_patch_candidate\n- worker_contract: janus-delegated-worker\n- output_schema: status, changed_files, command_results, summary, blockers\n- hard_rules: stay bounded, do not commit, do not leave the allowlist\n\nVariable suffix:\nImplement TASK-SPEC29.1 only. Add the hidden candidate lifecycle for silent routine learning in v1. After one qualifying successful multi-step workflow, Janus should create exactly one internal candidate rather than a visible saved routine. Risky, sensitive, or strongly context-dependent workflows must fail closed and create no candidate. Unconfirmed candidates must expire after 30 days and no longer count as active learning candidates. Keep the slice strictly backend/persistence-only. Do not add automatic promotion, passive chat hints, settings UI, routines API, OAuth, transport changes, commits, dependencies, or broader architecture changes. Return concise JSON-compatible output with status, root_cause, changed_files, command_results, summary, and blockers.\nTask label: Implement hidden routine candidate lifecycle and fail-closed guards\nUse Cursor for one bounded execution patch. Inspect only allowlisted persistence/workflow files, implement the smallest safe hidden candidate lifecycle with 30-day expiry and fail-closed guards, run listed checks, and return concise JSON-compatible output.\nAcceptance criteria:\n- Only allowlisted backend persistence/workflow files and focused tests may change.\n- A first qualifying successful multi-step workflow creates exactly one internal candidate instead of a visible saved routine.\n- Risky, sensitive, or strongly context-dependent workflows do not create candidates in v1.\n- Unconfirmed candidates expire after 30 days and are no longer treated as active learning candidates.\n- Do not add automatic promotion, passive chat transparency, settings UI, routines API, OAuth, transport changes, migrations, Git, or broad architecture changes.\nAllowed edit paths:\n- backend/data/models.py\n- backend/data/database.py\n- backend/services/workflow/workflow_detector.py\n- backend/services/workflow/step_trace_extractor.py\n- backend/services/workflow/routine_store.py\n- backend/tests/test_workflow_detector.py\n- backend/tests/test_routine_store.py\nReturn status, changed_files, command_results, summary, and blockers as concise JSON-compatible output.\n\nWorkspace root: C:\\KI\\Janus-Projekt\\backend\nWorkspace-relative edit paths:\n- data/models.py\n- data/database.py\n- services/workflow/workflow_detector.py\n- services/workflow/step_trace_extractor.py\n- services/workflow/routine_store.py\n- tests/test_workflow_detector.py\n- tests/test_routine_store.py"
+  ],
+  "live_execution_allowed": true,
+  "mode": "proposal_first",
+  "workspace_root": "C:\\KI\\Janus-Projekt\\backend",
+  "timeout_seconds": 180,
+  "changed_files": [],
+  "changed_outside_allowlist": []
+}

@@ -1,0 +1,20 @@
+{
+  "task_id": "TASK-DBG-001",
+  "lane_id": "debug_hypothesis_review",
+  "workflow_id": "WF-DBG-HYPOTHESIS-EXAMPLE-001",
+  "bound_skill_context": "janus-debug",
+  "expected_behavior": "Runner artifact path in generated plan should match executed Playwright spec path.",
+  "actual_behavior": "Preflight reports READY, but executed runner path differs from generated plan artifact name.",
+  "evidence_snippets": [
+    "Failure code: RUNNER_ARTIFACT_MISMATCH",
+    "Generated plan references documentation/test-runs/TEST-RUN-042_generated.spec.js",
+    "Executed runner was tests/e2e/generated/TEST-RUN-042.live.spec.js",
+    "No secret values included in this package."
+  ],
+  "iteration_number": 1,
+  "explicit_question": "Rank the top 3 hypotheses and name the single best next local verifier for Codex.",
+  "redaction_ready": true,
+  "failure_code": "RUNNER_ARTIFACT_MISMATCH",
+  "recommended_backend": "openrouter",
+  "recommended_model": "qwen/qwen3-coder-30b-a3b-instruct"
+}

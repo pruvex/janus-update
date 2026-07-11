@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "target_task": "BACKLOG-108",
+  "patch_text": "--- a/backend/services/contact_manager.py\n+++ b/backend/services/contact_manager.py\n@@ -X,XX +X,XX @@ def stage_contact_update_from_memory(\n     else:\n         return {\n             \"status\": \"proposed\",\n             \"reason\": \"requires_review\",\n             \"proposals_staged\": 1,\n             \"proposal_payload\": proposal_payload,\n             \"target_contact_id\": target_contact.id,\n         }\n-\n-    proposal_payload[\"memory_sync_status\"] = \"ready\"\n-    proposal_payload[\"proposal_metadata\"] = {\n-        \"memory_id\": getattr(memory, \"id\", None),\n-        \"memory_category\": metadata.get(\"category\"),\n-        \"memory_fact\": metadata.get(\"fact\"),\n-        \"sensitive\": bool(metadata.get(\"sensitive\")),\n-        \"source_context\": _MEMORY_PROPOSAL_SOURCE,\n-    }",
+  "changed_files": [
+    "backend/services/contact_manager.py"
+  ],
+  "risk_list": [
+    "Removes dead code that was unreachable after the return in the else branch; no functional change."
+  ],
+  "suggested_validation_steps": [
+    "python -m pytest backend/tests/test_contact_manager.py -q",
+    "python -m pytest backend/tests/test_memory_tools.py -q"
+  ],
+  "manual_validation_note": "Codex must manually validate this patch locally before task completion.",
+  "codex_acceptance_rule": "Codex must review and apply or reject locally.",
+  "notes": "Current-shape fixture derived from the accepted DIRECT-OR-DEEPSEEK-EXECUTION-POST-WRITE-008 response for bounded local validation only."
+}

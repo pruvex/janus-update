@@ -1,0 +1,19 @@
+{
+  "schema_version": "codex_delegated_action_request.v1",
+  "workflow_id": "BOUNDED-QUICKCHANGE-SKILL-DELEGATED-001-STRUCTURED",
+  "skill_id": "janus-quickchange",
+  "action_type": "propose_patch",
+  "summary": "Bridge accepted quickchange patch proposal into structured review flow for: Quickchange installed skill delegated validation",
+  "requires_codex_review": true,
+  "non_goals": [
+    "No auto apply",
+    "No repo authority update"
+  ],
+  "action_payload": {
+    "patch_format": "unified_diff",
+    "allowed_files": [
+      "frontend/index.html"
+    ],
+    "patch_text": "diff --git a/frontend/index.html b/frontend/index.html\nindex 661c104ee..e95112af7 100644\n--- a/frontend/index.html\n+++ b/frontend/index.html\n@@ -430,7 +430,7 @@\n                       <textarea\n                         id=\"user-input-A\"\n                         rows=\"1\"\n-                        placeholder=\"Nachricht an Janus senden...\"\n+                        placeholder=\"Nachricht an Janus schreiben...\"\n                         autocomplete=\"off\"\n                         spellcheck=\"true\"\n                       ></textarea>\n@@ -526,7 +526,7 @@\n                       <textarea\n                         id=\"user-input-B\"\n                         rows=\"1\"\n-                        placeholder=\"Nachricht an Janus senden...\"\n+                        placeholder=\"Nachricht an Janus schreiben...\"\n                         autocomplete=\"off\"\n                         spellcheck=\"true\"\n                       ></textarea>\n"
+  }
+}

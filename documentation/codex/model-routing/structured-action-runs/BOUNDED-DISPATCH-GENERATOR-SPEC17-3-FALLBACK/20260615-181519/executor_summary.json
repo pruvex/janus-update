@@ -1,0 +1,13 @@
+{
+  "workflow_id": "BOUNDED-DISPATCH-GENERATOR-SPEC17-3-FALLBACK",
+  "skill_id": "janus-test-pipeline",
+  "action_type": "run_generator",
+  "executor_status": "FAILED",
+  "schema_validation": "PASS",
+  "mapping_resolution": "NOT_RUN",
+  "allowlist_status": "NOT_RUN",
+  "output_artifact_status": "NOT_RUN",
+  "codex_review_required": true,
+  "detail": "Unsupported generator_id in TASK-SPEC17.2 executor slice: generate_live_runner_v1",
+  "run_directory": "documentation/codex/model-routing/structured-action-runs/BOUNDED-DISPATCH-GENERATOR-SPEC17-3-FALLBACK/20260615-181519"
+}

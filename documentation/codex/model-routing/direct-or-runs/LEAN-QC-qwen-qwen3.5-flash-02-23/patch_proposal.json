@@ -1,0 +1,4 @@
+{
+  "diff": "--- a/frontend/index.html\n+++ b/frontend/index.html\n@@ -1,1 +1,1 @@\n-    <input type=\"text\" placeholder=\"Nachricht an Janus senden...\" />\n+    <input type=\"text\" placeholder=\"Nachricht an Janus schreiben...\" />",
+  "summary": "Changed file: frontend/index.html\nExact text changed: 'Nachricht an Janus senden...' -> 'Nachricht an Janus schreiben...'\nConfirmation: No other file or wording was touched."
+}

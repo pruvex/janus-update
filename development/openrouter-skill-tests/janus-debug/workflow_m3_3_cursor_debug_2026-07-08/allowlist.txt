@@ -1,0 +1,2 @@
+development/openrouter-skill-tests/janus-debug/workflow_m3_3_cursor_debug_2026-07-08/sandbox/workflow_m3_3_shadow.py
+development/openrouter-skill-tests/janus-debug/workflow_m3_3_cursor_debug_2026-07-08/sandbox/test_workflow_m3_3_shadow.py

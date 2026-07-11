@@ -1,0 +1,110 @@
+{
+  "input_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DEV-WORKHORSE-EXECUTION-GATE-003\\input_package.json",
+  "validation_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DEV-WORKHORSE-EXECUTION-GATE-003\\validation_summary.json",
+  "operator_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DEV-WORKHORSE-EXECUTION-GATE-003\\operator_summary.json",
+  "delegated_result_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DEV-WORKHORSE-EXECUTION-GATE-003\\delegated_result.md",
+  "summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DEV-WORKHORSE-EXECUTION-GATE-003\\summary.json",
+  "diff_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DEV-WORKHORSE-EXECUTION-GATE-003\\git_diff.patch",
+  "changed_files_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DEV-WORKHORSE-EXECUTION-GATE-003\\changed_files.txt",
+  "stdout_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DEV-WORKHORSE-EXECUTION-GATE-003\\stdout.log",
+  "stderr_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DEV-WORKHORSE-EXECUTION-GATE-003\\stderr.log",
+  "exit_code_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DEV-WORKHORSE-EXECUTION-GATE-003\\exit_code.txt",
+  "allowed_files": [
+    "backend/services/chat_orchestrator.py",
+    "backend/services/contact_manager.py",
+    "backend/services/memory_extractor.py",
+    "backend/tools/memory_tools.py",
+    "backend/data/crud.py",
+    "backend/tests/test_contact_manager.py",
+    "backend/tests/test_memory_tools.py",
+    "backend/tests/test_memory_write_update_conflict_handling.py"
+  ],
+  "max_touched_files": 8,
+  "changed_files": [],
+  "issues": [
+    "missing delegated_result.md",
+    "missing summary.json",
+    "missing git_diff.patch",
+    "missing changed_files.txt",
+    "accepted_for_codex_patch_review is not true",
+    "source summary status is not PASS",
+    "changed_files.txt is empty",
+    "git_diff.patch is empty",
+    "source final_outcome is not EXECUTION_PATCH_CANDIDATE_READY_FOR_CODEX_REVIEW"
+  ],
+  "input_payload": {
+    "workflow_id": "BACKLOG-108-EXECUTION-PATCH-CANDIDATE-001",
+    "bound_skill_context": "janus-executioner",
+    "target_task": "BACKLOG-108",
+    "spec_path": "documentation/tasks/backlog_BACKLOG-108_bestaetigtes_kontaktwissen_aus_chat_landung_im_bestehenden_adressbuchkontakt.md",
+    "precheck_status": "PRE-CHECK PASSED",
+    "allowed_files": [
+      "backend/services/chat_orchestrator.py",
+      "backend/services/contact_manager.py",
+      "backend/services/memory_extractor.py",
+      "backend/tools/memory_tools.py",
+      "backend/data/crud.py",
+      "backend/tests/test_contact_manager.py",
+      "backend/tests/test_memory_tools.py",
+      "backend/tests/test_memory_write_update_conflict_handling.py"
+    ],
+    "max_touched_files": 8,
+    "mini_test_plan": [
+      "python -m pytest backend/tests/test_contact_manager.py -q",
+      "python -m pytest backend/tests/test_memory_tools.py -q",
+      "python -m pytest backend/tests/test_memory_write_update_conflict_handling.py -q",
+      "python -m py_compile backend/services/chat_orchestrator.py backend/services/contact_manager.py backend/services/memory_extractor.py backend/tools/memory_tools.py backend/data/crud.py backend/tests/test_contact_manager.py backend/tests/test_memory_tools.py backend/tests/test_memory_write_update_conflict_handling.py"
+    ],
+    "manual_validation_gate": "Codex must still verify that confirmed facts for an already matched existing contact reach the intended contact persistence or explicit proposal path, and that Janus does not claim a fact is firmly stored when it remains memory-only.",
+    "delegation_question": "Produce one bounded patch candidate that closes the confirmed existing-contact fact gap so clear confirmed contact facts reach the approved persistence or proposal path without aggressive silent mutation on ambiguous statements."
+  },
+  "validation_payload": {
+    "workflow_id": "DEV-WORKHORSE-EXECUTION-GATE-003",
+    "validation_result": "PASS",
+    "budget_profile": "execution_patch_candidate",
+    "issues": [],
+    "allowed_files": [
+      "backend/services/chat_orchestrator.py",
+      "backend/services/contact_manager.py",
+      "backend/services/memory_extractor.py",
+      "backend/tools/memory_tools.py",
+      "backend/data/crud.py",
+      "backend/tests/test_contact_manager.py",
+      "backend/tests/test_memory_tools.py",
+      "backend/tests/test_memory_write_update_conflict_handling.py"
+    ],
+    "changed_files": [
+      "backend/services/contact_manager.py",
+      "backend/tools/memory_tools.py"
+    ],
+    "max_touched_files": 8,
+    "finish_reason": "stop",
+    "actual_or_cost": 0.00047768,
+    "cost_cap": 0.05
+  },
+  "operator_payload": {
+    "summary_header": "DIRECT OR EXECUTION PATCH RESULT",
+    "workflow_id": "DEV-WORKHORSE-EXECUTION-GATE-003",
+    "task_label": "BACKLOG-108 execution patch candidate higher-budget retry",
+    "selected_path": "direct_or_execution_patch_candidate_then_codex_review",
+    "budget_profile": "execution_patch_candidate",
+    "normal_target_model": "5.4 medium",
+    "or_model": "deepseek/deepseek-v4-flash",
+    "estimated_or_cost": 0.00115,
+    "actual_or_cost": 0.00047768,
+    "cost_estimate_confidence_percent": 35.0,
+    "finish_reason": "stop",
+    "validation_result": "PASS",
+    "final_outcome": "DIRECT_OR_EXECUTION_PATCH_READY_FOR_CODEX_REVIEW",
+    "fallback_used": "NO",
+    "rework_required": "NO",
+    "response_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DEV-WORKHORSE-EXECUTION-GATE-003\\response_summary.json",
+    "patch_candidate_result_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DEV-WORKHORSE-EXECUTION-GATE-003\\patch_candidate_result.json",
+    "validation_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DEV-WORKHORSE-EXECUTION-GATE-003\\validation_summary.json",
+    "telemetry_jsonl_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\or_healthcheck_telemetry_direct_or_execution_patch_2026-06-23_DEV-WORKHORSE-EXECUTION-GATE-003.jsonl",
+    "healthcheck_status": "PASS",
+    "healthcheck_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DEV-WORKHORSE-EXECUTION-GATE-003\\healthcheck_summary.json",
+    "operator_message": "Direct OR produced a bounded execution patch candidate. Codex must review and decide whether to apply or reject locally."
+  },
+  "summary_payload": {}
+}

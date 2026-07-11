@@ -1,0 +1,22 @@
+{
+  "status": "PASS",
+  "source_run_dir": "documentation/codex/model-routing/execution-direct-or-runs/WF-BACKLOG-108-EXEC-OR-GATE-2026-06-28-001",
+  "output_dir": "documentation/codex/model-routing/execution-write-apply-source-bridges/WF-BACKLOG-108-EXEC-WRITE-BRIDGE-2026-06-28-001",
+  "changed_files": [
+    "backend/services/contact_manager.py"
+  ],
+  "source_snapshot_count": 1,
+  "source_snapshot_missing_files": [],
+  "artifacts": {
+    "input_package": "documentation/codex/model-routing/execution-write-apply-source-bridges/WF-BACKLOG-108-EXEC-WRITE-BRIDGE-2026-06-28-001/input_package.json",
+    "validation_summary": "documentation/codex/model-routing/execution-write-apply-source-bridges/WF-BACKLOG-108-EXEC-WRITE-BRIDGE-2026-06-28-001/validation_summary.json",
+    "operator_summary": "documentation/codex/model-routing/execution-write-apply-source-bridges/WF-BACKLOG-108-EXEC-WRITE-BRIDGE-2026-06-28-001/operator_summary.json",
+    "summary": "documentation/codex/model-routing/execution-write-apply-source-bridges/WF-BACKLOG-108-EXEC-WRITE-BRIDGE-2026-06-28-001/summary.json",
+    "delegated_result": "documentation/codex/model-routing/execution-write-apply-source-bridges/WF-BACKLOG-108-EXEC-WRITE-BRIDGE-2026-06-28-001/delegated_result.md",
+    "git_diff": "documentation/codex/model-routing/execution-write-apply-source-bridges/WF-BACKLOG-108-EXEC-WRITE-BRIDGE-2026-06-28-001/git_diff.patch",
+    "changed_files": "documentation/codex/model-routing/execution-write-apply-source-bridges/WF-BACKLOG-108-EXEC-WRITE-BRIDGE-2026-06-28-001/changed_files.txt",
+    "stdout": "documentation/codex/model-routing/execution-write-apply-source-bridges/WF-BACKLOG-108-EXEC-WRITE-BRIDGE-2026-06-28-001/stdout.log",
+    "stderr": "documentation/codex/model-routing/execution-write-apply-source-bridges/WF-BACKLOG-108-EXEC-WRITE-BRIDGE-2026-06-28-001/stderr.log",
+    "exit_code": "documentation/codex/model-routing/execution-write-apply-source-bridges/WF-BACKLOG-108-EXEC-WRITE-BRIDGE-2026-06-28-001/exit_code.txt"
+  }
+}

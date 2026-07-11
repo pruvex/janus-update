@@ -1,0 +1,22 @@
+{
+  "summary_header": "DEBUG HYPOTHESIS REVIEW GATE",
+  "workflow_id": "WF-DEBUG-LEAN-CHECK-2026-06-25",
+  "skill": "janus-debug",
+  "task_label": "Lean debug gate check",
+  "selected_path": "codex_only_pre_gate",
+  "normal_target_model": "5.4 medium",
+  "delegated_model_label": "qwen/qwen3-coder-30b-a3b-instruct",
+  "eligibility_result": "OR_NOT_ELIGIBLE",
+  "eligibility_reason_code": "DEBUG_PACKAGE_REQUIRED",
+  "evidence_status": "BOUNDED_LIVE_EVIDENCE_CONFIRMED",
+  "budget_profile": "N_A",
+  "per_call_cap_usd": null,
+  "session_cap_usd": null,
+  "validation_result": "PASS",
+  "final_outcome": "LOCAL_CODEX_PATH_SELECTED",
+  "operator_result_lines": [
+    "Ergebnis: OR_NOT_ELIGIBLE",
+    "Route: janus-debug bleibt Codex-only vor dem sichtbaren OR-Gate"
+  ],
+  "operator_message": "A single bounded and redaction-ready debug package is required before showing the productive janus-debug OR gate."
+}

@@ -29,6 +29,75 @@ Read the source only if exact legacy wording is needed. Otherwise follow this co
 - Do not start implementation.
 - Do not send an idea forward to `janus-spec-generator` while relevant product questions are still open.
 
+## Tri-Modal Rollout Note
+
+Global delegation vocabulary across Janus is now:
+
+- `1 = Codex`
+- `2 = OpenRouter`
+- `3 = Cursor Composer`
+- `4 = Cursor API`
+
+This skill's bounded feature-design consolidation lane is now wired through the shared manifest-backed `documentation/codex/model-routing/scripts/janus_delegate.py` entry. OpenRouter remains the recommended backend for this assist-only review slice; Cursor is visible as option `2` but is not the recommended backend here.
+
+## Bounded Delegation Gate
+
+For a narrowly bounded feature-design consolidation slice, this skill now has the shared cost-aware operator gate:
+
+- `1 = Codex`
+- `2 = OpenRouter`
+- `4 = Cursor API`
+
+Use the shared delegate entry first:
+
+```powershell
+python documentation/codex/model-routing/scripts/janus_delegate.py --lane feature_design_review --task-id TASK-FD-001 --workflow-id <WORKFLOW-ID> --operator-choice prompt --input-package-json development/openrouter-skill-tests/janus-feature-design/feature_design_input_package.json --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000
+```
+
+Reference no-live-ready operator path for this lane:
+
+- `C:\KI\Janus-Projekt\documentation\codex\model-routing\FEATURE_DESIGN_REVIEW_NO_LIVE_PATH_2026-07-07.md`
+
+For a narrowly bounded feature-design consolidation slice, this skill may offer one operator-facing delegated choice only when all of the following are true:
+
+- exactly one bounded feature request package is bound
+- the delegated task is limited to drafting one `LATEST DECISION SUMMARY` or exactly one blocking question from already-given answers
+- no final product decision authority, implementation, task creation, Git action, or release action is delegated
+- Codex remains the final owner of the decision summary and of any follow-up questioning
+
+Binding implementation artifact:
+
+- `C:\KI\Janus-Projekt\documentation\codex\model-routing\scripts\codex_feature_design_runner.py`
+
+Current bounded winner for the representative existing-skill Codex-vs-OR feature slice:
+
+- `qwen/qwen3-coder-30b-a3b-instruct`
+
+Current passing alternative on the same bounded contract:
+
+- `deepseek/deepseek-v4-flash`
+
+Current lane behavior:
+
+- OpenRouter remains the recommended backend for this bounded assist-only review slice.
+- Cursor is visible as option `2`, but not the recommended backend.
+- The existing `codex_feature_design_runner.py` remains the downstream OR helper planned by `janus_delegate.py`.
+- The current everyday proof point is prompt/dry-run readiness; do not imply a live OR result unless that run was explicitly approved and actually executed.
+
+Gate rules:
+
+- if the user chooses `1`, `local`, or `codex`, stay local in Codex
+- if the user chooses `2`, `or`, `opr`, or `openrouter`, the shared delegate currently plans the bounded feature-design helper path and hands off to the existing runner
+- if the user chooses `4`, `cursor-api`, `cursor_api`, or `api`, do not imply a live Cursor feature-design path unless a later migration artifact explicitly adds one
+- use only a bounded feature-design input package; do not delegate free-form final decision authority
+- accepted delegated output remains draft material only; Codex must still decide the final `LATEST DECISION SUMMARY` or blocking question locally
+
+Forbidden inside this path:
+
+- delegated final product decision authority
+- delegated implementation or task creation
+- delegated Git, release, routing-table, or `CURRENT_STATE` writes
+
 ## Decision Areas
 
 Cover every relevant area:

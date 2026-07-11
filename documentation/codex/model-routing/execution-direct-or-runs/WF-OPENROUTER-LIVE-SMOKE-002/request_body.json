@@ -1,0 +1,90 @@
+{
+  "model": "deepseek/deepseek-v4-flash",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a bounded OpenRouter worker for a Janus execution patch candidate. Return only JSON matching the required schema. This is proposal-only work. Do not claim completion, release readiness, routing authority, git authority, or final validation authority. Codex will review and decide whether to apply or reject. Return the smallest viable unified diff for the smallest viable subset of the allowlist. If you cannot anchor a real unified diff against exact current file context, return BLOCKED with empty patch_text. Preserve patch_text as newline-separated unified diff lines; never compress the diff into one line. Do not invent simplified file structure, placeholder headers, ellipses, or fake helper skeletons. Keep the JSON compact: short notes, short risk bullets, no repeated restatement of the task. Do not include explanatory prose outside the JSON object. Prefer backend-first minimal change shape over broad test or cleanup expansion."
+    },
+    {
+      "role": "user",
+      "content": "{\n  \"target_task\": \"TASK-EXAMPLE-001\",\n  \"allowed_files\": [\n    \"documentation/codex/model-routing/scripts/bounded_or_worker_gate_prompt.py\",\n    \"documentation/codex/model-routing/tests/test_bounded_or_worker_gate_prompt.py\"\n  ],\n  \"max_touched_files\": 2,\n  \"manual_validation_gate\": \"Codex must verify the patch only adds session-budget lines to operator gate output and does not widen delegation authority.\",\n  \"delegation_question\": \"Produce one minimal bounded patch candidate that appends session OR-budget summary lines to build_operator_prompt_lines without changing gate semantics.\",\n  \"current_seam_context\": \"build_operator_prompt_lines already renders model and ROI data; session budget is not yet shown.\",\n  \"signature_context\": \"\",\n  \"call_shape_examples\": [],\n  \"exact_code_context_blocks\": [],\n  \"forbidden_anchors\": [\n    \"production routing activation\",\n    \"canonical routing-table update\",\n    \"delegated git authority\",\n    \"broad write approval\"\n  ],\n  \"required_current_anchors\": [],\n  \"task_contract\": {\n    \"goal\": \"\",\n    \"acceptance\": \"\",\n    \"risk\": \"\",\n    \"context_bullets\": \"\"\n  },\n  \"validation_bundle\": {\n    \"validation_bundle_id\": \"bundle-2-steps\",\n    \"validation_summary\": \"Codex will run the known local validation bundle after review: python -m pytest documentation/codex/model-routing/tests/test_bounded_or_worker_gate_prompt.py -q; python -m py_compile documentation/codex/model-routing/scripts/bounded_or_worker_gate_prompt.py\"\n  },\n  \"return_contract\": {\n    \"required_fields\": [\n      \"status\",\n      \"target_task\",\n      \"patch_text\",\n      \"changed_files\",\n      \"risk_list\",\n      \"suggested_validation_steps\",\n      \"manual_validation_note\",\n      \"codex_acceptance_rule\",\n      \"notes\"\n    ],\n    \"empty_allowed_fields\": [\n      \"changed_files\",\n      \"risk_list\",\n      \"suggested_validation_steps\"\n    ],\n    \"patch_rule\": \"patch_text must be unified diff text touching only the smallest necessary subset of the allowlist\",\n    \"newline_rule\": \"patch_text must preserve newline-separated unified diff headers and hunk lines; never collapse the diff into one line\",\n    \"anchor_rule\": \"do not target forbidden_anchors; prefer required_current_anchors when present\",\n    \"signature_rule\": \"preserve real local function signatures and call shapes when signature_context or call_shape_examples are provided\",\n    \"context_rule\": \"when exact_code_context_blocks are provided, keep imports, surrounding control flow, and local helper usage aligned to those real excerpts instead of inventing simplified file structure\",\n    \"blocked_rule\": \"if you cannot produce a real hunk anchored to current local code, return status BLOCKED with empty patch_text and explain why in notes/risk_list\",\n    \"placeholder_rule\": \"never use placeholder context like '# existing header', '...', or 'existing artifact-oriented summary logic'\"\n  },\n  \"full_spec_excerpt_for_reference_only\": \"\"\n}"
+    }
+  ],
+  "temperature": 0.0,
+  "max_tokens": 1800,
+  "response_format": {
+    "type": "json_schema",
+    "json_schema": {
+      "name": "janus_execution_patch_candidate_result",
+      "strict": true,
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "status",
+          "target_task",
+          "patch_text",
+          "changed_files",
+          "risk_list",
+          "suggested_validation_steps",
+          "manual_validation_note",
+          "codex_acceptance_rule",
+          "notes"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "PASS",
+              "WEAK_SIGNAL",
+              "BLOCKED"
+            ]
+          },
+          "target_task": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "patch_text": {
+            "type": "string",
+            "maxLength": 5000
+          },
+          "changed_files": {
+            "type": "array",
+            "maxItems": 5,
+            "items": {
+              "type": "string"
+            }
+          },
+          "risk_list": {
+            "type": "array",
+            "maxItems": 4,
+            "items": {
+              "type": "string",
+              "maxLength": 220
+            }
+          },
+          "suggested_validation_steps": {
+            "type": "array",
+            "maxItems": 4,
+            "items": {
+              "type": "string",
+              "maxLength": 220
+            }
+          },
+          "manual_validation_note": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "codex_acceptance_rule": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 320
+          }
+        }
+      }
+    }
+  }
+}

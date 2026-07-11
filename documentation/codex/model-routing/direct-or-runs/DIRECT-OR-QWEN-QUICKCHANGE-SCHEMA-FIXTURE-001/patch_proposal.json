@@ -1,0 +1,13 @@
+{
+  "status": "PATCH_PROPOSAL",
+  "summary": "Nachricht an Janus senden... -> Nachricht an Janus schreiben... No other file or wording was touched.",
+  "changed_files": [
+    "frontend/index.html"
+  ],
+  "unified_diff": "--- a/frontend/index.html\n+++ b/frontend/index.html\n@@ -1,5 +1,5 @@\n <html>\n   <head>\n     <title>Janus Chat</title>\n   </head>\n   <body>\n-    <input type=\"text\" placeholder=\"Nachricht an Janus senden...\" />\n+    <input type=\"text\" placeholder=\"Nachricht an Janus schreiben...\" />\n   </body>\n</html>",
+  "validation_notes": [
+    "model reported changed file: frontend/index.html",
+    "No other file or wording was touched."
+  ],
+  "risk_notes": []
+}

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-06-09-002",
+  "testCaseId": "TC-006-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "`Korrektur: Oli liebt nicht Big Bang Theory, sondern Strategiespiele wie Panzer General` then `was mag oli?`",
+  "response": "Hallo Rolf Adam. Ich habe das korrigiert: Oli liebt Strategiespiele wie Panzer General (und nicht Big Bang Theory).Oli mag nach aktuellem Stand:*   Strategiespiele (insbesondere Panzer General)Das hast du mir heute um 16:51 Uhr im Chat „Chris Giers Vorlieben“ erzählt.💡 Passende nächste Schritte:• Soll ich nach weiteren Strategiespielen suchen, die Oli gefallen könnten?• Möchtest du noch mehr Details zu Olis Vorlieben ergänzen?• Soll ich nachsehen, was dein bester Freund Nathan Raimann in Berlin macht?18:39",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-06-09T16:39:43.903Z"
+}

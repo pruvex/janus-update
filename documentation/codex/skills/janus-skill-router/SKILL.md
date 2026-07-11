@@ -13,22 +13,31 @@ Default posture for this user: guide the process actively, keep the next step ex
 
 Bare acknowledgements like `ok` are continuation signals only when no actor or chat boundary changes. Never use them as a substitute for a required handoff block.
 
-## Tri-Modal Rollout Note
+## Four-Choice Delegation Note
 
 Global delegation vocabulary across Janus is now:
 
 - `1 = Codex`
-- `2 = Cursor`
-- `3 = OpenRouter`
+- `2 = OpenRouter`
+- `3 = Cursor Composer`
+- `4 = Cursor API`
 
-This skill's bounded routing-review lane is now wired through the shared manifest-backed `documentation/codex/model-routing/scripts/janus_delegate.py` entry. OpenRouter remains the recommended backend for this assist-only review slice; Cursor is available as option `2` but is not the preferred backend here.
+Binding operating model for productive work vs route hardening:
+
+- `documentation/codex/model-routing/HANDOFF_DELEGATION_ROUTE_HARDENING_OPERATING_MODEL_2026-07-07.md`
+- `documentation/codex/model-routing/CURSOR_API_POOL_OPERATOR_PLAYBOOK_2026-07-07.md`
+
+This skill's bounded routing-review lane is wired through the shared manifest-backed `documentation/codex/model-routing/scripts/janus_delegate.py` entry. OpenRouter remains the recommended backend for this assist-only review slice; Cursor Composer and Cursor API are visible where the lane allows them, but are not the preferred backends here.
 
 Current evidence-aware routing baseline:
 
-- prefer OpenRouter for bounded assist-only lanes that are now productively proven and cost-stable, especially mechanical normalization or bounded precheck review work
-- keep stricter ROI scrutiny on deeper judgment lanes such as `janus-spec-review`, where the live shared-gate result was usable but materially costlier than the first estimate
-- prefer Cursor for write-capable or tool-heavy bounded work such as execution patching, debug repro, or bounded test-fixture work
-- keep Codex as the default when delegation overhead is likely to dominate, or when the lane is not yet live-proven for the needed authority level
+- prefer **Codex local** for multi-file backend / roadmap slices (M1.1 evidence: Composer timeout, API transport-only)
+- prefer **Cursor Composer (3)** for write-capable or tool-heavy bounded work when the allowlist is small (typically ≤2 files) and the lane is live-proven
+- prefer **Cursor API (4)** for bounded assist/review slices (Mini / GLM), not for multi-file execution patches
+- prefer OpenRouter for bounded assist-only lanes when Cursor API is not the better fit, or as explicit fallback — not as default for execution
+- keep stricter ROI scrutiny on deeper judgment lanes such as `janus-spec-review`
+- keep Codex as the default when delegation overhead is likely to dominate, when slice fitness fails, or when the lane is not yet live-proven for the needed authority level
+- on delegation fail: log evidence, implement in Codex, do not retry backends on the critical path (max one Composer + one API compare per task)
 
 ## Required Context
 
@@ -37,6 +46,8 @@ Prefer these files, only as needed:
 - `C:\KI\Janus-Projekt\AGENTS.md`
 - `C:\KI\Janus-Projekt\documentation\pipeline\PIPELINE_CONTRACT.md`
 - `C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md`
+- `C:\KI\Janus-Projekt\documentation\Cursor specs\ROADMAP_EPIC_ORDER.md` (product planning)
+- `C:\KI\Janus-Projekt\documentation\codex\model-routing\HANDOFF_DELEGATION_ROUTE_HARDENING_OPERATING_MODEL_2026-07-07.md` (live Cursor / execution delegation)
 - bound Spec, TestSpec, Handoff, TestRun, or changed files named by the user
 
 Do not load broad archives unless the active artifact references them.
@@ -79,11 +90,14 @@ If `Neuer Chat: ja`, always include one compact fenced `text` handoff block dire
 
 ## Bounded Delegation Gate
 
-For one bounded routing-recommendation slice, this skill may offer the shared tri-modal operator gate:
+For one bounded routing-recommendation slice, this skill may offer the shared four-choice operator gate:
 
 - `1 = Codex`
-- `2 = Cursor`
-- `3 = OpenRouter`
+- `2 = OpenRouter`
+- `3 = Cursor Composer`
+- `4 = Cursor API`
+
+Before recommending live Cursor for any skill, check slice fitness in `HANDOFF_DELEGATION_ROUTE_HARDENING_OPERATING_MODEL_2026-07-07.md` §3.3.
 
 Use the shared delegate entry first:
 
@@ -101,7 +115,7 @@ python documentation/codex/model-routing/scripts/janus_delegate.py `
 Current lane behavior:
 
 - OpenRouter remains the recommended backend for this bounded assist-only review slice.
-- Cursor is visible as option `2`, but not the recommended backend.
+- Cursor Composer and Cursor API are visible only when the lane manifest enables them; neither is the recommended backend for this skill-router review slice.
 - The existing `codex_skill_router_review_runner.py` remains the downstream OR helper planned by `janus_delegate.py`.
 - Use this lane to help shape routing recommendations, but keep the actual recommendation lane-selective: not every OR-capable lane should be treated as equally cheap or equally mature.
 
@@ -193,19 +207,22 @@ For larger features, do not create implementation tasks directly. Start decision
 
 When recommending an operator backend, prefer the most evidence-aligned bounded lane rather than the most general-sounding one:
 
-- cheap mechanical assist-only work: OpenRouter is usually the first external option
-- bounded precheck-style review work: OpenRouter is usually the first external option
-- deeper review/synthesis work: OpenRouter can still help, but only when the package is large enough to justify the higher review cost
-- write-capable or shell/tool-driven work: prefer Cursor first when the manifest exposes a validated Cursor worker lane
+- cheap mechanical assist-only work: Cursor API (4) or OpenRouter (2), lane-dependent
+- bounded precheck-style review work: Cursor API (4) or OpenRouter (2), lane-dependent
+- deeper review/synthesis work: OpenRouter or Cursor API only when the package is large enough to justify the higher review cost
+- write-capable or shell/tool-driven work: prefer Cursor Composer (3) when slice fitness passes (≤2 allowlisted files, live-proven lane)
+- multi-file backend / roadmap implementation: keep on Codex (1) — do not delegate first
 - tiny obvious work: keep it on Codex even if an external lane exists
 
 ## Model Routing
 
-- `5.5`, high: architecture, security, privacy, prompt-injection, complex failure analysis, release gates, final audits.
-- `5.4`, medium/high: Janus workhorse for feature design, specs, TestSpecs, implementation, refactoring, tests, debugging, local repository work, complex product decisions, and pipeline artifact review.
-- `5.4 mini`, low/medium: separated Backlog cleanup, documentation normalization, snapshot sync, and mechanical checks only when cheaper than staying on warm `5.4`.
+- `5.6 Sol`, high: architecture, security, privacy, prompt-injection, complex failure analysis, release gates, final audits.
+- `5.6 Terra`, medium/high: Janus workhorse for feature design, specs, TestSpecs, implementation, refactoring, tests, debugging, local repository work, complex product decisions, and pipeline artifact review.
+- `5.6 Luna`, low/medium: separated Backlog cleanup, documentation normalization, snapshot sync, and mechanical checks only when cheaper than staying on warm `5.6 Terra`.
 
-Cache strategy: prefer staying on `5.4` and changing only reasoning effort inside an ongoing Janus workflow. If `5.4` is warm and the next task is short, mechanical, or tied to the same Janus artifacts, recommend `5.4` low instead of `5.4 mini`. Recommend switching to `5.4 mini` only for separated low-risk mechanical blocks where the lower model cost is still likely to beat the warm-cache benefit and the later return to `5.4`; recommend `5.5` only when justified by risk.
+`5.5` and `5.4` / `5.4 mini` are legacy or warm-context fallbacks only; they are not default recommendations for new Janus slices. If the Codex app offers a "faster model" during a long request, treat that as a candidate for `5.6 Luna` or lower reasoning only when the remaining work is short, mechanical, and low risk.
+
+Cache strategy: prefer staying on `5.6 Terra` and changing only reasoning effort inside an ongoing Janus workflow. If `5.6 Terra` is warm and the next task is short, mechanical, or tied to the same Janus artifacts, recommend `5.6 Terra` low instead of `5.6 Luna`. Recommend switching to `5.6 Luna` only for separated low-risk mechanical blocks where the lower model cost is still likely to beat the warm-cache benefit and the later return to `5.6 Terra`; recommend `5.6 Sol` only when justified by risk.
 
 ## Plugin Routing
 

@@ -1,0 +1,29 @@
+{
+  "summary_header": "FIXED OR MINI DOC SKILL SUMMARY",
+  "workflow_id": "FIXED-OR-20260623-001611-DOC-SKILL-002",
+  "skill_id": "DOC-SKILL-002",
+  "selected_path": "fixed_or_then_codex_validate",
+  "eligibility_result": "OR_ALLOWED",
+  "eligibility_reason_code": "ELIGIBILITY_CONFIRMED",
+  "evidence_status": "LIVE_EVIDENCE_CONFIRMED",
+  "local_codex_option": "enabled",
+  "or_option": "enabled",
+  "or_model": "openai/gpt-oss-20b",
+  "estimated_or_cost": 0.000207295,
+  "cost_estimate_confidence_percent": 55,
+  "actual_or_cost": 7.844e-05,
+  "finish_reason": "stop",
+  "validation_result": "PASS",
+  "fallback_used": "NO",
+  "rework_required": "NO",
+  "operator_result_lines": [
+    "Ergebnis: OR erfolgreich (stop)",
+    "Tatsaechliche Kosten: 0.000078440",
+    "Codex-Status: OR_ACCEPTED_BY_CODEX"
+  ],
+  "session_jsonl_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\or_healthcheck_telemetry_fixed_or_session_2026-06-23_FIXED-OR-20260623-001611-DOC-SKILL-002.jsonl",
+  "healthcheck_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\fixed-or-live-runs\\FIXED-OR-20260623-001611-DOC-SKILL-002\\doc-skill-002\\healthcheck_summary.json",
+  "operator_message": "Accepted fixed-model OR row captured and ingested locally. No Auto Router used.",
+  "codex_owned_outcome_status": "OR_ACCEPTED_BY_CODEX",
+  "codex_owned_outcome_final": true
+}

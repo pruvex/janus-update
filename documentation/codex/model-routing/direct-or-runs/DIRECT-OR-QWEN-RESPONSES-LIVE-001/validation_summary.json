@@ -1,0 +1,23 @@
+{
+  "workflow_id": "DIRECT-OR-QWEN-RESPONSES-LIVE-001",
+  "validation_result": "FAIL",
+  "budget_profile": "quickchange_patch_review",
+  "issues": [
+    "no apply_patch_call items found",
+    "actual OR cost missing or above cap"
+  ],
+  "touched_files": [],
+  "editable_paths": [
+    "frontend/index.html"
+  ],
+  "max_touched_files": 1,
+  "finish_reason": "stop",
+  "actual_or_cost": 0.023917075000000003,
+  "cost_cap": 0.002,
+  "response_api_shape": "responses",
+  "response_output_item_types": [
+    "openrouter:apply_patch",
+    "openrouter:apply_patch",
+    "openrouter:apply_patch"
+  ]
+}

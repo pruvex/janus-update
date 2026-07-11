@@ -1,0 +1,36 @@
+{
+  "summary_header": "CODEX LIVE TEST EXECUTION GATE",
+  "workflow_id": "TP-LIVE-GATE-PROMPT-002",
+  "skill": "janus-test-pipeline",
+  "mode": "LIVE_TEST_EXECUTION",
+  "testspec_path": "documentation/TEST_SPEC/example.md",
+  "test_run_id": "TEST-RUN-2026-07-01-302",
+  "selected_path": "codex_only_live_test_execution_gate",
+  "normal_target_model": "5.4 medium",
+  "choice_1": "Codex",
+  "selected_or_model": "moonshotai/kimi-k2.5",
+  "live_test_scope": "non_local_live_test",
+  "operator_prompt_lines": [
+    "1 = Codex",
+    "Kein sichtbares OR-Gate fuer diesen LIVE_TEST_EXECUTION-Slice.",
+    "Fail-closed Grund: NON_LOCAL_LIVE_TEST",
+    "Non-local LIVE_TEST_EXECUTION flows must remain Codex-only.",
+    "Diese Sichtbarkeits-Slice oeffnet keine generische Live-Test-Delegation."
+  ],
+  "boundaries": [
+    "No visible 2 = OR option for non-eligible live retests.",
+    "No delegated auth, worker, or evidence contract in this slice.",
+    "Codex remains the only live execution owner here."
+  ],
+  "eligibility": {
+    "eligibility_result": "OR_NOT_ELIGIBLE",
+    "subject_type": "live_test_execution_gate",
+    "subject_id": "LIVE_TEST_EXECUTION:non_local_live_test",
+    "reason_code": "NON_LOCAL_LIVE_TEST",
+    "message": "Non-local LIVE_TEST_EXECUTION flows must remain Codex-only.",
+    "evidence_status": "N_A",
+    "selected_or_model": "moonshotai/kimi-k2.5"
+  },
+  "final_outcome": "LOCAL_CODEX_PATH_SELECTED",
+  "validation_result": "PASS"
+}

@@ -1,0 +1,13 @@
+{
+  "workflow_id": "STRUCTURED-GENERATOR-REVIEW-001-VALIDATOR",
+  "skill_id": "janus-test-pipeline",
+  "action_type": "run_validator",
+  "executor_status": "FAILED",
+  "schema_validation": "PASS",
+  "mapping_resolution": "NOT_RUN",
+  "allowlist_status": "NOT_RUN",
+  "output_artifact_status": "NOT_RUN",
+  "codex_review_required": true,
+  "detail": "Validator input runner_path does not exist: C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\structured-action-runs\\STRUCTURED-GENERATOR-REVIEW-001-VALIDATOR\\20260614-165635\\generated\\TEST-RUN-2026-05-15-005_generated_from_builder.spec.js",
+  "run_directory": "documentation/codex/model-routing/structured-action-runs/STRUCTURED-GENERATOR-REVIEW-001-VALIDATOR/20260614-165635"
+}

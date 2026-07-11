@@ -1,0 +1,43 @@
+{
+  "shadow_work_class": "backlog_handoff_review",
+  "task_label": "Bounded shadow backlog handoff review task",
+  "worker_profile": "cursor-agent-api-shadow",
+  "task_prompt": "Update only the shadow handoff summary so it explicitly recommends the preimplementation-check entry point for the selected backlog item.",
+  "allowed_edit_paths": [
+    "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/backlog_handoff_review/sandbox/selected_handoff_shadow.md"
+  ],
+  "acceptance_criteria": [
+    "Only the allowlisted shadow handoff summary file may change.",
+    "The summary must contain exactly one explicit recommendation line for PRE_IMPLEMENTATION_VERIFICATION.",
+    "The focused shadow pytest command must pass."
+  ],
+  "checks": [
+    {
+      "label": "shadow_backlog_handoff_pytest",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/backlog_handoff_review/sandbox/test_backlog_handoff_shadow.py",
+        "-q"
+      ],
+      "expected_exit_codes": [0]
+    }
+  ],
+  "forbidden_actions": [
+    "architecture",
+    "auth",
+    "commit",
+    "dependency",
+    "merge",
+    "migration",
+    "privacy",
+    "publish",
+    "push",
+    "release",
+    "secret",
+    "security",
+    "tag"
+  ],
+  "requested_actions": ["edit"]
+}

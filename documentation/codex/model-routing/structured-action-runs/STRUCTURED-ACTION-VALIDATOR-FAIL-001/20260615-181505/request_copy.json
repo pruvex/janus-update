@@ -1,0 +1,19 @@
+{
+  "schema_version": "codex_delegated_action_request.v1",
+  "workflow_id": "STRUCTURED-ACTION-VALIDATOR-FAIL-001",
+  "skill_id": "janus-test-pipeline",
+  "action_type": "run_validator",
+  "summary": "Validate a deliberately broken generated Playwright runner through the deterministic local validator mapping.",
+  "requires_codex_review": true,
+  "non_goals": [
+    "No live test execution",
+    "No repo writes outside validator logs"
+  ],
+  "action_payload": {
+    "validator_id": "validate_runner_v1",
+    "inputs": {
+      "plan_path": "documentation/test-runs/TEST-RUN-2026-05-15-005_plan.json",
+      "runner_path": "documentation/codex/model-routing/structured-action-fixtures/invalid_generated_runner_2026-06-15.spec.js"
+    }
+  }
+}

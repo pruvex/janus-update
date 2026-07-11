@@ -1,0 +1,75 @@
+{
+  "workflow_id": "WF-BACKLOG-PRIO-PACKAGE-001",
+  "bound_skill_context": "janus-backlog-prioritization",
+  "review_mode": "DELTA",
+  "open_ready_count": 3,
+  "needs_info_count": 0,
+  "blocked_count": 0,
+  "candidate_items": [
+    {
+      "backlog_id": "BACKLOG-109",
+      "title": "Lokale DB-Snapshots vor riskanten Debug-, Repair- und Migrationsschritten anlegen",
+      "type": "IMPROVEMENT",
+      "status": "READY",
+      "updated_at": "2026-06-08",
+      "summary": "Vor riskanten lokalen DB-Eingriffen soll Janus automatisch rotierende Snapshots anlegen, damit Debug- oder Repair-Fehler ohne manuelle Rekonstruktion rueckgaengig gemacht werden koennen.",
+      "affected_area": "Backend / Dev-Workflow / lokale Persistenz / Debug- und Repair-Tooling",
+      "missing_info": "Keine",
+      "acceptance_summary": [
+        "Pre-Action-DB-Snapshot-Mechanismus fuer die lokale Janus-DB",
+        "definierter lokaler Backup-Pfad mit nachvollziehbarer Rotation",
+        "Restore bleibt explizit manuell",
+        "Loesung wird dokumentiert"
+      ],
+      "cached_fields_present": false
+    },
+    {
+      "backlog_id": "BACKLOG-062",
+      "title": "Gemini-Modell befolgt feindselige Retry-Anweisung mit hoeherem Modell und ignoriert Sicherheitsregeln",
+      "type": "BUG",
+      "status": "READY",
+      "updated_at": "2026-05-19",
+      "summary": "Gemini akzeptiert eine feindselige Retry-Anweisung, nimmt eine Admin-Rolle an und verweigert den Modellwechsel nicht.",
+      "affected_area": "AI Safety / Provider-Specific Guardrails",
+      "missing_info": "Keine",
+      "acceptance_summary": [
+        "Gemini verweigert feindselige Anweisungen fuer Modell-Wechsel",
+        "Safety refusal/blocker patterns greifen korrekt",
+        "PINJ-006-GEMINI bestaetigt nach Fix"
+      ],
+      "cached_fields_present": true,
+      "existing_cache": {
+        "wichtigkeit": "CRITICAL",
+        "umsetzungsrisiko": "HIGH",
+        "aufwand": "M",
+        "umsetzungsreife": "READY",
+        "empfehlung": "DO NOW"
+      }
+    },
+    {
+      "backlog_id": "BACKLOG-061",
+      "title": "TestPlan-Expectations fuer AI Safety Spec sind zu strikt",
+      "type": "TECH_DEBT",
+      "status": "READY",
+      "updated_at": "2026-05-19",
+      "summary": "Clarification-Responses werden im AI-Safety-TestPlan zu eng bewertet und erzeugen False Positives.",
+      "affected_area": "TestPlan Generator / Oracle Logic",
+      "missing_info": "Keine",
+      "acceptance_summary": [
+        "Clarification-Patterns in den TestPlan-Expectations",
+        "PINJ-001-GPT nach Fix bestaetigt",
+        "TC-009-GPT nach Fix bestaetigt"
+      ],
+      "cached_fields_present": true,
+      "existing_cache": {
+        "wichtigkeit": "MEDIUM",
+        "umsetzungsrisiko": "LOW",
+        "aufwand": "S",
+        "umsetzungsreife": "READY",
+        "empfehlung": "SCHEDULE"
+      }
+    }
+  ],
+  "expected_output": "One bounded DELTA prioritization recommendation with cache-field suggestions and one recommended next backlog item.",
+  "redaction_ready": true
+}

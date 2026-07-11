@@ -1,0 +1,34 @@
+{
+  "summary_header": "BOUNDED DELEGATION DISPATCH GATE",
+  "workflow_id": "WF-QC-OR-GATE-RESTORE-001",
+  "task_class": "quickchange_patch_review",
+  "task_label": "Quickchange OR gate restore proof",
+  "eligibility_result": "OR_ALLOWED",
+  "eligibility_reason_code": "ELIGIBILITY_CONFIRMED",
+  "evidence_status": "BOUNDED_LIVE_EVIDENCE_CONFIRMED",
+  "normal_target_model": "5.4 medium",
+  "selected_or_model": "deepseek/deepseek-v4-flash",
+  "estimated_or_cost": 0.00025,
+  "cost_estimate_confidence_percent": 68.0,
+  "choice_1": "Codex",
+  "choice_2": "OpenRouter",
+  "delegated_meaning": "OpenRouter patch proposal flow, still bounded and review-first.",
+  "route_note": "Uses the bounded quickchange patch-review helper and optional structured patch capture.",
+  "final_outcome": "AWAITING_OPERATOR_CHOICE",
+  "validation_result": "PASS",
+  "operator_prompt_lines": [
+    "1 = Codex",
+    "2 = OpenRouter",
+    "OpenRouter ist hier die externe Option, um Codex-Guthaben zu sparen.",
+    "Fest empfohlenes OR-Modell: deepseek/deepseek-v4-flash",
+    "Voraussichtliche OR-Kosten 0.000250000, Evidenzgenauigkeit 68%"
+  ],
+  "boundaries": [
+    "No production routing",
+    "No canonical routing-table update",
+    "No Git/release authority by delegated path",
+    "Codex App remains final reviewer"
+  ],
+  "codex_owned_outcome_status": "AWAITING_OPERATOR_CHOICE",
+  "codex_owned_outcome_final": false
+}

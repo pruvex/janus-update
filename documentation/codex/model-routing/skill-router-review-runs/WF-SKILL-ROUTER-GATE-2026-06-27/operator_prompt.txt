@@ -1,0 +1,8 @@
+1 = Codex
+2 = OR
+OR ist hier die externe Option, um Codex-Guthaben zu sparen.
+Live-Evidenz: bounded router review lane in fixture-validation mode
+Einordnung: routing recommendation only; Codex keeps final process authority
+Fest empfohlenes OR-Modell: qwen/qwen3-coder-30b-a3b-instruct
+Pre-Call-Kostenbasis: Skill-router bounded lane for Skill router visible gate check
+Voraussichtliche OR-Kosten 0.000180000, Evidenzgenauigkeit 70%

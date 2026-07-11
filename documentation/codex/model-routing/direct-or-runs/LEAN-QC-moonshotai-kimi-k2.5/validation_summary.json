@@ -1,0 +1,18 @@
+{
+  "workflow_id": "LEAN-QC-moonshotai-kimi-k2.5",
+  "validation_result": "FAIL",
+  "budget_profile": "quickchange_patch_review",
+  "issues": [
+    "actual OR cost missing or above cap"
+  ],
+  "changed_files": [
+    "frontend/index.html"
+  ],
+  "editable_paths": [
+    "frontend/index.html"
+  ],
+  "max_touched_files": 1,
+  "finish_reason": "stop",
+  "actual_or_cost": 0.00484488,
+  "cost_cap": 0.002
+}

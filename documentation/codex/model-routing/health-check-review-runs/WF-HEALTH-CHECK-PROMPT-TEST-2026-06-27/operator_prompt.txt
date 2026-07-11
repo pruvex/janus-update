@@ -1,0 +1,8 @@
+1 = Codex
+2 = OR
+OR ist hier die externe Option, um Codex-Guthaben zu sparen.
+Live-Evidenz: bounded health-check review lane in fixture-validation mode
+Einordnung: hygiene scan interpretation only; Codex keeps final process authority
+Fest empfohlenes OR-Modell: qwen/qwen3-coder-30b-a3b-instruct
+Pre-Call-Kostenbasis: Health-check bounded lane for Health check prompt gate
+Voraussichtliche OR-Kosten 0.000160000, Evidenzgenauigkeit 69%

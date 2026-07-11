@@ -1,0 +1,25 @@
+{
+  "summary_header": "BOUNDED DELEGATION DISPATCH RESULT",
+  "workflow_id": "AUDIT-SPEC21-4-TRIAGE-FIXTURE",
+  "task_class": "test_result_triage_review",
+  "task_label": "audit triage fixture",
+  "selected_path": "codex_only_pre_dispatch",
+  "eligibility_result": "OR_CONTEXT_REDACTION_REQUIRED",
+  "eligibility_reason_code": "REQUEST_PACKAGE_NOT_ALLOWLISTED",
+  "evidence_status": "PILOT_SCOPE_ALLOWED",
+  "validation_result": "PASS",
+  "final_outcome": "LOCAL_CODEX_PATH_SELECTED",
+  "input_package_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\bounded-dispatch-runs\\AUDIT-SPEC21-4-TRIAGE-FIXTURE\\test_result_triage_review_input_package_rejected.json",
+  "operator_result_lines": [
+    "Ergebnis: OR_CONTEXT_REDACTION_REQUIRED",
+    "Route: Codex-only bis das Request-Paket auf die Pilot-Allowlist reduziert ist"
+  ],
+  "operator_message": "Request package must be narrowed to the approved redacted allowlist before delegated review.",
+  "request_validation_issues": [
+    "forbidden input field: test_spec_path",
+    "forbidden input field: test_plan_path",
+    "forbidden input field: test_result_path"
+  ],
+  "codex_owned_outcome_status": "CODEX_LOCAL_PATH",
+  "codex_owned_outcome_final": false
+}

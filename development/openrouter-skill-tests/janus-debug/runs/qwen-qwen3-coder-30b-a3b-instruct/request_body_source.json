@@ -1,0 +1,15 @@
+{
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a bounded debug hypothesis reviewer. Use only the redacted input package. Return exactly one JSON object and no prose. Do not claim a fix is implemented, do not instruct repo writes, do not execute commands, and do not claim release, production, routing, Git, or policy authority."
+    },
+    {
+      "role": "user",
+      "content": "Return a JSON object with these exact top-level fields: status, primary_failure_code, likely_subsystem, hypotheses, suggested_local_verifiers, instrumentation_suggestion, escalation_trigger, redaction_check, notes.\n\nRules:\n- status must be PASS, WEAK_SIGNAL, or BLOCKED\n- hypotheses must contain 1 to 3 items\n- each hypothesis item must contain title, confidence, evidence\n- confidence must be LOW, MEDIUM, or HIGH\n- redaction_check must be PASS\n- suggested_local_verifiers must describe only local Codex-side checks\n- do not claim any fix is already done\n- do not propose delegated command execution\n\nRedacted input package JSON:\n{\n  \"workflow_id\": \"WF-DEBUG-EVERYDAY-PACKAGE-001\",\n  \"bound_skill_context\": \"janus-debug\",\n  \"expected_behavior\": \"Codex may offer exactly one bounded redacted hypothesis review.\",\n  \"actual_behavior\": \"We want to validate the visible everyday OR gate with an allowlisted redacted package.\",\n  \"evidence_snippets\": [\n    \"Failure code already isolated.\",\n    \"One bounded slice only.\",\n    \"No local command execution will be delegated.\"\n  ],\n  \"iteration_number\": 1,\n  \"explicit_question\": \"Which local verifier should Codex run next?\",\n  \"redaction_ready\": true,\n  \"failure_code\": \"RUNNER_ARTIFACT_MISMATCH\"\n}"
+    }
+  ],
+  "temperature": 0,
+  "max_tokens": 900
+}

@@ -12,6 +12,8 @@ class RoutineStep(BaseModel):
     skill_id: str
     args: dict[str, Any] = Field(default_factory=dict)
     arg_bindings: dict[str, str] = Field(default_factory=dict)
+    output_snapshot: str | None = None
+    snapshot_query: str | None = None
 
     @field_validator("skill_id")
     @classmethod

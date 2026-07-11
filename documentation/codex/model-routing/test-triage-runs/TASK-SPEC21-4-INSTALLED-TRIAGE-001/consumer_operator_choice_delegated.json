@@ -1,0 +1,17 @@
+{
+  "summary_header": "TEST RESULT TRIAGE REVIEW RESULT",
+  "workflow_id": "TASK-SPEC21-4-INSTALLED-TRIAGE-001",
+  "skill": "janus-test-pipeline",
+  "task_label": "installed janus-test-pipeline skill-context evidence",
+  "selected_path": "delegated_assist_only_test_result_triage_review",
+  "normal_target_model": "5.4 medium",
+  "delegated_model_label": "bounded delegated review / fixture mode",
+  "validation_result": "PASS",
+  "final_outcome": "TEST_RESULT_TRIAGE_REVIEW_READY_FOR_CODEX_VALIDATION",
+  "input_package_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\test-triage-runs\\TASK-SPEC21-4-INSTALLED-TRIAGE-001\\input_package.json",
+  "delegated_result_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\test-triage-runs\\TASK-SPEC21-4-INSTALLED-TRIAGE-001\\delegated_result.md",
+  "validation_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\test-triage-runs\\TASK-SPEC21-4-INSTALLED-TRIAGE-001\\validation_summary.json",
+  "operator_message": "Delegated test-result triage review stayed bounded and assist-only. Codex must still validate the classification and choose the next rerun or routing step.",
+  "codex_owned_outcome_status": "DELEGATED_REVIEW_PENDING_CODEX_DECISION",
+  "codex_owned_outcome_final": false
+}

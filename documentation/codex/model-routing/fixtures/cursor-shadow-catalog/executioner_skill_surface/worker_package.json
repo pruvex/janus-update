@@ -1,0 +1,44 @@
+{
+  "shadow_work_class": "execution_patch_candidate",
+  "task_label": "Update janus-executioner four-choice operator gate wording",
+  "worker_profile": "cursor-agent-api-livedev",
+  "task_prompt": "Update only the janus-executioner skill document so the bounded delegation gate uses the cost-aware four-choice wording: 1 = Codex, 2 = OpenRouter, 3 = Cursor Composer, 4 = Cursor API. Keep TASK-EX-002 as deterministic apply and preserve the fail-closed visibility note.",
+  "allowed_edit_paths": [
+    "documentation/codex/skills/janus-executioner/SKILL.md"
+  ],
+  "acceptance_criteria": [
+    "Only the janus-executioner skill document may change.",
+    "The skill document must mention 1 = Codex, 2 = OpenRouter, 3 = Cursor Composer, and 4 = Cursor API in the bounded delegation gate section.",
+    "The skill document must keep the TASK-EX-002 deterministic apply exception.",
+    "The focused executioner skill surface pytest command must pass."
+  ],
+  "checks": [
+    {
+      "label": "executioner_skill_surface_pytest",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "documentation/codex/model-routing/tests/test_janus_executioner_skill_surface.py",
+        "-q"
+      ],
+      "expected_exit_codes": [0]
+    }
+  ],
+  "forbidden_actions": [
+    "architecture",
+    "auth",
+    "commit",
+    "dependency",
+    "merge",
+    "migration",
+    "privacy",
+    "publish",
+    "push",
+    "release",
+    "secret",
+    "security",
+    "tag"
+  ],
+  "requested_actions": ["edit"]
+}

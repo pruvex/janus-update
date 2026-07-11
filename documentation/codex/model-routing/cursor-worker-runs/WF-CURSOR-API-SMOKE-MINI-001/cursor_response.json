@@ -1,0 +1,16 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 9096,
+  "duration_api_ms": 9096,
+  "result": "What stable prefix do you want, and for which file or setting?\n\nIf you mean a versioning label, branch name, or a prompt/template field, tell me the target and Iâ€™ll fill it in.",
+  "session_id": "b5f7d01c-3758-4fdb-895f-237fd7d1200f",
+  "request_id": "a8291712-7827-4862-aee7-9b453dd06be7",
+  "usage": {
+    "inputTokens": 21014,
+    "outputTokens": 226,
+    "cacheReadTokens": 2560,
+    "cacheWriteTokens": 0
+  }
+}

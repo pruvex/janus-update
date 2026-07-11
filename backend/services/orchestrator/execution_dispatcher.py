@@ -23,6 +23,7 @@ from backend.utils import intent_classifier
 from backend.services.model_catalog import get_models_by_provider
 # 💎 BACKLOG-006: Dynamic fallback summary helper
 from backend.services.orchestrator.execution_engine import _build_dynamic_fallback_summary
+from backend.services.orchestrator.intent_engine import intent_engine
 # 💎 BACKLOG-035: Prompt Injection Detection
 from backend.services.security.injection_detector import detect_injection, get_injection_type
 from backend.services.logging.logger_core import log_event
@@ -45,6 +46,55 @@ _CONTACT_RELATIONSHIP_RECALL_RE = re.compile(
     r"(?:freundin|freund|partnerin|partner|ehefrau|ehemann)\b",
     re.IGNORECASE,
 )
+
+_TOOL_NAME_SKILL_ALIASES = {
+    "calendar_list_events": "calendar.list_events",
+    "system_wikipedia_summary": "system.wikipedia_summary",
+    "system_weather": "system.weather",
+    "system_routing": "system.routing",
+}
+
+
+def _tool_name_to_skill_id(tool_name: str) -> str:
+    normalized = str(tool_name or "").strip()
+    return _TOOL_NAME_SKILL_ALIASES.get(normalized, normalized)
+
+
+def _should_skip_redundant_multi_skill_duplicate(
+    tool_name: str,
+    *,
+    combo_skill_ids: frozenset[str],
+    executed_skill_ids: set[str],
+) -> bool:
+    if len(combo_skill_ids) < 2:
+        return False
+    skill_id = _tool_name_to_skill_id(tool_name)
+    if skill_id not in executed_skill_ids:
+        return False
+    pending = set(combo_skill_ids) - executed_skill_ids
+    return bool(pending)
+
+
+def _build_calendar_wikipedia_forced_tool_plan(
+    user_text: str,
+) -> tuple[dict[str, Any], dict[str, Any] | None]:
+    from backend.services.workflow.routine_runner import (
+        _apply_calendar_date_rebind,
+        _extract_calendar_context_date_reference,
+        _extract_calendar_weather_combo_date_reference,
+        _extract_requested_wikipedia_query,
+    )
+
+    calendar_args: dict[str, Any] = {"range": "today"}
+    date_ref = (
+        _extract_calendar_context_date_reference(user_text)
+        or _extract_calendar_weather_combo_date_reference(user_text)
+    )
+    if date_ref:
+        _apply_calendar_date_rebind(calendar_args, date_ref)
+    wiki_query = _extract_requested_wikipedia_query(user_text)
+    wiki_args = {"query": wiki_query} if wiki_query else None
+    return calendar_args, wiki_args
 
 
 def _extract_strict_short_reply(query: str) -> Optional[str]:
@@ -255,6 +305,115 @@ def _is_mail_query(query: str) -> bool:
     if "mail" in q or "gmail" in q or "inbox" in q or "posteingang" in q:
         return True
     return bool(_MAIL_QUERY_RE.search(q))
+
+
+def _build_weather_turn_skill_ids(
+    relevant_skill_ids: list[str] | None,
+    *,
+    calendar_intent: bool,
+) -> list[str]:
+    if not calendar_intent:
+        return ["system.weather"]
+
+    preserved: list[str] = []
+    for skill_id in list(relevant_skill_ids or []):
+        normalized = str(skill_id or "").strip()
+        if not normalized:
+            continue
+        if normalized == "system.weather" or normalized.startswith("calendar."):
+            if normalized not in preserved:
+                preserved.append(normalized)
+    if "system.weather" not in preserved:
+        preserved.append("system.weather")
+    return preserved or ["system.weather"]
+
+
+def _build_wikipedia_turn_skill_ids(
+    relevant_skill_ids: list[str] | None,
+    *,
+    calendar_intent: bool,
+) -> list[str]:
+    if not calendar_intent:
+        return ["system.wikipedia_summary"]
+
+    preserved: list[str] = []
+    for skill_id in list(relevant_skill_ids or []):
+        normalized = str(skill_id or "").strip()
+        if not normalized:
+            continue
+        if normalized == "system.wikipedia_summary" or normalized.startswith("calendar."):
+            if normalized not in preserved:
+                preserved.append(normalized)
+    if "calendar.list_events" not in preserved:
+        preserved.insert(0, "calendar.list_events")
+    if "system.wikipedia_summary" not in preserved:
+        preserved.append("system.wikipedia_summary")
+    return preserved or ["calendar.list_events", "system.wikipedia_summary"]
+
+
+def _is_calendar_wikipedia_combo(intent_result: Any, user_text: str = "") -> bool:
+    if not intent_result:
+        return False
+    if getattr(intent_result, "is_calendar_mutation", False) or getattr(
+        intent_result, "is_calendar_creation", False
+    ):
+        return False
+    if not getattr(intent_result, "is_calendar_intent", False):
+        return False
+    if getattr(intent_result, "is_wikipedia_intent", False):
+        return True
+    text = str(user_text or "").strip()
+    if text and intent_engine.detect_wikipedia_intent(text):
+        return True
+    if text:
+        skills = intent_engine.detect_routine_request_skills(text)
+        if skills == frozenset({"calendar.list_events", "system.wikipedia_summary"}):
+            return True
+    return False
+
+
+def _is_calendar_weather_combo(intent_result: Any) -> bool:
+    return bool(
+        intent_result
+        and getattr(intent_result, "is_calendar_intent", False)
+        and not getattr(intent_result, "is_calendar_mutation", False)
+        and not getattr(intent_result, "is_calendar_creation", False)
+    )
+
+
+def _is_calendar_routing_combo(intent_result: Any) -> bool:
+    return _is_calendar_weather_combo(intent_result)
+
+
+def _should_force_routing_tool_choice(intent_result: Any) -> bool:
+    if not intent_result:
+        return False
+    if _is_calendar_routing_combo(intent_result):
+        return False
+    is_routing_geo = bool(getattr(intent_result, "is_routing_geo_intent", False))
+    primary_intent = str(getattr(intent_result, "primary_intent", "")).lower()
+    return bool(is_routing_geo or "routing" in primary_intent)
+
+
+def _build_routing_turn_skill_ids(
+    relevant_skill_ids: list[str] | None,
+    *,
+    calendar_intent: bool,
+) -> list[str]:
+    if not calendar_intent:
+        return ["system.routing"]
+
+    preserved: list[str] = []
+    for skill_id in list(relevant_skill_ids or []):
+        normalized = str(skill_id or "").strip()
+        if not normalized:
+            continue
+        if normalized == "system.routing" or normalized.startswith("calendar."):
+            if normalized not in preserved:
+                preserved.append(normalized)
+    if "system.routing" not in preserved:
+        preserved.append("system.routing")
+    return preserved or ["system.routing"]
 
 
 _MAIL_SENDER_KEYWORD_CLEAR_RE = re.compile(
@@ -1800,6 +1959,8 @@ async def execute_generation_prepare_gateway(
         # 💎 HARD-LOOP-BREAKER: Tracking für wiederholte Tool-Calls (Case-Variation-Schutz)
         wf.kpi_retry_paths: set[str] = set()
         wf.kpi_tool_status: dict[str, str] = {}  # cache_key -> status (für Self-Correction bei Error)
+        wf.kpi_skills_executed: set[str] = set()
+        wf.multi_skill_combo_ids = intent_engine.detect_routine_request_skills(str(wf.user_text or ""))
         wf._normalize_tool_args_fn = _normalize_tool_args
         wf.gateway_kwargs = {'provider': request.provider, 'model': wf.chosen_model, 'api_key': wf.api_key, 'chat_history': wf.messages, 'context_manager': context_manager, 'db': db, 'user_prompt': wf.user_text, 'chat_id': request.chat_id, 'tool_executor': wf.executor, 'disable_tools': wf.disable_tools, 'allowed_skill_ids': wf.relevant_skill_ids, 'requested_skills': wf.relevant_skill_ids, 'tools_override': wf.tools_override, 'bypass_policy': wf.bypass_policy_this_turn, 'reason_and_respond_fn': _reason_and_respond_with_provider_fixes, '_kpi_retry_paths': wf.kpi_retry_paths, '_kpi_tool_status': wf.kpi_tool_status, '_normalize_tool_args_fn': wf._normalize_tool_args_fn, '_prompt_cache_decision': wf.prompt_cache_decision, '_suggestion_context': {'base_system': getattr(wf, '_system_prompt_base_for_suggestions', wf.final_system_prompt), 'mode': suggestion_mode, 'memory_context': str(wf.memory_context_string or ''), 'user_text': str(wf.user_text or '')}}
         if clarification_mode:
@@ -1833,6 +1994,7 @@ async def execute_generation_prepare_gateway(
         _is_cal_creation = bool(getattr(wf, "is_calendar_creation", False))
         _is_filesystem_intent = bool(getattr(wf, "is_filesystem_intent", False))
         _idr = getattr(wf, "intent_detection_result", None)
+        _calendar_wikipedia_combo = _is_calendar_wikipedia_combo(_idr, wf.user_text)
         _mutation_target = str(getattr(_idr, "mutation_target", "") or "").strip() if _idr else ""
         _routing_geo = bool(getattr(_idr, "is_routing_geo_intent", False)) if _idr else False
         _weather = bool(getattr(_idr, "is_weather_intent", False)) if _idr else False
@@ -1856,7 +2018,7 @@ async def execute_generation_prepare_gateway(
                 request.provider,
             )
 
-        elif _is_cal_intent and not _is_cal_mutation and not _routing_geo and not _weather and not _is_mail_query_text:
+        elif _is_cal_intent and not _is_cal_mutation and not _routing_geo and not _weather and not _wikipedia and not _calendar_wikipedia_combo and not _is_mail_query_text:
             # 💎 TASK-003: BACKLOG-004 - Filesystem-Intent Veto
             # VIDEO-FORCE nicht bei Filesystem-Intents anwenden
             if _is_filesystem_intent:
@@ -1896,13 +2058,20 @@ async def execute_generation_prepare_gateway(
                 "query": str(wf.user_text or "").strip(),
             }
             logger.info("SESSION-SEARCH: Forcing session_search for provider=%s", request.provider)
-        elif _wikipedia:
+
+        elif _wikipedia and not _is_calendar_wikipedia_combo(_idr, wf.user_text):
             wf.gateway_kwargs["forced_tool"] = {
                 "skill_id": "system.wikipedia_summary",
                 "provider_tool_name": "system.wikipedia_summary",
             }
             wf.gateway_kwargs["force_tool_name"] = "system.wikipedia_summary"
             logger.info("💎 SOURCE-ROUTING: Forcing system.wikipedia_summary for provider=%s", request.provider)
+
+        elif _wikipedia and _is_calendar_wikipedia_combo(_idr, wf.user_text):
+            logger.info(
+                "💎 SOURCE-ROUTING: Mixed calendar+wikipedia turn detected for provider=%s — no single-tool force",
+                request.provider,
+            )
 
         elif _news and _websearch_v3_news_routing_enabled(request.provider, wf.user_text):
             wf.gateway_kwargs["forced_tool"] = {
@@ -2130,25 +2299,64 @@ async def execute_generation_prepare_gateway(
                         wf.action_guidance = (existing + "\n" + _hammer).strip() if existing else _hammer
 
         if _routing_geo:
-            wf.gateway_kwargs["forced_tool"] = {
-                "skill_id": "system.routing",
-                "provider_tool_name": "system.routing",
-            }
-            wf.gateway_kwargs["force_tool_name"] = "system.routing"
-            _rg_block = (
-                "\n\n!!! ROUTING-/ENTFERNUNGS-FRAGE (DIAMOND) !!!\n"
-                "Der Nutzer fragt nach Entfernung, Route oder Fahrzeit zwischen Orten.\n"
-                "PFLICHT: Rufe `system.routing` mit sinnvollem Ursprung und Ziel auf.\n"
-                "VERBOTEN in diesem Turn: `calendar.list_events` — keine Kalender-Live-Abfrage, "
-                "solange es sich um eine reine Entfernungs-/Routenfrage handelt.\n"
+            _calendar_routing_combo = _is_calendar_routing_combo(
+                getattr(wf, "intent_detection_result", None)
             )
+            _before_routing_skills = list(getattr(wf, "relevant_skill_ids", []) or [])
+            wf.relevant_skill_ids = _build_routing_turn_skill_ids(
+                _before_routing_skills,
+                calendar_intent=_calendar_routing_combo,
+            )
+            _removed_routing_skills = [
+                sid for sid in _before_routing_skills if sid not in wf.relevant_skill_ids
+            ]
+            if _removed_routing_skills:
+                logger.info(
+                    "💎 ROUTING-GEO: Removed non-routing tools from routing turn: %s",
+                    _removed_routing_skills,
+                )
+            wf.gateway_kwargs["allowed_skill_ids"] = list(wf.relevant_skill_ids)
+            wf.gateway_kwargs["requested_skills"] = list(wf.relevant_skill_ids)
+            if _calendar_routing_combo:
+                wf.gateway_kwargs.pop("forced_tool", None)
+                wf.gateway_kwargs.pop("force_tool_name", None)
+                wf.gateway_kwargs.pop("forced_tool_args", None)
+                _rg_block = (
+                    "\n\n!!! KALENDER- UND ROUTING-FRAGE (DIAMOND) !!!\n"
+                    "Der Nutzer fragt gleichzeitig nach Kalenderinhalt und Entfernung/Route.\n"
+                    "PFLICHT: Bearbeite beide Teilaufgaben in demselben Turn.\n"
+                    "Nutze `system.routing` fuer die Entfernung/Route und halte Kalender-Skills aktiv.\n"
+                )
+                logger.info(
+                    "💎 ROUTING-GEO: Mixed calendar+routing turn detected. Preserving combined tool set: %s",
+                    wf.relevant_skill_ids,
+                )
+            else:
+                wf.gateway_kwargs["forced_tool"] = {
+                    "skill_id": "system.routing",
+                    "provider_tool_name": "system.routing",
+                }
+                wf.gateway_kwargs["force_tool_name"] = "system.routing"
+                _rg_block = (
+                    "\n\n!!! ROUTING-/ENTFERNUNGS-FRAGE (DIAMOND) !!!\n"
+                    "Der Nutzer fragt nach Entfernung, Route oder Fahrzeit zwischen Orten.\n"
+                    "PFLICHT: Rufe `system.routing` mit sinnvollem Ursprung und Ziel auf.\n"
+                    "VERBOTEN in diesem Turn: `calendar.list_events` — keine Kalender-Live-Abfrage, "
+                    "solange es sich um eine reine Entfernungs-/Routenfrage handelt.\n"
+                )
+                logger.info("💎 ROUTING-GEO: action_guidance — Routing vor Kalender-Tools.")
             _ag_rg = str(getattr(wf, "action_guidance", "") or "").strip()
             wf.action_guidance = f"{_ag_rg}\n{_rg_block.strip()}".strip() if _ag_rg else _rg_block.strip()
-            logger.info("💎 ROUTING-GEO: action_guidance — Routing vor Kalender-Tools.")
 
         if _weather:
+            _calendar_weather_combo = _is_calendar_weather_combo(
+                getattr(wf, "intent_detection_result", None)
+            )
             _before_weather_skills = list(getattr(wf, "relevant_skill_ids", []) or [])
-            wf.relevant_skill_ids = ["system.weather"]
+            wf.relevant_skill_ids = _build_weather_turn_skill_ids(
+                _before_weather_skills,
+                calendar_intent=_calendar_weather_combo,
+            )
             _removed_weather_skills = [
                 sid for sid in _before_weather_skills if sid not in wf.relevant_skill_ids
             ]
@@ -2157,24 +2365,80 @@ async def execute_generation_prepare_gateway(
                     "💎 WEATHER-INTENT: Removed non-weather tools from weather turn: %s",
                     _removed_weather_skills,
                 )
-            wf.gateway_kwargs["allowed_skill_ids"] = ["system.weather"]
-            wf.gateway_kwargs["requested_skills"] = ["system.weather"]
-            wf.gateway_kwargs["forced_tool"] = {
-                "skill_id": "system.weather",
-                "provider_tool_name": "system.weather",
-            }
-            wf.gateway_kwargs["force_tool_name"] = "system.weather"
-            wf.gateway_kwargs.pop("forced_tool_args", None)
-            _w_block = (
-                "\n\n!!! WETTER-FRAGE (DIAMOND) !!!\n"
-                "Der Nutzer fragt nach Wetter, Temperatur oder Vorhersage.\n"
-                "PFLICHT: Rufe `system.weather` mit dem genannten Ort (oder Kontext).\n"
-                "VERBOTEN in diesem Turn: `calendar.list_events`, `calendar.find_slots` — "
-                "bei reiner Wetterfrage keine Kalender-Tools verwenden.\n"
-            )
+            wf.gateway_kwargs["allowed_skill_ids"] = list(wf.relevant_skill_ids)
+            wf.gateway_kwargs["requested_skills"] = list(wf.relevant_skill_ids)
+            if _calendar_weather_combo:
+                wf.gateway_kwargs.pop("forced_tool", None)
+                wf.gateway_kwargs.pop("force_tool_name", None)
+                wf.gateway_kwargs.pop("forced_tool_args", None)
+                _w_block = (
+                    "\n\n!!! KALENDER- UND WETTER-FRAGE (DIAMOND) !!!\n"
+                    "Der Nutzer fragt gleichzeitig nach Kalenderinhalt und Wetter.\n"
+                    "PFLICHT: Bearbeite beide Teilaufgaben in demselben Turn.\n"
+                    "Nutze `system.weather` fuer die Wetterdaten und halte Kalender-Skills aktiv.\n"
+                )
+                logger.info(
+                    "💎 WEATHER-INTENT: Mixed calendar+weather turn detected. Preserving combined tool set: %s",
+                    wf.relevant_skill_ids,
+                )
+            else:
+                wf.gateway_kwargs["forced_tool"] = {
+                    "skill_id": "system.weather",
+                    "provider_tool_name": "system.weather",
+                }
+                wf.gateway_kwargs["force_tool_name"] = "system.weather"
+                wf.gateway_kwargs.pop("forced_tool_args", None)
+                _w_block = (
+                    "\n\n!!! WETTER-FRAGE (DIAMOND) !!!\n"
+                    "Der Nutzer fragt nach Wetter, Temperatur oder Vorhersage.\n"
+                    "PFLICHT: Rufe `system.weather` mit dem genannten Ort (oder Kontext).\n"
+                    "VERBOTEN in diesem Turn: `calendar.list_events`, `calendar.find_slots` — "
+                    "bei reiner Wetterfrage keine Kalender-Tools verwenden.\n"
+                )
             _ag_w = str(getattr(wf, "action_guidance", "") or "").strip()
             wf.action_guidance = f"{_ag_w}\n{_w_block.strip()}".strip() if _ag_w else _w_block.strip()
             logger.info("💎 WEATHER-INTENT: action_guidance — system.weather vor Kalender-Tools.")
+
+        if _is_calendar_wikipedia_combo(_idr, wf.user_text):
+            wf.multi_skill_combo_ids = frozenset(
+                {"calendar.list_events", "system.wikipedia_summary"}
+            )
+            _before_wikipedia_skills = list(getattr(wf, "relevant_skill_ids", []) or [])
+            wf.relevant_skill_ids = _build_wikipedia_turn_skill_ids(
+                _before_wikipedia_skills,
+                calendar_intent=True,
+            )
+            _removed_wikipedia_skills = [
+                sid for sid in _before_wikipedia_skills if sid not in wf.relevant_skill_ids
+            ]
+            if _removed_wikipedia_skills:
+                logger.info(
+                    "💎 WIKIPEDIA-INTENT: Removed non-wikipedia tools from mixed calendar+wikipedia turn: %s",
+                    _removed_wikipedia_skills,
+                )
+            wf.gateway_kwargs["forced_tool"] = {
+                "skill_id": "calendar.list_events",
+                "provider_tool_name": "calendar.list_events",
+            }
+            wf.gateway_kwargs["force_tool_name"] = "calendar.list_events"
+            _calendar_args, _wiki_args = _build_calendar_wikipedia_forced_tool_plan(str(wf.user_text or ""))
+            wf.gateway_kwargs["forced_tool_args"] = _calendar_args
+            if _wiki_args:
+                wf.gateway_kwargs["_combo_wikipedia_forced_args"] = _wiki_args
+            wf.gateway_kwargs["allowed_skill_ids"] = list(wf.relevant_skill_ids)
+            wf.gateway_kwargs["requested_skills"] = list(wf.relevant_skill_ids)
+            _wiki_block = (
+                "\n\n!!! KALENDER- UND WIKIPEDIA-FRAGE (DIAMOND) !!!\n"
+                "Der Nutzer fragt gleichzeitig nach Kalenderinhalt und einer Wikipedia-Zusammenfassung.\n"
+                "PFLICHT: Bearbeite beide Teilaufgaben in demselben Turn.\n"
+                "Nutze zuerst `calendar.list_events` und danach `system.wikipedia_summary`.\n"
+            )
+            _ag_wiki = str(getattr(wf, "action_guidance", "") or "").strip()
+            wf.action_guidance = f"{_ag_wiki}\n{_wiki_block.strip()}".strip() if _ag_wiki else _wiki_block.strip()
+            logger.info(
+                "💎 WIKIPEDIA-INTENT: Mixed calendar+wikipedia turn detected. Preserving combined tool set: %s",
+                wf.relevant_skill_ids,
+            )
 
         # 💎 ANTI-HALLUCINATION: Force knowledge.query tool when audit_file marker is present
         if getattr(request, "audit_file", None):
@@ -2288,17 +2552,24 @@ async def execute_generation_prepare_gateway(
                 tool_name, cache_key[:80] + "...", len(wf.kpi_retry_paths)
             )
             return False  # Not a duplicate
+        def _skip_redundant_duplicate(tool_name: str, arguments: Dict[str, Any]) -> bool:
+            return _should_skip_redundant_multi_skill_duplicate(
+                tool_name,
+                combo_skill_ids=wf.multi_skill_combo_ids,
+                executed_skill_ids=wf.kpi_skills_executed,
+            )
         wf.gateway_kwargs['_track_tool_call_fn'] = _track_tool_call
+        wf.gateway_kwargs['_skip_redundant_duplicate_fn'] = _skip_redundant_duplicate
+        wf.gateway_kwargs['_multi_skill_combo_ids'] = wf.multi_skill_combo_ids
+        wf.gateway_kwargs['_kpi_skills_executed'] = wf.kpi_skills_executed
         # 💎 BACKLOG-034: Copy relevant_skill_ids to allowed_skill_ids for tool filter
         if hasattr(wf, 'relevant_skill_ids') and wf.relevant_skill_ids:
             wf.gateway_kwargs['allowed_skill_ids'] = list(wf.relevant_skill_ids)
             # 💎 DIAMOND-CORE-ROUTING-FORCE: Force tool_choice for critical mandatory skills
             # If routing intent was detected (by skill_selector), force OpenAI to use system.routing
             # This prevents GPT from ignoring mandatory tools and responding from knowledge context
-            # Check intent_detection_result instead of list length because memory skills can enlarge the list
             intent_result = getattr(wf, 'intent_detection_result', None)
-            is_routing_geo = bool(getattr(intent_result, 'is_routing_geo_intent', False)) if intent_result else False
-            if intent_result and ("routing" in str(getattr(intent_result, 'primary_intent', '')).lower() or is_routing_geo):
+            if _should_force_routing_tool_choice(intent_result):
                 wf.gateway_kwargs['force_tool_name'] = "system.routing"
                 logger.info("💎 DIAMOND-CORE-ROUTING-FORCE: Routing intent detected. Forcing tool_choice for system.routing to prevent knowledge-context response")
         # 💎 BACKLOG-006: Dynamic fallback summary based on error details
@@ -2358,6 +2629,11 @@ def apply_run_tool_loop_result_to_workflow(ctx: RequestContext) -> None:
         wf.clean_text = wf.raw_text.strip()
         if not wf.final_text:
             wf.final_text = wf.raw_text
+        wf.tool_results = (
+            getattr(wf.run_tool_loop_result, "all_tool_results", None)
+            or getattr(wf.run_tool_loop_result, "tool_results", None)
+            or []
+        )
         wf.is_pure_json = wf.clean_text.startswith("{") and wf.clean_text.endswith("}") and (
             "query_text" in wf.clean_text or "tool_call" in wf.clean_text
         )

@@ -1,0 +1,14 @@
+{
+  "skill_id": "DOC-SKILL-006",
+  "model": "z-ai/glm-4.7-flash",
+  "pass": false,
+  "failures": [
+    "finish_reason_length",
+    "missing_required_doc_skill_006_markers"
+  ],
+  "finish_reason": "length",
+  "actual_or_cost": 0.00038904,
+  "latency_ms": 14939,
+  "generation_id": "gen-1782397376-bqVjnPmZOOuzucV50Kiq",
+  "response_path": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-documentation-update\\strict-runs\\doc-skill-006\\z-ai-glm-4.7-flash\\response_body.json"
+}

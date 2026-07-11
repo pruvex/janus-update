@@ -1,0 +1,46 @@
+{
+  "task_label": "Debug M3.3 routine offer Ja follow-up consumed by mail guard",
+  "worker_profile": "cursor-agent",
+  "allowed_edit_paths": [
+    "backend/services/chat_orchestrator.py",
+    "backend/tests/test_workflow_offer_service.py"
+  ],
+  "acceptance_criteria": [
+    "Only the allowlisted orchestrator and focused workflow offer test may change.",
+    "When the latest assistant message with a JANUS_ROUTINE_OFFER marker is persisted in DB but not present in wf.messages during early exit, a Ja follow-up must be handled by routine offer confirmation before mail confirmation.",
+    "The existing mail guard must remain unchanged except for losing precedence to a detected pending routine offer.",
+    "Focused pytest must pass before Codex review."
+  ],
+  "checks": [
+    {
+      "label": "pytest",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "backend/tests/test_workflow_offer_service.py",
+        "-q"
+      ]
+    }
+  ],
+  "forbidden_actions": [
+    "commit",
+    "push",
+    "tag",
+    "merge",
+    "release",
+    "publish",
+    "dependency",
+    "secret",
+    "auth",
+    "security",
+    "privacy",
+    "migration",
+    "architecture"
+  ],
+  "requested_actions": [
+    "edit",
+    "run_checks"
+  ],
+  "task_prompt": "Investigate only the allowlisted M3.3 routine-offer follow-up files. Latest live evidence: both GPT and Gemini show the routine offer marker after the calendar+weather answer, but replying 'ja' returns the stale mail message 'Es gibt gerade keinen offenen Mail-Entwurf...'. The code already calls _try_routine_offer_confirmation before _try_chat_mail_confirmation, so the likely issue is that early-exit wf.messages does not contain the persisted previous assistant marker. Add the smallest bounded fix so routine offer confirmation can fall back to recent DB chat history for request.chat_id when wf.messages has no pending marker. Do not redesign mail. Do not commit. Run only the listed pytest command. Return concise JSON-compatible output with status, root_cause, changed_files, command_results, summary, and blockers."
+}

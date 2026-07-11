@@ -1,0 +1,18 @@
+{
+  "changed_files": [
+    "development/openrouter-skill-tests/execution_patch_candidate_live_harness/math_utils.py"
+  ],
+  "codex_acceptance_rule": "Codex must review and apply or reject locally.",
+  "manual_validation_note": "Codex must manually validate this patch locally before task completion.",
+  "notes": "Adds high-bound guard clause. Preserves signature and existing low-bound behavior.",
+  "patch_text": "--- a/development/openrouter-skill-tests/execution_patch_candidate_live_harness/math_utils.py+++ b/development/openrouter-skill-tests/execution_patch_candidate_live_harness/math_utils.py@@ -1,4 +1,6 @@ def clamp(value: int, low: int, high: int) -> int:     if value < low:         return low+    if value > high:+        return high     return value",
+  "risk_list": [
+    "Minimal logic addition; no external dependencies touched."
+  ],
+  "status": "BLOCKED",
+  "suggested_validation_steps": [
+    "python -m pytest development/openrouter-skill-tests/execution_patch_candidate_live_harness/test_math",
+    "python -m py_compile development/openrouter-skill-tests/execution_patch_candidate_live_harness/"
+  ],
+  "target_task": "DEV-HARNESS-clamp-high-bound-fix"
+}

@@ -1,0 +1,31 @@
+{
+  "summary_header": "SPEC NORMALIZER GATE",
+  "workflow_id": "WF-SPEC-NORMALIZER-PROMPT-TEST-2026-06-27",
+  "skill": "janus-spec-normalizer",
+  "task_label": "Spec normalizer prompt gate",
+  "selected_path": "operator_choice_pending",
+  "normal_target_model": "5.4 mini",
+  "choice_1": "Codex",
+  "choice_2": "OR",
+  "selected_or_model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "estimated_or_cost": 0.00022,
+  "cost_estimate_confidence_percent": 72.0,
+  "operator_prompt_lines": [
+    "1 = Codex",
+    "2 = OR",
+    "OR ist hier die externe Option, um Codex-Guthaben zu sparen.",
+    "Live-Evidenz: bounded OR lane ready",
+    "Einordnung: structured normalization only; Codex keeps final review ownership",
+    "Fest empfohlenes OR-Modell: qwen/qwen3-coder-30b-a3b-instruct",
+    "Pre-Call-Kostenbasis: Spec normalizer bounded lane for Spec normalizer prompt gate",
+    "Voraussichtliche OR-Kosten 0.000220000, Evidenzgenauigkeit 72%"
+  ],
+  "boundaries": [
+    "No delegated product-decision changes",
+    "No delegated task generation",
+    "No delegated authoritative Spec acceptance",
+    "Codex remains final reviewer and local writer"
+  ],
+  "final_outcome": "AWAITING_OPERATOR_CHOICE",
+  "validation_result": "PASS"
+}

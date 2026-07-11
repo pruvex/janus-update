@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-06-09-003",
+  "testCaseId": "TC-003-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "`was mag oli?`",
+  "response": "Hallo Rolf Adam. Über Oli (Oliver Schwab) habe ich mir im Laufe unserer Gespräche schon einiges gemerkt. Hier ist alles, was er laut meinen Aufzeichnungen mag:*   Serien: Er liebt „The Big Bang Theory“. (Das hast du mir heute um 14:37 Uhr erzählt).*   Spiele: Er mag Strategiespiele, ganz besonders „Panzer General“. (Erstmals erwähnt heute um 14:51 Uhr).*   Hobbys: Er baut gerne Star-Wars-Modelle und verbringt gerne Zeit im Garten. (Diese Details stammen von heute um 14:53 Uhr).*   Essen: Oli mag Kimchi und isst gerne vegetarisch. (Ebenfalls heute um 14:53 Uhr notiert).💡 Passende nächste Schritte:• Soll ich nach neuen vegetarischen Kimchi-Rezepten suchen, die du für ihn kochen könntest?• Suchst du nach einer Empfehlung für ein aktuelles Strategiespiel als Geschenk?• Möchtest du, dass ich nach Star-Wars-Modellbausätzen suche, die er vielleicht noch nicht hat?19:13",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-06-09T17:13:27.946Z"
+}

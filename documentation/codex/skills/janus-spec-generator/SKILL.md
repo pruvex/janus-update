@@ -43,6 +43,72 @@ BLOCKING QUESTION
 Do not output a Spec with missing, optional, maybe, TBD, or ambiguous core decisions.
 Do not treat a vague `ok` as a locked decision or as a valid handoff substitute.
 
+## Tri-Modal Rollout Note
+
+Global delegation vocabulary across Janus is now:
+
+- `1 = Codex`
+- `2 = Cursor`
+- `3 = OpenRouter`
+
+This skill's bounded locked-decision Spec generation lane is now wired through the shared manifest-backed `documentation/codex/model-routing/scripts/janus_delegate.py` entry. OpenRouter remains the recommended backend for this assist-only review slice; Cursor is visible as option `2` but is not the recommended backend here.
+
+## Bounded Delegation Gate
+
+For a narrowly bounded locked-decision Spec generation slice, this skill now has the shared tri-modal operator gate:
+
+- `1 = Codex`
+- `2 = Cursor`
+- `3 = OpenRouter`
+
+Use the shared delegate entry first:
+
+```powershell
+python documentation/codex/model-routing/scripts/janus_delegate.py --lane spec_generator_review --task-id TASK-SG-001 --workflow-id <WORKFLOW-ID> --operator-choice prompt --input-package-json development/openrouter-skill-tests/janus-spec-generator/spec_generator_input_package.json --estimated-codex-saved-tokens 12000 --estimated-delegation-overhead-tokens 4000
+```
+
+For a narrowly bounded locked-decision Spec generation slice, this skill may offer one operator-facing delegated choice only when all of the following are true:
+
+- exactly one locked decision summary is bound
+- the delegated task is bounded to a structured Spec draft proposal only
+- no authoritative Spec file write, task creation, Git action, release action, or final product decision is delegated
+- Codex remains the final reviewer and local writer of any accepted Spec draft
+
+Binding implementation artifact:
+
+- `C:\KI\Janus-Projekt\documentation\codex\model-routing\scripts\codex_spec_generator_review_runner.py`
+
+Current bounded winner for the representative first-real-OR-pilot Spec slice:
+
+- `qwen/qwen3-coder-30b-a3b-instruct`
+
+Current passing alternatives on the same structured contract:
+
+- `deepseek/deepseek-v4-flash`
+- `qwen/qwen3.5-flash-02-23`
+- `moonshotai/kimi-k2.5`
+
+Current lane behavior:
+
+- OpenRouter remains the recommended backend for this bounded assist-only review slice.
+- Cursor is visible as option `2`, but not the recommended backend.
+- The existing `codex_spec_generator_review_runner.py` remains the downstream OR helper planned by `janus_delegate.py`.
+
+Gate rules:
+
+- if the user chooses `1`, `local`, or `codex`, stay local in Codex
+- if the user chooses `2`, `cursor`, or `Cursor`, do not imply a live Cursor spec-generation path unless a later migration artifact explicitly adds one
+- if the user chooses `3`, `or`, `opr`, or `openrouter`, the shared delegate currently plans the bounded spec-generator helper path and hands off to the existing runner
+- use only a bounded locked-decision input package; do not delegate the authoritative Spec file write
+- accepted delegated output remains draft material only; Codex must still perform any real Spec write locally
+
+Forbidden inside this path:
+
+- delegated authoritative Spec writes
+- delegated task creation or implementation authority
+- delegated final next-skill authority beyond bounded draft suggestion
+- delegated Git, release, routing-table, or `CURRENT_STATE` writes
+
 ## Output Contract
 
 Write the full Spec to the target file under `documentation/SPEC/`.
@@ -58,7 +124,7 @@ SPEC GENERATION RESULT
 - Spec: <path>
 - Decision: GENERATED | BLOCKED
 - Complexity Score: <0-100 integer | N/A>
-- Model Recommendation: <5.4 | 5.5>, <low | medium | high>
+- Model Recommendation: <5.6 Terra | 5.6 Sol>, <low | medium | high>
 - Key Note: <one short sentence>
 - Next Skill: janus-spec-review | janus-spec-normalizer | NEEDS_INFO
 ```
@@ -111,7 +177,7 @@ Directly under `## SPEC REVIEW EXECUTION ROUTING`, include exactly these fields,
 
 ```text
 target_skill: janus-spec-review
-recommended_model: 5.4 | 5.5
+recommended_model: 5.6 Terra | 5.6 Sol
 recommended_reasoning: low | medium | high
 new_chat: yes | no
 complexity_score: <0-100 integer>
@@ -165,9 +231,9 @@ These values must match exactly:
 - routing `confidence` = `Routing Confidence`
 - routing `dashboard_hint` = `Dashboard Hint`
 
-Prefer `5.4` as the normal Janus workhorse for spec review.
+Prefer `5.6 Terra` as the normal Janus workhorse for spec review.
 
-Escalate to `5.5` only for high ambiguity, security/privacy risk, architecture risk, or release-critical decisions.
+Escalate to `5.6 Sol` only for high ambiguity, security/privacy risk, architecture risk, or release-critical decisions.
 
 Use `new_chat: yes` only when the next review should happen in a fresh thread because of context size, audit independence, or scope shift. Otherwise use `no`.
 

@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "target_task": "BACKLOG-108",
+  "patch_text": "--- a/backend/services/contact_manager.py\n+++ b/backend/services/contact_manager.py\n@@ -155,6 +155,15 @@ def stage_contact_update_from_memory(\n             \"target_contact_id\": target_contact.id,\n         }\n \n+    proposal_payload[\"memory_sync_status\"] = \"ready\"\n+    proposal_payload[\"proposal_metadata\"] = {\n+        \"memory_id\": getattr(memory, \"id\", None),\n+        \"memory_category\": metadata.get(\"category\"),\n+        \"memory_fact\": metadata.get(\"fact\"),\n+        \"sensitive\": bool(metadata.get(\"sensitive\")),\n+        \"source_context\": _MEMORY_PROPOSAL_SOURCE,\n+    }\n+\n     if _should_auto_apply_contact_memory_update(\n         memory=memory,\n         match_mode=match_mode,\n@@ -165,20 +174,11 @@ def stage_contact_update_from_memory(\n             target_contact=target_contact,\n             proposal_payload=proposal_payload,\n         )\n-    else:\n-        return {\n-            \"status\": \"proposed\",\n-            \"reason\": \"requires_review\",\n-            \"proposals_staged\": 1,\n-            \"proposal_payload\": proposal_payload,\n-            \"target_contact_id\": target_contact.id,\n-        }\n \n-    proposal_payload[\"memory_sync_status\"] = \"ready\"\n-    proposal_payload[\"proposal_metadata\"] = {\n-        \"memory_id\": getattr(memory, \"id\", None),\n-        \"memory_category\": metadata.get(\"category\"),\n-        \"memory_fact\": metadata.get(\"fact\"),\n-        \"sensitive\": bool(metadata.get(\"sensitive\")),\n-        \"source_context\": _MEMORY_PROPOSAL_SOURCE,\n+    return {\n+        \"status\": \"proposed\",\n+        \"reason\": \"requires_review\",\n+        \"proposals_staged\": 1,\n+        \"proposal_payload\": proposal_payload,\n+        \"target_contact_id\": target_contact.id,\n     }",
+  "changed_files": [
+    "backend/services/contact_manager.py"
+  ],
+  "risk_list": [
+    "The moved metadata enrichment now executes for both auto-applied and proposed paths; auto-applied path returns early from _apply_contact_memory_update_directly so this only affects the proposed return value",
+    "If downstream consumers expect proposal_payload without memory_sync_status or proposal_metadata keys, this change adds new fields that were previously unreachable",
+    "The unreachable code removal is a no-op behavior change but cleans up dead code that could confuse future maintainers"
+  ],
+  "suggested_validation_steps": [
+    "Run python -m pytest backend/tests/test_contact_manager.py -q to verify contact manager logic",
+    "Run python -m pytest backend/tests/test_memory_tools.py -q to verify memory tool integration",
+    "Run python -m pytest backend/tests/test_memory_write_update_conflict_handling.py -q to verify conflict handling",
+    "Verify that stage_contact_update_from_memory returns enriched proposal_payload with memory_sync_status and proposal_metadata for non-auto-applied cases",
+    "Verify that auto-applied cases still bypass the proposal return and apply directly via _apply_contact_memory_update_directly"
+  ],
+  "manual_validation_note": "Codex must manually validate this patch locally before task completion.",
+  "codex_acceptance_rule": "Codex must review and apply or reject locally.",
+  "notes": "The patch addresses the unreachable code issue in stage_contact_update_from_memory by moving the proposal_payload metadata enrichment (memory_sync_status, proposal_metadata) to execute before the conditional auto-apply check. This ensures that when _should_auto_apply_contact_memory_update returns False, the returned proposal dict contains the fully enriched payload with memory context. The auto-apply path returns early via _apply_contact_memory_update_directly, so it is unaffected. The dead code after the original else return is removed. This is the minimal viable change to close the gap where confirmed contact facts for existing contacts were not reaching persistence with proper metadata context."
+}

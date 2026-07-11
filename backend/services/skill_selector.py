@@ -36,6 +36,18 @@ def _looks_like_mail_query(text: str) -> bool:
     return bool(_MAIL_QUERY_RE.search(q))
 
 
+def _looks_like_contact_pet_recall_query(text: str) -> bool:
+    q = str(text or "").strip().lower()
+    if not q:
+        return False
+    pet_terms = ("haustier", "haustiere", "hund", "katze", "kater", "hündin", "huendin")
+    contact_markers = ("oli", "olis", "oliver", "schwab")
+    return (
+        any(term in q for term in pet_terms)
+        and any(term in q for term in contact_markers)
+    )
+
+
 class SkillSelector:
     """Intent-driven skill discovery constrained by CapabilityRegistry.
 
@@ -102,6 +114,21 @@ class SkillSelector:
         mandatory: List[str] = policy["mandatory"]
         boosted: List[str] = policy["boosted"]
         forbidden: Set[str] = set(policy["forbidden"])
+        if _looks_like_contact_pet_recall_query(prompt):
+            mandatory = ["system.memory_read", "memory.read"] + list(mandatory)
+            forbidden.update(
+                {
+                    "system.price_comparison",
+                    "system.routing",
+                    "system.websearch",
+                    "system.rss_news",
+                    "system.wikipedia_summary",
+                }
+            )
+            logger.info(
+                "[SKILL-SELECTOR] Contact pet recall override active for query=%r",
+                prompt[:120],
+            )
         if is_mail_query:
             # Mail queries should not drift into calendar pipelines.
             mandatory = [m for m in mandatory if not str(m).startswith("calendar.")]

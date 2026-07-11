@@ -1,0 +1,16 @@
+{
+  "workflow_id": "LIVE-HARNESS-EXECUTION-OR-001",
+  "validation_result": "FAIL",
+  "budget_profile": "execution_patch_candidate",
+  "issues": [
+    "finish_reason=length"
+  ],
+  "allowed_files": [
+    "development/openrouter-skill-tests/execution_patch_candidate_live_harness/math_utils.py"
+  ],
+  "changed_files": [],
+  "max_touched_files": 1,
+  "finish_reason": "length",
+  "actual_or_cost": 0.0072798,
+  "cost_cap": 0.05
+}

@@ -11,6 +11,20 @@ Zweck: Dieses Log sammelt kompakte, auswertbare Beobachtungen aus echten Janus T
 - **Security/Privacy/Prompt-Injection immer dokumentieren**: Auch bei PASS muessen die Gates explizit aufgefuehrt werden.
 - **Nebenbefunde außerhalb TestScope immer erfassen**: Seitliche Findings duerfen nicht unter den Tisch fallen.
 
+### TASK-WORKFLOW-M3.4 - Semantic Routine Reuse - Documentation Sync Note
+
+- **Datum**: 2026-07-10
+- **Quelle**: Final Audit / Documentation Update
+- **Artefakte**: `documentation/tasks/TASK-WORKFLOW-M3.4_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-WORKFLOW-M3.4_validation_2026-07-10.md`, `documentation/tasks/TASK-WORKFLOW-M3.4_final_audit.md`
+- **Getestete Faehigkeit**: Semantische Wiederverwendung einer gespeicherten Kalender-plus-Wetter-Routine aus einer natuerlichen Folgeanfrage
+- **Pipeline-Route**: final audit -> documentation update
+- **Status**: PASS
+- **Summary**: M3.4 schliesst den Workflow-MVP-Pfad. Der natürliche Wiederverwendungspfad bleibt transparent und fail-closed; optionale UI- und stilles-Lernen-Slices werden nicht als Teil dieses Abschlusses behauptet.
+- **Security Gate**: PASS - keine autonome Ausfuehrung ohne Nutzeranfrage und keine Erweiterung in Transport/OAuth/Produkt-OpenRouter.
+- **Provider-/Model-Matrix**: Live-Evidence PASS auf GPT und Gemini; Final Audit lokal auf `5.6 Terra/high` wegen `SOL_UNAVAILABLE_FOR_CHATGPT_CODEX_ACCOUNT`.
+- **Findings**: Keine blockierenden Befunde. Die Cursor-Timeout-Posture bleibt Track B und blockiert M3 nicht.
+- **Abschluss**: PASS
+
 ### BACKLOG-124 - GPT-5.6 Modellmatrix - Documentation Sync Note
 
 - **Datum**: 2026-07-10

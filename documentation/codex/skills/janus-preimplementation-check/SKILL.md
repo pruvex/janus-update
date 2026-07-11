@@ -28,31 +28,32 @@ Task: documentation/tasks/<task_file>.md
 Spec: <spec path | N/A WITH REASON>
 Backlog Item: <BACKLOG-XXX | N/A>
 Mode: SINGLE_TASK_PRECHECK
-Assigned Model: <5.4 | 5.4 mini | 5.5 | other explicit model>
+Assigned Model: <5.6 Terra | 5.6 Luna | 5.6 Sol | 5.5 fallback | legacy fallback | other explicit model>
 ```
 
 If a task file contains multiple tasks, `Target Task` is mandatory.
 Exactly one target task or implementation slice may be checked per run. If the request spans multiple tasks, stop and require a narrower handoff.
 
-Model choice is part of the gate. If the current `5.4` context is warm and the implementation will continue in `5.4`, prefer `Assigned Model: 5.4` with low reasoning for short mechanical work instead of assigning `5.4 mini`. Assign `5.4 mini` only when the task is a separated low-risk mechanical block that is still likely cheaper than staying on warm `5.4`.
+Model choice is part of the gate. If the current `5.6 Terra` context is warm and the implementation will continue in `5.6 Terra`, prefer `Assigned Model: 5.6 Terra` with low reasoning for short mechanical work instead of assigning `5.6 Luna`. Assign `5.6 Luna` only when the task is a separated low-risk mechanical block that is still likely cheaper than staying on warm `5.6 Terra`.
 
 ## Tri-Modal Rollout Note
 
 Global delegation vocabulary across Janus is now:
 
 - `1 = Codex`
-- `2 = Cursor`
-- `3 = OpenRouter`
+- `2 = OpenRouter`
+- `3 = Cursor Composer`
+- `4 = Cursor API`
 
 This skill's bounded precheck-review lane is now wired through the shared manifest-backed `documentation/codex/model-routing/scripts/janus_delegate.py` entry. OpenRouter remains the recommended backend for this assist-only review slice; Cursor is visible as option `2` but is not the recommended backend here.
 
 ## Bounded Delegation Gate
 
-For a narrowly bounded precheck slice, this skill now has the shared tri-modal operator gate:
+For a narrowly bounded precheck slice, this skill now has the shared cost-aware operator gate:
 
 - `1 = Codex`
-- `2 = Cursor`
-- `3 = OpenRouter`
+- `2 = OpenRouter`
+- `4 = Cursor API`
 
 Use the shared delegate entry first:
 
@@ -85,8 +86,8 @@ Current lane behavior:
 Gate rules:
 
 - if the user chooses `1`, `local`, or `codex`, stay local in Codex
-- if the user chooses `2`, `cursor`, or `Cursor`, do not imply a live Cursor precheck path unless a later migration artifact explicitly adds one
-- if the user chooses `3`, `or`, `opr`, or `openrouter`, the shared delegate currently plans the bounded precheck helper path and hands off to the existing runner
+- if the user chooses `2`, `or`, `opr`, or `openrouter`, the shared delegate currently plans the bounded precheck helper path and hands off to the existing runner
+- if the user chooses `4`, `cursor-api`, `cursor_api`, or `api`, do not imply a live Cursor precheck path unless a later migration artifact explicitly adds one
 - use only a bounded precheck input package; do not delegate the final precheck authority
 - accepted delegated output remains review material only; Codex must still perform the real precheck decision locally
 
@@ -143,6 +144,15 @@ For TestSpec, TestPlan, Test-Oracle, assertion, `containsAny`, `mustNotContain`,
 
 For Live E2E/TestRun execution-only subtasks, route to `janus-test-pipeline` instead of implementation unless a small handoff artifact must first be written.
 
+## Same-Chat Output Rule
+
+The canonical precheck result belongs in the bound artifact file, not in the conversational reply.
+
+- when continuing in the same chat, write or update the canonical precheck artifact first, then answer with a compact summary only
+- the compact summary should name: canonical state, artifact path, next skill, recommended model, and recommended intelligence
+- do not paste a full handoff block into chat unless the user explicitly asks for it or a real new-chat handoff is required
+- a compact same-chat summary never replaces the canonical artifact; `janus-executioner` should read the bound file when it needs the full literals
+
 ## Required PASS Literals
 
 A valid PASS output must contain these literal lines:
@@ -150,7 +160,7 @@ A valid PASS output must contain these literal lines:
 ```text
 PRE-CHECK RESULT
 PRE-CHECK PASSED
-BEGIN COPY FOR SKILL 4
+legacy handoff start
 NEXT: janus-executioner
 Pre-Check: PRE-CHECK PASSED
 Pre-Check Context:
@@ -159,10 +169,10 @@ Automated Evidence Gate:
 npx playwright test <runner> --headed --workers=1 --reporter=list
 Artifact Identity Check:
 Oracle-/TestPlan-Regel:
-END COPY FOR SKILL 4
+legacy handoff end
 ```
 
-The execution handoff copyblock must be a single fenced `text` code block.
+The execution handoff is a compact Codex-native artifact.
 A bare `ok` or similar acknowledgement is never a valid handoff replacement.
 
 ## Forbidden PASS Content
@@ -181,7 +191,7 @@ Do not output PASS if the handoff contains:
 - optionalized generator/validator/Playwright wording like `sofern`, `alternativ`, or `nur wenn`
 - product-code or scope-expansion clauses for Test-Oracle tasks
 
-If the copyblock cannot be produced exactly, output:
+If the required native fields cannot be produced exactly, output:
 
 ```text
 PRE-CHECK BLOCKED: SKILL-4-HANDOVER-INCOMPLETE
@@ -196,7 +206,7 @@ PRE-CHECK RESULT
 PRE-CHECK PASSED
 
 ```text
-BEGIN COPY FOR SKILL 4
+legacy handoff start
 NEXT: janus-executioner
 Target Task: <task id>
 Target Subtask: <subtask id | N/A>
@@ -232,15 +242,25 @@ Completion Rule:
 - End with PASS/BLOCKED/HANDOFF and concrete evidence paths.
 Expected Output:
 - Implementation result, executed checks, changed files, and next-skill handoff.
-END COPY FOR SKILL 4
+legacy handoff end
 ```
 ```
 
-If the next step stays inside the same warm Codex context, the fenced `text` block is still required, but it may remain compact and artifact-bound.
+If the next step stays inside the same warm Codex context, keep the canonical artifact compact and artifact-bound.
 
 ## Non-PASS Handoff Rule
 
-If the result is `PRE-CHECK BLOCKED`, `NEEDS_INFO`, `SCOPE_MISMATCH`, or `MODEL SWITCH REQUIRED`, output exactly one compact fenced `text` block for Codex -> ChatGPT handoff.
+## Codex-Native Result Contract
+
+The active PASS artifact is plain text and must include:
+
+- `NEXT STEP`
+- `Recommended Skill: janus-executioner`
+- `Recommended Model:`
+- `Recommended Intelligence:`
+- `User Action:`
+
+If the result is `PRE-CHECK BLOCKED`, `NEEDS_INFO`, `SCOPE_MISMATCH`, or `MODEL SWITCH REQUIRED`, output one compact plain-text handoff for Codex -> ChatGPT.
 
 That handoff must include:
 

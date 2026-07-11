@@ -355,7 +355,581 @@ def delete_memory(db: Session, memory_id: int) -> bool:
 
 
 # --- Contact CRUD ---
+_CONTACT_DIETARY_DETAIL_RE = re.compile(
+    r"^(?:vegetarier(?:in)?|vegetarisch|veganer(?:in)?|vegan|pescetarier(?:in)?|pescetarisch|vegetarisches essen)\.?$",
+    re.IGNORECASE,
+)
+_CONTACT_PREFERENCE_SENTENCE_RE = re.compile(
+    r"^(?:[A-Za-zÄÖÜäöüß][\wÄÖÜäöüß-]*(?:\s+[A-Za-zÄÖÜäöüß][\wÄÖÜäöüß-]*){0,2})\s+"
+    r"(?:mag|liebt|baut gern|baut gerne|verbringt gern|verbringt gerne)\s+(.+?)\.?$",
+    re.IGNORECASE,
+)
+_CONTACT_STAR_WARS_FAN_RE = re.compile(
+    r"\bstar[- ]?wars\b.*\bfan\b|\bfan\b.*\bstar[- ]?wars\b",
+    re.IGNORECASE,
+)
+_CONTACT_STAR_WARS_MODELS_RE = re.compile(
+    r"\bstar[- ]?wars[- ]?modelle?\b",
+    re.IGNORECASE,
+)
+_CONTACT_RESIDENCE_DETAIL_RE = re.compile(r"^(?:wohnt|lebt)\s+in\s+(.+)$", re.IGNORECASE)
+
+
+def _normalize_contact_preference_text(value: str) -> str:
+    text = str(value or "").strip().strip(".")
+    if not text:
+        return ""
+    lower = text.casefold()
+    if lower.startswith("die serie "):
+        text = text[10:].strip()
+        lower = text.casefold()
+    if _CONTACT_STAR_WARS_FAN_RE.search(text):
+        return "star wars"
+    if _CONTACT_STAR_WARS_MODELS_RE.search(text):
+        return "star wars modelle bauen"
+    if "big bang theory" in lower:
+        return "big bang theory"
+    return text
+
+
+def _dedupe_contact_string_list(items: List[str]) -> List[str]:
+    deduped: List[str] = []
+    seen: set[str] = set()
+    for item in items:
+        text = str(item or "").strip()
+        if not text:
+            continue
+        key = text.casefold()
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(text)
+    return deduped
+
+
+def _sanitize_contact_address_text(value: Optional[str]) -> Optional[str]:
+    text = str(value or "").strip()
+    if not text:
+        return None
+    text = text.replace("-", " ")
+    text = re.sub(r"(?:â€œ|â€|â€ž|â€˜|â€™|“|”|„|‚|’|‘)+", "", text)
+    text = re.sub(r"[\"“”'`]+", "", text)
+    text = text.strip(" .,)];:")
+    text = re.sub(r"[^\w\s]+$", "", text, flags=re.UNICODE)
+    text = re.sub(r"\s+", " ", text)
+    return text.strip() or None
+
+
+def _extract_contact_residence_address(value: Optional[str]) -> Optional[str]:
+    text = str(value or "").strip()
+    if not text:
+        return None
+    match = _CONTACT_RESIDENCE_DETAIL_RE.match(text)
+    if not match:
+        return None
+    return _sanitize_contact_address_text(match.group(1))
+
+
+_PET_NAMED_DETAIL_RE = re.compile(
+    r"^(?P<owner>.+?)\s+(?P<pet>hund|katze)\s+hei(?:ß|ss|\?)t\s+(?P<name>.+)$",
+    re.IGNORECASE,
+)
+_PET_GENERIC_DETAIL_RE = re.compile(
+    r"^(?:(?P<owner>.+?)\s+)?hat\s+(?:auch\s+)?(?P<article>einen|eine|ein)\s+(?P<pet>hund|katze|haustier)$",
+    re.IGNORECASE,
+)
+_PET_STORED_NAMED_DETAIL_RE = re.compile(
+    r"^hat\s+ein(?:en|e)?\s+(?P<pet>hund|katze|haustier)\s+namens\s+(?P<name>[^\s.,!?]+)$",
+    re.IGNORECASE,
+)
+_PET_OWNER_TRAIT_DETAIL_RE = re.compile(
+    r"^(?P<label>Hund|Katze|Haustier)\s+(?P<name>[^\s.,!?]+)\s+(?P<detail>.+)$",
+    re.IGNORECASE,
+)
+_PET_RAW_TRAIT_DETAIL_RE = re.compile(
+    r"^(?P<name>[^\s.,!?]+)\s+(?P<detail>ist\s+.+|frisst\s+gern(?:e)?\s+.+|mag\s+.+\s+nicht)$",
+    re.IGNORECASE,
+)
+_PET_OWNER_RELATION_DETAIL_RE = re.compile(
+    r"^ist\s+(?:der|die|das)\s+(?P<pet>hund|katze|haustier)\s+von\s+.+$",
+    re.IGNORECASE,
+)
+_PET_OWNER_TAUTOLOGY_DETAIL_RE = re.compile(
+    r"^ist\s+ein(?:e)?\s+(?P<pet>hund|katze|haustier)\b.*$",
+    re.IGNORECASE,
+)
+_PET_DETAIL_TYPO_REPLACEMENTS = {
+    "hunfisch": "thunfisch",
+}
+
+
+def _normalize_contact_personal_detail_text(value: str) -> str:
+    text = str(value or "").strip(" .")
+    if not text:
+        return ""
+
+    pet_named_match = _PET_NAMED_DETAIL_RE.match(text)
+    if pet_named_match:
+        pet = str(pet_named_match.group("pet") or "").strip().casefold()
+        pet_name = str(pet_named_match.group("name") or "").strip(" .")
+        if pet == "hund":
+            return f"hat einen Hund namens {pet_name}"
+        if pet == "katze":
+            return f"hat eine Katze namens {pet_name}"
+
+    pet_generic_match = _PET_GENERIC_DETAIL_RE.match(text)
+    if pet_generic_match:
+        pet = str(pet_generic_match.group("pet") or "").strip().casefold()
+        if pet == "hund":
+            return "hat einen Hund"
+        if pet == "katze":
+            return "hat eine Katze"
+        if pet == "haustier":
+            return "hat ein Haustier"
+
+    return text
+
+
+def _normalize_pet_owner_trait_detail(label: str, pet_name: str, detail: str) -> str:
+    normalized_label = str(label or "").strip().casefold()
+    normalized_name = str(pet_name or "").strip(" .")
+    normalized_detail = re.sub(r"\s+", " ", str(detail or "").strip(" ."))
+    if not normalized_label or not normalized_name or not normalized_detail:
+        return ""
+
+    lower_detail = normalized_detail.casefold()
+    if lower_detail.startswith("frisst gern "):
+        normalized_detail = f"frisst gerne {normalized_detail[len('frisst gern '):].strip()}"
+        lower_detail = normalized_detail.casefold()
+
+    relation_match = _PET_OWNER_RELATION_DETAIL_RE.match(normalized_detail)
+    tautology_match = _PET_OWNER_TAUTOLOGY_DETAIL_RE.match(normalized_detail)
+    if relation_match:
+        related_pet = str(relation_match.group("pet") or "").strip().casefold()
+        if related_pet == normalized_label:
+            if normalized_label == "hund":
+                return f"hat einen Hund namens {normalized_name}"
+            if normalized_label == "katze":
+                return f"hat eine Katze namens {normalized_name}"
+            if normalized_label == "haustier":
+                return f"hat ein Haustier namens {normalized_name}"
+    if tautology_match:
+        tautology_pet = str(tautology_match.group("pet") or "").strip().casefold()
+        if tautology_pet == normalized_label:
+            if normalized_label == "hund":
+                return f"hat einen Hund namens {normalized_name}"
+            if normalized_label == "katze":
+                return f"hat eine Katze namens {normalized_name}"
+            if normalized_label == "haustier":
+                return f"hat ein Haustier namens {normalized_name}"
+
+    display_label = {"hund": "Hund", "katze": "Katze", "haustier": "Haustier"}.get(
+        normalized_label,
+        str(label or "").strip(),
+    )
+    return f"{display_label} {normalized_name} {normalized_detail}".strip()
+
+
+def _normalize_pet_trait_tail(detail: str) -> str:
+    normalized_detail = re.sub(r"\s+", " ", str(detail or "").strip(" ."))
+    if not normalized_detail:
+        return ""
+
+    lower_detail = normalized_detail.casefold()
+    if lower_detail.startswith("frisst gern "):
+        normalized_detail = f"frisst gerne {normalized_detail[len('frisst gern '):].strip()}"
+
+    for typo, replacement in _PET_DETAIL_TYPO_REPLACEMENTS.items():
+        normalized_detail = re.sub(
+            rf"\b{re.escape(typo)}\b",
+            replacement,
+            normalized_detail,
+            flags=re.IGNORECASE,
+        )
+
+    return normalized_detail
+
+
+def _humanize_pet_memory_object(value: str) -> str:
+    text = str(value or "").replace("_", " ").strip(" .")
+    if not text:
+        return ""
+    return text[:1].upper() + text[1:]
+
+
+def _extract_pet_detail_tail_from_memory_text(text: str) -> tuple[str, Optional[str]]:
+    normalized = re.sub(r"\s+", " ", str(text or "").strip()).casefold()
+    normalized = (
+        normalized
+        .replace("ü", "ue")
+        .replace("ä", "ae")
+        .replace("ö", "oe")
+        .replace("ß", "ss")
+    )
+    if not normalized:
+        return "", None
+
+    match = re.search(r"\bmag\s+(.+?)\s+ueberhaupt\s+nicht\b", normalized, re.IGNORECASE)
+    if match:
+        raw_object = str(match.group(1) or "").strip().replace("_", " ")
+        pretty_object = _humanize_pet_memory_object(raw_object)
+        if pretty_object:
+            return f"mag {pretty_object} überhaupt nicht", f"{raw_object} überhaupt nicht"
+
+    match = re.search(r"\bmag\s+nicht\s+(.+)$", normalized, re.IGNORECASE)
+    if match:
+        pretty_object = _humanize_pet_memory_object(match.group(1))
+        if pretty_object:
+            return f"mag {pretty_object} nicht", None
+
+    match = re.search(r"\bfrisst\s+gern(?:e)?\s+(.+)$", normalized, re.IGNORECASE)
+    if match:
+        raw_object = str(match.group(1) or "").replace("_", " ").strip(" .")
+        if raw_object:
+            return f"frisst gerne {raw_object}", None
+
+    match = re.search(r"\bist\s+ein(?:e)?\s+(.+)$", normalized, re.IGNORECASE)
+    if match:
+        raw_object = str(match.group(1) or "").replace("_", " ").strip(" .")
+        if raw_object:
+            return f"ist ein {raw_object}", None
+
+    return "", None
+
+
+def _recover_missing_pet_details_from_memory(
+    db: Optional[Session],
+    *,
+    named_pets: Dict[str, Dict[str, str]],
+    missing_pet_keys: List[str],
+) -> tuple[List[str], set[str]]:
+    if db is None or not named_pets or not missing_pet_keys:
+        return [], set()
+
+    recovered_details: List[str] = []
+    covered_preferences: set[str] = set()
+    seen_detail_keys: set[str] = set()
+
+    for pet_key in missing_pet_keys:
+        pet_info = named_pets.get(pet_key) or {}
+        pet_name = str(pet_info.get("name") or "").strip()
+        pet_type = str(pet_info.get("type") or "").strip().casefold()
+        if not pet_name or not pet_type:
+            continue
+
+        label = {"hund": "Hund", "katze": "Katze", "haustier": "Haustier"}.get(pet_type, "Haustier")
+        display_pet_name = pet_name[:1].upper() + pet_name[1:]
+        memories = (
+            db.query(models.Memory)
+            .filter(models.Memory.normalized_text.isnot(None))
+            .filter(models.Memory.normalized_text.like(f"%{pet_key}%"))
+            .order_by(models.Memory.id.desc())
+            .all()
+        )
+        for memory in memories:
+            category = str(getattr(memory, "category", None) or "").strip().casefold()
+            source_metadata = getattr(memory, "source_metadata", None)
+            if not isinstance(source_metadata, dict):
+                source_metadata = {}
+            trusted = bool(source_metadata.get("contact_sync_trusted"))
+            if category not in {"haustier-details", "haustier_details", "haustier-details"} and not trusted:
+                continue
+
+            candidate_texts = [
+                str(source_metadata.get("user_msg") or "").strip(),
+                str(getattr(memory, "normalized_text", None) or "").replace(":", " ").replace("|", " ").strip(),
+            ]
+            for candidate_text in candidate_texts:
+                detail_tail, covered_preference = _extract_pet_detail_tail_from_memory_text(candidate_text)
+                if not detail_tail:
+                    continue
+                detail = f"{label} {display_pet_name} {detail_tail}".strip()
+                key = detail.casefold()
+                if key in seen_detail_keys:
+                    continue
+                seen_detail_keys.add(key)
+                recovered_details.append(detail)
+                if covered_preference:
+                    covered_preferences.add(covered_preference.casefold())
+                break
+
+    return recovered_details, covered_preferences
+
+
+def _normalize_contact_identity_part(value: Optional[str]) -> str:
+    return re.sub(r"\s+", " ", str(value or "").strip()).casefold()
+
+
+def _contact_duplicate_signature(contact: contact_schemas.ContactResponse) -> tuple[str, str]:
+    return (
+        _normalize_contact_identity_part(getattr(contact, "name", None)),
+        _normalize_contact_identity_part(getattr(contact, "nickname", None)),
+    )
+
+
+def _contact_completeness_score(contact: contact_schemas.ContactResponse) -> tuple[int, int]:
+    score = 0
+    for field_name in ("email", "phone", "address", "website", "notes"):
+        if str(getattr(contact, field_name, "") or "").strip():
+            score += 1
+    for field_name in ("preferences", "dislikes", "personal_details"):
+        score += len(list(getattr(contact, field_name, None) or []))
+    for field_name in ("name", "nickname"):
+        if _normalize_contact_identity_part(getattr(contact, field_name, None)):
+            score += 1
+    return (score, -int(getattr(contact, "id", 0) or 0))
+
+
+def _collapse_visible_duplicate_contacts(
+    contacts: List[contact_schemas.ContactResponse],
+) -> List[contact_schemas.ContactResponse]:
+    grouped: Dict[tuple[str, str], List[contact_schemas.ContactResponse]] = {}
+    order: List[tuple[str, str]] = []
+    for contact in contacts:
+        signature = _contact_duplicate_signature(contact)
+        if not signature[0]:
+            continue
+        if signature not in grouped:
+            grouped[signature] = []
+            order.append(signature)
+        grouped[signature].append(contact)
+
+    collapsed: List[contact_schemas.ContactResponse] = []
+    for signature in order:
+        candidates = grouped.get(signature) or []
+        if len(candidates) == 1:
+            collapsed.append(candidates[0])
+            continue
+        collapsed.append(max(candidates, key=_contact_completeness_score))
+    return collapsed
+
+
+def _normalize_contact_structured_fields(contact: models.Contact, db: Optional[Session] = None) -> bool:
+    preferences = list(getattr(contact, "preferences", None) or [])
+    personal_details = list(getattr(contact, "personal_details", None) or [])
+    raw_address = str(getattr(contact, "address", None) or "").strip()
+    address = _sanitize_contact_address_text(getattr(contact, "address", None)) or ""
+    cleaned_preferences: List[str] = []
+    cleaned_personal_details: List[str] = []
+    detail_keys: set[str] = set()
+    note_lines = [line.strip() for line in str(getattr(contact, "notes", None) or "").splitlines()]
+    cleaned_note_lines: List[str] = []
+    changed = False
+
+    if address != raw_address:
+        changed = True
+
+    for item in preferences:
+        text = str(item or "").strip()
+        if not text:
+            changed = True
+            continue
+        normalized_preference = _normalize_contact_preference_text(text)
+        if normalized_preference != text:
+            changed = True
+        if _CONTACT_DIETARY_DETAIL_RE.match(normalized_preference):
+            dietary_detail = "vegetarier" if normalized_preference.casefold() == "vegetarisches essen" else normalized_preference
+            if dietary_detail.casefold() not in detail_keys:
+                cleaned_personal_details.append(dietary_detail)
+                detail_keys.add(dietary_detail.casefold())
+            changed = True
+            continue
+        cleaned_preferences.append(normalized_preference)
+
+    for item in personal_details:
+        text = str(item or "").strip()
+        if not text:
+            changed = True
+            continue
+        normalized_address = _extract_contact_residence_address(text)
+        if normalized_address:
+            if not address:
+                address = normalized_address
+            changed = True
+            continue
+        preference_match = _CONTACT_PREFERENCE_SENTENCE_RE.match(text)
+        is_pet_trait_detail = bool(_PET_OWNER_TRAIT_DETAIL_RE.match(text) or _PET_RAW_TRAIT_DETAIL_RE.match(text))
+        if preference_match and not is_pet_trait_detail:
+            normalized_preference = _normalize_contact_preference_text(preference_match.group(1))
+            if normalized_preference:
+                cleaned_preferences.append(normalized_preference)
+                changed = True
+                continue
+        if _CONTACT_DIETARY_DETAIL_RE.match(text):
+            text = "vegetarier" if text.casefold() == "vegetarisches essen" else text
+        normalized_detail = _normalize_contact_personal_detail_text(text)
+        if normalized_detail != text:
+            changed = True
+        text = normalized_detail
+        if text.casefold() in detail_keys:
+            changed = True
+            continue
+        cleaned_personal_details.append(text)
+        detail_keys.add(text.casefold())
+
+    for line in note_lines:
+        if not line:
+            changed = True
+            continue
+        normalized_address = _extract_contact_residence_address(line)
+        if normalized_address:
+            if not address:
+                address = normalized_address
+            changed = True
+            continue
+        cleaned_note_lines.append(line)
+
+    deduped_preferences = _dedupe_contact_string_list(cleaned_preferences)
+    deduped_personal_details = _dedupe_contact_string_list(cleaned_personal_details)
+    has_named_dog = any(detail.casefold().startswith("hat einen hund namens ") for detail in deduped_personal_details)
+    has_named_cat = any(detail.casefold().startswith("hat eine katze namens ") for detail in deduped_personal_details)
+    filtered_personal_details: List[str] = []
+    for detail in deduped_personal_details:
+        lowered = detail.casefold()
+        if has_named_dog and lowered == "hat einen hund":
+            changed = True
+            continue
+        if has_named_cat and lowered == "hat eine katze":
+            changed = True
+            continue
+        filtered_personal_details.append(detail)
+    deduped_personal_details = filtered_personal_details
+
+    named_pets: Dict[str, Dict[str, str]] = {}
+    for detail in deduped_personal_details:
+        owner_match = _PET_NAMED_DETAIL_RE.match(detail)
+        stored_match = _PET_STORED_NAMED_DETAIL_RE.match(detail)
+        pet_type = ""
+        pet_name = ""
+        if owner_match:
+            pet_type = str(owner_match.group("pet") or "").strip().casefold()
+            pet_name = str(owner_match.group("name") or "").strip(" .")
+        elif stored_match:
+            pet_type = str(stored_match.group("pet") or "").strip().casefold()
+            pet_name = str(stored_match.group("name") or "").strip(" .")
+        else:
+            continue
+        if pet_name:
+            named_pets[pet_name.casefold()] = {"type": pet_type, "name": pet_name}
+
+    existing_pet_trait_names: set[str] = set()
+    for detail in deduped_personal_details:
+        owner_trait_match = _PET_OWNER_TRAIT_DETAIL_RE.match(detail)
+        raw_trait_match = _PET_RAW_TRAIT_DETAIL_RE.match(detail)
+        if owner_trait_match:
+            existing_pet_trait_names.add(str(owner_trait_match.group("name") or "").strip().casefold())
+        elif raw_trait_match:
+            existing_pet_trait_names.add(str(raw_trait_match.group("name") or "").strip().casefold())
+
+    recovered_pet_details, covered_pet_preferences = _recover_missing_pet_details_from_memory(
+        db,
+        named_pets=named_pets,
+        missing_pet_keys=[
+            pet_key
+            for pet_key in named_pets
+            if pet_key and pet_key not in existing_pet_trait_names
+        ],
+    )
+    existing_detail_keys = {
+        str(item or "").strip().casefold()
+        for item in deduped_personal_details
+        if str(item or "").strip()
+    }
+    for recovered_detail in recovered_pet_details:
+        key = recovered_detail.casefold()
+        if key in existing_detail_keys:
+            continue
+        deduped_personal_details.append(recovered_detail)
+        existing_detail_keys.add(key)
+        changed = True
+
+    owner_detail_keys = set()
+    for detail in deduped_personal_details:
+        owner_trait_match = _PET_OWNER_TRAIT_DETAIL_RE.match(detail)
+        if not owner_trait_match:
+            continue
+        normalized_owner_detail = _normalize_pet_owner_trait_detail(
+            str(owner_trait_match.group("label") or ""),
+            str(owner_trait_match.group("name") or ""),
+            _normalize_pet_trait_tail(str(owner_trait_match.group("detail") or "")),
+        )
+        if normalized_owner_detail != detail:
+            changed = True
+        if not normalized_owner_detail:
+            changed = True
+            continue
+        owner_detail_keys.add(
+            (
+                str(owner_trait_match.group("name") or "").strip().casefold(),
+                str(owner_trait_match.group("detail") or "").strip().casefold(),
+            )
+        )
+
+    normalized_pet_details: List[str] = []
+    seen_normalized_pet_details: set[str] = set()
+    for detail in deduped_personal_details:
+        normalized_detail = detail
+        owner_trait_match = _PET_OWNER_TRAIT_DETAIL_RE.match(detail)
+        if owner_trait_match:
+            normalized_detail = _normalize_pet_owner_trait_detail(
+                str(owner_trait_match.group("label") or ""),
+                str(owner_trait_match.group("name") or ""),
+                _normalize_pet_trait_tail(str(owner_trait_match.group("detail") or "")),
+            )
+            if not normalized_detail:
+                changed = True
+                continue
+            if normalized_detail != detail:
+                changed = True
+        raw_trait_match = _PET_RAW_TRAIT_DETAIL_RE.match(detail)
+        if raw_trait_match:
+            pet_name = str(raw_trait_match.group("name") or "").strip()
+            tail = _normalize_pet_trait_tail(str(raw_trait_match.group("detail") or ""))
+            pet_info = named_pets.get(pet_name.casefold()) or {}
+            pet_type = str(pet_info.get("type") or "").strip().casefold()
+            if pet_type:
+                label = {"hund": "Hund", "katze": "Katze", "haustier": "Haustier"}.get(pet_type, "Haustier")
+                candidate = f"{label} {pet_name} {tail}"
+                if (pet_name.casefold(), tail.casefold()) in owner_detail_keys:
+                    changed = True
+                    continue
+                normalized_detail = candidate
+                if normalized_detail != detail:
+                    changed = True
+        key = normalized_detail.casefold()
+        if key in seen_normalized_pet_details:
+            changed = True
+            continue
+        seen_normalized_pet_details.add(key)
+        normalized_pet_details.append(normalized_detail)
+    deduped_personal_details = normalized_pet_details
+
+    if covered_pet_preferences:
+        filtered_preferences = [
+            item
+            for item in deduped_preferences
+            if str(item or "").strip().casefold() not in covered_pet_preferences
+        ]
+        if filtered_preferences != deduped_preferences:
+            deduped_preferences = filtered_preferences
+            changed = True
+
+    normalized_notes = "\n".join(cleaned_note_lines).strip() or None
+    if deduped_preferences != cleaned_preferences or deduped_personal_details != cleaned_personal_details:
+        changed = True
+    if normalized_notes != (str(getattr(contact, "notes", None) or "").strip() or None):
+        changed = True
+
+    if changed:
+        contact.notes = normalized_notes
+        contact.address = address or None
+        contact.preferences = deduped_preferences
+        contact.personal_details = deduped_personal_details
+    return changed
+
+
 def _contact_response_from_model(contact: models.Contact) -> contact_schemas.ContactResponse:
+    _normalize_contact_structured_fields(contact)
     return contact_schemas.ContactResponse.model_validate(
         {
             "id": contact.id,
@@ -383,14 +957,22 @@ def _contact_response_from_model(contact: models.Contact) -> contact_schemas.Con
 def get_contact(db: Session, contact_id: int) -> Optional[contact_schemas.ContactResponse]:
     db_contact = db.query(models.Contact).filter(models.Contact.id == contact_id).first()
     if db_contact:
-        return _contact_response_from_model(db_contact)
+        changed = _normalize_contact_structured_fields(db_contact, db)
+        response = _contact_response_from_model(db_contact)
+        if changed:
+            db.commit()
+        return response
     return None
 
 
 def get_contact_by_email(db: Session, email: str) -> Optional[contact_schemas.ContactResponse]:
     db_contact = db.query(models.Contact).filter(models.Contact.email == email).first()
     if db_contact:
-        return _contact_response_from_model(db_contact)
+        changed = _normalize_contact_structured_fields(db_contact, db)
+        response = _contact_response_from_model(db_contact)
+        if changed:
+            db.commit()
+        return response
     return None
 
 
@@ -398,7 +980,14 @@ def get_contacts(
     db: Session, skip: int = 0, limit: int = 100
 ) -> List[contact_schemas.ContactResponse]:
     contacts = db.query(models.Contact).offset(skip).limit(limit).all()
-    return [_contact_response_from_model(contact) for contact in contacts]
+    changed = False
+    responses = []
+    for contact in contacts:
+        changed = _normalize_contact_structured_fields(contact, db) or changed
+        responses.append(_contact_response_from_model(contact))
+    if changed:
+        db.commit()
+    return _collapse_visible_duplicate_contacts(responses)
 
 
 def create_contact(
@@ -424,6 +1013,7 @@ def create_contact(
             memory_sync_status=contact.memory_sync_status or "unlinked",
         )
         db.add(db_contact)
+        _normalize_contact_structured_fields(db_contact, db)
         db.commit()
         db.refresh(db_contact)
         return _contact_response_from_model(db_contact)
@@ -507,6 +1097,7 @@ def update_contact(db: Session, contact_id: int, updates: dict) -> Optional[mode
     for key, value in updates.items():
         if hasattr(db_contact, key) and value is not None:  # Überspringe None-Werte
             setattr(db_contact, key, value)
+    _normalize_contact_structured_fields(db_contact, db)
 
     try:
         db.commit()
@@ -527,7 +1118,14 @@ def search_contacts_by_name(db: Session, name_query: str) -> List[contact_schema
             models.Contact.name.ilike(f'%{name_query}%')
         ).all()
     )
-    return [_contact_response_from_model(contact) for contact in contacts]
+    changed = False
+    responses = []
+    for contact in contacts:
+        changed = _normalize_contact_structured_fields(contact, db) or changed
+        responses.append(_contact_response_from_model(contact))
+    if changed:
+        db.commit()
+    return _collapse_visible_duplicate_contacts(responses)
 
 
 def delete_contact(db: Session, contact_id: int) -> bool:

@@ -39,6 +39,37 @@ from bounded_or_worker_eligibility import evaluate_doc_skill_fixed_or
 from bounded_or_worker_gate_prompt import build_operator_prompt_lines
 from bounded_or_worker_outcome import normalize_codex_owned_outcome
 
+OPERATOR_RECOMMENDATION_MAP: dict[str, dict[str, str]] = {
+    "DOC-SKILL-001": {
+        "operator_recommendation": "PREFER_OR",
+        "operator_recommendation_reason": "sehr guenstige, deterministische Summary-Spur mit sauberer Live-Evidenz",
+    },
+    "DOC-SKILL-002": {
+        "operator_recommendation": "PREFER_OR",
+        "operator_recommendation_reason": "guenstige Report-/Summary-Spur mit sauberer Live-Evidenz",
+    },
+    "DOC-SKILL-003": {
+        "operator_recommendation": "PREFER_OR",
+        "operator_recommendation_reason": "guenstigste akzeptierte Handoff-Spur mit sauberer Live-Evidenz",
+    },
+    "DOC-SKILL-006": {
+        "operator_recommendation": "PREFER_OR",
+        "operator_recommendation_reason": "mechanische Formatierung blieb im Live-Betrieb extrem guenstig",
+    },
+    "DOC-SKILL-008": {
+        "operator_recommendation": "OR_OPTIONAL",
+        "operator_recommendation_reason": "valide und bounded, aber nicht unter den staerksten Sparspuren",
+    },
+    "DOC-SKILL-009": {
+        "operator_recommendation": "OR_OPTIONAL",
+        "operator_recommendation_reason": "valide und bounded, aber nicht unter den staerksten Sparspuren",
+    },
+    "DOC-SKILL-010": {
+        "operator_recommendation": "OR_OPTIONAL",
+        "operator_recommendation_reason": "valide und bounded, aber nicht unter den staerksten Sparspuren",
+    },
+}
+
 
 def load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8-sig"))
@@ -112,6 +143,16 @@ def build_paths(config: dict[str, Any], workflow_id: str, skill_id: str) -> tupl
     return session_dir, session_jsonl_path, request_body_source_path
 
 
+def get_operator_recommendation(skill_id: str) -> dict[str, str]:
+    return OPERATOR_RECOMMENDATION_MAP.get(
+        skill_id,
+        {
+            "operator_recommendation": "OR_OPTIONAL",
+            "operator_recommendation_reason": "bounded OR live evidence exists, but no stronger operator guidance is mapped",
+        },
+    )
+
+
 def make_operator_prompt(
     args: argparse.Namespace,
     config: dict[str, Any],
@@ -119,12 +160,15 @@ def make_operator_prompt(
     skill_config: dict[str, Any],
     workflow_id: str,
 ) -> dict[str, Any]:
+    recommendation = get_operator_recommendation(args.skill_id)
     return {
         "workflow_id": workflow_id,
         "skill_id": args.skill_id,
-        "local_codex_option": "handle locally with Codex",
-        "or_option": f"handle with OR using fixed model {skill_config['selected_or_model']}",
+        "local_codex_option": "handle locally with Codex and spend Codex quota",
+        "or_option": f"handle with OR using fixed model {skill_config['selected_or_model']} and preserve Codex quota",
         "estimated_or_cost": baseline_row["estimated_or_cost"],
+        "operator_recommendation": recommendation["operator_recommendation"],
+        "operator_recommendation_reason": recommendation["operator_recommendation_reason"],
         "confidence_status": {
             "cost_estimate_confidence_percent": baseline_row.get("cost_estimate_confidence_percent"),
             "cost_estimate_sample_count": baseline_row.get("cost_estimate_sample_count"),
@@ -487,9 +531,11 @@ def main() -> int:
                 "eligibility_reason_code": eligibility["reason_code"],
                 "evidence_status": eligibility["evidence_status"],
                 "choice_1": "Codex",
-                "choice_2": "OpenRouter",
+                "choice_2": "OR",
                 "or_model": skill_config["selected_or_model"],
                 "estimated_or_cost": estimated_or_cost,
+                "operator_recommendation": operator_prompt["operator_recommendation"],
+                "operator_recommendation_reason": operator_prompt["operator_recommendation_reason"],
                 "cost_estimate_confidence_percent": baseline_row["cost_estimate_confidence_percent"],
                 "cost_estimate_sample_count": baseline_row["cost_estimate_sample_count"],
                 "cost_estimate_mean_abs_error_percent": baseline_row["cost_estimate_mean_abs_error_percent"],
@@ -502,8 +548,11 @@ def main() -> int:
                 "rework_required": "NO",
                 "final_outcome": "AWAITING_OPERATOR_CHOICE",
                 "operator_prompt_lines": build_operator_prompt_lines(
+                    selected_or_model=skill_config["selected_or_model"],
                     estimated_or_cost=estimated_or_cost,
                     cost_estimate_confidence_percent=float(baseline_row["cost_estimate_confidence_percent"]),
+                    operator_recommendation=operator_prompt["operator_recommendation"],
+                    operator_recommendation_reason=operator_prompt["operator_recommendation_reason"],
                 ),
                 "operator_message": (
                     "Eligible bounded mini documentation task detected. "

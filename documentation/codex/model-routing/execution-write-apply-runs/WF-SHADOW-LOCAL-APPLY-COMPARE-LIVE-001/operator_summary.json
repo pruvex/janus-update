@@ -1,0 +1,18 @@
+{
+  "summary_header": "EXECUTION WRITE APPLY CANDIDATE RESULT",
+  "workflow_id": "WF-SHADOW-LOCAL-APPLY-COMPARE-LIVE-001",
+  "skill": "janus-executioner",
+  "task_label": "Shadow local apply compare",
+  "selected_path": "delegated_execution_write_apply_candidate_local_apply_live",
+  "normal_target_model": "5.4 medium",
+  "delegated_model_label": "Accepted OR patch package / deterministic local apply",
+  "validation_result": "PASS",
+  "final_outcome": "EXECUTION_WRITE_APPLY_LIVE_WRITE_READY_FOR_CODEX_ACCEPT_REJECT",
+  "accepted_source_run_dir": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\fixtures\\cursor-shadow-catalog\\execution_write_apply_candidate\\accepted_source\\WF-SHADOW-LOCAL-APPLY-COMPARE-001",
+  "source_validation_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-runs\\WF-SHADOW-LOCAL-APPLY-COMPARE-LIVE-001\\source_validation.json",
+  "live_validation_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-runs\\WF-SHADOW-LOCAL-APPLY-COMPARE-LIVE-001\\live_validation_summary.json",
+  "apply_instructions_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-runs\\WF-SHADOW-LOCAL-APPLY-COMPARE-LIVE-001\\apply_instructions.md",
+  "local_apply_run_dir": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-runs\\WF-SHADOW-LOCAL-APPLY-COMPARE-LIVE-001\\local_apply_run",
+  "runner_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-runs\\WF-SHADOW-LOCAL-APPLY-COMPARE-LIVE-001\\local_apply_run\\summary.json",
+  "operator_message": "Delegated bounded live write completed via deterministic local patch apply inside the exact accepted-source allowlist. Codex still owns diff review, acceptance, and final task completion."
+}

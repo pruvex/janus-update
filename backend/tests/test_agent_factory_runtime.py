@@ -5,8 +5,14 @@ import pytest
 
 from backend.data.models import SkillTelemetry
 from backend.data.schemas import PlannerContext, PlannerProviderProfile
+from backend.renderers.attribution import render_weather_forecast_from_tools
 from backend.services.agent_planner import AgentPlanner
 from backend.services.agent_runtime import AgentRuntime
+from backend.services.orchestrator.execution_engine import (
+    OrchestratorExecutionEngine,
+    _build_calendar_weather_combo_response,
+    _build_calendar_wikipedia_combo_response,
+)
 from backend.services.orchestrator.intent_engine import IntentDetectionResult
 from backend.services.skill_selector import SkillSelector
 
@@ -275,6 +281,169 @@ async def test_agent_planner_calendar_intent_forbids_pdf_and_skips_llm(monkeypat
     assert spec.required_skills == ["calendar.list_events"]
     assert "system.create_pdf" not in spec.required_skills
     assert spec.max_iterations == 1
+
+
+def test_execution_engine_builds_required_skills_for_calendar_weather_combo():
+    engine = OrchestratorExecutionEngine(
+        db=None,
+        context_manager=None,
+        model_hierarchy={},
+        agent_planner=MagicMock(),
+        agent_runtime=MagicMock(),
+        skill_selector=SkillSelector(),
+        capability_registry=None,
+    )
+
+    intent = IntentDetectionResult(
+        is_calendar_intent=True,
+        is_weather_intent=True,
+        is_calendar_mutation=False,
+        is_calendar_creation=False,
+        primary_intent="calendar",
+    )
+
+    context = engine._build_planner_context(
+        user_text="Was steht heute in meinem Kalender und wie wird das Wetter in Koeln?",
+        relevant_skill_ids=["calendar.list_events", "system.weather", "system.create_pdf"],
+        intent_result=intent,
+    )
+
+    assert context.required_skill_ids == ["calendar.list_events", "system.weather"]
+    assert context.priority_skill_ids == ["calendar.list_events", "system.weather"]
+    assert "system.create_pdf" in context.forbidden_skill_ids
+    assert any("Kalender-und-Wetter-Turn" in item for item in context.negative_constraints)
+
+
+def test_build_calendar_weather_combo_response_keeps_no_events_and_weather():
+    text = _build_calendar_weather_combo_response(
+        [
+            {
+                "name": "calendar_list_events",
+                "_raw_content": json.dumps(
+                    {
+                        "status": "ok",
+                        "data": {"events": [], "listing_text": "", "event_count": 0},
+                        "message": "Keine Termine im angegebenen Zeitraum gefunden.",
+                        "output": "Keine Termine im angegebenen Zeitraum gefunden.",
+                    },
+                    ensure_ascii=False,
+                ),
+            },
+            {
+                "name": "system_weather",
+                "_skill_id": "system.weather",
+                "_raw_content": json.dumps(
+                    {
+                        "status": "ok",
+                        "data": {
+                            "forecast": "Das Wetter fuer Koeln (heute, 08.07.2026) im Ueberblick:\n* Zustand: Bedeckt\n\nQuelle: Open-Meteo",
+                            "city": "Koeln",
+                            "source": "open-meteo",
+                        },
+                    },
+                    ensure_ascii=False,
+                ),
+            },
+        ]
+    )
+
+    assert "Keine Termine im angegebenen Zeitraum gefunden." in text
+    assert "Das Wetter fuer Koeln" in text
+
+
+def test_build_calendar_wikipedia_combo_response_keeps_calendar_and_wikipedia():
+    text = _build_calendar_wikipedia_combo_response(
+        [
+            {
+                "name": "calendar_list_events",
+                "_raw_content": json.dumps(
+                    {
+                        "status": "ok",
+                        "data": {"events": [], "listing_text": "", "event_count": 0},
+                        "message": "Keine Termine im angegebenen Zeitraum gefunden.",
+                    },
+                    ensure_ascii=False,
+                ),
+            },
+            {
+                "name": "system_wikipedia_summary",
+                "_skill_id": "system.wikipedia_summary",
+                "_raw_content": json.dumps(
+                    {
+                        "status": "ok",
+                        "data": {
+                            "title": "Berlin",
+                            "summary": "Berlin ist die Hauptstadt Deutschlands.",
+                            "url": "https://de.wikipedia.org/wiki/Berlin",
+                        },
+                    },
+                    ensure_ascii=False,
+                ),
+            },
+        ]
+    )
+
+    assert "Keine Termine im angegebenen Zeitraum gefunden." in text
+    assert "Berlin ist die Hauptstadt Deutschlands." in text
+
+
+def test_render_weather_forecast_from_tools_accepts_system_weather_alias():
+    text = render_weather_forecast_from_tools(
+        [
+            {
+                "name": "system_weather",
+                "_raw_content": json.dumps(
+                    {
+                        "status": "ok",
+                        "data": {
+                            "forecast": "Das Wetter fuer Koeln (heute, 08.07.2026) im Ueberblick:\n* Zustand: Bedeckt",
+                            "city": "Koeln",
+                            "source": "open-meteo",
+                        },
+                    },
+                    ensure_ascii=False,
+                ),
+            }
+        ]
+    )
+
+    assert "Das Wetter fuer Koeln" in text
+
+
+@pytest.mark.asyncio
+async def test_agent_planner_uses_required_skills_for_calendar_weather_combo_without_llm(monkeypatch):
+    planner = AgentPlanner()
+
+    async def _fake_generate(**_kwargs):
+        raise AssertionError("LLM darf bei vorgegebenem Kalender-und-Wetter-Plan nicht aufgerufen werden")
+
+    monkeypatch.setattr("backend.services.agent_planner.llm_gateway.simple_llm_generate_content", _fake_generate)
+
+    spec = await planner.plan(
+        user_prompt="Was steht heute in meinem Kalender und wie wird das Wetter in Koeln?",
+        intent_result=IntentDetectionResult(
+            is_calendar_intent=True,
+            is_weather_intent=True,
+            primary_intent="calendar",
+        ),
+        planner_context=_planner_context(
+            ["calendar.list_events", "system.weather"],
+            forbidden=["system.create_pdf"],
+            negative=["Kalender-und-Wetter-Turn: Bearbeite Kalender und Wetter im selben Lauf."],
+            required=["calendar.list_events", "system.weather"],
+        ),
+        provider_profile=_planner_profile(),
+        capability_groups={
+            "calendar": ["calendar.list_events"],
+            "geo_routing": ["system.weather"],
+        },
+        provider="openai",
+        model="gpt-5.4-nano",
+        api_key="dummy",
+    )
+
+    assert spec.required_skills == ["calendar.list_events", "system.weather"]
+    assert spec.max_iterations == 2
 
 
 @pytest.mark.asyncio

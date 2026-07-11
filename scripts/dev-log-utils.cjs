@@ -12,7 +12,7 @@ function timestampForFile(date = new Date()) {
 }
 
 function createLogStreams(prefix) {
-  const logDir = path.join(process.cwd(), "debug_logs");
+  const logDir = path.join(process.cwd(), "documentation", "logs", "dev-runtime");
   ensureDir(logDir);
   const stamp = timestampForFile();
   const outPath = path.join(logDir, `${prefix}_${stamp}.out.log`);

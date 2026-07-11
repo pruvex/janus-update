@@ -1,0 +1,18 @@
+{
+  "status": "BLOCKED",
+  "target_task": "BACKLOG-108",
+  "patch_text": "",
+  "changed_files": [],
+  "risk_list": [
+    "Proposal only; Codex must still review scope, correctness, and bounded local validation before any apply step."
+  ],
+  "suggested_validation_steps": [
+    "python -m pytest backend/tests/test_contact_manager.py -q",
+    "python -m pytest backend/tests/test_memory_tools.py -q",
+    "python -m pytest backend/tests/test_memory_write_update_conflict_handling.py -q",
+    "python -m py_compile backend/services/chat_orchestrator.py backend/services/contact_manager.py backend/services/memory_extractor.py backend/tools/memory_tools.py backend/data/crud.py backend/tests/test_contact_manager.py backend/tests/test_memory_tools.py backend/tests/test_memory_write_update_conflict_handling.py"
+  ],
+  "manual_validation_note": "Codex must manually validate this patch locally before task completion.",
+  "codex_acceptance_rule": "Codex must review and apply or reject locally.",
+  "notes": "The exact_code_context_blocks for stage_contact_update_from_memory show a call to `_should_auto_apply_contact_memory_update(...)` with `proposal_payload=proposal_payload` but `proposal_payload` is never defined in that function. This is a fatal defect. The patch must define `proposal_payload` from the extracted `updates` and `metadata` before the auto-apply check. Without this fix, the code cannot run. I am BLOCKED from producing a valid patch until this defect is acknowledged and fixed."
+}

@@ -1,0 +1,29 @@
+{
+  "summary_header": "DIRECT OR QUICKCHANGE RESULT",
+  "workflow_id": "DIRECT-OR-DISPATCH-FIXTURE-001",
+  "task_label": "Fixture dispatcher direct OR quickchange",
+  "selected_path": "direct_or_patch_proposal_then_codex_review",
+  "normal_target_model": "5.4/medium",
+  "or_model": "openai/gpt-oss-20b",
+  "estimated_or_cost": 0.00025,
+  "actual_or_cost": 5.15e-05,
+  "cost_estimate_confidence_percent": 15.0,
+  "finish_reason": "stop",
+  "validation_result": "PASS",
+  "final_outcome": "DIRECT_OR_PATCH_PROPOSAL_READY_FOR_CODEX_REVIEW",
+  "fallback_used": "NO",
+  "rework_required": "NO",
+  "response_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\direct-or-runs\\DIRECT-OR-DISPATCH-FIXTURE-001\\response_summary.json",
+  "patch_proposal_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\direct-or-runs\\DIRECT-OR-DISPATCH-FIXTURE-001\\patch_proposal.json",
+  "validation_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\direct-or-runs\\DIRECT-OR-DISPATCH-FIXTURE-001\\validation_summary.json",
+  "telemetry_jsonl_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\or_healthcheck_telemetry_direct_or_quickchange_2026-06-19_DIRECT-OR-DISPATCH-FIXTURE-001.jsonl",
+  "healthcheck_status": "PASS",
+  "healthcheck_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\direct-or-runs\\DIRECT-OR-DISPATCH-FIXTURE-001\\healthcheck_summary.json",
+  "operator_result_lines": [
+    "Ergebnis: DIRECT_OR_PATCH_PROPOSAL_READY_FOR_CODEX_REVIEW",
+    "Tatsaechliche Kosten: 0.000051500"
+  ],
+  "operator_message": "Direct OR produced a bounded patch proposal. Codex must review and apply locally.",
+  "codex_owned_outcome_status": "CODEX_REVIEW_REQUIRED",
+  "codex_owned_outcome_final": false
+}

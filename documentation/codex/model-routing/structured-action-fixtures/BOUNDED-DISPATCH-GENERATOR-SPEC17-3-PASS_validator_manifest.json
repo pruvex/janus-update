@@ -1,0 +1,7 @@
+{
+  "validator_id": "validate_runner_v1",
+  "inputs": {
+    "plan_path": "documentation/codex/model-routing/structured-action-runs/BOUNDED-DISPATCH-GENERATOR-SPEC17-3-PASS/20260615-181519/generated/TEST-RUN-2099-12-31-998_plan.json",
+    "runner_path": "documentation/codex/model-routing/structured-action-runs/BOUNDED-DISPATCH-GENERATOR-SPEC17-3-PASS/20260615-181519/generated/TEST-RUN-2099-12-31-998_generated.spec.js"
+  }
+}

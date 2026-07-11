@@ -1,0 +1,1011 @@
+﻿diff --git a/backend/services/contact_manager.py b/backend/services/contact_manager.py
+index d3cbfe58a..a6b5517ab 100644
+--- a/backend/services/contact_manager.py
++++ b/backend/services/contact_manager.py
+@@ -191,7 +191,7 @@ _MEMORY_PROPOSAL_SOURCE = "memory_sync"
+ _EMAIL_RE = re.compile(r"\b[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}\b", re.IGNORECASE)
+ _PHONE_RE = re.compile(r"\+?\d[\d\s()/-]{5,}\d")
+ _URL_RE = re.compile(r"(https?://[^\s]+|www\.[^\s]+)", re.IGNORECASE)
+-_ADDRESS_RE = re.compile(r"\b(?:adresse|wohnt in|anschrift)\s*[:\-]?\s*(.+)$", re.IGNORECASE)
++_ADDRESS_RE = re.compile(r"\b(?:adresse|anschrift)\s*[:\-]?\s*(.+)$", re.IGNORECASE)
+ _PREFERENCE_RE = re.compile(
+     r"\b(?:mag|liebt|bevorzugt|gern|gerne)\b\s*(.+)$",
+     re.IGNORECASE,
+@@ -200,6 +200,10 @@ _DISLIKE_RE = re.compile(
+     r"\b(?:mag nicht|hasst|vermeidet|ungern|mochte nicht)\b\s*(.+)$",
+     re.IGNORECASE,
+ )
++_DIETARY_PREFERENCE_RE = re.compile(
++    r"\b(?:vegetarier(?:in)?|vegetarisch|veganer(?:in)?|vegan|pescetarier(?:in)?|pescetarisch)\b",
++    re.IGNORECASE,
++)
+ _HEALTH_RE = re.compile(
+     r"\b(?:allerg|krank|gesund|medik|unvertraeg|unverträg|gluten|laktose|diabet|blutdruck)\w*",
+     re.IGNORECASE,
+@@ -208,6 +212,33 @@ _RELATIONSHIP_RE = re.compile(
+     r"\b(?:partner|ehe|verheirat|freundin|freund|mann|frau|mutter|vater|bruder|schwester|kind)\w*",
+     re.IGNORECASE,
+ )
++_POLITICAL_RE = re.compile(
++    r"\b(?:afd|cdu|csu|spd|fdp|gruene|gruenen|linke|bsw|partei|politik|politisch|wahl)\b",
++    re.IGNORECASE,
++)
++_RELIGION_RE = re.compile(
++    r"\b(?:religion|religioes|religioese|kirche|christlich|christentum|christen|muslim|islam|juedisch|juedische|judentum|hindu|buddh)\w*",
++    re.IGNORECASE,
++)
++_FINANCIAL_RE = re.compile(
++    r"\b(?:gehalt|einkommen|schulden|vermoegen|kredit|konto|iban|bank|finanz)\w*",
++    re.IGNORECASE,
++)
++_CONTACT_NAME_PREDICATES = {
++    "heisst",
++    "heißt",
++    "heisst_voller_name",
++    "heißt_voller_name",
++    "heisst_vollstaendig",
++    "heißt_vollstaendig",
++}
++_CONTACT_RESIDENCE_PREDICATES = {"wohnt_in", "lebt_in"}
++_CONTACT_RESIDENCE_DETAIL_RE = re.compile(r"^(?:wohnt|lebt)\s+in\s+(.+)$", re.IGNORECASE)
++_DIRECT_CONTACT_RESIDENCE_FACT_RE = re.compile(
++    r"^\s*(?:[A-ZÄÖÜa-zäöüß][\wÄÖÜäöüß' -]{0,80}\s+)?(?:wohnt|lebt)\s+in\s+(.+?)\s*[.!?]?\s*$",
++    re.IGNORECASE,
++)
++_PET_DETAIL_RE = re.compile(r"\b(?:hund|katze|haustier|podenco)\b", re.IGNORECASE)
+ 
+ 
+ def _normalize_contact_name(name: Optional[str]) -> str:
+@@ -216,6 +247,8 @@ def _normalize_contact_name(name: Optional[str]) -> str:
+ 
+ def _normalize_contact_hint(value: Optional[str]) -> str:
+     text = str(value or "").strip().lower()
++    if "." in text:
++        text = text.split(".")[-1]
+     return (
+         text.replace("ä", "ae")
+         .replace("ö", "oe")
+@@ -236,6 +269,31 @@ def _contact_is_public_enrichment_eligible(contact: Any) -> bool:
+     return category in _PUBLIC_CATEGORY_HINTS
+ 
+ 
++def _sanitize_contact_address_text(value: Optional[str]) -> str:
++    text = str(value or "").strip()
++    if not text:
++        return ""
++    text = text.replace("-", " ")
++    text = re.sub(r"(?:â€œ|â€|â€ž|â€˜|â€™|“|”|„|‚|’|‘)+", "", text)
++    text = re.sub(r"[\"“”'`]+", "", text)
++    text = text.strip(" .,)];:")
++    text = re.sub(r"[^\w\s]+$", "", text, flags=re.UNICODE)
++    text = re.sub(r"\s+", " ", text)
++    return text.strip()
++
++
++def _derive_pet_contact_detail(*, fact_text: str, object_value: str) -> str:
++    fact_norm = str(fact_text or "").strip()
++    object_norm = str(object_value or "").strip().casefold()
++    if re.search(r"\b(?:hat|besitzt)\s+einen\s+hund\b", fact_norm, re.IGNORECASE) or object_norm == "hund":
++        return "hat einen Hund"
++    if re.search(r"\b(?:hat|besitzt)\s+eine\s+katze\b", fact_norm, re.IGNORECASE) or object_norm == "katze":
++        return "hat eine Katze"
++    if re.search(r"\b(?:hat|besitzt)\s+ein\s+haustier\b", fact_norm, re.IGNORECASE) or object_norm == "haustier":
++        return "hat ein Haustier"
++    return fact_norm
++
++
+ def _parse_memory_snippet_payload(snippet: Any) -> Dict[str, Any]:
+     if isinstance(snippet, dict):
+         return dict(snippet)
+@@ -260,6 +318,48 @@ def _append_unique(items: List[str], value: Optional[str]) -> None:
+         items.append(text)
+ 
+ 
++def _split_contact_preference_values(value: Optional[str]) -> List[str]:
++    text = str(value or "").strip(" .")
++    if not text:
++        return []
++    if " und " not in text.casefold():
++        return [text]
++    parts = [part.strip(" .") for part in re.split(r"\s+und\s+", text, flags=re.IGNORECASE)]
++    if len(parts) < 2:
++        return [text]
++    if any(not part or len(part.split()) > 3 for part in parts):
++        return [text]
++    return parts
++
++
++def _to_contact_display_name(value: Optional[str]) -> str:
++    return " ".join(part.capitalize() for part in str(value or "").strip().split())
++
++
++def _infer_contact_subject_from_fact(db_session: Session, fact_text: str) -> str:
++    fact_norm = _normalize_contact_name(fact_text)
++    if not fact_norm:
++        return ""
++    all_contacts = db_session.query(Contact).all()
++    for contact in all_contacts:
++        aliases = [
++            str(getattr(contact, "name", "") or "").strip(),
++            str(getattr(contact, "nickname", "") or "").strip(),
++        ]
++        for alias in aliases:
++            alias_norm = _normalize_contact_name(alias)
++            if not alias_norm:
++                continue
++            if re.search(
++                rf"(?<!\w){re.escape(alias_norm)}\s+"
++                rf"(?:mag|liebt|hasst|bevorzugt|verbringt\s+gerne|verbringt\s+gern|ist)\b",
++                fact_norm,
++                re.IGNORECASE,
++            ):
++                return str(getattr(contact, "name", None) or alias).strip()
++    return ""
++
++
+ def _build_contact_memory_fact(
+     *,
+     contact_name: str,
+@@ -360,13 +460,32 @@ def _contact_memory_fact_objects(contact: Any) -> List[Dict[str, Any]]:
+ def _extract_contact_updates_from_memory_payload(memory_payload: Dict[str, Any]) -> Dict[str, Any]:
+     fact_text = str(memory_payload.get("fact") or "").strip()
+     category = _normalize_contact_hint(memory_payload.get("category"))
++    predicate = _normalize_contact_hint(memory_payload.get("predicate"))
++    subject_name = str(memory_payload.get("subject_name") or "").strip()
++    object_value = str(memory_payload.get("object_value") or "").strip(" .")
+     updates: Dict[str, Any] = {}
+     metadata: Dict[str, Any] = {
+         "fact": fact_text,
+         "category": memory_payload.get("category"),
+         "sensitive": False,
++        "dietary": False,
++        "naming": False,
++        "residence": False,
+     }
+ 
++    if predicate in _CONTACT_NAME_PREDICATES and object_value:
++        metadata["naming"] = True
++        display_name = _to_contact_display_name(object_value)
++        if display_name:
++            updates["name"] = display_name
++        display_subject = _to_contact_display_name(subject_name)
++        if (
++            display_subject
++            and display_name
++            and display_subject.casefold() != display_name.casefold()
++        ):
++            updates["nickname"] = display_subject
++
+     email_match = _EMAIL_RE.search(fact_text)
+     if email_match:
+         updates["email"] = email_match.group(0)
+@@ -381,14 +500,53 @@ def _extract_contact_updates_from_memory_payload(memory_payload: Dict[str, Any])
+ 
+     address_match = _ADDRESS_RE.search(fact_text)
+     if address_match:
+-        updates["address"] = address_match.group(1).strip(" .")
++        normalized_address = _sanitize_contact_address_text(address_match.group(1))
++        if normalized_address:
++            updates["address"] = normalized_address
+ 
+     preference_match = _PREFERENCE_RE.search(fact_text)
+     dislike_match = _DISLIKE_RE.search(fact_text)
++    dietary_match = _DIETARY_PREFERENCE_RE.search(
++        " ".join(
++            str(memory_payload.get(key) or "")
++            for key in ("fact", "object_value", "predicate")
++        )
++    )
++    residence_match = None
++    if predicate in _CONTACT_RESIDENCE_PREDICATES and object_value:
++        residence_match = object_value
++    else:
++        _residence_match = _DIRECT_CONTACT_RESIDENCE_FACT_RE.match(fact_text)
++        if _residence_match:
++            residence_match = _residence_match.group(1)
++
++    if residence_match:
++        metadata["residence"] = True
++        normalized_residence = _sanitize_contact_address_text(residence_match)
++        if normalized_residence:
++            updates["address"] = normalized_residence
++
++    if category == "haustier_details" or _PET_DETAIL_RE.search(" ".join([fact_text, object_value])):
++        details = []
++        _append_unique(
++            details,
++            _derive_pet_contact_detail(fact_text=fact_text, object_value=object_value),
++        )
++        if details:
++            updates["personal_details"] = details
+ 
+-    if category == "vorlieben" or preference_match:
++    if dietary_match:
++        metadata["dietary"] = True
++        details = []
++        _append_unique(details, dietary_match.group(0).strip(" ."))
++        if details:
++            updates["personal_details"] = details
++
++    if (category == "vorlieben" or preference_match) and not dietary_match:
+         preferences = []
+-        _append_unique(preferences, preference_match.group(1).strip(" .") if preference_match else fact_text)
++        raw_preference = preference_match.group(1).strip(" .") if preference_match else fact_text
++        for preference in _split_contact_preference_values(raw_preference):
++            _append_unique(preferences, preference)
+         if preferences:
+             updates["preferences"] = preferences
+ 
+@@ -398,13 +556,29 @@ def _extract_contact_updates_from_memory_payload(memory_payload: Dict[str, Any])
+         if dislikes:
+             updates["dislikes"] = dislikes
+ 
+-    if category in _SENSITIVE_MEMORY_CATEGORIES or _HEALTH_RE.search(fact_text) or _RELATIONSHIP_RE.search(fact_text):
++    if (
++        not metadata["naming"]
++        and (
++        category in _SENSITIVE_MEMORY_CATEGORIES
++        or _HEALTH_RE.search(fact_text)
++        or _RELATIONSHIP_RE.search(fact_text)
++        or _POLITICAL_RE.search(fact_text)
++        or _RELIGION_RE.search(fact_text)
++        or _FINANCIAL_RE.search(fact_text)
++        )
++    ):
+         metadata["sensitive"] = True
+ 
+     if (
+         category in {"allgemein", "beruf", "stil", "physis"}
+         and not any(key in updates for key in ("email", "phone", "address", "website"))
+-    ) or metadata["sensitive"]:
++        and not metadata["naming"]
++        and not metadata["residence"]
++    ) or (
++        metadata["sensitive"]
++        and not any(key in updates for key in ("preferences", "dislikes", "personal_details"))
++        and not metadata["naming"]
++    ):
+         details: List[str] = []
+         _append_unique(details, fact_text)
+         if details:
+@@ -422,15 +596,35 @@ def _should_auto_apply_contact_memory_update(
+     proposal_payload: Dict[str, Any],
+ ) -> bool:
+     source_type = str(getattr(memory, "source_type", "") or "").strip().lower()
+-    if source_type != "text":
++    if source_type not in {"text", "tool"}:
+         return False
+     if match_mode != "exact":
+         return False
+     if bool(metadata.get("sensitive")):
+         return False
+     allowed_fields = {"preferences", "dislikes"}
++    if bool(metadata.get("dietary")) or (not bool(metadata.get("sensitive"))):
++        allowed_fields.add("personal_details")
++    if bool(metadata.get("residence")):
++        allowed_fields.add("address")
++    if bool(metadata.get("naming")):
++        allowed_fields.update({"name", "nickname"})
+     payload_fields = {field for field in proposal_payload.keys() if field != "memory_sync_status"}
+-    return bool(payload_fields) and payload_fields.issubset(allowed_fields)
++    if not payload_fields or not payload_fields.issubset(allowed_fields):
++        return False
++    if source_type == "text":
++        return True
++
++    source_metadata = getattr(memory, "source_metadata", None) or {}
++    if not isinstance(source_metadata, dict):
++        return False
++
++    origin = str(source_metadata.get("contact_sync_origin") or "").strip().lower()
++    return (
++        bool(source_metadata.get("contact_sync_trusted"))
++        and origin in {"direct_user_utterance", "confirmed_contact_knowledge"}
++        and bool(str(source_metadata.get("user_msg") or "").strip())
++    )
+ 
+ 
+ def _apply_contact_memory_update_directly(
+@@ -457,6 +651,78 @@ def _apply_contact_memory_update_directly(
+     }
+ 
+ 
++def _should_create_contact_from_memory(
++    *,
++    memory: Any,
++    subject_name: str,
++    metadata: Dict[str, Any],
++    updates: Dict[str, Any],
++) -> bool:
++    source_type = str(getattr(memory, "source_type", "") or "").strip().lower()
++    if source_type != "text":
++        return False
++    if not str(subject_name or "").strip():
++        return False
++
++    source_metadata = getattr(memory, "source_metadata", None) or {}
++    if not isinstance(source_metadata, dict) or not str(source_metadata.get("user_msg") or "").strip():
++        return False
++
++    if bool(metadata.get("sensitive")):
++        return False
++
++    return bool(
++        updates.get("name")
++        or updates.get("nickname")
++        or updates.get("email")
++        or updates.get("phone")
++        or updates.get("website")
++        or updates.get("address")
++    )
++
++
++def _create_contact_from_memory_payload(
++    db_session: Session,
++    *,
++    subject_name: str,
++    updates: Dict[str, Any],
++) -> Dict[str, Any]:
++    contact_name = str(updates.get("name") or _to_contact_display_name(subject_name) or subject_name).strip()
++    nickname = str(updates.get("nickname") or "").strip() or None
++    if nickname and nickname.casefold() == contact_name.casefold():
++        nickname = None
++
++    contact_schema = contact_schemas.ContactCreate(
++        name=contact_name,
++        nickname=nickname,
++        category="Privat",
++        contact_type="private_person",
++        email=updates.get("email"),
++        phone=updates.get("phone"),
++        address=updates.get("address"),
++        website=updates.get("website"),
++        preferences=list(updates.get("preferences") or []),
++        dislikes=list(updates.get("dislikes") or []),
++        personal_details=list(updates.get("personal_details") or []),
++        proposal_status="confirmed",
++        proposal_source_context="direct_context",
++        proposal_last_outcome="created_from_confirmed_chat_fact",
++        memory_sync_status="ready",
++    )
++    created_contact = crud.create_contact(db_session, contact=contact_schema)
++    if created_contact is None:
++        return {"status": "failed", "reason": "create_failed", "proposals_staged": 0}
++    return {
++        "status": "created",
++        "reason": "created_from_confirmed_chat_fact",
++        "proposals_staged": 0,
++        "suppressed": 0,
++        "review_notes": [],
++        "user_message": None,
++        "applied_contact_id": created_contact.id,
++    }
++
++
+ def _coerce_public_contact_value(field: str, value: Any) -> Optional[str]:
+     if isinstance(value, list):
+         value = ", ".join(str(item) for item in value if str(item).strip())
+@@ -533,6 +799,16 @@ def _contact_type_from_payload(contact_data_item: Dict[str, Any]) -> str:
+     return "private_person"
+ 
+ 
++def _extract_residence_address(value: Optional[str]) -> Optional[str]:
++    text = str(value or "").strip()
++    if not text:
++        return None
++    match = _CONTACT_RESIDENCE_DETAIL_RE.match(text)
++    if not match:
++        return None
++    return _sanitize_contact_address_text(match.group(1)) or None
++
++
+ def _sanitize_contact_payload(contact_data_item: Dict[str, Any]) -> Dict[str, Any]:
+     payload = dict(contact_data_item or {})
+     payload["contact_type"] = _contact_type_from_payload(payload)
+@@ -554,6 +830,23 @@ def _sanitize_contact_payload(contact_data_item: Dict[str, Any]) -> Dict[str, An
+         cleaned["name"] = str(cleaned["name"]).strip()
+     if "category" not in cleaned:
+         cleaned["category"] = "Business" if cleaned.get("contact_type") == "organization" else "Privat"
++    if cleaned.get("contact_type") == "private_person":
++        note_lines = [line.strip() for line in str(cleaned.get("notes", "") or "").splitlines()]
++        cleaned_note_lines: List[str] = []
++        for line in note_lines:
++            if not line:
++                continue
++            residence_address = _extract_residence_address(line)
++            if residence_address:
++                if not cleaned.get("address"):
++                    cleaned["address"] = residence_address
++                continue
++            cleaned_note_lines.append(line)
++        if "notes" in cleaned:
++            if cleaned_note_lines:
++                cleaned["notes"] = "\n".join(cleaned_note_lines)
++            else:
++                cleaned.pop("notes", None)
+     return cleaned
+ 
+ 
+@@ -589,9 +882,28 @@ def _extract_candidate_updates(
+ 
+ 
+ def _find_existing_contact_candidates(db_session: Session, contact_name: str) -> Dict[str, Any]:
+-    exact_matches = crud.search_contacts_by_name(db_session, name_query=contact_name)
+     normalized_name = _normalize_contact_name(contact_name)
+-    exact_named = [row for row in exact_matches if _normalize_contact_name(getattr(row, "name", "")) == normalized_name]
++    if not normalized_name:
++        return {"primary": None, "mode": "none", "candidates": []}
++
++    all_contacts = db_session.query(Contact).all()
++
++    def _candidate_aliases(candidate: Any) -> List[Dict[str, str]]:
++        aliases: List[Dict[str, str]] = []
++        for field_name, raw_value in (
++            ("name", getattr(candidate, "name", None)),
++            ("nickname", getattr(candidate, "nickname", None)),
++        ):
++            normalized_value = _normalize_contact_name(raw_value)
++            if normalized_value and all(alias["value"] != normalized_value for alias in aliases):
++                aliases.append({"field": field_name, "value": normalized_value})
++        return aliases
++
++    exact_named = [
++        row
++        for row in all_contacts
++        if any(alias["value"] == normalized_name for alias in _candidate_aliases(row))
++    ]
+     if len(exact_named) == 1:
+         return {"primary": exact_named[0], "mode": "exact", "candidates": exact_named}
+     if len(exact_named) > 1:
+@@ -599,30 +911,41 @@ def _find_existing_contact_candidates(db_session: Session, contact_name: str) ->
+ 
+     seen: Dict[int, Any] = {}
+     tokens = [part for part in re.split(r"\s+", contact_name) if len(part) > 2]
+-    candidate_queries = [contact_name]
+-    if tokens:
+-        candidate_queries.extend(tokens)
+-        candidate_queries.append(tokens[-1])
+-
+-    for query in candidate_queries:
+-        for row in crud.search_contacts_by_name(db_session, name_query=query):
+-            seen[getattr(row, "id", 0)] = row
++    for candidate in all_contacts:
++        aliases = _candidate_aliases(candidate)
++        if any(
++            normalized_name in alias["value"] or alias["value"] in normalized_name
++            for alias in aliases
++        ):
++            seen[getattr(candidate, "id", 0)] = candidate
++            continue
++        if tokens and any(token in alias["value"] for token in tokens for alias in aliases):
++            seen[getattr(candidate, "id", 0)] = candidate
+ 
+-    candidates = list(seen.values())
+-    if len(candidates) == 1:
+-        return {"primary": candidates[0], "mode": "near_match", "candidates": candidates}
++    candidates = list(seen.values()) or list(all_contacts)
+ 
+     scored: List[Any] = []
+     for candidate in candidates:
+-        ratio = SequenceMatcher(
+-            None,
+-            normalized_name,
+-            _normalize_contact_name(getattr(candidate, "name", "")),
+-        ).ratio()
+-        scored.append((ratio, candidate))
+-
+-    strong = [candidate for ratio, candidate in scored if ratio >= 0.78]
++        alias_scores = [
++            (
++                SequenceMatcher(None, normalized_name, alias["value"]).ratio(),
++                alias["field"],
++            )
++            for alias in _candidate_aliases(candidate)
++        ]
++        ratio, matched_field = max(alias_scores, default=(0.0, ""))
++        scored.append((ratio, matched_field, candidate))
++
++    strong = [candidate for ratio, _, candidate in scored if ratio >= 0.78]
+     if len(strong) == 1:
++        strongest_ratio, strongest_field, strongest_candidate = max(scored, key=lambda item: item[0])
++        if (
++            strongest_candidate is strong[0]
++            and strongest_field == "nickname"
++            and len(tokens) <= 1
++            and strongest_ratio >= 0.88
++        ):
++            return {"primary": strongest_candidate, "mode": "exact", "candidates": strong}
+         return {"primary": strong[0], "mode": "near_match", "candidates": strong}
+     if len(strong) > 1:
+         return {"primary": None, "mode": "ambiguous", "candidates": strong}
+@@ -1375,18 +1698,34 @@ def stage_contact_update_from_memory(
+         or memory_payload.get("contact_name")
+         or ""
+     ).strip()
++    if not subject_name:
++        subject_name = _infer_contact_subject_from_fact(
++            db_session,
++            str(memory_payload.get("fact") or ""),
++        )
+     if not subject_name:
+         return {"status": "ignored", "reason": "missing_subject", "proposals_staged": 0}
+ 
+     match_info = _find_existing_contact_candidates(db_session, subject_name)
+     target_contact = match_info.get("primary")
+     match_mode = str(match_info.get("mode") or "")
+-    if target_contact is None or match_mode not in {"exact", "near_match"}:
+-        return {"status": "ignored", "reason": "ambiguous_contact", "proposals_staged": 0}
+-
+     extracted = _extract_contact_updates_from_memory_payload(memory_payload)
+     updates = extracted.get("updates") or {}
+     metadata = extracted.get("metadata") or {}
++    if target_contact is None or match_mode not in {"exact", "near_match"}:
++        if match_mode == "none" and _should_create_contact_from_memory(
++            memory=memory,
++            subject_name=subject_name,
++            metadata=metadata,
++            updates=updates,
++        ):
++            return _create_contact_from_memory_payload(
++                db_session,
++                subject_name=subject_name,
++                updates=updates,
++            )
++        return {"status": "ignored", "reason": "ambiguous_contact", "proposals_staged": 0}
++
+     if not updates:
+         return {"status": "ignored", "reason": "no_contact_fields", "proposals_staged": 0}
+ 
+@@ -1408,6 +1747,22 @@ def stage_contact_update_from_memory(
+             ):
+                 proposal_payload[field] = normalized_value
+ 
++    if bool(metadata.get("dietary")):
++        dietary_terms = {
++            str(item or "").strip().casefold()
++            for item in list(updates.get("personal_details") or [])
++            if str(item or "").strip()
++        }
++        if dietary_terms:
++            existing_preferences = list(getattr(target_contact, "preferences", None) or [])
++            cleaned_preferences = [
++                item
++                for item in existing_preferences
++                if str(item or "").strip().casefold() not in dietary_terms
++            ]
++            if cleaned_preferences != existing_preferences:
++                proposal_payload["preferences"] = cleaned_preferences
++
+     if not proposal_payload:
+         return {"status": "ignored", "reason": "already_applied", "proposals_staged": 0}
+ 
+diff --git a/backend/tools/memory_tools.py b/backend/tools/memory_tools.py
+index 18a236e5e..4809c1ae1 100644
+--- a/backend/tools/memory_tools.py
++++ b/backend/tools/memory_tools.py
+@@ -49,6 +49,77 @@ _NO_DURABLE_MEMORY_RE = re.compile(
+     r"\b(?:nicht|not|no)\b.{0,80}\b(?:dauerhaft|permanent|langfristig|long[-\s]?term)\b",
+     re.IGNORECASE,
+ )
++_CONTACT_QUERY_SCOPE_PATTERNS = [
++    re.compile(r"\bwas\s+mag(?:en)?\s+(.+)$", re.IGNORECASE),
++    re.compile(r"\bwas\s+wei(?:ß|ss)t\s+du\s+über\s+(.+)$", re.IGNORECASE),
++    re.compile(r"\bich\s+will\s+mit\s+(.+)$", re.IGNORECASE),
++    re.compile(r"\b(?:vorlieben|praeferenzen|prÃ¤ferenzen|interessen|hobbys)\s+von\s+(.+)$", re.IGNORECASE),
++    re.compile(r"\bmein(?:e|en)?\s+(?:freund|freundin)\s+(.+)$", re.IGNORECASE),
++    re.compile(r"\bkorr(?:e|i)ktur:?\s+(.+)$", re.IGNORECASE),
++    re.compile(
++        r"^\s*([a-zäöüß][\wäöüß-]*(?:\s+[a-zäöüß][\wäöüß-]*){0,2})\s+"
++        r"(?:liebt|mag|ist|wohnt|hasst|verbringt|baut)\b",
++        re.IGNORECASE,
++    ),
++]
++_CONTACT_QUERY_STOPWORDS = {
++    "als",
++    "am",
++    "an",
++    "bei",
++    "bin",
++    "das",
++    "dem",
++    "den",
++    "der",
++    "die",
++    "du",
++    "ein",
++    "eine",
++    "er",
++    "essen",
++    "fuer",
++    "für",
++    "geht",
++    "gehen",
++    "heute",
++    "ich",
++    "im",
++    "in",
++    "ist",
++    "mag",
++    "mit",
++    "nicht",
++    "oder",
++    "sie",
++    "und",
++    "was",
++    "weiss",
++    "weißt",
++    "wohnt",
++    "zu",
++    "zum",
++}
++_EXPLICIT_CONTACT_SUBJECT_RE = re.compile(
++    r"^\s*([a-zäöüß][\wäöüß-]*(?:\s+[a-zäöüß][\wäöüß-]*){0,2})\s+"
++    r"(?:liebt|mag|ist|wohnt|hasst|verbringt|baut)\b",
++    re.IGNORECASE,
++)
++_EXPLICIT_CONTACT_SUBJECT_STOPWORDS = {
++    "ja",
++    "genau",
++    "richtig",
++    "korrekt",
++    "stimmt",
++    "yes",
++    "und",
++    "oder",
++    "er",
++    "sie",
++    "es",
++    "ich",
++    "du",
++}
+ 
+ 
+ def _is_sensitive_memory_write_request(text: Any) -> bool:
+@@ -84,6 +155,213 @@ def _memory_lexical_match_score(mem: models.Memory, query: str) -> int:
+     return sum(1 for term in query_terms if term in haystack)
+ 
+ 
++def _normalize_memory_search_text(text: Any) -> str:
++    normalized = str(text or "").casefold()
++    normalized = (
++        normalized
++        .replace("ü", "ue")
++        .replace("ä", "ae")
++        .replace("ö", "oe")
++        .replace("ß", "ss")
++        .replace("Ã¼", "ue")
++        .replace("Ã¤", "ae")
++        .replace("Ã¶", "oe")
++        .replace("ÃŸ", "ss")
++    )
++    return re.sub(r"[^a-z0-9]+", " ", normalized).strip()
++
++
++def _extract_explicit_lead_contact_subject(text: Any) -> Optional[str]:
++    match = _EXPLICIT_CONTACT_SUBJECT_RE.search(str(text or "").strip())
++    if not match:
++        return None
++    subject = str(match.group(1) or "").strip()
++    tokens = [token.casefold() for token in subject.split() if token]
++    if not tokens or any(token in _EXPLICIT_CONTACT_SUBJECT_STOPWORDS for token in tokens):
++        return None
++    return subject.strip() or None
++
++
++def _rebind_explicit_contact_subject(
++    *,
++    fact: str,
++    subject_name: Optional[str],
++    original_user_text: Optional[str],
++) -> tuple[str, Optional[str]]:
++    def _tokenize_subject(value: Optional[str]) -> list[str]:
++        return [token for token in _normalize_memory_search_text(value).split() if token]
++
++    def _is_more_specific_subject(candidate: Optional[str], explicit: str) -> bool:
++        candidate_tokens = _tokenize_subject(candidate)
++        explicit_tokens = _tokenize_subject(explicit)
++        if not candidate_tokens or not explicit_tokens:
++            return False
++        if len(candidate_tokens) <= len(explicit_tokens):
++            return False
++        return candidate_tokens[: len(explicit_tokens)] == explicit_tokens
++
++    explicit_subject = _extract_explicit_lead_contact_subject(original_user_text)
++    if not explicit_subject:
++        return fact, subject_name
++
++    rebound_subject = subject_name or explicit_subject
++    if not _is_more_specific_subject(subject_name, explicit_subject):
++        rebound_subject = explicit_subject
++
++    rebound_fact = str(fact or "").strip()
++    if rebound_fact:
++        fact_match = _EXPLICIT_CONTACT_SUBJECT_RE.search(rebound_fact)
++        if fact_match:
++            original_prefix = str(fact_match.group(1) or "").strip()
++            if (
++                original_prefix
++                and _normalize_memory_search_text(original_prefix) != _normalize_memory_search_text(explicit_subject)
++                and not _is_more_specific_subject(original_prefix, explicit_subject)
++            ):
++                rebound_fact = rebound_fact.replace(original_prefix, explicit_subject, 1)
++    return rebound_fact, rebound_subject
++
++
++def _extract_contact_query_subject_aliases(db: Session, query: str) -> set[str]:
++    query_norm = _normalize_memory_search_text(query)
++    if not query_norm:
++        return set()
++
++    query_tokens = {token for token in query_norm.split() if len(token) >= 3}
++    aliases: set[str] = set()
++
++    scoped_fragments: List[str] = []
++    normalized_scope_patterns = [
++        re.compile(r"\bwas\s+mag(?:en)?\s+(.+)$"),
++        re.compile(r"\bwas\s+weisst\s+du\s+ueber\s+(.+)$"),
++        re.compile(r"\bich\s+will\s+mit\s+(.+)$"),
++        re.compile(r"\b(?:vorlieben|praeferenzen|interessen|hobbys)\s+von\s+(.+)$"),
++        re.compile(r"\bmein(?:e|en)?\s+(?:freund|freundin)\s+(.+)$"),
++        re.compile(r"\bkorr(?:e|i)ktur\s+(.+)$"),
++        re.compile(
++            r"^\s*([a-z][a-z0-9-]*(?:\s+[a-z][a-z0-9-]*){0,2})\s+"
++            r"(?:liebt|mag|ist|wohnt|hasst|verbringt|baut)\b"
++        ),
++    ]
++    for pattern in normalized_scope_patterns:
++        match = pattern.search(query_norm)
++        if not match:
++            continue
++        for part in re.split(r"\bund\b|,|/|;", match.group(1)):
++            tokens: List[str] = []
++            for token in part.split():
++                if token in _CONTACT_QUERY_STOPWORDS:
++                    break
++                if len(token) < 3:
++                    continue
++                tokens.append(token)
++                if len(tokens) >= 2:
++                    break
++            if tokens:
++                scoped_fragments.append(" ".join(tokens))
++        if scoped_fragments:
++            break
++
++    if not scoped_fragments:
++        for pattern in _CONTACT_QUERY_SCOPE_PATTERNS:
++            match = pattern.search(str(query or ""))
++            if not match:
++                continue
++            fragment_norm = _normalize_memory_search_text(match.group(1))
++            if not fragment_norm:
++                continue
++            for part in re.split(r"\bund\b|,|/|;", fragment_norm):
++                tokens: List[str] = []
++                for token in part.split():
++                    if token in _CONTACT_QUERY_STOPWORDS:
++                        break
++                    if len(token) < 3:
++                        continue
++                    tokens.append(token)
++                    if len(tokens) >= 2:
++                        break
++                if tokens:
++                    scoped_fragments.append(" ".join(tokens))
++            if scoped_fragments:
++                break
++
++    if scoped_fragments:
++        contacts = db.query(models.Contact).all()
++        matched_exact_fragment = False
++        for fragment in scoped_fragments:
++            fragment_tokens = {token for token in fragment.split() if len(token) >= 3}
++            exact_contact_aliases: List[str] = []
++            for contact in contacts:
++                contact_aliases = [
++                    str(value or "").strip()
++                    for value in (getattr(contact, "name", None), getattr(contact, "nickname", None))
++                    if str(value or "").strip()
++                ]
++                normalized_aliases = [
++                    _normalize_memory_search_text(alias)
++                    for alias in contact_aliases
++                    if _normalize_memory_search_text(alias)
++                ]
++                if fragment in normalized_aliases:
++                    exact_contact_aliases.extend(normalized_aliases)
++                    break
++            if exact_contact_aliases:
++                matched_exact_fragment = True
++                for alias_norm in exact_contact_aliases:
++                    aliases.add(alias_norm)
++                    aliases.update(token for token in alias_norm.split() if len(token) >= 3)
++                continue
++
++            if not matched_exact_fragment:
++                aliases.add(fragment)
++                aliases.update(fragment_tokens)
++        return aliases
++
++    for contact in db.query(models.Contact).all():
++        contact_aliases = [
++            str(value or "").strip()
++            for value in (getattr(contact, "name", None), getattr(contact, "nickname", None))
++            if str(value or "").strip()
++        ]
++        matched = False
++        normalized_aliases: List[str] = []
++        for alias in contact_aliases:
++            alias_norm = _normalize_memory_search_text(alias)
++            if not alias_norm:
++                continue
++            normalized_aliases.append(alias_norm)
++            alias_tokens = {token for token in alias_norm.split() if len(token) >= 3}
++            if re.search(rf"(?<!\w){re.escape(alias_norm)}(?!\w)", query_norm) or query_tokens.intersection(alias_tokens):
++                matched = True
++        if not matched:
++            continue
++        for alias_norm in normalized_aliases:
++            aliases.add(alias_norm)
++            aliases.update(token for token in alias_norm.split() if len(token) >= 3)
++
++    if aliases:
++        return aliases
++
++    return aliases
++
++
++def _memory_matches_subject_aliases(mem: models.Memory, subject_aliases: set[str]) -> bool:
++    if not subject_aliases:
++        return True
++    snippet_data = _parse_snippet(mem.snippet)
++    fact_text = str(snippet_data.get("fact") or mem.snippet or "")
++    subject_name = str(snippet_data.get("subject_name") or "")
++    haystack_parts = [
++        _normalize_memory_search_text(subject_name),
++        _normalize_memory_search_text(getattr(mem, "canonical_key", None)),
++        _normalize_memory_search_text(fact_text),
++    ]
++    haystack = " ".join(part for part in haystack_parts if part).strip()
++    if not haystack:
++        return False
++    return any(alias and alias in haystack for alias in subject_aliases)
++
++
+ def _is_placeholder_memory_fact_text(text: Any) -> bool:
+     normalized = _normalize_memory_search_text(text)
+     if not normalized:
+@@ -100,6 +378,22 @@ def _is_placeholder_memory_fact_text(text: Any) -> bool:
+     return not any(marker in normalized for marker in concrete_markers)
+ 
+ 
++def _build_memory_write_source_metadata(
++    *,
++    source_skill: str,
++    original_user_text: Optional[str],
++) -> Dict[str, Any]:
++    metadata: Dict[str, Any] = {
++        "source_skill": str(source_skill or "").strip() or "system.memory_write",
++    }
++    user_msg = str(original_user_text or "").strip()
++    if user_msg:
++        metadata["user_msg"] = user_msg[:500]
++        metadata["contact_sync_trusted"] = True
++        metadata["contact_sync_origin"] = "direct_user_utterance"
++    return metadata
++
++
+ # ═══════════════════════════════════════════════════════════════════════════
+ # INPUT SCHEMAS
+ # ═══════════════════════════════════════════════════════════════════════════
+@@ -160,7 +454,8 @@ async def handle_memory_write(
+     params: Dict[str, Any],
+     db: Session,
+     chat_id: int,
+-    source_skill: str = "system.memory_write"
++    source_skill: str = "system.memory_write",
++    original_user_text: Optional[str] = None,
+ ) -> ToolResultV1:
+     """
+     FLOW:
+@@ -195,6 +490,22 @@ async def handle_memory_write(
+                 tags=_MEMORY_TAGS,
+                 started_at=t0,
+             )
++
++        rebound_fact, rebound_subject_name = _rebind_explicit_contact_subject(
++            fact=args.fact,
++            subject_name=args.subject_name,
++            original_user_text=original_user_text,
++        )
++        if rebound_fact != args.fact or rebound_subject_name != args.subject_name:
++            logger.info(
++                "[TOOL WRITE] Rebinding explicit contact subject from fact=%r subject=%r to fact=%r subject=%r",
++                args.fact,
++                args.subject_name,
++                rebound_fact,
++                rebound_subject_name,
++            )
++            args.fact = rebound_fact
++            args.subject_name = rebound_subject_name
+         
+         # 1. Build fact_object
+         fact_object = {
+@@ -229,11 +540,16 @@ async def handle_memory_write(
+         # 5. Save via Task-020 Memory-Paket (öffentliche API)
+         from backend.services.memory import save_memory_snippet
+ 
++        source_metadata = _build_memory_write_source_metadata(
++            source_skill=source_skill,
++            original_user_text=original_user_text,
++        )
+         saved = save_memory_snippet(
+             db=db,
+             chat_id=chat_id,
+             fact_object=enriched,
+-            source_type="tool"
++            source_type="tool",
++            source_metadata=source_metadata,
+         )
+         
+         if not saved:
+@@ -313,6 +629,14 @@ async def handle_memory_read(
+         
+         # Get candidates
+         candidates = query.all()
++
++        subject_aliases = _extract_contact_query_subject_aliases(db, args.query)
++        if subject_aliases:
++            subject_filtered = [
++                mem for mem in candidates if _memory_matches_subject_aliases(mem, subject_aliases)
++            ]
++            if subject_filtered:
++                candidates = subject_filtered
+         
+         # Filter by tags if specified
+         if args.filter_tags:
+@@ -719,7 +1043,12 @@ def _parse_snippet(snippet: Optional[str]) -> Dict[str, Any]:
+ # SYNC WRAPPERS (for ToolExecutor compatibility)
+ # ═══════════════════════════════════════════════════════════════════════════
+ 
+-def memory_write_tool(db: Session, **kwargs) -> ToolResultV1:
++def memory_write_tool(
++    db: Session,
++    original_user_text: Optional[str] = None,
++    source_skill: str = "system.memory_write",
++    **kwargs,
++) -> ToolResultV1:
+     """Sync wrapper for handle_memory_write with proper asyncio handling.
+     
+     Args:
+@@ -737,11 +1066,28 @@ def memory_write_tool(db: Session, **kwargs) -> ToolResultV1:
+     try:
+         loop = asyncio.get_running_loop()
+         # If we're in an async context, schedule the coroutine
+-        future = asyncio.run_coroutine_threadsafe(handle_memory_write(params, db, chat_id), loop)
++        future = asyncio.run_coroutine_threadsafe(
++            handle_memory_write(
++                params,
++                db,
++                chat_id,
++                source_skill=source_skill,
++                original_user_text=original_user_text,
++            ),
++            loop,
++        )
+         return future.result(timeout=30)
+     except RuntimeError:
+         # No running loop - use our own
+-        return asyncio.run(handle_memory_write(params, db, chat_id))
++        return asyncio.run(
++            handle_memory_write(
++                params,
++                db,
++                chat_id,
++                source_skill=source_skill,
++                original_user_text=original_user_text,
++            )
++        )
+ 
+ 
+ async def memory_read_tool_async(params: Dict[str, Any], db: Session) -> ToolResultV1:

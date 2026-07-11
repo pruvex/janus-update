@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-06-09-002",
+  "testCaseId": "TC-003-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "`was mag oli?`",
+  "response": "Oli (Oliver Schwab) hat eine ganze Reihe von Interessen, die du mir heute, am 09. Juni 2026, erzählt hast:*   Essen: Er mag Kimchi und isst gerne vegetarisch.*   Unterhaltung: Er liebt die Serie *The Big Bang Theory*.*   Hobbys: Er verbringt gerne Zeit im Garten und baut Star-Wars-Modelle zusammen.*   Spiele: Oli mag Strategiespiele, insbesondere Klassiker wie *Panzer General*.Da er in Köln Stammheim wohnt, hast du sicher schon die eine oder andere Runde mit ihm dort verbracht, Rolf Adam.💡 Passende nächste Schritte:• Soll ich nach vegetarischen Restaurants in Köln Stammheim suchen?• Suchst du nach einem neuen Star-Wars-Modell als Geschenk für ihn?• Möchtest du weitere Details zu Olis Hobbys ergänzen?18:33",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-06-09T16:33:40.600Z"
+}

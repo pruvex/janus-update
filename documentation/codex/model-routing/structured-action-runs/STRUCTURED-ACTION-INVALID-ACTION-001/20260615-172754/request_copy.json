@@ -1,0 +1,21 @@
+{
+  "schema_version": "codex_delegated_action_request.v1",
+  "workflow_id": "STRUCTURED-ACTION-INVALID-ACTION-001",
+  "skill_id": "janus-test-pipeline",
+  "action_type": "run_generator",
+  "summary": "Attempt a later-slice action type before mapping support is enabled.",
+  "requires_codex_review": true,
+  "non_goals": [
+    "No free shell execution",
+    "No generator mapping in TASK-SPEC17.1"
+  ],
+  "action_payload": {
+    "generator_id": "generate_live_runner_v1",
+    "inputs": {
+      "plan_path": "documentation/codex/model-routing/structured-action-fixtures/builder_generator_payload_2026-06-14.json"
+    },
+    "declared_output_artifacts": [
+      "__RUN_DIR__/generated_output.md"
+    ]
+  }
+}

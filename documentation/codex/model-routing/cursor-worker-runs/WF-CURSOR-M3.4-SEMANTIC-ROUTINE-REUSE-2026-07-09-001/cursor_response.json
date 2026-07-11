@@ -1,0 +1,16 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 193948,
+  "duration_api_ms": 193948,
+  "result": "The task prompt wasn't included in your message â€” I'll look for the delegated worker package or task file in the workspace.\nImplementing semantic routine matching: intent-based skill signatures, runner fallback after explicit triggers, and focused tests.\nAdding regression tests:\nRemoving duplicate tests introduced by the replace operation.\n**TASK-WORKFLOW-M3.4** is implemented. Saved calendar+weather routines can now be reused from natural phrasing without naming the routine.\n\n### What changed\n\n1. **`intent_engine.py`** â€” Added bounded semantic matching:\n   - `detect_routine_request_skills()` maps natural text â†’ skill signature (`calendar.list_events`, `system.weather`)\n   - `match_routine_semantic_signature()` matches when request skills equal saved routine steps (min. 2 skills)\n\n2. **`routine_runner.py`** â€” Two-pass matching:\n   - Pass 1: explicit `trigger_phrases` (unchanged)\n   - Pass 2: semantic step-signature match\n   - Success text for semantic matches: *\"Ich habe deine passende gespeicherte Routine genutzt.\"*\n\n3. **`chat_orchestrator.py`** â€” Passes routine memory context to the runner and logs trigger vs semantic match kind.\n\n4. **Tests** â€” Added regression coverage for semantic reuse, unrelated-request guard, and saveâ†’execute roundtrip.\n\n### Validation\n\n- `pytest backend/tests/test_routine_runner.py backend/tests/test_workflow_offer_service.py -v` â†’ **17 passed**\n- `py_compile` on all three service files â†’ **PASS**\n\n```json\n{\n  \"status\": \"PASS\",\n  \"root_cause\": \"RoutineRunner only matched explicit trigger_phrases; natural calendar+weather requests did not map to saved step signatures.\",\n  \"changed_files\": [\n    \"backend/services/orchestrator/intent_engine.py\",\n    \"backend/services/workflow/routine_runner.py\",\n    \"backend/services/chat_orchestrator.py\",\n    \"backend/tests/test_routine_runner.py\",\n    \"backend/tests/test_workflow_offer_service.py\"\n  ],\n  \"command_results\": {\n    \"focused_pytest\": \"17 passed in 0.24s\",\n    \"py_compile\": \"PASS\"\n  },\n  \"summary\": \"Semantic routine reuse is live for calendar+weather: natural requests like 'Was steht heute in meinem Kalender und wie wird das Wetter in Koeln?' execute the saved routine without naming it, explicit triggers still work, unrelated requests are rejected, and the success response states the saved routine was used.\",\n  \"blockers\": []\n}\n```",
+  "session_id": "f7977118-ebc2-4b85-ac5e-2c5c39ca7190",
+  "request_id": "dd8ee1c1-057d-4454-87b7-59fe7ee3e223",
+  "usage": {
+    "inputTokens": 72171,
+    "outputTokens": 17047,
+    "cacheReadTokens": 1647601,
+    "cacheWriteTokens": 0
+  }
+}

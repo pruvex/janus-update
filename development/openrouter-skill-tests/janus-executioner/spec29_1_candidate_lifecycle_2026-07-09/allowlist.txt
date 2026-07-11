@@ -1,0 +1,7 @@
+backend/data/models.py
+backend/data/database.py
+backend/services/workflow/workflow_detector.py
+backend/services/workflow/step_trace_extractor.py
+backend/services/workflow/routine_store.py
+backend/tests/test_workflow_detector.py
+backend/tests/test_routine_store.py

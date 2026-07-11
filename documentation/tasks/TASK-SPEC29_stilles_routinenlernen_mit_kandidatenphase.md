@@ -1,0 +1,115 @@
+TASK-SPEC29
+- Source Spec: `documentation/SPEC/29_stilles_routinenlernen_mit_kandidatenphase.md`
+- Backlog Item: N/A
+- Feature: Stilles Routinenlernen mit Kandidatenphase
+- Generated At: 2026-07-09
+
+## Generated Tasks
+
+### TASK-SPEC29.1 Kandidaten-Lebenszyklus und Lern-Guards
+- Ziel:
+  - Nach einem ersten qualifying Multi-Step-Erfolg einen internen Routinen-Kandidaten anlegen, riskante oder stark kontextabhaengige Faelle fail-closed ausschliessen und den 30-Tage-Verfall deterministisch abbilden.
+- Scope:
+  - Datenmodell fuer unsichtbare Kandidaten oder entsprechenden internen Zwischenstatus ergaenzen.
+  - Ersten qualifying Erfolg vom bestehenden Workflow-/Routine-Pfad in eine Kandidatenanlage statt in eine sofort sichtbare gespeicherte Routine ueberfuehren.
+  - 30-Tage-Verfall fuer unbestaetigte Kandidaten persistenzseitig und fachlich abbilden.
+  - Riskante, sensitive oder stark kontextabhaengige Ablaeufe fuer v1 fail-closed vom stillen Lernen ausschliessen.
+  - Keine automatische Promotion zu sichtbaren Routinen, keine Settings-Oberflaeche, keine sichtbare Chat-Speicherbestaetigung in diesem Slice.
+- Files:
+  - backend/data/models.py
+  - backend/data/database.py
+  - backend/services/workflow/workflow_detector.py
+  - backend/services/workflow/step_trace_extractor.py
+  - backend/services/workflow/routine_store.py
+  - backend/tests/test_workflow_detector.py
+  - backend/tests/test_routine_store.py
+- Steps:
+  - Internen Kandidatenstatus mit den fuer Matching, Alter und Sichtbarkeit noetigen Feldern modellieren.
+  - Bestehende Qualifying- und Reject-Guards so anpassen, dass nur geeignete erfolgreiche Mehrschritt-Ablaeufe Kandidaten erzeugen.
+  - 30-Tage-Verfall fuer unbestaetigte Kandidaten in Store-/Lesepfaden fail-closed beruecksichtigen.
+  - Tests fuer Kandidatenanlage, Risk-Reject und Verfall ohne zweite Bestaetigung ergaenzen.
+- Acceptance Criteria:
+  - Ein erster geeigneter erfolgreicher Mehrschritt-Ablauf erzeugt genau einen internen Kandidaten statt sofort eine sichtbare gespeicherte Routine.
+  - Riskante, sensitive oder stark kontextabhaengige Ablaeufe erzeugen in v1 keinen Kandidaten.
+  - Ein unbestaetigter Kandidat wird nach 30 Tagen nicht mehr als aktiver Lernkandidat behandelt.
+  - Vorhandene Reject-Guards fuer unpassende oder instabile Faelle bleiben fail-closed.
+- Tests:
+  - python -m pytest backend/tests/test_workflow_detector.py -v
+  - python -m pytest backend/tests/test_routine_store.py -v
+  - python -m py_compile backend/data/models.py backend/data/database.py backend/services/workflow/workflow_detector.py backend/services/workflow/step_trace_extractor.py backend/services/workflow/routine_store.py
+- Model: 5.4
+- Reason:
+  - Bounded Backend-/Persistenz-Slice mit Guard-Logik und klaren Testgrenzen; gut task-bar und spaeter Cursor-tauglich fuer eine allowlistbare Workhorse-Ausfuehrung.
+
+### TASK-SPEC29.2 Automatische Promotion und passive Chat-Transparenz
+- Ziel:
+  - Einen passenden zweiten erfolgreichen Fall automatisch von Kandidat zu echter gespeicherter Routine promoten und die blockierende Save-Interaktion fuer diesen Lernpfad durch passive Chat-Hinweise ersetzen.
+- Scope:
+  - Zweiten passenden erfolgreichen Fall gegen bestehende Kandidaten matchen und automatische Promotion in eine sichtbare gespeicherte Routine ausloesen.
+  - Passive Chat-Hinweise fuer automatische Speicherung und spaetere Routinen-Nutzung liefern.
+  - Bestehenden expliziten Offer-/Save-Bestaetigungspfad fuer den in Scope liegenden stillen Lernpfad unterdruecken oder umgehen.
+  - Bereits gespeicherte Routinen weiter ueber den bestehenden Runner-/Reuse-Pfad nutzbar halten.
+  - Keine Settings-Verwaltung und keine breitere UI-Informationsarchitektur in diesem Slice.
+- Files:
+  - backend/services/workflow/workflow_offer_service.py
+  - backend/services/workflow/routine_runner.py
+  - backend/services/chat_orchestrator.py
+  - backend/services/orchestrator/response_finalizer.py
+  - backend/tests/test_workflow_offer_service.py
+  - backend/tests/test_routine_runner.py
+  - backend/tests/unit/test_chat_orchestrator_routine_execution.py
+- Steps:
+  - Kandidaten-Matching und automatische Promotion beim zweiten passenden erfolgreichen Fall an den bestehenden Workflow-/Runner-Pfad anbinden.
+  - Explizite Save-Unterbrechung fuer den stillen Lernpfad durch passive Speicherhinweise ersetzen.
+  - Reuse-Hinweis fuer spaetere Nutzung gespeicherter Routinen auf dem bestehenden Antwortpfad stabil halten.
+  - Regressionen gegen den bisherigen Save-/Run-Pfad und den semantischen Reuse-Pfad absichern.
+- Acceptance Criteria:
+  - Ein zweiter passender erfolgreicher Fall innerhalb von 30 Tagen promotet den Kandidaten automatisch zu einer echten gespeicherten Routine.
+  - Beim ersten und zweiten Fall erscheint keine blockierende Save-Frage mehr fuer den stillen Lernpfad.
+  - Der erste qualifying Fall bleibt ohne passiven Speicherhinweis; ein solcher Hinweis darf erst bei der automatischen Promotion oder bei spaeterer Routinen-Nutzung erscheinen.
+  - Nach automatischer Promotion erscheint nur ein kurzer passiver Hinweis, dass eine Routine gespeichert wurde.
+  - Bei spaeterer passender Routinen-Nutzung erscheint nur ein kurzer passiver Hinweis, dass eine gespeicherte Routine verwendet wurde.
+  - Fehlgeschlagene, unpassende oder zu spaete zweite Faelle fuehren nicht zu Promotion.
+- Tests:
+  - python -m pytest backend/tests/test_workflow_offer_service.py -v
+  - python -m pytest backend/tests/test_routine_runner.py -v
+  - python -m pytest backend/tests/unit/test_chat_orchestrator_routine_execution.py -v
+  - python -m py_compile backend/services/workflow/workflow_offer_service.py backend/services/workflow/routine_runner.py backend/services/chat_orchestrator.py backend/services/orchestrator/response_finalizer.py
+- Model: 5.4
+- Reason:
+  - Produktrelevanter Multi-File-Backend-Slice mit Antwortpfad-, Persistenz- und UX-Verhalten; klar bounded, aber hoeherer Review- und Regressionseinfluss.
+
+### TASK-SPEC29.3 Routinen-Verwaltung in Einstellungen mit Sichtbarkeits- und Kontrollpfad
+- Ziel:
+  - Echte gespeicherte Routinen in einem sichtbaren Einstellungen-Bereich listen und Kontrollaktionen fuer Einsehen, Deaktivieren und Loeschen bereitstellen.
+- Scope:
+  - API fuer sichtbare gespeicherte Routinen und ihre Verwaltungsaktionen bereitstellen.
+  - Bestehende Settings-Navigation und Settings-Ansicht um einen Routinen-Bereich erweitern.
+  - Gespeicherte Routinen sichtbar listen und bounded Aktionen fuer Deaktivieren und Loeschen anbinden.
+  - Nur echte gespeicherte Routinen anzeigen; interne Kandidaten bleiben unsichtbar.
+  - Kein Feindesign-Polish, keine allgemeine Settings-Neuarchitektur, keine Kandidaten-UI.
+- Files:
+  - backend/api/routers/routines.py
+  - backend/main.py
+  - backend/services/workflow/routine_store.py
+  - frontend/js/settings.js
+  - frontend/css/settings.css
+  - backend/tests/test_routine_store.py
+  - backend/tests/test_routine_api.py
+- Steps:
+  - Gebundene Routinen-API fuer Listen, Deaktivieren und Loeschen einfuehren und in `main.py` registrieren.
+  - Store-Zugriffe fuer sichtbare gespeicherte Routinen und Aktiv-/Inaktiv-Zustand anbinden.
+  - Settings-Navigation und Settings-Section fuer Routinen lokal ergaenzen.
+  - UI nur fuer echte gespeicherte Routinen rendern; Kandidaten bleiben unsichtbar.
+- Acceptance Criteria:
+  - In den Einstellungen gibt es einen sichtbaren Routinen-Bereich fuer gespeicherte Routinen.
+  - Gespeicherte Routinen koennen eingesehen, deaktiviert und geloescht werden.
+  - Deaktivierte Routinen bleiben sichtbar, werden aber nicht mehr als aktive gespeicherte Routinen behandelt.
+  - Interne Kandidaten erscheinen nirgends in der sichtbaren Routinen-Verwaltung.
+- Tests:
+  - python -m pytest backend/tests/test_routine_store.py -v
+  - python -m pytest backend/tests/test_routine_api.py -v
+  - python -m py_compile backend/api/routers/routines.py backend/main.py frontend/js/settings.js
+- Model: 5.4
+- Reason:
+  - Surface-uebergreifender API-plus-Settings-Slice mit klarer Nutzerkontrolle; sinnvoll getrennt vom Lern- und Promotionskern.

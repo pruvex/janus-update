@@ -1,0 +1,11 @@
+{
+  "skill_id": "DOC-SKILL-002",
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "pass": true,
+  "failures": [],
+  "finish_reason": "stop",
+  "actual_or_cost": 6.718e-05,
+  "latency_ms": 5133,
+  "generation_id": "gen-1782397342-YNr4APN7KcZjJzjqj9Xn",
+  "response_path": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-documentation-update\\strict-runs\\doc-skill-002\\qwen-qwen3-coder-30b-a3b-instruct\\response_body.json"
+}

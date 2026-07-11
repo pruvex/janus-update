@@ -1,0 +1,97 @@
+{
+  "workflow_id": "WF-SPEC-TO-TASK-REPRESENTATIVE-SPEC21-2026-06-26",
+  "bound_skill_context": "janus-spec-to-task",
+  "mode": "TASK_COMPILATION_DRAFT_ONLY",
+  "spec_path": "documentation/SPEC/Spec Done/21_assisted_or_workhorse_mode_for_janus_skills.md",
+  "task_file_path": "documentation/tasks/TASK-SPEC21_assisted_or_workhorse_mode_for_janus_skills.md",
+  "task_root_id": "TASK-SPEC21",
+  "backlog_item": "N/A",
+  "feature_name": "Assistierter OR-Arbeitspferd-Modus fuer Janus-Skills",
+  "expected_next_skill": "janus-task-breakdown",
+  "expected_execution_model": "5.4",
+  "expected_slice_themes": [
+    "eligibility_redaction_gate",
+    "operator_gate_normalization",
+    "telemetry_healthcheck_capture",
+    "consumer_integration_without_scope_widening"
+  ],
+  "slice_theme_file_anchors": {
+    "eligibility_redaction_gate": [
+      "documentation/codex/model-routing/scripts/bounded_or_worker_eligibility.py",
+      "documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py",
+      "documentation/codex/model-routing/scripts/codex_structured_action_request_builder.py",
+      "documentation/codex/model-routing/tests/"
+    ],
+    "operator_gate_normalization": [
+      "documentation/codex/model-routing/scripts/bounded_or_worker_gate_prompt.py",
+      "documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py",
+      "documentation/codex/skills/janus-debug/SKILL.md",
+      "documentation/codex/skills/janus-test-pipeline/SKILL.md",
+      "documentation/codex/model-routing/tests/"
+    ],
+    "telemetry_healthcheck_capture": [
+      "documentation/codex/model-routing/scripts/or_file_first_capture_wrapper.ps1",
+      "documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py",
+      "documentation/codex/model-routing/scripts/bounded_or_worker_outcome.py",
+      "documentation/codex/skills/janus-health-check/scripts/health_snapshot.py",
+      "documentation/codex/model-routing/tests/"
+    ],
+    "consumer_integration_without_scope_widening": [
+      "documentation/codex/model-routing/scripts/codex_debug_hypothesis_review_runner.py",
+      "documentation/codex/model-routing/scripts/codex_test_result_triage_review_runner.py",
+      "documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py",
+      "documentation/codex/skills/janus-debug/SKILL.md",
+      "documentation/codex/skills/janus-test-pipeline/SKILL.md",
+      "documentation/codex/model-routing/tests/"
+    ]
+  },
+  "spec_constraints": [
+    "No implementation",
+    "No code generation",
+    "No architecture decisions",
+    "No invented requirements",
+    "No feature expansion",
+    "No review-only or verification-only tasks",
+    "Codex remains the local writer of the final task artifact"
+  ],
+  "task_contract": {
+    "minimum_task_count": 4,
+    "maximum_task_count": 4,
+    "required_task_fields": [
+      "task_id",
+      "title",
+      "ziel",
+      "scope",
+      "files",
+      "steps",
+      "acceptance_criteria",
+      "tests",
+      "model",
+      "reason",
+      "slice_theme"
+    ],
+    "allowed_model_values": [
+      "5.4",
+      "5.4 mini",
+      "5.5"
+    ]
+  },
+  "spec_summary": {
+    "review_status": "APPROVED_WITH_NOTES",
+    "complexity_score": 61,
+    "risk": "HIGH",
+    "allowed_initial_skills": [
+      "janus-debug",
+      "janus-test-pipeline"
+    ],
+    "primary_goal": "Bei geeigneten bounded Arbeitsschritten eine klare Wahl zwischen Codex und OpenRouter anbieten, ohne lokale Kontroll- und Validierungsgrenzen aufzugeben.",
+    "definition_of_done_focus": [
+      "visible 1 = Codex / 2 = OR-Arbeitspferd gate",
+      "cost and confidence display before choice",
+      "exactly one bounded OR step",
+      "actual OR cost visible after run",
+      "fallback or manual review on failed OR gates",
+      "no OR path outside janus-debug and janus-test-pipeline"
+    ]
+  }
+}

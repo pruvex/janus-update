@@ -1,0 +1,139 @@
+{
+  "task_root_id": "TASK-SPEC21",
+  "source_spec": "documentation/SPEC/Spec Done/21_assisted_or_workhorse_mode_for_janus_skills.md",
+  "task_file_path": "documentation/tasks/TASK-SPEC21_assisted_or_workhorse_mode_for_janus_skills.md",
+  "backlog_item": "N/A",
+  "feature_name": "Assistierter OR-Arbeitspferd-Modus fuer Janus-Skills",
+  "generated_at": "2026-06-26T12:00:00Z",
+  "generated_tasks": [
+    {
+      "task_id": "TASK-SPEC21.1",
+      "title": "Implement Eligibility Redaction Gate Logic",
+      "ziel": "Ensure bounded eligibility checks before OR delegation",
+      "scope": "Define eligibility criteria and redaction rules for OR worker",
+      "files": [
+        "documentation/codex/model-routing/scripts/bounded_or_worker_eligibility.py",
+        "documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py",
+        "documentation/codex/model-routing/scripts/codex_structured_action_request_builder.py",
+        "documentation/codex/model-routing/tests/"
+      ],
+      "steps": [
+        "Define eligibility rules for bounded OR step",
+        "Implement redaction logic for sensitive data",
+        "Integrate eligibility check with dispatcher"
+      ],
+      "acceptance_criteria": [
+        "Eligibility check passes before OR call",
+        "Redaction applied to sensitive data",
+        "Visible 1 = Codex / 2 = OR-Arbeitspferd gate"
+      ],
+      "tests": [
+        "tests for eligibility logic",
+        "tests for redaction output",
+        "tests for dispatcher integration"
+      ],
+      "model": "5.4",
+      "reason": "Required for bounded OR step enforcement",
+      "slice_theme": "eligibility_redaction_gate"
+    },
+    {
+      "task_id": "TASK-SPEC21.2",
+      "title": "Normalize Operator Gate Prompts",
+      "ziel": "Standardize prompts for Janus skills (debug/test-pipeline)",
+      "scope": "Adjust prompt templates for operator gate normalization",
+      "files": [
+        "documentation/codex/model-routing/scripts/bounded_or_worker_gate_prompt.py",
+        "documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py",
+        "documentation/codex/skills/janus-debug/SKILL.md",
+        "documentation/codex/skills/janus-test-pipeline/SKILL.md",
+        "documentation/codex/model-routing/tests/"
+      ],
+      "steps": [
+        "Review prompt templates for operator gate",
+        "Normalize operator instructions for Janus skills",
+        "Update skill SKILL.md references"
+      ],
+      "acceptance_criteria": [
+        "Prompts align with Janus skills",
+        "No scope widening in prompts",
+        "Fallback or manual review on failed OR gates"
+      ],
+      "tests": [
+        "tests for prompt generation",
+        "tests for skill compatibility",
+        "tests for gate normalization"
+      ],
+      "model": "5.4",
+      "reason": "Ensures consistent operator behavior",
+      "slice_theme": "operator_gate_normalization"
+    },
+    {
+      "task_id": "TASK-SPEC21.3",
+      "title": "Capture Telemetry and Health Check Data",
+      "ziel": "Record OR cost and health status during execution",
+      "scope": "Implement health snapshot capture and cost visibility",
+      "files": [
+        "documentation/codex/model-routing/scripts/or_file_first_capture_wrapper.ps1",
+        "documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py",
+        "documentation/codex/model-routing/scripts/bounded_or_worker_outcome.py",
+        "documentation/codex/skills/janus-health-check/scripts/health_snapshot.py",
+        "documentation/codex/model-routing/tests/"
+      ],
+      "steps": [
+        "Integrate health_snapshot.py for telemetry",
+        "Capture OR cost metrics during run",
+        "Log health status for visibility"
+      ],
+      "acceptance_criteria": [
+        "Cost visible after run",
+        "Health snapshot captured",
+        "Cost and confidence display before choice"
+      ],
+      "tests": [
+        "tests for health capture",
+        "tests for cost logging",
+        "tests for telemetry wrapper"
+      ],
+      "model": "5.4",
+      "reason": "Supports DoD focus on cost and confidence display",
+      "slice_theme": "telemetry_healthcheck_capture"
+    },
+    {
+      "task_id": "TASK-SPEC21.4",
+      "title": "Integrate Consumer Without Scope Widening",
+      "ziel": "Connect consumer logic to Janus-debug and janus-test-pipeline only",
+      "scope": "Implement consumer integration runners",
+      "files": [
+        "documentation/codex/model-routing/scripts/codex_debug_hypothesis_review_runner.py",
+        "documentation/codex/model-routing/scripts/codex_test_result_triage_review_runner.py",
+        "documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py",
+        "documentation/codex/skills/janus-debug/SKILL.md",
+        "documentation/codex/skills/janus-test-pipeline/SKILL.md",
+        "documentation/codex/model-routing/tests/"
+      ],
+      "steps": [
+        "Configure debug hypothesis review runner",
+        "Configure test result triage review runner",
+        "Verify scope boundaries for consumer integration"
+      ],
+      "acceptance_criteria": [
+        "No OR path outside allowed skills",
+        "Consumer integration functional",
+        "Exactly one bounded OR step"
+      ],
+      "tests": [
+        "tests for consumer integration",
+        "tests for scope boundaries",
+        "tests for runner configuration"
+      ],
+      "model": "5.4",
+      "reason": "Enforces bounded skill context",
+      "slice_theme": "consumer_integration_without_scope_widening"
+    }
+  ],
+  "execution_model": "5.4",
+  "next_skill": "janus-task-breakdown",
+  "notes": [
+    "Compilation based on SPEC21 approved package. Adheres to bounded constraints and spec summary goals. No code implementation or scope invention."
+  ]
+}

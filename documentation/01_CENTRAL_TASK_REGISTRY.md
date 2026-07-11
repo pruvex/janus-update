@@ -43,6 +43,19 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 - **Validation**: `TASK-SPEC31.1` schliesst den ersten eng gebundenen Spec-31-Slice als allgemeinen semantischen Reuse-Kern fuer mehrschrittige gespeicherte Routinen mit dem ersten Pilotfall `calendar.list_events + system.routing` ab. Der produktive Pfad erkennt jetzt passende gespeicherte Routinen nicht mehr nur ueber den bisherigen engen Weather-Sonderfall, bindet aktuelle Nutzerwerte fuer Datum/Start/Ziel frisch an die gespeicherte Struktur und behaelt den kurzen passiven Routinenutzungshinweis bei. Final Audit PASS mit fokussierter Cursor-first-Execution-Evidence, Pytest-/Compile-Evidence und realer Janus-PASS-Evidence fuer den neuen Routing-Pilot plus den bestehenden Weather-Regressionspfad. Zusammen mit `TASK-SPEC31.2` ist der allgemeine Spec-31-Pfad jetzt vollstaendig abgeschlossen.
 - **Changed Files**: `backend/services/orchestrator/intent_engine.py`, `backend/services/workflow/routine_runner.py`, `development/openrouter-skill-tests/janus-executioner/spec31_1_semantic_routine_reuse_2026-07-09/input_package.json`, `development/openrouter-skill-tests/janus-executioner/spec31_1_semantic_routine_reuse_2026-07-09/worker_package.json`, `development/openrouter-skill-tests/janus-executioner/spec31_1_semantic_routine_reuse_2026-07-09/allowlist.txt`, `documentation/codex/model-routing/cursor-worker-runs/WF-SPEC31.1-EXEC-PATCH-2026-07-09-002/resume_followup_response.json`, `documentation/tasks/TASK-SPEC31.1_cursor_execution_probe_2026-07-09.md`, `documentation/tasks/TASK-SPEC31.1_execution_result.md`, `documentation/tasks/TASK-SPEC31.1_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-SPEC31.1_final_audit.md`.
 
+### TASK-WORKFLOW-M3.4 - Semantic saved-routine reuse from natural user requests
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-WORKFLOW-M3.4_final_audit.md` (PASS)
+- **Spec**: `documentation/Cursor specs/LEARNED_WORKFLOWS_SPEC.md` (Phase 4 / M3.4 only; optional Phase 5 UI remains open)
+- **Parent Task**: `documentation/tasks/TASK-WORKFLOW-M3_offer_runner.md`
+- **Task Breakdown**: `documentation/tasks/TASK-WORKFLOW-M3.4_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-WORKFLOW-M3.4_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-WORKFLOW-M3.4_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-WORKFLOW-M3.4_AUDIT_PACKAGE.md`
+- **Validation**: M3.4 beendet den Workflow-MVP-Pfad als bounded semantische Wiedererkennung: eine gespeicherte `calendar.list_events + system.weather`-Routine wird auf eine passende natuerliche Nutzeranfrage ohne Routinenamen ausgefuehrt, transparent angezeigt und bei unpassender Stadt/Datum, Mehrdeutigkeit oder unvollstaendigen Werten fail-closed nicht wiederverwendet. Cursor lieferte den bounded Kandidaten, Codex behielt Review und Acceptance Authority. Validation: GPT-/Gemini-Live-Evidence PASS; re-run `pytest` PASS (`40 passed`); compile und scoped diff check PASS; final-audit validator PASS.
+- **Changed Files**: `backend/services/workflow/routine_runner.py`, `backend/services/orchestrator/intent_engine.py`, `backend/services/chat_orchestrator.py`, `backend/tests/test_routine_runner.py`, `backend/tests/test_workflow_offer_service.py`, `backend/tests/unit/test_chat_orchestrator_routine_execution.py`, task/precheck/execution/audit artifacts, and Cursor worker evidence.
+
 ### TASK-WORKFLOW-M3.1 - Implement Workflow Phase 1+2 as one bounded store-and-detector slice
 
 - **Status**: DONE

@@ -1,0 +1,33 @@
+{
+  "summary_header": "BACKLOG INTAKE REVIEW RESULT",
+  "workflow_id": "WF-BACKLOG-FIXTURE-CHECK-2026-06-25",
+  "skill": "janus-backlog-intake",
+  "task_label": "Lean backlog intake delegated fixture check",
+  "selected_path": "delegated_backlog_intake_review",
+  "normal_target_model": "5.4 medium",
+  "selected_or_model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "estimated_or_cost": 0.00018,
+  "actual_or_cost": 0.00016096,
+  "cost_estimate_confidence_percent": 74.0,
+  "generation_id": "gen-1782415462-RsGmbeWA3qV3DOO383sD",
+  "finish_reason": "stop",
+  "latency_ms": 549,
+  "validation_result": "PASS",
+  "final_outcome": "BACKLOG_INTAKE_REVIEW_READY_FOR_CODEX_VALIDATION",
+  "fallback_used": "NO",
+  "rework_required": "NO",
+  "input_package_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\backlog-intake-review-runs\\WF-BACKLOG-FIXTURE-CHECK-2026-06-25\\input_package.json",
+  "request_body_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\backlog-intake-review-runs\\WF-BACKLOG-FIXTURE-CHECK-2026-06-25\\request_body.json",
+  "response_body_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\backlog-intake-review-runs\\WF-BACKLOG-FIXTURE-CHECK-2026-06-25\\response_body.json",
+  "response_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\backlog-intake-review-runs\\WF-BACKLOG-FIXTURE-CHECK-2026-06-25\\response_summary.json",
+  "delegated_result_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\backlog-intake-review-runs\\WF-BACKLOG-FIXTURE-CHECK-2026-06-25\\delegated_result.md",
+  "validation_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\backlog-intake-review-runs\\WF-BACKLOG-FIXTURE-CHECK-2026-06-25\\validation_summary.json",
+  "telemetry_jsonl_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\or_healthcheck_telemetry_backlog_intake_review_2026-06-25_WF-BACKLOG-FIXTURE-CHECK-2026-06-25.jsonl",
+  "healthcheck_status": "PASS",
+  "healthcheck_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\backlog-intake-review-runs\\WF-BACKLOG-FIXTURE-CHECK-2026-06-25\\healthcheck_summary.json",
+  "operator_result_lines": [
+    "Ergebnis: BACKLOG_INTAKE_REVIEW_READY_FOR_CODEX_VALIDATION",
+    "Tatsaechliche Kosten: 0.000160960"
+  ],
+  "operator_message": "Delegated backlog-intake review stayed bounded and file-first captured. Codex must still decide the final backlog edit locally."
+}

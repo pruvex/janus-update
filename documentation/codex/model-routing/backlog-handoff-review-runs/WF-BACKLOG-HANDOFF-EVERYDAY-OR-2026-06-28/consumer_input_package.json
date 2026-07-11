@@ -1,0 +1,47 @@
+{
+  "workflow_id": "WF-BACKLOG-HANDOFF-PACKAGE-001",
+  "bound_skill_context": "janus-backlog-handoff",
+  "mode": "SELECTED_HANDOFF",
+  "selected_backlog_id": "BACKLOG-109",
+  "selected_item": {
+    "backlog_id": "BACKLOG-109",
+    "title": "Lokale DB-Snapshots vor riskanten Debug-, Repair- und Migrationsschritten anlegen",
+    "type": "IMPROVEMENT",
+    "status": "READY",
+    "created_at": "2026-06-08",
+    "updated_at": "2026-06-08",
+    "follow_up_to": "BACKLOG-108",
+    "summary": "Vor riskanten lokalen Eingriffen an der Janus-App-Datenbank soll Janus automatisch einen rotierenden Snapshot der produktiven lokalen DB anlegen.",
+    "expected_behavior": "Vor riskanten lokalen Debug-, Repair-, Migrations- oder datenveraendernden Sonderpfaden wird ein klar benannter DB-Snapshot in einem definierten lokalen Backup-Pfad erzeugt. Restore bleibt ein expliziter manueller Schritt.",
+    "actual_behavior": "Aktuell gibt es keinen verlaesslichen automatischen Schutzmechanismus fuer die lokale Janus-DB vor riskanten Debug-/Repair-Eingriffen.",
+    "context": "Der Nutzer wollte nach riskanten Live-Debug- und Repair-Erfahrungen einen Snapshot-first-Schutz fuer die lokale produktive Janus-DB.",
+    "affected_area": "Backend / Dev-Workflow / lokale Persistenz / Debug- und Repair-Tooling",
+    "evidence_paths": [
+      "documentation/backlog/BACKLOG.md#BACKLOG-109",
+      "documentation/backlog/BACKLOG_ACTIVE_SUMMARY.md",
+      "documentation/codex/SKILL_USAGE_LOG.md#2026-06-08-janus-debug"
+    ],
+    "acceptance_summary": [
+      "klar definierter Pre-Action-DB-Snapshot-Mechanismus fuer die lokale Janus-DB",
+      "definierter Backup-Pfad mit nachvollziehbarer Benennung und Rotation",
+      "Restore bleibt explizit manuell",
+      "Loesung wird fuer kuenftige Debug-/Repair-Schritte dokumentiert"
+    ],
+    "missing_info": [],
+    "notes": [
+      "als lokale Sicherheits-/Workflow-Haertung behandeln",
+      "kein normales Endnutzer-Feature"
+    ]
+  },
+  "allowed_entry_points": [
+    "PRE_IMPLEMENTATION_VERIFICATION",
+    "SPEC_PIPELINE_START",
+    "ROUTING_BLOCKED"
+  ],
+  "expected_best_entry_point": "PRE_IMPLEMENTATION_VERIFICATION",
+  "expected_artifact_path": "documentation/tasks/backlog_BACKLOG-109_lokale_db_snapshots_vor_riskanten_debug_repair_und_migrationsschritten.md",
+  "expected_next_skill": "janus-preimplementation-check",
+  "artifact_exists": false,
+  "expected_output": "One bounded selected-handoff recommendation for BACKLOG-109 with entry point, artifact path, next skill prompt, and no authoritative backlog write claims.",
+  "redaction_ready": true
+}

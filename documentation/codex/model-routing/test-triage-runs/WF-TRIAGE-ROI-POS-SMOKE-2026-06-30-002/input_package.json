@@ -1,0 +1,14 @@
+{
+  "workflow_id": "WF-TRIAGE-EVERYDAY-PACKAGE-001",
+  "bound_skill_context": "janus-test-pipeline",
+  "test_run_id": "TEST-RUN-TRIAGE-EVERYDAY-001",
+  "result_outcome_summary": "One bounded local result bundle needs assist-only classification review.",
+  "evidence_snippets": [
+    "Result bundle already redacted.",
+    "One bounded classification question only.",
+    "Codex keeps rerun and routing ownership."
+  ],
+  "classification_question": "Is this more likely an INFRA_BLOCKER or TEST_BUG?",
+  "redaction_ready": true,
+  "candidate_blocker_category": "INFRA_BLOCKER"
+}

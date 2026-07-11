@@ -1,0 +1,27 @@
+{
+  "task_id": "TASK-TP-003",
+  "lane_id": "test_fixture_worker",
+  "workflow_id": "WF-TEST-FIXTURE-EXAMPLE-001",
+  "bound_skill_context": "janus-test-pipeline",
+  "test_run_id": "TEST-RUN-042",
+  "testspec_path": "documentation/TEST_SPEC/EXAMPLE-FEATURE-001.md",
+  "task_label": "Add bounded contact-memory fixture and matching unit test",
+  "allowlist_file": "documentation/codex/model-routing/fixtures/examples/allowlists/test_fixture_allowlist.txt",
+  "worker_package_json": "documentation/codex/model-routing/fixtures/examples/test_fixture_worker_package_example.json",
+  "acceptance_criteria": [
+    "Only allowlisted fixture and test files may change.",
+    "Fixture shape must match the bounded TestSpec helper need.",
+    "Checks must pass before Codex review."
+  ],
+  "redaction_ready": true,
+  "estimated_codex_saved_tokens": 30000,
+  "estimated_delegation_overhead_tokens": 10000,
+  "recommended_backend": "cursor",
+  "recommended_model": "composer-2.5",
+  "openrouter_fallback": {
+    "backend": "openrouter",
+    "model": "moonshotai/kimi-k2.5",
+    "worker_profile": "aider-openrouter-kimi"
+  },
+  "cursor_prompt_contract": "Edit only allowlisted files. Run only package checks. Do not commit. Return diff, check output, and concise worker summary."
+}

@@ -1,0 +1,75 @@
+{
+  "task_label": "Bounded LIVE_TEST_EXECUTION worker contract fixture",
+  "worker_profile": "aider-openrouter",
+  "task_prompt": "Run only the bounded local live-retest contract steps described in the package. Do not invent credentials, do not inspect unrelated repository context, and do not claim final PASS authority. Write only the allowlisted evidence summary file.",
+  "workspace_files": [
+    {
+      "repo_path": "documentation/codex/model-routing/strong-or-fixtures/strong_live_retest_evidence_fixture_2026-07-05.md",
+      "workspace_path": "documentation/codex/model-routing/strong-or-fixtures/strong_live_retest_evidence_fixture_2026-07-05.md",
+      "allow_edit": true,
+      "copy_back": true
+    }
+  ],
+  "pre_commands": [
+    {
+      "label": "contract_api_health_check",
+      "command": [
+        "python",
+        "-c",
+        "print('api_health_check: contract placeholder')"
+      ],
+      "expected_exit_codes": [
+        0
+      ]
+    }
+  ],
+  "post_commands": [
+    {
+      "label": "contract_evidence_check",
+      "command": [
+        "python",
+        "-c",
+        "print('evidence: reviewable contract placeholder')"
+      ],
+      "expected_exit_codes": [
+        0
+      ]
+    }
+  ],
+  "live_retest_contract": {
+    "mode": "LIVE_TEST_EXECUTION",
+    "live_test_scope": "local_bounded_retest",
+    "allowed_steps": [
+      "api_health_check",
+      "create_chat",
+      "run_bound_prompt",
+      "collect_evidence"
+    ],
+    "local_auth": {
+      "mode": "runtime_only",
+      "header_reference": "JANUS_LOCAL_DEV_AUTH_HEADER_RUNTIME_ONLY",
+      "secret_material_included": false,
+      "versioned_secret_value": "REDACTED"
+    },
+    "evidence_outputs": [
+      "RESULT.json",
+      "RESULT.md",
+      "CHECKS.log",
+      "FILES_CHANGED.txt",
+      "COST.json"
+    ],
+    "codex_review_required": true,
+    "forbidden_authority": [
+      "final_pass",
+      "release",
+      "git",
+      "routing",
+      "broad_shell",
+      "secret_write"
+    ]
+  },
+  "notes": [
+    "Contract fixture for bounded local LIVE_TEST_EXECUTION retest worker packages.",
+    "The package may reference a runtime-only auth/header requirement but must never serialize real secret values."
+  ]
+}

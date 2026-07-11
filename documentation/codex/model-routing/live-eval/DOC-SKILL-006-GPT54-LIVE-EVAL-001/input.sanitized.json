@@ -1,0 +1,33 @@
+{
+  "fixture_id": "DOC-SKILL-006-GPT54-LIVE-EVAL-001",
+  "skill_id": "DOC-SKILL-006",
+  "skill_name": "Format Markdown documentation",
+  "target_local_baseline": {
+    "model": "5.4",
+    "reasoning": "medium"
+  },
+  "task_intent": "Format a sanitized documentation note while preserving authority boundaries.",
+  "source_status": "sanitized_fixture_only",
+  "raw_markdown": "# routing note\nstatus: planning only no production routing\n\npurpose - compare cheaper candidates for 5.4 documentation assist. do not approve anything.\n\nallowed scope:\n- summarize sanitized text\n- preserve HOLD and UNKNOWN\n- propose next fixture work\n\nblocked scope:\n- update routing table\n- approve production\n- run live calls\n- decide audit or release readiness\n\noperator reminder: if future test is approved, show estimate first, use file-first capture, and record actual cost after completion.",
+  "required_preservations": [
+    "planning-only status",
+    "no production routing",
+    "no approval language",
+    "allowed scope remains allowed",
+    "blocked scope remains blocked",
+    "future live tests require approval"
+  ],
+  "formatting_goals": [
+    "clean heading hierarchy",
+    "normalize status line",
+    "convert scope sections into readable bullets",
+    "use code spans for HOLD and UNKNOWN",
+    "keep operator reminder visible"
+  ],
+  "forbidden_changes": [
+    "add new permissions",
+    "remove blocked scope",
+    "rewrite planning-only as approved",
+    "turn future test approval into automatic execution"
+  ]
+}

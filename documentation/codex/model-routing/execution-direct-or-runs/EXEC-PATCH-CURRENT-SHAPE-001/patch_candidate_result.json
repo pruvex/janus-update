@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "target_task": "BACKLOG-108",
+  "patch_text": "--- a/backend/services/contact_manager.py\n+++ b/backend/services/contact_manager.py\n@@ -198,6 +198,19 @@ class ContactManager:\n         if not contact_id:\n             return None, []\n \n+        # If confirmed facts exist and contact exists, apply persistent updates\n+        if confirmed_facts:\n+            success, _ = self.persist_contact_updates(\n+                contact_id=contact_id,\n+                updates=confirmed_facts,\n+                source=\"chat\",\n+            )\n+            if not success:\n+                logger.warning(\n+                    f\"Failed to persist confirmed facts for contact {contact_id}\"\n+                )\n+            return contact_id, confirmed_facts\n+\n         return contact_id, []\n \n     def extract_and_link_facts(self, contact_name: str, message_text: str) -> list:",
+  "changed_files": [
+    "backend/services/contact_manager.py"
+  ],
+  "risk_list": [
+    "If confirmed_facts contain keys not updatable via persist_contact_updates, call may silently fail or raise.",
+    "Returning all confirmed_facts instead of empty list may change caller behavior if they rely on the previous convention.",
+    "No new test coverage yet – existing tests may not exercise this branch."
+  ],
+  "suggested_validation_steps": [
+    "pytest backend/tests/test_contact_manager.py -q",
+    "pytest backend/tests/test_memory_tools.py -q"
+  ],
+  "manual_validation_note": "Codex must manually validate this patch locally before task completion.",
+  "codex_acceptance_rule": "Codex must review and apply or reject locally.",
+  "notes": "Minimal patch: adds a check in get_or_resolve_contact to invoke persist_contact_updates when confirmed_facts and contact_id are both present. Touches only contact_manager.py. Does not redesign data model or proposal behavior. Validation bundle expected to pass with no regressions if contact mutation is idempotent for empty updates."
+}

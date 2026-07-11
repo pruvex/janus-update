@@ -36,13 +36,58 @@ Do not start implementation without a matching `PRE-CHECK PASSED` handoff bound 
 
 ## Model Gate
 
-Default execution model is `5.4`, medium/high.
+Default execution model is `5.6 Terra`, medium/high.
 
-Recommend `5.5` only for high-risk security/privacy/provider/memory architecture fixes or when the precheck requires strongest reasoning. Recommend `5.4 mini` only for deterministic low-risk docs/config edits when they are a separated block and still likely cheaper than staying on warm `5.4`; otherwise use `5.4` low for short mechanical edits inside an ongoing `5.4` workflow.
+Recommend `5.6 Sol` only for high-risk security/privacy/provider/memory architecture fixes or when the precheck requires strongest reasoning. Recommend `5.6 Luna` only for deterministic low-risk docs/config edits when they are a separated block and still likely cheaper than staying on warm `5.6 Terra`; otherwise use `5.6 Terra` low for short mechanical edits inside an ongoing `5.6 Terra` workflow.
+
+## Same-Chat Output Rule
+
+Execution stays artifact-first when we remain in the same chat.
+
+- keep the conversational reply compact and outcome-focused
+- do not dump large handoff blocks, giant task restatements, or full execution artifacts into chat unless the user explicitly asks for them or a real new-chat handoff is required
+- when prior skills returned a compact summary, read the bound artifact file instead of expecting the chat reply to contain the full handoff text
+
+## Cursor-First Execution Gate Rule
+
+For bounded, prechecked execution slices, the current shared gate must actively surface Cursor when it is a viable path.
+
+- if a Cursor option is visible in the current rollout state, probe that gate before silently defaulting to local Codex
+- if Cursor is eligible and ROI-positive, present it explicitly as an execution option so we can gather evidence and avoid unnecessary local-only work
+- if Cursor is hidden, unsupported for the lane, or ROI-negative, say that briefly and continue with the best remaining path
+- do not skip the Cursor option merely because Codex can also perform the task locally
 
 ## Bounded Delegation Gate
 
-For one prechecked execution slice that fits either the proposal-first `execution_patch_candidate` class or the later derivative `execution_write_apply_candidate` class, prefer the dedicated productive Dev-workhorse runner as the visible operator-facing gate. The shared dispatcher remains the sealed downstream helper and should not be presented as the everyday first entry.
+Operator-facing entry for the current cost-aware four-choice rollout:
+
+- `1 = Codex`
+- `2 = OpenRouter`
+- `3 = Cursor Composer`
+- `4 = Cursor API`
+
+Use the shared delegate entry first for eligible bounded execution slices:
+
+```powershell
+python documentation/codex/model-routing/scripts/janus_delegate.py --lane execution_patch_candidate --workflow-id <WORKFLOW-ID> --operator-choice prompt --input-package-json <input-package.json> --allowlist-file <allowlist.txt> --estimated-codex-saved-tokens <n> --estimated-delegation-overhead-tokens <n>
+```
+
+Notes:
+
+- default behavior stays plan-only and review-first
+- explicit live Cursor execution is allowed only with additional operator approval via `--execute-live-cursor`
+- OpenRouter remains option `2`; older OR-specific runners remain sealed downstream helpers rather than the first visible entry
+- Cursor Composer uses the Auto+Composer pool; Cursor API uses the same shared `janus_cursor_worker_runner.py` with per-lane `cursor_api_model` from the API pool
+- `live_test_execution`, compiler steps, and final validation stay Codex-owned and are not widened by this gate
+- the normal visible everyday shared gate is only for already approved bounded execution lanes; `execution_write_apply_candidate` remains fail-closed and hidden from the normal visible gate while its visibility status is still `HIDDEN_PARTIAL_CANDIDATE`
+
+Current everyday recommendation for the execution lanes:
+
+- `TASK-EX-001` / `execution_patch_candidate`: use `3 = Cursor Composer` or `4 = Cursor API` as the primary bounded worker paths for real proposal work when ROI is positive and the slice is allowlisted
+- `TASK-EX-001` / option `2 = OpenRouter`: keep as an explicit secondary/experimental proposal path, mainly for comparative validation or when the operator deliberately wants OR
+- `TASK-EX-002` / `execution_write_apply_candidate`: For `TASK-EX-002` / `execution_write_apply_candidate`, option `2` is now the sealed deterministic local apply worker; this lane stays fail-closed in the normal visible gate
+
+After the first Cursor live wave, treat the shared `janus_delegate.py` four-choice surface as the primary everyday operator-facing gate for bounded execution slices. The older productive Dev-workhorse runner and direct OR helpers remain legacy/downstream validation helpers for explicit OpenRouter-specific checks, not the first visible entry for normal execution work.
 
 Before offering OR, run the net-value check. OR is useful only when expected Codex savings clearly exceed the Codex overhead for creating the OR handoff, running the lane, reviewing the result, and documenting the outcome. Tiny tasks should stay local even if OR itself is cheap.
 
@@ -50,7 +95,7 @@ Net-value rule:
 
 - if estimated Codex tokens saved <= estimated Codex OR orchestration/review overhead, choose Codex directly
 - if estimates are close or uncertain, choose Codex directly unless the task is a deliberate OR lane validation
-- if ROI is positive and the task is prechecked, bounded, and low/medium risk, show the `1 = Codex` / `2 = OR` gate
+- if ROI is positive and the task is prechecked, bounded, and low/medium risk, route through the shared four-choice gate above; if an older direct productive helper is used instead, treat it as a legacy OpenRouter validation path and keep its local wording explicit as `1 = Codex` / `2 = OpenRouter`
 - prefer write-capable bounded OR only when apply authority is constrained by allowlist, max touched files, no Git/release authority, and Codex-owned validation
 
 Runner ROI fields:
@@ -61,32 +106,34 @@ Runner ROI fields:
 
 Use `--require-positive-or-roi` when estimates must be present before showing the OR choice. If the gate is negative or incomplete, the runner returns `LOCAL_CODEX_PATH_SELECTED`.
 
-Binding artifacts:
+Legacy OpenRouter validation/helper artifacts:
 
 - `C:\KI\Janus-Projekt\documentation\codex\model-routing\scripts\codex_dev_workhorse_runner.py`
 - `C:\KI\Janus-Projekt\documentation\codex\model-routing\scripts\codex_bounded_delegation_dispatcher.py`
 - `C:\KI\Janus-Projekt\documentation\codex\model-routing\scripts\codex_execution_patch_candidate_runner.py`
 - `C:\KI\Janus-Projekt\documentation\codex\model-routing\codex_execution_patch_candidate_plan_2026-06-14.md`
 
-Use prompt mode first:
+Use prompt mode only when you are explicitly validating the older OpenRouter-specific helper path rather than the normal shared delegate entry:
 
 ```powershell
 python documentation/codex/model-routing/scripts/codex_dev_workhorse_runner.py --task-class execution_patch_candidate --task-label "<short execution slice>" --normal-target-model "<declared model/reasoning>" --operator-choice prompt --workflow-id <WORKFLOW-ID> --path-id productive_dev_workhorse_path --estimated-or-cost <estimated-cost> --cost-estimate-confidence-percent <confidence>
 ```
 
-Expected operator gate:
+Expected local gate for that legacy helper path:
 
 - `1 = Codex`
-- `2 = OR`
+- `2 = OpenRouter`
 
 Meaning here:
 
 - `1` keeps the execution slice fully local in Codex.
-- `2` enters the productive Dev-workhorse OR branch, which then invokes the bounded delegated `execution_patch_candidate` proposal path behind the visible gate.
+- `2` enters the older productive Dev-workhorse OpenRouter branch, which then invokes the bounded delegated `execution_patch_candidate` proposal path behind that legacy gate.
 
-Current preferred OR candidate for this bounded lane:
+Current legacy OR fallback candidate for this bounded lane when option `2 = OpenRouter` is explicitly chosen:
 
-- `qwen/qwen3-coder-30b-a3b-instruct`
+- `moonshotai/kimi-k2.5`
+
+Use the smaller Qwen Coder lane only for deliberately narrow smoke/benchmark slices or when the sealed contract explicitly selects it. After BACKLOG-116, productive execution-patch work should default to the stronger OR lane because malformed/repetitive patch output from the smaller Qwen model caused Codex fallback.
 
 When the selected OR model starts with `qwen/`, the dispatcher routes `execution_patch_candidate` through the Responses API `openrouter:apply_patch` runner:
 
@@ -108,12 +155,14 @@ Boundaries stay strict:
 - no Git, release, or audit authority by delegated path
 - Codex App remains patch reviewer, apply/reject owner, and final execution owner
 
-If the user chooses the OR path:
+If the user explicitly chooses a delegated path:
 
 - if the user chooses `1`, `local`, or `codex`, invoke the dispatcher with `--operator-choice local`
-- if the user chooses `2`, `or`, `openrouter`, or `opr`, invoke the productive runner first; the runner must show the fixed pre-call estimate/confidence gate and only then continue to the sealed dispatcher/runtime path
-- for local fixture validation under the OR branch, the downstream dispatcher still uses `--operator-choice delegated --execution-input-package <input-json> --execution-fixture-result <result-json>`
-- for the real proposal-only OR branch, the downstream dispatcher still uses `--operator-choice delegated --execution-input-package <input-json> --execution-live-sidecar`; this path stays read-only and captures a bounded patch proposal only
+- if the user chooses `2`, `or`, `openrouter`, or `opr`, prefer the shared `janus_delegate.py` option `2` first; use the older productive runner directly only when the task is explicitly testing or validating the legacy OpenRouter helper path
+- if the user chooses `3`, `cursor-composer`, `composer`, or `cursor`, prefer the shared `janus_delegate.py` option `3` with the Auto+Composer pool
+- if the user chooses `4`, `cursor-api`, `cursor_api`, or `api`, prefer the shared `janus_delegate.py` option `4` with the lane-specific API model
+- for local fixture validation inside that legacy OR helper path, the downstream dispatcher still uses `--operator-choice delegated --execution-input-package <input-json> --execution-fixture-result <result-json>`
+- for the real proposal-only legacy OR branch, the downstream dispatcher still uses `--operator-choice delegated --execution-input-package <input-json> --execution-live-sidecar`; this path stays read-only and captures a bounded patch proposal only
 
 Important:
 
@@ -122,22 +171,24 @@ Important:
 - the delegated output may suggest a bounded patch, but Codex still decides whether to apply or reject it
 - manual Janus validation remains Codex-owned even if the delegated proposal looks strong
 
-For a later derivative bounded write candidate that is backed by an already accepted proposal-first execution package, use the separate `execution_write_apply_candidate` class:
+For a later derivative bounded write candidate that is backed by an already accepted proposal-first execution package, keep the shared four-choice surface only as a future operator-entry target when the lane is visibility-ready. For `TASK-EX-002` / `execution_write_apply_candidate`, option `2` is now the sealed deterministic local apply worker, not Cursor Composer, Cursor API, or OpenRouter. The current everyday operator posture is still fail-closed: no normal visible delegated choice should be shown while the shared contract keeps this lane at `HIDDEN_PARTIAL_CANDIDATE`. The direct `codex_dev_workhorse_runner.py` path below remains a legacy/helper-focused OpenRouter validation artifact rather than the recommended or normally visible path for this lane:
 
 ```powershell
 python documentation/codex/model-routing/scripts/codex_dev_workhorse_runner.py --task-class execution_write_apply_candidate --task-label "<short execution slice>" --normal-target-model "<declared model/reasoning>" --operator-choice prompt --workflow-id <WORKFLOW-ID> --path-id productive_dev_workhorse_path --estimated-or-cost <estimated-cost> --cost-estimate-confidence-percent <confidence> --accepted-source-run-dir <accepted-execution-patch-run-dir>
 ```
 
-Meaning there:
+Meaning there for that legacy helper path:
 
 - `1` keeps the execution slice fully local in Codex.
-- `2` enters the productive Dev-workhorse OR branch and then uses the bounded delegated `execution_write_apply_candidate` path backed by an already accepted OR patch package plus deterministic local patch apply.
+- `2` in the old legacy helper path enters the historical Dev-workhorse OpenRouter branch, but this legacy validation wording must not be surfaced as the normal everyday gate while `TASK-EX-002` remains visibility-hidden.
 - accepted Qwen `openrouter:apply_patch` runs must first be normalized with `normalize_openrouter_apply_patch_for_write_apply.py`; accepted JSON `patch_text` runs use `normalize_execution_patch_candidate_for_write_apply.py`.
 
 Extra write-candidate boundaries:
 
 - delegated write candidacy must be backed by an accepted `execution_patch_candidate` package
 - the live apply step is deterministic local patch application inside the exact accepted allowlist, not a second open-ended model writing pass
+- do not route `TASK-EX-002` through Cursor `agent -p`; repeated live timeout evidence made that path a bad worker fit rather than a prompt-tuning problem
+- do not invest in OpenRouter as the apply worker for `TASK-EX-002`; OR remains useful for proposal-first execution lanes, not this mechanical apply step
 - this does not itself grant broad live write approval
 - Codex still owns any future live-write approval, diff review, validation review, and final task completion
 - manual Janus validation remains Codex-owned
@@ -189,25 +240,30 @@ Playwright N/A is valid only for pure `.md`, `.yml`, or `.css` changes with no l
 
 ## Precheck Handoff Gate
 
-Valid precheck must contain:
+Valid precheck must contain the compact Codex-native result fields:
 
-```text
-BEGIN COPY FOR SKILL 4
-Pre-Check: PRE-CHECK PASSED
-Pre-Check Context:
-Scope-Regel:
-Automated Evidence Gate:
-npx playwright test <runner> --headed --workers=1 --reporter=list
-Artifact Identity Check:
-Oracle-/TestPlan-Regel:
-END COPY FOR SKILL 4
-```
+- `PRE-CHECK RESULT`
+- `PRE-CHECK PASSED`
+- `Pre-Check: PRE-CHECK PASSED`
+- `Pre-Check Context:`
+- `Scope-Regel:`
+- `Automated Evidence Gate:`
+- `npx playwright test <runner> --headed --workers=1 --reporter=list`
+- `Artifact Identity Check:`
+- `Oracle-/TestPlan-Regel:`
+- `NEXT STEP`
+- `Recommended Skill: janus-executioner`
+- `Recommended Model:`
+- `Recommended Intelligence:`
+- `User Action:`
+
+When the prior precheck stayed in the same chat and returned only a compact summary, validate these literals from the bound precheck artifact file rather than requiring the user-facing reply to repeat a large handoff block.
 
 If missing:
 
 ```text
 BLOCKED: INVALID_SKILL3_HANDOVER
-Reason: Skill-3 handoff lacks complete V3.2 copyblock.
+Reason: Skill-3 handoff lacks the required Codex-native precheck fields.
 Required Fix: Run janus-preimplementation-check again.
 ```
 

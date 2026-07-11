@@ -1,0 +1,13 @@
+{
+  "model": "qwen/qwen3.5-flash-02-23",
+  "pass": true,
+  "validation_result": "PASS",
+  "final_outcome": "DIRECT_OR_BOUNDED_BLOCKED_NO_PATCH",
+  "actual_or_cost": 0.001348035,
+  "generation_id": "gen-1782398586-UeBpgL6eRkbbfW764LAl",
+  "finish_reason": "stop",
+  "changed_files": [],
+  "issues": [],
+  "response_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\LEAN-EXEC-qwen-qwen3.5-flash-02-23\\response_summary.json",
+  "operator_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\LEAN-EXEC-qwen-qwen3.5-flash-02-23\\operator_summary.json"
+}

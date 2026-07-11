@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-06-09-004",
+  "testCaseId": "TC-002-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "Olix liebt Big Bang Theory",
+  "response": "Notiert, Rolf Adam! Dass Olix Quarz „The Big Bang Theory“ liebt, habe ich mir gemerkt. Du hattest mir das bereits heute um 22:30 Uhr hier im Chat „Neuer Chat“ erzählt.💡 Passende nächste Schritte:• Nach Fan-Artikeln oder Box-Sets von „The Big Bang Theory“ suchen• Einen Serien-Abend mit Olix im Kalender planen• Weitere Hobbys oder Vorlieben von Olix Quarz ergänzen22:47",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-06-09T20:47:32.444Z"
+}

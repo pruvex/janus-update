@@ -1,0 +1,27 @@
+{
+  "evaluation_id": "SPEC30-SHADOW-EVAL-001",
+  "sandbox_root": "development/openrouter-skill-tests/janus-worker-gateway-shadow-eval",
+  "real_repo_writeback_allowed": false,
+  "global_worker_release_allowed": false,
+  "real_consumer_activation_allowed": false,
+  "shadow_work_classes": [
+    {
+      "class_id": "docs_fleissarbeit",
+      "task_package_path": "development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/docs_fleissarbeit/task_package.json",
+      "comparison_models": [
+        "openrouter/qwen/qwen3-coder-30b-a3b-instruct",
+        "openrouter/moonshotai/kimi-k2.5"
+      ],
+      "comparison_goal": "Compare a cheaper default and a stronger bounded worker on the same docs-only shadow task."
+    },
+    {
+      "class_id": "test_fixture_arbeit",
+      "task_package_path": "development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/test_fixture_arbeit/task_package.json",
+      "comparison_models": [
+        "openrouter/qwen/qwen3-coder-30b-a3b-instruct",
+        "openrouter/moonshotai/kimi-k2.5"
+      ],
+      "comparison_goal": "Compare the same fixed pair on a bounded fixture-and-test shadow task."
+    }
+  ]
+}

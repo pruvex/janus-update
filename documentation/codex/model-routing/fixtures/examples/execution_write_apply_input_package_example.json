@@ -1,0 +1,21 @@
+{
+  "task_id": "TASK-EX-002",
+  "lane_id": "execution_write_apply_candidate",
+  "workflow_id": "WF-EXEC-APPLY-EXAMPLE-001",
+  "bound_skill_context": "janus-executioner",
+  "target_task": "TASK-EXAMPLE-001",
+  "accepted_source_run_dir": "documentation/codex/model-routing/execution-direct-or-runs/WF-EXEC-PATCH-EXAMPLE-001",
+  "allowlist_file": "documentation/codex/model-routing/fixtures/examples/allowlists/execution_patch_allowlist.txt",
+  "apply_mode": "deterministic_local_patch_apply",
+  "manual_validation_gate": "Codex must review the resulting diff and run the mini_test_plan before accepting the write candidate.",
+  "redaction_ready": true,
+  "requires_accepted_source": true,
+  "estimated_codex_saved_tokens": 20000,
+  "estimated_delegation_overhead_tokens": 12000,
+  "recommended_backend": "cursor",
+  "recommended_model": "composer-2.5",
+  "openrouter_fallback": {
+    "backend": "openrouter",
+    "model": "deepseek/deepseek-v4-flash"
+  }
+}

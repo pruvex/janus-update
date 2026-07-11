@@ -1,0 +1,6 @@
+{
+  "validator_id": "validate_test_plan_v1",
+  "inputs": {
+    "plan_path": "documentation/test-runs/TEST-RUN-2026-05-15-005_plan.json"
+  }
+}

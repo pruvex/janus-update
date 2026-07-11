@@ -1,0 +1,12 @@
+{
+  "summary_header": "TEST RESULT TRIAGE REVIEW RESULT",
+  "workflow_id": "TEST-TRIAGE-LOCAL-001",
+  "skill": "janus-test-pipeline",
+  "task_label": "Test triage local validation",
+  "selected_path": "codex_only_operator_choice",
+  "normal_target_model": "5.4/medium",
+  "delegated_model_label": "bounded delegated review / fixture mode",
+  "final_outcome": "LOCAL_CODEX_PATH_SELECTED",
+  "validation_result": "PASS",
+  "operator_message": "Operator chose the local Codex triage path. No delegated triage review was used."
+}

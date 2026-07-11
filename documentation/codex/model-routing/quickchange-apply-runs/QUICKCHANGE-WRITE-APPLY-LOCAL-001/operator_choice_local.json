@@ -1,0 +1,12 @@
+{
+  "summary_header": "QUICKCHANGE WRITE APPLY RESULT",
+  "workflow_id": "QUICKCHANGE-WRITE-APPLY-LOCAL-001",
+  "skill": "janus-quickchange",
+  "task_label": "Quickchange write apply local validation",
+  "selected_path": "codex_only_operator_choice",
+  "normal_target_model": "5.4/medium",
+  "delegated_model_label": "bounded workspace-write sidecar / accepted evidence path",
+  "final_outcome": "LOCAL_CODEX_PATH_SELECTED",
+  "validation_result": "PASS",
+  "operator_message": "Operator chose the local Codex quickchange apply path. No delegated write path was used."
+}

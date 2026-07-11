@@ -1,0 +1,7 @@
+{
+  "status": "PASS",
+  "sidecar_run_dir": "documentation/codex/model-routing/sidecar-runs/SIDECAR-DOC-STRUCTURED-FLOW-001",
+  "built_request_json": "documentation/codex/model-routing/structured-action-fixtures/SIDECAR-DOC-STRUCTURED-FLOW-001-STRUCTURED_built_from_sidecar.json",
+  "builder_status": "PASS",
+  "executor_status": "PASS"
+}

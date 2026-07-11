@@ -1,0 +1,19 @@
+{
+  "schema_version": "codex_delegated_action_request.v1",
+  "workflow_id": "WF-GEN-OR-DELEGATED-001-VALIDATOR",
+  "skill_id": "janus-test-pipeline",
+  "action_type": "run_validator",
+  "summary": "Validate generated output for WF-GEN-OR-DELEGATED-001",
+  "requires_codex_review": true,
+  "non_goals": [
+    "No prompt-level shell delegation",
+    "No production routing activation"
+  ],
+  "action_payload": {
+    "validator_id": "validate_runner_v1",
+    "inputs": {
+      "plan_path": "documentation/codex/model-routing/structured-action-runs/WF-GEN-OR-DELEGATED-001/20260624-162038/generated/TEST-RUN-2099-12-31-998_plan.json",
+      "runner_path": "documentation/codex/model-routing/structured-action-runs/WF-GEN-OR-DELEGATED-001/20260624-162038/generated/TEST-RUN-2099-12-31-998_generated.spec.js"
+    }
+  }
+}

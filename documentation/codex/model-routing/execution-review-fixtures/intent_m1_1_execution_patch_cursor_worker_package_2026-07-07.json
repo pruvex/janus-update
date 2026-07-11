@@ -1,0 +1,71 @@
+{
+  "task_label": "Build the intent auxiliary classifier contract and focused tests for TASK-INTENT-M1.1",
+  "worker_profile": "cursor-agent",
+  "allowed_edit_paths": [
+    "backend/services/orchestrator/intent_aux_classifier.py",
+    "backend/services/orchestrator/intent_config.py",
+    "backend/data/schemas_intent.py",
+    "backend/tests/test_intent_aux_classifier.py",
+    "backend/tests/test_intent_action_subject_mapping.py"
+  ],
+  "acceptance_criteria": [
+    "Only the allowlisted source and test files may change.",
+    "Implement the ActionSubjectResult contract and auxiliary classifier wrapper without integrating into detect_all_intents().",
+    "Fail closed on invalid provider output or provider errors and preserve deterministic fallback behavior for this slice.",
+    "Keep transport, OAuth, OpenRouter product routing, detect_all_intents integration, and benchmark uplift work out of scope.",
+    "The focused pytest and py_compile checks must pass before Codex review."
+  ],
+  "checks": [
+    {
+      "label": "pytest-intent-aux-classifier",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "backend/tests/test_intent_aux_classifier.py",
+        "-q"
+      ]
+    },
+    {
+      "label": "pytest-intent-action-subject-mapping",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "backend/tests/test_intent_action_subject_mapping.py",
+        "-q"
+      ]
+    },
+    {
+      "label": "py-compile-intent-aux-slice",
+      "command": [
+        "python",
+        "-m",
+        "py_compile",
+        "backend/services/orchestrator/intent_aux_classifier.py",
+        "backend/services/orchestrator/intent_config.py",
+        "backend/data/schemas_intent.py"
+      ]
+    }
+  ],
+  "forbidden_actions": [
+    "commit",
+    "push",
+    "tag",
+    "merge",
+    "release",
+    "publish",
+    "dependency",
+    "secret",
+    "auth",
+    "security",
+    "privacy",
+    "migration",
+    "architecture"
+  ],
+  "requested_actions": [
+    "edit",
+    "run_checks"
+  ],
+  "task_prompt": "Edit only the allowlisted files for TASK-INTENT-M1.1. Introduce the ActionSubjectResult contract, the bounded auxiliary classifier/provider wrapper, the flag and config surface, and the focused tests. Do not integrate into detect_all_intents(). Do not widen into transport, OAuth, OpenRouter product routing, benchmark work, or unrelated intent cleanup. Run only the listed checks. Do not commit. Return concise JSON-compatible output."
+}

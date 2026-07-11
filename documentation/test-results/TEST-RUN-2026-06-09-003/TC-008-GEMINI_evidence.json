@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-06-09-003",
+  "testCaseId": "TC-008-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "After a wrong or broad recall-style assistant answer, ask again about Oli",
+  "response": "Über dein Wissen zu Oli (Oliver Schwab) kann ich dir Folgendes sagen, Rolf Adam:*   Identität & Wohnort: Oli heißt mit vollem Namen Oliver Schwab und wohnt in Köln-Stammheim. Das hast du mir zum ersten Mal am 8. Juni 2026 um 19:12 Uhr erzählt.*   Ernährung: Er ist Vegetarier und mag Kimchi.*   Hobbys & Vorlieben:     *   Er verbringt gerne Zeit im Garten.    *   Er baut gerne Star-Wars-Modelle.    *   Er liebt Strategiespiele wie *Panzer General*.*   Wichtige Korrektur: Entgegen einer früheren Annahme mag er die Serie *The Big Bang Theory* nicht. Diese Korrektur hast du heute um 17:22 Uhr vorgenommen.Bezüglich seines Aussehens liegen mir aktuell keine dauerhaften Merkmale (wie eine Brille, Smartwatch oder Kopfhörer) vor.💡 Passende nächste Schritte:• Möchtest du mir beschreiben, ob Oli eine Brille oder andere markante Accessoires trägt?• Soll ich nach neuen Strategiespielen suchen, die ähnlich wie Panzer General sind?• Suchst du nach einem Rezept für ein vegetarisches Gericht mit Kimchi, das Oli schmecken könnte?19:27",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-06-09T17:27:49.295Z"
+}

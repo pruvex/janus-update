@@ -360,6 +360,94 @@ Dashboard-Regeln:
 
 ## READY
 
+### BACKLOG-127 - Roadmap-Sync fuer abgeschlossene Workflow-/Block-2-Slices fehlt noch
+
+- **Typ:** IMPROVEMENT
+- **Status:** READY
+- **Quelle:** Cursor Intake 2026-07-10
+- **Erstellt:** 2026-07-10
+- **Aktualisiert:** 2026-07-10
+- **Kurzbeschreibung:** Spec 29 (stilles Lernen), Spec 31 (semantic reuse), Block 2 (Kalender+Wikipedia) und die Cursor-Session-Diamond-UX-Fixes sind live validiert, aber in `ROADMAP_EPIC_ORDER.md`, `CURRENT_STATE.md` und dem Task-Registry nur indirekt oder gar nicht als abgeschlossen dokumentiert.
+- **Erwartetes Verhalten:** Roadmap, CURRENT_STATE, Registry und Handoffs spiegeln den echten Stand: M3 EXIT PASS inkl. erweiterter Combo-Familien; naechster Schritt bleibt klar M4 MC.
+- **Tatsaechliches Verhalten:** Operator und Codex muessen aus mehreren Handoffs und Live-Tests den Stand zusammensetzen; Risiko fuer Doppelarbeit oder verpasste Abschlussmarkierung.
+- **Reproduktion / Kontext:** Nach Block-2-Live-Tests (GPT/Gemini, Routine, Rebind, Snapshot) und bestehendem `HANDOFF_BLOCK2_CALENDAR_WIKIPEDIA_TO_CODEX_2026-07-10.md`.
+- **Betroffener Bereich:** Dokumentation / Roadmap / Tracking
+- **Nachweise:** `documentation/codex/HANDOFF_BLOCK2_CALENDAR_WIKIPEDIA_TO_CODEX_2026-07-10.md`; `documentation/codex/model-routing/HANDOFF_ROADMAP_STATUS_TO_CODEX_2026-07-10.md`; `documentation/tasks/TASK-SPEC31.1_final_audit.md`; `documentation/tasks/TASK-SPEC31.2_final_audit.md`
+- **Akzeptanzkriterien:**
+  - [x] `ROADMAP_EPIC_ORDER.md` §0.1/§0.7/§16/§17 nennt Spec-29/31, Block 2 und BACKLOG-125/126/127 (v1.2.3, 2026-07-10 Abend)
+  - [ ] `CURRENT_STATE.md` enthaelt Abschnitt 2026-07-10 Abend (Block 2 LIVE PASS)
+  - [ ] `01_CENTRAL_TASK_REGISTRY.md` oder klarer Verweis auf Block-2-Handoff
+  - [ ] `SKILL_USAGE_LOG.md` Cursor-Session-Eintrag
+  - [ ] Keine Aenderung der Roadmap-Reihenfolge (M4 bleibt JETZT)
+- **Fehlende Informationen:** Keine
+- **Wichtigkeit:** MEDIUM
+- **Umsetzungsrisiko:** LOW
+- **Aufwand:** XS
+- **Umsetzungsreife:** READY
+- **Empfehlung:** DO NOW
+- **Entry Point:** DOCUMENTATION_UPDATE
+- **Routing reason:** Reiner Doku-Sync vor M4-Start; kein Produktcode.
+- **Recommended next skill:** janus-documentation-update
+- **Spec Seed:** `documentation/Planned Features/backlog_BACKLOG-127_roadmap_sync_abgeschlossene_workflow_slices.md`
+
+### BACKLOG-126 - Wikipedia-Routine-Snapshot speichert nicht immer die beste LLM-Formulierung
+
+- **Typ:** ENHANCEMENT
+- **Status:** READY
+- **Quelle:** User Intake / Live-Test 2026-07-10
+- **Erstellt:** 2026-07-10
+- **Aktualisiert:** 2026-07-10
+- **Kurzbeschreibung:** Beim 2-Lauf-Lernen (GPT schoener erster Lauf, Gemini Promotion) landet im Snapshot oft die Tool-Combo-Fassung statt der besseren LLM-Synthese; Routine-Reuse wirkt dann encyclopedia-artig statt assistenten-artig.
+- **Erwartetes Verhalten:** Snapshot speichert die beste sichtbare Wikipedia-Formulierung; Rebind (z. B. Muenchen) holt weiter frische Tool-Kurzfassung.
+- **Tatsaechliches Verhalten:** `output_snapshot` existiert (z. B. 489 Zeichen, Berlin), aber Inhalt stammt vom Promotion-Provider/Tool-Pfad, nicht vom qualitativ besseren GPT-Lauf.
+- **Reproduktion / Kontext:** 1) GPT Berlin LLM-schoen 2) Gemini Promotion + Speichern 3) GPT Routine reuse mit Tool-Style-Text.
+- **Betroffener Bereich:** Backend / Workflow / `calendar_wikipedia_presenter.py`
+- **Nachweise:** `documentation/codex/HANDOFF_BLOCK2_CALENDAR_WIKIPEDIA_TO_CODEX_2026-07-10.md`; `backend/services/workflow/calendar_wikipedia_presenter.py`; `backend/tests/test_calendar_wikipedia_presenter.py`
+- **Akzeptanzkriterien:**
+  - [ ] Best-text-wins-Policy beim Kandidaten- und Promotion-Snapshot
+  - [ ] Rebind andere Query: frischer Tool-Text, kein alter Snapshot
+  - [ ] Tests fuer cross-provider promotion + snapshot merge
+  - [ ] Keine Regression Kalender-live + semantic reuse
+- **Fehlende Informationen:** Keine
+- **Wichtigkeit:** LOW
+- **Umsetzungsrisiko:** LOW
+- **Aufwand:** S
+- **Umsetzungsreife:** READY
+- **Empfehlung:** SCHEDULE
+- **Entry Point:** TASK_PIPELINE_START
+- **Routing reason:** Diamond-UX-Polish; kein M4-Blocker.
+- **Recommended next skill:** janus-preimplementation-check
+- **Spec Seed:** `documentation/Planned Features/backlog_BACKLOG-126_wikipedia_routine_snapshot_polish.md`
+
+### BACKLOG-125 - Recall-Cluster Follow-up (M1 Caveat +0 pp) formalisieren
+
+- **Typ:** ENHANCEMENT
+- **Status:** READY
+- **Quelle:** Roadmap Caveat / Hermes-Gap-Analyse 2026-07-10
+- **Erstellt:** 2026-07-10
+- **Aktualisiert:** 2026-07-10
+- **Kurzbeschreibung:** M1 Auxiliary Classifier ist EXIT PASS, aber Recall-Benchmark blieb flat (`80.0% -> 80.0%`). Roadmap §0.7 nennt Recall-Follow-up nur als Prio 3 ohne formalen Meilenstein.
+- **Erwartetes Verhalten:** Recall/Personal-Cluster steigt messbar gegen M0-Baseline; Staging-Enablement ohne Contact/Calendar/Medical-Regression.
+- **Tatsaechliches Verhalten:** Recall-Anfragen profitieren kaum vom Classifier; Nutzer erleben das als Memory- oder Provider-Problem.
+- **Reproduktion / Kontext:** `INTENT_BENCHMARK_BASELINE.md`; `INTENT_ENGINE_HERMES_INSPIRED_UPGRADE_PLAN.md` §12; Roadmap Recall-Caveat.
+- **Betroffener Bereich:** Backend / Intent Engine / Benchmark
+- **Nachweise:** `documentation/test-runs/INTENT_BENCHMARK_BASELINE.md`; `documentation/Cursor specs/INTENT_ENGINE_HERMES_INSPIRED_UPGRADE_PLAN.md`; `backend/services/orchestrator/intent_engine.py`
+- **Akzeptanzkriterien:**
+  - [ ] Recall-Teilmenge: mindestens +8 pp vs. M0 (Stretch +12 pp)
+  - [ ] Live-Retest dokumentiert
+  - [ ] Keine Regression Calendar/Medical/Workflow-Combos
+  - [ ] Roadmap-Eintrag M2.3/I6 oder §0.7 als erledigt markierbar
+- **Fehlende Informationen:** Keine
+- **Wichtigkeit:** MEDIUM
+- **Umsetzungsrisiko:** MEDIUM
+- **Aufwand:** M
+- **Umsetzungsreife:** READY
+- **Empfehlung:** SCHEDULE
+- **Entry Point:** TASK_PIPELINE_START
+- **Routing reason:** Schliesst dokumentierten Hermes-/Roadmap-Gap ohne M4 zu blockieren; parallel zu M4 moeglich.
+- **Recommended next skill:** janus-preimplementation-check
+- **Spec Seed:** `documentation/Planned Features/backlog_BACKLOG-125_recall_cluster_followup_m1_caveat.md`
+
 ### BACKLOG-122 - system.country_info haengt an deprecated Rest-Countries-Legacypfad und driftet zur Live-Runtime
 
 - **Typ:** BUG

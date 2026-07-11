@@ -1,0 +1,56 @@
+{
+  "task_label": "Review the bounded Memory MA/MB implementation slice for TASK-MEM-M1.1",
+  "worker_profile": "cursor-agent",
+  "allowed_edit_paths": [
+    "backend/services/memory/retrieval_service.py",
+    "backend/services/memory_budget.py",
+    "backend/services/memory_observability.py",
+    "backend/services/chat_orchestrator.py",
+    "backend/services/orchestrator/intent_engine.py",
+    "backend/tests/test_memory_hot_layer_cap.py",
+    "backend/tests/test_memory_on_demand_injection.py",
+    "backend/tests/test_memory_diamond.py",
+    "backend/tests/test_memory_regression.py",
+    "backend/tests/test_memory_tools.py",
+    "backend/tests/test_memory_retrieval_relevance_priority.py"
+  ],
+  "acceptance_criteria": [
+    "Stay strictly inside Memory Phase A Hot-Layer-Caps and Phase B On-Demand Injection only.",
+    "Do not widen into Session-Search, Frozen Core, USER.md export, Intent M2, Recall-gap work, transport, OAuth, OpenRouter, or delegation hardening.",
+    "Preserve health and medical protected-core behavior, avoid accidental health-injection gating, and keep flag-off parity explicit.",
+    "If code suggestions are made, keep them bounded to the allowlisted files and focused tests only.",
+    "Do not commit, push, merge, publish, or claim authoritative implementation completion."
+  ],
+  "checks": [
+    {
+      "label": "precheck-artifact-present",
+      "command": [
+        "python",
+        "-c",
+        "from pathlib import Path; raise SystemExit(0 if Path('documentation/tasks/TASK-MEM-M1.1_preimplementation_check.md').exists() else 1)"
+      ],
+      "expected_exit_codes": [0]
+    }
+  ],
+  "forbidden_actions": [
+    "architecture",
+    "auth",
+    "commit",
+    "dependency",
+    "merge",
+    "migration",
+    "privacy",
+    "publish",
+    "push",
+    "release",
+    "secret",
+    "security",
+    "tag"
+  ],
+  "requested_actions": [
+    "review",
+    "risk_analysis",
+    "bounded_plan"
+  ],
+  "task_prompt": "Review one bounded Janus product slice only: TASK-MEM-M1.1, Memory Phase A Hot-Layer-Caps plus Phase B On-Demand Memory Injection. Trust first the bound task, task breakdown, preimplementation check, roadmap M1 section, and CURRENT_STATE snapshot. Identify the highest-risk implementation pitfalls, especially health/medical protected-core behavior, accidental gating of health injection, flag-off parity drift, and weather-vs-personal memory gating edge cases. If useful, draft a compact implementation order or test emphasis list. Stay strictly inside the allowlisted file cluster. Do not widen into Session-Search, Frozen Core, USER.md export, Intent M2, Recall-gap work, transport, OAuth, OpenRouter, or delegation hardening. Do not commit. Do not claim implementation is complete."
+}

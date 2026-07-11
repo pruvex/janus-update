@@ -72,9 +72,9 @@ def build_validator_manifest_payload(manifest_payload: dict, generator_exec_summ
         }
 
     if generator_id == "compile_testspec_to_testplan_v1":
-        if len(output_artifacts) != 2:
+        if len(output_artifacts) not in {2, 3}:
             raise SystemExit(
-                "Expected exactly two generated output artifacts for compile_testspec_to_testplan_v1 validation."
+                "Expected two or three generated output artifacts for compile_testspec_to_testplan_v1 validation."
             )
         return {
             "validator_id": "validate_runner_v1",

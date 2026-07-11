@@ -1,0 +1,16 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 214965,
+  "duration_api_ms": 214965,
+  "result": "The task prompt wasn't included in your message â€” I'll locate the delegated worker package and execution instructions in the repo.\nFound the M3.3 debug worker package. Reading the allowlisted files and running tests to identify the failure.\nImplementing the fix: `_is_success` only checks top-level fields, but live tool results carry success in nested `content`/`_raw_content` JSON.\nBounded M3.3 delegated worker task completed.\n\n**Root cause:** `step_trace_extractor._is_success` only checked top-level `success`/`status`. Live finalizer tool results use `role`/`name`/`content` or `_raw_content` with `status: ok` nested in JSON, so successful calendar+weather steps were skipped and no routine offer was appended.\n\n**Fix:** Parse `content`/`_raw_content` when top-level status is absent and treat nested `status: ok` (or `success: true`) as success. Name alias canonicalization (`calendar_list_events` â†’ `calendar.list_events`, `system_weather` â†’ `system.weather`) was already in place.\n\n**Changed files:**\n- `backend/services/workflow/step_trace_extractor.py`\n- `backend/tests/test_workflow_detector.py`\n- `backend/tests/test_workflow_offer_service.py`\n\n**Validation:** `python -m pytest backend/tests/test_workflow_detector.py backend/tests/test_workflow_offer_service.py -q` â†’ **15 passed**\n\n```json\n{\n  \"status\": \"PASS\",\n  \"root_cause\": \"step_trace_extractor._is_success ignored nested JSON status in content/_raw_content for role/name/content tool results, so successful calendar+weather steps were not extracted and maybe_append_workflow_offer returned no offer.\",\n  \"changed_files\": [\n    \"backend/services/workflow/step_trace_extractor.py\",\n    \"backend/tests/test_workflow_detector.py\",\n    \"backend/tests/test_workflow_offer_service.py\"\n  ],\n  \"command_results\": [\n    {\n      \"label\": \"pytest\",\n      \"command\": \"python -m pytest backend/tests/test_workflow_detector.py backend/tests/test_workflow_offer_service.py -q\",\n      \"exit_code\": 0,\n      \"summary\": \"15 passed in 0.24s\"\n    }\n  ],\n  \"summary\": \"Added content/_raw_content success detection in step_trace_extractor and regression tests for the live role/name/content calendar+weather shape. Focused workflow tests are green; no commit performed.\",\n  \"blockers\": []\n}\n```",
+  "session_id": "3db9f215-55b7-413d-8f24-018c23534f6e",
+  "request_id": "5d406048-2ee2-4bc5-a3d9-f33f70c17e26",
+  "usage": {
+    "inputTokens": 41789,
+    "outputTokens": 6650,
+    "cacheReadTokens": 684162,
+    "cacheWriteTokens": 0
+  }
+}

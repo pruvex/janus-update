@@ -1,0 +1,80 @@
+{
+  "model": "moonshotai/kimi-k2.5",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a bounded OpenRouter worker for a Janus execution patch candidate. Return only JSON matching the required schema. This is proposal-only work. Do not claim completion, release readiness, routing authority, git authority, or final validation authority. Codex will review and decide whether to apply or reject. Return the smallest viable unified diff for the smallest viable subset of the allowlist. Do not include explanatory prose outside the JSON object. Prefer backend-first minimal change shape over broad test or cleanup expansion."
+    },
+    {
+      "role": "user",
+      "content": "{\n  \"target_task\": \"TASK-SPEC28.1\",\n  \"allowed_files\": [\n    \"documentation/codex/skills/janus-test-pipeline/SKILL.md\",\n    \"documentation/codex/model-routing/scripts/bounded_or_worker_eligibility.py\",\n    \"documentation/codex/model-routing/scripts/test_pipeline_sidecar_write_pilot_runner.py\",\n    \"documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py\",\n    \"documentation/codex/model-routing/tests/test_test_pipeline_sidecar_write_pilot_runner.py\"\n  ],\n  \"max_touched_files\": 5,\n  \"manual_validation_gate\": \"Codex must verify that eligible local LIVE_TEST_EXECUTION retests show 1 = Codex / 2 = OR, while non-eligible or non-local live-retest flows remain Codex-only.\",\n  \"delegation_question\": \"Produce one minimal bounded patch candidate for TASK-SPEC28.1. Add only fail-closed eligibility plus a visible operator gate for eligible local LIVE_TEST_EXECUTION retests. Do not implement auth/header handling, worker package details, delegated evidence-write semantics, or final accept-reject closeout.\",\n  \"current_seam_context\": \"The current janus-test-pipeline skill documents visible OR gates for generator-review, strong isolated test-worker, and finding-triage lanes, but not yet for LIVE_TEST_EXECUTION. The current test_pipeline_sidecar_write_pilot_runner.py prompt summary is test-artifact oriented and not live-retest aware. The current bounded_or_worker_eligibility.py exposes productive execution_patch_candidate eligibility but no dedicated fail-closed visible live-retest gate seam.\",\n  \"signature_context\": \"Preserve the existing evaluate_productive_dev_workhorse_path(...) contract and the existing prompt_summary(...), main(), and invoke_isolated_aider_runner wiring in test_pipeline_sidecar_write_pilot_runner.py. Add the smallest helper seam instead of a new dispatcher or broad mode rewrite.\",\n  \"call_shape_examples\": [\n    \"self.assertIn(\\\"1 = Codex\\\", summary[\\\"operator_prompt_lines\\\"])\",\n    \"self.assertIn(\\\"2 = OR\\\", summary[\\\"operator_prompt_lines\\\"])\",\n    \"result = eligibility.evaluate_productive_dev_workhorse_path(path_id=\\\"productive_dev_workhorse_path\\\", task_class=\\\"execution_patch_candidate\\\", estimated_or_cost=0.02)\"\n  ],\n  \"exact_code_context_blocks\": [],\n  \"forbidden_anchors\": [\n    \"broad live test delegation for all modes\",\n    \"local auth/header contract implementation\",\n    \"delegated evidence-write semantics\",\n    \"final Codex-owned accept-reject wiring\",\n    \"new dispatcher or routing-table redesign\"\n  ],\n  \"required_current_anchors\": [\n    \"LIVE_TEST_EXECUTION\",\n    \"1 = Codex\",\n    \"2 = OR\",\n    \"prompt_summary\",\n    \"invoke_isolated_aider_runner\",\n    \"evaluate_productive_dev_workhorse_path\"\n  ],\n  \"task_contract\": {\n    \"goal\": \"TASK BREAKDOWN RESULT\",\n    \"acceptance\": \"- Acceptance Criteria: an eligible local `LIVE_TEST_EXECUTION` retest shows the visible `1 = Codex` / `2 = OR` choice; a non-eligible, too-broad, or non-local live retest shows no normal OR gate; the gate remains fail-closed and does not imply general live-test delegation; the Sk\",\n    \"risk\": \"Keep scope bounded to the exact allowlist and avoid broader product changes.\",\n    \"context_bullets\": \"- Spec: documentation/SPEC/28_bounded_or_lane_fuer_live_test_execution.md | - Task File: documentation/tasks/TASK-SPEC28_bounded_or_lane_fuer_live_test_execution.md | - Target Task: TASK-SPEC28.1\"\n  },\n  \"validation_bundle\": {\n    \"validation_bundle_id\": \"bundle-3-steps\",\n    \"validation_summary\": \"Codex will run the known local validation bundle after review: python -m pytest documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py -q; python -m pytest documentation/codex/model-routing/tests/test_test_pipeline_sidecar_write_pilot_ru\"\n  },\n  \"return_contract\": {\n    \"required_fields\": [\n      \"status\",\n      \"target_task\",\n      \"patch_text\",\n      \"changed_files\",\n      \"risk_list\",\n      \"suggested_validation_steps\",\n      \"manual_validation_note\",\n      \"codex_acceptance_rule\",\n      \"notes\"\n    ],\n    \"empty_allowed_fields\": [\n      \"changed_files\",\n      \"risk_list\",\n      \"suggested_validation_steps\"\n    ],\n    \"patch_rule\": \"patch_text must be unified diff text touching only the smallest necessary subset of the allowlist\",\n    \"anchor_rule\": \"do not target forbidden_anchors; prefer required_current_anchors when present\",\n    \"signature_rule\": \"preserve real local function signatures and call shapes when signature_context or call_shape_examples are provided\",\n    \"context_rule\": \"when exact_code_context_blocks are provided, keep imports, surrounding control flow, and local helper usage aligned to those real excerpts instead of inventing simplified file structure\"\n  },\n  \"full_spec_excerpt_for_reference_only\": \"TASK BREAKDOWN RESULT\\n- Spec: documentation/SPEC/28_bounded_or_lane_fuer_live_test_execution.md\\n- Task File: documentation/tasks/TASK-SPEC28_bounded_or_lane_fuer_live_test_execution.md\\n- Target Task: TASK-SPEC28.1\\n- Decision: TASK DESIGN COMPLETE\\n- Source Of Truth: approved Spec 28 plus generated TASK-SPEC28 artifact; the first released slice is the fail-closed visibility and eligibility gate only, and must not widen into local auth/header handling, bounded worker contract details, or Codex-owned accept/reject closeout that belong to TASK-SPEC28.2 and TASK-SPEC28.3\\n- Files: documentation/codex/skills/janus-test-pipeline/SKILL.md, documentation/codex/model-routing/scripts/bounded_or_worker_eligibility.py, documentation/codex/model-routing/scripts/test_pipeline_sidecar_write_pilot_runner.py, documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py, documentation/codex/model-routing/tests/test_test_pipeline_sidecar_write_pilot_runner.py\\n- Acceptance Criteria: an eligible local `LIVE_TEST_EXECUTION` retest shows the visible `1 = Codex` / `2 = OR` choice; a non-eligible, too-broad, or non-local live retest shows no normal OR gate; the gate remains fail-closed and do\"\n}"
+    }
+  ],
+  "temperature": 0.0,
+  "max_tokens": 2200,
+  "response_format": {
+    "type": "json_schema",
+    "json_schema": {
+      "name": "janus_execution_patch_candidate_result",
+      "strict": true,
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "status",
+          "target_task",
+          "patch_text",
+          "changed_files",
+          "risk_list",
+          "suggested_validation_steps",
+          "manual_validation_note",
+          "codex_acceptance_rule",
+          "notes"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "PASS",
+              "WEAK_SIGNAL",
+              "BLOCKED"
+            ]
+          },
+          "target_task": {
+            "type": "string"
+          },
+          "patch_text": {
+            "type": "string"
+          },
+          "changed_files": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "risk_list": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "suggested_validation_steps": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "manual_validation_note": {
+            "type": "string"
+          },
+          "codex_acceptance_rule": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

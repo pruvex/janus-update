@@ -1,0 +1,12 @@
+{
+  "model": "deepseek/deepseek-v4-flash",
+  "returncode": 0,
+  "finish_reason": "length",
+  "actual_or_cost": 0.000615048,
+  "validation_issues": [
+    "parse_failed: Expecting ',' delimiter: line 77 column 6 (char 4893)"
+  ],
+  "status": "FAIL",
+  "validator_returncode": null,
+  "response_path": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-spec-to-task\\runs\\deepseek-deepseek-v4-flash\\response_body.json"
+}

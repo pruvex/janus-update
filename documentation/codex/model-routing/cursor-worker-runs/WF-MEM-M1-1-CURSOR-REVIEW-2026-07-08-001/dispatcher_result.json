@@ -1,0 +1,115 @@
+{
+  "backend": "cursor",
+  "lane_id": "precheck_review",
+  "workflow_id": "WF-MEM-M1-1-CURSOR-REVIEW-2026-07-08-001",
+  "selected_model": "gpt-5.4-mini-medium",
+  "cursor_pool": "api",
+  "estimated_cost_usd_static": 0.01515,
+  "session_id": "86e67859-10fd-4e2b-9a1d-9973ecba8f52",
+  "validation_result": "PASS",
+  "selected_path": "cursor_worker_live_mockable",
+  "final_outcome": "CURSOR_WORKER_READY_FOR_CODEX_REVIEW",
+  "package_validation": {
+    "validation_result": "PASS",
+    "contract_status": "TASK_PACKAGE_VALID_VIA_WORKER_REFERENCE",
+    "issues": [],
+    "task_label": "Review the bounded Memory MA/MB implementation slice for TASK-MEM-M1.1",
+    "worker_profile": "cursor-agent",
+    "allowed_edit_paths": [
+      "backend/services/memory/retrieval_service.py",
+      "backend/services/memory_budget.py",
+      "backend/services/memory_observability.py",
+      "backend/services/chat_orchestrator.py",
+      "backend/services/orchestrator/intent_engine.py",
+      "backend/tests/test_memory_hot_layer_cap.py",
+      "backend/tests/test_memory_on_demand_injection.py",
+      "backend/tests/test_memory_diamond.py",
+      "backend/tests/test_memory_regression.py",
+      "backend/tests/test_memory_tools.py",
+      "backend/tests/test_memory_retrieval_relevance_priority.py"
+    ],
+    "required_result_artifacts": [
+      "RESULT.json",
+      "RESULT.md",
+      "DIFF.patch",
+      "FILES_CHANGED.txt",
+      "CHECKS.log",
+      "COST.json"
+    ],
+    "source_package_path": "development\\openrouter-skill-tests\\janus-preimplementation-check\\precheck_input_package_task_mem_m1_1_2026-07-08.json",
+    "worker_package_path": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-preimplementation-check\\task_mem_m1_1_cursor_worker_package_2026-07-08.json"
+  },
+  "allowlist_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "allowlist": [
+      "backend/services/memory/retrieval_service.py",
+      "backend/services/memory_budget.py",
+      "backend/services/memory_observability.py",
+      "backend/services/chat_orchestrator.py",
+      "backend/services/orchestrator/intent_engine.py",
+      "backend/tests/test_memory_hot_layer_cap.py",
+      "backend/tests/test_memory_on_demand_injection.py",
+      "backend/tests/test_memory_diamond.py",
+      "backend/tests/test_memory_regression.py",
+      "backend/tests/test_memory_tools.py",
+      "backend/tests/test_memory_retrieval_relevance_priority.py"
+    ]
+  },
+  "allowlist_consistency_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "package_allowed_edit_paths": [
+      "backend/services/memory/retrieval_service.py",
+      "backend/services/memory_budget.py",
+      "backend/services/memory_observability.py",
+      "backend/services/chat_orchestrator.py",
+      "backend/services/orchestrator/intent_engine.py",
+      "backend/tests/test_memory_hot_layer_cap.py",
+      "backend/tests/test_memory_on_demand_injection.py",
+      "backend/tests/test_memory_diamond.py",
+      "backend/tests/test_memory_regression.py",
+      "backend/tests/test_memory_tools.py",
+      "backend/tests/test_memory_retrieval_relevance_priority.py"
+    ],
+    "allowlist": [
+      "backend/services/memory/retrieval_service.py",
+      "backend/services/memory_budget.py",
+      "backend/services/memory_observability.py",
+      "backend/services/chat_orchestrator.py",
+      "backend/services/orchestrator/intent_engine.py",
+      "backend/tests/test_memory_hot_layer_cap.py",
+      "backend/tests/test_memory_on_demand_injection.py",
+      "backend/tests/test_memory_diamond.py",
+      "backend/tests/test_memory_regression.py",
+      "backend/tests/test_memory_tools.py",
+      "backend/tests/test_memory_retrieval_relevance_priority.py"
+    ],
+    "declared_allowlist_file": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-preimplementation-check\\task_mem_m1_1_cursor_allowlist_2026-07-08.txt"
+  },
+  "accepted_source_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "accepted_source_run_dir": null,
+    "recognized_artifacts": []
+  },
+  "accepted_source_run_dir": null,
+  "planned_command": [
+    "C:\\Users\\pruve\\AppData\\Local\\cursor-agent\\agent.CMD",
+    "-p",
+    "--workspace",
+    "C:\\KI\\Janus-Projekt",
+    "--model",
+    "gpt-5.4-mini-medium",
+    "--output-format",
+    "json",
+    "Execute this bounded Janus delegated worker task now. Treat the full prompt below as instructions, not as text to analyze. Do not ask clarifying questions unless the task is impossible with the provided files and rules.\n\nStable prefix:\n- lane: precheck_review\n- worker_contract: janus-delegated-worker\n- output_schema: status, changed_files, command_results, summary, blockers\n- hard_rules: stay bounded, do not commit, do not leave the allowlist\n\nVariable suffix:\nReview this bounded Janus preimplementation package for TASK-MEM-M1.1. Do not implement code. Identify the highest-risk pitfalls, especially around health/medical protected slots, accidental gating of health injection, flag-off parity drift, and weather-vs-personal query routing. If helpful, suggest a compact implementation order or test emphasis list. Stay strictly inside Memory Phase A+B. Do not widen into Session-Search, Frozen Core, USER.md export, Intent M2, Recall-gap work, Transport, OAuth, OpenRouter, or delegation hardening.\nTask label: Review precheck package for Memory MA/MB bounded implementation slice\nReview only the allowlisted bounded memory files and the bound Janus artifacts. Do not commit. Return concise JSON-friendly review output with top risks, bounded plan, and test emphasis.\nAcceptance criteria:\n- Only the allowlisted bounded memory source and test files may be considered for any concrete suggestion.\n- The review must stay inside Memory Phase A+B and must not widen into later memory phases or intent/transport work.\n- Health and medical safety paths, flag-off parity, and weather-vs-personal gating must be treated as first-class risk boundaries.\nAllowed edit paths:\n- backend/services/memory/retrieval_service.py\n- backend/services/memory_budget.py\n- backend/services/memory_observability.py\n- backend/services/chat_orchestrator.py\n- backend/services/orchestrator/intent_engine.py\n- backend/tests/test_memory_hot_layer_cap.py\n- backend/tests/test_memory_on_demand_injection.py\n- backend/tests/test_memory_diamond.py\n- backend/tests/test_memory_regression.py\n- backend/tests/test_memory_tools.py\n- backend/tests/test_memory_retrieval_relevance_priority.py\nReturn status, changed_files, command_results, summary, and blockers as concise JSON-compatible output."
+  ],
+  "mode": "assist_only",
+  "workspace_root": "C:\\KI\\Janus-Projekt",
+  "live_execution_allowed": false,
+  "codex_review_required": true,
+  "changed_files": [],
+  "changed_outside_allowlist": [],
+  "operator_message": "Cursor worker finished the bounded slice and returned artifacts for Codex review."
+}

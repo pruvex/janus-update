@@ -1,0 +1,57 @@
+{
+  "task_id": "TASK-DBG-002",
+  "lane_id": "debug_repro_investigation",
+  "workflow_id": "WF-BACKLOG-124-PRECHECK-CONTRACT-001",
+  "bound_skill_context": "janus-debug",
+  "task_label": "Reconcile Janus precheck validator and executioner handoff contract",
+  "worker_profile": "janus-debug-repro-worker",
+  "allowed_edit_paths": [
+    "documentation/codex/skills/janus-preimplementation-check/SKILL.md",
+    "documentation/codex/skills/janus-preimplementation-check/scripts/validate_precheck.py",
+    "documentation/codex/skills/janus-executioner/SKILL.md"
+  ],
+  "task_prompt": "Inspect the three allowlisted versioned contract files and reconcile them to the newer compact Codex-native precheck result contract enforced by the installed validator. Remove active requirements for the old Skill-4 copyblock from the precheck skill and executioner, update the versioned validator to the Codex-native required fields, and preserve unrelated existing delegation/Cursor edits. Do not modify fixtures, installed copies, product code, or any other files.",
+  "acceptance_criteria": [
+    "The versioned precheck validator accepts valid_precheck.md and rejects invalid_precheck.md.",
+    "The versioned precheck skill and executioner describe the same compact Codex-native handoff fields without active copyblock requirements.",
+    "Only the three allowlisted versioned contract files change; no installed copy or unrelated file is modified."
+  ],
+  "expected_behavior": "The versioned precheck skill, precheck validator, and executioner must all accept and require the same compact Codex-native precheck artifact without chat copyblocks.",
+  "actual_behavior": "The installed validator rejects Skill-4 copyblocks while the installed precheck skill and executioner require them; the versioned validator still encodes the older copyblock contract.",
+  "failure_code": "SKILL_CONTRACT_CONTRADICTION",
+  "test_run_id": "BACKLOG-124-CONTRACT",
+  "iteration_number": 1,
+  "allowlist_file": "documentation/codex/model-routing/debug-review-runs/WF-BACKLOG-124-PRECHECK-CONTRACT-001/allowlist.txt",
+  "allowed_commands": [
+    "python -m pytest documentation/codex/model-routing/debug-review-runs/WF-BACKLOG-124-PRECHECK-CONTRACT-001/test_precheck_contract.py -q",
+    "git diff -- documentation/codex/skills/janus-preimplementation-check/SKILL.md documentation/codex/skills/janus-preimplementation-check/scripts/validate_precheck.py documentation/codex/skills/janus-executioner/SKILL.md"
+  ],
+  "checks": [
+    "python -m pytest documentation/codex/model-routing/debug-review-runs/WF-BACKLOG-124-PRECHECK-CONTRACT-001/test_precheck_contract.py -q",
+    "git diff -- documentation/codex/skills/janus-preimplementation-check/SKILL.md documentation/codex/skills/janus-preimplementation-check/scripts/validate_precheck.py documentation/codex/skills/janus-executioner/SKILL.md"
+  ],
+  "forbidden_actions": [
+    "commit",
+    "push",
+    "tag",
+    "merge",
+    "release",
+    "publish",
+    "product_code_edit",
+    "installed_skill_write",
+    "broad_shell",
+    "secret_write",
+    "architecture",
+    "auth",
+    "dependency",
+    "migration",
+    "privacy",
+    "secret",
+    "security"
+  ],
+  "investigation_goal": "Apply the smallest source-only fix that makes the three versioned contracts agree on the compact Codex-native PASS shape enforced by the installed validator. Preserve unrelated existing Cursor/delegation edits in both SKILL.md files. Do not edit fixtures or installed copies.",
+  "redaction_ready": true,
+  "recommended_backend": "cursor",
+  "recommended_model": "composer-2.5",
+  "cursor_prompt_contract": "Operate only inside the exact allowlist. Preserve unrelated uncommitted changes. Run only allowed_commands. Do not commit. Return JSON with root_cause, changed_files, command_results, and proposed_next_step. Do not claim final acceptance."
+}

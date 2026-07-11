@@ -15,10 +15,11 @@ This is primarily a ChatGPT-side routing skill. Codex normally consumes the resu
 Global delegation vocabulary across Janus is now:
 
 - `1 = Codex`
-- `2 = Cursor`
-- `3 = OpenRouter`
+- `2 = OpenRouter`
+- `3 = Cursor Composer`
+- `4 = Cursor API`
 
-This skill's bounded selected-handoff review lane is now wired through the shared manifest-backed `documentation/codex/model-routing/scripts/janus_delegate.py` entry. OpenRouter remains the recommended backend for this assist-only review slice; Cursor is available as option `2` but is not the preferred backend here.
+This skill's bounded selected-handoff review lane is now wired through the shared manifest-backed `documentation/codex/model-routing/scripts/janus_delegate.py` entry. Cursor API is now a valid short-review option, while OpenRouter remains available as fallback.
 
 ## Source Reference
 
@@ -74,16 +75,16 @@ python documentation/codex/model-routing/scripts/janus_delegate.py --lane backlo
 Current lane behavior:
 
 - `1 = Codex`
-- `2 = Cursor`
-- `3 = OpenRouter`
-- OpenRouter remains the recommended backend for this bounded assist-only review slice.
-- Cursor is visible as option `2`, but not the recommended backend.
+- `2 = OpenRouter`
+- `4 = Cursor API`
+- Cursor API is the current recommended backend for this bounded short-review slice.
 - The existing `codex_backlog_handoff_review_runner.py` remains the downstream OR helper planned by `janus_delegate.py`.
 
 Gate rules:
 
 - if the user chooses `1`, `local`, or `codex`, invoke the same runner with `--operator-choice local`
-- if the user chooses `3`, `or`, `openrouter`, or `opr`, invoke the same runner with `--operator-choice delegated --input-package-json <bounded package>`
+- if the user chooses `2`, `or`, `openrouter`, or `opr`, invoke the same runner with `--operator-choice delegated --input-package-json <bounded package>`
+- if the user chooses `4`, `cursor-api`, `cursor_api`, or `api`, invoke the shared delegate and keep the task bounded to the same review package
 - use only a bounded review package; do not delegate full backlog writing
 - accepted delegated output remains review material only; Codex must still perform any real backlog/task artifact changes locally
 

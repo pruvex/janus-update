@@ -1,0 +1,21 @@
+﻿
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1783286738-6bBzPhCA0wyRBTIsZQmp","object":"chat.completion","created":1783286738,"model":"qwen/qwen3-coder-30b-a3b-instruct","provider":"SiliconFlow","system_fingerprint":null,"service_tier":null,"choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"stop","message":{"role":"assistant","content":"{\n  \"status\": \"PASS\",\n  \"target_task\": \"BACKLOG-114\",\n  \"precheck_decision\": \"PRECHECK_PASS_CANDIDATE\",\n  \"artifact_identity\": \"PASS\",\n  \"scope_status\": \"ATOMIC\",\n  \"risk_level\": \"LOW\",\n  \"blocking_issues\": [],\n  \"required_evidence\": [\n    \"repo-vs-installed parity check for each bound skill copy\",\n    \"visible approved lane workflow verification\",\n    \"hidden lane workflow verification\"\n  ],\n  \"execution_handoff_ready\": \"YES\",\n  \"notes\": \"All acceptance criteria met. Scope is bounded and atomic. Evidence requirements are concrete and executable. No blocking issues identified.\"\n}","refusal":null,"reasoning":null}}],"usage":{"prompt_tokens":795,"completion_tokens":144,"total_tokens":939,"cost":0.00009597,"is_byok":false,"prompt_tokens_details":{"cached_tokens":0,"cache_write_tokens":0,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.00009597,"upstream_inference_prompt_cost":0.00005565,"upstream_inference_completions_cost":0.00004032},"completion_tokens_details":{"reasoning_tokens":0,"image_tokens":0,"audio_tokens":0}}}

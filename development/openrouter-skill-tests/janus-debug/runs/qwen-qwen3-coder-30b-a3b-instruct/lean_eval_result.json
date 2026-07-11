@@ -1,0 +1,11 @@
+{
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "pass": true,
+  "failures": [],
+  "finish_reason": "stop",
+  "actual_or_cost": 0.00010999,
+  "latency_ms": 4221,
+  "generation_id": "gen-1782398122-hjaWzSwycjX1AjEEjQ8C",
+  "parse_error": null,
+  "response_path": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-debug\\runs\\qwen-qwen3-coder-30b-a3b-instruct\\response_body.json"
+}

@@ -1,0 +1,25 @@
+{
+  "workflow_id": "FIXED-OR-20260622-232049-DOC-SKILL-010",
+  "skill_id": "DOC-SKILL-010",
+  "local_codex_option": "handle locally with Codex",
+  "or_option": "handle with OR using fixed model qwen/qwen3.5-flash-02-23",
+  "estimated_or_cost": 0.00039156,
+  "confidence_status": {
+    "cost_estimate_confidence_percent": 55,
+    "cost_estimate_sample_count": 1,
+    "cost_estimate_mean_abs_error_percent": 54.15,
+    "cost_estimate_p50_error_percent": 54.15,
+    "cost_estimate_p90_error_percent": 54.15,
+    "cost_estimate_basis": "qwen/qwen3.5-flash-02-23+DOC-SKILL-010+sha256:doc-skill-010-live-batch-v1+summary_short",
+    "prompt_template_hash": "sha256:doc-skill-010-live-batch-v1",
+    "task_variant": "review_notes_short",
+    "price_snapshot_source": "documentation/codex/openrouter-delegation/model_price_inventory_2026-06-12.json",
+    "price_snapshot_timestamp": "2026-06-13T18:16:57.0290565+02:00"
+  },
+  "per_call_cap_usd": 0.002,
+  "session_cap_usd": 0.006,
+  "note": "Operator-invoked fixed OR use only. No Auto Router. Not production routing.",
+  "eligibility_result": "OR_ALLOWED",
+  "eligibility_reason_code": "ELIGIBILITY_CONFIRMED",
+  "evidence_status": "LIVE_EVIDENCE_CONFIRMED"
+}

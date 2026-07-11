@@ -1,0 +1,26 @@
+{
+  "status": "WEAK_SIGNAL",
+  "test_run_id": "TEST-RUN-TRIAGE-EVERYDAY-001",
+  "primary_outcome": "One bounded local result bundle needs assist-only classification review.",
+  "likely_classification": "INFRA_BLOCKER",
+  "likely_subsystem": "Codex-side test pipeline",
+  "finding_clusters": [
+    {
+      "title": "Classification ambiguity between INFRA_BLOCKER and TEST_BUG",
+      "confidence": "MEDIUM",
+      "evidence": "Candidate blocker category is INFRA_BLOCKER, but no definitive evidence to rule out TEST_BUG."
+    },
+    {
+      "title": "Redacted result bundle requires local review",
+      "confidence": "HIGH",
+      "evidence": "Result bundle already redacted; Codex retains rerun and routing ownership per bound skill context."
+    }
+  ],
+  "suggested_next_local_verifiers": [
+    "Codex-test-qualifier-team"
+  ],
+  "suggested_routing": "Codex-side classification pipeline",
+  "escalation_trigger": "None",
+  "redaction_check": "PASS",
+  "notes": "No final PASS/release decision implied. Local Codex validation required prior to any routing or escalation."
+}

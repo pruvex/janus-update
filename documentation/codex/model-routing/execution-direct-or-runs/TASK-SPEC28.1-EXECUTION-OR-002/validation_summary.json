@@ -1,0 +1,20 @@
+{
+  "workflow_id": "TASK-SPEC28.1-EXECUTION-OR-002",
+  "validation_result": "FAIL",
+  "budget_profile": "execution_patch_candidate",
+  "issues": [
+    "finish_reason=length"
+  ],
+  "allowed_files": [
+    "documentation/codex/skills/janus-test-pipeline/SKILL.md",
+    "documentation/codex/model-routing/scripts/bounded_or_worker_eligibility.py",
+    "documentation/codex/model-routing/scripts/test_pipeline_sidecar_write_pilot_runner.py",
+    "documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py",
+    "documentation/codex/model-routing/tests/test_test_pipeline_sidecar_write_pilot_runner.py"
+  ],
+  "changed_files": [],
+  "max_touched_files": 5,
+  "finish_reason": "length",
+  "actual_or_cost": 0.0080658,
+  "cost_cap": 0.05
+}

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-06-09-002",
+  "testCaseId": "TC-007-GPT",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "`was weißt du über oli?` after creation and enrichment",
+  "response": "Hallo Rolf Adam — ich weiß Folgendes über Oli:- Oli wohnt in Köln-Stammheim.- Er baut gern Star-Wars-Modelle.- Er ist gern im Garten.- Er mag Kimchi und generell vegetarisches Essen.- Er liebt die Serie The Big Bang Theory.- Er mag Strategiespiele wie Panzer General.💡 Passende nächste Schritte:• Soll ich dir noch ein kurzes Gesprächs-„Einstiegsrezept“ formulieren, um Oli anzusprechen (z.B. Star Wars / Garten / Essen)?• Möchtest du, dass ich Oli bei kommenden Gesprächen automatisch mit seinen Vorlieben „mitdenke“?18:40",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-06-09T16:40:28.548Z"
+}

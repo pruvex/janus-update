@@ -1,0 +1,5 @@
+{
+  "status": "FAIL",
+  "error": "Validator input runner_path does not exist: C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\structured-action-runs\\STRUCTURED-GENERATOR-REVIEW-001-VALIDATOR\\20260614-165635\\generated\\TEST-RUN-2026-05-15-005_generated_from_builder.spec.js",
+  "schema_path": "documentation/codex/model-routing/schemas/codex_delegated_action_request.schema.json"
+}

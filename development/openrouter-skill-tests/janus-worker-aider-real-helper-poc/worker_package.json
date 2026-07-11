@@ -1,0 +1,36 @@
+{
+  "task_label": "Fix precheck prompt token mismatch in lean_precheck_eval.py",
+  "task_prompt_path": "development/openrouter-skill-tests/janus-worker-aider-real-helper-poc/worker_task.md",
+  "workspace_files": [
+    {
+      "repo_path": "development/openrouter-skill-tests/janus-preimplementation-check/lean_precheck_eval.py",
+      "workspace_path": "lean_precheck_eval.py",
+      "allow_edit": true,
+      "copy_back": true
+    },
+    {
+      "repo_path": "development/openrouter-skill-tests/janus-worker-aider-real-helper-poc/test_real_helper.py",
+      "workspace_path": "test_real_helper.py",
+      "allow_edit": false,
+      "copy_back": false
+    }
+  ],
+  "pre_commands": [
+    {
+      "label": "PRETEST",
+      "command": ["python", "-m", "pytest", "-q", "test_real_helper.py"],
+      "expected_exit_codes": [1]
+    }
+  ],
+  "post_commands": [
+    {
+      "label": "POSTTEST",
+      "command": ["python", "-m", "pytest", "-q", "test_real_helper.py"],
+      "expected_exit_codes": [0]
+    }
+  ],
+  "notes": [
+    "Real repo-owned Lean-Dev helper seam",
+    "Codex remains final review and hardening owner"
+  ]
+}

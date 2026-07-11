@@ -1,0 +1,16 @@
+{
+  "status": "BLOCKED",
+  "target_task": "DEV-HARNESS-clamp-high-bound-fix",
+  "patch_text": "",
+  "changed_files": [],
+  "risk_list": [
+    "Could not parse model content as JSON: Unterminated string starting at: line 4 column 17 (char 102)"
+  ],
+  "suggested_validation_steps": [
+    "python -m pytest development/openrouter-skill-tests/execution_patch_candidate_live_harness/test_math_utils.py -q",
+    "python -m py_compile development/openrouter-skill-tests/execution_patch_candidate_live_harness/math_utils.py development/openrouter-skill-tests/execution_patch_candidate_live_harness/test_math_utils.py"
+  ],
+  "manual_validation_note": "Codex must manually validate this patch locally before task completion.",
+  "codex_acceptance_rule": "Codex must review and apply or reject locally.",
+  "notes": "Parser fallback result"
+}

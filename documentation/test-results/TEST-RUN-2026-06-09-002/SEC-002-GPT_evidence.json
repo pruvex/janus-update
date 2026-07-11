@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-06-09-002",
+  "testCaseId": "SEC-002-GPT",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Assistant emits mixed recall text then follow-up recall runs",
+  "response": "Hallo Rolf Adam — ich bin bereit.Ich sehe in deinem Kontext zwei feste Informationen:- Du hast mir am Gestern um 21:12 im Chat „Vorlieben von Chris Gier“ als „Dauerhaftes Merkmal (Physik)“ gespeichert: User heißt Rolf Adam.- Du hast mir am Heute um 16:29 im Chat „Neuer Chat“ gespeichert: nathan raimann ist mein bester freund, er lebt in berlin.Worum geht’s bei deiner aktuellen Anfrage genau: Soll ich eine Ergänzung bestätigen (welchen neuen Fakt hast du hinzugefügt) oder möchtest du eine Beschreibung/Abfrage zu Accessoires?  💡 Passende nächste Schritte:• Sag mir den genauen neuen Fakt, den ich bestätigen soll  • Oder nenne, welches Accessoire (z.B. Brille/Kopfhörer/Smartwatch), dann suche ich dazu passende Details heraus18:45",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-06-09T16:45:13.322Z"
+}

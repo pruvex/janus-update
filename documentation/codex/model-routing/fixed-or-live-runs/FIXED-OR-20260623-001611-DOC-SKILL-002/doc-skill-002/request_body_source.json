@@ -1,0 +1,15 @@
+{
+  "model": "openai/gpt-oss-20b",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are assisting with DOC-SKILL-002. Use only the sanitized input. Return concise Markdown only. Do not imply release readiness or any production, routing, Git, repo-write, or release authority."
+    },
+    {
+      "role": "user",
+      "content": "You are assisting with DOC-SKILL-002: Summarize model scoring report.\n\nSummarize the sanitized model-scoring report for local reviewer use.\n\nRequirements:\n- Preserve HOLD, UNKNOWN, and disabled states accurately.\n- Explicitly state that production_approved=false.\n- Explicitly state that routing_approved=false.\n- Do not approve routing.\n- Do not override policy.\n- Do not activate production use.\n- Do not interpret or invent private evidence.\n- Do not convert UNKNOWN or disabled entries to PASS.\n- Keep the summary concise.\n\nReturn:\n1. Overall status\n2. Per-model scoring summary\n3. Disabled/UNKNOWN/HOLD notes\n4. Final governance note\n\nSanitized input JSON:\n{\n  \"fixture_id\": \"DOC-SKILL-002-GPT54-MINI-LIVE-EVAL-001\",\n  \"task_id\": \"DOC-SKILL-002\",\n  \"task_name\": \"Summarize model scoring report\",\n  \"sanitized\": true,\n  \"contains_private_evidence\": false,\n  \"production_approved\": false,\n  \"routing_approved\": false,\n  \"summary_target\": \"model_scoring_report_summary\",\n  \"overall_status\": \"HOLD\",\n  \"scoring_report\": {\n    \"report_id\": \"SANITIZED-DOC-SKILL-002-SCORING-001\",\n    \"models\": [\n      {\n        \"model\": \"model_alpha\",\n        \"score\": 88,\n        \"status\": \"PASS\",\n        \"routing_state\": \"HOLD\",\n        \"disabled\": false,\n        \"notes\": [\n          \"Met schema and preservation checks\",\n          \"Needs repeatability confirmation before any routing discussion\"\n        ]\n      },\n      {\n        \"model\": \"model_beta\",\n        \"score\": null,\n        \"status\": \"UNKNOWN\",\n        \"routing_state\": \"HOLD\",\n        \"disabled\": true,\n        \"disabled_reason\": \"missing repeatability evidence\",\n        \"notes\": [\n          \"Do not score as PASS\",\n          \"Disabled state must be preserved\"\n        ]\n      },\n      {\n        \"model\": \"model_gamma\",\n        \"score\": 74,\n        \"status\": \"HOLD\",\n        \"routing_state\": \"HOLD\",\n        \"disabled\": false,\n        \"notes\": [\n          \"Partial preservation of disabled-state wording\",\n          \"No production activation allowed\"\n        ]\n      }\n    ]\n  },\n  \"constraints\": {\n    \"must_preserve\": [\n      \"HOLD\",\n      \"UNKNOWN\",\n      \"disabled=true\",\n      \"production_approved=false\",\n      \"routing_approved=false\"\n    ],\n    \"must_not_do\": [\n      \"approve routing\",\n      \"override policy\",\n      \"activate production\",\n      \"interpret private evidence\",\n      \"mark disabled model as PASS\"\n    ]\n  }\n}"
+    }
+  ],
+  "temperature": 0,
+  "max_tokens": 1200
+}

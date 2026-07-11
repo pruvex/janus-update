@@ -7,7 +7,7 @@
 It gives the operator one stable gate with the same language pattern:
 
 - `1 = Codex`
-- `2 = Delegated`
+- `2 = OpenRouter`
 
 The dispatcher then routes to the matching bounded helper without requiring the operator to select low-level scripts directly.
 
@@ -43,7 +43,7 @@ This keeps the real workflow choice simple while preserving class-specific routi
 
 - Prompt mode returns the operator gate.
 - `1` or `local` keeps the work local in Codex.
-- `2` or `delegated` invokes the bounded quickchange helper.
+- `2`, `or`, `openrouter`, or `delegated` invokes the bounded quickchange helper.
 - Structured review remains capture-first and review-first.
 - No auto-apply is introduced by the dispatcher.
 
@@ -61,7 +61,7 @@ The dispatcher is the canonical shared bounded entry for the validated delegatio
 Current exposure:
 
 - `documentation_draft`: already wired into the installed `janus-documentation-update` skill guidance.
-- `quickchange_patch_review`: validated through dispatcher-first helper usage, not yet an installed-skill operator entry.
+- `quickchange_patch_review`: validated through dispatcher-first helper usage and now aligned to the installed-skill OpenRouter wording.
 - `generator_review`: validated through dispatcher-first helper usage, not yet an installed-skill operator entry.
 
 ## Boundaries

@@ -1,0 +1,13 @@
+{
+  "calls": [
+    {
+      "id": "st_tmp_lmwz2ct6z3b",
+      "type": "openrouter:apply_patch",
+      "status": "in_progress",
+      "name": "openrouter:apply_patch",
+      "operation_type": "update_file",
+      "path": "frontend/index.html",
+      "diff": "@@ -433,7 +433,7 @@\n                       <textarea\n                         id=\"user-input-A\"\n                         rows=\"1\"\n-                        placeholder=\"Nachricht an Janus schreiben...\"\n+                        placeholder=\"Nachricht an Janus senden...\"\n                         autocomplete=\"off\"\n                         spellcheck=\"true\"\n                       ></textarea>\n@@ -529,7 +529,7 @@\n                       <textarea\n                         id=\"user-input-B\"\n                         rows=\"1\"\n-                        placeholder=\"Nachricht an Janus schreiben...\"\n+                        placeholder=\"Nachricht an Janus senden...\"\n                         autocomplete=\"off\"\n                         spellcheck=\"true\"\n                       ></textarea>"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-06-09-004",
+  "testCaseId": "TC-006-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "was mag olix?",
+  "response": "Olix Quarz (den du auch Oli nennst) mag vor allem Strategiespiele, wobei er ein großer Fan von Panzer General ist.Hier ist die Übersicht zu seinem Profil, Rolf Adam:*   Interessen: Er liebt Strategiespiele (insbesondere Panzer General). Das hast du mir heute um 20:58 Uhr im Chat „Neuer Chat“ erzählt.*   Abneigungen: Entgegen der ersten Information mag er „The Big Bang Theory“ nicht. Diese Korrektur hast du heute ebenfalls um 20:58 Uhr im Chat „Neuer Chat“ vorgenommen (nachdem du zuvor um 20:30 Uhr erwähnt hattest, er würde die Serie lieben).*   Wohnort: Er wohnt in Köln-Stammheim (erwähnt heute um 17:46 Uhr im Chat „Neuer Chat“).💡 Passende nächste Schritte:• Soll ich nach aktuellen Strategiespielen suchen, die Panzer General ähneln?• Möchtest du weitere Hobbys von Olix ergänzen, damit ich sein Profil vervollständigen kann?• Suchst du nach einem passenden Geschenk für ihn, das mit seinem Strategie-Hobby zu tun hat?23:00",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-06-09T21:00:50.887Z"
+}

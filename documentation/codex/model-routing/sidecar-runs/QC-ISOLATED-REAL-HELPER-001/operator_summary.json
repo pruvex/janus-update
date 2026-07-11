@@ -1,0 +1,59 @@
+{
+  "summary_header": "ISOLATED AIDER WORKER RESULT",
+  "workflow_id": "QC-ISOLATED-REAL-HELPER-001",
+  "skill": "janus-quickchange",
+  "task_label": "Fix precheck prompt token mismatch in lean_precheck_eval.py",
+  "normal_target_model": "5.4 medium",
+  "or_model_provider": "OpenRouter / openrouter/qwen/qwen3-coder-30b-a3b-instruct",
+  "selected_path": "isolated_aider_temp_workspace_reject",
+  "final_outcome": "ISOLATED_AIDER_REJECT_AND_FALLBACK",
+  "validation_result": "FAIL",
+  "package_path": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-worker-aider-real-helper-poc\\worker_package.json",
+  "run_directory": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\isolated-aider-worker-runs\\QC-ISOLATED-REAL-HELPER-001",
+  "temp_workspace_removed": true,
+  "log_path": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\isolated-aider-worker-runs\\QC-ISOLATED-REAL-HELPER-001\\test_output.log",
+  "report_path": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\isolated-aider-worker-runs\\QC-ISOLATED-REAL-HELPER-001\\worker_report.md",
+  "changed_files": [],
+  "scope_drift_files": [],
+  "copy_back_files": [],
+  "pre_command_results": [
+    {
+      "label": "PRETEST",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "-q",
+        "test_real_helper.py"
+      ],
+      "expected_exit_codes": [
+        1
+      ],
+      "actual_exit_code": 0,
+      "ok": false
+    }
+  ],
+  "post_command_results": [
+    {
+      "label": "POSTTEST",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "-q",
+        "test_real_helper.py"
+      ],
+      "expected_exit_codes": [
+        0
+      ],
+      "actual_exit_code": 0,
+      "ok": true
+    }
+  ],
+  "aider_exit_code": 0,
+  "repo_root_new_aider_artifacts": [],
+  "gitignore_changed_during_run": false,
+  "operator_message": "Isolated OR worker failed bounded acceptance checks. Fallback to Codex-only.",
+  "delegation_mode": "isolated_aider_workspace",
+  "forwarded_runner": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\scripts\\isolated_aider_workspace_runner.py"
+}

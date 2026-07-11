@@ -1,0 +1,15 @@
+﻿{
+    "status":  "DRY_RUN",
+    "exit_code":  null,
+    "command_json":  "C:\\Users\\CodexSandboxOffline\\.codex\\.sandbox\\cwd\\2be9fc6871716c59\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-OR-LIVE-001-DRYFIX\\command.json",
+    "stdout_log":  "C:\\Users\\CodexSandboxOffline\\.codex\\.sandbox\\cwd\\2be9fc6871716c59\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-OR-LIVE-001-DRYFIX\\stdout.log",
+    "stderr_log":  "C:\\Users\\CodexSandboxOffline\\.codex\\.sandbox\\cwd\\2be9fc6871716c59\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-OR-LIVE-001-DRYFIX\\stderr.log",
+    "last_message":  "C:\\Users\\CodexSandboxOffline\\.codex\\.sandbox\\cwd\\2be9fc6871716c59\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-OR-LIVE-001-DRYFIX\\last_message.md",
+    "event_stream":  "C:\\Users\\CodexSandboxOffline\\.codex\\.sandbox\\cwd\\2be9fc6871716c59\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-OR-LIVE-001-DRYFIX\\event_stream.jsonl",
+    "editable_paths":  "C:\\Users\\CodexSandboxOffline\\.codex\\.sandbox\\cwd\\2be9fc6871716c59\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-OR-LIVE-001-DRYFIX\\editable_paths.txt",
+    "pre_run_status":  "C:\\Users\\CodexSandboxOffline\\.codex\\.sandbox\\cwd\\2be9fc6871716c59\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-OR-LIVE-001-DRYFIX\\pre_run_status.txt",
+    "post_run_status":  "C:\\Users\\CodexSandboxOffline\\.codex\\.sandbox\\cwd\\2be9fc6871716c59\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-OR-LIVE-001-DRYFIX\\post_run_status.txt",
+    "changed_files":  "C:\\Users\\CodexSandboxOffline\\.codex\\.sandbox\\cwd\\2be9fc6871716c59\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-OR-LIVE-001-DRYFIX\\changed_files.txt",
+    "git_diff":  "C:\\Users\\CodexSandboxOffline\\.codex\\.sandbox\\cwd\\2be9fc6871716c59\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-OR-LIVE-001-DRYFIX\\git_diff.patch",
+    "validation_summary":  "C:\\Users\\CodexSandboxOffline\\.codex\\.sandbox\\cwd\\2be9fc6871716c59\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-OR-LIVE-001-DRYFIX\\validation_summary.json"
+}

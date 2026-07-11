@@ -1,0 +1,25 @@
+{
+  "workflow_id": "WF-FEATURE-DESIGN-PACKAGE-001",
+  "bound_skill_context": "janus-feature-design",
+  "raw_feature_request": "Ich moechte in bestehenden Janus-Skills immer waehlen koennen, ob Codex die Aufgabe lokal macht oder ob ein begrenzter OpenRouter-Arbeitspfad genutzt wird, damit ich flexibel Codex-Kontingent sparen kann.",
+  "locked_answers": [
+    "Feature Name: Operator-facing Codex-oder-OR-Wahl in bestehenden Janus-Skills",
+    "Primary Goal: In passenden bestehenden Janus-Skills soll am Einstieg sichtbar zwischen lokalem Codex-Pfad und bounded OR-Pfad gewaehlt werden koennen.",
+    "User Problem: Der Nutzer will je nach Codex-Kontingent und erwarteten OR-Kosten flexibel entscheiden koennen, welcher Pfad fuer eine konkrete Aufgabe sinnvoller ist.",
+    "Primary Target Surface: bestehende Janus-Skill-Einstiege",
+    "Existing or New Surface: bestehend",
+    "Existence Confirmation: confirmed by user",
+    "User Trigger: Start eines geeigneten Janus-Skills mit bounded OR-Kandidaten",
+    "Success Behavior: Der Skill zeigt sichtbar 1 = Codex und 2 = OR inklusive Kosten-/Evidenzhinweis und faellt fail-closed lokal zurueck, wenn kein freigegebener bounded OR-Lane passt.",
+    "Failure Behavior: Nicht freigegebene, partielle oder ungesunde OR-Lanes duerfen nicht als normale Wahl erscheinen; in solchen Faellen bleibt nur der lokale Codex-Pfad sichtbar.",
+    "User Action Surface: bewusste Auswahl zwischen Codex und OR am Skill-Einstieg",
+    "Data / Persistence: nur Telemetrie, Gate-Evidenz und vorhandene Skill-/Routing-Artefakte; keine neue Produktpersistenz",
+    "Security / Privacy: keine broad delegated authority, keine Production-Routing-Aktivierung, Codex behaelt finale Validierung und Autoritaet",
+    "Edge Cases: fehlende Gate-Daten, fehlende OR-Freigabe, partielle Kandidaten, unvollstaendige Telemetrie, Healthcheck-Fehler",
+    "Out of Scope: globale OR-Freigabe, canonical routing-table update, broad delegated repo authority, release actions"
+  ],
+  "expected_routing_decision": "FULL FEATURE PIPELINE",
+  "expected_next_skill": "janus-spec-generator",
+  "expected_output": "One bounded latest decision summary draft or one blocking question, with no implementation, task creation, or final product authority claims.",
+  "redaction_ready": true
+}

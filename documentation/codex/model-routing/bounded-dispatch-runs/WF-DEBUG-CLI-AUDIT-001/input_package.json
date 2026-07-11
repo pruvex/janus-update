@@ -1,0 +1,12 @@
+{
+  "workflow_id": "WF-DEBUG-CLI-AUDIT-001",
+  "bound_skill_context": "janus-debug",
+  "expected_behavior": "Exactly one bounded fixture-backed review should run.",
+  "actual_behavior": "CLI delegated path should resolve fixture mode without spawning itself.",
+  "evidence_snippets": [
+    "audit probe snippet"
+  ],
+  "iteration_number": 1,
+  "explicit_question": "What verifier next?",
+  "redaction_ready": true
+}

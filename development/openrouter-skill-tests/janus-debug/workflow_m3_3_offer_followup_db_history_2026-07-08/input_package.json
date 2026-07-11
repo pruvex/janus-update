@@ -1,0 +1,31 @@
+{
+  "task_id": "TASK-WORKFLOW-M3.3-DBG-OFFER-FOLLOWUP-DB-HISTORY",
+  "lane_id": "debug_repro_investigation",
+  "bound_skill_context": "janus-debug",
+  "task_label": "Debug M3.3 routine offer Ja follow-up consumed by mail guard",
+  "worker_package_json": "development/openrouter-skill-tests/janus-debug/workflow_m3_3_offer_followup_db_history_2026-07-08/worker_package.json",
+  "allowlist_file": "development/openrouter-skill-tests/janus-debug/workflow_m3_3_offer_followup_db_history_2026-07-08/allowlist.txt",
+  "failure_code": "WORKFLOW_M3_3_OFFER_FOLLOWUP_CONSUMED_BY_MAIL_GUARD",
+  "latest_user_evidence": {
+    "timestamp_local": "2026-07-08 23:51-23:53 +02:00",
+    "actual": "Both providers show a JANUS_ROUTINE_OFFER marker after the combined answer. Replying 'ja' returns the stale mail no-draft message instead of saving the routine.",
+    "expected": "A Ja follow-up to a pending routine offer should save the routine before mail confirmation can handle the turn."
+  },
+  "prior_cursor_evidence": {
+    "successful_cursor_workflow_id": "WF-CURSOR-M3.3-OFFER-CONTENT-STATUS-2026-07-08-001",
+    "summary": "Cursor Composer succeeded on a smaller M3.3 worker package after a larger Composer timeout and API-hidden gate."
+  },
+  "acceptance_criteria": [
+    "Only the allowlisted orchestrator and focused workflow offer test may change.",
+    "When the latest assistant message with a JANUS_ROUTINE_OFFER marker is persisted in DB but not present in wf.messages during early exit, a Ja follow-up must be handled by routine offer confirmation before mail confirmation.",
+    "The existing mail guard must remain unchanged except for losing precedence to a detected pending routine offer.",
+    "Focused pytest must pass before Codex review."
+  ],
+  "local_validation_command": "python -m pytest backend/tests/test_workflow_offer_service.py -q",
+  "redaction_ready": true,
+  "estimated_codex_saved_tokens": 12000,
+  "estimated_delegation_overhead_tokens": 2500,
+  "recommended_backend": "cursor",
+  "recommended_model": "composer-2.5",
+  "cursor_prompt_contract": "Use Cursor Composer for this small follow-up; inspect only allowlisted orchestrator/test files and return concise JSON-friendly output."
+}

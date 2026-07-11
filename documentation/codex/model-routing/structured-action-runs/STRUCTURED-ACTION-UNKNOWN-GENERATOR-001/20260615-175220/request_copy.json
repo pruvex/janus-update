@@ -1,0 +1,25 @@
+{
+  "schema_version": "codex_delegated_action_request.v1",
+  "workflow_id": "STRUCTURED-ACTION-UNKNOWN-GENERATOR-001",
+  "skill_id": "janus-test-pipeline",
+  "action_type": "run_generator",
+  "summary": "Attempt an unsupported generator route after only one generator mapping is enabled.",
+  "requires_codex_review": true,
+  "non_goals": [
+    "No free shell execution",
+    "No generator mapping in TASK-SPEC17.1"
+  ],
+  "action_payload": {
+    "generator_id": "unknown_generator_v1",
+    "inputs": {
+      "spec_path": "documentation/TEST_SPEC/07_regression_suite/18_testspec_testplan_generator_regression.md",
+      "test_run_id": "TEST-RUN-2099-12-31-998",
+      "output_dir": "__RUN_DIR__/generated"
+    },
+    "declared_output_artifacts": [
+      "__RUN_DIR__/generated/TEST-RUN-2099-12-31-998_plan.json",
+      "__RUN_DIR__/generated/TEST-RUN-2099-12-31-998_generated.spec.js",
+      "__RUN_DIR__/generated/TEST-RUN-2099-12-31-998_skill2_handover.txt"
+    ]
+  }
+}

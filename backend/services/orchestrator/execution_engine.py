@@ -28,10 +28,237 @@ from backend.services.llm_silo_context import normalize_llm_silo_provider
 from backend.services.prompt_cache import clone_decision_for_route, decision_from_gateway_kwargs, merge_decision_into_usage
 from backend.utils.config_loader import load_config_data, load_model_catalog
 from backend.renderers.attribution import append_tool_attributions_from_tools, render_weather_forecast_from_tools
+from backend.services.workflow.calendar_wikipedia_presenter import resolve_calendar_wikipedia_final_text
 from backend.utils.link_sanitizer import force_sanitize_links
 from backend.services.security.injection_detector import detect_injection, get_injection_type
 
 logger = logging.getLogger("janus_backend")
+
+_TOOL_NAME_SKILL_ALIASES = {
+    "calendar_list_events": "calendar.list_events",
+    "system_wikipedia_summary": "system.wikipedia_summary",
+    "system_weather": "system.weather",
+    "system_routing": "system.routing",
+}
+
+
+def _tool_name_to_skill_id(tool_name: str) -> str:
+    normalized = str(tool_name or "").strip()
+    return _TOOL_NAME_SKILL_ALIASES.get(normalized, normalized)
+
+
+def _partition_duplicate_tool_calls(
+    tool_calls: list,
+    gateway_kwargs: Dict[str, Any],
+) -> tuple[list, bool, str]:
+    track_tool_call_fn = gateway_kwargs.get("_track_tool_call_fn")
+    skip_redundant_duplicate_fn = gateway_kwargs.get("_skip_redundant_duplicate_fn")
+    combo_skill_ids = gateway_kwargs.get("_multi_skill_combo_ids") or frozenset()
+    executed_skill_ids = gateway_kwargs.get("_kpi_skills_executed") or set()
+    filtered: list = []
+    batch_skill_ids: set[str] = set()
+    duplicate_detected = False
+    duplicate_tool_name = ""
+    if not callable(track_tool_call_fn):
+        return list(tool_calls or []), False, ""
+    for tool_call in tool_calls or []:
+        function = tool_call.get("function") or {}
+        tool_name = function.get("name", "")
+        args_raw = function.get("arguments") or "{}"
+        try:
+            args = json.loads(args_raw) if isinstance(args_raw, str) else args_raw
+        except Exception:
+            args = {}
+        skill_id = _tool_name_to_skill_id(tool_name)
+        is_duplicate = track_tool_call_fn(tool_name, args)
+        if is_duplicate:
+            pending_combo = set(combo_skill_ids) - executed_skill_ids - batch_skill_ids
+            if len(combo_skill_ids) >= 2 and pending_combo:
+                logger.info(
+                    "[HARD-LOOP-BREAKER] Skipping duplicate %s while combo skills still pending: %s",
+                    tool_name,
+                    sorted(pending_combo),
+                )
+                continue
+            if callable(skip_redundant_duplicate_fn) and skip_redundant_duplicate_fn(tool_name, args):
+                logger.info(
+                    "[HARD-LOOP-BREAKER] Skipping redundant duplicate %s while multi-skill combo is still pending",
+                    tool_name,
+                )
+                continue
+            if len(combo_skill_ids) >= 2 and skill_id in batch_skill_ids and pending_combo:
+                logger.info(
+                    "[HARD-LOOP-BREAKER] Skipping repeated %s in same batch; pending combo skills: %s",
+                    tool_name,
+                    sorted(pending_combo),
+                )
+                continue
+            duplicate_detected = True
+            duplicate_tool_name = tool_name
+            break
+        filtered.append(tool_call)
+        if skill_id:
+            batch_skill_ids.add(skill_id)
+    return filtered, duplicate_detected, duplicate_tool_name
+
+
+def _record_executed_skills_from_tool_results(
+    gateway_kwargs: Dict[str, Any],
+    tool_results: list,
+) -> None:
+    executed = gateway_kwargs.get("_kpi_skills_executed")
+    if not isinstance(executed, set):
+        return
+    for result in tool_results or []:
+        if not isinstance(result, dict):
+            continue
+        skill_name = str(result.get("name") or "").strip()
+        if skill_name:
+            executed.add(_tool_name_to_skill_id(skill_name))
+
+
+def _get_pending_combo_skill_ids(gateway_kwargs: Dict[str, Any]) -> set[str]:
+    combo = gateway_kwargs.get("_multi_skill_combo_ids") or frozenset()
+    if len(combo) < 2:
+        return set()
+    executed = gateway_kwargs.get("_kpi_skills_executed")
+    if not isinstance(executed, set):
+        return {str(skill_id) for skill_id in combo}
+    return {str(skill_id) for skill_id in combo if skill_id not in executed}
+
+
+def _resolve_combo_forced_tool_for_iteration(
+    gateway_kwargs: Dict[str, Any],
+    current_iteration: int,
+) -> tuple[str | None, dict[str, Any] | None]:
+    del current_iteration
+    combo = gateway_kwargs.get("_multi_skill_combo_ids") or frozenset()
+    if combo != frozenset({"calendar.list_events", "system.wikipedia_summary"}):
+        return None, None
+    pending = _get_pending_combo_skill_ids(gateway_kwargs)
+    if not pending:
+        return None, None
+
+    if "calendar.list_events" in pending:
+        calendar_args = gateway_kwargs.get("forced_tool_args")
+        if not (isinstance(calendar_args, dict) and calendar_args):
+            from backend.services.orchestrator.execution_dispatcher import (
+                _build_calendar_wikipedia_forced_tool_plan,
+            )
+
+            user_prompt = str(gateway_kwargs.get("user_prompt") or "")
+            calendar_args, wiki_args = _build_calendar_wikipedia_forced_tool_plan(user_prompt)
+            if wiki_args:
+                gateway_kwargs.setdefault("_combo_wikipedia_forced_args", wiki_args)
+        if isinstance(calendar_args, dict) and calendar_args:
+            tool_name = str(gateway_kwargs.get("force_tool_name") or "calendar.list_events").strip()
+            return tool_name or "calendar.list_events", calendar_args
+
+    if "system.wikipedia_summary" in pending:
+        wiki_args = gateway_kwargs.get("_combo_wikipedia_forced_args")
+        if not (
+            isinstance(wiki_args, dict)
+            and str(wiki_args.get("query") or "").strip()
+        ):
+            from backend.services.orchestrator.execution_dispatcher import (
+                _build_calendar_wikipedia_forced_tool_plan,
+            )
+
+            user_prompt = str(gateway_kwargs.get("user_prompt") or "")
+            _, wiki_args = _build_calendar_wikipedia_forced_tool_plan(user_prompt)
+            if isinstance(wiki_args, dict) and str(wiki_args.get("query") or "").strip():
+                gateway_kwargs["_combo_wikipedia_forced_args"] = wiki_args
+        if isinstance(wiki_args, dict) and str(wiki_args.get("query") or "").strip():
+            return "system.wikipedia_summary", wiki_args
+    return None, None
+
+
+def _inject_pending_combo_tool_calls(
+    gateway_kwargs: Dict[str, Any],
+    *,
+    provider_key: str,
+    current_iteration: int,
+) -> list[dict[str, Any]] | None:
+    forced_tool_name, forced_tool_args = _resolve_combo_forced_tool_for_iteration(
+        gateway_kwargs,
+        current_iteration,
+    )
+    if not (forced_tool_name and forced_tool_args):
+        return None
+    logger.info(
+        "COMBO-CONTINUATION: Injecting pending combo tool %s (provider=%s)",
+        forced_tool_name,
+        provider_key,
+    )
+    return _synthesize_forced_tool_calls(
+        forced_tool_name,
+        forced_tool_args,
+        provider_key=provider_key,
+    )
+
+
+def _synthesize_forced_tool_calls(
+    forced_tool_name: str,
+    forced_tool_args: dict[str, Any],
+    *,
+    provider_key: str,
+) -> list[dict[str, Any]]:
+    normalized_name = (
+        forced_tool_name.replace(".", "_")
+        if provider_key == "openai"
+        else forced_tool_name
+    )
+    return [
+        {
+            "id": f"call_{uuid.uuid4().hex[:16]}",
+            "type": "function",
+            "function": {
+                "name": normalized_name,
+                "arguments": json.dumps(forced_tool_args, ensure_ascii=False),
+            },
+        }
+    ]
+
+
+def _finalize_stream_text_from_tool_results(
+    text_value: str,
+    *,
+    results_buffer: list,
+    had_tool_round: bool,
+    fallback_summary: str,
+) -> str:
+    text = str(text_value or "").strip()
+    if had_tool_round and results_buffer and (
+        not text
+        or text == fallback_summary
+        or _is_generic_stability_fallback_text(text)
+    ):
+        combo_text = _build_calendar_wikipedia_combo_response(results_buffer)
+        if combo_text:
+            return combo_text
+        combo_text = _build_calendar_weather_combo_response(results_buffer)
+        if combo_text:
+            return combo_text
+        weather_text = render_weather_forecast_from_tools(results_buffer)
+        if weather_text:
+            return weather_text
+        successful_results: list[str] = []
+        for tr in results_buffer:
+            if not isinstance(tr, dict):
+                continue
+            try:
+                raw = tr.get("_raw_content") or tr.get("content", "{}")
+                parsed = json.loads(raw) if isinstance(raw, str) else dict(raw or {})
+                if isinstance(parsed, dict) and parsed.get("status") == "ok":
+                    normalized = _tool_name_to_skill_id(str(tr.get("name") or ""))
+                    msg = _extract_ok_tool_result_text(parsed, normalized)
+                    if msg:
+                        successful_results.append(str(msg))
+            except Exception:
+                continue
+        if successful_results:
+            return "\n\n".join(successful_results)
+    return str(text_value or "")
 
 # Tool wall-clock limits: ToolExecutor uses asyncio.wait_for with each skill's ``timeout_ms``
 # (see backend/skills/). Example: system.local_business is 45s so geo/OSM + enrichment can finish.
@@ -558,6 +785,116 @@ def _build_memory_read_fallback_response_v2(user_text: str, tool_results: Any) -
     if pet_overview_message:
         return _repair_known_mojibake_text(pet_overview_message)
     return _build_memory_read_fallback_response(user_text, tool_results)
+
+
+def _extract_ok_tool_result_text(payload: dict[str, Any], normalized: str) -> str:
+    data = payload.get("data") if isinstance(payload.get("data"), dict) else {}
+    if normalized in {"system.wikipedia_summary", "system_wikipedia_summary"}:
+        return (
+            str(data.get("summary") or "").strip()
+            or str(payload.get("message") or "").strip()
+            or str(payload.get("output") or "").strip()
+        )
+    return (
+        str(data.get("listing_text") or "").strip()
+        or str(payload.get("message") or "").strip()
+        or str(payload.get("output") or "").strip()
+    )
+
+
+def _build_calendar_weather_combo_response(tool_results: Any) -> str:
+    calendar_message = ""
+    saw_calendar = False
+    saw_weather = False
+
+    for item in tool_results or []:
+        if not isinstance(item, dict):
+            continue
+        name = str(item.get("name") or "").strip().lower()
+        skill_id = str(item.get("_skill_id") or item.get("skill_id") or "").strip().lower()
+        normalized = skill_id or name
+        raw = item.get("_raw_content") or item.get("content") or "{}"
+        try:
+            payload = json.loads(raw) if isinstance(raw, str) else dict(raw or {})
+        except Exception:
+            continue
+        if not isinstance(payload, dict) or payload.get("status") != "ok":
+            continue
+        data = payload.get("data") if isinstance(payload.get("data"), dict) else {}
+
+        if normalized in {"calendar.list_events", "calendar_list_events"}:
+            saw_calendar = True
+            candidate = _extract_ok_tool_result_text(payload, normalized)
+            if candidate:
+                calendar_message = candidate
+        elif normalized in {"system.weather", "system_weather"}:
+            saw_weather = True
+
+    if not (saw_calendar and saw_weather):
+        return ""
+
+    weather_message = render_weather_forecast_from_tools(tool_results)
+    if not weather_message:
+        return ""
+    if calendar_message:
+        return f"{calendar_message}\n\n{weather_message}"
+    return weather_message
+
+
+def _build_calendar_wikipedia_combo_response(tool_results: Any) -> str:
+    calendar_message = ""
+    wikipedia_message = ""
+    wikipedia_error_message = ""
+    saw_calendar = False
+    saw_wikipedia = False
+    saw_wikipedia_tool = False
+
+    for item in tool_results or []:
+        if not isinstance(item, dict):
+            continue
+        name = str(item.get("name") or "").strip().lower()
+        skill_id = str(item.get("_skill_id") or item.get("skill_id") or "").strip().lower()
+        normalized = skill_id or name
+        raw = item.get("_raw_content") or item.get("content") or "{}"
+        try:
+            payload = json.loads(raw) if isinstance(raw, str) else dict(raw or {})
+        except Exception:
+            continue
+        if not isinstance(payload, dict):
+            continue
+
+        if normalized in {"calendar.list_events", "calendar_list_events"}:
+            if payload.get("status") != "ok":
+                continue
+            saw_calendar = True
+            candidate = _extract_ok_tool_result_text(payload, normalized)
+            if candidate:
+                calendar_message = candidate
+        elif normalized in {"system.wikipedia_summary", "system_wikipedia_summary"}:
+            saw_wikipedia_tool = True
+            if payload.get("status") == "ok":
+                saw_wikipedia = True
+                candidate = _extract_ok_tool_result_text(payload, normalized)
+                if candidate:
+                    wikipedia_message = candidate
+            else:
+                error_obj = payload.get("error") if isinstance(payload.get("error"), dict) else {}
+                wikipedia_error_message = (
+                    str(error_obj.get("message") or "").strip()
+                    or str(payload.get("message") or "").strip()
+                )
+
+    if saw_calendar and saw_wikipedia and calendar_message and wikipedia_message:
+        return f"{calendar_message}\n\n{wikipedia_message}"
+
+    parts = [part for part in (calendar_message, wikipedia_message) if part]
+    if parts:
+        return "\n\n".join(parts)
+    if saw_calendar and saw_wikipedia_tool and wikipedia_error_message:
+        if calendar_message:
+            return f"{calendar_message}\n\n{wikipedia_error_message}"
+        return wikipedia_error_message
+    return ""
 
 
 def _should_force_memory_read_fallback(user_text: str, tool_results: Any) -> bool:
@@ -1262,15 +1599,49 @@ class OrchestratorExecutionEngine:
             for skill_id in (relevant_skill_ids or [])
             if str(skill_id).strip()
         ]
+        is_calendar_intent = bool(getattr(intent_result, "is_calendar_intent", False))
+        is_weather_intent = bool(getattr(intent_result, "is_weather_intent", False))
+        is_calendar_mutation = bool(getattr(intent_result, "is_calendar_mutation", False))
+        is_calendar_creation = bool(getattr(intent_result, "is_calendar_creation", False))
         forbidden: List[str] = []
         negative_constraints: List[str] = []
+        required: List[str] = []
+        priority: List[str] = []
         primary_intent = str(getattr(intent_result, "primary_intent", "") or "")
+        is_calendar_weather_combo = (
+            is_calendar_intent
+            and is_weather_intent
+            and not is_calendar_mutation
+            and not is_calendar_creation
+        )
+        is_wikipedia_intent = bool(getattr(intent_result, "is_wikipedia_intent", False))
+        is_calendar_wikipedia_combo = (
+            is_calendar_intent
+            and is_wikipedia_intent
+            and not is_calendar_mutation
+            and not is_calendar_creation
+        )
 
-        if getattr(intent_result, "is_calendar_intent", False) or primary_intent == "calendar":
+        if is_calendar_intent or primary_intent == "calendar":
             forbidden.extend(["system.create_pdf", "knowledge.edit_pdf", "system.generate_image"])
-            negative_constraints.append(
-                "Kalender-Turn: PDF-, Bild- und Nicht-Kalender-Tools sind verboten. Nutze Kalender-Skills."
-            )
+            if is_calendar_weather_combo:
+                required.extend(["calendar.list_events", "system.weather"])
+                priority.extend(["calendar.list_events", "system.weather"])
+                negative_constraints.append(
+                    "Kalender-und-Wetter-Turn: Bearbeite Kalender und Wetter im selben Lauf. "
+                    "Nutze zuerst calendar.list_events und danach system.weather."
+                )
+            elif is_calendar_wikipedia_combo:
+                required.extend(["calendar.list_events", "system.wikipedia_summary"])
+                priority.extend(["calendar.list_events", "system.wikipedia_summary"])
+                negative_constraints.append(
+                    "Kalender-und-Wikipedia-Turn: Bearbeite Kalender und Wikipedia im selben Lauf. "
+                    "Nutze zuerst calendar.list_events und danach system.wikipedia_summary."
+                )
+            else:
+                negative_constraints.append(
+                    "Kalender-Turn: PDF-, Bild- und Nicht-Kalender-Tools sind verboten. Nutze Kalender-Skills."
+                )
         if getattr(intent_result, "is_personal_recall", False) or primary_intent == "personal_recall":
             forbidden.extend(["system.websearch", "system.rss_news"])
             negative_constraints.append(
@@ -1285,6 +1656,8 @@ class OrchestratorExecutionEngine:
         return PlannerContext(
             original_user_text=str(user_text or ""),
             allowed_skill_ids=[s for s in allowed if s not in forbidden_set],
+            required_skill_ids=list(dict.fromkeys(required)),
+            priority_skill_ids=list(dict.fromkeys(priority)),
             forbidden_skill_ids=sorted(forbidden_set),
             negative_constraints=negative_constraints,
         )
@@ -2107,22 +2480,27 @@ class OrchestratorExecutionEngine:
             # synthesize the initial tool_calls and skip the LLM round entirely.
             # This replaces the old fake-assistant-message injection that caused
             # OpenAI 400 BadRequest by polluting the message history.
-            _forced_tool_args = gateway_kwargs.get("forced_tool_args") if current_iteration == 0 else None
-            _forced_tool_name = str(gateway_kwargs.get("force_tool_name") or "").strip() if current_iteration == 0 else ""
+            _forced_tool_name, _forced_tool_args = _resolve_combo_forced_tool_for_iteration(
+                gateway_kwargs,
+                current_iteration,
+            )
+            if not (_forced_tool_args and _forced_tool_name):
+                if current_iteration == 0:
+                    _forced_tool_args = gateway_kwargs.get("forced_tool_args")
+                    _forced_tool_name = str(gateway_kwargs.get("force_tool_name") or "").strip()
+                else:
+                    _forced_tool_args = None
+                    _forced_tool_name = ""
             if _forced_tool_args and _forced_tool_name:
                 _provider_lc = str(current_call_provider or gateway_kwargs.get("provider") or "").lower()
                 _normalized_name = (
                     _forced_tool_name.replace(".", "_") if _provider_lc == "openai" else _forced_tool_name
                 )
-                _synth_call_id = f"call_{uuid.uuid4().hex[:16]}"
-                _synth_tool_call = {
-                    "id": _synth_call_id,
-                    "type": "function",
-                    "function": {
-                        "name": _normalized_name,
-                        "arguments": json.dumps(_forced_tool_args, ensure_ascii=False),
-                    },
-                }
+                _synth_tool_call = _synthesize_forced_tool_calls(
+                    _forced_tool_name,
+                    _forced_tool_args,
+                    provider_key=_provider_lc,
+                )[0]
                 response = {
                     "type": "tool_code",
                     "text": "",
@@ -2145,6 +2523,8 @@ class OrchestratorExecutionEngine:
                 gateway_kwargs.pop("forced_tool_args", None)
                 gateway_kwargs.pop("force_tool_name", None)
                 gateway_kwargs.pop("forced_tool", None)
+                if _forced_tool_name == "system.wikipedia_summary":
+                    gateway_kwargs.pop("_combo_wikipedia_forced_args", None)
             else:
                 call_kwargs = dict(gateway_kwargs)
                 call_kwargs["provider"] = current_call_provider
@@ -2358,7 +2738,30 @@ class OrchestratorExecutionEngine:
                         )
                         current_iteration += 1
                         continue
-                break
+                _provider_lc = str(current_call_provider or gateway_kwargs.get("provider") or "").lower()
+                _pending_combo_calls = _inject_pending_combo_tool_calls(
+                    gateway_kwargs,
+                    provider_key=_provider_lc,
+                    current_iteration=current_iteration,
+                )
+                if _pending_combo_calls:
+                    tool_calls = _pending_combo_calls
+                    latest_tool_calls = list(tool_calls)
+                    response = {
+                        "type": "tool_code",
+                        "text": "",
+                        "tool_calls": tool_calls,
+                        "raw_assistant_response": {
+                            "role": "assistant",
+                            "content": None,
+                            "tool_calls": tool_calls,
+                        },
+                        "usage": {},
+                        "cost": {},
+                        "agent_payload": None,
+                    }
+                else:
+                    break
             had_tool_round = True
 
             # --- BUDGET-TRANSIT: Re-inject budget into price_comparison args ---
@@ -2383,29 +2786,16 @@ class OrchestratorExecutionEngine:
                             )
 
             # 💎 HARD-LOOP-BREAKER: Prüfe auf Duplikat-Tool-Calls vor Ausführung
-            _track_tool_call_fn = gateway_kwargs.get("_track_tool_call_fn")
-            _duplicate_detected = False
-            _duplicate_tool_name = ""
-            if callable(_track_tool_call_fn):
-                for tool_call in tool_calls:
-                    function = tool_call.get("function") or {}
-                    tool_name = function.get("name", "")
-                    args_raw = function.get("arguments") or "{}"
-                    try:
-                        args = json.loads(args_raw) if isinstance(args_raw, str) else args_raw
-                    except Exception:
-                        args = {}
-                    is_duplicate = _track_tool_call_fn(tool_name, args)
-                    if is_duplicate:
-                        _duplicate_detected = True
-                        _duplicate_tool_name = tool_name
-                        # KRITISCH: Log auf ERROR-Level damit es IMMER sichtbar ist
-                        logger.error(
-                            "[HARD-LOOP-BREAKER] LOOP BLOCKED for tool: %s. "
-                            "Force-exiting tool loop immediately!",
-                            tool_name
-                        )
-                        break
+            tool_calls, _duplicate_detected, _duplicate_tool_name = _partition_duplicate_tool_calls(
+                tool_calls,
+                gateway_kwargs,
+            )
+            if _duplicate_detected:
+                logger.error(
+                    "[HARD-LOOP-BREAKER] LOOP BLOCKED for tool: %s. "
+                    "Force-exiting tool loop immediately!",
+                    _duplicate_tool_name,
+                )
             
             if _duplicate_detected:
                 # KRITISCH: Soffortiger Exit - KEINE weitere Iteration, KEINE Tool-Ausführung
@@ -2595,6 +2985,7 @@ class OrchestratorExecutionEngine:
                             pass
 
             # 💎 AGGREGATOR FIX: Sammle alle Tool-Resultate im Buffer
+            _record_executed_skills_from_tool_results(gateway_kwargs, tool_results)
             if tool_results:
                 for tr in tool_results:
                     if isinstance(tr, dict):
@@ -3093,9 +3484,21 @@ class OrchestratorExecutionEngine:
                         should_force_memory_read,
                     )
 
-        weather_text = render_weather_forecast_from_tools(results_buffer)
-        if weather_text:
-            text_value = weather_text
+        combo_text = _build_calendar_wikipedia_combo_response(results_buffer)
+        if combo_text:
+            text_value = resolve_calendar_wikipedia_final_text(
+                text_value,
+                results_buffer,
+                build_combo_response=_build_calendar_wikipedia_combo_response,
+            )
+        else:
+            combo_text = _build_calendar_weather_combo_response(results_buffer)
+            if combo_text:
+                text_value = combo_text
+            else:
+                weather_text = render_weather_forecast_from_tools(results_buffer)
+                if weather_text:
+                    text_value = weather_text
         text_value = append_tool_attributions_from_tools(text_value, results_buffer)
         text_value = _normalize_inline_weather_source(text_value, results_buffer)
 
@@ -3288,12 +3691,17 @@ class OrchestratorExecutionEngine:
             # 💎 AUDIT-LOOP-FORCED-START (stream):
             # Replace old fake-assistant-message injection (OpenAI 400) with a clean
             # initial-loop-state: synthesize tool_calls and skip the LLM stream round.
-            _forced_tool_args_stream = (
-                gateway_kwargs.get("forced_tool_args") if current_iteration == 0 else None
+            _forced_tool_name_stream, _forced_tool_args_stream = _resolve_combo_forced_tool_for_iteration(
+                gateway_kwargs,
+                current_iteration,
             )
-            _forced_tool_name_stream = (
-                str(gateway_kwargs.get("force_tool_name") or "").strip() if current_iteration == 0 else ""
-            )
+            if not (_forced_tool_args_stream and _forced_tool_name_stream):
+                if current_iteration == 0:
+                    _forced_tool_args_stream = gateway_kwargs.get("forced_tool_args")
+                    _forced_tool_name_stream = str(gateway_kwargs.get("force_tool_name") or "").strip()
+                else:
+                    _forced_tool_args_stream = None
+                    _forced_tool_name_stream = ""
             _forced_tool_calls_stream: Optional[List[Dict[str, Any]]] = None
             if _forced_tool_args_stream and _forced_tool_name_stream:
                 _normalized_name_stream = (
@@ -3301,17 +3709,11 @@ class OrchestratorExecutionEngine:
                     if provider_key == "openai"
                     else _forced_tool_name_stream
                 )
-                _synth_call_id_stream = f"call_{uuid.uuid4().hex[:16]}"
-                _forced_tool_calls_stream = [
-                    {
-                        "id": _synth_call_id_stream,
-                        "type": "function",
-                        "function": {
-                            "name": _normalized_name_stream,
-                            "arguments": json.dumps(_forced_tool_args_stream, ensure_ascii=False),
-                        },
-                    }
-                ]
+                _forced_tool_calls_stream = _synthesize_forced_tool_calls(
+                    _forced_tool_name_stream,
+                    _forced_tool_args_stream,
+                    provider_key=provider_key,
+                )
                 logger.info(
                     "💎 AUDIT-LOOP-FORCED-START (stream): Skipping LLM stream on iteration %d; "
                     "injecting pre-filled tool-call for %s (normalized: %s, provider=%s)",
@@ -3324,6 +3726,8 @@ class OrchestratorExecutionEngine:
                 gateway_kwargs.pop("forced_tool_args", None)
                 gateway_kwargs.pop("force_tool_name", None)
                 gateway_kwargs.pop("forced_tool", None)
+                if _forced_tool_name_stream == "system.wikipedia_summary":
+                    gateway_kwargs.pop("_combo_wikipedia_forced_args", None)
 
             # 💎 VIDEO-FORCE: Only force tool_choice on first iteration to prevent infinite loops
             _active_force_tool = None
@@ -3495,41 +3899,41 @@ class OrchestratorExecutionEngine:
             latest_tool_calls = list(tool_calls) if isinstance(tool_calls, list) else []
 
             if not tool_calls:
-                # 💎 BACKLOG-006: Use dynamic fallback with tool error details if available
-                if _last_tool_error:
-                    tool_name, error_code, error_message = _last_tool_error
-                    dynamic_fallback = _build_dynamic_fallback_summary(
-                        tool_name=tool_name,
-                        error_code=error_code,
-                        error_message=error_message,
-                        provider=provider,
-                        model=model,
-                    )
-                    text_value = round_text if round_text.strip() else dynamic_fallback
+                _pending_combo_calls = _inject_pending_combo_tool_calls(
+                    gateway_kwargs,
+                    provider_key=provider_key,
+                    current_iteration=current_iteration,
+                )
+                if _pending_combo_calls:
+                    tool_calls = _pending_combo_calls
+                    round_text = ""
+                    round_text_parts = []
+                    pending_text_events = []
                 else:
-                    text_value = round_text if round_text.strip() else fallback_summary
-                text_value = force_sanitize_links(text_value)
-                response = {"text": text_value, "usage": {}, "cost": {}}
-                break
+                    # 💎 BACKLOG-006: Use dynamic fallback with tool error details if available
+                    if _last_tool_error:
+                        tool_name, error_code, error_message = _last_tool_error
+                        dynamic_fallback = _build_dynamic_fallback_summary(
+                            tool_name=tool_name,
+                            error_code=error_code,
+                            error_message=error_message,
+                            provider=provider,
+                            model=model,
+                        )
+                        text_value = round_text if round_text.strip() else dynamic_fallback
+                    else:
+                        text_value = round_text if round_text.strip() else fallback_summary
+                    text_value = force_sanitize_links(text_value)
+                    response = {"text": text_value, "usage": {}, "cost": {}}
+                    break
             had_tool_round = True
 
-            _track_tool_call_fn = gateway_kwargs.get("_track_tool_call_fn")
-            _duplicate_detected = False
-            _duplicate_tool_name = ""
-            if callable(_track_tool_call_fn):
-                for tool_call in tool_calls:
-                    function = tool_call.get("function") or {}
-                    tool_name = function.get("name", "")
-                    args_raw = function.get("arguments") or "{}"
-                    try:
-                        args = json.loads(args_raw) if isinstance(args_raw, str) else args_raw
-                    except Exception:
-                        args = {}
-                    if _track_tool_call_fn(tool_name, args):
-                        _duplicate_detected = True
-                        _duplicate_tool_name = tool_name
-                        logger.error("[HARD-LOOP-BREAKER] (stream) duplicate blocked: %s", tool_name)
-                        break
+            tool_calls, _duplicate_detected, _duplicate_tool_name = _partition_duplicate_tool_calls(
+                tool_calls,
+                gateway_kwargs,
+            )
+            if _duplicate_detected:
+                logger.error("[HARD-LOOP-BREAKER] (stream) duplicate blocked: %s", _duplicate_tool_name)
 
             if _duplicate_detected:
                 final_response_text = round_text.strip() or (
@@ -3676,6 +4080,7 @@ class OrchestratorExecutionEngine:
                 )
 
             # Log tool end events with success status (streaming)
+            _record_executed_skills_from_tool_results(gateway_kwargs, tool_results)
             for tr in tool_results:
                 if isinstance(tr, dict):
                     skill_name = str(tr.get("name") or "").strip()
@@ -3909,8 +4314,8 @@ class OrchestratorExecutionEngine:
                         raw = tr.get("_raw_content") or tr.get("content", "{}")
                         parsed = json.loads(raw) if isinstance(raw, str) else dict(raw or {})
                         if isinstance(parsed, dict) and parsed.get("status") == "ok":
-                            data = parsed.get("data") if isinstance(parsed.get("data"), dict) else {}
-                            msg = data.get("listing_text") or parsed.get("message") or parsed.get("output")
+                            normalized = _tool_name_to_skill_id(str(tr.get("name") or ""))
+                            msg = _extract_ok_tool_result_text(parsed, normalized)
                             if msg:
                                 successful_results.append(str(msg))
                     except Exception:
@@ -3960,12 +4365,30 @@ class OrchestratorExecutionEngine:
                         should_force_memory_read,
                     )
 
-        weather_text = render_weather_forecast_from_tools(results_buffer)
-        if weather_text:
-            text_value = weather_text
+        combo_text = _build_calendar_wikipedia_combo_response(results_buffer)
+        if combo_text:
+            text_value = resolve_calendar_wikipedia_final_text(
+                text_value,
+                results_buffer,
+                build_combo_response=_build_calendar_wikipedia_combo_response,
+            )
+        else:
+            combo_text = _build_calendar_weather_combo_response(results_buffer)
+            if combo_text:
+                text_value = combo_text
+            else:
+                weather_text = render_weather_forecast_from_tools(results_buffer)
+                if weather_text:
+                    text_value = weather_text
         text_value = force_sanitize_links(text_value)
         text_value = append_tool_attributions_from_tools(text_value, results_buffer)
         text_value = _normalize_inline_weather_source(text_value, results_buffer)
+        text_value = _finalize_stream_text_from_tool_results(
+            text_value,
+            results_buffer=results_buffer,
+            had_tool_round=had_tool_round,
+            fallback_summary=fallback_summary,
+        )
 
         if country_not_found_detected and isinstance(response, dict):
             response["skip_fact_extraction"] = True

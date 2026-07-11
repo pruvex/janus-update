@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-06-09-003",
+  "testCaseId": "SEC-002-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Assistant emits mixed recall text then follow-up recall runs",
+  "response": "Hallo Rolf Adam. Das klingt nach einem technischen Testlauf oder einer spezifischen Beobachtung zum Systemverhalten. Wie kann ich dich heute konkret unterstützen?Wir haben ja erst heute um 16:29 Uhr im Chat „Neuer Chat“ festgehalten, dass Nathan Raimann dein bester Freund ist und in Berlin lebt. Möchtest du dazu noch etwas ergänzen oder gibt es eine andere Aufgabe, bei der ich dir behilflich sein kann?💡 Passende nächste Schritte:• Soll ich Kontaktdaten für Nathan Raimann in Berlin suchen?• Möchtest du einen Termin für einen Besuch in Berlin planen?• Hast du weitere Informationen zu deinen Vorlieben, die ich speichern soll?19:31",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-06-09T17:31:19.279Z"
+}

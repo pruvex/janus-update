@@ -1,0 +1,14 @@
+{
+  "workflow_id": "TASK-SPEC21-4-INSTALLED-DEBUG-001",
+  "bound_skill_context": "installed janus-debug skill copy",
+  "expected_behavior": "The installed skill context should show the bounded Codex-vs-OR gate.",
+  "actual_behavior": "The bounded delegated result should remain assist-only and Codex-owned.",
+  "evidence_snippets": [
+    "Installed janus-debug skill now references build_consumer_input_package(...)",
+    "Installed janus-debug skill now references run_consumer_flow(...)"
+  ],
+  "iteration_number": 1,
+  "explicit_question": "Which local verifier should Codex run next after the bounded review?",
+  "redaction_ready": true,
+  "failure_code": "SPEC21_4_REAL_SKILL_CONTEXT_EVIDENCE_MISSING"
+}

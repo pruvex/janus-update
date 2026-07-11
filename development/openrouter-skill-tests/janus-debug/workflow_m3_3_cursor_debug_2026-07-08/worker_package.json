@@ -1,0 +1,46 @@
+{
+  "task_label": "Reproduce and fix the bounded M3.3 routine-offer shadow mismatch",
+  "worker_profile": "cursor-agent",
+  "allowed_edit_paths": [
+    "development/openrouter-skill-tests/janus-debug/workflow_m3_3_cursor_debug_2026-07-08/sandbox/workflow_m3_3_shadow.py",
+    "development/openrouter-skill-tests/janus-debug/workflow_m3_3_cursor_debug_2026-07-08/sandbox/test_workflow_m3_3_shadow.py"
+  ],
+  "acceptance_criteria": [
+    "Only the allowlisted shadow debug files may change.",
+    "The mixed calendar-plus-weather shadow case must preserve both tool families.",
+    "The follow-up shadow case must prioritize the pending routine offer over stale mail confirmation.",
+    "The focused pytest command must pass before Codex review."
+  ],
+  "checks": [
+    {
+      "label": "pytest",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "development/openrouter-skill-tests/janus-debug/workflow_m3_3_cursor_debug_2026-07-08/sandbox/test_workflow_m3_3_shadow.py",
+        "-q"
+      ]
+    }
+  ],
+  "forbidden_actions": [
+    "commit",
+    "push",
+    "tag",
+    "merge",
+    "release",
+    "publish",
+    "dependency",
+    "secret",
+    "auth",
+    "security",
+    "privacy",
+    "migration",
+    "architecture"
+  ],
+  "requested_actions": [
+    "edit",
+    "run_checks"
+  ],
+  "task_prompt": "Investigate only the allowlisted M3.3 shadow repro files. Reproduce the stated mismatch and make the smallest bounded fix that resolves it. Run only the listed pytest check. Do not commit. Return concise JSON-compatible output with status, root_cause, changed_files, command_results, summary, and blockers."
+}

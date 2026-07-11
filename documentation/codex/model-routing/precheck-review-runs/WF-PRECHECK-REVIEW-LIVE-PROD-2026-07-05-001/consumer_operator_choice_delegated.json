@@ -1,0 +1,33 @@
+{
+  "summary_header": "PREIMPLEMENTATION REVIEW RESULT",
+  "workflow_id": "WF-PRECHECK-REVIEW-LIVE-PROD-2026-07-05-001",
+  "skill": "janus-preimplementation-check",
+  "task_label": "Precheck review productive OR pilot",
+  "selected_path": "delegated_precheck_review",
+  "normal_target_model": "5.4 medium",
+  "selected_or_model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "estimated_or_cost": 0.00012,
+  "actual_or_cost": 9.597e-05,
+  "cost_estimate_confidence_percent": 82.0,
+  "generation_id": "gen-1783286738-6bBzPhCA0wyRBTIsZQmp",
+  "finish_reason": "stop",
+  "latency_ms": 6495,
+  "validation_result": "PASS",
+  "final_outcome": "PRECHECK_REVIEW_READY_FOR_CODEX_VALIDATION",
+  "fallback_used": "NO",
+  "rework_required": "NO",
+  "input_package_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\precheck-review-runs\\WF-PRECHECK-REVIEW-LIVE-PROD-2026-07-05-001\\input_package.json",
+  "request_body_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\precheck-review-runs\\WF-PRECHECK-REVIEW-LIVE-PROD-2026-07-05-001\\request_body.json",
+  "response_body_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\precheck-review-runs\\WF-PRECHECK-REVIEW-LIVE-PROD-2026-07-05-001\\response_body.json",
+  "response_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\precheck-review-runs\\WF-PRECHECK-REVIEW-LIVE-PROD-2026-07-05-001\\response_summary.json",
+  "delegated_result_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\precheck-review-runs\\WF-PRECHECK-REVIEW-LIVE-PROD-2026-07-05-001\\delegated_result.md",
+  "validation_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\precheck-review-runs\\WF-PRECHECK-REVIEW-LIVE-PROD-2026-07-05-001\\validation_summary.json",
+  "telemetry_jsonl_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\or_healthcheck_telemetry_precheck_review_2026-07-05_WF-PRECHECK-REVIEW-LIVE-PROD-2026-07-05-001.jsonl",
+  "healthcheck_status": "PASS",
+  "healthcheck_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\precheck-review-runs\\WF-PRECHECK-REVIEW-LIVE-PROD-2026-07-05-001\\healthcheck_summary.json",
+  "operator_result_lines": [
+    "Ergebnis: PRECHECK_REVIEW_READY_FOR_CODEX_VALIDATION",
+    "Tatsaechliche Kosten: 0.000095970"
+  ],
+  "operator_message": "Delegated precheck review stayed bounded and file-first captured. Codex must still make the final precheck decision."
+}

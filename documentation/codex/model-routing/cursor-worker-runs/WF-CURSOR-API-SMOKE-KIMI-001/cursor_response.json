@@ -1,0 +1,16 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 5913,
+  "duration_api_ms": 5913,
+  "result": "I see only a fragment â€” \"Stable prefix:\". What would you like me to do with it?\n\nA few guesses:\n\n- Write a stable commit-message prefix?\n- Define a stable prefix for a file format or naming convention?\n- Continue a sentence or code snippet that starts with that prefix?\n- Something else entirely?\n\nTell me the context and Iâ€™ll take it from there.",
+  "session_id": "d79b004e-ad96-4ffa-8902-58b08f1f646e",
+  "request_id": "db8ba5b8-b598-4098-8296-affaea6bf99f",
+  "usage": {
+    "inputTokens": 17415,
+    "outputTokens": 182,
+    "cacheReadTokens": 7503,
+    "cacheWriteTokens": 0
+  }
+}

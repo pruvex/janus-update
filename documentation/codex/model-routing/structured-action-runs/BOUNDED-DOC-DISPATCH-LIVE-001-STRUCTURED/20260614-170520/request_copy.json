@@ -1,0 +1,16 @@
+{
+  "schema_version": "codex_delegated_action_request.v1",
+  "workflow_id": "BOUNDED-DOC-DISPATCH-LIVE-001-STRUCTURED",
+  "skill_id": "janus-documentation-update",
+  "action_type": "draft_markdown",
+  "summary": "Bridge accepted sidecar documentation draft into structured action flow for: Dispatcher-bound documentation delegated run",
+  "requires_codex_review": true,
+  "non_goals": [
+    "No direct repo authority update",
+    "No production routing activation"
+  ],
+  "action_payload": {
+    "format": "markdown",
+    "content": "## Title\nSidecar Documentation Draft Workflow Note\n\n## Summary\nOperators can choose `1 = Codex` or `2 = Sidecar` for an eligible documentation draft task. This note is non-binding and describes a review-first workflow.\n\n## Workflow Test\nUse `1 = Codex` when the draft should stay fully local. Use `2 = Sidecar` when a bounded draft can be delegated in a read-only path for draft generation only. Codex App remains the reviewer in both paths.\n\n## Boundaries\nThe Sidecar path is read-only and limited to bounded draft work such as notes, summaries, or handoff-style text. It is not an authority for binding documentation state, file writes, Git actions, release decisions, or canonical project updates. Any binding documentation write is performed locally by Codex App after review.\n\n## Next Step\nThe next safe step is to review the returned draft and confirm it is acceptable before any local documentation update is considered.\n\n## No File Edits\nThis response is a draft only. It does not claim any repository documentation was changed or synchronized.\n\nNo file edits were made."
+  }
+}

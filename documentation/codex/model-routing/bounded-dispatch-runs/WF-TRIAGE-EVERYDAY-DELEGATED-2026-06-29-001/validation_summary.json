@@ -1,0 +1,13 @@
+{
+  "workflow_id": "WF-TRIAGE-EVERYDAY-DELEGATED-2026-06-29-001",
+  "task_class": "test_result_triage_review",
+  "input_validation_pass": true,
+  "result_validation_pass": true,
+  "telemetry_validation_pass": true,
+  "input_issues": [],
+  "result_issues": [],
+  "telemetry_issues": [],
+  "redaction_ready": true,
+  "redaction_check": "PASS",
+  "accepted_for_local_codex_validation": true
+}

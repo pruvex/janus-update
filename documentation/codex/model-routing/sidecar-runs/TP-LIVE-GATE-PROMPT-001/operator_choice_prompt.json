@@ -1,0 +1,39 @@
+{
+  "summary_header": "CODEX LIVE TEST EXECUTION GATE",
+  "workflow_id": "TP-LIVE-GATE-PROMPT-001",
+  "skill": "janus-test-pipeline",
+  "mode": "LIVE_TEST_EXECUTION",
+  "testspec_path": "documentation/TEST_SPEC/example.md",
+  "test_run_id": "TEST-RUN-2026-07-01-301",
+  "selected_path": "operator_choice_pending",
+  "normal_target_model": "5.4 medium",
+  "choice_1": "Codex",
+  "choice_2": "OR",
+  "selected_or_model": "moonshotai/kimi-k2.5",
+  "live_test_scope": "local_bounded_retest",
+  "operator_prompt_lines": [
+    "1 = Codex",
+    "2 = OR",
+    "OR ist hier nur fuer einen lokalen bounded LIVE_TEST_EXECUTION-Retest sichtbar.",
+    "Diese Slice oeffnet nur die sichtbare Wahl, nicht die spaetere Worker-/Auth-/Evidence-Autoritaet.",
+    "Technischer Delegationspfad (vorbehaltlich TASK-SPEC28.2): isolated bounded live-retest worker / moonshotai/kimi-k2.5",
+    "Eligible Slice: local_bounded_retest",
+    "Codex behaelt finale Review-, PASS/FAIL- und Routing-Hoheit."
+  ],
+  "boundaries": [
+    "Visible gate only for one local bounded retest slice.",
+    "No delegated auth, worker, or evidence contract in this slice.",
+    "Codex remains final reviewer and acceptance owner."
+  ],
+  "eligibility": {
+    "eligibility_result": "OR_ALLOWED",
+    "subject_type": "live_test_execution_gate",
+    "subject_id": "LIVE_TEST_EXECUTION:local_bounded_retest",
+    "reason_code": "ELIGIBILITY_CONFIRMED",
+    "message": "Bounded OR gate is allowed for one local bounded LIVE_TEST_EXECUTION retest slice.",
+    "evidence_status": "CONTRACT_ONLY_ALLOWED",
+    "selected_or_model": "moonshotai/kimi-k2.5"
+  },
+  "final_outcome": "AWAITING_OPERATOR_CHOICE",
+  "validation_result": "PASS"
+}

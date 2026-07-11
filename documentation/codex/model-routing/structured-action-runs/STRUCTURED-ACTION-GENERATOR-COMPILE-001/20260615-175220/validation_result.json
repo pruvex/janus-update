@@ -1,0 +1,5 @@
+{
+  "status": "FAIL",
+  "error": "Generator execution failed or output missing for compile_testspec_to_testplan_v1. exit_code=1 missing_outputs=documentation/codex/model-routing/structured-action-runs/STRUCTURED-ACTION-GENERATOR-COMPILE-001/20260615-175220/generated/TEST-RUN-2099-12-31-997_skill2_handover.txt",
+  "schema_path": "documentation/codex/model-routing/schemas/codex_delegated_action_request.schema.json"
+}

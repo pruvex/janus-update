@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-06-09-002",
+  "testCaseId": "TC-008-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "After a wrong or broad recall-style assistant answer, ask again about Oli",
+  "response": "Hallo Rolf Adam. Ich habe in meinen Aufzeichnungen nachgesehen, konnte aber bisher keine Informationen zu einer Person namens „Oli“ finden.Aktuell ist in meinem Gedächtnis lediglich vermerkt, dass Nathan Raimann dein bester Freund ist und in Berlin lebt. Diese Information hast du mir heute um 16:29 Uhr im Chat „Neuer Chat“ mitgeteilt.Wer ist Oli genau, und was sollte ich mir über ihn merken? Falls er beispielsweise auch Brillen, Kopfhörer oder eine Smartwatch trägt, kann ich das gerne direkt in seinem Profil ergänzen.💡 Passende nächste Schritte:• Erzähle mir mehr über Oli, damit ich einen neuen Kontakt für dich anlegen kann.• Ergänze spezifische Merkmale zu Oli (z. B. ob er eine Brille oder Kopfhörer trägt).• Frag mich nach weiteren Details zu deinem Freund Nathan Raimann.18:42",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-06-09T16:42:58.781Z"
+}

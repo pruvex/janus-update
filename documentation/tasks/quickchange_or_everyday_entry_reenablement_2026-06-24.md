@@ -1,0 +1,40 @@
+# Quickchange OR Everyday Entry Reenablement Task
+
+- **Task ID:** QC-OR-ENTRY-001
+- **Status:** READY
+- **Created:** 2026-06-24
+- **Updated:** 2026-06-24
+- **Related Backlog Item:** N/A WITH REASON - bounded Lean Dev infrastructure slice to realign an already evidenced quickchange OR gate with the current shared dispatcher contract
+- **Spec:** N/A WITH REASON - no product surface or feature-spec change; this is a bounded Dev workflow contract repair
+- **Short Description:** Restore the visible bounded `janus-quickchange` OR entry at the shared dispatcher gate for `quickchange_patch_review` so the skill contract, gate prompt, and lived dispatcher behavior match again.
+- **Goal:** Re-enable the shared dispatcher prompt for bounded quickchange patch review instead of forcing `codex_only_pre_dispatch`, while keeping all existing bounded review-first constraints intact.
+- **In Scope:**
+  - shared eligibility contract for `quickchange_patch_review`
+  - prompt-gate behavior for the shared dispatcher
+  - prompt-gate regression test for the quickchange operator choice
+  - bounded evidence and state documentation updates tied directly to this gate repair
+- **Out of Scope:**
+  - Janus product logic
+  - production routing
+  - canonical routing-table updates
+  - new live OR calls
+  - broad quickchange workflow redesign
+  - changes to unrelated bounded OR lanes
+- **Affected Files:**
+  - `documentation/codex/model-routing/config/bounded_or_worker_eligibility_2026-06-17.json`
+  - `documentation/codex/model-routing/tests/test_bounded_or_worker_gate_prompt.py`
+  - `documentation/codex/model-routing/quickchange_or_everyday_entry_blocker_2026-06-24.md`
+  - `documentation/codex/model-routing/or_everyday_lane_inventory_2026-06-24.md`
+  - `documentation/ai/CURRENT_STATE.md`
+  - `documentation/codex/SKILL_USAGE_LOG.md`
+- **Acceptance Criteria:**
+  - `quickchange_patch_review` is no longer marked `OR_NOT_ELIGIBLE` with `SKILL_NOT_ALLOWED` at the shared dispatcher gate.
+  - The prompt path for `quickchange_patch_review` again exposes a visible operator choice with `1 = Codex` and `2 = OR-Arbeitspferd` or equivalent bounded OR wording.
+  - Existing bounded review-first constraints remain unchanged: no production routing, no auto-apply, no Git/release authority, Codex remains acceptance owner.
+  - The gate regression test reflects and validates the re-enabled prompt behavior.
+  - State documentation records that the blocker was resolved as a bounded Dev contract repair, not as production activation.
+- **Required Evidence:**
+  - `python -m unittest documentation.codex.model-routing.tests.test_bounded_or_worker_gate_prompt`
+  - one dispatcher prompt proof command for `quickchange_patch_review` showing the restored operator choice
+- **Risk:** MEDIUM
+- **Notes:** This task intentionally repairs only the shared dispatcher contract seam that drifted away from the already documented quickchange bounded OR lane.

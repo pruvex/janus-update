@@ -1,0 +1,50 @@
+{
+  "task_label": "Debug M3.3 missing routine offer for live calendar-plus-weather result shape",
+  "worker_profile": "cursor-agent",
+  "allowed_edit_paths": [
+    "backend/services/workflow/step_trace_extractor.py",
+    "backend/services/workflow/workflow_detector.py",
+    "backend/services/workflow/workflow_offer_service.py",
+    "backend/tests/test_workflow_detector.py",
+    "backend/tests/test_workflow_offer_service.py"
+  ],
+  "acceptance_criteria": [
+    "Only the allowlisted workflow detector/offer files and focused tests may change.",
+    "A successful two-step calendar-plus-weather live result shape using name aliases such as calendar_list_events and system_weather must produce a routine offer.",
+    "The existing save/decline follow-up behavior must remain covered.",
+    "The focused pytest command must pass before Codex review."
+  ],
+  "checks": [
+    {
+      "label": "pytest",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "backend/tests/test_workflow_detector.py",
+        "backend/tests/test_workflow_offer_service.py",
+        "-q"
+      ]
+    }
+  ],
+  "forbidden_actions": [
+    "commit",
+    "push",
+    "tag",
+    "merge",
+    "release",
+    "publish",
+    "dependency",
+    "secret",
+    "auth",
+    "security",
+    "privacy",
+    "migration",
+    "architecture"
+  ],
+  "requested_actions": [
+    "edit",
+    "run_checks"
+  ],
+  "task_prompt": "Investigate the bounded M3.3 bug where the user-visible calendar-plus-weather answer is correct but no routine offer appears. Live evidence from backend/backend/logs/failed_batches.jsonl around 2026-07-08T21:12 shows OpenAI successful tools as skill names calendar_list_events and system_weather, with duplicate canonical attempts also present; Gemini uses calendar.list_events and system.weather. Inspect only the allowlisted workflow detector/offer files. Determine why maybe_append_workflow_offer still returns no offer for the live shape. Apply the smallest fix and add focused regression coverage. Do not commit. Run only the listed pytest check. Return concise JSON-compatible output with status, root_cause, changed_files, command_results, summary, and blockers."
+}

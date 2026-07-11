@@ -1,0 +1,35 @@
+{
+  "status": "PASS",
+  "selected_backlog_id": "BACKLOG-109",
+  "mode": "SELECTED_HANDOFF",
+  "recommended_entry_point": "PRE_IMPLEMENTATION_VERIFICATION",
+  "routing_reason": "Backlog item READY with complete acceptance criteria and no missing information; requires pre-implementation verification for local DB safety mechanism",
+  "routing_confidence": "HIGH",
+  "required_artifact_path": "documentation/tasks/backlog_BACKLOG-109_lokale_db_snapshots_vor_riskanten_debug_repair_und_migrationsschritten.md",
+  "artifact_action": "CREATE_NEW",
+  "recommended_next_skill": "janus-preimplementation-check",
+  "next_skill_copy_prompt": "Execute pre-implementation verification for BACKLOG-109: Local DB snapshot safety mechanism. Verify technical approach for rotating snapshots before debug/repair operations, confirm backup path strategy with rotation logic, and validate that restore remains explicit manual step.",
+  "handoff_scope": {
+    "backlog_item": {
+      "id": "BACKLOG-109",
+      "title": "Lokale DB-Snapshots vor riskanten Debug-, Repair- und Migrationsschritten anlegen",
+      "type": "IMPROVEMENT"
+    },
+    "entry_point": "PRE_IMPLEMENTATION_VERIFICATION",
+    "required_artifact": "documentation/tasks/backlog_BACKLOG-109_lokale_db_snapshots_vor_riskanten_debug_repair_und_migrationsschritten.md",
+    "required_next_skill": "janus-preimplementation-check",
+    "evidence_paths": [
+      "documentation/backlog/BACKLOG.md#BACKLOG-109",
+      "documentation/backlog/BACKLOG_ACTIVE_SUMMARY.md",
+      "documentation/codex/SKILL_USAGE_LOG.md#2026-06-08-janus-debug"
+    ],
+    "dropped_context": []
+  },
+  "manual_review_needed": "NO",
+  "notes": [
+    "Local workflow hardening for DB protection during debug/repair",
+    "Artifact creation required - no existing implementation spec found",
+    "Follow-up to BACKLOG-108 per evidence paths",
+    "Acceptance criteria clearly defines snapshot rotation and manual restore requirements"
+  ]
+}

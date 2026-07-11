@@ -1,0 +1,14 @@
+{
+  "model": "z-ai/glm-4.7-flash",
+  "pass": false,
+  "failures": [
+    "finish_reason_length",
+    "json_parse_failed"
+  ],
+  "finish_reason": "length",
+  "actual_or_cost": 0.00045416,
+  "latency_ms": null,
+  "generation_id": "gen-1782414268-T9tZ6aJuQwYDLJlY8i82",
+  "parse_error": "Expecting property name enclosed in double quotes: line 8 column 25 (char 210)",
+  "response_path": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-preimplementation-check\\runs\\z-ai-glm-4.7-flash\\response_body.json"
+}

@@ -1,0 +1,35 @@
+{
+  "workflow_id": "WF-PRECHECK-WORKFLOW-M3.1-2026-07-08-001",
+  "bound_skill_context": "janus-preimplementation-check",
+  "target_task": "TASK-WORKFLOW-M3.1",
+  "task_path": "documentation/tasks/TASK-WORKFLOW-M3_learned_workflows_phase_1_2.md",
+  "spec_path": "documentation/Cursor specs/LEARNED_WORKFLOWS_SPEC.md",
+  "backlog_item": "N/A",
+  "assigned_model": "5.4",
+  "scope_summary": "Atomic precheck for one Workflow MVP foundation slice only. Verify artifact identity, bounded scope, affected file cluster, risk level, and evidence gate before janus-executioner starts. No proactive offer flow, no routine runner, no routines UI, no Memory Session-Search, and no product transport/provider expansion.",
+  "acceptance_focus": [
+    "target task identity is unique and consistent",
+    "scope stays bounded to Routine-Store, Schema, Detector, and Step-Trace extraction only",
+    "affected files are explicit",
+    "required evidence is concrete and executable",
+    "no architecture drift or provider fallback is introduced"
+  ],
+  "affected_files": [
+    "backend/data/models.py",
+    "backend/data/database.py",
+    "backend/services/workflow/routine_store.py",
+    "backend/services/workflow/routine_schema.py",
+    "backend/services/workflow/workflow_detector.py",
+    "backend/services/workflow/step_trace_extractor.py",
+    "backend/services/capability_registry.py",
+    "backend/tests/test_routine_store.py",
+    "backend/tests/test_workflow_detector.py"
+  ],
+  "evidence_focus": [
+    "pytest coverage for routine store CRUD, registry validation, and fingerprint dedup",
+    "pytest coverage for step ordering, failed-step filtering, and offer-candidate detection",
+    "py_compile coverage for new workflow modules",
+    "scoped diff hygiene on the bound workflow task chain"
+  ],
+  "redaction_ready": true
+}

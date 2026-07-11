@@ -1,0 +1,13 @@
+{
+  "workflow_id": "STRUCTURED-ACTION-GENERATOR-COMPILE-001",
+  "skill_id": "janus-test-pipeline",
+  "action_type": "run_generator",
+  "executor_status": "FAILED",
+  "schema_validation": "PASS",
+  "mapping_resolution": "NOT_RUN",
+  "allowlist_status": "NOT_RUN",
+  "output_artifact_status": "NOT_RUN",
+  "codex_review_required": true,
+  "detail": "Generator execution failed or output missing for compile_testspec_to_testplan_v1. exit_code=1 missing_outputs=documentation/codex/model-routing/structured-action-runs/STRUCTURED-ACTION-GENERATOR-COMPILE-001/20260615-175220/generated/TEST-RUN-2099-12-31-997_skill2_handover.txt",
+  "run_directory": "documentation/codex/model-routing/structured-action-runs/STRUCTURED-ACTION-GENERATOR-COMPILE-001/20260615-175220"
+}

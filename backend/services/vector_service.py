@@ -35,6 +35,15 @@ _cache_lock = threading.Lock()
 _MAX_CACHE_SIZE = 128
 
 
+def _log_chroma_unavailable(context: str, exc: BaseException) -> None:
+    logger.error(
+        "Vektor-Service: Chroma unavailable during %s: %s (%s)",
+        context,
+        exc,
+        type(exc).__name__,
+    )
+
+
 def _get_cached_embedding(text: str) -> Optional[np.ndarray]:
     """Internal cache lookup (thread-safe)."""
     with _cache_lock:
@@ -445,5 +454,44 @@ class VectorService:
             logger.error(f"Fehler bei Vektor-Löschung ID {document_id}: {e}")
             return False
 
+def delete_embeddings(chunk_ids: List[str], collection_name: str = "janus_global_documents"):
+    """Remove the provided chunk IDs from the shared Chroma collection."""
+    if not chunk_ids:
+        return
+
+    try:
+        client = chromadb.PersistentClient(path=CHROMA_PATH)
+        collection = client.get_collection(name=collection_name)
+        collection.delete(ids=chunk_ids)
+        logger.info("Vektor-Service: %d Embeddings aus '%s' geloescht.", len(chunk_ids), collection_name)
+    except BaseException as exc:
+        _log_chroma_unavailable("delete_embeddings", exc)
+
+
+def delete_by_document_id(document_id: int):
+    """Entfernt alle Vektoren eines Dokuments direkt aus der Collection."""
+    try:
+        client = chromadb.PersistentClient(path=CHROMA_PATH)
+        collection = client.get_collection(name="janus_global_documents")
+        collection.delete(where={"document_id": document_id})
+        return True
+    except BaseException as exc:
+        _log_chroma_unavailable("delete_by_document_id", exc)
+        return False
+
+
+def _build_vector_service() -> VectorService:
+    try:
+        return VectorService()
+    except BaseException as exc:
+        _log_chroma_unavailable("startup", exc)
+        service = VectorService.__new__(VectorService)
+        service.persist_directory = CHROMA_PATH
+        service.embedding_fn = None
+        service._client = None
+        service.collection = None
+        return service
+
+
 # Singleton-Instanz sicher am Ende exportieren
-vector_service = VectorService()
+vector_service = _build_vector_service()

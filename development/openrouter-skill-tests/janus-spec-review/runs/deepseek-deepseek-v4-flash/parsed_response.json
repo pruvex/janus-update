@@ -1,0 +1,27 @@
+{
+  "decision": "APPROVED",
+  "spec_path": "documentation/SPEC/Spec Done/21_assisted_or_workhorse_mode_for_janus_skills.md",
+  "mode": "REVIEW_ONLY",
+  "complexity_score": 61,
+  "risk": "HIGH",
+  "model_recommendation": "5.4",
+  "readiness_checklist": [],
+  "key_issues": [],
+  "required_refinements": [],
+  "split_recommendation": "NO",
+  "metadata_written": "YES",
+  "next_skill": "janus-spec-to-task",
+  "metadata_suggestion": {
+    "review_status": "APPROVED_WITH_NOTES",
+    "complexity_score": 61,
+    "risk": "HIGH",
+    "recommended_review_model": "5.4",
+    "skill_1_ready": "YES",
+    "split_required": "NO",
+    "review_confidence": "HIGH",
+    "review_source": "janus-spec-review"
+  },
+  "notes": [
+    "Spec approved with notes, restricted to specific skills and no production routing activation."
+  ]
+}

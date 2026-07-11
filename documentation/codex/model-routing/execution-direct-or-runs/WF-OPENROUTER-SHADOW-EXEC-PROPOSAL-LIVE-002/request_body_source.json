@@ -1,0 +1,90 @@
+{
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a bounded OpenRouter worker for a Janus execution patch candidate. Return only JSON matching the required schema. This is proposal-only work. Do not claim completion, release readiness, routing authority, git authority, or final validation authority. Codex will review and decide whether to apply or reject. Return the smallest viable unified diff for the smallest viable subset of the allowlist. If you cannot anchor a real unified diff against exact current file context, return BLOCKED with empty patch_text. Preserve patch_text as newline-separated unified diff lines; never compress the diff into one line. Do not invent simplified file structure, placeholder headers, ellipses, or fake helper skeletons. Keep the JSON compact: short notes, short risk bullets, no repeated restatement of the task. Do not include explanatory prose outside the JSON object. Prefer backend-first minimal change shape over broad test or cleanup expansion."
+    },
+    {
+      "role": "user",
+      "content": "{\n  \"target_task\": \"TASK-EX-001-shadow-session-budget-line\",\n  \"allowed_files\": [\n    \"documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/gate_prompt_shadow.py\",\n    \"documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/test_gate_prompt_shadow.py\"\n  ],\n  \"max_touched_files\": 2,\n  \"manual_validation_gate\": \"Codex must verify that exactly one Session-Budget line is present, the helper stays inside the shadow allowlist, and the focused sandbox pytest passes after any accepted local apply.\",\n  \"delegation_question\": \"Produce one minimal bounded patch candidate that re-adds exactly one Session-Budget line to the shadow operator prompt helper without widening scope or changing the visible operator gate semantics.\",\n  \"current_seam_context\": \"The shadow sandbox helper has just been reset to its pre-session-budget baseline. The focused shadow pytest is red specifically because the helper no longer emits a Session-Budget line. The smallest valid patch should restore exactly one Session-Budget line in gate_prompt_shadow.py while leaving the rest of the shadow task untouched.\",\n  \"signature_context\": \"Preserve the existing function signature exactly: build_shadow_operator_prompt_lines(*, choice_2_label: str = \\\"Cursor\\\", selected_model: str = \\\"\\\", estimated_cost: float = 0.0, session_cap_usd: float = 0.15) -> list[str]\",\n  \"call_shape_examples\": [\n    \"build_shadow_operator_prompt_lines(choice_2_label=\\\"Cursor\\\", selected_model=\\\"composer-2.5\\\", estimated_cost=0.0025)\",\n    \"The output must still begin with '1 = Codex' and '2 = Cursor'.\",\n    \"The output must contain exactly one line that starts with 'Session-Budget:'.\"\n  ],\n  \"exact_code_context_blocks\": [\n    \"documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/gate_prompt_shadow.py::build_shadow_operator_prompt_lines\\\\ndef build_shadow_operator_prompt_lines(\\\\n    *,\\\\n    choice_2_label: str = \\\\\\\"Cursor\\\\\\\",\\\\n    selected_model: str = \\\\\\\"\\\\\\\",\\\\n    estimated_cost: float = 0.0,\\\\n    session_cap_usd: float = 0.15,\\\\n) -> list[str]:\\\\n    _ = session_cap_usd\\\\n    lines = [\\\\n        \\\\\\\"1 = Codex\\\\\\\",\\\\n        f\\\\\\\"2 = {choice_2_label}\\\\\\\",\\\\n        \\\\\\\"Cursor is the bounded external worker option for this shadow lane.\\\\\\\",\\\\n    ]\\\\n    if selected_model.strip():\\\\n        lines.append(f\\\\\\\"Empfohlenes Worker-Modell: {selected_model}\\\\\\\")\\\\n    lines.append(f\\\\\\\"Voraussichtliche Worker-Kosten {estimated_cost:.6f}\\\\\\\")\\\\n    return lines\",\n    \"documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/test_gate_prompt_shadow.py::test_build_shadow_operator_prompt_lines_includes_session_budget_line\\\\ndef test_build_shadow_operator_prompt_lines_includes_session_budget_line() -> None:\\\\n    lines = build_shadow_operator_prompt_lines(\\\\n        choice_2_label=\\\\\\\"Cursor\\\\\\\",\\\\n        selected_model=\\\\\\\"composer-2.5\\\\\\\",\\\\n        estimated_cost=0.0025,\\\\n    )\\\\n\\\\n    assert lines[0] == \\\\\\\"1 = Codex\\\\\\\"\\\\n    assert lines[1] == \\\\\\\"2 = Cursor\\\\\\\"\\\\n    assert \\\\\\\"Empfohlenes Worker-Modell: composer-2.5\\\\\\\" in lines\\\\n    assert any(line.startswith(\\\\\\\"Session-Budget:\\\\\\\") for line in lines)\"\n  ],\n  \"forbidden_anchors\": [\n    \"edit outside the two shadow sandbox files\",\n    \"change 1 = Codex / 2 = Cursor gate semantics\",\n    \"broad refactor\",\n    \"new helper class\",\n    \"production routing activation\"\n  ],\n  \"required_current_anchors\": [\n    \"def build_shadow_operator_prompt_lines(\",\n    \"choice_2_label: str = \\\"Cursor\\\"\",\n    \"session_cap_usd: float = 0.15\",\n    \"_ = session_cap_usd\",\n    \"lines.append(f\\\"Voraussichtliche Worker-Kosten {estimated_cost:.6f}\\\")\",\n    \"assert any(line.startswith(\\\"Session-Budget:\\\") for line in lines)\"\n  ],\n  \"task_contract\": {\n    \"goal\": \"{\",\n    \"acceptance\": \"\\\"task_id\\\": \\\"TASK-EX-001\\\",\",\n    \"risk\": \"Keep scope bounded to the exact allowlist and avoid broader product changes.\",\n    \"context_bullets\": \"\"\n  },\n  \"validation_bundle\": {\n    \"validation_bundle_id\": \"bundle-1-steps\",\n    \"validation_summary\": \"Codex will run the known local validation bundle after review: python -m pytest documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_ca\"\n  },\n  \"return_contract\": {\n    \"required_fields\": [\n      \"status\",\n      \"target_task\",\n      \"patch_text\",\n      \"changed_files\",\n      \"risk_list\",\n      \"suggested_validation_steps\",\n      \"manual_validation_note\",\n      \"codex_acceptance_rule\",\n      \"notes\"\n    ],\n    \"empty_allowed_fields\": [\n      \"changed_files\",\n      \"risk_list\",\n      \"suggested_validation_steps\"\n    ],\n    \"patch_rule\": \"patch_text must be unified diff text touching only the smallest necessary subset of the allowlist\",\n    \"newline_rule\": \"patch_text must preserve newline-separated unified diff headers and hunk lines; never collapse the diff into one line\",\n    \"anchor_rule\": \"do not target forbidden_anchors; prefer required_current_anchors when present\",\n    \"signature_rule\": \"preserve real local function signatures and call shapes when signature_context or call_shape_examples are provided\",\n    \"context_rule\": \"when exact_code_context_blocks are provided, keep imports, surrounding control flow, and local helper usage aligned to those real excerpts instead of inventing simplified file structure\",\n    \"blocked_rule\": \"if you cannot produce a real hunk anchored to current local code, return status BLOCKED with empty patch_text and explain why in notes/risk_list\",\n    \"placeholder_rule\": \"never use placeholder context like '# existing header', '...', or 'existing artifact-oriented summary logic'\"\n  },\n  \"full_spec_excerpt_for_reference_only\": \"{\\n  \\\"task_id\\\": \\\"TASK-EX-001\\\",\\n  \\\"lane_id\\\": \\\"execution_patch_candidate\\\",\\n  \\\"bound_skill_context\\\": \\\"janus-executioner\\\",\\n  \\\"task_label\\\": \\\"Add one bounded session-budget line to the shadow execution prompt helper\\\",\\n  \\\"worker_package_json\\\": \\\"documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/worker_package.json\\\",\\n  \\\"allowlist_file\\\": \\\"documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/allowlist.txt\\\",\\n  \\\"acceptance_criteria\\\": [\\n    \\\"Only the two allowlisted shadow files may change.\\\",\\n    \\\"The helper should gain exactly one bounded session-budget line without widening task scope.\\\",\\n    \\\"The focused shadow pytest command must pass before Codex review.\\\"\\n  ],\\n  \\\"local_validation_command\\\": \\\"python -m pytest documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/test_gate_prompt_shadow.py -q\\\",\\n  \\\"shadow_reset_command\\\": \\\"python documentation/codex/model-routing/scripts/reset_execution_patch_candidate_shadow_fixture.py\\\",\\n  \\\"redaction_ready\\\": true,\\n  \\\"estimated_codex_saved_tokens\\\": 35000,\\n  \\\"estimated_delegation_overhead_tokens\\\": 10000,\\n  \\\"recommended_backend\\\": \\\"cursor\\\",\\n  \\\"r\"\n}"
+    }
+  ],
+  "temperature": 0.0,
+  "max_tokens": 3200,
+  "response_format": {
+    "type": "json_schema",
+    "json_schema": {
+      "name": "janus_execution_patch_candidate_result",
+      "strict": true,
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "status",
+          "target_task",
+          "patch_text",
+          "changed_files",
+          "risk_list",
+          "suggested_validation_steps",
+          "manual_validation_note",
+          "codex_acceptance_rule",
+          "notes"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "PASS",
+              "WEAK_SIGNAL",
+              "BLOCKED"
+            ]
+          },
+          "target_task": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "patch_text": {
+            "type": "string",
+            "maxLength": 5000
+          },
+          "changed_files": {
+            "type": "array",
+            "maxItems": 5,
+            "items": {
+              "type": "string"
+            }
+          },
+          "risk_list": {
+            "type": "array",
+            "maxItems": 4,
+            "items": {
+              "type": "string",
+              "maxLength": 220
+            }
+          },
+          "suggested_validation_steps": {
+            "type": "array",
+            "maxItems": 4,
+            "items": {
+              "type": "string",
+              "maxLength": 220
+            }
+          },
+          "manual_validation_note": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "codex_acceptance_rule": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 320
+          }
+        }
+      }
+    }
+  }
+}

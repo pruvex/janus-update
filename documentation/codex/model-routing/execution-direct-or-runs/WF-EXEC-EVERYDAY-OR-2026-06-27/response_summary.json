@@ -1,0 +1,27 @@
+﻿{
+    "capture_mode":  "local_fixture",
+    "http_status":  200,
+    "api_shape":  "chat_completions",
+    "response_object":  "chat.completion",
+    "response_status":  null,
+    "generation_id":  "gen-direct-or-execution-current-shape-fixture-001",
+    "model":  "deepseek/deepseek-v4-flash-20260423",
+    "finish_reason":  "stop",
+    "usage":  {
+                  "prompt_tokens":  3478,
+                  "completion_tokens":  541,
+                  "total_tokens":  4019,
+                  "cost":  0.00063384,
+                  "prompt_tokens_details":  {
+                                                "cached_tokens":  0
+                                            },
+                  "completion_tokens_details":  {
+                                                    "reasoning_tokens":  0
+                                                }
+              },
+    "actual_or_cost":  0.00063384,
+    "output_item_count":  0,
+    "output_item_types":  {
+
+                          }
+}

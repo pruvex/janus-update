@@ -1,0 +1,29 @@
+{
+  "workflow_id": "BACKLOG-116-EXECUTION-OR-001",
+  "bound_skill_context": "janus-executioner",
+  "target_task": "BACKLOG-116",
+  "spec_path": "documentation/tasks/backlog_BACKLOG-116_garfield_thunfisch_fakt_haustieruebersicht.md",
+  "precheck_path": "documentation/tasks/backlog_BACKLOG-116_preimplementation_check.md",
+  "precheck_status": "PRE-CHECK PASSED",
+  "allowed_files": [
+    "backend/services/contact_manager.py",
+    "backend/data/crud.py",
+    "backend/services/orchestrator/execution_engine.py",
+    "backend/tests/test_contact_manager.py",
+    "backend/tests/test_contact_card_normalization.py",
+    "backend/tests/test_provider_auth_fallback.py",
+    "backend/tests/test_memory_tools.py",
+    "backend/tests/integration/test_pet_recall_chat_path.py"
+  ],
+  "max_touched_files": 8,
+  "mini_test_plan": [
+    "python -m pytest backend/tests/test_contact_manager.py -q -k \"pet\"",
+    "python -m pytest backend/tests/test_contact_card_normalization.py -q",
+    "python -m pytest backend/tests/test_provider_auth_fallback.py -q -k \"pet_overview or memory_read_fallback_v2\"",
+    "python -m pytest backend/tests/test_memory_tools.py -q -k \"pet_overview\"",
+    "python -m pytest backend/tests/integration/test_pet_recall_chat_path.py -q",
+    "python -m py_compile backend/services/contact_manager.py backend/data/crud.py backend/services/orchestrator/execution_engine.py backend/tests/test_contact_manager.py backend/tests/test_contact_card_normalization.py backend/tests/test_provider_auth_fallback.py backend/tests/test_memory_tools.py backend/tests/integration/test_pet_recall_chat_path.py"
+  ],
+  "manual_validation_gate": "Codex must verify that stale generic Garfield/Thunfisch memory drift remains controlled while a deliberately pet-specific Garfield dislike fact can be attributed to Garfield and included in the Oli pet overview.",
+  "delegation_question": "Produce one bounded patch candidate for BACKLOG-116. The patch should keep `Garfield mag Thunfisch ueberhaupt nicht` pet-specific instead of an Oli general fact, include the Garfield dislike in the aggregated Oli pet overview when safely attributable to Garfield, preserve direct Garfield recall, and avoid mixing or deduping Tasso and Garfield tuna facts incorrectly."
+}

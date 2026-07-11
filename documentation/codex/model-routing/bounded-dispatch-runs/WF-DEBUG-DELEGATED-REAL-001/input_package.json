@@ -1,0 +1,12 @@
+{
+  "workflow_id": "WF-DEBUG-DELEGATED-REAL-001",
+  "bound_skill_context": "janus-debug",
+  "expected_behavior": "Exactly one bounded fixture-backed review should run through the shared dispatcher.",
+  "actual_behavior": "The consumer should resolve fixture mode and avoid self-recursion.",
+  "evidence_snippets": [
+    "snippet one"
+  ],
+  "iteration_number": 1,
+  "explicit_question": "What verifier next?",
+  "redaction_ready": true
+}

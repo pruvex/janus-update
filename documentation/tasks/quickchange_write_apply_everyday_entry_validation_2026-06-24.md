@@ -1,0 +1,40 @@
+# Quickchange Write-Apply Everyday Entry Validation Task
+
+- **Task ID:** QC-WRITE-OR-ENTRY-001
+- **Status:** READY
+- **Created:** 2026-06-24
+- **Updated:** 2026-06-24
+- **Related Backlog Item:** N/A WITH REASON - bounded Lean Dev evidence-refresh slice for an already designed dispatcher lane
+- **Spec:** N/A WITH REASON - no Janus product feature change; this is a bounded Dev workflow evidence refresh
+- **Short Description:** Refresh `janus-quickchange` `quickchange_write_apply` as an everyday operator-facing bounded OR lane so its current status can move from `PARTIAL` to either `OR_READY` or an explicit fresh blocker.
+- **Goal:** Validate the visible prompt gate and the accepted-source-backed delegated quickchange write-apply path in the current rollout, then update the central OR lane inventory and state documents based on real current evidence.
+- **In Scope:**
+  - `quickchange_write_apply` shared dispatcher prompt gate
+  - one bounded delegated write-apply validation path using an existing accepted source run only
+  - focused regression coverage if the current gate/tests are stale
+  - lane inventory and state documentation updates tied directly to the validation outcome
+- **Out of Scope:**
+  - Janus product logic
+  - production routing
+  - canonical routing-table updates
+  - new live OR calls
+  - broad quickchange redesign
+  - unrelated quickchange patch-review or other OR lanes
+- **Affected Files:**
+  - `documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py`
+  - `documentation/codex/model-routing/scripts/codex_quickchange_write_apply_runner.py`
+  - `documentation/codex/model-routing/tests/` relevant focused quickchange write-apply tests if needed
+  - `documentation/codex/model-routing/or_everyday_lane_inventory_2026-06-24.md`
+  - `documentation/ai/CURRENT_STATE.md`
+  - `documentation/codex/SKILL_USAGE_LOG.md`
+- **Acceptance Criteria:**
+  - A current prompt-mode proof exists for `quickchange_write_apply` showing the visible operator choice.
+  - A current accepted-source-backed delegated validation proof exists or a fresh bounded blocker is recorded with exact failure evidence.
+  - The lane inventory is updated from `PARTIAL` to either `OR_READY` or a precise current blocker state.
+  - No production-routing, release, or broad delegated-write authority is introduced.
+- **Required Evidence:**
+  - one dispatcher prompt proof for `quickchange_write_apply`
+  - one delegated accepted-source validation proof using an existing accepted source run
+  - focused tests only if code or current expectations need adjustment
+- **Risk:** LOW
+- **Notes:** This slice answers one operational question only: is `quickchange_write_apply` currently everyday-ready in this rollout, or not?

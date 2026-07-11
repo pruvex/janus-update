@@ -1,0 +1,39 @@
+{
+  "summary_header": "CODEX SIDECAR TEST-ARTIFACT WRITE GATE",
+  "workflow_id": "WF-TEST-ARTIFACT-GATE-2026-06-27",
+  "skill": "janus-test-pipeline",
+  "mode": "TESTSPEC_TO_TEST_PLAN",
+  "testspec_path": "documentation/TEST_SPEC/07_regression_suite/17_memory_recall_placeholder_regression.md",
+  "test_run_id": "TEST-RUN-2026-06-27-123",
+  "selected_path": "operator_choice_pending",
+  "normal_target_model": "5.4 medium",
+  "choice_1": "Codex",
+  "choice_2": "Sidecar",
+  "sidecar_model_provider": "Codex CLI sidecar / gpt-5.4",
+  "node_executable": "C:\\nvm4w\\nodejs\\node.exe",
+  "sandbox": "workspace-write",
+  "editable_paths": [
+    "documentation/test-runs/TEST-RUN-2026-06-27-123_plan.json",
+    "documentation/test-runs/TEST-RUN-2026-06-27-123_generated.spec.js",
+    "documentation/test-runs/TEST-RUN-2026-06-27-123_skill2_handover.txt"
+  ],
+  "validation_after_run": [
+    "validate-test-plan.mjs on generated plan",
+    "node --check on generated runner",
+    "validate-runner.mjs on plan plus generated runner"
+  ],
+  "abort_rules": [
+    "Abort if any file outside exact output allowlist changes.",
+    "Abort if any file in documentation/test-results changes.",
+    "Abort if product code changes.",
+    "Abort if generated outputs do not validate."
+  ],
+  "boundaries": [
+    "No live Playwright execution.",
+    "No result JSON or result markdown generation.",
+    "No product code edits.",
+    "Codex App remains final reviewer and acceptance owner."
+  ],
+  "final_outcome": "AWAITING_OPERATOR_CHOICE",
+  "validation_result": "PASS"
+}

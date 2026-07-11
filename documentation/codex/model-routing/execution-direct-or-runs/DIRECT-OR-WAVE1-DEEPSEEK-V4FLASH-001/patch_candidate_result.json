@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "target_task": "BACKLOG-108",
+  "patch_text": "diff --git a/backend/services/chat_orchestrator.py b/backend/services/chat_orchestrator.py\nindex abc123..def456 100644\n--- a/backend/services/chat_orchestrator.py\n+++ b/backend/services/chat_orchestrator.py\n@@ -10,6 +10,7 @@\n from backend.services.contact_manager import ContactManager\n from backend.services.memory_extractor import MemoryExtractor\n+from backend.data.crud import update_contact\n \n class ChatOrchestrator:\n     def __init__(self, contact_manager: ContactManager, memory_extractor: MemoryExtractor):\n@@ -45,6 +46,12 @@ class ChatOrchestrator:\n         if contact_match.confidence >= 0.8:\n             # confirmed existing contact\n-            # TODO: persist confirmed facts to contact record\n+            contact_id = contact_match.contact_id\n+            confirmed_facts = self._extract_confirmed_facts(chat_message)\n+            if confirmed_facts:\n+                update_contact(contact_id, confirmed_facts)\n+                self.contact_manager.notify_contact_updated(contact_id)\n+            else:\n+                self.contact_manager.propose_contact_update(contact_id, chat_message)\n         else:\n             self.contact_manager.propose_new_contact(chat_message)\n@@ -52,3 +59,8 @@ class ChatOrchestrator:\n     def _extract_confirmed_facts(self, chat_message):\n         return self.memory_extractor.extract_facts(chat_message)\n+\n+    def _extract_confirmed_facts(self, chat_message):\n+        \"\"\"Extract confirmed contact facts from a chat message.\"\"\"\n+        facts = self.memory_extractor.extract_facts(chat_message)\n+        return [f for f in facts if f.get('type') == 'contact' and f.get('confidence', 0) >= 0.8]\n",
+  "notes": "Minimal patch: adds persistence path for confirmed contact facts when an existing contact is matched with high confidence. Falls back to proposal path when no high-confidence facts are extracted. Touches only chat_orchestrator.py and adds import from crud.py. No other files changed.",
+  "changed_files": [
+    "backend/services/chat_orchestrator.py"
+  ],
+  "risk_list": [
+    "Low risk: only adds persistence call for high-confidence facts; no change to existing proposal or memory-only paths"
+  ],
+  "suggested_validation_steps": [
+    "python -m pytest backend/tests/test_contact_manager.py -q",
+    "python -m pytest backend/tests/test_memory_tools.py -q",
+    "python -m pytest backend/tests/test_memory_write_update_conflict_handling.py -q",
+    "python -m py_compile backend/services/chat_orchestrator.py backend/services/contact_manager.py backend/services/memory_extractor.py backend/tools/memory_tools.py backend/data/crud.py backend/tests/test_contact_manager.py backend/tests/test_memory_tools.py backend/tests/test_memory_write_update_conflict_handling.py"
+  ],
+  "manual_validation_note": "Codex must manually validate this patch locally before task completion.",
+  "codex_acceptance_rule": "Codex must review and apply or reject locally."
+}

@@ -1,0 +1,13 @@
+{
+  "workflow_id": "STRUCTURED-ACTION-VALIDATOR-FAIL-001",
+  "skill_id": "janus-test-pipeline",
+  "action_type": "run_validator",
+  "executor_status": "FAILED",
+  "schema_validation": "PASS",
+  "mapping_resolution": "NOT_RUN",
+  "allowlist_status": "NOT_RUN",
+  "output_artifact_status": "NOT_RUN",
+  "codex_review_required": true,
+  "detail": "Validator execution failed for validate_runner_v1. exit_code=1",
+  "run_directory": "documentation/codex/model-routing/structured-action-runs/STRUCTURED-ACTION-VALIDATOR-FAIL-001/20260615-181505"
+}

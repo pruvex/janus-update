@@ -1,0 +1,77 @@
+{
+  "backend": "cursor",
+  "lane_id": "backlog_handoff_review",
+  "workflow_id": "WF-CURSOR-API-SMOKE-GLM-002",
+  "selected_model": "glm-5.2-high",
+  "cursor_pool": "api",
+  "estimated_cost_usd_static": 0.028519999999999997,
+  "session_id": "d46216c1-e5fd-404a-8dc5-da1f7a0238b0",
+  "validation_result": "PASS",
+  "selected_path": "cursor_worker_live_mockable",
+  "final_outcome": "CURSOR_WORKER_READY_FOR_CODEX_REVIEW",
+  "package_validation": {
+    "validation_result": "PASS",
+    "contract_status": "TASK_PACKAGE_VALID_VIA_WORKER_REFERENCE",
+    "issues": [],
+    "task_label": "Bounded shadow backlog handoff review task",
+    "worker_profile": "cursor-agent-api-shadow",
+    "allowed_edit_paths": [
+      "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/backlog_handoff_review/sandbox/selected_handoff_shadow.md"
+    ],
+    "required_result_artifacts": [
+      "RESULT.json",
+      "RESULT.md",
+      "DIFF.patch",
+      "FILES_CHANGED.txt",
+      "CHECKS.log",
+      "COST.json"
+    ],
+    "source_package_path": "documentation\\codex\\model-routing\\fixtures\\cursor-shadow-catalog\\backlog_handoff_review\\input_package.json",
+    "worker_package_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\fixtures\\cursor-shadow-catalog\\backlog_handoff_review\\worker_package.json"
+  },
+  "allowlist_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "allowlist": [
+      "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/backlog_handoff_review/sandbox/selected_handoff_shadow.md"
+    ]
+  },
+  "allowlist_consistency_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "package_allowed_edit_paths": [
+      "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/backlog_handoff_review/sandbox/selected_handoff_shadow.md"
+    ],
+    "allowlist": [
+      "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/backlog_handoff_review/sandbox/selected_handoff_shadow.md"
+    ],
+    "declared_allowlist_file": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\fixtures\\cursor-shadow-catalog\\backlog_handoff_review\\allowlist.txt"
+  },
+  "accepted_source_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "accepted_source_run_dir": null,
+    "recognized_artifacts": []
+  },
+  "accepted_source_run_dir": null,
+  "planned_command": [
+    "C:\\Users\\pruve\\AppData\\Local\\cursor-agent\\agent.CMD",
+    "-p",
+    "--workspace",
+    "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\fixtures\\cursor-shadow-catalog\\backlog_handoff_review\\sandbox",
+    "--model",
+    "glm-5.2-high",
+    "--output-format",
+    "json",
+    "Execute this bounded Janus delegated worker task now. Treat the full prompt below as instructions, not as text to analyze. Do not ask clarifying questions unless the task is impossible with the provided files and rules.\n\nStable prefix:\n- lane: backlog_handoff_review\n- worker_contract: janus-delegated-worker\n- output_schema: status, changed_files, command_results, summary, blockers\n- hard_rules: stay bounded, do not commit, do not leave the allowlist\n\nVariable suffix:\nUpdate only the shadow handoff summary so it explicitly recommends the preimplementation-check entry point for the selected backlog item.\nTask label: Add one explicit precheck entry recommendation to the shadow backlog handoff summary\nEdit only the allowlisted shadow handoff summary file. Run only the focused pytest command. Do not commit. Return concise JSON-friendly output.\nAcceptance criteria:\n- Only the allowlisted shadow summary file may change.\n- The summary must recommend PRE_IMPLEMENTATION_VERIFICATION exactly once.\n- The focused shadow pytest command must pass before Codex review.\nAllowed edit paths:\n- documentation/codex/model-routing/fixtures/cursor-shadow-catalog/backlog_handoff_review/sandbox/selected_handoff_shadow.md\nReturn status, changed_files, command_results, summary, and blockers as concise JSON-compatible output.\n\nWorkspace root: C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\fixtures\\cursor-shadow-catalog\\backlog_handoff_review\\sandbox\nWorkspace-relative edit paths:\n- selected_handoff_shadow.md"
+  ],
+  "mode": "assist_only",
+  "workspace_root": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\fixtures\\cursor-shadow-catalog\\backlog_handoff_review\\sandbox",
+  "live_execution_allowed": false,
+  "codex_review_required": true,
+  "changed_files": [
+    "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/backlog_handoff_review/sandbox/selected_handoff_shadow.md"
+  ],
+  "changed_outside_allowlist": [],
+  "operator_message": "Cursor worker finished the bounded slice and returned artifacts for Codex review."
+}

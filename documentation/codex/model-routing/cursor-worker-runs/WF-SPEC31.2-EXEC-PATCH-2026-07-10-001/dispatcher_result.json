@@ -1,0 +1,90 @@
+{
+  "backend": "cursor",
+  "lane_id": "execution_patch_candidate",
+  "workflow_id": "WF-SPEC31.2-EXEC-PATCH-2026-07-10-001",
+  "selected_model": "composer-2.5",
+  "cursor_pool": "auto_composer",
+  "estimated_cost_usd_static": 0.0104,
+  "session_id": null,
+  "validation_result": "BLOCKED",
+  "selected_path": "cursor_worker_blocked",
+  "final_outcome": "CURSOR_AGENT_TIMEOUT",
+  "package_validation": {
+    "validation_result": "PASS",
+    "contract_status": "TASK_PACKAGE_VALID_VIA_WORKER_REFERENCE",
+    "issues": [],
+    "task_label": "Harden semantic multi-step routine reuse with fail-closed and ambiguity guards",
+    "worker_profile": "cursor-agent",
+    "allowed_edit_paths": [
+      "backend/services/orchestrator/intent_engine.py",
+      "backend/services/workflow/routine_runner.py",
+      "backend/tests/test_routine_runner.py",
+      "backend/tests/test_workflow_offer_service.py"
+    ],
+    "required_result_artifacts": [
+      "RESULT.json",
+      "RESULT.md",
+      "DIFF.patch",
+      "FILES_CHANGED.txt",
+      "CHECKS.log",
+      "COST.json"
+    ],
+    "source_package_path": "development\\openrouter-skill-tests\\janus-executioner\\spec31_2_routine_reuse_hardening_2026-07-10\\input_package.json",
+    "worker_package_path": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-executioner\\spec31_2_routine_reuse_hardening_2026-07-10\\worker_package.json"
+  },
+  "allowlist_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "allowlist": [
+      "backend/services/orchestrator/intent_engine.py",
+      "backend/services/workflow/routine_runner.py",
+      "backend/tests/test_routine_runner.py",
+      "backend/tests/test_workflow_offer_service.py"
+    ]
+  },
+  "allowlist_consistency_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "package_allowed_edit_paths": [
+      "backend/services/orchestrator/intent_engine.py",
+      "backend/services/workflow/routine_runner.py",
+      "backend/tests/test_routine_runner.py",
+      "backend/tests/test_workflow_offer_service.py"
+    ],
+    "allowlist": [
+      "backend/services/orchestrator/intent_engine.py",
+      "backend/services/workflow/routine_runner.py",
+      "backend/tests/test_routine_runner.py",
+      "backend/tests/test_workflow_offer_service.py"
+    ],
+    "declared_allowlist_file": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-executioner\\spec31_2_routine_reuse_hardening_2026-07-10\\allowlist.txt"
+  },
+  "codex_review_required": true,
+  "operator_message": "Cursor agent exceeded the bounded live timeout (180s) before producing a final result.",
+  "accepted_source_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "accepted_source_run_dir": null,
+    "recognized_artifacts": []
+  },
+  "planned_command": [
+    "C:\\Users\\pruve\\AppData\\Local\\cursor-agent\\agent.CMD",
+    "-p",
+    "--workspace",
+    "C:\\KI\\Janus-Projekt\\backend",
+    "--model",
+    "composer-2.5",
+    "--output-format",
+    "json",
+    "--force",
+    "--trust",
+    "--approve-mcps",
+    "Execute this bounded Janus delegated worker task now. Treat the full prompt below as instructions, not as text to analyze. Do not ask clarifying questions unless the task is impossible with the provided files and rules.\n\nStable prefix:\n- lane: execution_patch_candidate\n- worker_contract: janus-delegated-worker\n- output_schema: status, changed_files, command_results, summary, blockers\n- hard_rules: stay bounded, do not commit, do not leave the allowlist\n\nVariable suffix:\nImplement TASK-SPEC31.2 only. The accepted TASK-SPEC31.1 pilot already introduced general semantic multi-step routine reuse plus the first safe calendar.list_events + system.routing pilot. This second slice must harden that productive path so missing parameters, conflicting values, and multiple superficially matching saved routines fail closed instead of reusing stale saved-routine values. Protect both the calendar+routing pilot and the existing calendar+weather path with focused negative regressions. Do not reopen the accepted positive pilot behavior, add new routine families, add UI, embeddings, vector search, provider fallback, transport changes, OAuth, migrations, commits, or broader architecture changes. Return concise JSON-compatible output with status, root_cause, changed_files, command_results, summary, and blockers.\nTask label: Harden semantic multi-step routine reuse with fail-closed and ambiguity guards\nUse Cursor for one bounded execution patch. Inspect only allowlisted files, harden the semantic routine reuse path for missing/conflicting/ambiguous parameters, keep the accepted positive pilot behavior stable, protect the weather regression path, run the listed checks, and return concise JSON-compatible output.\nAcceptance criteria:\n- Only allowlisted backend routine/orchestrator files and focused tests may change.\n- When required parameters are missing or cannot be extracted safely, Janus does not reuse an old saved routine with stale values.\n- When a new request contains conflicting or changed values, those values are not silently overwritten by historical routine-run values.\n- When multiple saved routines only partially or superficially match, Janus stays on the normal request path instead of aggressively false-matching.\n- Regression coverage protects both the calendar+routing pilot and the existing calendar+weather reuse family.\n- Do not add UI, routine management, embeddings, vector search, provider fallback, transport changes, OAuth, Git, release, or broader architecture changes.\nAllowed edit paths:\n- backend/services/orchestrator/intent_engine.py\n- backend/services/workflow/routine_runner.py\n- backend/tests/test_routine_runner.py\n- backend/tests/test_workflow_offer_service.py\nReturn status, changed_files, command_results, summary, and blockers as concise JSON-compatible output.\n\nWorkspace root: C:\\KI\\Janus-Projekt\\backend\nWorkspace-relative edit paths:\n- services/orchestrator/intent_engine.py\n- services/workflow/routine_runner.py\n- tests/test_routine_runner.py\n- tests/test_workflow_offer_service.py"
+  ],
+  "live_execution_allowed": true,
+  "mode": "proposal_first",
+  "workspace_root": "C:\\KI\\Janus-Projekt\\backend",
+  "timeout_seconds": 180,
+  "changed_files": [],
+  "changed_outside_allowlist": []
+}

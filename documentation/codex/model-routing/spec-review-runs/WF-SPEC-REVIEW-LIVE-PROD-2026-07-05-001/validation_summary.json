@@ -1,0 +1,7 @@
+{
+  "workflow_id": "WF-SPEC-REVIEW-LIVE-PROD-2026-07-05-001",
+  "task_label": "Spec review productive OR pilot",
+  "validation_issues": [],
+  "finish_reason": "stop",
+  "actual_or_cost": 0.0007134075
+}

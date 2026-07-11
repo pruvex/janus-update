@@ -1,0 +1,34 @@
+{
+  "task_id": "TASK-WORKFLOW-M3.4-DBG-ROUTINE-OUTPUT",
+  "lane_id": "debug_repro_investigation",
+  "bound_skill_context": "janus-debug",
+  "task_label": "Debug M3.4 routine output normalization for saved calendar plus weather reuse",
+  "worker_package_json": "development/openrouter-skill-tests/janus-debug/workflow_m3_4_routine_output_normalization_2026-07-09/worker_package.json",
+  "allowlist_file": "development/openrouter-skill-tests/janus-debug/workflow_m3_4_routine_output_normalization_2026-07-09/allowlist.txt",
+  "failure_code": "WORKFLOW_M3_4_ROUTINE_OUTPUT_RAW_STEP_DUMP",
+  "latest_user_evidence": {
+    "timestamp_local": "2026-07-09 00:41 +02:00",
+    "prompt": "Was steht heute in meinem Kalender und wie wird das Wetter in Koeln?",
+    "actual": "Both providers now reuse the saved routine automatically, but the answer is a raw technical step dump: `Routine Routine List Events erfolgreich ausgefuehrt. - calendar.list_events: events: [] - system.weather: forecast: ...`. The calendar part is not verbalized as a user-friendly no-events sentence.",
+    "expected": "The reused routine should return the same user-facing combined answer shape as the normal non-routine path: natural calendar text such as `Keine Termine im angegebenen Zeitraum gefunden.` plus the formatted weather block and the transparent note that a matching saved routine was used."
+  },
+  "prior_cursor_evidence": {
+    "workflow_id": "WF-CURSOR-M3.4-SEMANTIC-ROUTINE-REUSE-2026-07-09-001",
+    "result": "Cursor Composer previously implemented bounded semantic routine reuse successfully; this follow-up slice is only about formatting the successful reused-routine response."
+  },
+  "acceptance_criteria": [
+    "Only the allowlisted routine runner and focused routine tests may change.",
+    "A successful reused calendar-plus-weather routine must produce user-facing combined text, not a raw skill dump.",
+    "The calendar step must verbalize the no-events case using the structured result payload when no events are present.",
+    "The weather step must keep the existing deterministic formatted forecast block.",
+    "The transparent note that Janus used a matching saved routine must remain present for semantic reuse.",
+    "Run the focused pytest command before returning."
+  ],
+  "local_validation_command": "python -m pytest backend/tests/test_routine_runner.py -q",
+  "redaction_ready": true,
+  "estimated_codex_saved_tokens": 9000,
+  "estimated_delegation_overhead_tokens": 2500,
+  "recommended_backend": "cursor",
+  "recommended_model": "composer-2.5",
+  "cursor_prompt_contract": "Use Cursor Composer for one bounded debug follow-up. Inspect only allowlisted files, normalize the reused routine success text for calendar plus weather without broad refactors, run the listed pytest command, and return concise JSON-compatible output."
+}

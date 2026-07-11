@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-06-09-003",
+  "testCaseId": "TC-007-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "`was weißt du über oli?` after creation and enrichment",
+  "response": "Hallo Rolf Adam! Über deinen Freund Oliver Schwab (Oli) habe ich folgende Informationen für dich zusammengetragen:*   Wohnort: Er wohnt in Köln-Stammheim. Das hast du mir gestern um 21:12 Uhr im Chat „Vorlieben von Chris Gier“ erzählt.*   Interessen (Aktualisiert):    *   Oli liebt Strategiespiele (wie z. B. *Panzer General*). Diese Korrektur hast du heute um 19:22 Uhr vorgenommen.    *   Er baut gerne Star-Wars-Modelle.    *   Er verbringt gerne Zeit im Garten.*   Ernährung:    *   Oli mag vegetarisches Essen.    *   Er isst gerne Kimchi.Diese zusätzlichen Vorlieben (Modellbau, Garten, Essen) hast du mir heute gegen 14:53 Uhr mitgeteilt. Dass er die Serie *The Big Bang Theory* liebt, habe ich nach deinem Hinweis heute Abend als veraltet markiert und durch sein Interesse an Strategiespielen ersetzt.💡 Passende nächste Schritte:• Soll ich nach vegetarischen Restaurants in Köln-Stammheim suchen, die vielleicht sogar Kimchi anbieten?• Möchtest du, dass ich nach neuen Star-Wars-Modellbausätzen oder Strategiespielen als Geschenkidee suche?• Soll ich einen Termin für ein gemeinsames Treffen oder einen Spieleabend mit Oli in deinen Kalender eintragen?19:24",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-06-09T17:24:59.076Z"
+}

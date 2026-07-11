@@ -1,0 +1,90 @@
+{
+  "backend": "cursor",
+  "lane_id": "debug_repro_investigation",
+  "workflow_id": "WF-CURSOR-M3.3-OFFER-CONTENT-STATUS-2026-07-08-001",
+  "selected_model": "composer-2.5",
+  "cursor_pool": "auto_composer",
+  "estimated_cost_usd_static": 0.0104,
+  "session_id": "3db9f215-55b7-413d-8f24-018c23534f6e",
+  "validation_result": "PASS",
+  "selected_path": "cursor_worker_live_mockable",
+  "final_outcome": "CURSOR_WORKER_READY_FOR_CODEX_REVIEW",
+  "package_validation": {
+    "validation_result": "PASS",
+    "contract_status": "TASK_PACKAGE_VALID_VIA_WORKER_REFERENCE",
+    "issues": [],
+    "task_label": "Debug M3.3 missing offer for content-only successful tool results",
+    "worker_profile": "cursor-agent",
+    "allowed_edit_paths": [
+      "backend/services/workflow/step_trace_extractor.py",
+      "backend/tests/test_workflow_detector.py",
+      "backend/tests/test_workflow_offer_service.py"
+    ],
+    "required_result_artifacts": [
+      "RESULT.json",
+      "RESULT.md",
+      "DIFF.patch",
+      "FILES_CHANGED.txt",
+      "CHECKS.log",
+      "COST.json"
+    ],
+    "source_package_path": "development\\openrouter-skill-tests\\janus-debug\\workflow_m3_3_offer_content_status_2026-07-08\\input_package.json",
+    "worker_package_path": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-debug\\workflow_m3_3_offer_content_status_2026-07-08\\worker_package.json"
+  },
+  "allowlist_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "allowlist": [
+      "backend/services/workflow/step_trace_extractor.py",
+      "backend/tests/test_workflow_detector.py",
+      "backend/tests/test_workflow_offer_service.py"
+    ]
+  },
+  "allowlist_consistency_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "package_allowed_edit_paths": [
+      "backend/services/workflow/step_trace_extractor.py",
+      "backend/tests/test_workflow_detector.py",
+      "backend/tests/test_workflow_offer_service.py"
+    ],
+    "allowlist": [
+      "backend/services/workflow/step_trace_extractor.py",
+      "backend/tests/test_workflow_detector.py",
+      "backend/tests/test_workflow_offer_service.py"
+    ],
+    "declared_allowlist_file": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-debug\\workflow_m3_3_offer_content_status_2026-07-08\\allowlist.txt"
+  },
+  "accepted_source_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "accepted_source_run_dir": null,
+    "recognized_artifacts": []
+  },
+  "accepted_source_run_dir": null,
+  "planned_command": [
+    "C:\\Users\\pruve\\AppData\\Local\\cursor-agent\\agent.CMD",
+    "-p",
+    "--workspace",
+    "C:\\KI\\Janus-Projekt\\backend",
+    "--model",
+    "composer-2.5",
+    "--output-format",
+    "json",
+    "--force",
+    "--trust",
+    "--approve-mcps",
+    "Execute this bounded Janus delegated worker task now. Treat the full prompt below as instructions, not as text to analyze. Do not ask clarifying questions unless the task is impossible with the provided files and rules.\n\nStable prefix:\n- lane: debug_repro_investigation\n- worker_contract: janus-delegated-worker\n- output_schema: status, changed_files, command_results, summary, blockers\n- hard_rules: stay bounded, do not commit, do not leave the allowlist\n\nVariable suffix:\nInvestigate only the allowlisted M3.3 step extraction files. The latest live retest still shows no routine offer after a successful calendar-plus-weather answer. Previous Codex fix canonicalized name aliases, but likely still misses real finalizer tool results shaped as role/name/content or role/name/_raw_content where the JSON content has status ok and data/message/output, while the top-level tool result has no status/success. Apply the smallest bounded fix so content-only successful results extract routine steps for calendar_list_events/system_weather and canonical calendar.list_events/system.weather. Add focused regression tests. Do not commit. Run only the listed pytest check. Return concise JSON-compatible output with status, root_cause, changed_files, command_results, summary, and blockers.\nTask label: Debug M3.3 missing offer for content-only successful tool results\nUse Cursor API for this smaller follow-up after Composer timeout; investigate only allowlisted extractor/tests and return concise JSON-friendly output.\nAcceptance criteria:\n- Only the allowlisted extractor and focused tests may change.\n- Tool results with name plus JSON content/_raw_content status ok must extract successful routine steps even when top-level status/success is absent.\n- calendar_list_events and system_weather must canonicalize to calendar.list_events and system.weather.\n- The focused pytest command must pass before Codex review.\nAllowed edit paths:\n- backend/services/workflow/step_trace_extractor.py\n- backend/tests/test_workflow_detector.py\n- backend/tests/test_workflow_offer_service.py\nReturn status, changed_files, command_results, summary, and blockers as concise JSON-compatible output.\n\nWorkspace root: C:\\KI\\Janus-Projekt\\backend\nWorkspace-relative edit paths:\n- services/workflow/step_trace_extractor.py\n- tests/test_workflow_detector.py\n- tests/test_workflow_offer_service.py"
+  ],
+  "mode": "proposal_first",
+  "workspace_root": "C:\\KI\\Janus-Projekt\\backend",
+  "live_execution_allowed": false,
+  "codex_review_required": true,
+  "changed_files": [
+    "backend/services/workflow/step_trace_extractor.py",
+    "backend/tests/test_workflow_detector.py",
+    "backend/tests/test_workflow_offer_service.py"
+  ],
+  "changed_outside_allowlist": [],
+  "operator_message": "Cursor worker finished the bounded slice and returned artifacts for Codex review."
+}

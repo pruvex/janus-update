@@ -255,3 +255,39 @@
 - **Epic:** BACKLOG-124
 - **Confidence:** High
 - **Tags:** codex,gpt56,model-routing,runtime-entitlement,audit-fallback
+
+
+## [PATTERN] #CursorComposerTimeoutNeedsTieredWallClockBudget "Cursor Composer tool runs need a tiered wall-clock budget and one-attempt fallback"
+- **Kontext:** Cursor Composer timeout analysis for Janus bounded delegation (2026-07-10).
+- **Problem:** A 120-second wall-clock cap terminates valid Composer shell/tool loops before their final JSON response, which can look like a broken integration even though the agent is still working.
+- **Loesung:** For live Composer tool lanes, set 240 seconds for one allowlisted file and 300 seconds for two files or debug with shell. Make one critical-path attempt, inspect cursor-worker-run artifacts, and on CURSOR_AGENT_TIMEOUT implement locally in Codex instead of repeated retries.
+- **Haertung:** cursor_delegation_log evidence records successful runs at 124, 194, and 215 seconds; HANDOFF_CURSOR_COMPOSER_TIMEOUT_ANALYSIS_2026-07-10.md documents the runner's bounded timeout behavior, artifact expectations, and failure taxonomy.
+- **Tripwire:** If a Composer timeout is called an integration failure without checking the configured cap and run artifacts, if a 120-second cap is used for tool work, or if the same package is retried repeatedly on the critical path, the delegation operating contract has drifted.
+- **Location:** documentation/codex/model-routing/HANDOFF_CURSOR_COMPOSER_TIMEOUT_ANALYSIS_2026-07-10.md, documentation/codex/model-routing/scripts/janus_cursor_worker_runner.py, documentation/codex/model-routing/cursor_delegation_log.jsonl
+- **Epic:** Track B H-003
+- **Confidence:** High
+- **Tags:** cursor,composer,timeout,delegation,wall-clock,track-b
+
+
+## [PATTERN] #SemanticRoutineReuseMustBindFreshRequestConstraints "Semantic routine reuse must bind fresh request constraints and fail closed"
+- **Kontext:** TASK-WORKFLOW-M3.4 semantic calendar-plus-weather routine reuse (2026-07-10).
+- **Problem:** Matching only a saved multi-skill signature can reuse a routine with stale or mismatched city/date values, producing a plausible but wrong result.
+- **Loesung:** Keep explicit triggers first, then allow bounded semantic reuse only for a matching saved signature whose current request constraints are complete and compatible. Reject unrelated, missing, conflicting, or explicitly different city/date requests instead of executing a stale routine.
+- **Haertung:** M3.4 live GPT and Gemini validation passed; focused routine/offer/chat-finalize regression passed 40 tests, including semantic reuse, explicit trigger preservation, unrelated-request rejection, city/date mismatch rejection, and natural user-facing rendering.
+- **Tripwire:** If a semantic routine executes for a different weather city/date, with missing constraints, or without a transparent routine-use note, the reuse contract has drifted.
+- **Location:** backend/services/workflow/routine_runner.py, backend/services/orchestrator/intent_engine.py, backend/tests/test_routine_runner.py, documentation/tasks/TASK-WORKFLOW-M3.4_final_audit.md
+- **Epic:** TASK-WORKFLOW-M3.4
+- **Confidence:** High
+- **Tags:** workflow,routine,semantic-reuse,fail-closed,weather
+
+
+## [PATTERN] #SessionSearchMustFilterEchoCandidatesAndSecrets "Session search must filter echo candidates and password-like content before recall output"
+- **Kontext:** TASK-MEM-M4.1 / Memory Phase C Session-Search FTS5 closeout (2026-07-11). (2026-07-11).
+- **Problem:** Natural recall prompts with punctuation could produce weak FTS candidates, repeated user-question rows could outrank the earlier fact, and password-like rows needed stronger fail-closed filtering.
+- **Loesung:** Normalize bounded FTS query candidates, collect a bounded fallback candidate pool, suppress exact question echoes for natural recall, and apply session-search-specific password-like filtering before snippets reach the tool output.
+- **Haertung:** Focused store and tool tests PASS (4 plus 5); memory regression PASS (20); direct enabled-runtime Janus proof returned Acme GmbH through session_search and refused the password phrasing.
+- **Tripwire:** If a natural recall question returns its own text instead of the prior fact, FTS parsing fails on punctuation, or a password-like snippet reaches tool output, recheck query normalization, candidate pooling, echo suppression, and secret filtering together.
+- **Location:** backend/services/memory/session_fts_store.py, backend/services/memory/session_search_service.py, backend/tests/test_session_fts_store.py, backend/tests/test_session_search_tools.py
+- **Epic:** TASK-MEM-M4.1
+- **Confidence:** High
+- **Tags:** memory,session-search,fts5,recall,secret-suppression

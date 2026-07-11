@@ -1,0 +1,68 @@
+{
+  "task_label": "Implement semantic routine reuse from natural user phrasing",
+  "worker_profile": "cursor-agent",
+  "allowed_edit_paths": [
+    "backend/services/workflow/routine_runner.py",
+    "backend/services/orchestrator/intent_engine.py",
+    "backend/services/chat_orchestrator.py",
+    "backend/tests/test_routine_runner.py",
+    "backend/tests/test_workflow_offer_service.py"
+  ],
+  "acceptance_criteria": [
+    "A saved calendar-plus-weather routine can be reused from a later natural calendar-plus-weather request without naming the routine.",
+    "Explicit trigger phrase matching remains supported.",
+    "Unrelated natural requests do not execute saved routines.",
+    "The routine success response says a matching saved routine was used.",
+    "Only allowlisted paths are modified."
+  ],
+  "checks": [
+    {
+      "label": "focused_pytest",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "backend/tests/test_routine_runner.py",
+        "backend/tests/test_workflow_offer_service.py",
+        "-v"
+      ]
+    },
+    {
+      "label": "py_compile",
+      "command": [
+        "python",
+        "-m",
+        "py_compile",
+        "backend/services/workflow/routine_runner.py",
+        "backend/services/orchestrator/intent_engine.py",
+        "backend/services/chat_orchestrator.py"
+      ]
+    }
+  ],
+  "forbidden_actions": [
+    "commit",
+    "push",
+    "tag",
+    "merge",
+    "release",
+    "publish",
+    "dependency",
+    "secret",
+    "auth",
+    "security",
+    "privacy",
+    "migration",
+    "architecture",
+    "ui",
+    "transport",
+    "oauth",
+    "openrouter_product",
+    "session_search",
+    "embedding"
+  ],
+  "requested_actions": [
+    "edit",
+    "run_checks"
+  ],
+  "task_prompt": "Implement TASK-WORKFLOW-M3.4 only. Current behavior: RoutineRunner.execute_by_trigger only matches explicit trigger_phrases via IntentEngine.detect_routine_trigger, so users would need to remember generated names like `Routine List Events`. Required behavior: after a user saves a calendar+weather routine, a later natural request like `Was steht heute in meinem Kalender und wie wird das Wetter in Koeln?` must match the saved routine by bounded semantics/step signature and execute it. Keep explicit trigger matching. Add focused regression tests. Prefer deterministic intent/step-signature matching over embeddings or broad LLM calls. Do not add UI, APIs, transport, OAuth, product OpenRouter, Session-Search, migrations, commits, or dependencies. Return concise JSON-compatible output with status, root_cause, changed_files, command_results, summary, and blockers."
+}

@@ -1,0 +1,141 @@
+{
+  "task": "TASK-SPEC21.4",
+  "scope": "installed-skill workflow visibility evidence only",
+  "debug": {
+    "workflow_id": "TASK-SPEC21-4-INSTALLED-DEBUG-001",
+    "run_dir": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\debug-review-runs\\TASK-SPEC21-4-INSTALLED-DEBUG-001",
+    "prompt_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\debug-review-runs\\TASK-SPEC21-4-INSTALLED-DEBUG-001\\consumer_operator_choice_prompt.json",
+    "delegated_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\debug-review-runs\\TASK-SPEC21-4-INSTALLED-DEBUG-001\\consumer_operator_choice_delegated.json",
+    "validation_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\debug-review-runs\\TASK-SPEC21-4-INSTALLED-DEBUG-001\\validation_summary.json",
+    "fixture_result_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\debug-review-runs\\TASK-SPEC21-4-INSTALLED-DEBUG-001\\fixture_result.json",
+    "prompt_result": {
+      "summary_header": "BOUNDED DELEGATION DISPATCH GATE",
+      "workflow_id": "TASK-SPEC21-4-INSTALLED-DEBUG-001",
+      "task_class": "debug_hypothesis_review",
+      "task_label": "installed janus-debug skill-context evidence",
+      "eligibility_result": "OR_ALLOWED",
+      "eligibility_reason_code": "ELIGIBILITY_CONFIRMED",
+      "evidence_status": "PILOT_SCOPE_ALLOWED",
+      "normal_target_model": "5.4 medium",
+      "selected_or_model": "bounded delegated review / fixture mode",
+      "estimated_or_cost": 0.0004,
+      "cost_estimate_confidence_percent": 81.0,
+      "choice_1": "Codex",
+      "choice_2": "OR-Arbeitspferd",
+      "delegated_meaning": "Delegated assist-only hypothesis review, but Codex still owns reproduction, validation, and next debug action.",
+      "route_note": "Uses the bounded assist-only debug hypothesis review helper with redaction and Codex-owned validation.",
+      "final_outcome": "AWAITING_OPERATOR_CHOICE",
+      "validation_result": "PASS",
+      "operator_prompt_lines": [
+        "1 = Codex",
+        "2 = OR-Arbeitspferd",
+        "Ausgewaehltes OR-Modell: bounded delegated review / fixture mode",
+        "Voraussichtliche Kosten 0.000400000, Genauigkeit 81%"
+      ],
+      "boundaries": [
+        "No production routing",
+        "No canonical routing-table update",
+        "No Git/release authority by delegated path",
+        "Codex App remains final reviewer"
+      ],
+      "codex_owned_outcome_status": "AWAITING_OPERATOR_CHOICE",
+      "codex_owned_outcome_final": false
+    },
+    "delegated_result": {
+      "summary_header": "DEBUG HYPOTHESIS REVIEW RESULT",
+      "workflow_id": "TASK-SPEC21-4-INSTALLED-DEBUG-001",
+      "skill": "janus-debug",
+      "task_label": "installed janus-debug skill-context evidence",
+      "selected_path": "delegated_assist_only_hypothesis_review",
+      "normal_target_model": "5.4 medium",
+      "delegated_model_label": "bounded delegated review / fixture mode",
+      "validation_result": "PASS",
+      "final_outcome": "DEBUG_HYPOTHESIS_REVIEW_READY_FOR_CODEX_VALIDATION",
+      "input_package_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\debug-review-runs\\TASK-SPEC21-4-INSTALLED-DEBUG-001\\input_package.json",
+      "delegated_result_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\debug-review-runs\\TASK-SPEC21-4-INSTALLED-DEBUG-001\\delegated_result.md",
+      "validation_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\debug-review-runs\\TASK-SPEC21-4-INSTALLED-DEBUG-001\\validation_summary.json",
+      "operator_message": "Delegated debug hypothesis review stayed bounded and assist-only. Codex must still validate the hypotheses and choose the next local debug step.",
+      "codex_owned_outcome_status": "DELEGATED_REVIEW_PENDING_CODEX_DECISION",
+      "codex_owned_outcome_final": false
+    },
+    "validation_summary": {
+      "workflow_id": "TASK-SPEC21-4-INSTALLED-DEBUG-001",
+      "input_validation_pass": true,
+      "result_validation_pass": true,
+      "input_issues": [],
+      "result_issues": [],
+      "redaction_ready": true,
+      "redaction_check": "PASS",
+      "accepted_for_local_debug": true
+    }
+  },
+  "triage": {
+    "workflow_id": "TASK-SPEC21-4-INSTALLED-TRIAGE-001",
+    "run_dir": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\test-triage-runs\\TASK-SPEC21-4-INSTALLED-TRIAGE-001",
+    "prompt_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\test-triage-runs\\TASK-SPEC21-4-INSTALLED-TRIAGE-001\\consumer_operator_choice_prompt.json",
+    "delegated_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\test-triage-runs\\TASK-SPEC21-4-INSTALLED-TRIAGE-001\\consumer_operator_choice_delegated.json",
+    "validation_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\test-triage-runs\\TASK-SPEC21-4-INSTALLED-TRIAGE-001\\validation_summary.json",
+    "fixture_result_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\test-triage-runs\\TASK-SPEC21-4-INSTALLED-TRIAGE-001\\fixture_result.json",
+    "prompt_result": {
+      "summary_header": "BOUNDED DELEGATION DISPATCH GATE",
+      "workflow_id": "TASK-SPEC21-4-INSTALLED-TRIAGE-001",
+      "task_class": "test_result_triage_review",
+      "task_label": "installed janus-test-pipeline skill-context evidence",
+      "eligibility_result": "OR_ALLOWED",
+      "eligibility_reason_code": "ELIGIBILITY_CONFIRMED",
+      "evidence_status": "PILOT_SCOPE_ALLOWED",
+      "normal_target_model": "5.4 medium",
+      "selected_or_model": "bounded delegated review / fixture mode",
+      "estimated_or_cost": 0.0005,
+      "cost_estimate_confidence_percent": 79.0,
+      "choice_1": "Codex",
+      "choice_2": "OR-Arbeitspferd",
+      "delegated_meaning": "Delegated assist-only triage review, but Codex still owns final classification, rerun, and routing decisions.",
+      "route_note": "Uses the bounded assist-only test-result triage review helper with redaction and Codex-owned validation.",
+      "final_outcome": "AWAITING_OPERATOR_CHOICE",
+      "validation_result": "PASS",
+      "operator_prompt_lines": [
+        "1 = Codex",
+        "2 = OR-Arbeitspferd",
+        "Ausgewaehltes OR-Modell: bounded delegated review / fixture mode",
+        "Voraussichtliche Kosten 0.000500000, Genauigkeit 79%"
+      ],
+      "boundaries": [
+        "No production routing",
+        "No canonical routing-table update",
+        "No Git/release authority by delegated path",
+        "Codex App remains final reviewer"
+      ],
+      "codex_owned_outcome_status": "AWAITING_OPERATOR_CHOICE",
+      "codex_owned_outcome_final": false
+    },
+    "delegated_result": {
+      "summary_header": "TEST RESULT TRIAGE REVIEW RESULT",
+      "workflow_id": "TASK-SPEC21-4-INSTALLED-TRIAGE-001",
+      "skill": "janus-test-pipeline",
+      "task_label": "installed janus-test-pipeline skill-context evidence",
+      "selected_path": "delegated_assist_only_test_result_triage_review",
+      "normal_target_model": "5.4 medium",
+      "delegated_model_label": "bounded delegated review / fixture mode",
+      "validation_result": "PASS",
+      "final_outcome": "TEST_RESULT_TRIAGE_REVIEW_READY_FOR_CODEX_VALIDATION",
+      "input_package_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\test-triage-runs\\TASK-SPEC21-4-INSTALLED-TRIAGE-001\\input_package.json",
+      "delegated_result_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\test-triage-runs\\TASK-SPEC21-4-INSTALLED-TRIAGE-001\\delegated_result.md",
+      "validation_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\test-triage-runs\\TASK-SPEC21-4-INSTALLED-TRIAGE-001\\validation_summary.json",
+      "operator_message": "Delegated test-result triage review stayed bounded and assist-only. Codex must still validate the classification and choose the next rerun or routing step.",
+      "codex_owned_outcome_status": "DELEGATED_REVIEW_PENDING_CODEX_DECISION",
+      "codex_owned_outcome_final": false
+    },
+    "validation_summary": {
+      "workflow_id": "TASK-SPEC21-4-INSTALLED-TRIAGE-001",
+      "input_validation_pass": true,
+      "result_validation_pass": true,
+      "input_issues": [],
+      "result_issues": [],
+      "redaction_ready": true,
+      "redaction_check": "PASS",
+      "accepted_for_local_triage": true
+    }
+  },
+  "live_or_calls_made": 0
+}

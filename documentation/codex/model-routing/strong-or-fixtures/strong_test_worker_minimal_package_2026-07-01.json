@@ -1,0 +1,64 @@
+{
+  "task_label": "Strong OR test worker minimal prompt fixture",
+  "task_prompt": "This is a prompt-mode fixture. Do not modify content during prompt validation. In a live run, edit only the allowlisted workspace file and summarize the whitelisted command results.",
+  "workspace_files": [
+    {
+      "repo_path": "documentation/tasks/backlog_BACKLOG-117_strong_or_agent_lane.md",
+      "workspace_path": "documentation/tasks/backlog_BACKLOG-117_strong_or_agent_lane.md",
+      "allow_edit": true,
+      "copy_back": true
+    }
+  ],
+  "pre_commands": [
+    {
+      "label": "fixture_precheck",
+      "command": [
+        "python",
+        "-c",
+        "print('fixture precheck')"
+      ],
+      "expected_exit_codes": [
+        0
+      ]
+    }
+  ],
+  "post_commands": [
+    {
+      "label": "fixture_run_1",
+      "command": [
+        "python",
+        "-c",
+        "print('fixture run 1')"
+      ],
+      "expected_exit_codes": [
+        0
+      ]
+    },
+    {
+      "label": "fixture_run_2",
+      "command": [
+        "python",
+        "-c",
+        "print('fixture run 2')"
+      ],
+      "expected_exit_codes": [
+        0
+      ]
+    },
+    {
+      "label": "fixture_run_3",
+      "command": [
+        "python",
+        "-c",
+        "print('fixture run 3')"
+      ],
+      "expected_exit_codes": [
+        0
+      ]
+    }
+  ],
+  "notes": [
+    "Prompt-mode fixture for the Strong OR Test Worker gate.",
+    "The three post_commands demonstrate the repeat-run contract without granting open shell authority."
+  ]
+}

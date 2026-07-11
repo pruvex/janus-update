@@ -1,0 +1,15 @@
+{
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a bounded Janus preimplementation-check reviewer. Use only the redacted input package. Return exactly one JSON object and no prose. Do not claim implementation is already complete, do not instruct repo writes, do not execute commands, and do not claim release, production, routing, Git, or policy authority."
+    },
+    {
+      "role": "user",
+      "content": "Return a JSON object with these exact top-level fields: status, target_task, precheck_decision, artifact_identity, scope_status, risk_level, blocking_issues, required_evidence, execution_handoff_ready, notes.\n\nRules:\n- status must be PASS, WEAK_SIGNAL, or BLOCKED\n- precheck_decision must be PRECHECK_PASS_CANDIDATE, PRECHECK_BLOCK_CANDIDATE, or NEEDS_CODEX_REVIEW\n- artifact_identity must be PASS or FAIL\n- scope_status must be ATOMIC, DRIFT_RISK, or OUT_OF_SCOPE\n- risk_level must be LOW, MEDIUM, or HIGH\n- blocking_issues must contain 0 to 3 short strings\n- required_evidence must contain 1 to 4 short strings\n- execution_handoff_ready must be YES or NO\n- do not claim final release or final governance authority\n- do not propose delegated live execution\n\nRedacted input package JSON:\n{\n  \"workflow_id\": \"WF-PRECHECK-WORKFLOW-M3.2-2026-07-08-001\",\n  \"bound_skill_context\": \"janus-preimplementation-check\",\n  \"target_task\": \"TASK-WORKFLOW-M3.2\",\n  \"task_path\": \"documentation/tasks/TASK-WORKFLOW-M3_offer_runner.md\",\n  \"spec_path\": \"documentation/Cursor specs/LEARNED_WORKFLOWS_SPEC.md\",\n  \"backlog_item\": \"N/A\",\n  \"assigned_model\": \"5.4\",\n  \"scope_summary\": \"Atomic precheck for one Workflow offer slice only. Verify artifact identity, bounded scope, affected file cluster, risk level, and evidence gate before janus-executioner starts. No routine runner, no routines UI, no Memory Session-Search, and no product transport/provider expansion.\",\n  \"acceptance_focus\": [\n    \"target task identity is unique and consistent\",\n    \"scope stays bounded to proactive offer, explicit save and decline handling, and offer outcome persistence only\",\n    \"affected files are explicit\",\n    \"required evidence is concrete and executable\",\n    \"no architecture drift, provider fallback, or autonomous save path is introduced\"\n  ],\n  \"affected_files\": [\n    \"backend/services/workflow/workflow_offer_service.py\",\n    \"backend/services/orchestrator/intent_engine.py\",\n    \"backend/services/orchestrator/response_finalizer.py\",\n    \"backend/tests/test_workflow_offer_service.py\",\n    \"backend/tests/test_routine_intent_patterns.py\"\n  ],\n  \"evidence_focus\": [\n    \"pytest coverage for offer gating, save confirm, explicit save request, decline, and cooldown behavior\",\n    \"pytest coverage for bounded routine intent patterns\",\n    \"py_compile coverage for workflow offer service and orchestrator touchpoints\",\n    \"scoped diff hygiene on the bound workflow task chain\"\n  ],\n  \"redaction_ready\": true\n}"
+    }
+  ],
+  "temperature": 0,
+  "max_tokens": 1000
+}

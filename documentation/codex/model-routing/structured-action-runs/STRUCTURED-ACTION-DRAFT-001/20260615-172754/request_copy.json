@@ -1,0 +1,16 @@
+{
+  "schema_version": "codex_delegated_action_request.v1",
+  "workflow_id": "STRUCTURED-ACTION-DRAFT-001",
+  "skill_id": "janus-documentation-update",
+  "action_type": "draft_markdown",
+  "summary": "Create a non-authoritative documentation draft artifact for Codex review.",
+  "requires_codex_review": true,
+  "non_goals": [
+    "No direct repo authority update",
+    "No production routing activation"
+  ],
+  "action_payload": {
+    "format": "markdown",
+    "content": "# Draft\\n\\nThis is a structured-action draft artifact for local executor validation.\\n"
+  }
+}

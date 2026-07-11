@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-06-09-002",
+  "testCaseId": "TC-007-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "`was weißt du über oli?` after creation and enrichment",
+  "response": "Hallo Rolf Adam, über deinen Freund Oli (Oliver Schwab) habe ich mittlerweile einige interessante Details gespeichert:*   Wohnort: Er lebt in Köln-Stammheim.*   Hobbys & Interessen: Oli ist leidenschaftlicher Modellbauer (besonders Star-Wars-Modelle), verbringt gerne Zeit im Garten und spielt Strategiespiele wie *Panzer General*.*   Medien: Er ist ein großer Fan der Serie *The Big Bang Theory*.*   Ernährung: Er isst gerne vegetarisch und mag Kimchi.Diese Informationen hast du mir zum ersten Mal gestern Abend und heute Nachmittag im Laufe unserer Gespräche anvertraut. Über sein äußeres Erscheinungsbild (wie etwa eine Brille oder andere Merkmale) haben wir bisher noch nicht gesprochen.💡 Passende nächste Schritte:• Möchtest du mir mehr über Olis Aussehen verraten, damit ich mir ein besseres Bild von ihm machen kann?• Soll ich für euren nächsten Spieleabend vegetarische Rezepte mit Kimchi heraussuchen?• Suchst du nach einem passenden Star-Wars-Modellbausatz als Geschenk für ihn?18:41",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-06-09T16:41:22.198Z"
+}

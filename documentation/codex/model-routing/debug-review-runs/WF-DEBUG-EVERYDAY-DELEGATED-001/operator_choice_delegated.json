@@ -1,0 +1,24 @@
+{
+  "summary_header": "DEBUG HYPOTHESIS REVIEW GATE",
+  "workflow_id": "WF-DEBUG-EVERYDAY-DELEGATED-001",
+  "skill": "janus-debug",
+  "task_label": "Debug OR delegated proof",
+  "selected_path": "codex_only_pre_gate",
+  "normal_target_model": "5.4 medium",
+  "delegated_model_label": "qwen/qwen3.5-flash-02-23",
+  "eligibility_result": "OR_CONTEXT_REDACTION_REQUIRED",
+  "eligibility_reason_code": "REQUEST_PACKAGE_NOT_ALLOWLISTED",
+  "evidence_status": "BOUNDED_LIVE_EVIDENCE_CONFIRMED",
+  "budget_profile": "N_A",
+  "per_call_cap_usd": null,
+  "session_cap_usd": null,
+  "validation_result": "PASS",
+  "final_outcome": "LOCAL_CODEX_PATH_SELECTED",
+  "operator_result_lines": [
+    "Ergebnis: OR_CONTEXT_REDACTION_REQUIRED",
+    "Route: janus-debug bleibt Codex-only vor dem sichtbaren OR-Gate"
+  ],
+  "operator_message": "Request package must be narrowed to the approved redacted allowlist before delegated review.",
+  "codex_owned_outcome_status": "CODEX_LOCAL_PATH",
+  "codex_owned_outcome_final": false
+}

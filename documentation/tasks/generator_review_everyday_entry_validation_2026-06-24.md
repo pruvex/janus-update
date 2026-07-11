@@ -1,0 +1,40 @@
+# Generator Review Everyday Entry Validation Task
+
+- **Task ID:** GEN-OR-ENTRY-001
+- **Status:** READY
+- **Created:** 2026-06-24
+- **Updated:** 2026-06-24
+- **Related Backlog Item:** N/A WITH REASON - bounded Lean Dev validation slice for an already designed dispatcher lane
+- **Spec:** N/A WITH REASON - no Janus product feature change; this is a bounded Dev workflow evidence refresh
+- **Short Description:** Refresh `janus-test-pipeline` `generator_review` as an everyday operator-facing bounded OR lane so its current status can move from `PARTIAL` to either `OR_READY` or an explicit fresh blocker.
+- **Goal:** Validate the visible prompt gate and the delegated deterministic local generator-review path in the current rollout, then update the central OR lane inventory and state documents based on real current evidence.
+- **In Scope:**
+  - `generator_review` shared dispatcher prompt gate
+  - one bounded delegated generator-review validation path using existing manifest/evidence artifacts only
+  - focused regression coverage if the current gate/tests are stale
+  - lane inventory and state documentation updates tied directly to the validation outcome
+- **Out of Scope:**
+  - Janus product logic
+  - production routing
+  - canonical routing-table updates
+  - new live OR calls
+  - broad generator system redesign
+  - unrelated test-pipeline modes or live test execution
+- **Affected Files:**
+  - `documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py`
+  - `documentation/codex/model-routing/scripts/codex_structured_action_generator_review_runner.py`
+  - `documentation/codex/model-routing/tests/` relevant focused generator gate/runner tests if needed
+  - `documentation/codex/model-routing/or_everyday_lane_inventory_2026-06-24.md`
+  - `documentation/ai/CURRENT_STATE.md`
+  - `documentation/codex/SKILL_USAGE_LOG.md`
+- **Acceptance Criteria:**
+  - A current prompt-mode proof exists for `generator_review` showing the visible operator choice.
+  - A current delegated deterministic local execution proof exists or a fresh bounded blocker is recorded with exact failure evidence.
+  - The lane inventory is updated from `PARTIAL` to either `OR_READY` or a precise current blocker state.
+  - No production-routing, release, or broad delegated-write authority is introduced.
+- **Required Evidence:**
+  - one dispatcher prompt proof for `generator_review`
+  - one delegated deterministic local execution proof using an existing generator manifest
+  - focused tests only if code or current expectations need adjustment
+- **Risk:** LOW
+- **Notes:** This slice is meant to answer one operational question only: is `generator_review` currently everyday-ready in this rollout, or not?

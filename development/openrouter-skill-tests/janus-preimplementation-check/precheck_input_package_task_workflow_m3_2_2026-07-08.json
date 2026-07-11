@@ -1,0 +1,31 @@
+{
+  "workflow_id": "WF-PRECHECK-WORKFLOW-M3.2-2026-07-08-001",
+  "bound_skill_context": "janus-preimplementation-check",
+  "target_task": "TASK-WORKFLOW-M3.2",
+  "task_path": "documentation/tasks/TASK-WORKFLOW-M3_offer_runner.md",
+  "spec_path": "documentation/Cursor specs/LEARNED_WORKFLOWS_SPEC.md",
+  "backlog_item": "N/A",
+  "assigned_model": "5.4",
+  "scope_summary": "Atomic precheck for one Workflow offer slice only. Verify artifact identity, bounded scope, affected file cluster, risk level, and evidence gate before janus-executioner starts. No routine runner, no routines UI, no Memory Session-Search, and no product transport/provider expansion.",
+  "acceptance_focus": [
+    "target task identity is unique and consistent",
+    "scope stays bounded to proactive offer, explicit save and decline handling, and offer outcome persistence only",
+    "affected files are explicit",
+    "required evidence is concrete and executable",
+    "no architecture drift, provider fallback, or autonomous save path is introduced"
+  ],
+  "affected_files": [
+    "backend/services/workflow/workflow_offer_service.py",
+    "backend/services/orchestrator/intent_engine.py",
+    "backend/services/orchestrator/response_finalizer.py",
+    "backend/tests/test_workflow_offer_service.py",
+    "backend/tests/test_routine_intent_patterns.py"
+  ],
+  "evidence_focus": [
+    "pytest coverage for offer gating, save confirm, explicit save request, decline, and cooldown behavior",
+    "pytest coverage for bounded routine intent patterns",
+    "py_compile coverage for workflow offer service and orchestrator touchpoints",
+    "scoped diff hygiene on the bound workflow task chain"
+  ],
+  "redaction_ready": true
+}

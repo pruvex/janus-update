@@ -12,6 +12,7 @@ from backend.data.models import User, UserRoutineOfferLog
 from backend.services.capability_registry import CapabilityRegistry
 from backend.services.workflow.routine_schema import RoutineCreate, RoutineStep, RoutineStepsDocument
 from backend.services.workflow.routine_store import DuplicateRoutineError, RoutineStore, RoutineValidationError
+from backend.services.workflow.calendar_wikipedia_presenter import enrich_steps_with_wikipedia_snapshot
 from backend.services.workflow.workflow_detector import (
     DetectedWorkflow,
     detect_learning_candidate,
@@ -126,6 +127,12 @@ def maybe_learn_routine_passively(
         active_candidate = store.get_active_candidate_by_equivalent_steps(user_id, detected.steps)
     if active_candidate is not None:
         routine_name = suggest_routine_name(detected)
+        promotion_steps = enrich_steps_with_wikipedia_snapshot(
+            detected.steps,
+            final_text=final_text,
+            tool_results=tool_results,
+            build_combo_response=_build_calendar_wikipedia_combo_for_snapshot,
+        )
         try:
             saved_routine = store.promote_candidate_to_routine(
                 active_candidate.id,
@@ -133,6 +140,7 @@ def maybe_learn_routine_passively(
                 trigger_phrases=[routine_name],
                 source_chat_id=chat_id,
                 offer_state="auto_promoted",
+                steps=promotion_steps,
             )
         except (DuplicateRoutineError, RoutineValidationError):
             return PassiveRoutineLearningResult(final_text=final_text, handled=False)
@@ -169,7 +177,12 @@ def maybe_learn_routine_passively(
 
     created = store.create_candidate(
         user_id=user_id,
-        steps=learning_detected.steps,
+        steps=enrich_steps_with_wikipedia_snapshot(
+            learning_detected.steps,
+            final_text=final_text,
+            tool_results=tool_results,
+            build_combo_response=_build_calendar_wikipedia_combo_for_snapshot,
+        ),
         source_chat_id=chat_id,
     )
     return PassiveRoutineLearningResult(
@@ -230,7 +243,12 @@ def handle_offer_response(
                 user_id=user_id,
                 name=pending.suggested_name,
                 trigger_phrases=[pending.suggested_name],
-                steps=pending.steps,
+                steps=enrich_steps_with_wikipedia_snapshot(
+                    pending.steps,
+                    final_text=_extract_offer_response_text(messages),
+                    tool_results=None,
+                    build_combo_response=None,
+                ),
                 source_chat_id=chat_id,
                 user_approved=True,
                 offer_state="accepted",
@@ -273,8 +291,24 @@ def should_handle_offer_follow_up(user_text: str, *, messages: list[dict[str, An
 
 
 def suggest_routine_name(detected: DetectedWorkflow) -> str:
-    first_skill = detected.steps[0].skill_id.rsplit(".", 1)[-1].replace("_", " ").strip()
-    return f"Routine {first_skill.title()}"
+    skill_labels = {
+        "calendar.list_events": "Kalender",
+        "system.weather": "Wetter",
+        "system.routing": "Routing",
+        "system.wikipedia_summary": "Wikipedia",
+        "system.websearch": "Websearch",
+        "system.rss_news": "News",
+        "system.price_comparison": "Preisvergleich",
+        "system.local_business": "Lokal",
+        "video.search": "Video",
+        "knowledge.query": "Wissen",
+    }
+    ordered_skill_ids = sorted({step.skill_id for step in detected.steps})
+    labels = [
+        skill_labels.get(skill_id, skill_id.rsplit(".", 1)[-1].replace("_", " ").title())
+        for skill_id in ordered_skill_ids
+    ]
+    return "Routine " + " ".join(labels)
 
 
 def encode_offer_marker(detected: DetectedWorkflow, suggested_name: str) -> str:
@@ -358,6 +392,23 @@ def _append_passive_saved_hint(final_text: str) -> str:
     if not base:
         return hint
     return f"{base}\n\n{hint}"
+
+
+def _build_calendar_wikipedia_combo_for_snapshot(tool_results: list[dict[str, Any]]) -> str:
+    from backend.services.orchestrator.response_finalizer import _build_calendar_wikipedia_combo_response
+
+    return _build_calendar_wikipedia_combo_response(tool_results)
+
+
+def _extract_offer_response_text(messages: Iterable[dict[str, Any]]) -> str:
+    for message in reversed(list(messages)):
+        if str(message.get("role") or "") != "assistant":
+            continue
+        content = str(message.get("content") or "")
+        marker_start = content.find(OFFER_MARKER_PREFIX)
+        if marker_start >= 0:
+            return content[:marker_start].strip()
+    return ""
 
 
 def _routine_skill_set(steps_json: Any) -> set[str]:

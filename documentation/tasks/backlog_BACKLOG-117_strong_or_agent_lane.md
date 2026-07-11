@@ -1,0 +1,21 @@
+# BACKLOG-117 - Strong OR Agent Lane fuer echte ausgelagerte Testarbeit
+
+- **Typ:** TECH_DEBT
+- **Status:** IN PROGRESS
+- **Quelle:** User Intake
+- **Erstellt:** 2026-07-01
+- **Aktualisiert:** 2026-07-01
+- **Kurzbeschreibung:** Die OR-Integration soll nicht bei kleinen Review- und Patch-Vorschlaegen stehen bleiben. Fuer geeignete Dev-/Testpipeline-Arbeit braucht Janus eine staerkere, isolierte OR-Agent-Lane, die Tests schreiben, erlaubte Checks mehrfach ausfuehren und Ergebnisartefakte fuer Codex zusammenfassen kann.
+- **Erwartetes Verhalten:** Bei bounded Testarbeit kann Codex ein sichtbares `1 = Codex / 2 = OR` Gate anbieten, das eine starke OR-Worker-Lane in einem isolierten Temp-Workspace nutzt. OR darf nur allowlisted Dateien bearbeiten und nur whitelisted Commands ausfuehren; Codex behaelt finale Auswertung, Akzeptanz, Git- und Routing-Hoheit.
+- **Tatsaechliches Verhalten:** Die bisherigen OR-Lanes sind ueberwiegend assistiv oder proposal-first. Testpipeline-OR ist fuer Generator-Review und Triage sichtbar, aber nicht sauber als echte Agentenarbeit "Test schreiben, N-mal fahren, Ergebnisse buendeln" gefasst.
+- **Betroffener Bereich:** Dev-Infrastruktur / OR-Model-Routing / janus-test-pipeline / janus-executioner
+- **Nachweise:** BACKLOG-116 OR-Lauf mit `qwen/qwen3-coder-30b-a3b-instruct` scheiterte an malformed/repetitivem Patch; User-Feedback vom 2026-07-01 zur fehlenden echten Delegation und fehlenden Testpipeline-OR-Option.
+- **Akzeptanzkriterien:**
+  - [ ] Execution-Patch-Kandidaten nutzen nicht mehr das kleine Qwen-Coder-Modell als Default fuer komplexere produktive OR-Arbeit.
+  - [ ] Die Testpipeline beschreibt eine sichtbare Strong-OR-Testworker-Lane fuer isolierte Test-Authoring-/Run-/Summary-Arbeit.
+  - [ ] Der Testpipeline-Helper kann bei vorhandenem isolated-worker package die OR-Gate-Ausgabe an den isolierten Worker weiterreichen statt nur den Generator-Pilot zu zeigen.
+  - [ ] Regressionstests decken Modellvertrag und Strong-Testworker-Gate ab.
+  - [ ] Codex bleibt finaler Reviewer; keine Git-, Release-, Produkt- oder finale Test-PASS-Autoritaet wird delegiert.
+- **Fehlende Informationen:**
+  - Keine
+- **Notizen:** Lean-Dev-Slice, keine Janus-Produktlogik. Der erste Schritt schafft die sichtbare und validierbare Lane; echte Live-OR-Ausfuehrung bleibt weiter operator-gated.

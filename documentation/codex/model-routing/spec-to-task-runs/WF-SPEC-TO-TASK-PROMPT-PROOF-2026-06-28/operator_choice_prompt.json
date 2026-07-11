@@ -1,0 +1,30 @@
+{
+  "summary_header": "SPEC TO TASK GATE",
+  "workflow_id": "WF-SPEC-TO-TASK-PROMPT-PROOF-2026-06-28",
+  "skill": "janus-spec-to-task",
+  "task_label": "Spec-to-task prompt proof current-shape",
+  "selected_path": "operator_choice_pending",
+  "normal_target_model": "5.4 medium",
+  "selected_or_model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "estimated_or_cost": 0.00037,
+  "cost_estimate_confidence_percent": 74.0,
+  "choice_1": "Codex",
+  "choice_2": "OR",
+  "delegated_model_label": "qwen/qwen3-coder-30b-a3b-instruct",
+  "expected_delegation_value": "bounded task-compilation draft with no authoritative repo write",
+  "operator_prompt_lines": [
+    "1 = Codex",
+    "2 = OR",
+    "OR ist hier die externe Option, um Codex-Guthaben zu sparen.",
+    "Fest empfohlenes OR-Modell: qwen/qwen3-coder-30b-a3b-instruct",
+    "Voraussichtliche OR-Kosten 0.000370000, Evidenzgenauigkeit 74%"
+  ],
+  "boundaries": [
+    "No delegated authoritative task-file write",
+    "No delegated implementation or product decisions",
+    "No delegated next-skill authority beyond draft suggestion",
+    "Codex remains final task artifact owner"
+  ],
+  "final_outcome": "AWAITING_OPERATOR_CHOICE",
+  "validation_result": "PASS"
+}

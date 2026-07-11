@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-06-09-003",
+  "testCaseId": "TC-006-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "`Korrektur: Oli liebt nicht Big Bang Theory, sondern Strategiespiele wie Panzer General` then `was mag oli?`",
+  "response": "Hallo Rolf Adam. Oli (Oliver Schwab) begeistert sich für Strategiespiele, wobei er besonders Panzer General liebt. Das hast du mir gerade eben in unserem aktuellen Gespräch erzählt und dabei auch klargestellt, dass er *The Big Bang Theory* – anders als zuerst gedacht – nicht mag.Zudem weiß ich, dass er in Köln Stammheim wohnt. Diese Information hast du mir gestern um 21:12 Uhr im Chat „Vorlieben von Chris Gier“ gegeben.💡 Passende nächste Schritte:• Soll ich nach weiteren Spiele-Klassikern suchen, die Panzer General ähneln?• Möchtest du noch weitere Interessen oder Abneigungen von Oliver festhalten?• Soll ich eine Übersicht aller Informationen erstellen, die ich bisher über Oli gespeichert habe?19:21",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-06-09T17:21:36.631Z"
+}

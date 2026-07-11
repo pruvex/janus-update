@@ -1,0 +1,16 @@
+{
+  "changed_files": [
+    "frontend/index.html"
+  ],
+  "risk_notes": [
+    "Only the placeholder attribute value was changed.",
+    "No other file or wording was touched."
+  ],
+  "status": "PATCH_PROPOSAL",
+  "summary": "Changed chat input placeholder from 'Nachricht an Janus senden...' to 'Nachricht an Janus schreiben...' in both window A and window B.",
+  "unified_diff": "--- a/frontend/index.html\n+++ b/frontend/index.html\n@@ -X,Y +X,Y @@\n-<input type=\"text\" placeholder=\"Nachricht an Janus senden...\" ...>\n+<input type=\"text\" placeholder=\"Nachricht an Janus schreiben...\" ...>\n-<input type=\"text\" placeholder=\"Nachricht an Janus senden...\" ...>\n+<input type=\"text\" placeholder=\"Nachricht an Janus schreiben...\" ...>",
+  "validation_notes": [
+    "Only the placeholder attribute value was changed.",
+    "No other file or wording was touched."
+  ]
+}

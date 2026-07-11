@@ -1,0 +1,32 @@
+{
+  "task_id": "TASK-WORKFLOW-M3.3-DBG-OFFER-LIVE-SHAPE",
+  "lane_id": "debug_repro_investigation",
+  "bound_skill_context": "janus-debug",
+  "task_label": "Debug M3.3 missing routine offer for live calendar-plus-weather result shape",
+  "worker_package_json": "development/openrouter-skill-tests/janus-debug/workflow_m3_3_offer_live_shape_2026-07-08/worker_package.json",
+  "allowlist_file": "development/openrouter-skill-tests/janus-debug/workflow_m3_3_offer_live_shape_2026-07-08/allowlist.txt",
+  "failure_code": "WORKFLOW_M3_3_OFFER_NOT_APPENDED_FOR_LIVE_SHAPE",
+  "latest_user_evidence": {
+    "timestamp_local": "2026-07-08 23:12 +02:00",
+    "prompt": "Was steht heute in meinem Kalender und wie wird das Wetter in Koeln?",
+    "actual": "Both providers returned the combined calendar and weather answer, but no visible routine offer appeared.",
+    "expected": "The answer should include the combined calendar and weather content plus a routine offer, enabling Ja -> save -> routine trigger rerun."
+  },
+  "live_log_evidence": [
+    "backend/backend/logs/failed_batches.jsonl lines around 1229-1236: OpenAI run 4214 successful tool_end names calendar_list_events and system_weather.",
+    "backend/backend/logs/failed_batches.jsonl lines around 1237-1244: Gemini run 4215 successful tool_end names calendar.list_events and system.weather."
+  ],
+  "acceptance_criteria": [
+    "Only the allowlisted workflow detector/offer files and focused tests may change.",
+    "A successful two-step calendar-plus-weather live result shape using name aliases such as calendar_list_events and system_weather must produce a routine offer.",
+    "The existing save/decline follow-up behavior must remain covered.",
+    "The focused pytest command must pass before Codex review."
+  ],
+  "local_validation_command": "python -m pytest backend/tests/test_workflow_detector.py backend/tests/test_workflow_offer_service.py -q",
+  "redaction_ready": true,
+  "estimated_codex_saved_tokens": 9000,
+  "estimated_delegation_overhead_tokens": 3500,
+  "recommended_backend": "cursor",
+  "recommended_model": "composer-2.5",
+  "cursor_prompt_contract": "Investigate only the allowlisted M3.3 workflow detector/offer files, run only the focused pytest command, and return concise JSON-friendly output with root cause and changed_files."
+}

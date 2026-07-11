@@ -1,0 +1,14 @@
+{
+  "summary_header": "EXECUTION WRITE APPLY CANDIDATE RESULT",
+  "workflow_id": "EXEC-WRITE-APPLY-CANDIDATE-BACKLOG108-001",
+  "skill": "janus-executioner",
+  "task_label": "BACKLOG-108 write-apply candidate validation",
+  "selected_path": "delegated_execution_write_apply_candidate",
+  "normal_target_model": "5.4 medium",
+  "delegated_model_label": "bounded workspace-write execution candidate / accepted proposal-first evidence path",
+  "validation_result": "FAIL",
+  "final_outcome": "EXECUTION_WRITE_APPLY_CANDIDATE_REJECT_AND_FALLBACK",
+  "accepted_source_run_dir": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\DEV-WORKHORSE-EXECUTION-GATE-003",
+  "source_validation_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-runs\\EXEC-WRITE-APPLY-CANDIDATE-BACKLOG108-001\\source_validation.json",
+  "operator_message": "Accepted-source validation failed. Fallback to Codex-only execution is required."
+}

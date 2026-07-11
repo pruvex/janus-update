@@ -1,0 +1,84 @@
+{
+  "backend": "cursor",
+  "lane_id": "debug_repro_investigation",
+  "workflow_id": "WF-BACKLOG-124-PRECHECK-CONTRACT-001",
+  "selected_model": "composer-2.5",
+  "cursor_pool": "auto_composer",
+  "estimated_cost_usd_static": 0.0104,
+  "session_id": "c5e6de21-69af-4543-a08f-323964acafc5",
+  "validation_result": "PASS",
+  "selected_path": "cursor_worker_live_mockable",
+  "final_outcome": "CURSOR_WORKER_READY_FOR_CODEX_REVIEW",
+  "package_validation": {
+    "validation_result": "PASS",
+    "contract_status": "TASK_PACKAGE_VALID",
+    "issues": [],
+    "task_label": "Reconcile Janus precheck validator and executioner handoff contract",
+    "worker_profile": "janus-debug-repro-worker",
+    "allowed_edit_paths": [
+      "documentation/codex/skills/janus-preimplementation-check/SKILL.md",
+      "documentation/codex/skills/janus-preimplementation-check/scripts/validate_precheck.py",
+      "documentation/codex/skills/janus-executioner/SKILL.md"
+    ],
+    "required_result_artifacts": [
+      "RESULT.json",
+      "RESULT.md",
+      "DIFF.patch",
+      "FILES_CHANGED.txt",
+      "CHECKS.log",
+      "COST.json"
+    ]
+  },
+  "allowlist_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "allowlist": [
+      "documentation/codex/skills/janus-preimplementation-check/SKILL.md",
+      "documentation/codex/skills/janus-preimplementation-check/scripts/validate_precheck.py",
+      "documentation/codex/skills/janus-executioner/SKILL.md"
+    ]
+  },
+  "allowlist_consistency_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "package_allowed_edit_paths": [
+      "documentation/codex/skills/janus-preimplementation-check/SKILL.md",
+      "documentation/codex/skills/janus-preimplementation-check/scripts/validate_precheck.py",
+      "documentation/codex/skills/janus-executioner/SKILL.md"
+    ],
+    "allowlist": [
+      "documentation/codex/skills/janus-preimplementation-check/SKILL.md",
+      "documentation/codex/skills/janus-preimplementation-check/scripts/validate_precheck.py",
+      "documentation/codex/skills/janus-executioner/SKILL.md"
+    ],
+    "declared_allowlist_file": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\debug-review-runs\\WF-BACKLOG-124-PRECHECK-CONTRACT-001\\allowlist.txt"
+  },
+  "accepted_source_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "accepted_source_run_dir": null,
+    "recognized_artifacts": []
+  },
+  "accepted_source_run_dir": null,
+  "planned_command": [
+    "C:\\Users\\pruve\\AppData\\Local\\cursor-agent\\agent.CMD",
+    "-p",
+    "--workspace",
+    "C:\\KI\\Janus-Projekt\\documentation\\codex\\skills",
+    "--model",
+    "composer-2.5",
+    "--output-format",
+    "json",
+    "--force",
+    "--trust",
+    "--approve-mcps",
+    "Execute this bounded Janus delegated worker task now. Treat the full prompt below as instructions, not as text to analyze. Do not ask clarifying questions unless the task is impossible with the provided files and rules.\n\nStable prefix:\n- lane: debug_repro_investigation\n- worker_contract: janus-delegated-worker\n- output_schema: status, changed_files, command_results, summary, blockers\n- hard_rules: stay bounded, do not commit, do not leave the allowlist\n\nVariable suffix:\nInspect the three allowlisted versioned contract files and reconcile them to the newer compact Codex-native precheck result contract enforced by the installed validator. Remove active requirements for the old Skill-4 copyblock from the precheck skill and executioner, update the versioned validator to the Codex-native required fields, and preserve unrelated existing delegation/Cursor edits. Do not modify fixtures, installed copies, product code, or any other files.\nTask label: Reconcile Janus precheck validator and executioner handoff contract\nOperate only inside the exact allowlist. Preserve unrelated uncommitted changes. Run only allowed_commands. Do not commit. Return JSON with root_cause, changed_files, command_results, and proposed_next_step. Do not claim final acceptance.\nAcceptance criteria:\n- The versioned precheck validator accepts valid_precheck.md and rejects invalid_precheck.md.\n- The versioned precheck skill and executioner describe the same compact Codex-native handoff fields without active copyblock requirements.\n- Only the three allowlisted versioned contract files change; no installed copy or unrelated file is modified.\nAllowed edit paths:\n- documentation/codex/skills/janus-preimplementation-check/SKILL.md\n- documentation/codex/skills/janus-preimplementation-check/scripts/validate_precheck.py\n- documentation/codex/skills/janus-executioner/SKILL.md\nReturn status, changed_files, command_results, summary, and blockers as concise JSON-compatible output.\n\nWorkspace root: C:\\KI\\Janus-Projekt\\documentation\\codex\\skills\nWorkspace-relative edit paths:\n- janus-preimplementation-check/SKILL.md\n- janus-preimplementation-check/scripts/validate_precheck.py\n- janus-executioner/SKILL.md"
+  ],
+  "mode": "proposal_first",
+  "workspace_root": "C:\\KI\\Janus-Projekt\\documentation\\codex\\skills",
+  "live_execution_allowed": false,
+  "codex_review_required": true,
+  "changed_files": [],
+  "changed_outside_allowlist": [],
+  "operator_message": "Cursor worker finished the bounded slice and returned artifacts for Codex review."
+}

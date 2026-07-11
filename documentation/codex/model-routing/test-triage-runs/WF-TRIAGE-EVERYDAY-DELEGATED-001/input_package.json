@@ -1,0 +1,17 @@
+{
+  "workflow_id": "TEST-TRIAGE-FIXTURE-001",
+  "bound_skill_context": "janus-test-pipeline",
+  "test_run_id": "TEST-RUN-2026-06-14-901",
+  "test_spec_path": "documentation/TEST_SPEC/07_regression_suite/17_memory_recall_placeholder_regression.md",
+  "test_plan_path": "documentation/test-runs/TEST-RUN-2026-06-14-901_plan.json",
+  "test_result_path": "documentation/test-results/TEST-RUN-2026-06-14-901_results.json",
+  "result_outcome_summary": "Run blocked after generation stage because the expected artifact set was incomplete.",
+  "evidence_snippets": [
+    "results summary reports no generated artifact at the expected output path",
+    "validator marks the run as artifact mismatch instead of product assertion failure",
+    "no provider credential failure or auth-secret evidence is present in the bundle"
+  ],
+  "classification_question": "Is this most likely a product bug, a test bug, or an infrastructure/test-runner blocker?",
+  "candidate_blocker_category": "INFRA_BLOCKER",
+  "redaction_ready": true
+}

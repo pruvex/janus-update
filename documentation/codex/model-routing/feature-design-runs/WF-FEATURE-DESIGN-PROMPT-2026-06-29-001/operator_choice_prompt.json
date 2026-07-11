@@ -1,0 +1,30 @@
+{
+  "summary_header": "FEATURE DESIGN GATE",
+  "workflow_id": "WF-FEATURE-DESIGN-PROMPT-2026-06-29-001",
+  "skill": "janus-feature-design",
+  "task_label": "Feature design current-shape gate reproof",
+  "selected_path": "operator_choice_pending",
+  "normal_target_model": "5.4 medium",
+  "selected_or_model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "estimated_or_cost": 0.00024,
+  "cost_estimate_confidence_percent": 68.0,
+  "choice_1": "Codex",
+  "choice_2": "OR",
+  "delegated_model_label": "qwen/qwen3-coder-30b-a3b-instruct",
+  "expected_delegation_value": "bounded decision-summary draft or one blocking question from already-given feature answers",
+  "operator_prompt_lines": [
+    "1 = Codex",
+    "2 = OR",
+    "OR ist hier die externe Option, um Codex-Guthaben zu sparen.",
+    "Fest empfohlenes OR-Modell: qwen/qwen3-coder-30b-a3b-instruct",
+    "Voraussichtliche OR-Kosten 0.000240000, Evidenzgenauigkeit 68%"
+  ],
+  "boundaries": [
+    "No delegated final product decision authority",
+    "No delegated implementation or task creation",
+    "No delegated Git or release authority",
+    "Codex remains final feature-design owner"
+  ],
+  "final_outcome": "AWAITING_OPERATOR_CHOICE",
+  "validation_result": "PASS"
+}

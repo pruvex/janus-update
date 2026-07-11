@@ -1,0 +1,24 @@
+{
+  "id": "gen-direct-or-quickchange-fixture-001",
+  "model": "openai/gpt-oss-20b",
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "message": {
+        "role": "assistant",
+        "content": "{\"status\":\"PATCH_PROPOSAL\",\"summary\":\"Update the two chat placeholder strings only.\",\"changed_files\":[\"frontend/index.html\"],\"unified_diff\":\"diff --git a/frontend/index.html b/frontend/index.html\\n--- a/frontend/index.html\\n+++ b/frontend/index.html\\n@@ -1,2 +1,2 @@\\n-Nachricht an Janus senden...\\n+Nachricht an Janus schreiben...\\n\",\"validation_notes\":[\"One file only\",\"No delete, rename, or move operation\"],\"risk_notes\":[\"Fixture response for local runner validation only\"]}"
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 420,
+    "completion_tokens": 95,
+    "cost": 0.0000515,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  }
+}

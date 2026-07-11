@@ -48,8 +48,22 @@ class QuickchangeLiveOperatorPathTests(unittest.TestCase):
         result = dispatcher.prompt_summary(args, workflow_id="TASK-SPEC19-4-PROMPT")
 
         self.assertEqual(result["choice_1"], "Codex")
-        self.assertEqual(result["choice_2"], "OpenRouter")
+        self.assertEqual(result["choice_2"], "OR")
         self.assertIn("OpenRouter patch proposal flow", result["delegated_meaning"])
+
+    def test_dispatcher_prompt_summary_uses_configured_quickchange_model_when_missing(self) -> None:
+        args = Namespace(
+            task_class="quickchange_patch_review",
+            task_label="Tiny quickchange gate wording",
+            normal_target_model="5.4",
+            selected_or_model=None,
+            estimated_or_cost=0.0012,
+            cost_estimate_confidence_percent=84,
+        )
+
+        result = dispatcher.prompt_summary(args, workflow_id="TASK-SPEC19-4-PROMPT-DEFAULT")
+
+        self.assertEqual(result["selected_or_model"], "qwen/qwen3-coder-30b-a3b-instruct")
 
     def test_helper_main_live_mode_writes_live_operator_summary(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:

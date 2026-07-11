@@ -1,0 +1,11 @@
+{
+  "skill_id": "DOC-SKILL-006",
+  "model": "qwen/qwen3.5-flash-02-23",
+  "pass": true,
+  "failures": [],
+  "finish_reason": "stop",
+  "actual_or_cost": 0.001053195,
+  "latency_ms": 19175,
+  "generation_id": "gen-1782397357-H1JpngBwNhnOBB8gdrB8",
+  "response_path": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-documentation-update\\strict-runs\\doc-skill-006\\qwen-qwen3.5-flash-02-23\\response_body.json"
+}

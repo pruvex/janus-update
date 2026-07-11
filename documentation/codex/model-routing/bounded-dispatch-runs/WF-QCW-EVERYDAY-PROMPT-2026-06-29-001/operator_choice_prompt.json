@@ -1,0 +1,36 @@
+{
+  "summary_header": "BOUNDED DELEGATION DISPATCH GATE",
+  "workflow_id": "WF-QCW-EVERYDAY-PROMPT-2026-06-29-001",
+  "task_class": "quickchange_write_apply",
+  "task_label": "Quickchange write-apply current-shape gate reproof",
+  "operator_gate_visibility": "VISIBLE",
+  "visibility_status": "VISIBLE_APPROVED",
+  "eligibility_result": "OR_ALLOWED",
+  "eligibility_reason_code": "ELIGIBILITY_CONFIRMED",
+  "evidence_status": "BOUNDED_LIVE_EVIDENCE_CONFIRMED",
+  "normal_target_model": "5.4 medium",
+  "selected_or_model": "deepseek/deepseek-v4-flash",
+  "estimated_or_cost": 0.00095,
+  "cost_estimate_confidence_percent": 87.0,
+  "choice_1": "Codex",
+  "choice_2": "OR",
+  "delegated_meaning": "OpenRouter bounded workspace-write quickchange, but Codex still owns diff validation and final acceptance.",
+  "route_note": "Uses the bounded quickchange write-apply helper backed by accepted workspace-write evidence.",
+  "final_outcome": "AWAITING_OPERATOR_CHOICE",
+  "validation_result": "PASS",
+  "operator_prompt_lines": [
+    "1 = Codex",
+    "2 = OR",
+    "OR ist hier die externe Option, um Codex-Guthaben zu sparen.",
+    "Fest empfohlenes OR-Modell: deepseek/deepseek-v4-flash",
+    "Voraussichtliche OR-Kosten 0.000950000, Evidenzgenauigkeit 87%"
+  ],
+  "boundaries": [
+    "No production routing",
+    "No canonical routing-table update",
+    "No Git/release authority by delegated path",
+    "Codex App remains final reviewer"
+  ],
+  "codex_owned_outcome_status": "AWAITING_OPERATOR_CHOICE",
+  "codex_owned_outcome_final": false
+}

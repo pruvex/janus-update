@@ -200,10 +200,12 @@ GitHub-Connector bevorzugen, sobald der naechste Git-Schritt direkt auf GitHub s
 
 Immer:
 
-- `janus-git-governance` vor Commit/Push nutzen
-- Pfade explizit stage'n
-- nie `git add .` im grossen Dirty Tree
-- normale Entwicklungscommits nur nach `backup/develop` pushen
+- Solo Git v2: `documentation/codex/JANUS_SOLO_GIT.md`
+- `janus-git-governance` vor Commit/Push/Merge/Sync nutzen
+- `master` + `feature/*`; kein neues Arbeiten auf `develop`
+- Pfade explizit stage'n; kein Worktree-Archaeologie-Default
+- nach Feature-Merge nach `backup/master` pushen
+- ChatGPT-Sync: `documentation/codex/scripts/sync_codex_current_state.ps1` → `origin/codex-sync`
 
 ## CURRENT_STATE Snapshot
 
@@ -242,7 +244,7 @@ Wenn ChatGPT den aktuellen Rolling Snapshot verlaesslich lesen koennen soll, gil
 - verbindlicher Remote-Lesepunkt: `origin/codex-sync`
 - nach jedem substantielle Block soll Codex den Sync dieses einen Artefakts nach `origin/codex-sync` empfehlen
 - ohne diesen Sync gilt jeder GitHub-Stand fuer ChatGPT als potenziell veraltet, auch wenn andere Remotes oder Branches neuer sind
-- `backup/develop` bleibt der Entwicklungs-Backup-Stand; `origin/codex-sync` ist nur der klare ChatGPT-Sync-Punkt
+- `backup/master` bleibt der Entwicklungs-Backup-Stand; `origin/codex-sync` ist der klare ChatGPT-Sync-Punkt fuer `CURRENT_STATE.md`
 
 ## Versionierung Und Auto-Update Release
 

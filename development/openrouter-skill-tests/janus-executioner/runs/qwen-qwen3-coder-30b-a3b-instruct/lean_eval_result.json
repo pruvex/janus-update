@@ -1,0 +1,15 @@
+{
+  "model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "pass": true,
+  "validation_result": "PASS",
+  "final_outcome": "DIRECT_OR_EXECUTION_PATCH_READY_FOR_CODEX_REVIEW",
+  "actual_or_cost": 0.00045318,
+  "generation_id": "gen-1782398737-qBNLJQw55cU7OTLybCgf",
+  "finish_reason": "stop",
+  "changed_files": [
+    "backend/services/contact_manager.py"
+  ],
+  "issues": [],
+  "response_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\LEAN-EXEC-qwen-qwen3-coder-30b-a3b-instruct\\response_summary.json",
+  "operator_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\LEAN-EXEC-qwen-qwen3-coder-30b-a3b-instruct\\operator_summary.json"
+}

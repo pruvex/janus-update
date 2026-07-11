@@ -1,0 +1,25 @@
+{
+  "status": "WEAK_SIGNAL",
+  "backlog_type": "IMPROVEMENT",
+  "suggested_status": "READY",
+  "title": "Klarstellung des Caching-Ersparnis-Hinweises in der DeepDive-Kostenansicht",
+  "kurzbeschreibung": "Der Hinweis auf die Janus-Caching-Ersparnis im DeepDive-Fenster (Kostenansicht) ist verwirrend und zeigt bei fehlenden Daten einen irreführenden Prozentwert an. Ziel ist eine klarere Beschreibung und Vermeidung von irreführenden Werten.",
+  "erwartetes_verhalten": "Der Hinweis zur Caching-Ersparnis sollte verständlich formuliert sein und bei fehlenden Daten keinen Prozentwert anzeigen, der falsche Schlüsse zulässt.",
+  "tatsaechliches_verhalten": "Der Hinweis ist manchmal verwirrend und zeigt bei fehlenden Daten einen irreführenden Prozentwert an.",
+  "reproduktion_kontext": "DeepDive-Fenster, Kostenansicht, bei geöffneter Ansicht mit unvollständigen Daten.",
+  "betroffener_bereich": "Frontend/UX – DeepDive-Kostenansicht",
+  "nachweise": [
+    "User berichtet von verwirrender Formulierung und irreführendem Prozentwert."
+  ],
+  "akzeptanzkriterien": [
+    "Der Hinweistext ist klar und verständlich formuliert.",
+    "Bei fehlenden Daten wird kein Prozentwert angezeigt.",
+    "Die Änderung betrifft nur die bestehende UI-Oberfläche, keine neuen Funktionen."
+  ],
+  "fehlende_informationen": [
+    "Konkreter aktueller Wortlaut des Hinweises.",
+    "Genauer Anwendungsfall, bei dem der irreführende Prozentwert erscheint.",
+    "Gibt es bereits Design-Vorschläge für den neuen Text?"
+  ],
+  "notes": "Reine Verbesserung der bestehenden UI; keine neue Funktionalität. Keine Priorisierung oder Implementierung durch diesen Intake."
+}

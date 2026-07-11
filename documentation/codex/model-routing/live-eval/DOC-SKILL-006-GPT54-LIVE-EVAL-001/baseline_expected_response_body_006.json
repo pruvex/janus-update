@@ -1,0 +1,9 @@
+{
+  "choices": [
+    {
+      "message": {
+        "content": "# Routing Note\n\nStatus: PLANNING ONLY / NO PRODUCTION ROUTING\n\n## Purpose\n\nCompare cheaper candidates for `5.4` documentation assist. This note does not approve any model or route.\n\n## Allowed Scope\n\n- Summarize sanitized text.\n- Preserve `HOLD` and `UNKNOWN`.\n- Propose the next fixture work.\n\n## Blocked Scope\n\n- Update the routing table.\n- Approve production routing.\n- Run live calls.\n- Decide audit or release readiness.\n\n## Operator Reminder\n\nIf a future test is explicitly approved, show the estimate first, use file-first capture, and record actual cost after completion.\n"
+      }
+    }
+  ]
+}

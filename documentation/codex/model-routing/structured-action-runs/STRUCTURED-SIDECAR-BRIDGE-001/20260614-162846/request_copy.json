@@ -1,0 +1,16 @@
+{
+  "schema_version": "codex_delegated_action_request.v1",
+  "workflow_id": "STRUCTURED-SIDECAR-BRIDGE-001",
+  "skill_id": "janus-documentation-update",
+  "action_type": "draft_markdown",
+  "summary": "Bridge accepted sidecar documentation draft into structured action flow.",
+  "requires_codex_review": true,
+  "non_goals": [
+    "No direct repo authority update",
+    "No production routing activation"
+  ],
+  "action_payload": {
+    "format": "markdown",
+    "content": "## Title\nSidecar Documentation Milestone Draft\n\n## Summary\nThe sidecar runner hardening achieved its safety goal: Windows shim handling, unsupported CLI flag removal, file-first artifact capture, timeout enforcement, process-tree cleanup, and null-exit-code normalization now support bounded sidecar runs without claiming repo changes. The accepted live pilot confirms a read-only, non-binding sidecar path is usable for documentation-class work.\n\n## Evidence\nThe live pilot result records a safe timeout-guard run, then an accepted `SIDECAR-LIVE-PILOT-READONLY-180-001` completion with usable `last_message.md` and `stdout.log`, followed by `SIDECAR-LIVE-PILOT-READONLY-180-002` showing clean `PASS`, `artifact_success=true`, and no lingering process. `CURRENT_STATE.md` aligns with that outcome and names `janus-documentation-update` as the first validated sidecar candidate class.\n\n## Next Step\nUse the sidecar only for bounded, read-only, non-binding `janus-documentation-update` draft tasks, with Codex App staying the reviewer and governance holder. Keep single-sidecar execution only; do not enable parallel or write-capable sidecar usage yet.\n\n## No File Edits\nThis is a non-binding draft only and does not assert any repository update, test run, or Git action.\n\nNo file edits were made."
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "status": "BLOCKED",
+  "summary": "Could not parse model content as JSON: Expecting value: line 1 column 1 (char 0)",
+  "changed_files": [],
+  "unified_diff": "",
+  "validation_notes": [],
+  "risk_notes": []
+}

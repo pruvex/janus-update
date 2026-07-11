@@ -1,0 +1,23 @@
+{
+  "workflow_id": "SIDECAR-QUICKCHANGE-STRUCTURED-FLOW-001-STRUCTURED",
+  "skill_id": "janus-quickchange",
+  "action_type": "propose_patch",
+  "executor_status": "PASS",
+  "schema_validation": "PASS",
+  "mapping_resolution": "PASS",
+  "allowlist_status": "PASS",
+  "output_artifact_status": "PASS",
+  "codex_review_required": true,
+  "detail": "Patch captured for Codex review only; no apply attempted.",
+  "action_summary": {
+    "artifact_path": "documentation/codex/model-routing/structured-action-runs/SIDECAR-QUICKCHANGE-STRUCTURED-FLOW-001-STRUCTURED/20260614-164047/proposed_patch.diff",
+    "allowed_files": [
+      "frontend/index.html"
+    ],
+    "touched_files": [
+      "frontend/index.html"
+    ],
+    "auto_apply": false
+  },
+  "run_directory": "documentation/codex/model-routing/structured-action-runs/SIDECAR-QUICKCHANGE-STRUCTURED-FLOW-001-STRUCTURED/20260614-164047"
+}

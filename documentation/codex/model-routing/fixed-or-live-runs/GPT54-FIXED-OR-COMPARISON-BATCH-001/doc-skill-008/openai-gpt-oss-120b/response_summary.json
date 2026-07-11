@@ -1,0 +1,31 @@
+﻿{
+    "capture_mode":  "live_http",
+    "http_status":  200,
+    "generation_id":  "gen-1781385913-4BahXz8BVRBoAV2gLD5D",
+    "model":  "openai/gpt-oss-120b",
+    "finish_reason":  "stop",
+    "usage":  {
+                  "prompt_tokens":  531,
+                  "completion_tokens":  351,
+                  "total_tokens":  882,
+                  "cost":  0.00007038,
+                  "is_byok":  false,
+                  "prompt_tokens_details":  {
+                                                "cached_tokens":  64,
+                                                "cache_write_tokens":  0,
+                                                "audio_tokens":  0,
+                                                "video_tokens":  0
+                                            },
+                  "cost_details":  {
+                                       "upstream_inference_cost":  0.00007038,
+                                       "upstream_inference_prompt_cost":  0.00002124,
+                                       "upstream_inference_completions_cost":  0.00004914
+                                   },
+                  "completion_tokens_details":  {
+                                                    "reasoning_tokens":  243,
+                                                    "image_tokens":  0,
+                                                    "audio_tokens":  0
+                                                }
+              },
+    "actual_or_cost":  0.00007038
+}

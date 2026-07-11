@@ -1,0 +1,17 @@
+{
+  "status": "BLOCKED",
+  "target_task": "TASK-SPEC28.1",
+  "patch_text": "",
+  "changed_files": [],
+  "risk_list": [
+    "Could not parse model content as JSON: Expecting value: line 1 column 1 (char 0)"
+  ],
+  "suggested_validation_steps": [
+    "python -m pytest documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py -q",
+    "python -m pytest documentation/codex/model-routing/tests/test_test_pipeline_sidecar_write_pilot_runner.py -q -k \"live or gate or eligibility\"",
+    "python -m py_compile documentation/codex/model-routing/scripts/bounded_or_worker_eligibility.py documentation/codex/model-routing/scripts/test_pipeline_sidecar_write_pilot_runner.py"
+  ],
+  "manual_validation_note": "Codex must manually validate this patch locally before task completion.",
+  "codex_acceptance_rule": "Codex must review and apply or reject locally.",
+  "notes": "Parser fallback result"
+}

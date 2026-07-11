@@ -1,0 +1,30 @@
+{
+  "workflow_id": "BOUNDED-GENERATOR-DISPATCH-LIVE-001",
+  "skill_id": "janus-test-pipeline",
+  "action_type": "run_generator",
+  "executor_status": "PASS",
+  "schema_validation": "PASS",
+  "mapping_resolution": "PASS",
+  "allowlist_status": "PASS",
+  "output_artifact_status": "PASS",
+  "codex_review_required": true,
+  "detail": "Generator executed through deterministic local mapping.",
+  "action_summary": {
+    "generator_id": "generate_live_runner_v1",
+    "command": [
+      "C:\\nvm4w\\nodejs\\node.exe",
+      "tests/e2e/generator/generate-live-runner.mjs",
+      "--plan",
+      "documentation/test-runs/TEST-RUN-2026-05-15-005_plan.json",
+      "--out",
+      "documentation/codex/model-routing/structured-action-runs/BOUNDED-GENERATOR-DISPATCH-LIVE-001/20260614-172525/generated/TEST-RUN-2026-05-15-005_generated_from_builder.spec.js"
+    ],
+    "output_artifacts": [
+      "documentation/codex/model-routing/structured-action-runs/BOUNDED-GENERATOR-DISPATCH-LIVE-001/20260614-172525/generated/TEST-RUN-2026-05-15-005_generated_from_builder.spec.js"
+    ],
+    "stdout_path": "documentation/codex/model-routing/structured-action-runs/BOUNDED-GENERATOR-DISPATCH-LIVE-001/20260614-172525/stdout.log",
+    "stderr_path": "documentation/codex/model-routing/structured-action-runs/BOUNDED-GENERATOR-DISPATCH-LIVE-001/20260614-172525/stderr.log",
+    "exit_code_path": "documentation/codex/model-routing/structured-action-runs/BOUNDED-GENERATOR-DISPATCH-LIVE-001/20260614-172525/exit_code.txt"
+  },
+  "run_directory": "documentation/codex/model-routing/structured-action-runs/BOUNDED-GENERATOR-DISPATCH-LIVE-001/20260614-172525"
+}

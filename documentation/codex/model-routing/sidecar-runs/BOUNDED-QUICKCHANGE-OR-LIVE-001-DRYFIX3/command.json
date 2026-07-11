@@ -1,0 +1,45 @@
+﻿{
+    "codex_path":  "codex",
+    "arguments":  [
+                      "exec",
+                      "--cd",
+                      "C:\\KI\\Janus-Projekt",
+                      "--model",
+                      "openai/gpt-oss-20b",
+                      "--sandbox",
+                      "workspace-write",
+                      "--output-last-message",
+                      "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-OR-LIVE-001-DRYFIX3\\last_message.md",
+                      "-"
+                  ],
+    "process_executable":  "C:\\Program Files\\WindowsApps\\OpenAI.Codex_26.616.3309.0_x64__2p2nqsd0c76g0\\app\\resources\\codex.exe",
+    "process_arguments":  [
+                              "exec",
+                              "--cd",
+                              "C:\\KI\\Janus-Projekt",
+                              "--model",
+                              "openai/gpt-oss-20b",
+                              "--sandbox",
+                              "workspace-write",
+                              "--output-last-message",
+                              "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-OR-LIVE-001-DRYFIX3\\last_message.md",
+                              "-"
+                          ],
+    "run_directory":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-OR-LIVE-001-DRYFIX3",
+    "prompt_path":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-fixtures\\quickchange_or_live_prompt_2026-06-19.md",
+    "working_directory":  "C:\\KI\\Janus-Projekt",
+    "model":  "openai/gpt-oss-20b",
+    "sandbox":  "workspace-write",
+    "approval_policy":  "never",
+    "timeout_seconds":  120,
+    "use_oss":  false,
+    "local_provider":  "",
+    "json_events":  false,
+    "editable_paths":  [
+                           "frontend/index.html"
+                       ],
+    "max_touched_files":  1,
+    "capture_git_diff":  true,
+    "fail_on_delete_rename_move":  true,
+    "execute":  false
+}

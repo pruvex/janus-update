@@ -1,0 +1,15 @@
+{
+  "workflow_id": "EXEC-WRITE-ENTRY-NO-CAP-001",
+  "bound_skill_context": "janus-executioner",
+  "target_task": "TASK-SPEC18.1",
+  "spec_path": "documentation/SPEC/18_bounded_execution_write_apply_candidate_for_or_sidecar_delegation.md",
+  "precheck_status": "PRE-CHECK PASSED",
+  "allowed_files": [
+    "documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py"
+  ],
+  "manual_validation_gate": "Codex keeps manual validation ownership after any delegated candidate attempt.",
+  "delegation_question": "Can this exact target-task slice enter the delegated write-candidate path?",
+  "requested_operations": [
+    "modify"
+  ]
+}

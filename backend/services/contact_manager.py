@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Optional
 
 from backend.data import contact_schemas, crud, database
 from backend.data.database import SessionLocal
-from backend.data.models import Contact
+from backend.data.models import Contact, Memory
 from backend.utils.config_loader import load_model_catalog as main_load_model_catalog
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
@@ -191,13 +191,17 @@ _MEMORY_PROPOSAL_SOURCE = "memory_sync"
 _EMAIL_RE = re.compile(r"\b[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}\b", re.IGNORECASE)
 _PHONE_RE = re.compile(r"\+?\d[\d\s()/-]{5,}\d")
 _URL_RE = re.compile(r"(https?://[^\s]+|www\.[^\s]+)", re.IGNORECASE)
-_ADDRESS_RE = re.compile(r"\b(?:adresse|wohnt in|anschrift)\s*[:\-]?\s*(.+)$", re.IGNORECASE)
+_ADDRESS_RE = re.compile(r"\b(?:adresse|anschrift)\s*[:\-]?\s*(.+)$", re.IGNORECASE)
 _PREFERENCE_RE = re.compile(
     r"\b(?:mag|liebt|bevorzugt|gern|gerne)\b\s*(.+)$",
     re.IGNORECASE,
 )
 _DISLIKE_RE = re.compile(
     r"\b(?:mag nicht|hasst|vermeidet|ungern|mochte nicht)\b\s*(.+)$",
+    re.IGNORECASE,
+)
+_DIETARY_PREFERENCE_RE = re.compile(
+    r"\b(?:vegetarier(?:in)?|vegetarisch|veganer(?:in)?|vegan|pescetarier(?:in)?|pescetarisch)\b",
     re.IGNORECASE,
 )
 _HEALTH_RE = re.compile(
@@ -208,6 +212,62 @@ _RELATIONSHIP_RE = re.compile(
     r"\b(?:partner|ehe|verheirat|freundin|freund|mann|frau|mutter|vater|bruder|schwester|kind)\w*",
     re.IGNORECASE,
 )
+_RELATIONSHIP_NAMED_DETAIL_RE = re.compile(
+    r"\b(?P<relation>freundin|freund|partnerin|partner|ehefrau|ehemann|frau|mann|bruder|schwester|mutter|vater|sohn|tochter)\b"
+    r"\s+hei(?:ß|ss)t\s+(?P<name>[^\s.,!?]+(?:\s+[^\s.,!?]+){0,2})",
+    re.IGNORECASE,
+)
+_RELATIONSHIP_NAMED_OWNER_DETAIL_RE = re.compile(
+    r"\bhat\s+ein(?:e|en)?\s+(?P<relation>freundin|freund|partnerin|partner|ehefrau|ehemann|frau|mann|bruder|schwester|mutter|vater|sohn|tochter)\b"
+    r"\s+namens\s+(?P<name>[^\s.,!?]+(?:\s+[^\s.,!?]+){0,2})",
+    re.IGNORECASE,
+)
+_POLITICAL_RE = re.compile(
+    r"\b(?:afd|cdu|csu|spd|fdp|gruene|gruenen|linke|bsw|partei|politik|politisch|wahl)\b",
+    re.IGNORECASE,
+)
+_RELIGION_RE = re.compile(
+    r"\b(?:religion|religioes|religioese|kirche|christlich|christentum|christen|muslim|islam|juedisch|juedische|judentum|hindu|buddh)\w*",
+    re.IGNORECASE,
+)
+_FINANCIAL_RE = re.compile(
+    r"\b(?:gehalt|einkommen|schulden|vermoegen|kredit|konto|iban|bank|finanz)\w*",
+    re.IGNORECASE,
+)
+_CONTACT_NAME_PREDICATES = {
+    "heisst",
+    "heißt",
+    "heisst_voller_name",
+    "heißt_voller_name",
+    "heisst_vollstaendig",
+    "heißt_vollstaendig",
+}
+_CONTACT_RESIDENCE_PREDICATES = {"wohnt_in", "lebt_in"}
+_CONTACT_RESIDENCE_DETAIL_RE = re.compile(r"^(?:wohnt|lebt)\s+in\s+(.+)$", re.IGNORECASE)
+_DIRECT_CONTACT_RESIDENCE_FACT_RE = re.compile(
+    r"^\s*(?:[A-ZÄÖÜa-zäöüß][\wÄÖÜäöüß' -]{0,80}\s+)?(?:wohnt|lebt)\s+in\s+(.+?)\s*[.!?]?\s*$",
+    re.IGNORECASE,
+)
+_PET_DETAIL_RE = re.compile(r"\b(?:hund|katze|haustier|podenco)\b", re.IGNORECASE)
+_PET_OWNER_DETAIL_RE = re.compile(
+    r"\bhat\s+ein(?:en|e)?\s+(hund|katze|haustier)\s+namens\s+([^\s.,!?]+)",
+    re.IGNORECASE,
+)
+_PET_TRAIT_DETAIL_RE = re.compile(
+    r"^\s*(Hund|Katze|Haustier)\s+([^\s.,!?]+)\s+ist\s+(.+?)\s*[.!?]?\s*$",
+    re.IGNORECASE,
+)
+_PET_HINT_PREDICATES = {
+    "frisst_gern",
+    "frisst_gerne",
+    "ist_rasse",
+    "mag_nicht",
+    "hasst",
+    "hat_hund",
+    "hat_katze",
+    "hat_haustier",
+    "name_is",
+}
 
 
 def _normalize_contact_name(name: Optional[str]) -> str:
@@ -216,6 +276,8 @@ def _normalize_contact_name(name: Optional[str]) -> str:
 
 def _normalize_contact_hint(value: Optional[str]) -> str:
     text = str(value or "").strip().lower()
+    if "." in text:
+        text = text.split(".")[-1]
     return (
         text.replace("ä", "ae")
         .replace("ö", "oe")
@@ -236,6 +298,58 @@ def _contact_is_public_enrichment_eligible(contact: Any) -> bool:
     return category in _PUBLIC_CATEGORY_HINTS
 
 
+def _sanitize_contact_address_text(value: Optional[str]) -> str:
+    text = str(value or "").strip()
+    if not text:
+        return ""
+    text = text.replace("-", " ")
+    text = re.sub(r"(?:â€œ|â€|â€ž|â€˜|â€™|“|”|„|‚|’|‘)+", "", text)
+    text = re.sub(r"[\"“”'`]+", "", text)
+    text = text.strip(" .,)];:")
+    text = re.sub(r"[^\w\s]+$", "", text, flags=re.UNICODE)
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
+
+
+def _derive_pet_contact_detail(*, fact_text: str, object_value: str) -> str:
+    fact_norm = str(fact_text or "").strip()
+    object_norm = str(object_value or "").strip().casefold()
+    if re.search(r"\b(?:hat|besitzt)\s+einen\s+hund\b", fact_norm, re.IGNORECASE) or object_norm == "hund":
+        return "hat einen Hund"
+    if re.search(r"\b(?:hat|besitzt)\s+eine\s+katze\b", fact_norm, re.IGNORECASE) or object_norm == "katze":
+        return "hat eine Katze"
+    if re.search(r"\b(?:hat|besitzt)\s+ein\s+haustier\b", fact_norm, re.IGNORECASE) or object_norm == "haustier":
+        return "hat ein Haustier"
+    return fact_norm
+
+
+def _derive_relationship_contact_detail(memory_payload: Dict[str, Any]) -> Optional[str]:
+    fact_text = str(memory_payload.get("fact") or "").strip()
+    if not fact_text:
+        return None
+
+    predicate = _normalize_contact_hint(memory_payload.get("predicate"))
+    category = _normalize_contact_hint(memory_payload.get("category"))
+    if (
+        category != "beziehungen"
+        and predicate not in {"ist_beziehung", "ist_freund", "ist_partner", "ist_verwandt", "ist_familie"}
+        and not _RELATIONSHIP_RE.search(fact_text)
+    ):
+        return None
+
+    match = _RELATIONSHIP_NAMED_DETAIL_RE.search(fact_text)
+    if not match:
+        match = _RELATIONSHIP_NAMED_OWNER_DETAIL_RE.search(fact_text)
+    if not match:
+        return None
+
+    relation = str(match.group("relation") or "").strip()
+    related_name = _to_contact_display_name(str(match.group("name") or "").strip(" ."))
+    if not relation or not related_name:
+        return None
+    return f"{relation.title()} heisst {related_name}"
+
+
 def _parse_memory_snippet_payload(snippet: Any) -> Dict[str, Any]:
     if isinstance(snippet, dict):
         return dict(snippet)
@@ -252,12 +366,110 @@ def _parse_memory_snippet_payload(snippet: Any) -> Dict[str, Any]:
     return {"fact": text}
 
 
+def _looks_like_opaque_memory_fact(value: Any) -> bool:
+    text = str(value or "").strip()
+    return (
+        text.startswith("b'gAAAA")
+        or text.startswith('b"gAAAA')
+        or text.startswith("gAAAA")
+    )
+
+
+def _source_metadata_dict(memory: Any) -> Dict[str, Any]:
+    source_metadata = getattr(memory, "source_metadata", None) or {}
+    if isinstance(source_metadata, dict):
+        return dict(source_metadata)
+    if isinstance(source_metadata, str) and source_metadata.strip().startswith("{"):
+        try:
+            parsed = json.loads(source_metadata)
+            if isinstance(parsed, dict):
+                return parsed
+        except Exception:
+            return {}
+    return {}
+
+
+def _memory_payload_from_record(memory: Any) -> Dict[str, Any]:
+    payload = _parse_memory_snippet_payload(getattr(memory, "snippet", None))
+    canonical_key = str(getattr(memory, "canonical_key", "") or payload.get("canonical_key") or "").strip()
+    source_metadata = _source_metadata_dict(memory)
+
+    key_parts = canonical_key.split(":") if canonical_key else []
+    if len(key_parts) >= 4:
+        if len(key_parts) >= 5 and key_parts[1].casefold() == "contact":
+            key_subject, key_category, key_predicate = key_parts[0], key_parts[2], key_parts[3]
+            key_object_value = ":".join(key_parts[4:])
+        else:
+            key_subject, key_category, key_predicate = key_parts[0], key_parts[1], key_parts[2]
+            key_object_value = ":".join(key_parts[3:])
+        payload.setdefault("subject_name", key_subject)
+        payload.setdefault("category", key_category)
+        payload.setdefault("predicate", key_predicate)
+        payload.setdefault("object_value", key_object_value)
+
+    if not payload.get("category"):
+        category = str(getattr(memory, "category", "") or "").strip()
+        if category:
+            payload["category"] = category
+    if canonical_key:
+        payload.setdefault("canonical_key", canonical_key)
+
+    fact = str(payload.get("fact") or "").strip()
+    if not fact or _looks_like_opaque_memory_fact(fact):
+        user_msg = str(source_metadata.get("user_msg") or "").strip()
+        if user_msg:
+            payload["fact"] = user_msg
+    return payload
+
+
 def _append_unique(items: List[str], value: Optional[str]) -> None:
     text = str(value or "").strip()
     if not text:
         return
     if text not in items:
         items.append(text)
+
+
+def _split_contact_preference_values(value: Optional[str]) -> List[str]:
+    text = str(value or "").strip(" .")
+    if not text:
+        return []
+    if " und " not in text.casefold():
+        return [text]
+    parts = [part.strip(" .") for part in re.split(r"\s+und\s+", text, flags=re.IGNORECASE)]
+    if len(parts) < 2:
+        return [text]
+    if any(not part or len(part.split()) > 3 for part in parts):
+        return [text]
+    return parts
+
+
+def _to_contact_display_name(value: Optional[str]) -> str:
+    return " ".join(part.capitalize() for part in str(value or "").strip().split())
+
+
+def _infer_contact_subject_from_fact(db_session: Session, fact_text: str) -> str:
+    fact_norm = _normalize_contact_name(fact_text)
+    if not fact_norm:
+        return ""
+    all_contacts = db_session.query(Contact).all()
+    for contact in all_contacts:
+        aliases = [
+            str(getattr(contact, "name", "") or "").strip(),
+            str(getattr(contact, "nickname", "") or "").strip(),
+        ]
+        for alias in aliases:
+            alias_norm = _normalize_contact_name(alias)
+            if not alias_norm:
+                continue
+            if re.search(
+                rf"(?<!\w){re.escape(alias_norm)}\s+"
+                rf"(?:mag|liebt|hasst|bevorzugt|verbringt\s+gerne|verbringt\s+gern|ist)\b",
+                fact_norm,
+                re.IGNORECASE,
+            ):
+                return str(getattr(contact, "name", None) or alias).strip()
+    return ""
 
 
 def _build_contact_memory_fact(
@@ -360,12 +572,33 @@ def _contact_memory_fact_objects(contact: Any) -> List[Dict[str, Any]]:
 def _extract_contact_updates_from_memory_payload(memory_payload: Dict[str, Any]) -> Dict[str, Any]:
     fact_text = str(memory_payload.get("fact") or "").strip()
     category = _normalize_contact_hint(memory_payload.get("category"))
+    predicate = _normalize_contact_hint(memory_payload.get("predicate"))
+    subject_name = str(memory_payload.get("subject_name") or "").strip()
+    subject_role = _normalize_contact_hint(memory_payload.get("subject_role"))
+    object_value = str(memory_payload.get("object_value") or "").strip(" .")
     updates: Dict[str, Any] = {}
     metadata: Dict[str, Any] = {
         "fact": fact_text,
         "category": memory_payload.get("category"),
         "sensitive": False,
+        "dietary": False,
+        "naming": False,
+        "residence": False,
+        "relationship_detail": False,
     }
+
+    if predicate in _CONTACT_NAME_PREDICATES and object_value:
+        metadata["naming"] = True
+        display_name = _to_contact_display_name(object_value)
+        if display_name:
+            updates["name"] = display_name
+        display_subject = _to_contact_display_name(subject_name)
+        if (
+            display_subject
+            and display_name
+            and display_subject.casefold() != display_name.casefold()
+        ):
+            updates["nickname"] = display_subject
 
     email_match = _EMAIL_RE.search(fact_text)
     if email_match:
@@ -381,14 +614,61 @@ def _extract_contact_updates_from_memory_payload(memory_payload: Dict[str, Any])
 
     address_match = _ADDRESS_RE.search(fact_text)
     if address_match:
-        updates["address"] = address_match.group(1).strip(" .")
+        normalized_address = _sanitize_contact_address_text(address_match.group(1))
+        if normalized_address:
+            updates["address"] = normalized_address
 
     preference_match = _PREFERENCE_RE.search(fact_text)
     dislike_match = _DISLIKE_RE.search(fact_text)
+    dietary_match = _DIETARY_PREFERENCE_RE.search(
+        " ".join(
+            str(memory_payload.get(key) or "")
+            for key in ("fact", "object_value", "predicate")
+        )
+    )
+    residence_match = None
+    if predicate in _CONTACT_RESIDENCE_PREDICATES and object_value:
+        residence_match = object_value
+    else:
+        _residence_match = _DIRECT_CONTACT_RESIDENCE_FACT_RE.match(fact_text)
+        if _residence_match:
+            residence_match = _residence_match.group(1)
 
-    if category == "vorlieben" or preference_match:
+    if residence_match:
+        metadata["residence"] = True
+        normalized_residence = _sanitize_contact_address_text(residence_match)
+        if normalized_residence:
+            updates["address"] = normalized_residence
+
+    if subject_role != "pet" and _PET_DETAIL_RE.search(" ".join([fact_text, object_value])):
+        details = []
+        _append_unique(
+            details,
+            _derive_pet_contact_detail(fact_text=fact_text, object_value=object_value),
+        )
+        if details:
+            updates["personal_details"] = details
+
+    if dietary_match:
+        metadata["dietary"] = True
+        details = []
+        _append_unique(details, dietary_match.group(0).strip(" ."))
+        if details:
+            updates["personal_details"] = details
+
+    relationship_detail = _derive_relationship_contact_detail(memory_payload)
+    if relationship_detail:
+        metadata["relationship_detail"] = True
+        details = list(updates.get("personal_details") or [])
+        _append_unique(details, relationship_detail)
+        if details:
+            updates["personal_details"] = details
+
+    if (category == "vorlieben" or preference_match) and not dietary_match:
         preferences = []
-        _append_unique(preferences, preference_match.group(1).strip(" .") if preference_match else fact_text)
+        raw_preference = preference_match.group(1).strip(" .") if preference_match else fact_text
+        for preference in _split_contact_preference_values(raw_preference):
+            _append_unique(preferences, preference)
         if preferences:
             updates["preferences"] = preferences
 
@@ -398,13 +678,29 @@ def _extract_contact_updates_from_memory_payload(memory_payload: Dict[str, Any])
         if dislikes:
             updates["dislikes"] = dislikes
 
-    if category in _SENSITIVE_MEMORY_CATEGORIES or _HEALTH_RE.search(fact_text) or _RELATIONSHIP_RE.search(fact_text):
+    if (
+        not metadata["naming"]
+        and (
+        category in _SENSITIVE_MEMORY_CATEGORIES
+        or _HEALTH_RE.search(fact_text)
+        or _RELATIONSHIP_RE.search(fact_text)
+        or _POLITICAL_RE.search(fact_text)
+        or _RELIGION_RE.search(fact_text)
+        or _FINANCIAL_RE.search(fact_text)
+        )
+    ):
         metadata["sensitive"] = True
 
     if (
         category in {"allgemein", "beruf", "stil", "physis"}
         and not any(key in updates for key in ("email", "phone", "address", "website"))
-    ) or metadata["sensitive"]:
+        and not metadata["naming"]
+        and not metadata["residence"]
+    ) or (
+        metadata["sensitive"]
+        and not any(key in updates for key in ("preferences", "dislikes", "personal_details"))
+        and not metadata["naming"]
+    ):
         details: List[str] = []
         _append_unique(details, fact_text)
         if details:
@@ -422,15 +718,50 @@ def _should_auto_apply_contact_memory_update(
     proposal_payload: Dict[str, Any],
 ) -> bool:
     source_type = str(getattr(memory, "source_type", "") or "").strip().lower()
-    if source_type != "text":
+    if source_type not in {"text", "tool"}:
         return False
     if match_mode != "exact":
         return False
+    payload_fields = {field for field in proposal_payload.keys() if field != "memory_sync_status"}
+    if (
+        bool(metadata.get("relationship_detail"))
+        and payload_fields == {"personal_details"}
+    ):
+        if source_type == "text":
+            return True
+        source_metadata = getattr(memory, "source_metadata", None) or {}
+        if not isinstance(source_metadata, dict):
+            return False
+        origin = str(source_metadata.get("contact_sync_origin") or "").strip().lower()
+        return (
+            bool(source_metadata.get("contact_sync_trusted"))
+            and origin in {"direct_user_utterance", "confirmed_contact_knowledge"}
+            and bool(str(source_metadata.get("user_msg") or "").strip())
+        )
     if bool(metadata.get("sensitive")):
         return False
     allowed_fields = {"preferences", "dislikes"}
-    payload_fields = {field for field in proposal_payload.keys() if field != "memory_sync_status"}
-    return bool(payload_fields) and payload_fields.issubset(allowed_fields)
+    if bool(metadata.get("dietary")) or (not bool(metadata.get("sensitive"))):
+        allowed_fields.add("personal_details")
+    if bool(metadata.get("residence")):
+        allowed_fields.add("address")
+    if bool(metadata.get("naming")):
+        allowed_fields.update({"name", "nickname"})
+    if not payload_fields or not payload_fields.issubset(allowed_fields):
+        return False
+    if source_type == "text":
+        return True
+
+    source_metadata = getattr(memory, "source_metadata", None) or {}
+    if not isinstance(source_metadata, dict):
+        return False
+
+    origin = str(source_metadata.get("contact_sync_origin") or "").strip().lower()
+    return (
+        bool(source_metadata.get("contact_sync_trusted"))
+        and origin in {"direct_user_utterance", "confirmed_contact_knowledge"}
+        and bool(str(source_metadata.get("user_msg") or "").strip())
+    )
 
 
 def _apply_contact_memory_update_directly(
@@ -440,6 +771,7 @@ def _apply_contact_memory_update_directly(
     proposal_payload: Dict[str, Any],
 ) -> Dict[str, Any]:
     updates = dict(proposal_payload)
+    updates["memory_sync_status"] = "ready"
     updates["proposal_status"] = "confirmed"
     updates["proposal_source_context"] = "direct_context"
     updates["proposal_last_outcome"] = "applied_from_confirmed_chat_fact"
@@ -454,6 +786,78 @@ def _apply_contact_memory_update_directly(
         "review_notes": [],
         "user_message": None,
         "applied_contact_id": updated_contact.id,
+    }
+
+
+def _should_create_contact_from_memory(
+    *,
+    memory: Any,
+    subject_name: str,
+    metadata: Dict[str, Any],
+    updates: Dict[str, Any],
+) -> bool:
+    source_type = str(getattr(memory, "source_type", "") or "").strip().lower()
+    if source_type != "text":
+        return False
+    if not str(subject_name or "").strip():
+        return False
+
+    source_metadata = getattr(memory, "source_metadata", None) or {}
+    if not isinstance(source_metadata, dict) or not str(source_metadata.get("user_msg") or "").strip():
+        return False
+
+    if bool(metadata.get("sensitive")):
+        return False
+
+    return bool(
+        updates.get("name")
+        or updates.get("nickname")
+        or updates.get("email")
+        or updates.get("phone")
+        or updates.get("website")
+        or updates.get("address")
+    )
+
+
+def _create_contact_from_memory_payload(
+    db_session: Session,
+    *,
+    subject_name: str,
+    updates: Dict[str, Any],
+) -> Dict[str, Any]:
+    contact_name = str(updates.get("name") or _to_contact_display_name(subject_name) or subject_name).strip()
+    nickname = str(updates.get("nickname") or "").strip() or None
+    if nickname and nickname.casefold() == contact_name.casefold():
+        nickname = None
+
+    contact_schema = contact_schemas.ContactCreate(
+        name=contact_name,
+        nickname=nickname,
+        category="Privat",
+        contact_type="private_person",
+        email=updates.get("email"),
+        phone=updates.get("phone"),
+        address=updates.get("address"),
+        website=updates.get("website"),
+        preferences=list(updates.get("preferences") or []),
+        dislikes=list(updates.get("dislikes") or []),
+        personal_details=list(updates.get("personal_details") or []),
+        proposal_status="confirmed",
+        proposal_source_context="direct_context",
+        proposal_last_outcome="created_from_confirmed_chat_fact",
+        memory_sync_status="ready",
+    )
+    created_contact = crud.create_contact(db_session, contact=contact_schema)
+    if created_contact is None:
+        return {"status": "failed", "reason": "create_failed", "proposals_staged": 0}
+    return {
+        "status": "created",
+        "reason": "created_from_confirmed_chat_fact",
+        "proposals_staged": 0,
+        "suppressed": 0,
+        "review_notes": [],
+        "user_message": None,
+        "applied_contact_id": created_contact.id,
     }
 
 
@@ -533,6 +937,16 @@ def _contact_type_from_payload(contact_data_item: Dict[str, Any]) -> str:
     return "private_person"
 
 
+def _extract_residence_address(value: Optional[str]) -> Optional[str]:
+    text = str(value or "").strip()
+    if not text:
+        return None
+    match = _CONTACT_RESIDENCE_DETAIL_RE.match(text)
+    if not match:
+        return None
+    return _sanitize_contact_address_text(match.group(1)) or None
+
+
 def _sanitize_contact_payload(contact_data_item: Dict[str, Any]) -> Dict[str, Any]:
     payload = dict(contact_data_item or {})
     payload["contact_type"] = _contact_type_from_payload(payload)
@@ -554,6 +968,23 @@ def _sanitize_contact_payload(contact_data_item: Dict[str, Any]) -> Dict[str, An
         cleaned["name"] = str(cleaned["name"]).strip()
     if "category" not in cleaned:
         cleaned["category"] = "Business" if cleaned.get("contact_type") == "organization" else "Privat"
+    if cleaned.get("contact_type") == "private_person":
+        note_lines = [line.strip() for line in str(cleaned.get("notes", "") or "").splitlines()]
+        cleaned_note_lines: List[str] = []
+        for line in note_lines:
+            if not line:
+                continue
+            residence_address = _extract_residence_address(line)
+            if residence_address:
+                if not cleaned.get("address"):
+                    cleaned["address"] = residence_address
+                continue
+            cleaned_note_lines.append(line)
+        if "notes" in cleaned:
+            if cleaned_note_lines:
+                cleaned["notes"] = "\n".join(cleaned_note_lines)
+            else:
+                cleaned.pop("notes", None)
     return cleaned
 
 
@@ -589,44 +1020,282 @@ def _extract_candidate_updates(
 
 
 def _find_existing_contact_candidates(db_session: Session, contact_name: str) -> Dict[str, Any]:
-    exact_matches = crud.search_contacts_by_name(db_session, name_query=contact_name)
     normalized_name = _normalize_contact_name(contact_name)
-    exact_named = [row for row in exact_matches if _normalize_contact_name(getattr(row, "name", "")) == normalized_name]
+    if not normalized_name:
+        return {"primary": None, "mode": "none", "candidates": []}
+
+    all_contacts = db_session.query(Contact).all()
+
+    def _candidate_identity_signature(candidate: Any) -> tuple[str, str]:
+        return (
+            _normalize_contact_name(getattr(candidate, "name", None)),
+            _normalize_contact_name(getattr(candidate, "nickname", None)),
+        )
+
+    def _candidate_completeness_score(candidate: Any) -> tuple[int, int]:
+        score = 0
+        for field_name in ("email", "phone", "address", "website", "notes"):
+            if str(getattr(candidate, field_name, "") or "").strip():
+                score += 1
+        for field_name in ("preferences", "dislikes", "personal_details"):
+            score += len(list(getattr(candidate, field_name, None) or []))
+        score += len(
+            [
+                value
+                for value in (
+                    getattr(candidate, "name", None),
+                    getattr(candidate, "nickname", None),
+                )
+                if _normalize_contact_name(value)
+            ]
+        )
+        return (score, -int(getattr(candidate, "id", 0) or 0))
+
+    def _candidate_aliases(candidate: Any) -> List[Dict[str, str]]:
+        aliases: List[Dict[str, str]] = []
+        for field_name, raw_value in (
+            ("name", getattr(candidate, "name", None)),
+            ("nickname", getattr(candidate, "nickname", None)),
+        ):
+            normalized_value = _normalize_contact_name(raw_value)
+            if normalized_value and all(alias["value"] != normalized_value for alias in aliases):
+                aliases.append({"field": field_name, "value": normalized_value})
+        return aliases
+
+    exact_named = [
+        row
+        for row in all_contacts
+        if any(alias["value"] == normalized_name for alias in _candidate_aliases(row))
+    ]
     if len(exact_named) == 1:
         return {"primary": exact_named[0], "mode": "exact", "candidates": exact_named}
     if len(exact_named) > 1:
+        identity_signatures = {_candidate_identity_signature(candidate) for candidate in exact_named}
+        if len(identity_signatures) == 1:
+            selected = max(exact_named, key=_candidate_completeness_score)
+            return {"primary": selected, "mode": "exact", "candidates": exact_named}
         return {"primary": None, "mode": "ambiguous", "candidates": exact_named}
+
+    if len(normalized_name.split()) == 1:
+        first_token_matches: List[Any] = []
+        for candidate in all_contacts:
+            aliases = _candidate_aliases(candidate)
+            if any(alias["value"].split() and alias["value"].split()[0] == normalized_name for alias in aliases):
+                first_token_matches.append(candidate)
+        unique_first_token_matches = list({getattr(candidate, "id", 0): candidate for candidate in first_token_matches}.values())
+        if len(unique_first_token_matches) == 1:
+            return {"primary": unique_first_token_matches[0], "mode": "exact", "candidates": unique_first_token_matches}
+        if len(unique_first_token_matches) > 1:
+            return {"primary": None, "mode": "ambiguous", "candidates": unique_first_token_matches}
 
     seen: Dict[int, Any] = {}
     tokens = [part for part in re.split(r"\s+", contact_name) if len(part) > 2]
-    candidate_queries = [contact_name]
-    if tokens:
-        candidate_queries.extend(tokens)
-        candidate_queries.append(tokens[-1])
+    for candidate in all_contacts:
+        aliases = _candidate_aliases(candidate)
+        if any(
+            normalized_name in alias["value"] or alias["value"] in normalized_name
+            for alias in aliases
+        ):
+            seen[getattr(candidate, "id", 0)] = candidate
+            continue
+        if tokens and any(token in alias["value"] for token in tokens for alias in aliases):
+            seen[getattr(candidate, "id", 0)] = candidate
 
-    for query in candidate_queries:
-        for row in crud.search_contacts_by_name(db_session, name_query=query):
-            seen[getattr(row, "id", 0)] = row
-
-    candidates = list(seen.values())
-    if len(candidates) == 1:
-        return {"primary": candidates[0], "mode": "near_match", "candidates": candidates}
+    candidates = list(seen.values()) or list(all_contacts)
 
     scored: List[Any] = []
     for candidate in candidates:
-        ratio = SequenceMatcher(
-            None,
-            normalized_name,
-            _normalize_contact_name(getattr(candidate, "name", "")),
-        ).ratio()
-        scored.append((ratio, candidate))
+        alias_scores = [
+            (
+                SequenceMatcher(None, normalized_name, alias["value"]).ratio(),
+                alias["field"],
+            )
+            for alias in _candidate_aliases(candidate)
+        ]
+        ratio, matched_field = max(alias_scores, default=(0.0, ""))
+        scored.append((ratio, matched_field, candidate))
 
-    strong = [candidate for ratio, candidate in scored if ratio >= 0.78]
+    strong = [candidate for ratio, _, candidate in scored if ratio >= 0.78]
     if len(strong) == 1:
+        strongest_ratio, strongest_field, strongest_candidate = max(scored, key=lambda item: item[0])
+        if (
+            strongest_candidate is strong[0]
+            and strongest_field == "nickname"
+            and len(tokens) <= 1
+            and strongest_ratio >= 0.88
+        ):
+            return {"primary": strongest_candidate, "mode": "exact", "candidates": strong}
         return {"primary": strong[0], "mode": "near_match", "candidates": strong}
     if len(strong) > 1:
         return {"primary": None, "mode": "ambiguous", "candidates": strong}
     return {"primary": None, "mode": "none", "candidates": []}
+
+
+def _find_contact_by_pet_name(db_session: Session, pet_name: str) -> Dict[str, Any]:
+    normalized_pet_name = _normalize_contact_name(pet_name)
+    if not normalized_pet_name:
+        return {"primary": None, "mode": "none", "candidates": [], "pet_type": None}
+
+    matches: List[Any] = []
+    pet_type: Optional[str] = None
+    for candidate in db_session.query(Contact).all():
+        for value in list(getattr(candidate, "personal_details", None) or []):
+            detail_text = str(value or "").strip()
+            if not detail_text:
+                continue
+            match = _PET_OWNER_DETAIL_RE.search(detail_text)
+            if not match:
+                continue
+            detail_pet_type = str(match.group(1) or "").strip().lower()
+            detail_pet_name = _normalize_contact_name(match.group(2))
+            if detail_pet_name != normalized_pet_name:
+                continue
+            matches.append(candidate)
+            pet_type = detail_pet_type or pet_type
+            break
+
+    if len(matches) == 1:
+        return {"primary": matches[0], "mode": "exact", "candidates": matches, "pet_type": pet_type}
+    if len(matches) > 1:
+        return {"primary": None, "mode": "ambiguous", "candidates": matches, "pet_type": pet_type}
+    return {"primary": None, "mode": "none", "candidates": [], "pet_type": None}
+
+
+def _build_existing_contact_fact_summary(contact: Any) -> str:
+    personal_details = list(getattr(contact, "personal_details", None) or [])
+    named_pet: Optional[Dict[str, str]] = None
+    pet_traits: Dict[str, str] = {}
+
+    for value in personal_details:
+        detail_text = str(value or "").strip()
+        if not detail_text:
+            continue
+        owner_match = _PET_OWNER_DETAIL_RE.search(detail_text)
+        if owner_match and named_pet is None:
+            named_pet = {
+                "pet_type": str(owner_match.group(1) or "").strip().lower(),
+                "pet_name": str(owner_match.group(2) or "").strip(),
+            }
+            continue
+        trait_match = _PET_TRAIT_DETAIL_RE.match(detail_text)
+        if trait_match:
+            pet_traits[_normalize_contact_name(trait_match.group(2))] = str(trait_match.group(3) or "").strip()
+
+    if named_pet:
+        label = {
+            "hund": "Hund",
+            "katze": "Katze",
+            "haustier": "Haustier",
+        }.get(named_pet["pet_type"], "Haustier")
+        pet_name = named_pet["pet_name"]
+        trait = pet_traits.get(_normalize_contact_name(pet_name))
+        if trait:
+            return f"den {label} {pet_name}, {trait}"
+        return f"den {label} {pet_name}"
+
+    if personal_details:
+        return str(personal_details[0]).strip()
+
+    return ""
+
+
+def _memory_payload_likely_targets_pet(memory_payload: Dict[str, Any]) -> bool:
+    category = _normalize_contact_hint(memory_payload.get("category"))
+    predicate = _normalize_contact_hint(memory_payload.get("predicate"))
+    fact_text = str(memory_payload.get("fact") or "").strip()
+    object_value = str(memory_payload.get("object_value") or "").strip()
+
+    if category in {"haustier_details", "haustier-details"}:
+        return True
+    if predicate in _PET_HINT_PREDICATES:
+        return True
+    if _PET_DETAIL_RE.search(" ".join([fact_text, object_value])):
+        return True
+    return False
+
+
+def _find_contact_by_pet_memory(db_session: Session, pet_name: str) -> Dict[str, Any]:
+    normalized_pet_name = _normalize_contact_name(pet_name)
+    if not normalized_pet_name:
+        return {"primary": None, "mode": "none", "candidates": [], "pet_type": None}
+
+    matches: List[Any] = []
+    pet_type: Optional[str] = None
+
+    for memory in db_session.query(Memory).all():
+        payload = _memory_payload_from_record(memory)
+        canonical_key = str(getattr(memory, "canonical_key", "") or "").strip()
+        key_parts = canonical_key.split(":", 3) if canonical_key else []
+        key_subject_name = key_parts[0] if len(key_parts) == 4 else ""
+        key_category = key_parts[1] if len(key_parts) == 4 else ""
+        key_predicate = key_parts[2] if len(key_parts) == 4 else ""
+        key_object_value = key_parts[3] if len(key_parts) == 4 else ""
+
+        category = _normalize_contact_hint(payload.get("category")) or _normalize_contact_hint(key_category)
+        if category not in {"haustier_details", "haustier-details"}:
+            continue
+
+        predicate = _normalize_contact_hint(payload.get("predicate")) or _normalize_contact_hint(key_predicate)
+        if predicate not in {"hat_hund", "hat_katze", "hat_haustier"}:
+            continue
+
+        object_value = _normalize_contact_name(payload.get("object_value") or key_object_value)
+        if object_value != normalized_pet_name:
+            continue
+
+        subject_name = str(payload.get("subject_name") or key_subject_name or "").strip()
+        subject_role = _normalize_contact_hint(payload.get("subject_role"))
+        if not subject_name or subject_role == "pet":
+            continue
+
+        match_info = _find_existing_contact_candidates(db_session, subject_name)
+        target_contact = match_info.get("primary")
+        match_mode = str(match_info.get("mode") or "")
+        if target_contact is None or match_mode not in {"exact", "near_match"}:
+            continue
+
+        if not any(getattr(existing, "id", None) == getattr(target_contact, "id", None) for existing in matches):
+            matches.append(target_contact)
+
+        if predicate == "hat_hund":
+            pet_type = "hund"
+        elif predicate == "hat_katze":
+            pet_type = "katze"
+        elif predicate == "hat_haustier":
+            pet_type = "haustier"
+
+    if len(matches) == 1:
+        return {"primary": matches[0], "mode": "exact", "candidates": matches, "pet_type": pet_type}
+    if len(matches) > 1:
+        return {"primary": None, "mode": "ambiguous", "candidates": matches, "pet_type": pet_type}
+    return {"primary": None, "mode": "none", "candidates": [], "pet_type": None}
+
+
+def _derive_pet_owner_detail(memory_payload: Dict[str, Any], pet_type: Optional[str] = None) -> str:
+    fact_text = str(memory_payload.get("fact") or "").strip()
+    if not fact_text:
+        return ""
+    subject_role = _normalize_contact_hint(memory_payload.get("subject_role"))
+    if subject_role != "pet":
+        return ""
+    subject_name = str(memory_payload.get("subject_name") or "").strip()
+    if not subject_name:
+        return fact_text
+
+    label = {
+        "hund": "Hund",
+        "katze": "Katze",
+        "haustier": "Haustier",
+        "dog": "Hund",
+        "cat": "Katze",
+        "pet": "Haustier",
+    }.get(str(pet_type or "").strip().lower(), "Haustier")
+
+    if fact_text.casefold().startswith(subject_name.casefold()):
+        display_pet_name = _to_contact_display_name(subject_name) or subject_name
+        detail_rest = fact_text[len(subject_name):].lstrip()
+        return f"{label} {display_pet_name} {detail_rest}".strip()
+    return fact_text
 
 
 def _build_contact_proposal_item(
@@ -1369,24 +2038,79 @@ def stage_contact_update_from_memory(
     memory: Any,
     chat_id: Optional[int] = None,
 ) -> Dict[str, Any]:
-    memory_payload = _parse_memory_snippet_payload(getattr(memory, "snippet", None))
+    memory_payload = _memory_payload_from_record(memory)
     subject_name = str(
         memory_payload.get("subject_name")
         or memory_payload.get("contact_name")
         or ""
     ).strip()
+    subject_role = _normalize_contact_hint(memory_payload.get("subject_role"))
+    if not subject_name:
+        subject_name = _infer_contact_subject_from_fact(
+            db_session,
+            str(memory_payload.get("fact") or ""),
+        )
     if not subject_name:
         return {"status": "ignored", "reason": "missing_subject", "proposals_staged": 0}
 
     match_info = _find_existing_contact_candidates(db_session, subject_name)
     target_contact = match_info.get("primary")
     match_mode = str(match_info.get("mode") or "")
-    if target_contact is None or match_mode not in {"exact", "near_match"}:
-        return {"status": "ignored", "reason": "ambiguous_contact", "proposals_staged": 0}
-
+    owner_pet_type = None
+    if target_contact is None and subject_role == "pet":
+        pet_owner_match = _find_contact_by_pet_name(db_session, subject_name)
+        target_contact = pet_owner_match.get("primary")
+        match_mode = str(pet_owner_match.get("mode") or "")
+        owner_pet_type = pet_owner_match.get("pet_type")
+    if target_contact is None and subject_role == "pet":
+        pet_memory_match = _find_contact_by_pet_memory(db_session, subject_name)
+        target_contact = pet_memory_match.get("primary")
+        match_mode = str(pet_memory_match.get("mode") or "")
+        owner_pet_type = pet_memory_match.get("pet_type") or owner_pet_type
+    if target_contact is None and subject_role != "pet" and _memory_payload_likely_targets_pet(memory_payload):
+        pet_owner_match = _find_contact_by_pet_name(db_session, subject_name)
+        pet_memory_match = _find_contact_by_pet_memory(db_session, subject_name)
+        inferred_primary = pet_owner_match.get("primary") or pet_memory_match.get("primary")
+        inferred_mode = str(pet_owner_match.get("mode") or pet_memory_match.get("mode") or "")
+        inferred_pet_type = pet_owner_match.get("pet_type") or pet_memory_match.get("pet_type")
+        if inferred_primary is not None and inferred_mode in {"exact", "near_match"}:
+            subject_role = "pet"
+            memory_payload = dict(memory_payload)
+            memory_payload["subject_role"] = "pet"
+            target_contact = inferred_primary
+            match_mode = inferred_mode
+            owner_pet_type = inferred_pet_type or owner_pet_type
     extracted = _extract_contact_updates_from_memory_payload(memory_payload)
     updates = extracted.get("updates") or {}
     metadata = extracted.get("metadata") or {}
+    if subject_role == "pet":
+        # Pet facts belong on the owner's contact card as descriptive details,
+        # not as the owner's own likes/dislikes.
+        updates = dict(updates)
+        updates.pop("preferences", None)
+        updates.pop("dislikes", None)
+        pet_detail = _derive_pet_owner_detail(memory_payload, owner_pet_type)
+        if pet_detail:
+            merged_details = list(updates.get("personal_details") or [])
+            _append_unique(merged_details, pet_detail)
+            updates = dict(updates)
+            updates["personal_details"] = merged_details
+            metadata = dict(metadata)
+            metadata["fields"] = sorted(set(list(metadata.get("fields") or []) + ["personal_details"]))
+    if target_contact is None or match_mode not in {"exact", "near_match"}:
+        if match_mode == "none" and _should_create_contact_from_memory(
+            memory=memory,
+            subject_name=subject_name,
+            metadata=metadata,
+            updates=updates,
+        ):
+            return _create_contact_from_memory_payload(
+                db_session,
+                subject_name=subject_name,
+                updates=updates,
+            )
+        return {"status": "ignored", "reason": "ambiguous_contact", "proposals_staged": 0}
+
     if not updates:
         return {"status": "ignored", "reason": "no_contact_fields", "proposals_staged": 0}
 
@@ -1408,8 +2132,28 @@ def stage_contact_update_from_memory(
             ):
                 proposal_payload[field] = normalized_value
 
+    if bool(metadata.get("dietary")):
+        dietary_terms = {
+            str(item or "").strip().casefold()
+            for item in list(updates.get("personal_details") or [])
+            if str(item or "").strip()
+        }
+        if dietary_terms:
+            existing_preferences = list(getattr(target_contact, "preferences", None) or [])
+            cleaned_preferences = [
+                item
+                for item in existing_preferences
+                if str(item or "").strip().casefold() not in dietary_terms
+            ]
+            if cleaned_preferences != existing_preferences:
+                proposal_payload["preferences"] = cleaned_preferences
+
     if not proposal_payload:
-        return {"status": "ignored", "reason": "already_applied", "proposals_staged": 0}
+        result = {"status": "ignored", "reason": "already_applied", "proposals_staged": 0}
+        known_fact_summary = _build_existing_contact_fact_summary(target_contact)
+        if known_fact_summary:
+            result["known_fact_summary"] = known_fact_summary
+        return result
 
     if _should_auto_apply_contact_memory_update(
         memory=memory,
@@ -1417,21 +2161,27 @@ def stage_contact_update_from_memory(
         metadata=metadata,
         proposal_payload=proposal_payload,
     ):
-        return _apply_contact_memory_update_directly(
+        result = _apply_contact_memory_update_directly(
             db_session,
             target_contact=target_contact,
             proposal_payload=proposal_payload,
         )
-
-    proposal_payload["memory_sync_status"] = "ready"
-    proposal_payload["proposal_metadata"] = {
+        if result.get("status") == "applied" and bool(metadata.get("relationship_detail")):
+            result["memory_sync"] = sync_confirmed_contact_to_memory(
+                db_session,
+                contact_id=int(target_contact.id),
+                chat_id=chat_id,
+            )
+        return result
+    review_payload = dict(proposal_payload)
+    review_payload["memory_sync_status"] = "ready"
+    review_payload["proposal_metadata"] = {
         "memory_id": getattr(memory, "id", None),
         "memory_category": metadata.get("category"),
         "memory_fact": metadata.get("fact"),
         "sensitive": bool(metadata.get("sensitive")),
         "source_context": _MEMORY_PROPOSAL_SOURCE,
     }
-
     result = _persist_contact_proposal_batch(
         db_session,
         chat_id=chat_id,
@@ -1440,7 +2190,7 @@ def stage_contact_update_from_memory(
             _build_contact_proposal_item(
                 proposal_type="memory_contact_update",
                 contact_name=subject_name,
-                payload=proposal_payload,
+                payload=review_payload,
                 target_contact=target_contact,
             )
         ],
@@ -1456,6 +2206,10 @@ def stage_contact_update_from_memory(
             contact_model.proposal_last_outcome = "suggested_from_memory"
             contact_model.memory_sync_status = "ready"
             db_session.commit()
+        result["status"] = "proposed"
+        result["reason"] = "requires_review"
+        result["proposal_payload"] = review_payload
+        result["target_contact_id"] = target_contact.id
     return result
 
 

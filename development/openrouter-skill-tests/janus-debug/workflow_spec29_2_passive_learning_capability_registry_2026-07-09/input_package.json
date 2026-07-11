@@ -1,0 +1,39 @@
+{
+  "task_id": "TASK-SPEC29.2-DBG-PASSIVE-LEARNING-CAPREG",
+  "lane_id": "debug_repro_investigation",
+  "bound_skill_context": "janus-debug",
+  "task_label": "Debug passive routine learning capability-registry mismatch",
+  "worker_package_json": "development/openrouter-skill-tests/janus-debug/workflow_spec29_2_passive_learning_capability_registry_2026-07-09/worker_package.json",
+  "allowlist_file": "development/openrouter-skill-tests/janus-debug/workflow_spec29_2_passive_learning_capability_registry_2026-07-09/allowlist.txt",
+  "failure_code": "SPEC29_2_PASSIVE_LEARNING_CAPABILITY_REGISTRY_MISMATCH",
+  "latest_user_evidence": {
+    "timestamp_local": "2026-07-09 18:28 +02:00",
+    "prompt": "Welche Termine habe ich heute und wie weit ist es von Berlin nach Hamburg?",
+    "actual": "Janus answered calendar plus routing, but no candidate was created and no passive learning happened in the DB.",
+    "expected": "First successful mixed run should silently create a routine candidate for later promotion."
+  },
+  "bounded_root_cause": {
+    "log_summary": [
+      "chat_id 4234 executed system.routing and calendar.list_events successfully",
+      "response_finalizer then logged `WORKFLOW-OFFER: skipped due to non-critical error: unknown skill_id(s): calendar.list_events, system.routing`",
+      "live DB stayed at user_routine_candidates = 0 and user_routines = 1"
+    ],
+    "source_code_summary": [
+      "response_finalizer currently passes wf.executor.tool_manager into handle_offer_response and maybe_learn_routine_passively",
+      "RoutineStore._validate_skill_ids only reads capability_registry._available_skills",
+      "ToolManager does not expose _available_skills, so valid productive skill ids are treated as unknown"
+    ]
+  },
+  "acceptance_criteria": [
+    "Fix only the passive routine-learning validation mismatch on the allowlisted files.",
+    "Valid skills from the productive ToolManager-backed path must no longer be rejected as unknown.",
+    "Unknown skills must still be rejected.",
+    "Run the focused pytest command before returning."
+  ],
+  "local_validation_command": "python -m pytest backend/tests/test_routine_store.py -q",
+  "redaction_ready": true,
+  "estimated_codex_saved_tokens": 7000,
+  "estimated_delegation_overhead_tokens": 2500,
+  "recommended_backend": "cursor",
+  "recommended_model": "composer-2.5"
+}

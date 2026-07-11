@@ -1,0 +1,15 @@
+﻿{
+    "status":  "DRY_RUN",
+    "exit_code":  null,
+    "command_json":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-OR-LIVE-001-DRYFIX3\\command.json",
+    "stdout_log":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-OR-LIVE-001-DRYFIX3\\stdout.log",
+    "stderr_log":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-OR-LIVE-001-DRYFIX3\\stderr.log",
+    "last_message":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-OR-LIVE-001-DRYFIX3\\last_message.md",
+    "event_stream":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-OR-LIVE-001-DRYFIX3\\event_stream.jsonl",
+    "editable_paths":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-OR-LIVE-001-DRYFIX3\\editable_paths.txt",
+    "pre_run_status":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-OR-LIVE-001-DRYFIX3\\pre_run_status.txt",
+    "post_run_status":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-OR-LIVE-001-DRYFIX3\\post_run_status.txt",
+    "changed_files":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-OR-LIVE-001-DRYFIX3\\changed_files.txt",
+    "git_diff":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-OR-LIVE-001-DRYFIX3\\git_diff.patch",
+    "validation_summary":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-OR-LIVE-001-DRYFIX3\\validation_summary.json"
+}

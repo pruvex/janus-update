@@ -1,0 +1,16 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 22495,
+  "duration_api_ms": 22495,
+  "result": "Iâ€™ll locate the bounded delegated task and check whether itâ€™s actionable from the files and rules before asking anything.I cannot execute the delegated task yet: the actual bounded task package (allowlist, commands, and instructions) is missing from your message. The worker contract is ready, but it needs the payload to act on.\n\nPlease paste the full task package, or tell me which specific task spec / backlog item / handoff file I should read to get the bounded instructions.",
+  "session_id": "a8c46e54-6a80-4749-9df0-f5e4f7814829",
+  "request_id": "697b3a5f-122e-42fb-ab94-beffcf1f7bdc",
+  "usage": {
+    "inputTokens": 26347,
+    "outputTokens": 941,
+    "cacheReadTokens": 25292,
+    "cacheWriteTokens": 0
+  }
+}

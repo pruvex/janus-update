@@ -1,0 +1,31 @@
+﻿{
+    "capture_mode":  "live_http",
+    "http_status":  200,
+    "generation_id":  "gen-1781391084-wBV761wE5MEV25peG2gI",
+    "model":  "deepseek/deepseek-v4-flash-20260423",
+    "finish_reason":  "stop",
+    "usage":  {
+                  "prompt_tokens":  987,
+                  "completion_tokens":  650,
+                  "total_tokens":  1637,
+                  "cost":  0.00039529,
+                  "is_byok":  false,
+                  "prompt_tokens_details":  {
+                                                "cached_tokens":  0,
+                                                "cache_write_tokens":  0,
+                                                "audio_tokens":  0,
+                                                "video_tokens":  0
+                                            },
+                  "cost_details":  {
+                                       "upstream_inference_cost":  0.00039529,
+                                       "upstream_inference_prompt_cost":  0.00016779,
+                                       "upstream_inference_completions_cost":  0.0002275
+                                   },
+                  "completion_tokens_details":  {
+                                                    "reasoning_tokens":  203,
+                                                    "image_tokens":  0,
+                                                    "audio_tokens":  0
+                                                }
+              },
+    "actual_or_cost":  0.00039529
+}

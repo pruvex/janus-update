@@ -384,6 +384,33 @@ def should_skip_extraction_from_messages(user_msg: str, assistant_msg: str) -> b
     return False
 
 
+_CONTACT_RECALL_QUESTION_RE = re.compile(
+    r"\b(?:"
+    r"was\s+(?:wei(?:ß|ss)t|weisst)\s+du(?:\s+alles)?\s+(?:über|ueber)|"
+    r"was\s+mag|was\s+m(?:ö|oe)gen|was\s+hasst|"
+    r"was\s+macht(?:en)?(?:\s+.+?)?\s+gerne|"
+    r"welche\s+(?:vorlieben|abneigungen)|"
+    r"was\s+sind\s+.+?(?:vorlieben|abneigungen)"
+    r")\b",
+    re.IGNORECASE,
+)
+
+
+def _is_contact_recall_turn(user_msg: str) -> bool:
+    normalized = str(user_msg or "").strip()
+    if not normalized:
+        return False
+    if _CONTACT_RECALL_QUESTION_RE.search(normalized):
+        return True
+    return bool(
+        re.search(
+            r"\b(?:wer\s+ist|wie\s+hei(?:ß|ss)t)\s+.+?(?:freundin|freund|partnerin|partner|ehefrau|ehemann|frau|mann|bruder|schwester|mutter|vater|sohn|tochter)\b",
+            normalized,
+            re.IGNORECASE,
+        )
+    )
+
+
 def _strip_assistant_suggestion_block(assistant_msg: str) -> str:
     assistant_text = str(assistant_msg or "")
     if not assistant_text.strip():
@@ -736,6 +763,62 @@ async def _find_subject_name_in_text(text_block: str, api_key: str, provider: st
         logger.error(f"Fehler bei der Subjekt-Namenssuche: {e}", exc_info=True)
     return None
 
+
+_EXPLICIT_CONTACT_SUBJECT_RE = re.compile(
+    r"^\s*([a-zäöüß][\wäöüß-]*(?:\s+[a-zäöüß][\wäöüß-]*){0,2})\s+"
+    r"(?:liebt|mag|ist|wohnt|hasst|verbringt|spielt|baut)\b",
+    re.IGNORECASE,
+)
+_EXPLICIT_CONTACT_SUBJECT_STOPWORDS = {
+    "ja",
+    "genau",
+    "richtig",
+    "korrekt",
+    "stimmt",
+    "yes",
+    "und",
+    "oder",
+    "er",
+    "sie",
+    "es",
+    "ich",
+    "du",
+}
+
+_EXPLICIT_PET_LEAD_RE = re.compile(
+    r"^\s*(?:(?P<owner>[a-zÃ¤Ã¶Ã¼ÃŸ][\wÃ¤Ã¶Ã¼ÃŸ-]*)\s+)?(?P<pet_type>hund|katze)\s+(?P<pet_name>[a-zÃ¤Ã¶Ã¼ÃŸ][\wÃ¤Ã¶Ã¼ÃŸ-]*)\s+"
+    r"(?:ist|hat|hei(?:ÃŸ|ss)t)\b",
+    re.IGNORECASE,
+)
+_CONTACT_SUBJECT_PET_TOKENS = {"hund", "katze", "haustier"}
+
+
+def _extract_explicit_lead_contact_subject(text_block: str) -> Optional[str]:
+    match = _EXPLICIT_CONTACT_SUBJECT_RE.search(str(text_block or "").strip())
+    if not match:
+        return None
+    subject = str(match.group(1) or "").strip().lower()
+    tokens = [token for token in subject.split() if token]
+    if not tokens:
+        return None
+    if any(token in _EXPLICIT_CONTACT_SUBJECT_STOPWORDS for token in tokens):
+        return None
+    if any(token in _CONTACT_SUBJECT_PET_TOKENS for token in tokens):
+        return None
+    return subject or None
+
+
+def _extract_explicit_lead_pet_subject(text_block: str) -> Optional[Dict[str, str]]:
+    match = _EXPLICIT_PET_LEAD_RE.search(str(text_block or "").strip())
+    if not match:
+        return None
+    pet_name = str(match.group("pet_name") or "").strip().lower()
+    pet_type_raw = str(match.group("pet_type") or "").strip().lower()
+    if not pet_name or not pet_type_raw:
+        return None
+    pet_type = "dog" if pet_type_raw == "hund" else ("cat" if pet_type_raw == "katze" else "pet")
+    return {"subject_name": pet_name, "subject_role": "pet", "subject_type": pet_type}
+
 # ═══════════════════════════════════════════════════════════════════════════
 # IDENTITY PRE-PASS – deterministic "Ich bin X / Mein Name ist X" detection
 # ═══════════════════════════════════════════════════════════════════════════
@@ -857,6 +940,63 @@ def _normalize_subject_to_user(subject_name: str, user_identity_name: Optional[s
     return subject_name
 
 
+def _is_contact_bound_turn(subject_name: Optional[str], subject_role: Optional[str]) -> bool:
+    return bool(
+        str(subject_name or "").strip()
+        and str(subject_name or "").strip().lower() != "unbekannt"
+        and str(subject_role or "").strip().lower() == "contact"
+    )
+
+
+def _is_identity_slot_item(item: Dict[str, Any]) -> bool:
+    canonical_key = str(item.get("canonical_key") or "").strip().lower()
+    fixed_canonical_key = str(item.get("_fixed_canonical_key") or "").strip().lower()
+    if canonical_key == "user:physis:heisst:name" or fixed_canonical_key == "user:physis:heisst:name":
+        return True
+
+    subject_name = str(item.get("subject_name") or "").strip().lower()
+    predicate = str(item.get("predicate") or "").strip().lower()
+    return subject_name == "user" and predicate in {"bin", "ist", "heiße", "heisse", "heißt", "heisst"}
+
+
+def _normalize_predicate_token(value: Any) -> str:
+    return (
+        str(value or "")
+        .strip()
+        .lower()
+        .replace("ä", "ae")
+        .replace("ö", "oe")
+        .replace("ü", "ue")
+        .replace("ß", "ss")
+    )
+
+
+def _display_case(value: str) -> str:
+    return " ".join(part.capitalize() for part in str(value or "").strip().split())
+
+
+def _normalize_contact_fact_variant(item: Dict[str, Any], normalized_cat: str) -> str:
+    predicate_norm = _normalize_predicate_token(item.get("predicate"))
+    subject_name = str(item.get("subject_name") or "").strip()
+    object_value = " ".join(str(item.get("object_value") or "").strip().replace("-", " ").split())
+    if not subject_name or not object_value:
+        return normalized_cat
+
+    if predicate_norm in {"heisst", "heisst_voller_name", "heisst_vollstaendig"}:
+        item["predicate"] = "heisst"
+        item["object_value"] = object_value.lower()
+        item["fact"] = f"{_display_case(subject_name)} heißt {_display_case(object_value)}"
+        return "Allgemein"
+
+    if predicate_norm in {"wohnt_in", "lebt_in"}:
+        item["predicate"] = "wohnt_in"
+        item["object_value"] = object_value.lower()
+        item["fact"] = f"{_display_case(subject_name)} wohnt in {_display_case(object_value)}"
+        return "Allgemein"
+
+    return normalized_cat
+
+
 def _detect_user_identity_fact(user_msg: str) -> Optional[Dict[str, Any]]:
     """
     Deterministic pre-pass: detects user self-introduction patterns and returns
@@ -953,10 +1093,17 @@ async def extract_and_save_fact_from_interaction(
         if should_skip_extraction_from_messages(user_msg, extraction_assistant_msg):
             logger.warning("Memory extraction failed - skipping due to validation error.")
             return []
+        if _is_contact_recall_turn(user_msg):
+            logger.info(
+                "[FACT EXTRACTION] Skipping contact recall turn to avoid assistant self-poisoning."
+            )
+            return []
 
         final_subject_id = None
         subject_name_to_use = None
         subject_role_to_use = None
+        explicit_pet_subject = _extract_explicit_lead_pet_subject(user_msg)
+        explicit_lead_subject = _extract_explicit_lead_contact_subject(user_msg)
 
         if subject_hint:
             subject_name_to_use = subject_hint.lower()
@@ -973,6 +1120,26 @@ async def extract_and_save_fact_from_interaction(
             subject_role_to_use = "pet" if assistant_anchor_name in ["pody", "egon"] else "contact"
             final_subject_id = f"{subject_role_to_use}:dog:{subject_name_to_use}"
             logger.info(f"DIAMOND BINDING: Anker '{subject_name_to_use}' aus Assistant-Frage genutzt.")
+
+        if not subject_name_to_use and explicit_pet_subject:
+            subject_name_to_use = explicit_pet_subject["subject_name"]
+            subject_role_to_use = explicit_pet_subject["subject_role"]
+            subject_type = explicit_pet_subject["subject_type"]
+            final_subject_id = f"{subject_role_to_use}:{subject_type}:{subject_name_to_use}"
+            logger.info(
+                "[LEAD SUBJECT GUARD] Using explicit lead pet subject '%s' (%s) from user text.",
+                subject_name_to_use,
+                subject_type,
+            )
+
+        if not subject_name_to_use and explicit_lead_subject:
+            subject_name_to_use = explicit_lead_subject
+            subject_role_to_use = "contact"
+            final_subject_id = f"contact:person:{subject_name_to_use}"
+            logger.info(
+                "[LEAD SUBJECT GUARD] Using explicit lead contact subject '%s' from user text.",
+                subject_name_to_use,
+            )
 
         # 3. Falls noch kein Name gefunden, Standard-Suche
         if not subject_name_to_use:
@@ -1063,6 +1230,20 @@ async def extract_and_save_fact_from_interaction(
                 )
             ]
         # ──────────────────────────────────────────────────────────────────────
+
+        if (not identity_fact) and _is_contact_bound_turn(subject_name_to_use, subject_role_to_use):
+            filtered_items = []
+            for item in extracted_items:
+                if _is_identity_slot_item(item):
+                    logger.warning(
+                        "[CONTACT RECALL IDENTITY GUARD] Dropping invalid user identity fact on "
+                        "contact-bound turn for subject=%r: %r",
+                        subject_name_to_use,
+                        item,
+                    )
+                    continue
+                filtered_items.append(item)
+            extracted_items = filtered_items
 
         # CIRCUIT BREAKER: Success recording (Opus V2.1)
         _extraction_breaker.record_success()
@@ -1201,7 +1382,28 @@ async def extract_and_save_fact_from_interaction(
                         )
             # ═══════════════════════════════════════════════════════════════════
 
+            normalized_cat = _normalize_contact_fact_variant(item, normalized_cat)
             item["category"] = normalized_cat
+            if (
+                explicit_lead_subject
+                and str(item.get("subject_name") or "").strip().lower()
+                not in {"", "user", "unbekannt", explicit_lead_subject}
+                and str(item.get("subject_role") or subject_role_to_use or "").strip().lower() in {"", "contact"}
+            ):
+                logger.info(
+                    "[LEAD SUBJECT GUARD] Rebinding extracted contact subject '%s' -> '%s' for explicit user statement.",
+                    item.get("subject_name"),
+                    explicit_lead_subject,
+                )
+                item["subject_name"] = explicit_lead_subject
+                item["subject_role"] = "contact"
+            if (
+                not str(item.get("subject_role") or "").strip()
+                and _is_contact_bound_turn(subject_name_to_use, subject_role_to_use)
+                and str(item.get("subject_name") or "").strip().lower()
+                == str(subject_name_to_use or "").strip().lower()
+            ):
+                item["subject_role"] = subject_role_to_use or "contact"
 
             # ═══════════════════════════════════════════════════════════════════════════
             # BUG-MEM-018: IDENTITY NORMALIZATION
@@ -1209,7 +1411,10 @@ async def extract_and_save_fact_from_interaction(
             # This prevents duplicates like "max" and "user" for the same person
             # ═══════════════════════════════════════════════════════════════════════════
             original_subject = item.get("subject_name", "unbekannt")
-            normalized_subject = _normalize_subject_to_user(original_subject, user_identity_name)
+            if str(item.get("subject_role") or "").strip().lower() == "contact":
+                normalized_subject = original_subject
+            else:
+                normalized_subject = _normalize_subject_to_user(original_subject, user_identity_name)
             if normalized_subject != original_subject:
                 logger.debug(
                     "[IDENTITY NORMALIZATION] Mapped subject '%s' -> 'user' (user_identity=%s)",
@@ -1333,6 +1538,14 @@ async def extract_and_save_fact_from_interaction(
 
             s_type = "vision" if "[VISION ANALYSE]" in extraction_assistant_msg else "text"
 
+            if (
+                not str(item.get("subject_role") or "").strip()
+                and subject_name_to_use
+                and subject_name_to_use != "unbekannt"
+                and str(item.get("subject_name") or "").strip().lower() == str(subject_name_to_use).strip().lower()
+            ):
+                item["subject_role"] = subject_role_to_use or "contact"
+
             saved_memory = memory_manager.save_memory_snippet(
                 db=db, 
                 chat_id=chat_id, 
@@ -1341,7 +1554,7 @@ async def extract_and_save_fact_from_interaction(
                 source_metadata={"user_msg": user_msg[:100]} # NEU: Metadaten mitgeben
             )
             if saved_memory:
-                if str(item.get("subject_role") or "").strip().lower() == "contact":
+                if _should_attempt_contact_sync_for_item(item):
                     from backend.services import contact_manager
 
                     contact_manager.stage_contact_update_from_memory(
@@ -1385,6 +1598,34 @@ async def extract_and_save_fact_from_interaction(
         _extraction_breaker.record_failure()
         memory_metrics.increment("extractions_failed")
         return []
+
+
+_CONTACT_SYNC_CATEGORY_HINTS = {
+    "allgemein",
+    "beziehungen",
+    "beruf",
+    "gesundheit",
+    "haustier-details",
+    "physis",
+    "stil",
+    "vorlieben",
+}
+
+
+def _should_attempt_contact_sync_for_item(item: Dict[str, Any]) -> bool:
+    subject_name = str(item.get("subject_name") or "").strip()
+    if not subject_name:
+        return False
+    subject_name_norm = subject_name.casefold()
+    if subject_name_norm in {"user", "unbekannt"} or subject_name_norm.startswith("pet:"):
+        return False
+
+    subject_role = str(item.get("subject_role") or "").strip().casefold()
+    if subject_role == "contact":
+        return True
+
+    category = str(item.get("category") or "").strip().casefold()
+    return category in _CONTACT_SYNC_CATEGORY_HINTS
 
 
 # (Die Funktion `extract_and_save_fact` muss ebenfalls leicht angepasst werden, um `is_core` zu verarbeiten)
@@ -1441,7 +1682,7 @@ async def extract_and_save_fact(
                 fact_object=item 
             )
             if result:
-                if str(item.get("subject_role") or "").strip().lower() == "contact":
+                if _should_attempt_contact_sync_for_item(item):
                     from backend.services import contact_manager
 
                     contact_manager.stage_contact_update_from_memory(

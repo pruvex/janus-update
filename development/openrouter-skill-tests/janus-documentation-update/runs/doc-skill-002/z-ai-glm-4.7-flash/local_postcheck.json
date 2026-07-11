@@ -1,0 +1,22 @@
+{
+  "skill_id": "DOC-SKILL-002",
+  "generation_id": "gen-1782396823-QzRpmEmunm00k82Q5ZmZ",
+  "model": "z-ai/glm-4.7-flash-20260119",
+  "finish_reason": "length",
+  "actual_or_cost": 0.0005369305,
+  "common_checks": {
+    "generation_id_present": true,
+    "usage_present": true,
+    "actual_cost_present": true,
+    "finish_reason_not_length": false
+  },
+  "content_evaluation": {
+    "validation_result": "FAIL",
+    "reason_for_escalation": "postcheck_error",
+    "checks": {
+      "postcheck_exception": "Traceback (most recent call last):\n  File \"C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\scripts\\gpt54_doc_skill_batch_postcheck.py\", line 83, in <module>\n    raise SystemExit(main())\n                     ^^^^^^\n  File \"C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\scripts\\gpt54_doc_skill_batch_postcheck.py\", line 72, in main\n    result = evaluate_saved_artifacts(args.skill_id, response_body, response_summary)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\scripts\\gpt54_doc_skill_batch_postcheck.py\", line 36, in evaluate_saved_artifacts\n    content = extract_content(response_body)\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\scripts\\gpt54_doc_skill_response_evaluator.py\", line 129, in extract_content\n    raise ValueError(\"assistant content missing in response body\")\nValueError: assistant content missing in response body\n"
+    }
+  },
+  "postcheck_validation_result": "FAIL",
+  "accepted_for_local_batch_use": false
+}

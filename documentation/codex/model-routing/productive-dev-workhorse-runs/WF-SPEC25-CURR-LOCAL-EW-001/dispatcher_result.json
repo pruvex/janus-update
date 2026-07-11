@@ -1,0 +1,17 @@
+{
+  "summary_header": "PRODUCTIVE DEV WORKHORSE GATE",
+  "workflow_id": "WF-SPEC25-CURR-LOCAL-EW-001",
+  "task_label": "Spec25 current-state local path write-apply",
+  "task_class": "execution_write_apply_candidate",
+  "normal_target_model": "5.4 medium",
+  "eligibility_result": "OR_ALLOWED",
+  "eligibility_reason_code": "ELIGIBILITY_CONFIRMED",
+  "validation_result": "PASS",
+  "selected_path": "codex_only_operator_choice",
+  "final_outcome": "LOCAL_CODEX_PATH_SELECTED",
+  "operator_result_lines": [
+    "Ergebnis: Codex lokal ausgewaehlt",
+    "Route: dedizierter Dev-Workhorse-Schritt bleibt lokal"
+  ],
+  "operator_message": "Operator chose the local Codex path. No delegated helper was invoked."
+}

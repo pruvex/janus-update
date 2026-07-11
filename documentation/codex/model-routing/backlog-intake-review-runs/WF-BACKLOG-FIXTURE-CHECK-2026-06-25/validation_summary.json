@@ -1,0 +1,12 @@
+{
+  "workflow_id": "WF-BACKLOG-FIXTURE-CHECK-2026-06-25",
+  "task_label": "Lean backlog intake delegated fixture check",
+  "input_validation_pass": true,
+  "result_validation_pass": true,
+  "telemetry_validation_pass": true,
+  "input_issues": [],
+  "result_issues": [],
+  "telemetry_issues": [],
+  "redaction_ready": true,
+  "accepted_for_local_codex_validation": true
+}

@@ -1,0 +1,36 @@
+{
+  "task_id": "TASK-SPEC29.1",
+  "lane_id": "execution_patch_candidate",
+  "bound_skill_context": "janus-executioner",
+  "task_label": "Implement hidden routine candidate lifecycle and fail-closed guards",
+  "task_file": "documentation/tasks/TASK-SPEC29_stilles_routinenlernen_mit_kandidatenphase.md",
+  "task_breakdown": "documentation/tasks/TASK-SPEC29.1_task_breakdown.md",
+  "precheck": "documentation/tasks/TASK-SPEC29.1_preimplementation_check.md",
+  "spec": "documentation/SPEC/29_stilles_routinenlernen_mit_kandidatenphase.md",
+  "worker_package_json": "development/openrouter-skill-tests/janus-executioner/spec29_1_candidate_lifecycle_2026-07-09/worker_package.json",
+  "allowlist_file": "development/openrouter-skill-tests/janus-executioner/spec29_1_candidate_lifecycle_2026-07-09/allowlist.txt",
+  "problem_statement": "The approved feature requires a hidden routine-candidate phase before any visible saved routine exists, but the current routine/workflow stack only knows visible saved routines and offer logs. The first implementation slice must add an internal candidate lifecycle with fail-closed suitability guards and a 30-day expiry rule.",
+  "latest_user_evidence": {
+    "timestamp_local": "2026-07-09",
+    "actual": "Spec 29 and TASK-SPEC29.1 are approved/prechecked, but no candidate lifecycle exists yet.",
+    "expected": "One qualifying successful multi-step workflow produces exactly one internal candidate; risky or context-heavy flows produce none; unconfirmed candidates expire after 30 days."
+  },
+  "acceptance_criteria": [
+    "Only allowlisted backend persistence/workflow files and focused tests may change.",
+    "A first qualifying successful multi-step workflow creates exactly one internal candidate instead of a visible saved routine.",
+    "Risky, sensitive, or strongly context-dependent workflows do not create candidates in v1.",
+    "Unconfirmed candidates expire after 30 days and are no longer treated as active learning candidates.",
+    "Do not add automatic promotion, passive chat transparency, settings UI, routines API, OAuth, transport changes, migrations, Git, or broad architecture changes."
+  ],
+  "local_validation_commands": [
+    "python -m pytest backend/tests/test_workflow_detector.py -v",
+    "python -m pytest backend/tests/test_routine_store.py -v",
+    "python -m py_compile backend/data/models.py backend/data/database.py backend/services/workflow/workflow_detector.py backend/services/workflow/step_trace_extractor.py backend/services/workflow/routine_store.py"
+  ],
+  "redaction_ready": true,
+  "estimated_codex_saved_tokens": 14000,
+  "estimated_delegation_overhead_tokens": 4500,
+  "recommended_backend": "cursor",
+  "recommended_model": "gpt-5.4-mini-medium",
+  "cursor_prompt_contract": "Use Cursor for one bounded execution patch. Inspect only allowlisted persistence/workflow files, implement the smallest safe hidden candidate lifecycle with 30-day expiry and fail-closed guards, run listed checks, and return concise JSON-compatible output."
+}

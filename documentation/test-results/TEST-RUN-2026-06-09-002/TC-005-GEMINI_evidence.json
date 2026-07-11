@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-06-09-002",
+  "testCaseId": "TC-005-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "After `Chris ist Vegetarier`, ask `ich will mit chris essen gehen`",
+  "response": "Die 5 relevantesten EintrÃ¤ge aus der Suche sind:Quelle der Liste: Guide MICHELIN.1. Cookies CreamDas mit einem Michelin-Stern ausgezeichnete Restaurant in Mitte gilt als Pionier der vegetarischen Haute Cuisine und serviert in industriellem Club-Ambiente innovative fleischlose Menüs.Details: online leider nicht eindeutig verfÃ¼gbar.2. BonvivantAls Berlins erstes rein veganes Sternerestaurant kombiniert dieses Cocktail-Bistro in Schöneberg gehobene pflanzliche Kulinarik mit einer exzellenten Auswahl an handwerklich perfektionierten Drinks.Details: online leider nicht eindeutig verfÃ¼gbar.3. FREAIn diesem veganen Zero-Waste-Restaurant in Mitte werden alle Zutaten regional bezogen und Abfälle durch eine eigene Kompostieranlage im Sinne der Nachhaltigkeit konsequent vermieden.Details: online leider nicht eindeutig verfÃ¼gbar.4. OukanDieses Restaurant bietet japanisch inspirierte vegane Fine-Dining-Erlebnisse in einem eleganten, minimalistischen Ambiente und stellt saisonale Produkte in den Mittelpunkt seiner kunstvollen Gerichte.Details: online leider nicht eindeutig verfÃ¼gbar.5. Lucky LeekDas etablierte Lokal im Prenzlauer Berg überzeugt durch kreative vegane Gänge-Menüs auf Spitzenniveau, wobei Chefköchin Josita Hartanto besonders auf saisonale Akzente setzt.Details: online leider nicht eindeutig verfÃ¼gbar.18:36",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-06-09T16:38:11.342Z"
+}

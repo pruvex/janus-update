@@ -1,0 +1,11 @@
+﻿
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1781385899-t7YDjF4X2FUJlLgG8fyk","object":"chat.completion","created":1781385899,"model":"ibm-granite/granite-4.1-8b-20260429","provider":"WandB","system_fingerprint":null,"service_tier":null,"choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"stop","message":{"role":"assistant","content":"## Purpose\nCompare cheaper candidates for 5.4 documentation assistance. Do not approve anything.\n\n## Status\n**Planning only** – no production routing.\n\n## Allowed Scope\n- Summarize sanitized text  \n- Preserve **HOLD** and **UNKNOWN**  \n- Propose next fixture work  \n\n## Blocked Scope\n- Update routing table  \n- Approve production  \n- Run live calls  \n- Decide audit or release readiness  \n\n## Operator Reminder\nIf a future test is approved, show the estimate first, use file‑first capture, and record the actual cost after completion.","refusal":null,"reasoning":null}}],"usage":{"prompt_tokens":582,"completion_tokens":117,"total_tokens":699,"cost":0.0000408,"is_byok":false,"prompt_tokens_details":{"cached_tokens":0,"cache_write_tokens":0,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.0000408,"upstream_inference_prompt_cost":0.0000291,"upstream_inference_completions_cost":0.0000117},"completion_tokens_details":{"reasoning_tokens":0,"image_tokens":0,"audio_tokens":0}}}

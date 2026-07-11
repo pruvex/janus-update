@@ -1,0 +1,15 @@
+{
+  "model": "deepseek/deepseek-v4-flash",
+  "pass": true,
+  "validation_result": "PASS",
+  "final_outcome": "DIRECT_OR_EXECUTION_PATCH_READY_FOR_CODEX_REVIEW",
+  "actual_or_cost": 0.00052528,
+  "generation_id": "gen-1782398556-tX8pUHS1ICaLsNrkEyjC",
+  "finish_reason": "stop",
+  "changed_files": [
+    "backend/services/contact_manager.py"
+  ],
+  "issues": [],
+  "response_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\LEAN-EXEC-deepseek-deepseek-v4-flash\\response_summary.json",
+  "operator_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-direct-or-runs\\LEAN-EXEC-deepseek-deepseek-v4-flash\\operator_summary.json"
+}

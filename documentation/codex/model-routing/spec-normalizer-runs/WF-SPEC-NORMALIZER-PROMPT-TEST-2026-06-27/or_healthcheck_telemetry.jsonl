@@ -1,0 +1,1 @@
+{"workflow_id": "WF-SPEC-NORMALIZER-PROMPT-TEST-2026-06-27", "skill": "janus-spec-normalizer", "selected_path": "operator_choice_pending", "operator_choice": "prompt", "or_model": "qwen/qwen3-coder-30b-a3b-instruct", "estimated_or_cost": 0.00022, "cost_estimate_confidence_percent": 72.0, "final_outcome": "AWAITING_OPERATOR_CHOICE", "validation_result": "PASS"}

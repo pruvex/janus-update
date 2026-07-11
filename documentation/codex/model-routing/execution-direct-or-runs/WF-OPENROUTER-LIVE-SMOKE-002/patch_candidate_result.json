@@ -1,0 +1,19 @@
+{
+  "status": "BLOCKED",
+  "target_task": "TASK-EXAMPLE-001",
+  "patch_text": "",
+  "changed_files": [],
+  "risk_list": [
+    "No exact code context provided for `build_operator_prompt_lines` function; cannot anchor a real unified diff.",
+    "Current seam context describes intent but lacks concrete file lines, import structure, or surrounding control flow.",
+    "Cannot produce a valid hunk without knowing the exact variable names, string templates, or indentation used in the target function.",
+    "Any patch would be speculative and risk mismatching the real local codebase."
+  ],
+  "suggested_validation_steps": [
+    "python -m pytest documentation/codex/model-routing/tests/test_bounded_or_worker_gate_prompt.py -q",
+    "python -m py_compile documentation/codex/model-routing/scripts/bounded_or_worker_gate_prompt.py"
+  ],
+  "manual_validation_note": "Codex must manually validate this patch locally before task completion.",
+  "codex_acceptance_rule": "Codex must review and apply or reject locally.",
+  "notes": "No real hunk can be produced without concrete function body. Requesting additional code context from operator."
+}

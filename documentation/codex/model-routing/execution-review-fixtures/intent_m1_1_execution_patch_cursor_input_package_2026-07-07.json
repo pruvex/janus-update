@@ -1,0 +1,25 @@
+{
+  "task_id": "TASK-EX-001",
+  "lane_id": "execution_patch_candidate",
+  "workflow_id": "WF-INTENT-M1.1-CURSOR-LIVE-2026-07-07-001",
+  "bound_skill_context": "janus-executioner",
+  "target_task": "TASK-INTENT-M1.1",
+  "task_label": "Build the intent auxiliary classifier contract and focused tests for TASK-INTENT-M1.1",
+  "spec_path": "documentation/Cursor specs/INTENT_ENGINE_HERMES_INSPIRED_UPGRADE_PLAN.md",
+  "precheck_path": "documentation/tasks/TASK-INTENT-M1.1_preimplementation_check.md",
+  "precheck_status": "PRE-CHECK PASSED",
+  "worker_package_json": "documentation/codex/model-routing/execution-review-fixtures/intent_m1_1_execution_patch_cursor_worker_package_2026-07-07.json",
+  "allowlist_file": "documentation/codex/model-routing/execution-review-fixtures/allowlists/intent_m1_1_execution_patch_allowlist_2026-07-07.txt",
+  "acceptance_criteria": [
+    "Only the allowlisted source and test files may change.",
+    "Implement the ActionSubjectResult contract and auxiliary classifier wrapper without integrating into detect_all_intents().",
+    "Provider or parsing failures must fail closed and stay inside deterministic fallback behavior for this slice.",
+    "The focused pytest and py_compile checks must pass before Codex review."
+  ],
+  "local_validation_command": "python -m pytest backend/tests/test_intent_aux_classifier.py backend/tests/test_intent_action_subject_mapping.py -q",
+  "estimated_codex_saved_tokens": 28000,
+  "estimated_delegation_overhead_tokens": 10000,
+  "recommended_backend": "cursor",
+  "recommended_model": "composer-2.5",
+  "cursor_prompt_contract": "Stay inside the five-file allowlist, do not integrate into detect_all_intents(), preserve Janus boundaries, run only the bounded checks, and return concise JSON-friendly output."
+}

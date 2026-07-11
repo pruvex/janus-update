@@ -1,0 +1,1 @@
+C:\python311\python.exe C:\KI\Janus-Projekt\documentation\codex\skills\janus-health-check\scripts\health_snapshot.py --repo C:\KI\Janus-Projekt --or-telemetry-jsonl C:\KI\Janus-Projekt\documentation\codex\model-routing\or_healthcheck_telemetry_productive_dev_workhorse_2026-06-23_EXEC-WRITE-APPLY-LIVE-PILOT-001.jsonl

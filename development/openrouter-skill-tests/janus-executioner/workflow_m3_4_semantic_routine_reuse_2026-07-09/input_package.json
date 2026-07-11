@@ -1,0 +1,36 @@
+{
+  "task_id": "TASK-WORKFLOW-M3.4",
+  "lane_id": "execution_patch_candidate",
+  "bound_skill_context": "janus-executioner",
+  "task_label": "Implement semantic routine reuse from natural user phrasing",
+  "task_file": "documentation/tasks/TASK-WORKFLOW-M3_offer_runner.md",
+  "task_breakdown": "documentation/tasks/TASK-WORKFLOW-M3.4_task_breakdown.md",
+  "precheck": "documentation/tasks/TASK-WORKFLOW-M3.4_preimplementation_check.md",
+  "spec": "documentation/Cursor specs/LEARNED_WORKFLOWS_SPEC.md",
+  "worker_package_json": "development/openrouter-skill-tests/janus-executioner/workflow_m3_4_semantic_routine_reuse_2026-07-09/worker_package.json",
+  "allowlist_file": "development/openrouter-skill-tests/janus-executioner/workflow_m3_4_semantic_routine_reuse_2026-07-09/allowlist.txt",
+  "problem_statement": "The technical runner can execute by generated routine name or explicit trigger phrase, but product acceptance must not require users to remember names like `Routine List Events`. After saving a routine from a natural calendar+weather request, Janus must recognize a later semantically matching natural request and use the saved routine.",
+  "latest_user_evidence": {
+    "timestamp_local": "2026-07-09",
+    "actual": "The proposed acceptance retest asked the user to type `Routine List Events`, which the user rejected as bad UX.",
+    "expected": "The user repeats the natural request, for example `Was steht heute in meinem Kalender und wie wird das Wetter in Koeln?`; Janus finds the saved calendar+weather routine, runs it, and says it used the routine."
+  },
+  "acceptance_criteria": [
+    "Only allowlisted backend routine/intent/orchestrator files and focused tests may change.",
+    "A saved routine with steps `calendar.list_events` then `system.weather` must execute when a later natural request asks for calendar plus weather, even when the routine name or generated trigger phrase is not present.",
+    "Existing explicit trigger phrase execution must still pass.",
+    "An unrelated natural request must not execute the routine.",
+    "The successful routine response must transparently say that a saved or matching routine was used.",
+    "Do not add UI, transport APIs, OAuth, product OpenRouter, Memory Session-Search, embeddings, migration, Git, or broad architecture changes."
+  ],
+  "local_validation_commands": [
+    "python -m pytest backend/tests/test_routine_runner.py backend/tests/test_workflow_offer_service.py -v",
+    "python -m py_compile backend/services/workflow/routine_runner.py backend/services/orchestrator/intent_engine.py backend/services/chat_orchestrator.py"
+  ],
+  "redaction_ready": true,
+  "estimated_codex_saved_tokens": 14000,
+  "estimated_delegation_overhead_tokens": 3500,
+  "recommended_backend": "cursor",
+  "recommended_model": "composer-2.5",
+  "cursor_prompt_contract": "Use Cursor Composer for one bounded execution patch. Inspect only allowlisted files, implement the smallest safe semantic routine reuse matcher, run listed checks, and return concise JSON-compatible output."
+}

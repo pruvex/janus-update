@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-06-09-004",
+  "testCaseId": "TC-006-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "was mag olix?",
+  "response": "Olix Quarz mag Strategiespiele wie Panzer General. Außerdem wohnt er in Köln-Stammheim.💡 Passende nächste Schritte:• Soll ich dir aus seinen Vorlieben eine kurze „Merkliste“ für Geschenke zusammenstellen?• Gibt es noch weitere Spiele/Strategie-Genres, die ihm gefallen?22:58",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-06-09T20:58:57.037Z"
+}

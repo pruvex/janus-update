@@ -1,0 +1,25 @@
+{
+  "summary_header": "PRODUCTIVE DEV WORKHORSE GATE",
+  "workflow_id": "WF-EXEC-EVERYDAY-LOCAL-2026-06-28",
+  "task_label": "Executioner everyday local proof current-shape",
+  "task_class": "execution_patch_candidate",
+  "normal_target_model": "5.4 medium",
+  "eligibility_result": "OR_ALLOWED",
+  "eligibility_reason_code": "ELIGIBILITY_CONFIRMED",
+  "validation_result": "PASS",
+  "selected_path": "codex_only_operator_choice",
+  "final_outcome": "LOCAL_CODEX_PATH_SELECTED",
+  "operator_result_lines": [
+    "Ergebnis: Codex lokal ausgewaehlt",
+    "Route: dedizierter Dev-Workhorse-Schritt bleibt lokal",
+    "Tatsaechliche Kosten: N/A (Codex-only Pfad)"
+  ],
+  "operator_message": "Operator chose the local Codex path. No delegated helper was invoked. Session telemetry and healthcheck visibility were finalized for the dedicated Dev-workhorse path.",
+  "session_run_dir": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\productive-dev-workhorse-runs\\WF-EXEC-EVERYDAY-LOCAL-2026-06-28",
+  "session_telemetry_jsonl_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\or_healthcheck_telemetry_productive_dev_workhorse_2026-06-28_WF-EXEC-EVERYDAY-LOCAL-2026-06-28.jsonl",
+  "session_telemetry_row_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\productive-dev-workhorse-runs\\WF-EXEC-EVERYDAY-LOCAL-2026-06-28\\session_telemetry_row.json",
+  "dev_workhorse_healthcheck_status": "PASS",
+  "dev_workhorse_healthcheck_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\productive-dev-workhorse-runs\\WF-EXEC-EVERYDAY-LOCAL-2026-06-28\\healthcheck_summary.json",
+  "actual_or_cost": 0.0,
+  "generation_id": ""
+}

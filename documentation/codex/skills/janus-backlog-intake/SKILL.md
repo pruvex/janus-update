@@ -10,6 +10,50 @@ description: Capture raw Janus bugs, changes, enhancements, improvements, and te
 Turn raw Janus input into one or more structured items in `C:\KI\Janus-Projekt\documentation\backlog\BACKLOG.md`, unless the request clearly qualifies for the `janus-quickchange` lane. Do not prioritize, implement, create handoff files, or route directly to execution.
 This is primarily a ChatGPT-led intake skill. Codex should only consume a bounded handoff for the actual backlog-file edit when the intake decision is already clear.
 
+## Tri-Modal Rollout Note
+
+Global delegation vocabulary across Janus is now:
+
+- `1 = Codex`
+- `2 = Cursor`
+- `3 = OpenRouter`
+
+This skill's bounded backlog-candidate review lane is now wired through the shared manifest-backed `documentation/codex/model-routing/scripts/janus_delegate.py` entry. OpenRouter remains the recommended backend for this assist-only review slice; Cursor is available as option `2` but is not the preferred backend here.
+
+## Bounded Delegation Gate
+
+For one bounded backlog-candidate drafting slice, this skill now has the shared tri-modal operator gate:
+
+- `1 = Codex`
+- `2 = Cursor`
+- `3 = OpenRouter`
+
+Use the shared delegate entry first:
+
+```powershell
+python documentation/codex/model-routing/scripts/janus_delegate.py `
+  --lane backlog_intake_review `
+  --task-id TASK-BI-001 `
+  --workflow-id WF-BACKLOG-REVIEW-001 `
+  --operator-choice prompt `
+  --input-package-json development/openrouter-skill-tests/janus-backlog-intake/backlog_intake_input_package.json `
+  --estimated-codex-saved-tokens 12000 `
+  --estimated-delegation-overhead-tokens 4000
+```
+
+Current lane behavior:
+
+- OpenRouter remains the recommended backend for this bounded assist-only review slice.
+- Cursor is visible as option `2`, but not the recommended backend.
+- The existing `codex_backlog_intake_review_runner.py` remains the downstream OR helper planned by `janus_delegate.py`.
+
+Boundaries:
+
+- no delegated prioritization
+- no delegated implementation handoff
+- no delegated final backlog write acceptance
+- Codex remains the final backlog editor and owner
+
 ## Source Reference
 
 Legacy source:

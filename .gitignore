@@ -37,6 +37,7 @@ costs.db*
 janus_fallback.db*
 # Runtime fallback logs (generated during local dev runs)
 backend/backend/
+documentation/logs/dev-runtime/
 e2e_janus.db*
 playwright-report/data/
 playwright-report/trace/

@@ -1,0 +1,7 @@
+﻿ M documentation/codex/model-routing/scripts/codex_sidecar_skill_runner.ps1
+ M documentation/codex/model-routing/scripts/doc_skill_mini_fixed_or_live_runner.py
+ M documentation/codex/model-routing/scripts/or_file_first_capture_wrapper.ps1
+?? documentation/codex/model-routing/scripts/gpt54_doc_skill_batch_postcheck.py
+?? documentation/codex/model-routing/scripts/gpt54_doc_skill_multi_model_batch_runner.py
+?? documentation/codex/model-routing/scripts/gpt54_doc_skill_response_evaluator.py
+?? documentation/codex/model-routing/scripts/quickchange_sidecar_write_pilot_runner.py

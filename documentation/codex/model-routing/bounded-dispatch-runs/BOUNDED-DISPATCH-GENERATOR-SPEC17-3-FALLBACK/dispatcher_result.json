@@ -1,0 +1,17 @@
+{
+  "summary_header": "BOUNDED DELEGATION DISPATCH RESULT",
+  "workflow_id": "BOUNDED-DISPATCH-GENERATOR-SPEC17-3-FALLBACK",
+  "task_class": "generator_review",
+  "task_label": "TASK-SPEC17.3 validator fallback path",
+  "selected_path": "codex_local_fallback_after_structured_executor_failure",
+  "validation_result": "FAIL",
+  "final_outcome": "CODEX_LOCAL_FALLBACK_REQUIRED",
+  "operator_result_lines": [
+    "Ergebnis: Lokaler Fallback aktiviert",
+    "Route: Delegated intent -> structured executor failed -> Codex local"
+  ],
+  "fallback_reason": "Structured generator or validator execution did not complete successfully.",
+  "generator_runner_stdout_excerpt": "No failure details captured.",
+  "generator_runner_stderr_excerpt": "Generator executor failed: STDOUT: { \"workflow_id\": \"BOUNDED-DISPATCH-GENERATOR-SPEC17-3-FALLBACK\", \"skill_id\": \"janus-test-pipeline\", \"action_type\": \"run_generator\", \"executor_status\": \"FAILED\", \"schema_validation\": \"PASS\", \"mapping_resolution\": \"NOT_RUN\", \"allowlist_status\": \"NOT_RUN\", \"output_artifact_status\": \"NOT_RUN\", \"codex_review_required\": true, \"detail\": \"Unsupported generator_id in TASK-SPEC17.2 executor slice: generate_live_runner_v1\", \"run_directory\": \"documentation/codex/model-routing/structured-action-runs/BOUNDED-DISPATCH-GENERATOR-SPEC17-3-FALLBACK/20260615-181519\" } STDERR:",
+  "operator_message": "Delegated generator intent stayed bounded, but the structured local path failed. Codex must take over locally instead of attempting any free delegated shell execution."
+}

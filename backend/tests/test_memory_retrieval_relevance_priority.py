@@ -8,7 +8,9 @@ from backend.data import models
 from backend.data.database import Base
 from backend.services.memory.retrieval_service import (
     _is_context_privacy_memory_suppressed_query,
+    retrieve_diamond_slots,
 )
+from backend.services.memory_cache import memory_cache
 from backend.services.memory_budget import (
     MemorySlot,
     TokenBudget,
@@ -176,3 +178,94 @@ async def test_memory_read_returns_relevant_project_but_not_placeholder(db_sessi
     assert project.id in [memory["memory_id"] for memory in result["data"]["memories"]]
     assert any("Phoenix" in fact for fact in facts)
     assert all("Name des Testprojekts" not in fact for fact in facts)
+
+
+def test_retrieve_diamond_slots_filters_foreign_contact_memories_for_subject_scoped_query(
+    db_session, monkeypatch
+):
+    memory_cache.invalidate_all()
+    chat = _add_chat(db_session, "Kontakt-Recall")
+    _add_memory(
+        db_session,
+        chat.id,
+        "Oli mag Kimchi und vegetarisches Essen.",
+        priority=0.6,
+        category="Vorlieben",
+        tags=["preference", "contact"],
+        canonical_key="oli|vorlieben|kimchi",
+    )
+    _add_memory(
+        db_session,
+        chat.id,
+        "Olix Quarz liebt Big Bang Theory.",
+        priority=0.6,
+        category="Vorlieben",
+        tags=["preference", "contact"],
+        canonical_key="olix|vorlieben|big_bang_theory",
+    )
+
+    monkeypatch.setattr(
+        "backend.services.memory.retrieval_service.vector_service.get_query_embedding",
+        lambda query: [0.1, 0.2, 0.3],
+    )
+    monkeypatch.setattr(
+        "backend.services.memory.retrieval_service.vector_service.find_most_similar_indices_precomputed",
+        lambda *args, **kwargs: list(range(len(args[1]))),
+    )
+
+    slots = retrieve_diamond_slots(db_session, chat.id, "was mag olix?")
+    texts = [slot.text for slot in slots]
+
+    assert any("Olix Quarz" in text for text in texts)
+    assert all("Oli mag Kimchi" not in text for text in texts)
+
+
+def test_retrieve_diamond_slots_keeps_both_contacts_for_multi_contact_query_without_chat_title_leak(
+    db_session, monkeypatch
+):
+    memory_cache.invalidate_all()
+    chat_oli = _add_chat(db_session, "Vorlieben von Oli")
+    chat_chris = _add_chat(db_session, "Vorlieben von Chris")
+    _add_memory(
+        db_session,
+        chat_oli.id,
+        "Oli mag Strategiespiele wie Panzer General.",
+        priority=0.6,
+        category="Vorlieben",
+        tags=["preference", "contact"],
+        canonical_key="oli|vorlieben|panzer_general",
+    )
+    _add_memory(
+        db_session,
+        chat_oli.id,
+        "Chris mag Kimchi.",
+        priority=0.6,
+        category="Vorlieben",
+        tags=["preference", "contact"],
+        canonical_key="chris|vorlieben|kimchi",
+    )
+    _add_memory(
+        db_session,
+        chat_chris.id,
+        "Chris verbringt gern Zeit im Garten.",
+        priority=0.6,
+        category="Vorlieben",
+        tags=["preference", "contact"],
+        canonical_key="chris|vorlieben|garten",
+    )
+
+    monkeypatch.setattr(
+        "backend.services.memory.retrieval_service.vector_service.get_query_embedding",
+        lambda query: [0.1, 0.2, 0.3],
+    )
+    monkeypatch.setattr(
+        "backend.services.memory.retrieval_service.vector_service.find_most_similar_indices_precomputed",
+        lambda *args, **kwargs: list(range(len(args[1]))),
+    )
+
+    slots = retrieve_diamond_slots(db_session, chat_oli.id, "was mögen chris und oli?")
+    texts = [slot.text for slot in slots]
+
+    assert any("Oli mag Strategiespiele" in text for text in texts)
+    assert any("Chris verbringt gern Zeit im Garten" in text or "Chris mag Kimchi" in text for text in texts)
+    assert all("Nathan" not in text for text in texts)

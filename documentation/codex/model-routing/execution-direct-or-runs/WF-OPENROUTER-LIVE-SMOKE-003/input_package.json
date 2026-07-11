@@ -1,0 +1,54 @@
+{
+  "task_id": "TASK-EX-001A",
+  "lane_id": "execution_patch_candidate",
+  "workflow_id": "WF-EXEC-PATCH-CODE-ANCHORED-EXAMPLE-001",
+  "bound_skill_context": "janus-executioner",
+  "target_task": "TASK-EXAMPLE-001A",
+  "spec_path": "documentation/tasks/TASK-EXAMPLE-001_task_breakdown.md",
+  "precheck_path": "documentation/tasks/TASK-EXAMPLE-001_preimplementation_check.md",
+  "precheck_status": "PRE-CHECK PASSED",
+  "allowlist_file": "documentation/codex/model-routing/fixtures/examples/allowlists/execution_patch_allowlist.txt",
+  "allowed_files": [
+    "documentation/codex/model-routing/scripts/bounded_or_worker_gate_prompt.py",
+    "documentation/codex/model-routing/tests/test_bounded_or_worker_gate_prompt.py"
+  ],
+  "max_touched_files": 2,
+  "mini_test_plan": [
+    "python -m pytest documentation/codex/model-routing/tests/test_bounded_or_worker_gate_prompt.py -q",
+    "python -m py_compile documentation/codex/model-routing/scripts/bounded_or_worker_gate_prompt.py"
+  ],
+  "manual_validation_gate": "Codex must verify the patch only adds bounded session-budget wording to operator gate output and does not widen delegation authority.",
+  "delegation_question": "Produce one minimal bounded patch candidate that appends one session-budget summary line to build_operator_prompt_lines without changing gate semantics, and update the focused unit test accordingly.",
+  "current_seam_context": "build_operator_prompt_lines currently renders choice labels, optional live evidence, optional OR model, optional pre-call cost basis, and one final cost/confidence line. The bounded task is to add exactly one new session-budget summary line in that same function, using the existing compact operator wording style, while keeping the rest of the gate structure intact.",
+  "signature_context": "def build_operator_prompt_lines(*, choice_2_label: str = \"OR\", selected_or_model: str = \"\", pre_call_cost_basis: str = \"\", estimated_or_cost: float, cost_estimate_confidence_percent: float, operator_recommendation: str = \"\", operator_recommendation_reason: str = \"\") -> list[str]:",
+  "call_shape_examples": [
+    "lines = gate_prompt.build_operator_prompt_lines(choice_2_label=\"OR\", selected_or_model=\"openai/gpt-oss-20b\", estimated_or_cost=0.000321, cost_estimate_confidence_percent=88.0, operator_recommendation=\"PREFER_OR\", operator_recommendation_reason=\"sehr guenstige deterministische Spur\")",
+    "self.assertEqual(lines[0], \"1 = Codex\")",
+    "self.assertEqual(lines[1], \"2 = OR\")",
+    "self.assertIn(\"Codex-Guthaben\", lines[2])"
+  ],
+  "required_current_anchors": [
+    "lines = [",
+    "\"OR ist hier die externe Option, um Codex-Guthaben zu sparen.\",",
+    "lines.append(f\"Fest empfohlenes OR-Modell: {selected_or_model}\")",
+    "lines.append(f\"Pre-Call-Kostenbasis: {pre_call_cost_basis}\")",
+    "f\"Voraussichtliche OR-Kosten {estimated_or_cost:.9f}, \"",
+    "self.assertIn(\"0.000321000\", lines[6])",
+    "self.assertIn(\"88%\", lines[6])"
+  ],
+  "exact_code_context_blocks": [
+    "def build_operator_prompt_lines(\\n    *,\\n    choice_2_label: str = \\\"OR\\\",\\n    selected_or_model: str = \\\"\\\",\\n    pre_call_cost_basis: str = \\\"\\\",\\n    estimated_or_cost: float,\\n    cost_estimate_confidence_percent: float,\\n    operator_recommendation: str = \\\"\\\",\\n    operator_recommendation_reason: str = \\\"\\\",\\n) -> list[str]:\\n    lines = [\\n        \\\"1 = Codex\\\",\\n        f\\\"2 = {choice_2_label}\\\",\\n        \\\"OR ist hier die externe Option, um Codex-Guthaben zu sparen.\\\",\\n    ]\\n    if str(operator_recommendation).strip():\\n        lines.append(f\\\"Live-Evidenz: {operator_recommendation}\\\")\\n    if str(operator_recommendation_reason).strip():\\n        lines.append(f\\\"Einordnung: {operator_recommendation_reason}\\\")\\n    if str(selected_or_model).strip():\\n        lines.append(f\\\"Fest empfohlenes OR-Modell: {selected_or_model}\\\")\\n    if str(pre_call_cost_basis).strip():\\n        lines.append(f\\\"Pre-Call-Kostenbasis: {pre_call_cost_basis}\\\")\\n    lines.append(\\n        (\\n            f\\\"Voraussichtliche OR-Kosten {estimated_or_cost:.9f}, \\\"\\n            f\\\"Evidenzgenauigkeit {cost_estimate_confidence_percent:.0f}%\\\"\\n        )\\n    )\\n    return lines",
+    "def test_build_operator_prompt_lines_include_quota_recommendation_model_cost_and_confidence(self) -> None:\\n    lines = gate_prompt.build_operator_prompt_lines(\\n        choice_2_label=\\\"OR\\\",\\n        selected_or_model=\\\"openai/gpt-oss-20b\\\",\\n        estimated_or_cost=0.000321,\\n        cost_estimate_confidence_percent=88.0,\\n        operator_recommendation=\\\"PREFER_OR\\\",\\n        operator_recommendation_reason=\\\"sehr guenstige deterministische Spur\\\",\\n    )\\n\\n    self.assertEqual(lines[0], \\\"1 = Codex\\\")\\n    self.assertEqual(lines[1], \\\"2 = OR\\\")\\n    self.assertIn(\\\"Codex-Guthaben\\\", lines[2])\\n    self.assertIn(\\\"PREFER_OR\\\", lines[3])\\n    self.assertIn(\\\"sehr guenstige deterministische Spur\\\", lines[4])\\n    self.assertIn(\\\"openai/gpt-oss-20b\\\", lines[5])\\n    self.assertIn(\\\"0.000321000\\\", lines[6])\\n    self.assertIn(\\\"88%\\\", lines[6])"
+  ],
+  "forbidden_anchors": [
+    "production routing activation",
+    "canonical routing-table update",
+    "delegated git authority",
+    "broad write approval"
+  ],
+  "redaction_ready": true,
+  "estimated_codex_saved_tokens": 35000,
+  "estimated_delegation_overhead_tokens": 10000,
+  "recommended_backend": "openrouter",
+  "recommended_model": "deepseek/deepseek-v4-flash"
+}

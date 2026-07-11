@@ -1,0 +1,15 @@
+{
+  "summary_header": "CODEX SIDECAR WRITE RESULT",
+  "workflow_id": "SIDECAR-QUICKCHANGE-HELPER-DRYRUN-001",
+  "skill": "janus-quickchange",
+  "task_label": "Quickchange workspace-write dry run",
+  "selected_path": "sidecar_workspace_write_dry_run",
+  "validation_result": "PASS",
+  "final_outcome": "DRY_RUN_VALIDATED",
+  "runner_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-QUICKCHANGE-HELPER-DRYRUN-001\\summary.json",
+  "validation_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-QUICKCHANGE-HELPER-DRYRUN-001\\validation_summary.json",
+  "allowlist_ok": true,
+  "touched_file_cap_ok": true,
+  "delete_rename_move_ok": true,
+  "operator_message": "Dry-run only. No delegated write execution was performed."
+}

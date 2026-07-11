@@ -1,0 +1,14 @@
+{
+  "model": "z-ai/glm-4.7-flash",
+  "pass": true,
+  "validation_result": "PASS",
+  "final_outcome": "DIRECT_OR_PATCH_PROPOSAL_READY_FOR_CODEX_REVIEW",
+  "actual_or_cost": 9.96e-05,
+  "generation_id": "gen-1782399479-LpJQDGJGrX7Ljx3CWqgK",
+  "finish_reason": "stop",
+  "changed_files": [],
+  "proposal_status": "BLOCKED",
+  "issues": [],
+  "response_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\direct-or-runs\\LEAN-QC-z-ai-glm-4.7-flash\\response_summary.json",
+  "operator_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\direct-or-runs\\LEAN-QC-z-ai-glm-4.7-flash\\operator_summary.json"
+}

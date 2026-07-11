@@ -1,0 +1,47 @@
+﻿{
+    "codex_path":  "codex",
+    "arguments":  [
+                      "exec",
+                      "--cd",
+                      "C:\\KI\\Janus-Projekt",
+                      "--model",
+                      "gpt-5.4",
+                      "--sandbox",
+                      "workspace-write",
+                      "--output-last-message",
+                      "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-runs\\EXEC-WRITE-APPLY-LIVE-PILOT-001\\sidecar_run\\last_message.md",
+                      "-"
+                  ],
+    "process_executable":  "C:\\nvm4w\\nodejs\\node.exe",
+    "process_arguments":  [
+                              "C:\\nvm4w\\nodejs\\node_modules\\@openai\\codex\\bin\\codex.js",
+                              "exec",
+                              "--cd",
+                              "C:\\KI\\Janus-Projekt",
+                              "--model",
+                              "gpt-5.4",
+                              "--sandbox",
+                              "workspace-write",
+                              "--output-last-message",
+                              "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-runs\\EXEC-WRITE-APPLY-LIVE-PILOT-001\\sidecar_run\\last_message.md",
+                              "-"
+                          ],
+    "run_directory":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-runs\\EXEC-WRITE-APPLY-LIVE-PILOT-001\\sidecar_run",
+    "prompt_path":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-runs\\EXEC-WRITE-APPLY-LIVE-PILOT-001\\sidecar_prompt.md",
+    "working_directory":  "C:\\KI\\Janus-Projekt",
+    "model":  "gpt-5.4",
+    "sandbox":  "workspace-write",
+    "approval_policy":  "never",
+    "timeout_seconds":  240,
+    "use_oss":  false,
+    "local_provider":  "",
+    "json_events":  false,
+    "editable_paths":  [
+                           "backend/services/contact_manager.py",
+                           "backend/tools/memory_tools.py"
+                       ],
+    "max_touched_files":  8,
+    "capture_git_diff":  true,
+    "fail_on_delete_rename_move":  true,
+    "execute":  true
+}

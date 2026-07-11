@@ -1,0 +1,15 @@
+{
+  "model": "moonshotai/kimi-k2.5",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a strict documentation-eval assistant. Use only the sanitized input. Do not claim production authority, routing authority, release readiness, repo write authority, or global approval."
+    },
+    {
+      "role": "user",
+      "content": "Return concise Markdown only.\n\nReformat the note into clean Markdown and preserve authority boundaries.\nYou must include these exact phrases:\n- planning only\n- no production routing\n- allowed scope\n- blocked scope\n- operator reminder\n- If a future test is explicitly approved\n\nYou must keep these blocked items visible:\n- update routing table\n- approve production routing\n- run live calls\n- decide audit or release readiness\n\nSanitized input JSON:\n{\n  \"fixture_id\": \"DOC-SKILL-006-GPT54-LIVE-EVAL-001\",\n  \"skill_id\": \"DOC-SKILL-006\",\n  \"skill_name\": \"Format Markdown documentation\",\n  \"target_local_baseline\": {\n    \"model\": \"5.4\",\n    \"reasoning\": \"medium\"\n  },\n  \"task_intent\": \"Format a sanitized documentation note while preserving authority boundaries.\",\n  \"source_status\": \"sanitized_fixture_only\",\n  \"raw_markdown\": \"# routing note\\nstatus: planning only no production routing\\n\\npurpose - compare cheaper candidates for 5.4 documentation assist. do not approve anything.\\n\\nallowed scope:\\n- summarize sanitized text\\n- preserve HOLD and UNKNOWN\\n- propose next fixture work\\n\\nblocked scope:\\n- update routing table\\n- approve production\\n- run live calls\\n- decide audit or release readiness\\n\\noperator reminder: if future test is approved, show estimate first, use file-first capture, and record actual cost after completion.\",\n  \"required_preservations\": [\n    \"planning-only status\",\n    \"no production routing\",\n    \"no approval language\",\n    \"allowed scope remains allowed\",\n    \"blocked scope remains blocked\",\n    \"future live tests require approval\"\n  ],\n  \"formatting_goals\": [\n    \"clean heading hierarchy\",\n    \"normalize status line\",\n    \"convert scope sections into readable bullets\",\n    \"use code spans for HOLD and UNKNOWN\",\n    \"keep operator reminder visible\"\n  ],\n  \"forbidden_changes\": [\n    \"add new permissions\",\n    \"remove blocked scope\",\n    \"rewrite planning-only as approved\",\n    \"turn future test approval into automatic execution\"\n  ]\n}"
+    }
+  ],
+  "temperature": 0,
+  "max_tokens": 900
+}

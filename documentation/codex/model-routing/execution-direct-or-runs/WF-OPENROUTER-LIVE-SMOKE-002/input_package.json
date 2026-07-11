@@ -1,0 +1,38 @@
+{
+  "task_id": "TASK-EX-001",
+  "lane_id": "execution_patch_candidate",
+  "workflow_id": "WF-EXEC-PATCH-EXAMPLE-001",
+  "bound_skill_context": "janus-executioner",
+  "target_task": "TASK-EXAMPLE-001",
+  "spec_path": "documentation/tasks/TASK-EXAMPLE-001_task_breakdown.md",
+  "precheck_path": "documentation/tasks/TASK-EXAMPLE-001_preimplementation_check.md",
+  "precheck_status": "PRE-CHECK PASSED",
+  "allowlist_file": "documentation/codex/model-routing/fixtures/examples/allowlists/execution_patch_allowlist.txt",
+  "allowed_files": [
+    "documentation/codex/model-routing/scripts/bounded_or_worker_gate_prompt.py",
+    "documentation/codex/model-routing/tests/test_bounded_or_worker_gate_prompt.py"
+  ],
+  "max_touched_files": 2,
+  "mini_test_plan": [
+    "python -m pytest documentation/codex/model-routing/tests/test_bounded_or_worker_gate_prompt.py -q",
+    "python -m py_compile documentation/codex/model-routing/scripts/bounded_or_worker_gate_prompt.py"
+  ],
+  "manual_validation_gate": "Codex must verify the patch only adds session-budget lines to operator gate output and does not widen delegation authority.",
+  "delegation_question": "Produce one minimal bounded patch candidate that appends session OR-budget summary lines to build_operator_prompt_lines without changing gate semantics.",
+  "current_seam_context": "build_operator_prompt_lines already renders model and ROI data; session budget is not yet shown.",
+  "forbidden_anchors": [
+    "production routing activation",
+    "canonical routing-table update",
+    "delegated git authority",
+    "broad write approval"
+  ],
+  "redaction_ready": true,
+  "estimated_codex_saved_tokens": 35000,
+  "estimated_delegation_overhead_tokens": 10000,
+  "recommended_backend": "cursor",
+  "recommended_model": "composer-2.5",
+  "openrouter_fallback": {
+    "backend": "openrouter",
+    "model": "moonshotai/kimi-k2.5"
+  }
+}

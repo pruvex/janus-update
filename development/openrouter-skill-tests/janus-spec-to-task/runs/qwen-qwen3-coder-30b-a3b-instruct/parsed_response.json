@@ -1,0 +1,142 @@
+{
+  "task_root_id": "TASK-SPEC21",
+  "source_spec": "documentation/SPEC/Spec Done/21_assisted_or_workhorse_mode_for_janus_skills.md",
+  "task_file_path": "documentation/tasks/TASK-SPEC21_assisted_or_workhorse_mode_for_janus_skills.md",
+  "backlog_item": "N/A",
+  "feature_name": "Assistierter OR-Arbeitspferd-Modus fuer Janus-Skills",
+  "generated_at": "2026-06-26T00:00:00Z",
+  "generated_tasks": [
+    {
+      "task_id": "TASK-SPEC21.1",
+      "title": "Implement eligibility redaction gate for bounded OR-worker selection",
+      "ziel": "Stellen Sie sicher, dass nur berechtigte bounded Arbeitsschritte den OR-Arbeitspferd-Modus aktivieren können, ohne lokale Validierungsgrenzen zu umgehen.",
+      "scope": "Begrenzt auf die Prüfung der Eignung von Arbeitsschritten für den OR-Modus basierend auf vordefinierten Codex-Regeln.",
+      "files": [
+        "documentation/codex/model-routing/scripts/bounded_or_worker_eligibility.py",
+        "documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py"
+      ],
+      "steps": [
+        "Lese die aktuelle Arbeitsschritt-Konfiguration aus dem Codex-Dispatcher.",
+        "Prüfe, ob der Arbeitsschritt in der Liste der erlaubten Skills (janus-debug, janus-test-pipeline) enthalten ist.",
+        "Reduziere sensible Metadaten vor der Weitergabe an den OR-Selektor.",
+        "Generiere eine Eligibility-Entscheidung mit Timestamp und Ursprungs-Context."
+      ],
+      "acceptance_criteria": [
+        "Eligibility-Entscheidung ist sichtbar in der Log-Ausgabe vor OR-Aufruf.",
+        "Kein OR-Aufruf erfolgt, wenn der Arbeitsschritt nicht in allowed_initial_skills steht.",
+        "Redaktierte Metadaten enthalten keine PII oder Systemgeheimnisse.",
+        "Die Entscheidung wird von codex_bounded_delegation_dispatcher genutzt."
+      ],
+      "tests": [
+        "test_eligibility_gate_allowed_skill.py",
+        "test_eligibility_gate_blocked_skill.py",
+        "test_redaction_of_sensitive_fields.py",
+        "test_eligibility_output_format.py"
+      ],
+      "model": "5.4",
+      "reason": "Die Eligibility-Redaktion ist die erste Kontrollschleife, die sicherstellt, dass nur autorisierte Skills den OR-Modus nutzen – ohne neue Fähigkeiten einzuführen.",
+      "slice_theme": "eligibility_redaction_gate"
+    },
+    {
+      "task_id": "TASK-SPEC21.2",
+      "title": "Normalize operator gate prompts to align with bounded worker context",
+      "ziel": "Stellen Sie eine einheitliche, kontextbezogene Prompt-Struktur für die OR-Übergabe sicher, die auf den lokalen Codex-Kontext zurückgreift.",
+      "scope": "Anpassung der Prompt-Generierung in der OR-Gate-Schicht, um konsistente Eingaben für den OpenRouter zu erzeugen.",
+      "files": [
+        "documentation/codex/model-routing/scripts/bounded_or_worker_gate_prompt.py",
+        "documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py",
+        "documentation/codex/skills/janus-debug/SKILL.md"
+      ],
+      "steps": [
+        "Extrahiere den aktuellen Arbeitsschritt-Context aus dem Dispatcher.",
+        "Verwende den SKILL.md-Template aus janus-debug oder janus-test-pipeline als Referenz für Prompt-Struktur.",
+        "Füge explizite Hinweise zur Kosten- und Vertrauensanzeige hinzu.",
+        "Vermeide jegliche Erweiterung des Prompt-Scopes außerhalb der definierten Skills."
+      ],
+      "acceptance_criteria": [
+        "Der Prompt enthält nur Daten aus dem lokalen Codex-Context.",
+        "Die Prompt-Struktur entspricht exakt einem der erlaubten SKILL.md-Template.",
+        "Kosten- und Vertrauensanzeige ist immer sichtbar und nicht optional.",
+        "Keine externen Referenzen oder dynamischen Variablen im Prompt."
+      ],
+      "tests": [
+        "test_gate_prompt_structure_compliance.py",
+        "test_gate_prompt_no_scope_widening.py",
+        "test_gate_prompt_cost_display.py",
+        "test_gate_prompt_template_match.py"
+      ],
+      "model": "5.4",
+      "reason": "Die Normalisierung des Gate-Prompts verhindert, dass der OR-Modus über die definierten Skills hinaus verwendet wird – ein zentraler DOD-Punkt.",
+      "slice_theme": "operator_gate_normalization"
+    },
+    {
+      "task_id": "TASK-SPEC21.3",
+      "title": "Capture telemetry and healthcheck data during bounded OR execution",
+      "ziel": "Sammle Metriken über OR-Ausführungskosten und Systemzustand, ohne die lokale Überwachung zu unterbrechen.",
+      "scope": "Erfassung von Healthcheck- und Telemetriedaten während und nach dem OR-Aufruf, inklusive Fallback-Logik.",
+      "files": [
+        "documentation/codex/model-routing/scripts/or_file_first_capture_wrapper.ps1",
+        "documentation/codex/model-routing/scripts/bounded_or_worker_outcome.py",
+        "documentation/codex/skills/janus-health-check/scripts/health_snapshot.py"
+      ],
+      "steps": [
+        "Starte health_snapshot.py vor OR-Aufruf zur Aufnahme des Systemzustands.",
+        "Wrapper skript or_file_first_capture_wrapper.ps1 fängt die tatsächlichen OR-Kosten ab.",
+        "bouned_or_worker_outcome.py protokolliert den Ergebnisstatus und die Dauer.",
+        "Falls der OR-Aufruf fehlschlägt, wird ein manueller Review-Trigger ausgelöst."
+      ],
+      "acceptance_criteria": [
+        "Alle OR-Aufrufe erzeugen ein Healthcheck-Snapshot.",
+        "Die tatsächlichen Kosten sind im Log nachvollziehbar.",
+        "Fehlgeschlagene OR-Aufrufe führen zu einem klaren Fallback-Trigger.",
+        "Keine Telemetrie wird außerhalb der definierten Skripte generiert."
+      ],
+      "tests": [
+        "test_telemetry_capture_before_or.py",
+        "test_cost_capture_post_or.py",
+        "test_healthcheck_fallback_trigger.py",
+        "test_no_extra_telemetry_generated.py"
+      ],
+      "model": "5.4",
+      "reason": "Telemetrie- und Healthcheck-Capture ist notwendig, um die transparenz und Fallback-Fähigkeit des OR-Modus zu gewährleisten – ein zentrales DOD-Kriterium.",
+      "slice_theme": "telemetry_healthcheck_capture"
+    },
+    {
+      "task_id": "TASK-SPEC21.4",
+      "title": "Integrate consumer workflows without scope widening beyond janus-debug and janus-test-pipeline",
+      "ziel": "Stellen Sie sicher, dass alle Consumer-Integrationen nur auf die erlaubten Skills beschränkt bleiben und keine neuen Funktionalitäten einführen.",
+      "scope": "Verknüpfung von Debug- und Test-Pipeline-Skills mit dem OR-Modus, ohne Erweiterung des erlaubten Skill-Spektrums.",
+      "files": [
+        "documentation/codex/model-routing/scripts/codex_debug_hypothesis_review_runner.py",
+        "documentation/codex/model-routing/scripts/codex_test_result_triage_review_runner.py",
+        "documentation/codex/skills/janus-test-pipeline/SKILL.md"
+      ],
+      "steps": [
+        "Verwende codex_debug_hypothesis_review_runner als einzigen Consumer für OR-Resultate aus janus-debug.",
+        "Verwende codex_test_result_triage_review_runner als einzigen Consumer für OR-Resultate aus janus-test-pipeline.",
+        "Stelle sicher, dass keine neuen Trigger- oder Input-Wege hinzugefügt werden.",
+        "Validiere, dass alle OR-Resultate innerhalb der definierten Skills verbleiben."
+      ],
+      "acceptance_criteria": [
+        "Kein Consumer außer den beiden erlaubten Skills nutzt den OR-Modus.",
+        "Alle OR-Resultate werden nur in den definierten SKILL.md-Workflows verarbeitet.",
+        "Keine neuen Eingabeparameter oder Routing-Logik eingeführt.",
+        "Alle Integrationen sind dokumentiert in den existierenden SKILL.md-Dateien."
+      ],
+      "tests": [
+        "test_consumer_only_allowed_skills.py",
+        "test_no_or_scope_widening.py",
+        "test_result_routing_within_defined_workflows.py",
+        "test_no_new_consumer_added.py"
+      ],
+      "model": "5.4",
+      "reason": "Die Integration ohne Scope-Widening ist zentral für die Definition von Done – nur die zwei erlaubten Skills dürfen den OR-Modus nutzen, keine weiteren.",
+      "slice_theme": "consumer_integration_without_scope_widening"
+    }
+  ],
+  "execution_model": "5.4",
+  "next_skill": "janus-task-breakdown",
+  "notes": [
+    "Alle Tasks wurden strikt nach dem approved spec package erstellt. Kein Code implementiert, keine neuen Anforderungen erfunden, keine Architekturentscheidungen getroffen. Alle Dateipfade und Themen entsprechen den vorgegebenen Anchors. Die vier Slice-Themen sind exakt einmal vertreten."
+  ]
+}

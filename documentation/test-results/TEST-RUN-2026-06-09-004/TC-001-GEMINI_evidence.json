@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-06-09-004",
+  "testCaseId": "TC-001-GEMINI",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "mein freund Olix Quarz wohnt in köln stammheim",
+  "response": "Hallo Rolf Adam. Alles klar, ich habe mir gemerkt, dass dein Freund Olix Quarz in Köln-Stammheim wohnt.💡 Passende nächste Schritte:• Soll ich nach Restaurants oder Cafés in Köln-Stammheim suchen?• Möchtest du die Fahrtzeit zu Olix Quarz berechnen lassen?• Willst du weitere Details zu Olix ergänzen, wie zum Beispiel seine Hobbys oder seinen Geburtstag?22:45",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-06-09T20:45:18.858Z"
+}

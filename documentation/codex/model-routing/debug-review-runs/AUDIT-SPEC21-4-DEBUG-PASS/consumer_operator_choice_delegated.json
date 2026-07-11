@@ -1,0 +1,17 @@
+{
+  "summary_header": "DEBUG HYPOTHESIS REVIEW RESULT",
+  "workflow_id": "AUDIT-SPEC21-4-DEBUG-PASS",
+  "skill": "janus-debug",
+  "task_label": "audit debug pass",
+  "selected_path": "delegated_assist_only_hypothesis_review",
+  "normal_target_model": "5.4 medium",
+  "delegated_model_label": "bounded delegated review / fixture mode",
+  "validation_result": "PASS",
+  "final_outcome": "DEBUG_HYPOTHESIS_REVIEW_READY_FOR_CODEX_VALIDATION",
+  "input_package_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\debug-review-runs\\AUDIT-SPEC21-4-DEBUG-PASS\\input_package.json",
+  "delegated_result_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\debug-review-runs\\AUDIT-SPEC21-4-DEBUG-PASS\\delegated_result.md",
+  "validation_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\debug-review-runs\\AUDIT-SPEC21-4-DEBUG-PASS\\validation_summary.json",
+  "operator_message": "Delegated debug hypothesis review stayed bounded and assist-only. Codex must still validate the hypotheses and choose the next local debug step.",
+  "codex_owned_outcome_status": "DELEGATED_REVIEW_PENDING_CODEX_DECISION",
+  "codex_owned_outcome_final": false
+}

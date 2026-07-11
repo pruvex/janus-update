@@ -1,0 +1,16 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 117532,
+  "duration_api_ms": 117532,
+  "result": "Searching for the delegated worker task instructions and related artifacts.\nThe passive-promotion signature-drift worker package looks like the active task. Reading the allowlisted files and tests.\nImplementing skill-set equivalence for passive promotion lookup so order flips and benign arg differences don't block matching.\nCleaning up imports and removing unused variables.\nPassive promotion now matches equivalent mixed traces by skill set, not exact fingerprint.\n\n**Root cause:** `get_active_candidate_by_fingerprint` required an exact match on step order and arg keys. Equivalent `calendar.list_events` + `system.routing` traces with flipped order or different optional args (e.g. `start_date`/`end_date` vs `range`) got different fingerprints and created duplicate candidates instead of promoting.\n\n**Fix:**\n- Added `steps_share_promotion_equivalence()` â€” same skill set with â‰¥2 distinct skills\n- Added `get_active_candidate_by_equivalent_steps()` for promotion lookup\n- Wired equivalence into passive learning suppression and duplicate-candidate guards\n- Added regression test for calendar+routing with order/arg drift\n\n```json\n{\n  \"status\": \"PASS\",\n  \"root_cause\": \"Passive promotion required exact step_fingerprint matches, so equivalent mixed calendar.list_events + system.routing traces with flipped order or benign arg-shape drift failed to promote existing candidates.\",\n  \"changed_files\": [\n    \"backend/services/workflow/routine_schema.py\",\n    \"backend/services/workflow/routine_store.py\",\n    \"backend/services/workflow/workflow_offer_service.py\",\n    \"backend/services/workflow/workflow_detector.py\",\n    \"backend/tests/test_workflow_offer_service.py\"\n  ],\n  \"command_results\": [\n    {\n      \"label\": \"pytest\",\n      \"command\": \"python -m pytest backend/tests/test_workflow_offer_service.py -q\",\n      \"exit_code\": 0,\n      \"result\": \"15 passed in 0.21s\"\n    }\n  ],\n  \"summary\": \"Passive routine promotion now falls back to skill-set equivalence when exact fingerprints differ. A second mixed calendar+routing trace with flipped step order and different optional args promotes the earlier candidate and appends the passive saved hint instead of creating a duplicate active candidate.\",\n  \"blockers\": []\n}\n```",
+  "session_id": "c441725d-c829-4567-a696-5262e1e7c9ee",
+  "request_id": "ba1694c3-dce7-4bce-9a11-01d0ef37a596",
+  "usage": {
+    "inputTokens": 51846,
+    "outputTokens": 8215,
+    "cacheReadTokens": 446709,
+    "cacheWriteTokens": 0
+  }
+}

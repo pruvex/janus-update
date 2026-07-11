@@ -1,0 +1,17 @@
+{
+  "workflow_id": "WF-HEALTH-CHECK-PACKAGE-001",
+  "bound_skill_context": "janus-health-check",
+  "mode": "DAILY",
+  "scan_summary": "Leichter Daily-Check: Kernartefakte vorhanden, Worktree dirty aber arbeitsfaehig, keine Release-Aktion, keine Security-Eskalation.",
+  "git_state": "dirty_worktree_non_blocking",
+  "backlog_visibility": "in_progress_visible",
+  "doc_skill_drift": "minor_or_rollout_sync_gap_only",
+  "large_files": "no_new_large_file_blocker",
+  "expected_systemhealth": 84,
+  "expected_traffic_light": "GELB",
+  "expected_next_skill": "janus-backlog-intake",
+  "expected_model": "5.4",
+  "expected_reasoning": "medium",
+  "expected_operational_recommendation": "Weiterarbeiten ist moeglich; den kleinen Drift als klaren Backlog-Kandidaten erfassen statt sofort zu fixen.",
+  "redaction_ready": true
+}

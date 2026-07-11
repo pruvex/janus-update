@@ -1,0 +1,22 @@
+﻿{
+    "status":  "PASS",
+    "sandbox":  "workspace-write",
+    "editable_paths":  [
+                           "frontend/js/cost-visualizer.js"
+                       ],
+    "touched_files":  "frontend/js/cost-visualizer.js",
+    "touched_file_count":  1,
+    "max_touched_files":  1,
+    "deleted_paths":  [
+
+                      ],
+    "renamed_paths":  [
+
+                      ],
+    "moved_paths":  [
+
+                    ],
+    "allowlist_ok":  true,
+    "touched_file_cap_ok":  true,
+    "delete_rename_move_ok":  true
+}

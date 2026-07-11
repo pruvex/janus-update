@@ -1,0 +1,16 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 89330,
+  "duration_api_ms": 89330,
+  "result": "Searching for the delegated worker task prompt and related instructions in the workspace.\nThe task prompt wasn't included in your message â€” checking the latest worker package and any active runner context.\nThe implementation appears complete from a prior Codex run after a blocked Cursor probe â€” running the worker package checks to confirm.\nBounded TASK-SPEC31.2 worker run complete. The implementation was already in the repo from the prior Codex local fallback after the blocked Cursor probe; this session verified it without edits.\n\n```json\n{\n  \"status\": \"PASS\",\n  \"root_cause\": null,\n  \"changed_files\": [],\n  \"command_results\": [\n    {\n      \"label\": \"pytest_routine_runner\",\n      \"exit_code\": 0,\n      \"result\": \"19 passed\"\n    },\n    {\n      \"label\": \"pytest_workflow_offer_service\",\n      \"exit_code\": 0,\n      \"result\": \"18 passed\"\n    },\n    {\n      \"label\": \"py_compile\",\n      \"exit_code\": 0,\n      \"result\": \"intent_engine.py and routine_runner.py compile cleanly\"\n    }\n  ],\n  \"summary\": \"TASK-SPEC31.2 fail-closed and ambiguity hardening is already implemented in routine_runner.py with focused regressions in test_routine_runner.py and test_workflow_offer_service.py. Missing calendar date references, missing routing origin/destination, conflicting date markers, multiple superficially matching saved routines, and missing weather city all fail closed (not_found or blocked) instead of reusing stale saved-routine values. Positive calendar+routing and calendar+weather reuse paths remain green. All three bounded checks passed; no allowlisted file edits were required in this worker session.\",\n  \"blockers\": []\n}\n```\n\n**Acceptance criteria verification**\n\n| Criterion | Evidence |\n|---|---|\n| Missing semantic parameters fail closed | `_routine_constraints_match_user_text`, `_semantic_reuse_block_reason`; tests for missing date, routing, weather city |\n| Conflicting values not silently overwritten | `_rebind_semantic_step_args` rebinds from user text; stale-routing test passes |\n| Multiple superficial matches fail closed | `len(semantic_matches) > 1` â†’ `not_found`; ambiguity tests pass |\n| Calendar+routing + calendar+weather protected | 19 routine_runner + 18 workflow_offer_service tests pass |\n| Only allowlisted paths | No files modified this session |",
+  "session_id": "c5e6de21-69af-4543-a08f-323964acafc5",
+  "request_id": "997fa318-ec33-4144-bede-2a2de47b1760",
+  "usage": {
+    "inputTokens": 42274,
+    "outputTokens": 2617,
+    "cacheReadTokens": 275075,
+    "cacheWriteTokens": 0
+  }
+}

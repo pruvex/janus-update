@@ -1,0 +1,10 @@
+{
+  "generator_id": "generate_live_runner_v1",
+  "inputs": {
+    "plan_path": "documentation/test-runs/TEST-RUN-2026-05-15-005_plan.json",
+    "output_runner_path": "__RUN_DIR__/generated/TEST-RUN-2026-05-15-005_generated_from_builder.spec.js"
+  },
+  "declared_output_artifacts": [
+    "__RUN_DIR__/generated/TEST-RUN-2026-05-15-005_generated_from_builder.spec.js"
+  ]
+}

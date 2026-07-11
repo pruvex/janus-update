@@ -1,0 +1,11 @@
+﻿
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1781387494-S3bC5l8JFcZrpcc3IOKe","object":"chat.completion","created":1781387494,"model":"ibm-granite/granite-4.1-8b-20260429","provider":"WandB","system_fingerprint":null,"service_tier":null,"choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"stop","message":{"role":"assistant","content":"## Summary\n\n### Overall status\nThe scoring report for `DOC-SKILL-002` includes multiple models with varied quality statuses. The majority of models are either `CANDIDATE_ NOT_ APPROVED` or `HOLD`, indicating they are not yet ready for production use. One model is marked as `EXPERIMENT_ ONLY`, and another as `UNKNOWN` due to insufficient evidence.\n\n### Candidate notes\n- **openai/gpt-oss-20b** and **openai/gpt-oss-120b** are candidates for cheaper alternatives but are **not approved** for use with the 5.4 baseline.\n- **minimax/minimax-m3** is held due to prior schema projection and provider compatibility concerns.\n\n### HOLD / UNKNOWN / experiment-only notes\n- **minimax/minimax-m3** is **HOLD** because of existing concerns.\n- **openrouter/auto** is **EXPERIMENT_ ONLY**, showing cost regression and finish reason issues in related tasks.\n- **unknown/provider-placeholder** is **UNKNOWN** due to lack of sufficient catalog and scoring evidence.\n\n### Boundaries\n- **No production routing** is approved for any of the models listed.\n- **No canonical routing-table update** is made based on this report.\n- **No global OpenRouter approval** exists for the models discussed.\n\n### Next safe step\nProceed with internal review and further testing of the `HOLD` and `EXPERIMENT_ ONLY` models before considering any updates to the routing or approval processes.","refusal":null,"reasoning":null}}],"usage":{"prompt_tokens":955,"completion_tokens":314,"total_tokens":1269,"cost":0.00007915,"is_byok":false,"prompt_tokens_details":{"cached_tokens":0,"cache_write_tokens":0,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.00007915,"upstream_inference_prompt_cost":0.00004775,"upstream_inference_completions_cost":0.0000314},"completion_tokens_details":{"reasoning_tokens":0,"image_tokens":0,"audio_tokens":0}}}

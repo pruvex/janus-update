@@ -1,0 +1,17 @@
+{
+  "workflow_id": "SIDECAR-DOC-STRUCTURED-FLOW-001-STRUCTURED",
+  "skill_id": "janus-documentation-update",
+  "action_type": "draft_markdown",
+  "executor_status": "PASS",
+  "schema_validation": "PASS",
+  "mapping_resolution": "PASS",
+  "allowlist_status": "PASS",
+  "output_artifact_status": "PASS",
+  "codex_review_required": true,
+  "detail": "Draft markdown artifact stored in run directory only.",
+  "action_summary": {
+    "artifact_path": "documentation/codex/model-routing/structured-action-runs/SIDECAR-DOC-STRUCTURED-FLOW-001-STRUCTURED/20260614-163556/draft_output.md",
+    "format": "markdown"
+  },
+  "run_directory": "documentation/codex/model-routing/structured-action-runs/SIDECAR-DOC-STRUCTURED-FLOW-001-STRUCTURED/20260614-163556"
+}

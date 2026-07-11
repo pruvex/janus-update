@@ -1,0 +1,7 @@
+--- a/documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/sandbox/test_gate_prompt_apply_shadow.py
++++ b/documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/sandbox/test_gate_prompt_apply_shadow.py
+@@ -14,3 +14,4 @@ def test_build_write_apply_shadow_lines_includes_accepted_source_summary_line() -> None:
+     assert lines[1] == "2 = Cursor"
+     assert "Empfohlenes Worker-Modell: composer-2.5" in lines
+     assert "Accepted source summary: apply the validated prompt delta exactly once." in lines
++    assert lines[-1].startswith("Voraussichtliche Worker-Kosten ")

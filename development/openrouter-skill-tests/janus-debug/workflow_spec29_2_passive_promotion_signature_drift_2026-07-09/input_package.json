@@ -1,0 +1,39 @@
+{
+  "task_id": "TASK-SPEC29.2-DBG-PASSIVE-PROMOTION-SIGNATURE-DRIFT",
+  "lane_id": "debug_repro_investigation",
+  "bound_skill_context": "janus-debug",
+  "task_label": "Debug passive promotion signature drift for mixed calendar-routing routine learning",
+  "worker_package_json": "development/openrouter-skill-tests/janus-debug/workflow_spec29_2_passive_promotion_signature_drift_2026-07-09/worker_package.json",
+  "allowlist_file": "development/openrouter-skill-tests/janus-debug/workflow_spec29_2_passive_promotion_signature_drift_2026-07-09/allowlist.txt",
+  "failure_code": "SPEC29_2_PASSIVE_PROMOTION_SIGNATURE_DRIFT",
+  "latest_user_evidence": {
+    "timestamp_local": "2026-07-09 19:55 +02:00",
+    "prompt": "Welche Termine habe ich heute und wie weit ist es von Berlin nach Hamburg?",
+    "actual": "The visible mixed-turn answer is now clean, but passive promotion still does not happen. Janus created a new routine candidate instead of promoting the existing one.",
+    "expected": "The second semantically equivalent mixed calendar+routing run should recognize the earlier candidate and append `Ich habe dafuer eine passende Routine gespeichert.`"
+  },
+  "bounded_root_cause": {
+    "log_summary": [
+      "chat 4239 executed exactly two successful tool calls with no loop-breaker: calendar.list_events and system.routing",
+      "DB state after the run was user_routine_candidates = 3 and user_routines = 1, so no promotion happened",
+      "the prior clean candidate from chat 4235 and the new clean candidate from chat 4239 have different fingerprints despite representing the same user intent family"
+    ],
+    "source_code_summary": [
+      "workflow_offer_service promotes only when get_active_candidate_by_fingerprint(user_id, detected.fingerprint) finds an exact fingerprint match",
+      "build_step_fingerprint currently depends on step order plus each step's arg key set, so equivalent mixed traces can diverge when order flips or optional args differ",
+      "the bounded fix likely needs normalization or equivalence handling for passive mixed-turn promotion without broadening scope into unrelated workflow behavior"
+    ]
+  },
+  "acceptance_criteria": [
+    "Fix only the passive-promotion signature/equivalence seam on the allowlisted files.",
+    "A second semantically equivalent mixed calendar.list_events + system.routing trace must promote the earlier candidate instead of creating a new one.",
+    "Equivalent mixed traces must tolerate order flips and minor optional-arg shape drift such as start_date/end_date variants when they represent the same intent family.",
+    "Run the focused pytest command before returning."
+  ],
+  "local_validation_command": "python -m pytest backend/tests/test_workflow_offer_service.py -q",
+  "redaction_ready": true,
+  "estimated_codex_saved_tokens": 9000,
+  "estimated_delegation_overhead_tokens": 2800,
+  "recommended_backend": "cursor",
+  "recommended_model": "composer-2.5"
+}

@@ -1,0 +1,27 @@
+{
+  "workflow_id": "STRUCTURED-ACTION-VALIDATOR-001",
+  "skill_id": "janus-test-pipeline",
+  "action_type": "run_validator",
+  "executor_status": "PASS",
+  "schema_validation": "PASS",
+  "mapping_resolution": "PASS",
+  "allowlist_status": "PASS",
+  "output_artifact_status": "PASS",
+  "codex_review_required": true,
+  "detail": "Validator executed through deterministic local mapping.",
+  "action_summary": {
+    "validator_id": "validate_runner_v1",
+    "command": [
+      "C:\\nvm4w\\nodejs\\node.exe",
+      "tests/e2e/generator/validate-runner.mjs",
+      "--plan",
+      "documentation/test-runs/TEST-RUN-2026-05-15-005_plan.json",
+      "--runner",
+      "documentation/test-runs/TEST-RUN-2026-05-15-005_generated.spec.js"
+    ],
+    "stdout_path": "documentation/codex/model-routing/structured-action-runs/STRUCTURED-ACTION-VALIDATOR-001/20260615-181505/stdout.log",
+    "stderr_path": "documentation/codex/model-routing/structured-action-runs/STRUCTURED-ACTION-VALIDATOR-001/20260615-181505/stderr.log",
+    "exit_code_path": "documentation/codex/model-routing/structured-action-runs/STRUCTURED-ACTION-VALIDATOR-001/20260615-181505/exit_code.txt"
+  },
+  "run_directory": "documentation/codex/model-routing/structured-action-runs/STRUCTURED-ACTION-VALIDATOR-001/20260615-181505"
+}

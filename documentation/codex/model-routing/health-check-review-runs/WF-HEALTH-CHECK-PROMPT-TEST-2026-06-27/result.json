@@ -1,0 +1,31 @@
+{
+  "summary_header": "HEALTH CHECK GATE",
+  "workflow_id": "WF-HEALTH-CHECK-PROMPT-TEST-2026-06-27",
+  "skill": "janus-health-check",
+  "task_label": "Health check prompt gate",
+  "selected_path": "operator_choice_pending",
+  "normal_target_model": "5.4 medium",
+  "choice_1": "Codex",
+  "choice_2": "OR",
+  "selected_or_model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "estimated_or_cost": 0.00016,
+  "cost_estimate_confidence_percent": 69.0,
+  "operator_prompt_lines": [
+    "1 = Codex",
+    "2 = OR",
+    "OR ist hier die externe Option, um Codex-Guthaben zu sparen.",
+    "Live-Evidenz: bounded health-check review lane in fixture-validation mode",
+    "Einordnung: hygiene scan interpretation only; Codex keeps final process authority",
+    "Fest empfohlenes OR-Modell: qwen/qwen3-coder-30b-a3b-instruct",
+    "Pre-Call-Kostenbasis: Health-check bounded lane for Health check prompt gate",
+    "Voraussichtliche OR-Kosten 0.000160000, Evidenzgenauigkeit 69%"
+  ],
+  "boundaries": [
+    "No delegated Git action",
+    "No delegated release action",
+    "No delegated file deletion",
+    "Codex remains final health-check owner"
+  ],
+  "final_outcome": "AWAITING_OPERATOR_CHOICE",
+  "validation_result": "PASS"
+}

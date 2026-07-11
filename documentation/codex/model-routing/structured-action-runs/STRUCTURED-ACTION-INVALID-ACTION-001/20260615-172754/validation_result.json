@@ -1,0 +1,5 @@
+{
+  "status": "FAIL",
+  "error": "Action type not enabled in TASK-SPEC17.1 executor slice: run_generator",
+  "schema_path": "documentation/codex/model-routing/schemas/codex_delegated_action_request.schema.json"
+}

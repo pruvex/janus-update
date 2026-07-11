@@ -1,0 +1,38 @@
+{
+  "skill_id": "DOC-SKILL-002",
+  "generation_id": "gen-1782396844-yGpWAf1TRheUs9nb8McG",
+  "model": "moonshotai/kimi-k2.5-0127",
+  "finish_reason": "stop",
+  "actual_or_cost": 0,
+  "common_checks": {
+    "generation_id_present": true,
+    "usage_present": true,
+    "actual_cost_present": true,
+    "finish_reason_not_length": true
+  },
+  "content_evaluation": {
+    "skill_id": "DOC-SKILL-002",
+    "validation_result": "FAIL",
+    "checks": {
+      "required_status_labels": {
+        "HOLD": true,
+        "UNKNOWN": true,
+        "EXPERIMENT_ONLY": true,
+        "CANDIDATE_NOT_APPROVED": true
+      },
+      "required_boundaries": {
+        "no production routing is approved": true,
+        "no canonical routing-table update is made": true,
+        "no global openrouter approval exists": false
+      },
+      "price_metadata_not_quality_evidence": true,
+      "next_safe_step_present": true,
+      "authority_violation_free": true
+    },
+    "reason_for_escalation": "",
+    "violations": [],
+    "violation_sentences": []
+  },
+  "postcheck_validation_result": "FAIL",
+  "accepted_for_local_batch_use": false
+}

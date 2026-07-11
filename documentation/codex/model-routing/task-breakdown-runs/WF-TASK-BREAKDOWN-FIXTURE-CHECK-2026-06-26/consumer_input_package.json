@@ -1,0 +1,51 @@
+{
+  "workflow_id": "WF-TASK-BREAKDOWN-REPRESENTATIVE-SPEC21-2026-06-26",
+  "bound_skill_context": "janus-task-breakdown",
+  "mode": "SINGLE_TARGET_TASK_REFINEMENT_ONLY",
+  "spec_path": "documentation/SPEC/Spec Done/21_assisted_or_workhorse_mode_for_janus_skills.md",
+  "task_file_path": "documentation/tasks/TASK-SPEC21_assisted_or_workhorse_mode_for_janus_skills.md",
+  "backlog_item": "N/A",
+  "candidate_target_tasks": [
+    "TASK-SPEC21.1",
+    "TASK-SPEC21.2",
+    "TASK-SPEC21.3",
+    "TASK-SPEC21.4"
+  ],
+  "expected_target_task": "TASK-SPEC21.3",
+  "expected_target_subtask": "N/A",
+  "expected_next_skill": "janus-preimplementation-check",
+  "expected_execution_model": "5.4",
+  "expected_decision": "TASK DESIGN COMPLETE",
+  "selection_rationale": [
+    "TASK-SPEC21.1 and TASK-SPEC21.2 are already sealed and must be reused unchanged",
+    "TASK-SPEC21.4 depends on the capture and telemetry foundation from TASK-SPEC21.3",
+    "TASK-SPEC21.3 is the next atomic precheck-ready slice"
+  ],
+  "required_files": [
+    "documentation/codex/model-routing/scripts/or_file_first_capture_wrapper.ps1",
+    "documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py",
+    "documentation/codex/model-routing/scripts/bounded_or_worker_outcome.py",
+    "documentation/codex/skills/janus-health-check/scripts/health_snapshot.py",
+    "documentation/codex/model-routing/tests/"
+  ],
+  "required_acceptance_focus": [
+    "file-first capture artifacts for accepted and rejected bounded runs",
+    "actual OR cost surfaced after completion when usage exists",
+    "health_snapshot.py ingests bounded OR telemetry without breaking non-OR behavior",
+    "incomplete capture or missing usage cannot be reported as accepted success"
+  ],
+  "required_test_focus": [
+    "fixture-driven complete capture and telemetry generation",
+    "negative coverage for missing usage or incomplete capture",
+    "healthcheck ingestion coverage against bounded OR telemetry",
+    "regression coverage that existing healthcheck behavior stays unchanged without OR input"
+  ],
+  "forbidden_behaviors": [
+    "No implementation",
+    "No precheck execution",
+    "No code generation",
+    "No implicit selection of multiple target tasks",
+    "No widening to TASK-SPEC21.4 consumer integration",
+    "No production routing activation"
+  ]
+}

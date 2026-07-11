@@ -234,3 +234,35 @@ class TestSkillSelectorFilesystemCalendar:
 
         # Bild-Intent sollte als mandatory gesetzt werden
         assert "system.generate_image" in policy["mandatory"]
+
+    def test_registry_fact_telling_loads_memory_and_contact_extraction(self):
+        """Fact-telling contact statements must stay tool-capable in the live SkillSelector path."""
+        from backend.services.capability_registry import CapabilityRegistry
+
+        registry = CapabilityRegistry(registry_path="/dev/null", skills_dir="/dev/null")
+
+        intent_result = IntentDetectionResult(is_fact_telling=True)
+        policy = registry.get_intent_skill_policy(intent_result)
+
+        assert "memory.write" in policy["mandatory"]
+        assert "contacts.extract_from_text" in policy["mandatory"]
+        assert "system.websearch" in policy["forbidden"]
+
+    def test_contact_pet_recall_override_forces_memory_read(self, skill_selector, monkeypatch):
+        """Pet recall questions about known contacts must not drift into unrelated tools."""
+        monkeypatch.setattr(
+            skill_selector,
+            "_semantic_search",
+            lambda prompt, top_k=10: ["system.price_comparison", "system.routing", "memory.read"],
+        )
+
+        skills = skill_selector.get_relevant_skills(
+            user_prompt="was weißt du über olis haustiere?",
+            intent_result=IntentDetectionResult(),
+            top_k=5,
+        )
+
+        assert "memory.read" in skills
+        assert "system.memory_read" in skills
+        assert "system.price_comparison" not in skills
+        assert "system.routing" not in skills

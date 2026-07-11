@@ -130,7 +130,62 @@ def test_get_country_info_translation_fallback_success(mock_get):
     assert "execution_time_ms" in result["metadata"]
 
 
-@pytest.mark.asyncio
+@patch("backend.tools.geo_service.requests.get")
+def test_get_country_info_deprecation_envelope_returns_api_error(mock_get):
+    mock_response = Mock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {
+        "success": False,
+        "data": None,
+        "errors": [
+            {
+                "message": (
+                    "This API version has been deprecated. Please visit "
+                    "https://restcountries.com/docs/legacy-api-deprecation to migrate to our new version (v5)."
+                )
+            }
+        ],
+    }
+    mock_get.return_value = mock_response
+
+    result = get_country_info_tool(country="Japan").model_dump()
+    assert result["status"] == "error"
+    assert result["error"]["code"] == "API_ERROR"
+    assert result["error"]["code"] != "PARSE_ERROR"
+    assert "nicht verfügbar" in result["error"]["message"]
+    assert "deprecated" in result["error"]["details"]["detail"].lower()
+    assert result["data"] == {}
+
+
+@patch("backend.tools.geo_service.requests.get")
+def test_get_country_info_success_envelope_with_data_list(mock_get):
+    mock_response = Mock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = {
+        "success": True,
+        "data": [
+            {
+                "name": {"common": "Japan"},
+                "translations": {"deu": {"common": "Japan"}},
+                "capital": ["Tokyo"],
+                "population": 125000000,
+                "region": "Asia",
+                "currencies": {"JPY": {"name": "Japanese yen"}},
+                "languages": {"jpn": "Japanese"},
+            }
+        ],
+        "errors": [],
+    }
+    mock_get.return_value = mock_response
+
+    result = get_country_info_tool(country="Japan", language="de").model_dump()
+    assert result["status"] == "ok"
+    assert result["data"]["name"] == "Japan"
+    assert result["data"]["capital"] == "Tokyo"
+    assert result["error"] is None
+
+
+@patch("backend.tools.geo_service.requests.get")
 async def test_find_local_business_tool_returns_skill_response_success():
     search_payload = {
         "text": "- Luigi's Pizza\n- Trattoria Roma\n- Osteria Centro",

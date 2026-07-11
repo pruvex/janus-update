@@ -1,0 +1,20 @@
+{
+  "workflow_id": "EXEC-WRITE-APPLY-LIVE-PILOT-003",
+  "mode": "execution_write_apply_candidate_sidecar_live",
+  "accepted_source_run_dir": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-source-bridges\\EXEC-WRITE-APPLY-SOURCE-BRIDGE-003",
+  "source_validation_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-runs\\EXEC-WRITE-APPLY-LIVE-PILOT-003\\source_validation.json",
+  "sidecar_run_dir": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-runs\\EXEC-WRITE-APPLY-LIVE-PILOT-003\\sidecar_run",
+  "expected_changed_files": [
+    "backend/services/contact_manager.py"
+  ],
+  "touched_files": [
+    "backend/services/contact_manager.py"
+  ],
+  "pre_run_status": "M backend/services/contact_manager.py",
+  "post_run_status": "M backend/services/contact_manager.py",
+  "apply_succeeded": true,
+  "last_message_excerpt": "Changed files: [backend/services/contact_manager.py](/abs/path not available)\n\nApply succeeded: yes. The exact patch hunk was applied to the allowlisted file only.\n\nBlocker: none for the patch apply. The separate start-of-work healthcheck reminder script could not run here because `tzdata` for `Europe/Berlin` is unavailable, but that did not block the bounded write.",
+  "issues": [],
+  "sidecar_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-runs\\EXEC-WRITE-APPLY-LIVE-PILOT-003\\sidecar_run\\summary.json",
+  "sidecar_validation_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-runs\\EXEC-WRITE-APPLY-LIVE-PILOT-003\\sidecar_run\\validation_summary.json"
+}

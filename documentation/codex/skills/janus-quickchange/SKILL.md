@@ -9,7 +9,7 @@ description: Execute a trivial low-risk Janus quick change such as copy replacem
 
 Use this skill for one tiny bounded change on an existing Janus surface. It is a guarded express lane for edits that would be wasteful in the full pipeline, not a loophole for skipping scope control, evidence, or rerouting.
 
-Default execution model is `5.4`, low/medium. Stay on warm `5.4` when possible. Escalate to `janus-backlog-intake`, `janus-feature-design`, or `janus-preimplementation-check` as soon as the change stops being trivial.
+Default execution model is `5.6 Terra`, low/medium. Stay on warm `5.6 Terra` when possible. Escalate to `janus-backlog-intake`, `janus-feature-design`, or `janus-preimplementation-check` as soon as the change stops being trivial.
 This is primarily a Codex execution skill. ChatGPT normally uses its result only when scope grows, risk becomes unclear, or Codex returns a blocked or reroute state.
 
 ## Allowed Scope
@@ -73,29 +73,43 @@ If control must move to ChatGPT, emit exactly one compact fenced `text` handoff 
 
 ## Bounded Delegation Gate
 
-For tiny eligible quickchange work that fits one of the already validated bounded delegation classes `quickchange_patch_review` or `quickchange_write_apply`, prefer the shared dispatcher as the operator-facing gate instead of choosing low-level helpers manually.
+Global delegation vocabulary across Janus is now:
+
+- `1 = Codex`
+- `2 = OpenRouter`
+- `3 = Cursor Composer`
+- `4 = Cursor API`
+
+This skill's bounded `quickchange_patch_review` slice is now wired through the shared manifest-backed `documentation/codex/model-routing/scripts/janus_delegate.py` entry. The visible gate for this lane is currently `1 = Codex` / `2 = OpenRouter` / `4 = Cursor API`; there is not yet a validated Cursor Composer quickchange backend here, so option `3` stays unavailable for this specific slice.
+
+Only this approved bounded quickchange lane should surface a normal delegated choice at the everyday skill entry. Other quickchange helper paths below are separate bounded helpers and must not be read as a generic shared-gate expansion.
+
+Current preferred OR candidate for the bounded `quickchange_patch_review` lane: `qwen/qwen3-coder-30b-a3b-instruct`.
 
 Binding artifacts:
 
+- `C:\KI\Janus-Projekt\documentation\codex\model-routing\scripts\janus_delegate.py`
 - `C:\KI\Janus-Projekt\documentation\codex\model-routing\scripts\codex_bounded_delegation_dispatcher.py`
 - `C:\KI\Janus-Projekt\documentation\codex\model-routing\scripts\quickchange_sidecar_write_pilot_runner.py`
 - `C:\KI\Janus-Projekt\documentation\codex\model-routing\codex_bounded_delegation_dispatcher_canonical_entry_2026-06-14.md`
 
-Use prompt mode first for review-first quickchanges:
+Use the shared delegate entry first for review-first quickchanges:
 
 ```powershell
-python documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py --task-class quickchange_patch_review --task-label "<short quickchange task>" --normal-target-model "<declared model/reasoning>" --operator-choice prompt --workflow-id <WORKFLOW-ID> --editable-path <relative-path> --max-touched-files <N>
+python documentation/codex/model-routing/scripts/janus_delegate.py --lane quickchange_patch_review --task-id TASK-QC-001 --workflow-id <WORKFLOW-ID> --operator-choice prompt --prompt-path documentation/codex/model-routing/fixtures/examples/quickchange_patch_review_prompt_example.md --editable-path <relative-path> --max-touched-files <N> --estimated-codex-saved-tokens 8000 --estimated-delegation-overhead-tokens 4000
 ```
 
-Expected operator gate:
+Current visible operator gate for this lane:
 
 - `1 = Codex`
 - `2 = OpenRouter`
+- `4 = Cursor API`
 
 Meaning here:
 
 - `1` keeps the quickchange fully local in Codex.
-- `2` uses the bounded OpenRouter quickchange patch-review path.
+- `2` routes through the existing bounded OpenRouter quickchange dispatcher path.
+- `4` routes through the shared Cursor API bounded review path.
 
 Boundaries stay strict:
 
@@ -107,9 +121,10 @@ Boundaries stay strict:
 
 If the user chooses the OpenRouter path:
 
-- if the user chooses `1`, `local`, or `codex`, invoke the dispatcher with `--operator-choice local`
-- if the user chooses `2`, `or`, `openrouter`, `delegated`, or `sidecar`, invoke the dispatcher with `--operator-choice delegated --prompt-path <bounded prompt path>`
-- pass the exact `--editable-path` allowlist and `--max-touched-files` cap that belong to the quickchange brief
+- if the user chooses `1`, `local`, or `codex`, stay local in Codex
+- if the user chooses `2`, `or`, `opr`, or `openrouter`, the shared delegate currently plans the bounded dispatcher path and hands off to the existing helper chain
+- if the user chooses `4`, `cursor-api`, `cursor_api`, or `api`, the shared delegate currently plans the bounded Cursor API review path
+- pass the exact `--prompt-path`, `--editable-path` allowlist, and `--max-touched-files` cap that belong to the quickchange brief
 
 Important:
 

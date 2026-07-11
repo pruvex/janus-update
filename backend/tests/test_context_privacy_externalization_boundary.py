@@ -8,6 +8,7 @@ from backend.services.orchestrator.execution_dispatcher import (
     _is_overbroad_user_data_export_request,
 )
 from backend.services.orchestrator.response_finalizer import (
+    _allow_e2e_fact_extraction,
     has_websearch_tool,
     strip_memory_references_from_live_answer,
 )
@@ -90,6 +91,16 @@ def test_websearch_tool_detection_accepts_provider_tool_alias():
     assert has_websearch_tool([
         {"role": "tool", "name": "system_websearch", "_skill_id": "system.websearch", "content": "{}"}
     ])
+
+
+def test_e2e_fact_extraction_override_defaults_to_disabled(monkeypatch):
+    monkeypatch.delenv("JANUS_E2E_ENABLE_FACT_EXTRACTION", raising=False)
+    assert not _allow_e2e_fact_extraction()
+
+
+def test_e2e_fact_extraction_override_can_be_enabled(monkeypatch):
+    monkeypatch.setenv("JANUS_E2E_ENABLE_FACT_EXTRACTION", "1")
+    assert _allow_e2e_fact_extraction()
 
 
 def test_personal_context_can_still_improve_related_answers_without_external_dump():

@@ -1,0 +1,45 @@
+{
+  "task_label": "Shadow docs fleissarbeit comparison package",
+  "shadow_work_class": "docs_fleissarbeit",
+  "worker_profile": "shadow-eval-fixed-pair",
+  "allowed_edit_paths": [
+    "docs/target_doc.md"
+  ],
+  "forbidden_actions": [
+    "architecture",
+    "auth",
+    "commit",
+    "dependency",
+    "merge",
+    "migration",
+    "privacy",
+    "publish",
+    "push",
+    "release",
+    "secret",
+    "security",
+    "tag"
+  ],
+  "acceptance_criteria": [
+    "Only docs/target_doc.md may change.",
+    "The document should become clearer without adding new product claims.",
+    "No edits may imply product release or consumer activation."
+  ],
+  "checks": [
+    {
+      "label": "markdown_file_exists",
+      "command": [
+        "python",
+        "-c",
+        "from pathlib import Path; raise SystemExit(0 if Path('docs/target_doc.md').exists() else 1)"
+      ],
+      "expected_exit_codes": [
+        0
+      ]
+    }
+  ],
+  "requested_actions": [
+    "edit"
+  ],
+  "task_prompt_path": "development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/docs_fleissarbeit/task_prompt.md"
+}

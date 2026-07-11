@@ -1,0 +1,25 @@
+﻿{
+    "status":  "DRY_RUN",
+    "sandbox":  "workspace-write",
+    "editable_paths":  [
+                           "documentation/test-runs/TEST-RUN-2099-12-31-001_plan.json",
+                           "documentation/test-runs/TEST-RUN-2099-12-31-001_generated.spec.js"
+                       ],
+    "touched_files":  [
+
+                      ],
+    "touched_file_count":  0,
+    "max_touched_files":  2,
+    "deleted_paths":  [
+
+                      ],
+    "renamed_paths":  [
+
+                      ],
+    "moved_paths":  [
+
+                    ],
+    "allowlist_ok":  true,
+    "touched_file_cap_ok":  true,
+    "delete_rename_move_ok":  true
+}

@@ -1,0 +1,16 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 219653,
+  "duration_api_ms": 219653,
+  "result": "```json\n{\n  \"status\": \"PASS\",\n  \"changed_files\": [\n    \"backend/services/orchestrator/intent_engine.py\",\n    \"backend/services/workflow/routine_runner.py\"\n  ],\n  \"command_results\": [\n    {\n      \"command\": \"python -m pytest tests/test_routine_runner.py -v\",\n      \"result\": \"12 passed\"\n    },\n    {\n      \"command\": \"python -m pytest tests/test_workflow_offer_service.py -v\",\n      \"result\": \"18 passed\"\n    },\n    {\n      \"command\": \"python -m pytest tests/unit/test_chat_orchestrator_routine_execution.py -v\",\n      \"result\": \"3 passed\"\n    },\n    {\n      \"command\": \"python -m py_compile services/orchestrator/intent_engine.py services/workflow/routine_runner.py services/chat_orchestrator.py\",\n      \"result\": \"compiled without errors\"\n    }\n  ],\n  \"summary\": \"The semantic multi-step routine reuse core and the calendar.list_events + system.routing pilot were already in place. Fixed two regressions: the routing origin/destination extractor now uses a punctuation/end lookahead so destinations like 'Hamburg?' are captured fully, and weather rebind now only overrides the city to keep the existing calendar+weather path intact. All focused tests pass.\",\n  \"blockers\": []\n}\n```",
+  "session_id": "23ff3aee-3d5b-49d5-8ff6-a2a24c5c1f54",
+  "request_id": "4586910e-2cdd-454e-8ff5-2f3b47b963a3",
+  "usage": {
+    "inputTokens": 92045,
+    "outputTokens": 9989,
+    "cacheReadTokens": 1069600,
+    "cacheWriteTokens": 0
+  }
+}

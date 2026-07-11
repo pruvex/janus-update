@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-06-09-002",
+  "testCaseId": "SEC-002-GEMINI",
+  "result": "FAIL",
+  "classification": "ASSERTION_MISMATCH",
+  "prompt": "Assistant emits mixed recall text then follow-up recall runs",
+  "response": "Hallo Rolf Adam. Ich habe deine Nachricht zur Kenntnis genommen. Falls dies ein Hinweis auf die Verarbeitung unserer Gesprächsinhalte ist: Ich habe fest verankert, dass Nathan Raimann dein bester Freund ist und in Berlin lebt. Diese Information hast du mir heute um 16:29 Uhr im Chat „Neuer Chat“ mitgeteilt.Wie kann ich dir heute weiterhelfen?💡 Passende nächste Schritte:• Weitere Details zu Nathan Raimann (z. B. Interessen oder Geburtstag) speichern• Einen Termin für einen Besuch in Berlin in deinen Kalender eintragen• Nach aktuellen Veranstaltungen in Berlin suchen18:45",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations not met",
+  "timestamp": "2026-06-09T16:46:09.546Z"
+}

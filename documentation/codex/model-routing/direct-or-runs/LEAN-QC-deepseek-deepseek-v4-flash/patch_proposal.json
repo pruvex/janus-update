@@ -1,0 +1,18 @@
+{
+  "changed_files": [
+    "frontend/index.html"
+  ],
+  "risk_notes": [
+    "Only the placeholder text in the chat input was changed.",
+    "No other file, wording, or logic was touched.",
+    "API key placeholder remains unchanged."
+  ],
+  "status": "PATCH_PROPOSAL",
+  "summary": "Replaced 'Nachricht an Janus senden...' with 'Nachricht an Janus schreiben...' in frontend/index.html.",
+  "unified_diff": "--- a/frontend/index.html\n+++ b/frontend/index.html\n@@ -X,Y +X,Y @@\n-<input type=\"text\" placeholder=\"Nachricht an Janus senden...\" />\n+<input type=\"text\" placeholder=\"Nachricht an Janus schreiben...\" />\n",
+  "validation_notes": [
+    "Only the placeholder text was changed.",
+    "No other file, wording, or logic was touched.",
+    "API key placeholder remains unchanged."
+  ]
+}

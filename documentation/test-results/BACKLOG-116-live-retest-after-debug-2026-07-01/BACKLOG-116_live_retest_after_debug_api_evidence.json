@@ -1,0 +1,56 @@
+﻿{
+    "testRunId":  "BACKLOG-116-live-retest-after-debug-2026-07-01",
+    "mode":  "janus-test-pipeline/LIVE_TEST_EXECUTION/ad-hoc-api-retest",
+    "prompt":  "was weißt du alles über olis haustiere?",
+    "provider":  "openai",
+    "model":  "gpt-5.4-nano",
+    "chatId":  4158,
+    "startedAt":  "2026-07-01T18:14:17.4597224+02:00",
+    "endedAt":  "2026-07-01T18:14:30.1183083+02:00",
+    "durationMs":  12654,
+    "status":  "PASS",
+    "assertions":  {
+                       "containsTasso":  true,
+                       "containsGarfield":  true,
+                       "containsGarfieldTunaDislike":  true,
+                       "noOliTunaDislikeMisattribution":  true
+                   },
+    "responseText":  "Hallo Rolf Adam â zu Olis Haustieren weiÃ ich Folgendes:\n\n- **Hund Tasso**: ein **Podenco** und frisst **gerne Thunfisch**.  \n- **Katze Garfield**: **mag Thunfisch Ã¼berhaupt nicht**.\n\nð¡ Passende nÃ¤chste Schritte:\nâ¢ Soll ich dir die Haustiere kurz mit typischen âMerksÃ¤tzenâ fÃ¼r Futter/Angebote zusammenfassen?  \nâ¢ MÃ¶chtest du wissen, ob Oli eher Hund oder eher Katze bevorzugt (z.B. fÃ¼r Treffen/Besuche)?",
+    "contactEvidence":  {
+                            "value":  [
+                                          {
+                                              "id":  1,
+                                              "name":  "Oliver Schwab",
+                                              "email":  "",
+                                              "phone":  "",
+                                              "notes":  null,
+                                              "created_at":  "2026-06-08 19:06:41.706279",
+                                              "address":  "k�ln stammheim",
+                                              "website":  "",
+                                              "category":  "Privat",
+                                              "contact_type":  "private_person",
+                                              "preferences":  [
+                                                                  "big bang theory",
+                                                                  "strategiespiele wie panzer general"
+                                                              ],
+                                              "dislikes":  [
+
+                                                           ],
+                                              "personal_details":  [
+                                                                       "hat einen Hund namens tasso",
+                                                                       "hat eine Katze namens garfield",
+                                                                       "Hund Tasso ist ein podenco",
+                                                                       "Hund Tasso frisst gerne thunfisch",
+                                                                       "Katze Garfield mag Thunfisch �berhaupt nicht"
+                                                                   ],
+                                              "proposal_status":  "confirmed",
+                                              "proposal_source_context":  "direct_context",
+                                              "proposal_last_outcome":  "applied_from_confirmed_chat_fact",
+                                              "memory_sync_status":  "ready",
+                                              "nickname":  "Oli"
+                                          }
+                                      ],
+                            "Count":  1
+                        },
+    "note":  "Live backend API run against local Janus app data after BACKLOG-116 debug recovery fix. Internal API key and provider secrets intentionally omitted."
+}

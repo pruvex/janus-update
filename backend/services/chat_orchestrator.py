@@ -72,6 +72,12 @@ from backend.services.orchestrator.intercept_handler import apply_image_intent_s
 from backend.services.orchestrator.policy_handler import handle_policy_consent_phase
 from backend.services.orchestrator.prompt_registry import apply_verbosity_control, prompt_registry
 from backend.services.orchestrator.identity_manager import identity_manager
+from backend.services.workflow.routine_runner import RoutineRunner
+from backend.services.workflow.workflow_offer_service import (
+    find_pending_offer,
+    handle_offer_response,
+    should_handle_offer_follow_up,
+)
 from backend.data.schemas import ExtractedFact
 from backend.services.vision.utils import fuse_vision_results, clean_for_chat
 from backend.utils import intent_classifier
@@ -84,6 +90,47 @@ from backend.utils.config_loader import (
 from backend.services.llm_silo_context import normalize_llm_silo_provider
 
 logger = logging.getLogger("janus_backend")
+
+
+def _build_routine_memory_context(wf: Any) -> Dict[str, Any]:
+    """Bounded key-value context for routine placeholder resolution."""
+    context: Dict[str, Any] = {}
+    user_text = str(getattr(wf, "user_text", "") or "").strip()
+    for slot in getattr(wf, "selected", None) or []:
+        text = str(getattr(slot, "text", "") or "").strip()
+        if not text:
+            continue
+        lowered = text.casefold()
+        if "wohnort" in lowered:
+            match = re.search(
+                r"(?:wohnort|wohne in|lebe in)\s*(?:ist|:)?\s*([^\n.,;]+)",
+                lowered,
+            )
+            if match:
+                city = match.group(1).strip()
+                if city:
+                    context.setdefault("wohnort", city)
+    if user_text:
+        origin, destination = intent_engine.extract_routing_origin_destination(user_text)
+        if origin:
+            context.setdefault("routing_origin", origin)
+        if destination:
+            context.setdefault("routing_destination", destination)
+    return context
+
+
+def _resolve_routine_offer_messages(
+    wf_messages: List[Dict[str, Any]],
+    db_messages: Optional[List[Dict[str, Any]]] = None,
+) -> List[Dict[str, Any]]:
+    """Prefer in-memory history; fall back to persisted chat rows during early exit."""
+    in_memory = list(wf_messages or [])
+    if find_pending_offer(in_memory):
+        return in_memory
+    persisted = list(db_messages or [])
+    if find_pending_offer(persisted):
+        return persisted
+    return in_memory
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1137,9 +1184,9 @@ class ChatOrchestrator:
         wf.help_intent_type = self._resolve_help_intent(inc)
         if intent_classifier.is_greeting(wf.user_text):
             wf.help_intent_type = None
-        
+
         # Help Fast-Path: Skip LLM for help queries (§4.3)
-        if wf.help_intent_type and not wf.has_image and not wf.is_policy_response:
+        if (not wf.skip_llm_generation) and wf.help_intent_type and not wf.has_image and not wf.is_policy_response:
             logger.info(
                 "[HELP-FAST-PATH] Detected help intent '%s' for query '%s...' — skipping LLM",
                 wf.help_intent_type,
@@ -1184,7 +1231,7 @@ class ChatOrchestrator:
                 wf.final_ui_command = None
             wf.skip_llm_generation = True
             wf.use_agent_factory = False
-        else:
+        elif not wf.skip_llm_generation:
             wf.use_agent_factory = not wf.has_image and (not wf.is_policy_response) and (not wf.is_policy_question) and (not wf.is_audit_request) and (not wf.is_factcheck_decision) and (not intent_classifier.is_greeting(wf.user_text)) and (not intent_classifier.is_identity_query(wf.user_text)) and (not intent_classifier.is_opinion_query(wf.user_text)) and (not wf.is_ollama_vague_smalltalk) and (not wf.is_simple_document_check_prompt) and (not wf.is_local_planner_early_exit) and (wf.planner_prefers_agent or inc.is_complex_document_request)
         wf._is_personal_recall = inc.is_self_referential
         wf.user_text_lower = str(wf.user_text or '').lower()
@@ -4113,6 +4160,33 @@ class ChatOrchestrator:
         self.status_sync.persist_assistant_message(chat_id, wf.execution_for_api)
         return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
 
+    async def _try_routine_offer_confirmation(self, ctx: RequestContext) -> Optional[Dict]:
+        wf = ctx.workflow
+        request = ctx.request
+        wf_messages = getattr(wf, "messages", []) or []
+        db_messages = None
+        if request.chat_id is not None:
+            db_messages = self.context_builder.build_chat_history(request.chat_id, limit=20)
+        messages = _resolve_routine_offer_messages(wf_messages, db_messages)
+        if not should_handle_offer_follow_up(wf.user_text or "", messages=messages):
+            return None
+
+        result = handle_offer_response(
+            wf.user_text or "",
+            messages=messages,
+            db=self.db,
+            capability_registry=self.capability_registry,
+            chat_id=request.chat_id,
+        )
+        if not result.handled or not result.response_text:
+            return None
+
+        wf.execution_for_api = ExecutionResponse(text=result.response_text)
+        wf.skip_llm_generation = True
+        if request.chat_id is not None:
+            self.status_sync.persist_assistant_message(request.chat_id, wf.execution_for_api)
+        return self.status_sync.build_api_response(execution_response=wf.execution_for_api)
+
     async def _try_early_exit(self, ctx: RequestContext) -> Optional[Dict]:
         wf = ctx.workflow
         request = ctx.request
@@ -4120,6 +4194,10 @@ class ChatOrchestrator:
         tools_cmd_result = await self._try_tools_command(ctx)
         if tools_cmd_result is not None:
             return tools_cmd_result
+
+        routine_offer_result = await self._try_routine_offer_confirmation(ctx)
+        if routine_offer_result is not None:
+            return routine_offer_result
 
         mail_guard_result = await self._try_chat_mail_confirmation(ctx)
         if mail_guard_result is not None:
@@ -4898,6 +4976,54 @@ class ChatOrchestrator:
             orchestrator_cls=ChatOrchestrator,
         )
 
+    async def _try_routine_execution(self, ctx: RequestContext) -> RequestContext:
+        wf = ctx.workflow
+        request = ctx.request
+        if (
+            wf.skip_llm_generation
+            or wf.help_intent_type
+            or wf.has_image
+            or wf.is_policy_response
+            or wf.is_policy_question
+            or wf.is_waiting_for_consent
+        ):
+            return ctx
+
+        executor = ToolExecutor(
+            self.db,
+            wf.api_key,
+            request.provider,
+            request.model,
+            additional_context={
+                "chat_id": request.chat_id,
+                "trace_id": str(uuid.uuid4()),
+                "provider": request.provider,
+                "model": request.model,
+            },
+        )
+        routine_runner = RoutineRunner(self.db, executor)
+        routine_result = await routine_runner.execute_by_trigger(
+            wf.user_text,
+            memory_context=_build_routine_memory_context(wf),
+        )
+        if not routine_result.found:
+            return ctx
+
+        match_kind = "semantic" if str(routine_result.matched_trigger or "").startswith("semantic:") else "trigger"
+        logger.info(
+            "[ROUTINE-RUNNER] Triggered routine '%s' via %s match '%s' with status=%s",
+            routine_result.routine_name,
+            match_kind,
+            routine_result.matched_trigger,
+            routine_result.status,
+        )
+        # Streamed early finalize paths read wf.final_text directly.
+        wf.final_text = routine_result.response_text
+        wf.final_text_to_generate = routine_result.response_text
+        wf.skip_llm_generation = True
+        wf.use_agent_factory = False
+        return ctx
+
     async def handle_chat_request(self, request: schemas.ChatRequest, background_tasks: Any = None) -> Dict:
         # Set trace_id for this request context
         from backend.services.logging.logger_core import set_trace_id, generate_trace_id
@@ -4920,6 +5046,7 @@ class ChatOrchestrator:
             )
             try:
                 ctx = await self._build_memory_context(ctx)
+                ctx = await self._try_routine_execution(ctx)
                 ctx = await self._execute_generation(ctx)
                 return await self._finalize_response(ctx)
             finally:
@@ -5011,11 +5138,25 @@ class ChatOrchestrator:
                     return
 
                 # 💎 STREAM-SWITCH: Video-Listen → Block-Response für stabile Markdown-Links
+                ctx = await self._build_memory_context(ctx)
+                ctx = await self._try_routine_execution(ctx)
+                if ctx.workflow.skip_llm_generation:
+                    result = await self._finalize_response(ctx)
+                    if isinstance(result, ExecutionResponse):
+                        block_text = str(result.text or "")
+                    elif isinstance(result, dict):
+                        block_text = str(result.get("text") or result.get("message") or "")
+                    else:
+                        block_text = str(result)
+                    yield StreamEvent(type="stream_complete", content={"text": block_text})
+                    for ev in self._iter_modal_request_stream_events(ctx):
+                        yield ev
+                    return
+
                 _wf_check = ctx.workflow
                 _idr = getattr(_wf_check, "intent_detection_result", None)
                 if _idr is not None and _idr.is_video_list_intent:
                     logger.info("💎 STREAM-SWITCH: Video-List-Intent erkannt → Block-Response für stabile Links")
-                    ctx = await self._build_memory_context(ctx)
                     ctx = await self._execute_generation(ctx)
                     result = await self._finalize_response(ctx)
                     wf = ctx.workflow

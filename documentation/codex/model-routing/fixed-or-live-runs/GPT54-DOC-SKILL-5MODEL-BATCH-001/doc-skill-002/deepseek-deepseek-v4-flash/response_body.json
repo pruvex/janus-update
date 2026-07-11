@@ -1,0 +1,27 @@
+﻿
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1781389739-JrEjlay1ME7Dxgaip0Zo","object":"chat.completion","created":1781389739,"model":"deepseek/deepseek-v4-flash-20260423","provider":"WandB","system_fingerprint":"vllm-0.22.1.dev0+g0b3ba88f1.d20260529-dp4-ep-a8f65562","service_tier":null,"choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"stop","message":{"role":"assistant","content":"### Overall status\n- **No candidate is approved for production routing.**  \n- All scoring rows preserve their original status labels exactly.\n\n### Candidate notes\n- **openai/gpt-oss-20b** – `CANDIDATE_NOT_APPROVED`. Cheaper than GPT-5.4, but lacks live documentation-skill evidence.  \n- **openai/gpt-oss-120b** – `CANDIDATE_NOT_APPROVED`. Stronger OpenAI-family candidate, but no replacement approval.  \n- **minimax/minimax-m3** – `HOLD`. Prior schema projection and provider compatibility concerns remain.  \n- **openrouter/auto** – `EXPERIMENT_ONLY`. Mini batch showed cost regression for DOC-SKILL-001 and finish_reason=length for DOC-SKILL-002.  \n- **unknown/provider-placeholder** – `UNKNOWN`. Insufficient catalog and scoring evidence.\n\n### HOLD / UNKNOWN / experiment-only notes\n- **HOLD** (minimax/minimax-m3) is preserved as `HOLD` – not treated as pass.  \n- **UNKNOWN** (unknown/provider-placeholder) is preserved as `UNKNOWN` – not treated as approved.  \n- **EXPERIMENT_ONLY** (openrouter/auto) is preserved as experiment-only – not promoted.\n\n### Boundaries\n- Price metadata (e.g., `CHEAPER_THAN_GPT54`) is **not** used as quality evidence.  \n- No production routing is approved.  \n- No canonical routing-table update is made.  \n- No claim of global OpenRouter approval or Auto Router confirmation.  \n- No candidate is stated to replace GPT-5.4.\n\n### Next safe step\n- Conduct fixture/baseline work (e.g., live documentation-skill evals for gpt-oss-20b and gpt-oss-120b) before any live comparison or routing consideration.  \n- For minimax/minimax-m3, resolve schema projection and provider compatibility issues before re-evaluation.  \n- For openrouter/auto, investigate cost regression and finish_reason=length issues in a controlled experiment.  \n- For unknown/provider-placeholder, gather sufficient catalog and scoring evidence before any status change.","refusal":null,"reasoning":null}}],"usage":{"prompt_tokens":987,"completion_tokens":471,"total_tokens":1458,"cost":0.00027006,"is_byok":false,"prompt_tokens_details":{"cached_tokens":0,"cache_write_tokens":0,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.00027006,"upstream_inference_prompt_cost":0.00013818,"upstream_inference_completions_cost":0.00013188},"completion_tokens_details":{"reasoning_tokens":0,"image_tokens":0,"audio_tokens":0}}}

@@ -1,0 +1,46 @@
+{
+  "status": "PASS",
+  "source_type": "LATEST_DECISION_SUMMARY",
+  "source_path": "documentation/codex/model-routing/codex_first_real_or_pilot_decision_summary_2026-06-16.md",
+  "target_spec_path": "documentation/SPEC/first_real_or_pilot_for_bounded_janus_delegation.md",
+  "recommended_next_skill": "janus-spec-review",
+  "mechanical_cleanup_required": "NO",
+  "structured_spec": {
+    "routing": {
+      "target_skill": "janus-spec-review",
+      "recommended_model": "5.4",
+      "recommended_reasoning": "medium",
+      "new_chat": "yes",
+      "complexity_score": 3,
+      "confidence": "HIGH",
+      "dashboard_hint": "SAFE",
+      "reason": "Locked decision summary is clear, low-risk, and scoped tightly; spec can proceed directly to review."
+    },
+    "feature_identity": "First Real OR Pilot for Bounded Janus Delegation",
+    "user_value": "Enables safe delegation of low-risk bounded write tasks to a cheaper external worker path while retaining local validation, diff review, and final acceptance control, reducing overhead for trivial changes.",
+    "target_surface": "janus-quickchange bounded delegated write candidate",
+    "user_action_surface": "User triggers janus-quickchange on a pre-allowlisted small change; the system delegates to an external worker, returns a diff, changed-files list, validation evidence, and presents an accept-or-reject handoff to Codex.",
+    "system_behavior": "On receiving a delegated write request, system validates that the change is in the allowlist and respects file cap and operation constraints. Delegates to the external worker. On success, system returns a reviewable diff, changed-files list, and validation evidence, then hands off to Codex for accept/reject. On any missing artifact, allowlist escape, file-cap escape, delete/rename/move, or validation failure, the system discards the delegated result and falls back to local Codex handling without claiming task completion.",
+    "data_persistence": "No persistent storage; all artifacts are ephemeral for a single delegation cycle and discarded after accept/reject or fallback.",
+    "constraints": "Allowlist must be pre-defined; only one tiny quickchange per delegation; no multi-task or architecture-changing writes; no file deletions, renames, or moves; file count capped per delegation.",
+    "security_privacy": "All changes are on local repository; no credentials or secrets are exposed; delegation does not bypass local validation or review.",
+    "edge_cases": "If the external worker returns incomplete artifacts (missing diff, changed-files, or validation evidence), discard and fallback. If the change is not in allowlist, reject delegation and fallback. If file cap exceeded, reject delegation. Any delete/rename/move operation triggers fallback. If validation fails, discard and fallback.",
+    "definition_of_done": [
+      "A tiny allowlisted quickchange request is submitted via janus-quickchange.",
+      "The request is validated as within allowlist, within file cap, and devoid of delete/rename/move operations.",
+      "The delegation to external worker completes and returns a diff, changed-files list, and validation evidence.",
+      "The returned artifacts are presented for Codex review with explicit accept/reject handoff.",
+      "No authoritative repo writes are performed by the delegation system.",
+      "On any failure condition, the system falls back to local Codex handling without claiming task completion."
+    ],
+    "test_strategy": "Unit test allowlist validation, file-cap enforcement, operation restrictions (no delete/rename/move). Integration test delegation success and artifact completeness. Verification that accept/reject handoff works. Test fallback behavior for each failure condition.",
+    "out_of_scope": "Broad janus-executioner code delegation, test-pipeline write retries, Auto Router, production routing, canonical routing-table updates, Git or release actions, and any multi-task or architecture-changing write attempt.",
+    "internal_complexity_breakdown": "Low: single bounded delegation with straightforward validation, external call, and fallback; no state machine, no retries, no persistent storage."
+  },
+  "notes": [
+    "Spec is tightly scoped from the locked summary; ready for review.",
+    "No mechanical cleanup needed; structured_spec mirrors the summary directly.",
+    "Edge cases explicitly cover all failure conditions from the source.",
+    "Routing suggests review with medium reasoning as a precaution."
+  ]
+}

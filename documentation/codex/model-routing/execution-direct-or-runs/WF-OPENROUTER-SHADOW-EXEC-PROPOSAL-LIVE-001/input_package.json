@@ -1,0 +1,43 @@
+{
+  "workflow_id": "WF-OPENROUTER-SHADOW-EXEC-PROPOSAL-001",
+  "bound_skill_context": "janus-executioner",
+  "target_task": "TASK-EX-001-shadow-session-budget-line",
+  "spec_path": "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/input_package.json",
+  "precheck_status": "PRE-CHECK PASSED",
+  "allowed_files": [
+    "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/gate_prompt_shadow.py",
+    "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/test_gate_prompt_shadow.py"
+  ],
+  "max_touched_files": 2,
+  "mini_test_plan": [
+    "python -m pytest documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/test_gate_prompt_shadow.py -q"
+  ],
+  "manual_validation_gate": "Codex must verify that exactly one Session-Budget line is present, the helper stays inside the shadow allowlist, and the focused sandbox pytest passes after any accepted local apply.",
+  "delegation_question": "Produce one minimal bounded patch candidate that re-adds exactly one Session-Budget line to the shadow operator prompt helper without widening scope or changing the visible operator gate semantics.",
+  "current_seam_context": "The shadow sandbox helper has just been reset to its pre-session-budget baseline. The focused shadow pytest is red specifically because the helper no longer emits a Session-Budget line. The smallest valid patch should restore exactly one Session-Budget line in gate_prompt_shadow.py while leaving the rest of the shadow task untouched.",
+  "signature_context": "Preserve the existing function signature exactly: build_shadow_operator_prompt_lines(*, choice_2_label: str = \"Cursor\", selected_model: str = \"\", estimated_cost: float = 0.0, session_cap_usd: float = 0.15) -> list[str]",
+  "call_shape_examples": [
+    "build_shadow_operator_prompt_lines(choice_2_label=\"Cursor\", selected_model=\"composer-2.5\", estimated_cost=0.0025)",
+    "The output must still begin with '1 = Codex' and '2 = Cursor'.",
+    "The output must contain exactly one line that starts with 'Session-Budget:'."
+  ],
+  "exact_code_context_blocks": [
+    "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/gate_prompt_shadow.py::build_shadow_operator_prompt_lines\\ndef build_shadow_operator_prompt_lines(\\n    *,\\n    choice_2_label: str = \\\"Cursor\\\",\\n    selected_model: str = \\\"\\\",\\n    estimated_cost: float = 0.0,\\n    session_cap_usd: float = 0.15,\\n) -> list[str]:\\n    _ = session_cap_usd\\n    lines = [\\n        \\\"1 = Codex\\\",\\n        f\\\"2 = {choice_2_label}\\\",\\n        \\\"Cursor is the bounded external worker option for this shadow lane.\\\",\\n    ]\\n    if selected_model.strip():\\n        lines.append(f\\\"Empfohlenes Worker-Modell: {selected_model}\\\")\\n    lines.append(f\\\"Voraussichtliche Worker-Kosten {estimated_cost:.6f}\\\")\\n    return lines",
+    "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/test_gate_prompt_shadow.py::test_build_shadow_operator_prompt_lines_includes_session_budget_line\\ndef test_build_shadow_operator_prompt_lines_includes_session_budget_line() -> None:\\n    lines = build_shadow_operator_prompt_lines(\\n        choice_2_label=\\\"Cursor\\\",\\n        selected_model=\\\"composer-2.5\\\",\\n        estimated_cost=0.0025,\\n    )\\n\\n    assert lines[0] == \\\"1 = Codex\\\"\\n    assert lines[1] == \\\"2 = Cursor\\\"\\n    assert \\\"Empfohlenes Worker-Modell: composer-2.5\\\" in lines\\n    assert any(line.startswith(\\\"Session-Budget:\\\") for line in lines)"
+  ],
+  "forbidden_anchors": [
+    "edit outside the two shadow sandbox files",
+    "change 1 = Codex / 2 = Cursor gate semantics",
+    "broad refactor",
+    "new helper class",
+    "production routing activation"
+  ],
+  "required_current_anchors": [
+    "def build_shadow_operator_prompt_lines(",
+    "choice_2_label: str = \"Cursor\"",
+    "session_cap_usd: float = 0.15",
+    "_ = session_cap_usd",
+    "lines.append(f\"Voraussichtliche Worker-Kosten {estimated_cost:.6f}\")",
+    "assert any(line.startswith(\"Session-Budget:\") for line in lines)"
+  ]
+}

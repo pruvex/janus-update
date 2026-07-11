@@ -1,0 +1,54 @@
+{
+  "task_label": "Fix passive promotion signature drift for equivalent mixed calendar-routing traces",
+  "worker_profile": "cursor-agent",
+  "allowed_edit_paths": [
+    "backend/services/workflow/workflow_offer_service.py",
+    "backend/services/workflow/routine_store.py",
+    "backend/services/workflow/routine_schema.py",
+    "backend/services/workflow/workflow_detector.py",
+    "backend/tests/test_workflow_offer_service.py"
+  ],
+  "constraints": [
+    "Keep the fix bounded to passive candidate equivalence, fingerprint normalization, or promotion matching for mixed calendar-plus-routing learning.",
+    "Do not revisit the dispatcher, provider behavior, weather formatting, routine runner UX, or unrelated workflow-offer copy.",
+    "Prefer the smallest product-safe normalization or lookup change over broad redesign.",
+    "Do not commit or widen scope into migrations, cleanup, or architecture refactors."
+  ],
+  "acceptance_criteria": [
+    "Two semantically equivalent mixed traces for calendar.list_events plus system.routing must resolve to one promotable candidate instead of multiple active candidates.",
+    "The second matching mixed trace should be eligible for passive promotion even if step order flips or optional benign args differ.",
+    "Focused regression tests in backend/tests/test_workflow_offer_service.py must pass."
+  ],
+  "checks": [
+    {
+      "label": "pytest",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "backend/tests/test_workflow_offer_service.py",
+        "-q"
+      ]
+    }
+  ],
+  "forbidden_actions": [
+    "commit",
+    "push",
+    "tag",
+    "merge",
+    "release",
+    "publish",
+    "dependency",
+    "secret",
+    "auth",
+    "security",
+    "privacy",
+    "migration",
+    "architecture"
+  ],
+  "requested_actions": [
+    "edit",
+    "run_checks"
+  ],
+  "task_prompt": "Investigate only the allowlisted passive routine-learning files. Live Janus evidence on 2026-07-09 19:55 shows the user-visible Gemini mixed-turn bug is already fixed: the prompt `Welche Termine habe ich heute und wie weit ist es von Berlin nach Hamburg?` now executes cleanly with exactly two successful tool calls and no loop-breaker. However passive promotion still fails one layer later. DB evidence shows Janus created a new active candidate from chat 4239 instead of promoting the earlier clean candidate from chat 4235. The two candidates differ only in workflow signature details that should likely be treated as equivalent for this mixed intent family: one trace is `system.routing -> calendar.list_events` with args including start_date/end_date, the other is `calendar.list_events -> system.routing` with a leaner arg shape. The current code appears to require an exact fingerprint match for promotion, and build_step_fingerprint depends on step order plus arg keys. Apply the smallest bounded product fix so semantically equivalent mixed calendar+routing traces can promote the earlier candidate instead of creating duplicate active candidates. Add focused regression coverage in backend/tests/test_workflow_offer_service.py. Run only the listed pytest check. Do not commit. Return concise JSON-compatible output with status, root_cause, changed_files, command_results, summary, and blockers."
+}

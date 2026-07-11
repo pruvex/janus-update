@@ -87,13 +87,13 @@ class CodexDevWorkhorseRunnerTests(unittest.TestCase):
         self.assertIn("1 = Codex", result["operator_prompt_lines"])
         self.assertIn("2 = OR", result["operator_prompt_lines"])
         self.assertIn(
-            "Fest empfohlenes OR-Modell: qwen/qwen3-coder-30b-a3b-instruct",
+            "Fest empfohlenes OR-Modell: moonshotai/kimi-k2.5",
             result["operator_prompt_lines"],
         )
         self.assertTrue(
             any("Pre-Call-Kostenbasis:" in line for line in result["operator_prompt_lines"])
         )
-        self.assertEqual(result["selected_or_model"], "qwen/qwen3-coder-30b-a3b-instruct")
+        self.assertEqual(result["selected_or_model"], "moonshotai/kimi-k2.5")
         self.assertEqual(result["budget_profile"], "execution_patch_candidate")
         self.assertIn("Proposal-only code patch candidate work", result["pre_call_cost_basis"])
         self.assertIn("already existing bounded delegated runtime path", result["operator_message"])
@@ -126,6 +126,20 @@ class CodexDevWorkhorseRunnerTests(unittest.TestCase):
         self.assertEqual(result["selected_path"], "codex_only_pre_gate")
         self.assertEqual(result["eligibility_reason_code"], "TASK_CLASS_NOT_ALLOWED")
 
+    def test_prompt_summary_hides_execution_write_apply_candidate_when_visibility_is_partial(self) -> None:
+        result = runner.prompt_summary(
+            make_args(
+                task_class="execution_write_apply_candidate",
+                accepted_source_run_dir=Path("fixtures/accepted-source"),
+            )
+        )
+
+        self.assertEqual(result["selected_path"], "codex_only_visibility_hidden")
+        self.assertEqual(result["final_outcome"], "LOCAL_CODEX_PATH_SELECTED")
+        self.assertEqual(result["visibility_status"], "HIDDEN_PARTIAL_CANDIDATE")
+        self.assertIn("HIDDEN_PARTIAL_CANDIDATE", result["operator_result_lines"][1])
+        self.assertIn("hidden", result["operator_message"].lower())
+
     def test_parse_args_rejects_assist_only_task_class_from_productive_runner(self) -> None:
         argv = [
             "codex_dev_workhorse_runner.py",
@@ -149,9 +163,9 @@ class CodexDevWorkhorseRunnerTests(unittest.TestCase):
         result = runner.prompt_summary(make_args(selected_or_model=None))
 
         self.assertEqual(result["final_outcome"], "AWAITING_OPERATOR_CHOICE")
-        self.assertEqual(result["selected_or_model"], "qwen/qwen3-coder-30b-a3b-instruct")
+        self.assertEqual(result["selected_or_model"], "moonshotai/kimi-k2.5")
         self.assertIn(
-            "Fest empfohlenes OR-Modell: qwen/qwen3-coder-30b-a3b-instruct",
+            "Fest empfohlenes OR-Modell: moonshotai/kimi-k2.5",
             result["operator_prompt_lines"],
         )
 
@@ -165,7 +179,7 @@ class CodexDevWorkhorseRunnerTests(unittest.TestCase):
 
         self.assertEqual(
             command[command.index("--selected-or-model") + 1],
-            "qwen/qwen3-coder-30b-a3b-instruct",
+            "moonshotai/kimi-k2.5",
         )
 
     def test_build_dispatcher_command_ignores_conflicting_cli_model(self) -> None:
@@ -178,7 +192,7 @@ class CodexDevWorkhorseRunnerTests(unittest.TestCase):
 
         self.assertEqual(
             command[command.index("--selected-or-model") + 1],
-            "qwen/qwen3-coder-30b-a3b-instruct",
+            "moonshotai/kimi-k2.5",
         )
 
     def test_gate_binds_model_once_for_dispatcher_and_telemetry(self) -> None:
@@ -281,23 +295,18 @@ class CodexDevWorkhorseRunnerTests(unittest.TestCase):
         self.assertEqual(result["selected_path"], delegated["selected_path"])
         self.assertEqual(result["final_outcome"], delegated["final_outcome"])
 
-    def test_or_choice_delegates_execution_write_apply_candidate(self) -> None:
-        delegated = {
-            "selected_path": "delegated_execution_write_apply_candidate",
-            "final_outcome": "EXECUTION_WRITE_APPLY_CANDIDATE_READY_FOR_CODEX_ACCEPT_REJECT",
-            "validation_result": "PASS",
-        }
+    def test_or_choice_keeps_execution_write_apply_candidate_codex_only_when_visibility_hidden(self) -> None:
         args = make_args(
             task_class="execution_write_apply_candidate",
             accepted_source_run_dir=Path("fixtures/accepted-source"),
         )
 
-        with patch.object(runner, "invoke_bounded_delegation_dispatch", return_value=delegated) as mocked:
+        with patch.object(runner, "invoke_bounded_delegation_dispatch") as mocked:
             result = runner.or_choice_summary(args)
 
-        mocked.assert_called_once_with(args)
-        self.assertEqual(result["selected_path"], delegated["selected_path"])
-        self.assertEqual(result["final_outcome"], delegated["final_outcome"])
+        mocked.assert_not_called()
+        self.assertEqual(result["selected_path"], "codex_only_visibility_hidden")
+        self.assertEqual(result["final_outcome"], "LOCAL_CODEX_PATH_SELECTED")
 
     def test_build_dispatcher_command_forwards_execution_write_live_sidecar_flags(self) -> None:
         args = make_args(
@@ -416,7 +425,7 @@ class CodexDevWorkhorseRunnerTests(unittest.TestCase):
             finalized = runner.finalize_productive_dev_workhorse_result(args, result)
 
         row = json.loads(Path(finalized["session_telemetry_jsonl_path"]).read_text(encoding="utf-8").strip())
-        self.assertEqual(row["or_model"], "qwen/qwen3-coder-30b-a3b-instruct")
+        self.assertEqual(row["or_model"], "moonshotai/kimi-k2.5")
 
     def test_finalize_result_telemetry_ignores_conflicting_cli_model(self) -> None:
         result = {
@@ -440,7 +449,7 @@ class CodexDevWorkhorseRunnerTests(unittest.TestCase):
             finalized = runner.finalize_productive_dev_workhorse_result(args, result)
 
         row = json.loads(Path(finalized["session_telemetry_jsonl_path"]).read_text(encoding="utf-8").strip())
-        self.assertEqual(row["or_model"], "qwen/qwen3-coder-30b-a3b-instruct")
+        self.assertEqual(row["or_model"], "moonshotai/kimi-k2.5")
 
 
 if __name__ == "__main__":

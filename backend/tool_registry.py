@@ -69,6 +69,7 @@ from backend.tools.db_wrappers import (
     delete_contact_by_id_wrapper,
     list_contacts_wrapper,
 )
+from backend.tools.contact_tools import extract_and_save_contact_from_text
 # Geo tools return ToolResultV1 (Pydantic); tool_executor serializes via model_dump().
 from backend.tools.geo_service import (
     CleanGetDistanceArgs,
@@ -1476,6 +1477,9 @@ def register_all_tools():
 
     tool_manager.register_tool(
         create_or_update_contact_tool, contact_schemas.CreateOrUpdateContactArgs
+    )
+    tool_manager.register_tool(
+        extract_and_save_contact_from_text, contact_schemas.ContactExtractionArgs
     )
     tool_manager.register_tool(list_contacts_wrapper, contact_schemas.ContactListArgs)
     tool_manager.register_tool(delete_contact_by_id_wrapper, contact_schemas.ContactDeleteArgs)

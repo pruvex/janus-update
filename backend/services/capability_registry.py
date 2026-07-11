@@ -536,6 +536,11 @@ class CapabilityRegistry:
             mandatory += ["system.memory_read", "memory.read"]
             forbidden += ["system.websearch", "system.rss_news"]
 
+        if _flag("is_fact_telling"):
+            mandatory += ["memory.write", "contacts.extract_from_text"]
+            boosted += ["system.memory_read", "memory.read"]
+            forbidden += ["system.websearch", "system.rss_news", "system.wikipedia_summary"]
+
         # Canonicalise: keep first occurrence, drop dupes, filter against available skills.
         def _unique(lst: List[str]) -> List[str]:
             seen: set = set()

@@ -1,0 +1,19 @@
+{
+  "schema_version": "codex_delegated_action_request.v1",
+  "workflow_id": "GENERATOR-EVERYDAY-WALKTHROUGH-001-DELEGATED-VALIDATOR",
+  "skill_id": "janus-test-pipeline",
+  "action_type": "run_validator",
+  "summary": "Validate generated output for GENERATOR-EVERYDAY-WALKTHROUGH-001-DELEGATED",
+  "requires_codex_review": true,
+  "non_goals": [
+    "No prompt-level shell delegation",
+    "No production routing activation"
+  ],
+  "action_payload": {
+    "validator_id": "validate_runner_v1",
+    "inputs": {
+      "plan_path": "documentation/test-runs/TEST-RUN-2026-05-15-005_plan.json",
+      "runner_path": "documentation/codex/model-routing/structured-action-runs/GENERATOR-EVERYDAY-WALKTHROUGH-001-DELEGATED/20260614-182613/generated/TEST-RUN-2026-05-15-005_generated_from_builder.spec.js"
+    }
+  }
+}

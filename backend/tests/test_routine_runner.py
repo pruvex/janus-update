@@ -11,7 +11,12 @@ from backend.services.workflow.workflow_offer_service import (
 
 class _RegistryStub:
     def __init__(self) -> None:
-        self._available_skills = {"calendar.list_events", "system.weather", "communication.list_emails"}
+        self._available_skills = {
+            "calendar.list_events",
+            "system.weather",
+            "system.wikipedia_summary",
+            "communication.list_emails",
+        }
 
 
 class _ExecutorStub:
@@ -254,6 +259,242 @@ async def test_execute_by_trigger_semantic_match_calendar_weather_without_routin
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "phrase",
+    [
+        "Pruefe Termine fuer heute und Wetter in Koeln",
+        "Zeig mir meine Termine heute und das Wetter in Koeln",
+        "Termine und Wetter Koeln heute",
+        "Kalender und Wetter fuer heute in Koeln",
+    ],
+)
+async def test_execute_by_trigger_semantic_match_natural_calendar_weather_phrases(db_session, phrase):
+    user = User(username="semantic-natural", hashed_password="x")
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+    routine = UserRoutine(
+        user_id=user.id,
+        name="Routine Kalender Wetter",
+        trigger_phrases=["Routine Kalender Wetter"],
+        steps_json={
+            "version": 1,
+            "steps": [
+                {"order": 1, "skill_id": "calendar.list_events", "args": {"range": "today"}, "arg_bindings": {}},
+                {"order": 2, "skill_id": "system.weather", "args": {"city": "Koeln", "date_str": "heute"}, "arg_bindings": {}},
+            ],
+        },
+        step_fingerprint="calendar-weather-natural",
+        user_approved=True,
+        offer_state="accepted",
+    )
+    db_session.add(routine)
+    db_session.commit()
+
+    executor = _ExecutorStub(
+        {
+            "calendar.list_events": {"status": "ok", "data": {"summary": "0 Termine"}},
+            "system.weather": {"status": "ok", "data": {"summary": "Sonnig"}},
+        }
+    )
+    runner = RoutineRunner(db_session, executor)
+    result = await runner.execute_by_trigger(phrase, user_id=user.id)
+
+    assert result.found is True
+    assert result.executed is True
+    assert result.matched_trigger == "semantic:calendar.list_events,system.weather"
+    assert "passende gespeicherte Routine" in result.response_text
+
+
+@pytest.mark.asyncio
+async def test_execute_by_trigger_semantic_match_formats_calendar_wikipedia_naturally(db_session):
+    user = User(username="semantic-wiki-render", hashed_password="x")
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+    routine = UserRoutine(
+        user_id=user.id,
+        name="Routine Kalender Wikipedia",
+        trigger_phrases=["Routine Kalender Wikipedia"],
+        steps_json={
+            "version": 1,
+            "steps": [
+                {"order": 1, "skill_id": "calendar.list_events", "args": {"range": "today"}, "arg_bindings": {}},
+                {
+                    "order": 2,
+                    "skill_id": "system.wikipedia_summary",
+                    "args": {"query": "Berlin"},
+                    "arg_bindings": {},
+                },
+            ],
+        },
+        step_fingerprint="calendar-wikipedia-render",
+        user_approved=True,
+        offer_state="accepted",
+    )
+    db_session.add(routine)
+    db_session.commit()
+
+    executor = _ExecutorStub(
+        {
+            "calendar.list_events": {
+                "status": "ok",
+                "data": {"events": [], "listing_text": "", "event_count": 0},
+                "message": "Keine Termine im angegebenen Zeitraum gefunden.",
+            },
+            "system.wikipedia_summary": {
+                "status": "ok",
+                "data": {
+                    "title": "Berlin",
+                    "summary": "Berlin ist die Hauptstadt Deutschlands.",
+                    "url": "https://de.wikipedia.org/wiki/Berlin",
+                },
+            },
+        }
+    )
+    runner = RoutineRunner(db_session, executor)
+
+    result = await runner.execute_by_trigger(
+        "Was steht heute in meinem Kalender und gib mir eine Wikipedia-Zusammenfassung zu Berlin.",
+        user_id=user.id,
+    )
+
+    assert result.executed is True
+    assert result.matched_trigger == "semantic:calendar.list_events,system.wikipedia_summary"
+    assert "Ich habe deine passende gespeicherte Routine genutzt." in result.response_text
+    assert "Keine Termine im angegebenen Zeitraum gefunden." in result.response_text
+    assert "Berlin ist die Hauptstadt Deutschlands." in result.response_text
+    assert "calendar.list_events" not in result.response_text
+    assert "events: []" not in result.response_text
+    assert "erfolgreich ausgefuehrt" not in result.response_text
+
+
+@pytest.mark.asyncio
+async def test_execute_by_trigger_semantic_match_reuses_wikipedia_snapshot_for_same_query(db_session):
+    user = User(username="semantic-wiki-snapshot", hashed_password="x")
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+    routine = UserRoutine(
+        user_id=user.id,
+        name="Routine Kalender Wikipedia",
+        trigger_phrases=["Routine Kalender Wikipedia"],
+        steps_json={
+            "version": 1,
+            "steps": [
+                {"order": 1, "skill_id": "calendar.list_events", "args": {"range": "today"}, "arg_bindings": {}},
+                {
+                    "order": 2,
+                    "skill_id": "system.wikipedia_summary",
+                    "args": {"query": "Berlin"},
+                    "arg_bindings": {},
+                    "output_snapshot": (
+                        "Berlin ist die Hauptstadt Deutschlands und ein wichtiges europaeisches Zentrum."
+                    ),
+                    "snapshot_query": "Berlin",
+                },
+            ],
+        },
+        step_fingerprint="calendar-wikipedia-snapshot",
+        user_approved=True,
+        offer_state="accepted",
+    )
+    db_session.add(routine)
+    db_session.commit()
+
+    executor = _ExecutorStub(
+        {
+            "calendar.list_events": {
+                "status": "ok",
+                "data": {"events": [], "listing_text": "", "event_count": 0},
+                "message": "Keine Termine im angegebenen Zeitraum gefunden.",
+            },
+            "system.wikipedia_summary": {
+                "status": "ok",
+                "data": {
+                    "title": "Berlin",
+                    "summary": "Berlin ist die Hauptstadt Deutschlands.",
+                    "url": "https://de.wikipedia.org/wiki/Berlin",
+                },
+            },
+        }
+    )
+    runner = RoutineRunner(db_session, executor)
+
+    result = await runner.execute_by_trigger(
+        "Was steht heute in meinem Kalender und gib mir eine Wikipedia-Zusammenfassung zu Berlin.",
+        user_id=user.id,
+    )
+
+    assert result.executed is True
+    assert "wichtiges europaeisches Zentrum" in result.response_text
+    assert "Berlin ist die Hauptstadt Deutschlands." not in result.response_text
+
+
+@pytest.mark.asyncio
+async def test_execute_by_trigger_semantic_match_rebind_uses_fresh_wikipedia_summary(db_session):
+    user = User(username="semantic-wiki-rebind", hashed_password="x")
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+    routine = UserRoutine(
+        user_id=user.id,
+        name="Routine Kalender Wikipedia",
+        trigger_phrases=["Routine Kalender Wikipedia"],
+        steps_json={
+            "version": 1,
+            "steps": [
+                {"order": 1, "skill_id": "calendar.list_events", "args": {"range": "today"}, "arg_bindings": {}},
+                {
+                    "order": 2,
+                    "skill_id": "system.wikipedia_summary",
+                    "args": {"query": "Berlin"},
+                    "arg_bindings": {},
+                    "output_snapshot": (
+                        "Berlin ist die Hauptstadt Deutschlands und ein wichtiges europaeisches Zentrum."
+                    ),
+                    "snapshot_query": "Berlin",
+                },
+            ],
+        },
+        step_fingerprint="calendar-wikipedia-rebind",
+        user_approved=True,
+        offer_state="accepted",
+    )
+    db_session.add(routine)
+    db_session.commit()
+
+    executor = _ExecutorStub(
+        {
+            "calendar.list_events": {
+                "status": "ok",
+                "data": {"events": [], "listing_text": "", "event_count": 0},
+                "message": "Keine Termine im angegebenen Zeitraum gefunden.",
+            },
+            "system.wikipedia_summary": {
+                "status": "ok",
+                "data": {
+                    "title": "Muenchen",
+                    "summary": "Muenchen ist die Landeshauptstadt Bayerns.",
+                    "url": "https://de.wikipedia.org/wiki/Muenchen",
+                },
+            },
+        }
+    )
+    runner = RoutineRunner(db_session, executor)
+
+    result = await runner.execute_by_trigger(
+        "Was steht heute in meinem Kalender und gib mir eine Wikipedia-Zusammenfassung zu Muenchen.",
+        user_id=user.id,
+    )
+
+    assert result.executed is True
+    assert executor.calls[1] == ("system.wikipedia_summary", {"query": "Muenchen"})
+    assert "Landeshauptstadt Bayerns" in result.response_text
+    assert "wichtiges europaeisches Zentrum" not in result.response_text
+
+
+@pytest.mark.asyncio
 async def test_execute_by_trigger_semantic_match_formats_calendar_weather_naturally(db_session):
     user = User(username="semantic-render", hashed_password="x")
     db_session.add(user)
@@ -353,7 +594,7 @@ async def test_execute_by_trigger_semantic_match_does_not_run_unrelated_request(
 
 
 @pytest.mark.asyncio
-async def test_execute_by_trigger_semantic_match_rejects_different_weather_city(db_session):
+async def test_execute_by_trigger_semantic_match_rebinds_different_weather_city(db_session):
     user = User(username="semantic-city-guard", hashed_password="x")
     db_session.add(user)
     db_session.commit()
@@ -381,19 +622,38 @@ async def test_execute_by_trigger_semantic_match_rejects_different_weather_city(
     db_session.add(routine)
     db_session.commit()
 
-    runner = RoutineRunner(db_session, _ExecutorStub({}))
+    executor = _ExecutorStub(
+        {
+            "calendar.list_events": {
+                "status": "ok",
+                "data": {"events": [], "listing_text": "", "event_count": 0},
+                "message": "Keine Termine im angegebenen Zeitraum gefunden.",
+            },
+            "system.weather": {
+                "status": "ok",
+                "message": "In Berlin wird es heute sonnig.",
+                "data": {"city": "Berlin"},
+            },
+        }
+    )
+    runner = RoutineRunner(db_session, executor)
     result = await runner.execute_by_trigger(
         "Was steht heute in meinem Kalender und wie wird das Wetter in Berlin?",
         user_id=user.id,
         memory_context={"wohnort": "Koeln"},
     )
 
-    assert result.found is False
-    assert result.status == "not_found"
+    assert result.found is True
+    assert result.executed is True
+    assert result.status == "ok"
+    assert executor.calls == [
+        ("calendar.list_events", {"range": "today"}),
+        ("system.weather", {"city": "Berlin"}),
+    ]
 
 
 @pytest.mark.asyncio
-async def test_execute_by_trigger_semantic_match_rejects_different_weather_date_reference(db_session):
+async def test_execute_by_trigger_semantic_match_rebinds_different_weather_date_reference(db_session):
     user = User(username="semantic-date-guard", hashed_password="x")
     db_session.add(user)
     db_session.commit()
@@ -421,15 +681,34 @@ async def test_execute_by_trigger_semantic_match_rejects_different_weather_date_
     db_session.add(routine)
     db_session.commit()
 
-    runner = RoutineRunner(db_session, _ExecutorStub({}))
+    executor = _ExecutorStub(
+        {
+            "calendar.list_events": {
+                "status": "ok",
+                "data": {"events": [], "listing_text": "", "event_count": 0},
+                "message": "Keine Termine im angegebenen Zeitraum gefunden.",
+            },
+            "system.weather": {
+                "status": "ok",
+                "message": "In Koeln wird es morgen regnerisch.",
+                "data": {"city": "Koeln", "date_str": "morgen"},
+            },
+        }
+    )
+    runner = RoutineRunner(db_session, executor)
     result = await runner.execute_by_trigger(
         "habe ich heute noch termine und wie wird morgen das wetter in Koeln?",
         user_id=user.id,
         memory_context={"wohnort": "Koeln"},
     )
 
-    assert result.found is False
-    assert result.status == "not_found"
+    assert result.found is True
+    assert result.executed is True
+    assert result.status == "ok"
+    assert executor.calls == [
+        ("calendar.list_events", {"range": "today"}),
+        ("system.weather", {"city": "Koeln", "date_str": "morgen"}),
+    ]
 
 
 @pytest.mark.asyncio

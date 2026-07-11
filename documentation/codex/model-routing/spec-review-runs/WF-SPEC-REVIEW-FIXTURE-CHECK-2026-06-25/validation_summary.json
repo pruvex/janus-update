@@ -1,0 +1,7 @@
+{
+  "workflow_id": "WF-SPEC-REVIEW-FIXTURE-CHECK-2026-06-25",
+  "task_label": "Lean spec review delegated fixture check",
+  "validation_issues": [],
+  "finish_reason": "stop",
+  "actual_or_cost": 0.00015036
+}

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-06-09-002",
+  "testCaseId": "TC-008-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "After a wrong or broad recall-style assistant answer, ask again about Oli",
+  "response": "Hallo Rolf Adam — meinst du mit „Oli“ die Person, über die wir zuvor gesprochen haben?  Wenn du mir kurz sagst, welche Info zu Oli du korrigieren/ergänzen willst (z.B. Name, Beziehung, Vorlieben, ein Accessoire wie Brille/Kopfhörer/Smartwatch), bestätige ich das sofort kurz.💡 Passende nächste Schritte:• Sag mir bitte, was genau an der Oli-Antwort falsch oder zu allgemein war.  • Nenne mir eine konkrete Korrektur (z.B. „Oli trägt eine Brille“ / „Oli mag kein Kaffee“), dann formuliere ich es sauber.18:42",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-06-09T16:42:09.579Z"
+}

@@ -1,0 +1,19 @@
+{
+  "summary_header": "BOUNDED DELEGATION DISPATCH GATE",
+  "workflow_id": "BOUNDED-QUICKCHANGE-DISPATCH-PROMPT-001",
+  "task_class": "quickchange_patch_review",
+  "task_label": "Dispatcher quickchange prompt gate",
+  "normal_target_model": "5.4/medium",
+  "choice_1": "Codex",
+  "choice_2": "Delegated",
+  "delegated_meaning": "Sidecar patch proposal flow, still bounded and review-first.",
+  "route_note": "Uses the bounded quickchange patch-review helper and optional structured patch capture.",
+  "final_outcome": "AWAITING_OPERATOR_CHOICE",
+  "validation_result": "PASS",
+  "boundaries": [
+    "No production routing",
+    "No canonical routing-table update",
+    "No Git/release authority by delegated path",
+    "Codex App remains final reviewer"
+  ]
+}

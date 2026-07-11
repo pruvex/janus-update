@@ -1,0 +1,23 @@
+{
+    "status":  "PASS",
+    "exit_code":  null,
+    "timed_out":  false,
+    "timeout_seconds":  120,
+    "artifact_success":  true,
+    "last_message_present":  true,
+    "stdout_present":  true,
+    "command_json":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-MAIL-AI-LABELS-001\\command.json",
+    "stdout_log":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-MAIL-AI-LABELS-001\\stdout.log",
+    "stderr_log":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-MAIL-AI-LABELS-001\\stderr.log",
+    "last_message":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-MAIL-AI-LABELS-001\\last_message.md",
+    "event_stream":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-MAIL-AI-LABELS-001\\event_stream.jsonl",
+    "editable_paths":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-MAIL-AI-LABELS-001\\editable_paths.txt",
+    "pre_run_status":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-MAIL-AI-LABELS-001\\pre_run_status.txt",
+    "post_run_status":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-MAIL-AI-LABELS-001\\post_run_status.txt",
+    "changed_files":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-MAIL-AI-LABELS-001\\changed_files.txt",
+    "git_diff":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-MAIL-AI-LABELS-001\\git_diff.patch",
+    "validation_summary":  "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\BOUNDED-QUICKCHANGE-MAIL-AI-LABELS-001\\validation_summary.json",
+    "allowlist_ok":  true,
+    "touched_file_cap_ok":  true,
+    "delete_rename_move_ok":  true
+}

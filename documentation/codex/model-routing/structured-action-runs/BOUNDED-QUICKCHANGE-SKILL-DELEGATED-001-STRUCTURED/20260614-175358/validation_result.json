@@ -1,0 +1,5 @@
+{
+  "status": "PASS",
+  "schema_path": "documentation/codex/model-routing/schemas/codex_delegated_action_request.schema.json",
+  "schema_title": "Codex Delegated Action Request"
+}

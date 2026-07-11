@@ -1,0 +1,19 @@
+{
+  "status": "PASS",
+  "test_run_id": "TEST-RUN-SPEC21-4",
+  "primary_outcome": "INCONCLUSIVE",
+  "likely_classification": "TEST_BUG",
+  "likely_subsystem": "bounded triage package handoff",
+  "finding_clusters": [
+    {
+      "title": "The bounded triage review remains review-only and should not mutate result evidence.",
+      "confidence": "HIGH",
+      "evidence": "The delegated summary returns a Codex-owned next-step state and keeps rerun and routing decisions local."
+    }
+  ],
+  "suggested_next_local_verifiers": "Review the operator summary and confirm Codex still owns classification and rerun choice.",
+  "suggested_routing": "Keep the slice inside janus-test-pipeline until Codex finishes the local evidence interpretation.",
+  "escalation_trigger": "Escalate if the installed skill wording drifts back to generic delegated wording or if prompt data goes missing.",
+  "redaction_check": "PASS",
+  "notes": "Local fixture only; no live test execution and no final PASS decision."
+}

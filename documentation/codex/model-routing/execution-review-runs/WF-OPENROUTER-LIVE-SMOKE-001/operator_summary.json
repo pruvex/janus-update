@@ -1,0 +1,14 @@
+{
+  "summary_header": "EXECUTION PATCH CANDIDATE RESULT",
+  "workflow_id": "WF-OPENROUTER-LIVE-SMOKE-001",
+  "skill": "janus-executioner",
+  "task_label": "Propose bounded execution patch for one prechecked slice",
+  "selected_path": "delegated_execution_patch_candidate_sidecar_failed",
+  "normal_target_model": "5.4 medium",
+  "delegated_model_label": "Codex CLI sidecar / moonshotai/kimi-k2.5",
+  "validation_result": "FAIL",
+  "final_outcome": "SIDECAR_PATCH_NOT_ACCEPTED",
+  "runner_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-review-runs\\WF-OPENROUTER-LIVE-SMOKE-001\\summary.json",
+  "last_message_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-review-runs\\WF-OPENROUTER-LIVE-SMOKE-001\\last_message.md",
+  "operator_message": "Sidecar run completed but did not return a usable unified diff patch."
+}

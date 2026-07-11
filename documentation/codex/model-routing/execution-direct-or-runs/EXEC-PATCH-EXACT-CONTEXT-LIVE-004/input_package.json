@@ -1,0 +1,52 @@
+{
+  "workflow_id": "BACKLOG-108-EXECUTION-PATCH-CANDIDATE-CURRENT-SHAPE-001",
+  "bound_skill_context": "janus-executioner",
+  "target_task": "BACKLOG-108",
+  "spec_path": "documentation/tasks/backlog_BACKLOG-108_bestaetigtes_kontaktwissen_aus_chat_landung_im_bestehenden_adressbuchkontakt.md",
+  "precheck_status": "PRE-CHECK PASSED",
+  "allowed_files": [
+    "backend/services/chat_orchestrator.py",
+    "backend/services/contact_manager.py",
+    "backend/services/memory_extractor.py",
+    "backend/tools/memory_tools.py",
+    "backend/data/crud.py",
+    "backend/tests/test_contact_manager.py",
+    "backend/tests/test_memory_tools.py",
+    "backend/tests/test_memory_write_update_conflict_handling.py"
+  ],
+  "max_touched_files": 4,
+  "mini_test_plan": [
+    "python -m pytest backend/tests/test_contact_manager.py -q",
+    "python -m pytest backend/tests/test_memory_tools.py -q",
+    "python -m pytest backend/tests/test_memory_write_update_conflict_handling.py -q",
+    "python -m py_compile backend/services/chat_orchestrator.py backend/services/contact_manager.py backend/services/memory_extractor.py backend/tools/memory_tools.py backend/data/crud.py backend/tests/test_contact_manager.py backend/tests/test_memory_tools.py backend/tests/test_memory_write_update_conflict_handling.py"
+  ],
+  "manual_validation_gate": "Codex must still verify that confirmed facts for an already matched existing contact reach the intended contact persistence or explicit proposal path, and that Janus does not claim a fact is firmly stored when it remains memory-only.",
+  "delegation_question": "Produce one bounded patch candidate for the current local seam where confirmed contact facts written through handle_memory_write and stage_contact_update_from_memory should reach the approved existing-contact persistence or proposal path without aggressive silent mutation.",
+  "current_seam_context": "The current local code is function-oriented, not class-oriented. In backend/tools/memory_tools.py the relevant flow runs through handle_memory_write(...) and memory_write_tool(...), which currently call contact_manager.stage_contact_update_from_memory(...). In backend/services/contact_manager.py the relevant existing-contact seam is stage_contact_update_from_memory(...), including _extract_contact_updates_from_memory_payload(...), _should_auto_apply_contact_memory_update(...), and _apply_contact_memory_update_directly(...). Prefer the smallest viable patch on this actual seam instead of inventing a ContactManager class or broad persistence redesign.",
+  "signature_context": "_apply_contact_memory_update_directly(db_session: Session, *, target_contact: Any, proposal_payload: Dict[str, Any]) -> Dict[str, Any]. stage_contact_update_from_memory(db_session: Session, *, memory: Any, chat_id: Optional[int] = None) -> Dict[str, Any]. handle_memory_write(params: Dict[str, Any], db: Session, chat_id: int, source_skill: str = 'system.memory_write', original_user_text: Optional[str] = None) -> ToolResultV1. Preserve these real local signatures; do not invent contact_id/updates/source_reference variants.",
+  "call_shape_examples": [
+    "contact_manager.stage_contact_update_from_memory(db, memory=saved, chat_id=chat_id)",
+    "_apply_contact_memory_update_directly(db_session, target_contact=target_contact, proposal_payload=proposal_payload)",
+    "if _should_auto_apply_contact_memory_update(...): return _apply_contact_memory_update_directly(db_session, target_contact=target_contact, proposal_payload=proposal_payload)"
+  ],
+  "exact_code_context_blocks": [
+    "backend/services/contact_manager.py::_apply_contact_memory_update_directly\norigin = str(source_metadata.get(\"contact_sync_origin\") or \"\").strip().lower()\nreturn (\n    bool(source_metadata.get(\"contact_sync_trusted\"))\n    and origin in {\"direct_user_utterance\", \"confirmed_contact_knowledge\"}\n    and bool(str(source_metadata.get(\"user_msg\") or \"\").strip())\n)\n\n\ndef _apply_contact_memory_update_directly(\n    db_session: Session,\n    *,\n    target_contact: Any,\n    proposal_payload: Dict[str, Any],\n) -> Dict[str, Any]:\n    updates = dict(proposal_payload)\n    updates[\"proposal_status\"] = \"confirmed\"\n    updates[\"proposal_source_context\"] = \"direct_context\"\n    updates[\"proposal_last_outcome\"] = \"applied_from_confirmed_chat_fact\"\n    updated_contact = crud.update_contact(db_session, int(target_contact.id), updates)\n    if updated_contact is None:\n        return {\"status\": \"failed\", \"reason\": \"update_failed\", \"proposals_staged\": 0}\n    return {\n        \"status\": \"applied\",\n        \"reason\": \"direct_confirmed_chat_fact\",\n        \"proposals_staged\": 0,\n        \"suppressed\": 0,\n        \"review_notes\": [],\n        \"user_message\": None,\n        \"applied_contact_id\": updated_contact.id,\n    }",
+    "backend/services/contact_manager.py::stage_contact_update_from_memory\ndef stage_contact_update_from_memory(\n    db_session: Session,\n    *,\n    memory: Any,\n    chat_id: Optional[int] = None,\n) -> Dict[str, Any]:\n    memory_payload = _parse_memory_snippet_payload(getattr(memory, \"snippet\", None))\n    subject_name = str(\n        memory_payload.get(\"subject_name\")\n        or memory_payload.get(\"contact_name\")\n        or \"\"\n    ).strip()\n    if not subject_name:\n        subject_name = _infer_contact_subject_from_fact(\n            db_session,\n            str(memory_payload.get(\"fact\") or \"\"),\n        )\n    if not subject_name:\n        return {\"status\": \"ignored\", \"reason\": \"missing_subject\", \"proposals_staged\": 0}\n\n    match_info = _find_existing_contact_candidates(db_session, subject_name)\n    target_contact = match_info.get(\"primary\")\n    match_mode = str(match_info.get(\"mode\") or \"\")\n    extracted = _extract_contact_updates_from_memory_payload(memory_payload)\n    updates = extracted.get(\"updates\") or {}\n    metadata = extracted.get(\"metadata\") or {}\n\n    if _should_auto_apply_contact_memory_update(\n        memory=memory,\n        match_mode=match_mode,\n        metadata=metadata,\n        proposal_payload=proposal_payload,\n    ):\n        return _apply_contact_memory_update_directly(\n            db_session,\n            target_contact=target_contact,\n            proposal_payload=proposal_payload,\n        )",
+    "backend/tools/memory_tools.py::handle_memory_write\ncontact_proposal_result = None\nif str(source_skill or \"\") != \"system.contact_memory_sync\":\n    from backend.services import contact_manager\n\n    contact_proposal_result = contact_manager.stage_contact_update_from_memory(\n        db,\n        memory=saved,\n        chat_id=chat_id,\n    )\n\nreturn tool_ok_v1(\n    {\n        \"operation\": \"saved\",\n        \"memory_id\": saved.id,\n        \"priority\": final_priority,\n        \"canonical_key\": enriched.get(\"canonical_key\"),\n        \"contact_proposal\": contact_proposal_result,\n    },\n    tags=_MEMORY_TAGS,\n    started_at=t0,\n    primary_entity_id=str(saved.id),\n)"
+  ],
+  "forbidden_anchors": [
+    "class ContactManager",
+    "get_or_resolve_contact",
+    "persist_contact_updates",
+    "store_memory_facts",
+    "create_contact_proposal"
+  ],
+  "required_current_anchors": [
+    "stage_contact_update_from_memory",
+    "handle_memory_write",
+    "memory_write_tool",
+    "_should_auto_apply_contact_memory_update",
+    "_apply_contact_memory_update_directly"
+  ]
+}

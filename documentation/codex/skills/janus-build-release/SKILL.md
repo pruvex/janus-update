@@ -227,11 +227,11 @@ Verify:
 
 ## Model And Context Guidance
 
-- Use `5.4` low for short readiness checks, metadata validation, and dry-run planning when the current `5.4` context is warm or build/debug follow-up returns to `5.4`.
-- Use `5.4 mini`, low/medium, only for separated low-risk readiness or metadata batches that are still likely cheaper than staying on warm `5.4`.
-- Use `5.4`, medium/high, for build failures and local script/package debugging.
-- Use `5.4`, medium/high, for release readiness decisions and ambiguous artifact risk.
-- Use `5.5`, high, for production publish approval review, security-sensitive updater risk, or rollback decisions.
+- Use `5.6 Terra` low for short readiness checks, metadata validation, and dry-run planning when the current `5.6 Terra` context is warm or build/debug follow-up returns to `5.6 Terra`.
+- Use `5.6 Luna`, low/medium, only for separated low-risk readiness or metadata batches that are still likely cheaper than staying on warm `5.6 Terra`.
+- Use `5.6 Terra`, medium/high, for build failures and local script/package debugging.
+- Use `5.6 Terra`, medium/high, for release readiness decisions and ambiguous artifact risk.
+- Use `5.6 Sol`, high, for production publish approval review, security-sensitive updater risk, or rollback decisions.
 - Prefer a new chat for `PUBLISH` and `POST_PUBLISH_VERIFY`; bind only release audit evidence, version, git status, manifest, installer, and release scripts.
 
 ## CURRENT_STATE Requirement

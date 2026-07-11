@@ -1,0 +1,19 @@
+{
+  "schema_version": "codex_delegated_action_request.v1",
+  "workflow_id": "STRUCTURED-GENERATOR-REVIEW-001-VALIDATOR",
+  "skill_id": "janus-test-pipeline",
+  "action_type": "run_validator",
+  "summary": "Validate generated output for STRUCTURED-GENERATOR-REVIEW-001",
+  "requires_codex_review": true,
+  "non_goals": [
+    "No prompt-level shell delegation",
+    "No production routing activation"
+  ],
+  "action_payload": {
+    "validator_id": "validate_runner_v1",
+    "inputs": {
+      "plan_path": "documentation/test-runs/TEST-RUN-2026-05-15-005_plan.json",
+      "runner_path": "__RUN_DIR__/generated/TEST-RUN-2026-05-15-005_generated_from_builder.spec.js"
+    }
+  }
+}

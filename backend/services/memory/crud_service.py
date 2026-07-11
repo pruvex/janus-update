@@ -293,7 +293,7 @@ def save_memory_snippet(
     embedding = vector_service.generate_embedding(final_fact_text)
     if embedding is None:
         logger.error(f"Konnte kein Embedding für '{final_fact_text}' erstellen. Speichern abgebrochen.")
-        return None
+        logger.warning("Memory-Speicherung laeuft ohne embedding_json weiter.")
 
     snippet_json = json.dumps(fact_object, ensure_ascii=False)
     source_metadata = json.loads(json.dumps(source_metadata, ensure_ascii=False))
@@ -737,9 +737,15 @@ def update_memory_snippet(
     try:
         # Update basic fields
         memory_item.snippet = new_snippet
-        memory_item.embedding_json = _serialize_embedding_json(
-            vector_service.generate_embedding(new_snippet)
-        )
+        new_embedding = vector_service.generate_embedding(new_snippet)
+        if new_embedding is None:
+            logger.warning(
+                "Konnte kein Embedding fuer aktualisierte Memory %s erzeugen. Update wird ohne neues embedding_json fortgesetzt.",
+                memory_id,
+            )
+            memory_item.embedding_json = None
+        else:
+            memory_item.embedding_json = _serialize_embedding_json(new_embedding)
         
         # Update core status if provided
         if is_core is not None:

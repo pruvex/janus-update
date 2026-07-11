@@ -1,0 +1,42 @@
+{
+  "skill_id": "DOC-SKILL-008",
+  "generation_id": "gen-1781390101-tHMGeoMCIcgwBOuKVd5l",
+  "model": "deepseek/deepseek-v4-flash-20260423",
+  "finish_reason": "stop",
+  "actual_or_cost": 9.69e-05,
+  "common_checks": {
+    "generation_id_present": true,
+    "usage_present": true,
+    "actual_cost_present": true,
+    "finish_reason_not_length": true
+  },
+  "content_evaluation": {
+    "skill_id": "DOC-SKILL-008",
+    "validation_result": "PASS",
+    "checks": {
+      "required_caveats": {
+        "no production routing was enabled": true,
+        "no canonical routing-table update was made": true,
+        "auto router remains experiment-only": true,
+        "the 5.4 phase has not run live or evaluations yet": true
+      },
+      "validated_fact_signals": {
+        "bounded fixed-model mini documentation-skill path": true,
+        "1 = codex": true,
+        "2 = openrouter": true,
+        "actual cost reporting": true,
+        "seven-skill": true,
+        "validation_result=pass": true,
+        "5.4 planning": true
+      },
+      "changelog_tone": true,
+      "no_invented_behavior": true,
+      "authority_violation_free": true
+    },
+    "reason_for_escalation": "",
+    "violations": [],
+    "violation_sentences": []
+  },
+  "postcheck_validation_result": "PASS",
+  "accepted_for_local_batch_use": true
+}

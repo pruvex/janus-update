@@ -1,0 +1,38 @@
+﻿{
+    "capture_mode":  "live_http",
+    "http_status":  200,
+    "api_shape":  "chat_completions",
+    "response_object":  "chat.completion",
+    "response_status":  null,
+    "generation_id":  "gen-1782165200-aH6eu3ESpowZYPP8WPH4",
+    "model":  "qwen/qwen3.5-flash-20260224",
+    "finish_reason":  "stop",
+    "usage":  {
+                  "prompt_tokens":  702,
+                  "completion_tokens":  1533,
+                  "total_tokens":  2235,
+                  "cost":  0.00044421,
+                  "is_byok":  false,
+                  "prompt_tokens_details":  {
+                                                "cached_tokens":  0,
+                                                "cache_write_tokens":  0,
+                                                "audio_tokens":  0,
+                                                "video_tokens":  0
+                                            },
+                  "cost_details":  {
+                                       "upstream_inference_cost":  0.00044421,
+                                       "upstream_inference_prompt_cost":  0.00004563,
+                                       "upstream_inference_completions_cost":  0.00039858
+                                   },
+                  "completion_tokens_details":  {
+                                                    "reasoning_tokens":  1373,
+                                                    "image_tokens":  0,
+                                                    "audio_tokens":  0
+                                                }
+              },
+    "actual_or_cost":  0.00044421,
+    "output_item_count":  0,
+    "output_item_types":  {
+
+                          }
+}

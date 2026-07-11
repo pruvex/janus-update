@@ -1,0 +1,68 @@
+{
+  "model": "openai/gpt-oss-20b",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a bounded OpenRouter worker for a Janus quickchange patch review. Return only JSON matching the requested schema. Do not edit files. Do not claim Git, release, routing, production, backlog, registry, or CURRENT_STATE authority. Codex will review the patch before any local apply."
+    },
+    {
+      "role": "user",
+      "content": "{\n  \"task_label\": \"Fixture dispatcher direct OR quickchange\",\n  \"allowed_files\": [\n    \"frontend/index.html\"\n  ],\n  \"max_touched_files\": 1,\n  \"diff_policy\": \"Return one unified diff proposal only for the allowed file set.\",\n  \"prompt\": \"# Quickchange OR Live Prompt - 2026-06-19\\n\\nYou are an OpenRouter-backed bounded quickchange worker for Janus.\\n\\nYou may edit files only inside the approved allowlist.\\n\\nHard rules:\\n\\n- Edit only `frontend/index.html`.\\n- Do not run Git commands.\\n- Do not edit any other file.\\n- Do not delete, move, or rename files.\\n- Do not change logic, IDs, classes, structure, button labels, settings labels, or any other wording outside the exact target text.\\n- Do not touch the API key placeholder in the same file.\\n- Make the smallest possible change set.\\n\\nTask:\\n\\n- Update the chat input placeholder in window A and window B.\\n- Replace `Nachricht an Janus senden...` with `Nachricht an Janus schreiben...`\\n- Leave everything else unchanged.\\n\\nOutput rules:\\n\\n- After the edit, return a short summary with:\\n  - changed file\\n  - what exact text was changed\\n  - confirmation that no other file or wording was touched\\n\"\n}"
+    }
+  ],
+  "temperature": 0.0,
+  "max_tokens": 1200,
+  "response_format": {
+    "type": "json_schema",
+    "json_schema": {
+      "name": "janus_quickchange_patch_proposal",
+      "strict": true,
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "status",
+          "summary",
+          "changed_files",
+          "unified_diff",
+          "validation_notes",
+          "risk_notes"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "PATCH_PROPOSAL",
+              "NO_CHANGE",
+              "BLOCKED"
+            ]
+          },
+          "summary": {
+            "type": "string"
+          },
+          "changed_files": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "unified_diff": {
+            "type": "string"
+          },
+          "validation_notes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "risk_notes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "summary_header": "BOUNDED DELEGATION DISPATCH RESULT",
+  "workflow_id": "WF-DOC-DRAFT-LOCAL-CHECK-2026-06-25",
+  "task_class": "documentation_draft",
+  "task_label": "Documentation draft local check",
+  "selected_path": "codex_only_operator_choice",
+  "selected_or_model": "N_A",
+  "eligibility_result": "OR_ALLOWED",
+  "eligibility_reason_code": "ELIGIBILITY_CONFIRMED",
+  "evidence_status": "BOUNDED_WORKFLOW_READY",
+  "validation_result": "PASS",
+  "final_outcome": "LOCAL_CODEX_PATH_SELECTED",
+  "operator_result_lines": [
+    "Ergebnis: Codex lokal ausgewaehlt",
+    "Route: documentation_draft bleibt lokal"
+  ],
+  "operator_message": "Operator chose the normal Codex-only path. No delegated helper was invoked.",
+  "codex_owned_outcome_status": "CODEX_LOCAL_PATH",
+  "codex_owned_outcome_final": false
+}

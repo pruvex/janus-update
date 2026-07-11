@@ -1,0 +1,82 @@
+{
+  "testRunId": "BACKLOG-119-live-retest-2026-07-02",
+  "mode": "janus-test-pipeline/LIVE_TEST_EXECUTION/ad-hoc-api-retest",
+  "status": "FAIL",
+  "startedAt": "2026-07-02T14:51:58.2028404+02:00",
+  "endedAt": "2026-07-02T14:52:22.5853021+02:00",
+  "durationMs": 24382,
+  "steps": [
+    {
+      "step": "gpt_write",
+      "provider": "openai",
+      "model": "gpt-5.4-nano",
+      "chatId": 4164,
+      "prompt": "mein bester freund, der nathan raimann wohnt in berlin",
+      "responseText": "Verstanden.\n\nPassende naechste Schritte angeboten.",
+      "result": "PASS"
+    },
+    {
+      "step": "gemini_write",
+      "provider": "gemini",
+      "model": "gemini-3-flash-preview",
+      "chatId": 4165,
+      "prompt": "nathans freundin heisst elena",
+      "responseText": "Alles klar, Rolf Adam. Ich habe mir notiert, dass Nathans Freundin Elena heisst.",
+      "result": "PASS"
+    },
+    {
+      "step": "gpt_recall",
+      "provider": "openai",
+      "model": "gpt-5.4-nano",
+      "chatId": 4166,
+      "prompt": "wer ist nathans freundin?",
+      "responseText": "Ich kann dir das nicht zuverlaessig sagen: In den bereitgestellten Informationen steht nichts dazu, wer Nathans Freundin ist.",
+      "result": "FAIL"
+    }
+  ],
+  "assertions": {
+    "gptWriteAccepted": true,
+    "geminiWriteAccepted": true,
+    "nathanContactExists": true,
+    "nathanAddressBerlin": true,
+    "nathanContactContainsElenaDetail": true,
+    "freshGptRecallAnswersElena": false,
+    "noNewRecallTurnMemoryCreated": true
+  },
+  "recallRoutingEvidence": {
+    "selectedSkills": [
+      "system.wikipedia_summary",
+      "memory.read",
+      "system.rss_news",
+      "memory.write"
+    ],
+    "forcedSkill": "system.wikipedia_summary",
+    "toolExecuted": "system.wikipedia_summary",
+    "toolError": "No module named 'wikipedia'"
+  },
+  "contactEvidence": {
+    "id": 6,
+    "name": "Nathan Raimann",
+    "address": "berlin",
+    "personal_details": [
+      "Freundin heisst Elena"
+    ],
+    "proposal_status": "confirmed",
+    "proposal_last_outcome": "applied_from_confirmed_chat_fact",
+    "memory_sync_status": "synced"
+  },
+  "memoryEvidence": {
+    "new_memory_ids_from_run": [
+      103,
+      104,
+      105
+    ],
+    "new_relationship_memory_keys": [
+      "nathan:Beziehungen:hat_beziehung:freundin_elena",
+      "contact:person:nathan_raimann:hat_adresse:berlin",
+      "contact:person:nathan_raimann:detail:freundin_heisst_elena"
+    ],
+    "recallChatCreatedMemory": false
+  },
+  "note": "Live backend API run against local Janus app data after BACKLOG-119 debug fix. Internal API key and provider secrets intentionally omitted."
+}

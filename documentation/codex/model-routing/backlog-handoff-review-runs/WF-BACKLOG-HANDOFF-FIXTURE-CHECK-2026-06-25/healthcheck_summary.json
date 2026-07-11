@@ -1,0 +1,83 @@
+{
+  "mode": "DAILY",
+  "repo": "C:\\KI\\Janus-Projekt",
+  "branch": "develop",
+  "dirty_total": 523,
+  "staged": 0,
+  "unstaged": 78,
+  "untracked": 445,
+  "core_artifacts": {
+    "AGENTS.md": true,
+    "documentation/CODEX_MIGRATION_PLAN.md": true,
+    "documentation/backlog/BACKLOG.md": true,
+    "documentation/pipeline/PIPELINE_CONTRACT.md": true,
+    "janus-dashboard/data/backlog.snapshot.json": true
+  },
+  "backlog": {
+    "exists": "YES",
+    "in_progress": 4,
+    "ready": 41,
+    "needs_info": 5,
+    "blocked": 9
+  },
+  "migration_gaps": [],
+  "root_suspicious": [],
+  "root_runtime_db_artifacts": [
+    "chat_history.db: legacy local split-chat DB artifact; not the intended active Janus runtime DB path",
+    "costs.db: legacy local split-cost DB artifact; not the intended active Janus runtime DB path",
+    "janus.db: stray root copy; active Janus runtime DB belongs under %APPDATA%/Janus Projekt/janus.db"
+  ],
+  "root_legacy_log_artifacts": [
+    ".codex-vite-err.log: legacy root Vite error log; current versioned dev start path writes Vite logs under documentation/logs/dev-runtime/",
+    ".codex-vite-out.log: legacy root Vite output log; current versioned dev start path writes Vite logs under documentation/logs/dev-runtime/",
+    "backend_hotfix.err.log: legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/",
+    "backend_hotfix.out.log: legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/",
+    "backend_live.err.log: legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/",
+    "backend_live.out.log: legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/",
+    "backend_persist.err.log: legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/",
+    "backend_persist.out.log: legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/",
+    "backend_restart.err.log: legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/",
+    "backend_restart.out.log: legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/",
+    "backend_start.log: legacy root backend start log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/",
+    "backend_start_manual.err.log: legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/",
+    "backend_start_manual.log: legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/",
+    "backend_verify.err.log: legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/",
+    "backend_verify.out.log: legacy root backend helper log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/",
+    "startdev.log: legacy root start-dev log; current versioned startup telemetry belongs under documentation/logs and dev runtime logs under documentation/logs/dev-runtime/",
+    "tmp_uv8011_err.log: legacy root temporary backend log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/",
+    "tmp_uv8011_out.log: legacy root temporary backend log; current versioned backend dev/runtime logs belong under documentation/logs/dev-runtime/"
+  ],
+  "skill_usage": {
+    "exists": true,
+    "entries": 723
+  },
+  "or_telemetry": {
+    "source": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\or_healthcheck_telemetry_backlog_handoff_2026-06-25_WF-BACKLOG-HANDOFF-FIXTURE-CHECK-2026-06-25.jsonl",
+    "record_count": 1,
+    "models_seen": [
+      "qwen/qwen3-coder-30b-a3b-instruct"
+    ],
+    "skills_seen": [
+      "janus-backlog-handoff"
+    ],
+    "routing_mode_counts": {
+      "Manual-review": 1
+    },
+    "estimated_cost_total": 0.00018,
+    "actual_cost_total": 0.00017933,
+    "confidence_average": 76.0,
+    "fallback_count": 0,
+    "validation_result_counts": {
+      "PASS": 1
+    },
+    "recommendation_signal_counts": {
+      "OR_PREFERRED": 1
+    },
+    "final_outcome_counts": {
+      "BACKLOG_HANDOFF_REVIEW_READY_FOR_CODEX_VALIDATION": 1
+    },
+    "codex_owned_outcome_status_counts": {
+      "N_A": 1
+    }
+  }
+}

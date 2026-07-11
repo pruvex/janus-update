@@ -725,6 +725,86 @@ class ToolExecutor:
             )
 
         try:
+            # Gemini occasionally emits the legacy batch shape
+            # {"entries": [{"text": "..."}]} for memory.write. Normalize it
+            # before schema validation so the first valid entry is not rejected.
+            if resolved_name in ("save_core_memory_fact", "memory_write", "memory.write") and isinstance(tool_args, dict):
+                entries = tool_args.get("entries")
+                if not tool_args.get("fact") and isinstance(entries, list) and entries:
+                    first_entry = next((entry for entry in entries if isinstance(entry, dict)), None)
+                    if first_entry:
+                        tags = first_entry.get("tags") if isinstance(first_entry.get("tags"), list) else tool_args.get("tags")
+                        category = first_entry.get("category") or tool_args.get("category")
+                        if not category and isinstance(tags, list):
+                            if any(str(tag).strip().casefold() == "vorlieben" for tag in tags):
+                                category = "Vorlieben"
+                        subject_name = first_entry.get("subject_name") or tool_args.get("subject_name")
+                        if not subject_name and isinstance(tags, list):
+                            subject_name = next(
+                                (
+                                    str(tag).strip()
+                                    for tag in tags
+                                    if str(tag).strip()
+                                    and str(tag).strip().casefold()
+                                    not in {"vorlieben", "abneigungen", "kontakt", "contact", "memory"}
+                                    and len(str(tag).split()) <= 4
+                                ),
+                                None,
+                            )
+                        normalized_args = {
+                            "fact": first_entry.get("fact") or first_entry.get("text") or first_entry.get("value"),
+                            "category": category or "Allgemein",
+                        }
+                        if first_entry.get("priority") is not None:
+                            normalized_args["priority_override"] = first_entry.get("priority")
+                        for key in ("subject_name", "ttl_days", "tags", "evidence"):
+                            if key == "subject_name" and subject_name:
+                                normalized_args[key] = subject_name
+                            elif first_entry.get(key) is not None:
+                                normalized_args[key] = first_entry.get(key)
+                            elif tool_args.get(key) is not None:
+                                normalized_args[key] = tool_args.get(key)
+                        tool_args = {key: value for key, value in normalized_args.items() if value is not None}
+                elif not tool_args.get("fact"):
+                    fact_candidate = tool_args.get("query") or tool_args.get("text") or tool_args.get("value")
+                    if isinstance(fact_candidate, str) and fact_candidate.strip():
+                        category = tool_args.get("category") or "Allgemein"
+                        subject_name = tool_args.get("subject_name")
+                        key_hint = str(tool_args.get("key") or "").strip()
+                        if key_hint:
+                            key_parts = [part.strip() for part in re.split(r"[:_|/]+", key_hint) if str(part).strip()]
+                            if not tool_args.get("category") and key_parts:
+                                category_candidate = key_parts[0]
+                                if category_candidate.casefold() in {
+                                    "gesundheit",
+                                    "beziehungen",
+                                    "haustier-details",
+                                    "haustier details",
+                                    "vorlieben",
+                                    "beruf",
+                                    "termine",
+                                    "allgemein",
+                                    "physis",
+                                    "stil",
+                                }:
+                                    category = category_candidate
+                            if not subject_name and len(key_parts) >= 2:
+                                subject_name = key_parts[-1]
+                        normalized_args = {
+                            "fact": fact_candidate.strip(),
+                            "category": category,
+                        }
+                        if tool_args.get("priority_override") is not None:
+                            normalized_args["priority_override"] = tool_args.get("priority_override")
+                        elif tool_args.get("priority") is not None:
+                            normalized_args["priority_override"] = tool_args.get("priority")
+                        if subject_name:
+                            normalized_args["subject_name"] = subject_name
+                        for key in ("ttl_days", "tags", "evidence"):
+                            if tool_args.get(key) is not None:
+                                normalized_args[key] = tool_args.get(key)
+                        tool_args = {key: value for key, value in normalized_args.items() if value is not None}
+
             args_schema = getattr(tool_def, "args_schema", None)
             if args_schema and hasattr(args_schema, "model_validate"):
                 try:
@@ -755,9 +835,32 @@ class ToolExecutor:
             # NUR eingreifen wenn Legacy-Parameter erkannt werden,
             # NICHT wenn korrekte V2.1-Parameter vorliegen.
             _MEMORY_WRITE_LEGACY_KEYS = {"preference", "new_memory", "preference_value", "new_preferences", "key", "value"}
-            if resolved_name in ("save_core_memory_fact", "memory_write"):
+            if resolved_name in ("save_core_memory_fact", "memory_write", "memory.write"):
                 has_legacy_args = bool(_MEMORY_WRITE_LEGACY_KEYS & set(tool_args.keys()))
                 if has_legacy_args or (not tool_args.get("fact") and tool_args):
+                    category = tool_args.get("category", "Allgemein")
+                    subject_name = tool_args.get("subject_name")
+                    key_hint = str(tool_args.get("key") or "").strip()
+                    if key_hint:
+                        key_parts = [part.strip() for part in re.split(r"[:_|/]+", key_hint) if str(part).strip()]
+                        if not tool_args.get("category") and key_parts:
+                            category_candidate = key_parts[0]
+                            if category_candidate.casefold() in {
+                                "gesundheit",
+                                "beziehungen",
+                                "haustier-details",
+                                "haustier details",
+                                "vorlieben",
+                                "beruf",
+                                "termine",
+                                "allgemein",
+                                "physis",
+                                "stil",
+                            }:
+                                category = category_candidate
+                        if not subject_name and len(key_parts) >= 2:
+                            subject_name = key_parts[-1]
+
                     fact = (
                         tool_args.get("fact")
                         or tool_args.get("preference")
@@ -780,12 +883,13 @@ class ToolExecutor:
                         fact = ", ".join([f"{k}: {v}" for k, v in fact.items()])
 
                     if fact:
-                        category = tool_args.get("category", "Allgemein")
                         # Bewahre V2.1-Felder die evtl. parallel geliefert wurden
                         preserved = {}
                         for k in ("subject_name", "priority_override", "ttl_days", "tags", "evidence"):
                             if k in tool_args:
                                 preserved[k] = tool_args[k]
+                        if subject_name and "subject_name" not in preserved:
+                            preserved["subject_name"] = subject_name
                         tool_args = {"fact": fact, "category": category, **preserved}
 
             # Legacy-Argumentformen für memory_read (get_core_memory_facts)

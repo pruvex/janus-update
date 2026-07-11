@@ -1,0 +1,19 @@
+{
+  "summary_header": "GPT54 FIXED OR DOC SKILL SUMMARY",
+  "workflow_id": "GPT54-FIXED-OR-COMPARISON-BATCH-001",
+  "skill_id": "DOC-SKILL-002",
+  "or_model": "openai/gpt-oss-20b",
+  "estimated_or_cost": 0.000186647,
+  "cost_estimate_confidence_percent": 35,
+  "actual_or_cost": 0.00023372,
+  "finish_reason": "stop",
+  "validation_result": "HOLD",
+  "fallback_used": "NO",
+  "rework_required": "YES",
+  "operator_result_lines": [
+    "Ergebnis: OR HOLD (stop)",
+    "Tatsaechliche Kosten: 0.000233720"
+  ],
+  "session_jsonl_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\or_healthcheck_telemetry_gpt54_fixed_or_comparison_batch_2026-06-13.jsonl",
+  "operator_message": "Accepted comparison row captured and ready for local healthcheck ingestion."
+}

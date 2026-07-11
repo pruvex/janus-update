@@ -1,0 +1,19 @@
+{
+  "task_id": "TASK-TP-002",
+  "lane_id": "generator_review",
+  "workflow_id": "WF-GEN-REVIEW-EXAMPLE-001",
+  "bound_skill_context": "janus-test-pipeline",
+  "test_run_id": "TEST-RUN-042",
+  "testspec_path": "documentation/TEST_SPEC/EXAMPLE-FEATURE-001.md",
+  "testplan_path": "documentation/test-runs/TEST-RUN-042_plan.json",
+  "generator_runner_path": "documentation/test-runs/TEST-RUN-042_generated.spec.js",
+  "review_question": "Does the generated runner stay within the TestSpec scope and name the correct evidence artifacts?",
+  "evidence_snippets": [
+    "TestSpec requires one health-check assertion and one chat-create assertion.",
+    "Generated plan lists two assertions and one generated runner path.",
+    "No provider secrets or auth header values are included."
+  ],
+  "redaction_ready": true,
+  "recommended_backend": "openrouter",
+  "recommended_model": "openai/gpt-oss-20b"
+}

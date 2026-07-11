@@ -1,6 +1,8 @@
 import logging
 import base64
 import os
+import re
+from difflib import SequenceMatcher
 from typing import List, Dict, Optional, Any
 from datetime import datetime
 from sqlalchemy.orm import Session
@@ -79,6 +81,11 @@ Alle Informationen, die unter 'INFORMATIONEN AUS DEM LANGZEITGEDÄCHTNIS' stehen
 3. Sprich einfach aus, was du weißt.
    - Falsch: "Laut meiner Erinnerung heißt dein Hund Pody."
    - Richtig: "Dein Hund heißt Pody."
+
+[ADRESSBUCH-KONTAKTE]
+Wenn unter "**Adressbuch:**" genau passende Kontaktinformationen zur Anfrage stehen, beantworte die Frage direkt mit diesen lokalen Kontaktdaten.
+Frage dann NICHT, ob der Nutzer sich selbst oder eine andere Person meint. Namen im Adressbuch sind Kontakte.
+Wenn nur wenige Details vorliegen, nenne kurz genau diese bekannten Details und erfinde nichts dazu.
 
 [WERKZEUG-NUTZUNG]
 - Wenn der Nutzer eine Aktion wünscht (Termin, Suche, Mail), nutze das entsprechende Tool.
@@ -222,23 +229,57 @@ Alle Informationen, die unter 'INFORMATIONEN AUS DEM LANGZEITGEDÄCHTNIS' stehen
         if intent_classifier.is_greeting(query): return ""
         
         try:
-            names = crud.get_all_contact_names(self.db)
             query_lower = query.lower()
-            found = [n for n in names if n.lower() in query_lower]
-            
-            # Immer User-Namen dazu
-            user_name = crud.get_user_name(self.db)
-            if user_name: found.append(user_name)
-            
+            query_tokens = {
+                token
+                for token in re.findall(r"[\wäöüÄÖÜß-]{3,}", query_lower)
+                if token
+            }
             contacts = []
             seen_ids = set()
-            
-            for name in found:
-                matches = crud.search_contacts_by_name(self.db, name)
-                for c in matches:
-                    if c.id not in seen_ids:
-                        seen_ids.add(c.id)
-                        contacts.append(f"Kontakt: {c.name} ({c.email or 'Keine Mail'})")
+
+            for c in crud.get_contacts(self.db, limit=500):
+                aliases = [
+                    str(value or "").strip().lower()
+                    for value in (getattr(c, "name", None), getattr(c, "nickname", None))
+                    if str(value or "").strip()
+                ]
+                alias_tokens = {
+                    token
+                    for alias in aliases
+                    for token in re.findall(r"[\wäöüÄÖÜß-]{3,}", alias)
+                }
+                alias_token_match = bool(query_tokens.intersection(alias_tokens))
+                if not alias_token_match:
+                    alias_token_match = any(
+                        SequenceMatcher(None, query_token, alias_token).ratio() >= 0.88
+                        for query_token in query_tokens
+                        for alias_token in alias_tokens
+                    )
+                if not (
+                    any(
+                        alias and re.search(rf"(?<!\w){re.escape(alias)}(?!\w)", query_lower)
+                        for alias in aliases
+                    )
+                    or alias_token_match
+                ):
+                    continue
+                if c.id in seen_ids:
+                    continue
+                seen_ids.add(c.id)
+
+                fields = []
+                if getattr(c, "nickname", None):
+                    fields.append(f"Nickname: {c.nickname}")
+                if getattr(c, "email", None):
+                    fields.append(f"E-Mail: {c.email}")
+                if getattr(c, "preferences", None):
+                    fields.append("Vorlieben: " + ", ".join(c.preferences))
+                if getattr(c, "dislikes", None):
+                    fields.append("Abneigungen: " + ", ".join(c.dislikes))
+                if getattr(c, "personal_details", None):
+                    fields.append("Details: " + ", ".join(c.personal_details))
+                contacts.append(f"Kontakt: {c.name} ({'; '.join(fields) if fields else 'Keine Details'})")
             
             if contacts:
                 return "**Adressbuch:**\n" + "\n".join(contacts)

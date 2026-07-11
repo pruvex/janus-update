@@ -525,7 +525,7 @@ try {
     $lastMessagePresent = -not [string]::IsNullOrWhiteSpace($lastMessage)
     $stdoutPresent = -not [string]::IsNullOrWhiteSpace($stdout)
     $effectiveExitCode = if ($completed -and $null -ne $process.ExitCode) { [int]$process.ExitCode } else { $null }
-    $artifactSuccess = $completed -and $null -eq $effectiveExitCode -and $lastMessagePresent -and $stdoutPresent
+    $artifactSuccess = $completed -and $effectiveExitCode -eq 0 -and $lastMessagePresent -and $stdoutPresent
     if (-not $allowlistOk -or -not $touchedFileCapOk -or -not $deleteRenameMoveOk) {
         $artifactSuccess = $false
         $validationSummary.status = "FAILED"

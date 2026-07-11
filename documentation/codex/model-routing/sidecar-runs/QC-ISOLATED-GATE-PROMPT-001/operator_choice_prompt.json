@@ -1,0 +1,30 @@
+{
+  "summary_header": "CODEX SIDECAR WRITE GATE",
+  "workflow_id": "QC-ISOLATED-GATE-PROMPT-001",
+  "skill": "janus-quickchange",
+  "task_label": "Quickchange gate prompt smoke",
+  "selected_path": "operator_choice_pending",
+  "normal_target_model": "5.4 medium",
+  "choice_1": "Codex",
+  "choice_2": "OpenRouter",
+  "sidecar_model_provider": "OpenRouter sidecar / gpt-5.4",
+  "sandbox": "workspace-write",
+  "editable_paths": [],
+  "max_touched_files": 3,
+  "diff_size_cap": "small quickchange diff only",
+  "validation_after_run": "Codex App checks changed files, patch, and local validation before acceptance.",
+  "abort_rules": [
+    "Abort if changed file falls outside allowlist.",
+    "Abort if touched file count exceeds cap.",
+    "Abort if delete, rename, or move appears.",
+    "Abort if validation fails locally."
+  ],
+  "boundaries": [
+    "No Git commands by the sidecar.",
+    "No release or routing authority.",
+    "No backlog, CURRENT_STATE, or registry authority.",
+    "Codex App remains final reviewer and acceptance owner."
+  ],
+  "final_outcome": "AWAITING_OPERATOR_CHOICE",
+  "validation_result": "PASS"
+}

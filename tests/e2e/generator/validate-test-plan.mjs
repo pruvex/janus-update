@@ -176,6 +176,13 @@ function validate(plan, registry) {
       for (const field of ['id', 'name', 'type', 'provider', 'model', 'prompt', 'expected']) {
         if (!(field in testCase)) errors.push(`Test ${label} missing ${field}`);
       }
+      if ('promptSequence' in testCase) {
+        if (!Array.isArray(testCase.promptSequence) || testCase.promptSequence.length === 0) {
+          errors.push(`Test ${label} invalid promptSequence`);
+        } else if (!testCase.promptSequence.every((step) => typeof step === 'string' && step.trim().length > 0)) {
+          errors.push(`Test ${label} promptSequence must contain only non-empty strings`);
+        }
+      }
       if ('parallelSafe' in testCase && typeof testCase.parallelSafe !== 'boolean') {
         errors.push(`Test ${label} invalid parallelSafe: ${testCase.parallelSafe}`);
       }

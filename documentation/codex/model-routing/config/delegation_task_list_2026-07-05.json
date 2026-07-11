@@ -3,11 +3,12 @@
   "session_label": "janus-core-skills-routing-baseline",
   "status": "READY_FOR_OPERATOR_USE",
   "manifest_ref": "documentation/codex/model-routing/config/delegation_routing_manifest.json",
-  "scope_note": "Concrete routing task list for janus-documentation-update, janus-quickchange, janus-backlog-handoff, janus-backlog-prioritization, janus-backlog-intake, janus-skill-router, janus-health-check, janus-feature-design, janus-spec-generator, janus-spec-normalizer, janus-spec-review, janus-spec-to-task, janus-task-breakdown, janus-preimplementation-check, janus-executioner, janus-debug, and janus-test-pipeline. Codex reads this list, shows the visible operator gate from the manifest, and delegates using the recommended backend unless the operator overrides.",
+  "scope_note": "Concrete routing task list for janus-documentation-update, janus-quickchange, janus-backlog-handoff, janus-backlog-prioritization, janus-backlog-intake, janus-skill-router, janus-health-check, janus-feature-design, janus-spec-generator, janus-spec-normalizer, janus-spec-review, janus-spec-to-task, janus-task-breakdown, janus-preimplementation-check, janus-executioner, janus-debug, and janus-test-pipeline. Codex reads this list, shows the visible cost-aware operator gate from the manifest, and delegates using the recommended backend unless the operator overrides.",
   "operator_gate_labels": {
     "1": "Codex",
-    "2": "Cursor",
-    "3": "OpenRouter"
+    "2": "OpenRouter",
+    "3": "Cursor Composer",
+    "4": "Cursor API"
   },
   "tasks": [
     {
@@ -16,11 +17,11 @@
       "skill": "janus-documentation-update",
       "lane_id": "documentation_draft_review",
       "pipeline_mode": "DOCUMENTATION_DRAFT_REVIEW",
-      "recommended_backend": "openrouter",
+      "recommended_backend": "cursor",
       "operator_override_allowed": true,
       "models": {
         "codex": { "model": "5.4", "reasoning": "medium" },
-        "cursor": { "model": "auto" },
+        "cursor": { "model": "gpt-5.4-mini-medium" },
         "openrouter": { "model": "codex-cli/gpt-5.4-read-only-sidecar" }
       },
       "when_to_use": "Bounded non-binding draft, summary, milestone note, changelog draft, or handoff draft inside documentation-update safe scope",
@@ -36,11 +37,11 @@
       "skill": "janus-quickchange",
       "lane_id": "quickchange_patch_review",
       "pipeline_mode": "QUICKCHANGE_PATCH_REVIEW",
-      "recommended_backend": "openrouter",
+      "recommended_backend": "cursor",
       "operator_override_allowed": true,
       "models": {
         "codex": { "model": "5.4", "reasoning": "medium" },
-        "cursor": { "model": "N/A" },
+        "cursor": { "model": "gpt-5.4-mini-medium" },
         "openrouter": { "model": "qwen/qwen3-coder-30b-a3b-instruct" }
       },
       "when_to_use": "One tiny quickchange stays inside an exact file allowlist and the operator wants a bounded patch proposal before any local apply",
@@ -60,11 +61,11 @@
       "skill": "janus-backlog-handoff",
       "lane_id": "backlog_handoff_review",
       "pipeline_mode": "BACKLOG_HANDOFF_REVIEW",
-      "recommended_backend": "openrouter",
+      "recommended_backend": "cursor",
       "operator_override_allowed": true,
       "models": {
         "codex": { "model": "5.4", "reasoning": "medium" },
-        "cursor": { "model": "auto" },
+        "cursor": { "model": "glm-5.2-high" },
         "openrouter": { "model": "qwen/qwen3-coder-30b-a3b-instruct" }
       },
       "when_to_use": "Exactly one READY backlog item is selected and external review can help shape the handoff recommendation before Codex writes anything",
@@ -425,7 +426,7 @@
       "models": {
         "codex": { "model": "5.4", "reasoning": "medium" },
         "cursor": { "model": "composer-2.5", "fallback_model": "auto" },
-        "openrouter": { "model": "moonshotai/kimi-k2.5", "fallback_model": "qwen/qwen3-coder-30b-a3b-instruct" }
+        "openrouter": { "model": "qwen/qwen3-coder-30b-a3b-instruct" }
       },
       "when_to_use": "Need fixture/helper code plus bounded command execution before live Playwright",
       "when_not_to_use": "Tiny obvious fixture; ROI negative; package allowlist missing",
@@ -507,7 +508,7 @@
       "models": {
         "codex": { "model": "5.4", "reasoning": "high" },
         "cursor": { "model": "composer-2.5", "fallback_model": "auto" },
-        "openrouter": { "model": "moonshotai/kimi-k2.5", "fallback_model": "qwen/qwen3-coder-30b-a3b-instruct" }
+        "openrouter": { "model": "qwen/qwen3-coder-30b-a3b-instruct" }
       },
       "when_to_use": "One bounded implementation slice with explicit allowlist and positive ROI",
       "when_not_to_use": "Scope unclear, security/privacy risk, or slice too small for delegation overhead",

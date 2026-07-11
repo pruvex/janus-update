@@ -1,0 +1,16 @@
+{
+  "model": "deepseek/deepseek-v4-flash",
+  "pass": true,
+  "validation_result": "PASS",
+  "final_outcome": "DIRECT_OR_PATCH_PROPOSAL_READY_FOR_CODEX_REVIEW",
+  "actual_or_cost": 0.00011298,
+  "generation_id": "gen-1782398995-5DjChVfJW4SJxFtoiG5B",
+  "finish_reason": "stop",
+  "changed_files": [
+    "frontend/index.html"
+  ],
+  "proposal_status": "PATCH_PROPOSAL",
+  "issues": [],
+  "response_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\direct-or-runs\\LEAN-QC-deepseek-deepseek-v4-flash\\response_summary.json",
+  "operator_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\direct-or-runs\\LEAN-QC-deepseek-deepseek-v4-flash\\operator_summary.json"
+}

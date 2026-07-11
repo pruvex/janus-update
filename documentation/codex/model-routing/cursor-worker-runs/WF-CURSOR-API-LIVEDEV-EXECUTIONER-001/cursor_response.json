@@ -1,0 +1,16 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 13159,
+  "duration_api_ms": 13159,
+  "result": "I donâ€™t see the bounded task instructions in your message. Please paste the full prompt you want me to execute, and Iâ€™ll proceed immediately without clarifying questions unless the task is impossible with the provided files and rules.",
+  "session_id": "7a988290-5cca-4151-9780-bbe40cf8631e",
+  "request_id": "7e44cb64-4a17-4339-8371-f3b5f2e97876",
+  "usage": {
+    "inputTokens": 19176,
+    "outputTokens": 826,
+    "cacheReadTokens": 3327,
+    "cacheWriteTokens": 0
+  }
+}

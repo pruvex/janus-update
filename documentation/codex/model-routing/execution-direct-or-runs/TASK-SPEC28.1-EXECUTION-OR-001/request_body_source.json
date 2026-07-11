@@ -1,0 +1,80 @@
+{
+  "model": "moonshotai/kimi-k2.5",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a bounded OpenRouter worker for a Janus execution patch candidate. Return only JSON matching the required schema. This is proposal-only work. Do not claim completion, release readiness, routing authority, git authority, or final validation authority. Codex will review and decide whether to apply or reject. Return the smallest viable unified diff for the smallest viable subset of the allowlist. Do not include explanatory prose outside the JSON object. Prefer backend-first minimal change shape over broad test or cleanup expansion."
+    },
+    {
+      "role": "user",
+      "content": "{\n  \"target_task\": \"TASK-SPEC28.1\",\n  \"allowed_files\": [\n    \"documentation/codex/skills/janus-test-pipeline/SKILL.md\",\n    \"documentation/codex/model-routing/scripts/bounded_or_worker_eligibility.py\",\n    \"documentation/codex/model-routing/scripts/test_pipeline_sidecar_write_pilot_runner.py\",\n    \"documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py\",\n    \"documentation/codex/model-routing/tests/test_test_pipeline_sidecar_write_pilot_runner.py\"\n  ],\n  \"max_touched_files\": 5,\n  \"manual_validation_gate\": \"Codex must still verify that an eligible local LIVE_TEST_EXECUTION slice now exposes a visible 1 = Codex / 2 = OR gate while non-eligible, too-broad, or non-local live-retest flows remain deterministically Codex-only.\",\n  \"delegation_question\": \"Produce one bounded patch candidate for TASK-SPEC28.1. Add only the fail-closed eligibility and visible operator gate for eligible local LIVE_TEST_EXECUTION retests inside janus-test-pipeline. Keep TASK-SPEC28.2 and TASK-SPEC28.3 out of scope: no local auth or header contract, no worker package details, no delegated evidence-write semantics, and no final Codex-owned accept-reject wiring beyond the visibility-only lane entry.\",\n  \"current_seam_context\": \"The current janus-test-pipeline skill already exposes visible OR gates for generator-review, strong isolated test-worker, and finding-triage lanes, but the LIVE_TEST_EXECUTION section remains Codex-owned and does not yet describe or trigger a dedicated visible OR gate for eligible local live retests. In documentation/codex/model-routing/scripts/test_pipeline_sidecar_write_pilot_runner.py the visible prompt summary is still hard-wired to TESTSPEC_TO_TEST_PLAN or strong-worker behavior rather than a fail-closed LIVE_TEST_EXECUTION eligibility check. In documentation/codex/model-routing/scripts/bounded_or_worker_eligibility.py the productive Dev-workhorse contract exists for execution_patch_candidate and execution_write_apply_candidate, but the first TASK-SPEC28.1 slice must stay visibility-only and must not expand into later worker-auth-evidence contract work.\",\n  \"signature_context\": \"Preserve the existing evaluate_productive_dev_workhorse_path(path_id: str, task_class: str, estimated_or_cost: float | int | None, ...) helper contract and the existing prompt_summary(...), main(), and isolated worker prompt wiring in test_pipeline_sidecar_write_pilot_runner.py. Prefer adding the smallest live-retest eligibility/gate seam that reuses the current visible OR language and fail-closed behavior instead of inventing a new broad dispatcher or replacing current task-artifact flows.\",\n  \"call_shape_examples\": [\n    \"result = eligibility.evaluate_productive_dev_workhorse_path(path_id=\\\"productive_dev_workhorse_path\\\", task_class=\\\"execution_patch_candidate\\\", estimated_or_cost=0.02)\",\n    \"self.assertIn(\\\"1 = Codex\\\", summary[\\\"operator_prompt_lines\\\"])\",\n    \"self.assertIn(\\\"2 = OR\\\", summary[\\\"operator_prompt_lines\\\"])\"\n  ],\n  \"exact_code_context_blocks\": [\n    \"documentation/codex/skills/janus-test-pipeline/SKILL.md::Strong OR Test Worker Gate and LIVE_TEST_EXECUTION\\\\nFor eligible bounded test work that goes beyond generator review, show a normal operator-facing gate when the slice is:\\\\n- one bound TestSpec/TestRun or one bounded test target\\\\n- one isolated worker package with explicit `workspace_files`, `pre_commands`, and `post_commands`\\\\n- no production app data mutation unless the package and user approval explicitly bind it\\\\n- no secrets in the package and no unbounded repository context\\\\n- positive expected Codex-token ROI after package preparation and Codex review overhead\\\\n\\\\nPreferred strong OR model for this lane:\\\\n- `moonshotai/kimi-k2.5`\\\\n\\\\n## Mode: LIVE_TEST_EXECUTION\\\\nInputs:\\\\n- TestSpec path.\\\\n- TestPlan path.\\\\n- Generated runner path.\\\\n- Approved `TEST_RUN_ID`.\\\\n\\\\nProcess:\\\\n1. Run deterministic preflight first:\",\n    \"documentation/codex/model-routing/scripts/test_pipeline_sidecar_write_pilot_runner.py::prompt_summary\\\\noperator_prompt_lines = [\\\\n    \\\"1 = Codex\\\",\\\\n    \\\"2 = OR\\\",\\\\n    \\\"OR ist hier die externe Option, um Codex-Guthaben zu sparen.\\\",\\\\n    \\\"Live-Evidenz: bounded test-artifact generator lane on structured local executor surface\\\",\\\\n    \\\"Einordnung: deterministische Generator-Ausgabe bleibt lokal validiert; Codex behaelt finale Review- und Akzeptanzhoheit\\\",\\\\n    f\\\"Technischer Delegationspfad: structured local executor / {sidecar_model}\\\",\\\\n    f\\\"Pre-Call-Kostenbasis: bounded test-artifact generation for {test_run_id}\\\",\\\\n    \\\"Voraussichtliche OR-Kosten noch nicht belastbar kalibriert, Evidenzgenauigkeit 100% fuer den lokalen strukturierten Ausfuehrungspfad\\\",\\\\n]\",\n    \"documentation/codex/model-routing/scripts/test_pipeline_sidecar_write_pilot_runner.py::main isolated worker branch\\\\nif isolated_package_path is not None:\\\\n    isolated_choice = \\\"delegated\\\" if choice == \\\"sidecar\\\" else choice\\\\n    completed = invoke_isolated_aider_runner(\\\\n        workflow_id=workflow_id,\\\\n        task_label=f\\\"Strong OR test worker for {args.test_run_id}\\\",\\\\n        normal_target_model=args.normal_target_model,\\\\n        or_model=args.sidecar_model,\\\\n        operator_choice=isolated_choice,\\\\n        estimated_or_cost=args.estimated_or_cost,\\\\n        confidence_percent=args.cost_estimate_confidence_percent,\\\\n        input_package_json=isolated_package_path,\\\\n    )\",\n    \"documentation/codex/model-routing/tests/test_test_pipeline_sidecar_write_pilot_runner.py::visible gate assertions\\\\nself.assertEqual(summary[\\\"choice_1\\\"], \\\"Codex\\\")\\\\nself.assertEqual(summary[\\\"choice_2\\\"], \\\"OR\\\")\\\\nself.assertIn(\\\"1 = Codex\\\", summary[\\\"operator_prompt_lines\\\"])\\\\nself.assertIn(\\\"2 = OR\\\", summary[\\\"operator_prompt_lines\\\"])\",\n    \"documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py::productive Dev-workhorse execution patch gate\\\\nresult = eligibility.evaluate_productive_dev_workhorse_path(\\\\n    path_id=\\\"productive_dev_workhorse_path\\\",\\\\n    task_class=\\\"execution_patch_candidate\\\",\\\\n    estimated_or_cost=0.02,\\\\n)\\\\nself.assertEqual(result[\\\"eligibility_result\\\"], \\\"OR_ALLOWED\\\")\\\\nself.assertEqual(result[\\\"selected_or_model\\\"], \\\"moonshotai/kimi-k2.5\\\")\"\n  ],\n  \"forbidden_anchors\": [\n    \"broad live test delegation for all modes\",\n    \"local auth/header contract implementation\",\n    \"delegated evidence-write semantics\",\n    \"final Codex-owned accept-reject wiring for OR live retests\",\n    \"new broad dispatcher or routing-table redesign\"\n  ],\n  \"required_current_anchors\": [\n    \"LIVE_TEST_EXECUTION\",\n    \"1 = Codex\",\n    \"2 = OR\",\n    \"evaluate_productive_dev_workhorse_path\",\n    \"prompt_summary\",\n    \"invoke_isolated_aider_runner\"\n  ],\n  \"task_contract\": {\n    \"goal\": \"TASK BREAKDOWN RESULT\",\n    \"acceptance\": \"- Acceptance Criteria: an eligible local `LIVE_TEST_EXECUTION` retest shows the visible `1 = Codex` / `2 = OR` choice; a non-eligible, too-broad, or non-local live retest shows no normal OR gate; the gate remains fail-closed and does not imply general live-test delegation; the Sk\",\n    \"risk\": \"Keep scope bounded to the exact allowlist and avoid broader product changes.\",\n    \"context_bullets\": \"- Spec: documentation/SPEC/28_bounded_or_lane_fuer_live_test_execution.md | - Task File: documentation/tasks/TASK-SPEC28_bounded_or_lane_fuer_live_test_execution.md | - Target Task: TASK-SPEC28.1\"\n  },\n  \"validation_bundle\": {\n    \"validation_bundle_id\": \"bundle-3-steps\",\n    \"validation_summary\": \"Codex will run the known local validation bundle after review: python -m pytest documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py -q; python -m pytest documentation/codex/model-routing/tests/test_test_pipeline_sidecar_write_pilot_ru\"\n  },\n  \"return_contract\": {\n    \"required_fields\": [\n      \"status\",\n      \"target_task\",\n      \"patch_text\",\n      \"changed_files\",\n      \"risk_list\",\n      \"suggested_validation_steps\",\n      \"manual_validation_note\",\n      \"codex_acceptance_rule\",\n      \"notes\"\n    ],\n    \"empty_allowed_fields\": [\n      \"changed_files\",\n      \"risk_list\",\n      \"suggested_validation_steps\"\n    ],\n    \"patch_rule\": \"patch_text must be unified diff text touching only the smallest necessary subset of the allowlist\",\n    \"anchor_rule\": \"do not target forbidden_anchors; prefer required_current_anchors when present\",\n    \"signature_rule\": \"preserve real local function signatures and call shapes when signature_context or call_shape_examples are provided\",\n    \"context_rule\": \"when exact_code_context_blocks are provided, keep imports, surrounding control flow, and local helper usage aligned to those real excerpts instead of inventing simplified file structure\"\n  },\n  \"full_spec_excerpt_for_reference_only\": \"TASK BREAKDOWN RESULT\\n- Spec: documentation/SPEC/28_bounded_or_lane_fuer_live_test_execution.md\\n- Task File: documentation/tasks/TASK-SPEC28_bounded_or_lane_fuer_live_test_execution.md\\n- Target Task: TASK-SPEC28.1\\n- Decision: TASK DESIGN COMPLETE\\n- Source Of Truth: approved Spec 28 plus generated TASK-SPEC28 artifact; the first released slice is the fail-closed visibility and eligibility gate only, and must not widen into local auth/header handling, bounded worker contract details, or Codex-owned accept/reject closeout that belong to TASK-SPEC28.2 and TASK-SPEC28.3\\n- Files: documentation/codex/skills/janus-test-pipeline/SKILL.md, documentation/codex/model-routing/scripts/bounded_or_worker_eligibility.py, documentation/codex/model-routing/scripts/test_pipeline_sidecar_write_pilot_runner.py, documentation/codex/model-routing/tests/test_bounded_or_worker_eligibility.py, documentation/codex/model-routing/tests/test_test_pipeline_sidecar_write_pilot_runner.py\\n- Acceptance Criteria: an eligible local `LIVE_TEST_EXECUTION` retest shows the visible `1 = Codex` / `2 = OR` choice; a non-eligible, too-broad, or non-local live retest shows no normal OR gate; the gate remains fail-closed and do\"\n}"
+    }
+  ],
+  "temperature": 0.0,
+  "max_tokens": 2200,
+  "response_format": {
+    "type": "json_schema",
+    "json_schema": {
+      "name": "janus_execution_patch_candidate_result",
+      "strict": true,
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "status",
+          "target_task",
+          "patch_text",
+          "changed_files",
+          "risk_list",
+          "suggested_validation_steps",
+          "manual_validation_note",
+          "codex_acceptance_rule",
+          "notes"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "PASS",
+              "WEAK_SIGNAL",
+              "BLOCKED"
+            ]
+          },
+          "target_task": {
+            "type": "string"
+          },
+          "patch_text": {
+            "type": "string"
+          },
+          "changed_files": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "risk_list": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "suggested_validation_steps": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "manual_validation_note": {
+            "type": "string"
+          },
+          "codex_acceptance_rule": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

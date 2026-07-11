@@ -28,6 +28,22 @@ def _normalize_text(value: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
+def _fold_de_ascii(text: str) -> str:
+    """Map common ASCII umlaut fallbacks for intent regex matching."""
+    folded = str(text or "")
+    for src, dst in (
+        ("fuer", "für"),
+        ("ueber", "über"),
+        ("naechste", "nächste"),
+        ("aendere", "ändere"),
+        ("aendern", "ändern"),
+        ("pruefe", "prüfe"),
+        ("pruefen", "prüfen"),
+    ):
+        folded = re.sub(rf"\b{re.escape(src)}\b", dst, folded, flags=re.IGNORECASE)
+    return folded
+
+
 def _contains_phrase(text_norm: str, phrase: str) -> bool:
     phrase_norm = _normalize_text(phrase)
     if not phrase_norm:
@@ -304,12 +320,38 @@ CALENDAR_COMMAND_MARKERS: Tuple[str, ...] = (
 
 CALENDAR_OBJECT_MARKERS: Tuple[str, ...] = (
     "termin",
+    "termine",
     "meeting",
     "kalender",
     "kalendereintrag",
     "verabredung",
     # BACKLOG-054: English calendar keyword for Gemini provider parity
     "calendar",
+)
+
+ROUTINE_CALENDAR_SIGNAL_MARKERS: Tuple[str, ...] = (
+    "termine",
+    "termin",
+    "kalender",
+    "meeting",
+    "kalendereintrag",
+    "verabredung",
+    "calendar",
+    "was steht an",
+    "was steht heute",
+    "was steht morgen",
+    "habe ich heute",
+    "habe ich morgen",
+)
+
+ROUTINE_CALENDAR_ACTION_MARKERS: Tuple[str, ...] = (
+    "prüfe",
+    "pruefe",
+    "zeig",
+    "zeige",
+    "check",
+    "gib mir",
+    "sag mir",
 )
 
 CALENDAR_DATE_MARKERS: Tuple[str, ...] = (
@@ -647,10 +689,6 @@ _VIDEO_LIST_RE: re.Pattern = re.compile(
 # ═══════════════════════════════════════════════════════════════════════════════
 
 _VIDEO_UNDERSTANDING_MARKERS: Tuple[str, ...] = (
-    "fass zusammen",
-    "fasse zusammen",
-    "zusammenfassung",
-    "zusammenfassen",
     "erkläre das video",
     "erkläre mir das video",
     "erklär das video",
@@ -662,6 +700,13 @@ _VIDEO_UNDERSTANDING_MARKERS: Tuple[str, ...] = (
     "anleitung aus dem video",
     "transcript",
     "transkript",
+)
+
+_VIDEO_UNDERSTANDING_SUMMARY_MARKERS: Tuple[str, ...] = (
+    "fass zusammen",
+    "fasse zusammen",
+    "zusammenfassung",
+    "zusammenfassen",
 )
 
 
@@ -1304,17 +1349,43 @@ class IntentEngine:
 
     def detect_routine_request_skills(self, user_text: str) -> frozenset[str]:
         """Infer a bounded skill signature from a natural user request."""
-        text = str(user_text or "").strip()
-        if not text:
-            return frozenset()
-        skills: set[str] = set()
-        if self.detect_calendar_intent(text):
-            skills.add("calendar.list_events")
-        if self.detect_weather_intent(text):
-            skills.add("system.weather")
-        if self.detect_routing_geo_intent(text):
-            skills.add("system.routing")
-        return frozenset(skills)
+        from backend.services.workflow.routine_intent_skills import detect_routine_request_skills
+
+        return detect_routine_request_skills(self, user_text)
+
+    def _detect_routine_calendar_signal(self, user_text: str) -> bool:
+        """Broader calendar read signal used only for routine semantic reuse."""
+        if self.detect_calendar_intent(user_text):
+            return True
+        if self.detect_filesystem_intent(user_text):
+            return False
+        text_norm = _normalize_text(_fold_de_ascii(user_text))
+        if not text_norm:
+            return False
+        has_object = _contains_any_phrase(text_norm, ROUTINE_CALENDAR_SIGNAL_MARKERS)
+        has_when = _contains_any_phrase(text_norm, CALENDAR_DATE_MARKERS) or bool(
+            _CALENDAR_TIME_RE.search(text_norm)
+        )
+        has_action = _contains_any_phrase(text_norm, ROUTINE_CALENDAR_ACTION_MARKERS)
+        return bool((has_object and has_when) or (has_object and has_action))
+
+    def _detect_routine_weather_signal(self, user_text: str) -> bool:
+        """Broader weather signal used only for routine semantic reuse."""
+        if self.detect_weather_intent(user_text):
+            return True
+        text_norm = _normalize_text(_fold_de_ascii(user_text))
+        if not text_norm:
+            return False
+        if re.search(r"\bund\s+wetter\b", text_norm):
+            return True
+        if re.search(r"\bwetter\s+(?:in|für|bei|von)\b", text_norm):
+            return True
+        if re.search(r"\bwetter\b", text_norm) and re.search(
+            r"\b(?:in|für|bei|von)\s+[a-zäöüß][\wäöüß.-]{2,}",
+            text_norm,
+        ):
+            return True
+        return False
 
     def match_routine_semantic_signature(
         self,
@@ -1421,6 +1492,9 @@ class IntentEngine:
         # Video-Anfragen duerfen nicht als Personal-Recall fehlklassifiziert werden.
         # Sonst blockiert der Precedence-Guard system.websearch fuer Video-Intents.
         if self.detect_video_intent(user_text):
+            return False
+        text_norm = _normalize_text(user_text)
+        if self._has_calendar_command_signal(text_norm):
             return False
         text_lower = user_text.lower()
         if re.search(
@@ -1580,9 +1654,11 @@ class IntentEngine:
         if not user_text:
             return False
         t = user_text.lower()
-        # Check exact markers
         if any(m in t for m in _VIDEO_UNDERSTANDING_MARKERS):
             return True
+        # Generic summary verbs require an explicit video context.
+        if any(m in t for m in _VIDEO_UNDERSTANDING_SUMMARY_MARKERS):
+            return "video" in t or "clip" in t or "transkript" in t or "transcript" in t
         # Check for split patterns: "fasse ... zusammen" or "fass ... zusammen"
         if ("fass" in t or "fasse" in t) and "zusammen" in t and "video" in t:
             return True
@@ -1821,7 +1897,7 @@ class IntentEngine:
         """
         if not user_text or not user_text.strip():
             return False
-        t = user_text.casefold()
+        t = _fold_de_ascii(user_text.casefold())
         if re.search(r"\b(?:regen|regnen|regnet|niederschlag|regenschirm)\b", t):
             return True
         if re.search(r"\bwie\s+(?:ist|wird)\s+(?:das\s+)?wetter\b", t):

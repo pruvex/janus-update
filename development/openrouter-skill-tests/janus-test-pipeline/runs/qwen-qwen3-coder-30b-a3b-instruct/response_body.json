@@ -1,0 +1,15 @@
+﻿
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1782398386-qpcyjeSlXyqTTh7MWNIY","object":"chat.completion","created":1782398386,"model":"qwen/qwen3-coder-30b-a3b-instruct","provider":"Novita","system_fingerprint":null,"service_tier":null,"choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"stop","message":{"role":"assistant","content":"{\n  \"status\": \"WEAK_SIGNAL\",\n  \"test_run_id\": \"TEST-RUN-TRIAGE-EVERYDAY-001\",\n  \"primary_outcome\": \"One bounded local result bundle needs assist-only classification review.\",\n  \"likely_classification\": \"INFRA_BLOCKER\",\n  \"likely_subsystem\": \"Codex-side test pipeline\",\n  \"finding_clusters\": [\n    {\n      \"title\": \"Classification ambiguity between INFRA_BLOCKER and TEST_BUG\",\n      \"confidence\": \"MEDIUM\",\n      \"evidence\": \"Candidate blocker category is INFRA_BLOCKER, but no definitive evidence to rule out TEST_BUG.\"\n    },\n    {\n      \"title\": \"Redacted result bundle requires local review\",\n      \"confidence\": \"HIGH\",\n      \"evidence\": \"Result bundle already redacted; Codex retains rerun and routing ownership per bound skill context.\"\n    }\n  ],\n  \"suggested_next_local_verifiers\": [\n    \"Codex-test-qualifier-team\"\n  ],\n  \"suggested_routing\": \"Codex-side classification pipeline\",\n  \"escalation_trigger\": \"None\",\n  \"redaction_check\": \"PASS\",\n  \"notes\": \"No final PASS/release decision implied. Local Codex validation required prior to any routing or escalation.\"\n}","refusal":null,"reasoning":null}}],"usage":{"prompt_tokens":421,"completion_tokens":264,"total_tokens":685,"cost":0.00010075,"is_byok":false,"prompt_tokens_details":{"cached_tokens":0,"cache_write_tokens":0,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.00010075,"upstream_inference_prompt_cost":0.00002947,"upstream_inference_completions_cost":0.00007128},"completion_tokens_details":{"reasoning_tokens":0,"image_tokens":0,"audio_tokens":0}}}

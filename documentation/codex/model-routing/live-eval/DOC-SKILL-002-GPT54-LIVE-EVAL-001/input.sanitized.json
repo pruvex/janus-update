@@ -1,0 +1,57 @@
+{
+  "fixture_id": "DOC-SKILL-002-GPT54-LIVE-EVAL-001",
+  "skill_id": "DOC-SKILL-002",
+  "skill_name": "Summarize model scoring report",
+  "target_local_baseline": {
+    "model": "5.4",
+    "reasoning": "medium"
+  },
+  "task_intent": "Summarize a sanitized model scoring report with nuanced status preservation.",
+  "source_status": "sanitized_fixture_only",
+  "scoring_rows": [
+    {
+      "model": "openai/gpt-oss-20b",
+      "price_status": "CHEAPER_THAN_GPT54",
+      "quality_status": "CANDIDATE_NOT_APPROVED",
+      "evidence": "structured outputs and tool support present in catalog; no 5.4 documentation-skill live evidence yet"
+    },
+    {
+      "model": "openai/gpt-oss-120b",
+      "price_status": "CHEAPER_THAN_GPT54",
+      "quality_status": "CANDIDATE_NOT_APPROVED",
+      "evidence": "stronger OpenAI-family candidate; no replacement approval"
+    },
+    {
+      "model": "minimax/minimax-m3",
+      "price_status": "CHEAPER_THAN_GPT54",
+      "quality_status": "HOLD",
+      "evidence": "prior schema projection and provider compatibility concerns"
+    },
+    {
+      "model": "openrouter/auto",
+      "price_status": "VARIABLE",
+      "quality_status": "EXPERIMENT_ONLY",
+      "evidence": "mini batch showed cost regression for DOC-SKILL-001 and finish_reason=length for DOC-SKILL-002"
+    },
+    {
+      "model": "unknown/provider-placeholder",
+      "price_status": "UNKNOWN",
+      "quality_status": "UNKNOWN",
+      "evidence": "insufficient catalog and scoring evidence"
+    }
+  ],
+  "required_preservations": [
+    "HOLD remains HOLD",
+    "UNKNOWN remains UNKNOWN",
+    "EXPERIMENT_ONLY remains experiment-only",
+    "CANDIDATE_NOT_APPROVED remains not approved",
+    "price metadata is not quality evidence"
+  ],
+  "forbidden_claims": [
+    "production routing is approved",
+    "canonical routing table should be updated",
+    "OpenRouter is globally approved",
+    "any candidate has replaced 5.4",
+    "Auto Router is broadly confirmed"
+  ]
+}

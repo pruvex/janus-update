@@ -1,0 +1,45 @@
+{
+  "status": "PASS",
+  "checks": [
+    {
+      "name": "validate_test_plan",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "tests/e2e/generator/validate-test-plan.mjs",
+        "--plan",
+        "documentation/test-runs/TEST-RUN-2026-06-27-904_plan.json"
+      ],
+      "exit_code": 0,
+      "stdout_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-TEST-ARTIFACT-LIVE-2026-06-27-904\\post_validation\\validate_test_plan.stdout.log",
+      "stderr_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-TEST-ARTIFACT-LIVE-2026-06-27-904\\post_validation\\validate_test_plan.stderr.log",
+      "passed": true
+    },
+    {
+      "name": "node_check_generated_runner",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "--check",
+        "documentation/test-runs/TEST-RUN-2026-06-27-904_generated.spec.js"
+      ],
+      "exit_code": 0,
+      "stdout_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-TEST-ARTIFACT-LIVE-2026-06-27-904\\post_validation\\node_check_generated_runner.stdout.log",
+      "stderr_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-TEST-ARTIFACT-LIVE-2026-06-27-904\\post_validation\\node_check_generated_runner.stderr.log",
+      "passed": true
+    },
+    {
+      "name": "validate_runner",
+      "command": [
+        "C:\\nvm4w\\nodejs\\node.exe",
+        "tests/e2e/generator/validate-runner.mjs",
+        "--plan",
+        "documentation/test-runs/TEST-RUN-2026-06-27-904_plan.json",
+        "--runner",
+        "documentation/test-runs/TEST-RUN-2026-06-27-904_generated.spec.js"
+      ],
+      "exit_code": 0,
+      "stdout_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-TEST-ARTIFACT-LIVE-2026-06-27-904\\post_validation\\validate_runner.stdout.log",
+      "stderr_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-TEST-ARTIFACT-LIVE-2026-06-27-904\\post_validation\\validate_runner.stderr.log",
+      "passed": true
+    }
+  ]
+}

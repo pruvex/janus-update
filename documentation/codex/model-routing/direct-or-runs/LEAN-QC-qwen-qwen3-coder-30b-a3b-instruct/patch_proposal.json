@@ -1,0 +1,15 @@
+{
+  "changed_files": [
+    "frontend/index.html"
+  ],
+  "risk_notes": [
+    "Only the specified placeholder text was modified as requested."
+  ],
+  "status": "PATCH_PROPOSAL",
+  "summary": "Updated the chat input placeholder text in frontend/index.html from 'Nachricht an Janus senden...' to 'Nachricht an Janus schreiben...'. No other text or files were modified.",
+  "unified_diff": "--- a/frontend/index.html\n+++ b/frontend/index.html\n@@ -1,3 +1,3 @@\n <html>\n   <body>\n-    <input placeholder=\"Nachricht an Janus senden...\" />\n+    <input placeholder=\"Nachricht an Janus schreiben...\" />\n   </body>\n</html>",
+  "validation_notes": [
+    "The change is minimal and only affects the specified placeholder text.",
+    "No other wording, structure, or file was altered."
+  ]
+}

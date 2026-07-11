@@ -1,0 +1,15 @@
+{
+  "workflow_id": "WF-OPENROUTER-LIVE-SMOKE-002",
+  "validation_result": "PASS",
+  "budget_profile": "execution_patch_candidate",
+  "issues": [],
+  "allowed_files": [
+    "documentation/codex/model-routing/scripts/bounded_or_worker_gate_prompt.py",
+    "documentation/codex/model-routing/tests/test_bounded_or_worker_gate_prompt.py"
+  ],
+  "changed_files": [],
+  "max_touched_files": 2,
+  "finish_reason": "stop",
+  "actual_or_cost": 0.000443324,
+  "cost_cap": 0.05
+}

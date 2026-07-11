@@ -1,0 +1,85 @@
+{
+  "backend": "cursor",
+  "lane_id": "debug_repro_investigation",
+  "workflow_id": "WF-SPEC29.2-DATE-GUARD-2026-07-09-001",
+  "selected_model": "composer-2.5",
+  "cursor_pool": "auto_composer",
+  "estimated_cost_usd_static": 0.0104,
+  "session_id": "1ba01032-d973-480d-9671-7ff1bc14039f",
+  "validation_result": "PASS",
+  "selected_path": "cursor_worker_live_mockable",
+  "final_outcome": "CURSOR_WORKER_READY_FOR_CODEX_REVIEW",
+  "package_validation": {
+    "validation_result": "PASS",
+    "contract_status": "TASK_PACKAGE_VALID_VIA_WORKER_REFERENCE",
+    "issues": [],
+    "task_label": "Debug routine semantic reuse date guard for calendar plus weather",
+    "worker_profile": "cursor-agent",
+    "allowed_edit_paths": [
+      "backend/services/workflow/routine_runner.py",
+      "backend/tests/test_routine_runner.py"
+    ],
+    "required_result_artifacts": [
+      "RESULT.json",
+      "RESULT.md",
+      "DIFF.patch",
+      "FILES_CHANGED.txt",
+      "CHECKS.log",
+      "COST.json"
+    ],
+    "source_package_path": "development\\openrouter-skill-tests\\janus-debug\\workflow_spec29_2_routine_date_guard_2026-07-09\\input_package.json",
+    "worker_package_path": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-debug\\workflow_spec29_2_routine_date_guard_2026-07-09\\worker_package.json"
+  },
+  "allowlist_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "allowlist": [
+      "backend/services/workflow/routine_runner.py",
+      "backend/tests/test_routine_runner.py"
+    ]
+  },
+  "allowlist_consistency_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "package_allowed_edit_paths": [
+      "backend/services/workflow/routine_runner.py",
+      "backend/tests/test_routine_runner.py"
+    ],
+    "allowlist": [
+      "backend/services/workflow/routine_runner.py",
+      "backend/tests/test_routine_runner.py"
+    ],
+    "declared_allowlist_file": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-debug\\workflow_spec29_2_routine_date_guard_2026-07-09\\allowlist.txt"
+  },
+  "accepted_source_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "accepted_source_run_dir": null,
+    "recognized_artifacts": []
+  },
+  "accepted_source_run_dir": null,
+  "planned_command": [
+    "C:\\Users\\pruve\\AppData\\Local\\cursor-agent\\agent.CMD",
+    "-p",
+    "--workspace",
+    "C:\\KI\\Janus-Projekt\\backend",
+    "--model",
+    "composer-2.5",
+    "--output-format",
+    "json",
+    "--force",
+    "--trust",
+    "--approve-mcps",
+    "Execute this bounded Janus delegated worker task now. Treat the full prompt below as instructions, not as text to analyze. Do not ask clarifying questions unless the task is impossible with the provided files and rules.\n\nStable prefix:\n- lane: debug_repro_investigation\n- worker_contract: janus-delegated-worker\n- output_schema: status, changed_files, command_results, summary, blockers\n- hard_rules: stay bounded, do not commit, do not leave the allowlist\n\nVariable suffix:\nInvestigate only the allowlisted semantic routine reuse path. Live Janus behavior shows that a saved calendar-plus-weather routine created for weather today can still be reused when the user asks for weather tomorrow, which is incorrect. Apply the smallest bounded fix in routine_runner.py so semantic reuse remains allowed for the same natural request shape but is rejected when the requested date/time reference (for example today vs tomorrow) differs from the stored weather-step args. Keep the existing city guard and the normal saved-routine success messaging intact. Add focused regression coverage in backend/tests/test_routine_runner.py. Do not broaden into intent engine redesign, UI, transport, OAuth, or provider changes. Run only the listed pytest check. Return concise JSON-compatible output with status, root_cause, changed_files, command_results, summary, and blockers.\nTask label: Debug semantic routine reuse across mismatched weather date references\nUse Cursor Composer for one bounded debug slice. Inspect only the allowlisted routine runner and test file, fix the weather date/time-reference guard for semantic routine reuse, run the listed pytest command, and return concise JSON-compatible output.\nAcceptance criteria:\n- Only the allowlisted routine runner and focused routine tests may change.\n- Semantic reuse must reject mismatched weather date/time references such as today versus tomorrow.\n- Semantic reuse must still work for same-date calendar plus weather requests.\n- Existing city guard behavior must remain intact.\n- Run the focused pytest command before returning.\nAllowed edit paths:\n- backend/services/workflow/routine_runner.py\n- backend/tests/test_routine_runner.py\nReturn status, changed_files, command_results, summary, and blockers as concise JSON-compatible output.\n\nWorkspace root: C:\\KI\\Janus-Projekt\\backend\nWorkspace-relative edit paths:\n- services/workflow/routine_runner.py\n- tests/test_routine_runner.py"
+  ],
+  "mode": "proposal_first",
+  "workspace_root": "C:\\KI\\Janus-Projekt\\backend",
+  "live_execution_allowed": false,
+  "codex_review_required": true,
+  "changed_files": [
+    "backend/services/workflow/routine_runner.py",
+    "backend/tests/test_routine_runner.py"
+  ],
+  "changed_outside_allowlist": [],
+  "operator_message": "Cursor worker finished the bounded slice and returned artifacts for Codex review."
+}

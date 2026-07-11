@@ -168,6 +168,46 @@ Only allow live test execution when:
 
 Otherwise block instead of improvising a run.
 
+## Tri-Modal Delegate Entry
+
+Operator-facing entry for the current tri-modal rollout:
+
+- `1 = Codex`
+- `2 = Cursor`
+- `3 = OpenRouter`
+
+Use the shared delegate entry first for the bounded test-pipeline lanes that are live in the manifest:
+
+- `generator_review`
+- `test_fixture_worker`
+- `test_result_triage_review`
+
+Prompt-mode entry:
+
+```powershell
+python documentation/codex/model-routing/scripts/janus_delegate.py --lane <generator_review|test_fixture_worker|test_result_triage_review> --workflow-id <WORKFLOW-ID> --operator-choice prompt --input-package-json <input-package.json> --allowlist-file <allowlist.txt> --estimated-codex-saved-tokens <n> --estimated-delegation-overhead-tokens <n>
+```
+
+Notes:
+
+- `test_fixture_worker` is the current bounded write-capable Cursor lane
+- `generator_review` and `test_result_triage_review` remain review-first lanes
+- default behavior stays plan-only; explicit live Cursor execution requires separate operator approval and `--execute-live-cursor`
+- `live_test_execution` and `diamond_retest_audit` remain Codex-only even though the surrounding skill now exposes tri-modal gates for other bounded lanes
+- visible delegated choice should appear only for the already approved bounded lane that matches the active slice; non-approved or fail-closed test slices stay local in Codex
+
+After the first shared live Cursor shadow wave, treat Cursor as the primary bounded worker for `test_fixture_worker`. The older `1 = Codex / 2 = OpenRouter` helper wording that still appears below applies only to explicit legacy review/helper paths such as `generator_review` or specialized OR validation, not to the main everyday test worker surface.
+
+Reference everyday proof for this lane:
+
+- `C:\KI\Janus-Projekt\documentation\codex\model-routing\TEST_FIXTURE_WORKER_GOLDEN_PATH_2026-07-06.md`
+
+Reference live evidence:
+
+- `WF-CURSOR-LIVE-SMOKE-003`
+- `WF-CURSOR-SHADOW-TEST-LIVE-001`
+- `WF-CURSOR-SHADOW-TEST-LIVE-002`
+
 ## Bounded Generator Review Gate
 
 For eligible bounded generator work inside `TEST_RUN_PRECHECK`, prefer the shared dispatcher as the operator-facing gate when the task is:
@@ -182,7 +222,7 @@ This gate is for the validated delegation class `generator_review`.
 Current visibility state:
 
 - `generator_review` is now `VISIBLE_APPROVED` under the shared existing-skill visibility contract for this bounded lane.
-- the normal everyday `1 = Codex / 2 = OR` operator gate may be shown from `janus-test-pipeline` for this lane, while Codex remains final reviewer and acceptance owner.
+- if this older direct helper path is used instead of the shared tri-modal entry above, its local operator gate may be shown as `1 = Codex / 2 = OpenRouter`, while Codex remains final reviewer and acceptance owner.
 
 Binding artifacts:
 
@@ -193,14 +233,14 @@ Binding artifacts:
 Use the real operator-facing helper for this lane first:
 
 ```powershell
-python documentation/codex/model-routing/scripts/test_pipeline_sidecar_write_pilot_runner.py --testspec-path <TestSpec> --test-run-id <TEST_RUN_ID> --normal-target-model "5.4 medium" --operator-choice prompt --workflow-id <WORKFLOW-ID>
+python documentation/codex/model-routing/scripts/test_pipeline_sidecar_write_pilot_runner.py --testspec-path <TestSpec> --test-run-id <TEST_RUN_ID> --normal-target-model "5.6 Terra medium" --operator-choice prompt --workflow-id <WORKFLOW-ID>
 ```
 
 Internal delegated meaning:
 
 - generator preparation and review stay deterministic and local through the structured local executor plus validator steps.
 - even with visible operator choice, this remains a bounded review-first lane rather than broad delegated test-authoring authority.
-- the visible gate should read `1 = Codex` and `2 = OR`, but the current technical delegated path is the bounded structured local executor surface, not broad free-form repo authority.
+- the visible gate should read `1 = Codex` and `2 = OpenRouter`, but the current technical delegated path is the bounded structured local executor surface, not broad free-form repo authority.
 
 Boundaries stay strict:
 
@@ -224,6 +264,54 @@ Important:
 - it remains bounded delegated intent with deterministic local execution
 - use it only when the active work is still a narrow generator-review problem inside this skill
 
+## Strong OR Test Worker Gate
+
+For eligible bounded test work that goes beyond generator review, show a normal operator-facing gate when the slice is:
+
+- one bound TestSpec/TestRun or one bounded test target
+- one isolated worker package with explicit `workspace_files`, `pre_commands`, and `post_commands`
+- no production app data mutation unless the package and user approval explicitly bind it
+- no secrets in the package and no unbounded repository context
+- positive expected Codex-token ROI after package preparation and Codex review overhead
+
+Use this lane for work like:
+
+- write or adjust one bounded test artifact
+- run the allowed test command multiple times by listing repeated command specs in the package
+- summarize the run outcomes and changed files for Codex review
+
+Binding artifacts:
+
+- `C:\KI\Janus-Projekt\documentation\codex\model-routing\scripts\test_pipeline_sidecar_write_pilot_runner.py`
+- `C:\KI\Janus-Projekt\documentation\codex\model-routing\scripts\isolated_aider_workspace_runner.py`
+
+Preferred strong OR model for this lane:
+
+- `moonshotai/kimi-k2.5`
+
+Prompt-mode gate example:
+
+```powershell
+python documentation/codex/model-routing/scripts/test_pipeline_sidecar_write_pilot_runner.py --testspec-path <TestSpec-or-N/A> --test-run-id <TEST_RUN_ID> --normal-target-model "5.6 Terra medium" --operator-choice prompt --workflow-id <WORKFLOW-ID> --sidecar-model moonshotai/kimi-k2.5 --isolated-aider-package-json <worker-package.json> --estimated-or-cost <estimated-cost> --cost-estimate-confidence-percent <confidence>
+```
+
+If the user chooses the delegated path:
+
+- invoke the helper with `--operator-choice 2` and the same `--isolated-aider-package-json`
+- keep the package allowlist as the authority boundary
+- treat repeated runs as explicit package command specs, not as open-ended shell freedom
+- review `operator_summary.json`, `test_output.log`, `worker_report.md`, changed files, and copy-back files before accepting anything
+
+Boundaries:
+
+- no delegated final PASS, release readiness, Backlog routing, Git, or product decision
+- no broad live shell authority
+- no edits outside package allowlist
+- no command outside package `pre_commands` / `post_commands`
+- Codex remains final reviewer, validator, and acceptance owner
+
+This lane exists because the earlier small-model proposal path was too narrow for the intended savings target. It should now be treated as a legacy/specialized OpenRouter helper path beside the Cursor-first shared delegate rollout, and used only when a bounded test-writing/execution bundle is large enough to justify explicit OR validation rather than the normal Cursor worker path.
+
 ## Mode: LIVE_TEST_EXECUTION
 
 Inputs:
@@ -242,14 +330,35 @@ node tests/e2e/generator/test-skill3-preflight.mjs --spec <TestSpec> --plan <Tes
 ```
 
 2. If the preflight is not `READY`, stop and classify the blocker.
-3. After explicit user approval, run the generated Playwright test:
+3. Before showing any normal OR choice, classify the live slice fail-closed:
+
+- `local_bounded_retest` -> visible `1 = Codex` / `2 = OpenRouter` gate may be shown
+- `local_broad_retest` -> no normal OR gate
+- `non_local_live_test` -> no normal OR gate
+- `not_a_retest` -> no normal OR gate
+
+Prompt the bounded visibility gate with:
+
+```powershell
+python documentation/codex/model-routing/scripts/test_pipeline_sidecar_write_pilot_runner.py --mode LIVE_TEST_EXECUTION --testspec-path <TestSpec-or-N/A> --test-run-id <TEST_RUN_ID> --normal-target-model "5.6 Terra medium" --operator-choice prompt --workflow-id <WORKFLOW-ID> --live-test-scope <local_bounded_retest|local_broad_retest|non_local_live_test|not_a_retest> --sidecar-model moonshotai/kimi-k2.5
+```
+
+Meaning in this first slice:
+
+- only `local_bounded_retest` may expose the visible `2 = OpenRouter` choice
+- the visible gate is backed by a bounded worker package only when `--isolated-aider-package-json <worker-package.json>` is supplied
+- the worker package may reference a runtime-only local auth/header requirement, but must not serialize real secret values into versioned artifacts
+- delegated evidence is reviewable by Codex and must not claim final PASS, release, Git, routing, or task-completion authority
+- incomplete delegated evidence, missing auth prerequisites, over-broad worker packages, scope drift, or missing review-bundle files must fail closed to a Codex-owned reject-and-fallback outcome
+- Codex remains the final live execution reviewer and acceptance owner
+4. After explicit user approval, run the generated Playwright test:
 
 ```powershell
 npx playwright test <Runner> --headed --workers=1 --reporter=list
 ```
 
-4. Preserve raw terminal evidence in the response summary.
-5. Verify result files exist and validate them with this skill's helper script when useful:
+5. Preserve raw terminal evidence in the response summary.
+6. Verify result files exist and validate them with this skill's helper script when useful:
 
 ```powershell
 python C:\Users\pruve\.codex\skills\janus-test-pipeline\scripts\validate_test_pipeline_artifacts.py --plan <TestPlan> --result <TestResultJson>
@@ -330,22 +439,22 @@ Use prompt mode first:
 python documentation/codex/model-routing/scripts/codex_test_result_triage_review_runner.py --task-label "<short triage review task>" --normal-target-model "<declared model/reasoning>" --operator-choice prompt --workflow-id <WORKFLOW-ID> --estimated-or-cost <estimated-cost> --cost-estimate-confidence-percent <confidence> --estimated-codex-saved-tokens <n> --estimated-codex-or-overhead-tokens <n> --minimum-net-codex-saved-tokens <n> --input-package-json <input.json>
 ```
 
-Expected operator gate:
+Expected local gate for that legacy helper path:
 
 - `1 = Codex`
-- `2 = OR`
+- `2 = OpenRouter`
 
 Meaning here:
 
 - `1` keeps finding triage fully local in Codex.
-- `2` uses the bounded OR lane for an assist-only triage review, but Codex behaelt die reale Klassifikation, die Rerun-Entscheidung, das Backlog-Routing und die finale Evidenzinterpretation.
+- `2` uses the bounded OpenRouter lane for an assist-only triage review, but Codex behaelt die reale Klassifikation, die Rerun-Entscheidung, das Backlog-Routing und die finale Evidenzinterpretation.
 
 Productive role:
 
-- Use OR when the result bundle and evidence snippets are large enough that external triage review will save meaningful Codex work.
-- OR may cluster failures, suggest likely classification, identify next local verifier/retest, and prepare compact `janus-debug`, `janus-backlog-intake`, or `janus-executioner` handoff language.
-- OR must not run Playwright, mutate result JSON, declare final PASS, or decide release readiness.
-- Keep tiny or obvious triage steps on Codex when OR briefing/review would cost more than classifying the result locally.
+- Use OpenRouter when the result bundle and evidence snippets are large enough that external triage review will save meaningful Codex work.
+- OpenRouter may cluster failures, suggest likely classification, identify next local verifier/retest, and prepare compact `janus-debug`, `janus-backlog-intake`, or `janus-executioner` handoff language.
+- OpenRouter must not run Playwright, mutate result JSON, declare final PASS, or decide release readiness.
+- Keep tiny or obvious triage steps on Codex when OpenRouter briefing/review would cost more than classifying the result locally.
 
 Current preferred OR candidate for this bounded lane:
 
@@ -429,11 +538,11 @@ Do not reopen unrelated historical runs unless coverage is still ambiguous.
 
 ## Model And Context Guidance
 
-- Use `5.4` low for short TestPlan validation, artifact checks, and routine triage when the current `5.4` context is warm or the next step returns to `5.4`.
-- Use `5.4 mini` for separated low-risk validation or triage batches only when likely cheaper than staying on warm `5.4`.
-- Use `5.4` for Playwright execution, local debugging, and script-level investigation.
-- Use `5.4` for ambiguous failures, product/spec classification, and retest audit.
-- Use `5.5` only for security-sensitive release blockers, provider trust boundaries, or complex audit disputes.
+- Use `5.6 Terra` low for short TestPlan validation, artifact checks, and routine triage when the current `5.6 Terra` context is warm or the next step returns to `5.6 Terra`.
+- Use `5.6 Luna` for separated low-risk validation or triage batches only when likely cheaper than staying on warm `5.6 Terra`.
+- Use `5.6 Terra` for Playwright execution, local debugging, and script-level investigation.
+- Use `5.6 Terra` for ambiguous failures, product/spec classification, and retest audit.
+- Use `5.6 Sol` only for security-sensitive release blockers, provider trust boundaries, or complex audit disputes.
 - Start a new chat when entering `LIVE_TEST_EXECUTION` or `DIAMOND_RETEST_AUDIT` with large prior context; bind only TestSpec, TestPlan, TestResult, and current Backlog entries.
 
 ## Required Response Shape

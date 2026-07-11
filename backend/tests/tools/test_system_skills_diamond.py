@@ -400,9 +400,41 @@ class TestWikipediaService:
 
     @pytest.mark.asyncio
     @patch("backend.tools.wiki_service.wikipediaapi.Wikipedia")
+    async def test_wikipedia_condenses_long_lead_to_opening_sentences(self, mock_wiki_cls):
+        from backend.tools.wiki_service import get_wikipedia_summary
+
+        long_summary = (
+            "Berlin ist die Hauptstadt Deutschlands. "
+            "Die Stadt hat rund 3,7 Millionen Einwohner. "
+            "Berlin ist die groesste Stadt der EU. "
+            "Der Stadtstaat hat zwoelf Bezirke. "
+            "Berlin wurde im 13. Jahrhundert erstmals urkundlich erwaehnt. "
+            "Die Stadt war Hauptstadt von Preussen und des Deutschen Reichs."
+        )
+        mock_page = Mock()
+        mock_page.exists.return_value = True
+        mock_page.title = "Berlin"
+        mock_page.summary = long_summary
+        mock_page.fullurl = "https://de.wikipedia.org/wiki/Berlin"
+
+        mock_wiki = Mock()
+        mock_wiki.page.return_value = mock_page
+        mock_wiki_cls.return_value = mock_wiki
+
+        result = await get_wikipedia_summary(query="Berlin", lang="de")
+        result = _validate_skill_response(result)
+
+        assert result["status"] == "ok"
+        summary = result["data"]["summary"]
+        assert summary.startswith("Berlin ist die Hauptstadt Deutschlands.")
+        assert "Der Stadtstaat hat zwoelf Bezirke." in summary
+        assert "13. Jahrhundert" not in summary
+        assert "(Auszug)" not in summary
+
+    @pytest.mark.asyncio
+    @patch("backend.tools.wiki_service.wikipediaapi.Wikipedia")
     async def test_wikipedia_not_found(self, mock_wiki_cls):
         from backend.tools.wiki_service import get_wikipedia_summary
-        import wikipedia as wp_mod
 
         mock_page = Mock()
         mock_page.exists.return_value = False
@@ -411,9 +443,8 @@ class TestWikipediaService:
         mock_wiki.page.return_value = mock_page
         mock_wiki_cls.return_value = mock_wiki
 
-        with patch.object(wp_mod, "search", return_value=[]):
-            with patch.object(wp_mod, "set_lang"):
-                result = await get_wikipedia_summary(query="Xyzzy_nonexistent")
+        with patch("backend.tools.wiki_service._search_wikipedia_titles", return_value=[]):
+            result = await get_wikipedia_summary(query="Xyzzy_nonexistent")
         result = _validate_skill_response(result)
         assert result["status"] == "error"
         assert result["error"]["code"] == "NOT_FOUND"

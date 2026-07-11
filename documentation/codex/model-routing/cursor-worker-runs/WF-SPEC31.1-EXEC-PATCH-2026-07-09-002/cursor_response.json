@@ -1,0 +1,16 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 8962,
+  "duration_api_ms": 8962,
+  "result": "I donâ€™t see the delegated worker task prompt in your message. Could you paste the full prompt so I can execute it as instructed?",
+  "session_id": "23ff3aee-3d5b-49d5-8ff6-a2a24c5c1f54",
+  "request_id": "edc11b1d-aa1d-4074-aa7b-8b7d87a15160",
+  "usage": {
+    "inputTokens": 24976,
+    "outputTokens": 280,
+    "cacheReadTokens": 15,
+    "cacheWriteTokens": 0
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "task_label": "Fix passive routine learning capability-registry mismatch blocking silent candidate creation",
+  "worker_profile": "cursor-agent",
+  "allowed_edit_paths": [
+    "backend/services/workflow/routine_store.py",
+    "backend/services/orchestrator/response_finalizer.py",
+    "backend/tests/test_routine_store.py"
+  ],
+  "constraints": [
+    "Keep the fix bounded to the passive routine-learning path.",
+    "Do not widen scope into unrelated routing, calendar, or settings behavior.",
+    "Preserve unknown-skill rejection for truly invalid skill ids.",
+    "Prefer the smallest product-safe fix over architectural cleanup."
+  ],
+  "acceptance_criteria": [
+    "A productive ToolManager-backed path must no longer reject valid skill ids like calendar.list_events and system.routing solely because _available_skills is absent.",
+    "RoutineStore validation must still reject truly unknown skill ids.",
+    "Focused tests for the new validation path must pass."
+  ],
+  "checks": [
+    {
+      "label": "pytest",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "backend/tests/test_routine_store.py",
+        "-q"
+      ]
+    }
+  ],
+  "forbidden_actions": [
+    "commit",
+    "push",
+    "tag",
+    "merge",
+    "release",
+    "publish",
+    "dependency",
+    "secret",
+    "auth",
+    "security",
+    "privacy",
+    "migration",
+    "architecture"
+  ],
+  "requested_actions": [
+    "edit",
+    "run_checks"
+  ],
+  "task_prompt": "Investigate only the allowlisted passive routine-learning files. Live Janus behavior on 2026-07-09 shows a mixed calendar-plus-routing turn that executes successfully, but the candidate store remains empty because response_finalizer passes ToolManager into RoutineStore validation and the path then logs `WORKFLOW-OFFER: skipped due to non-critical error: unknown skill_id(s): calendar.list_events, system.routing`. Apply the smallest bounded product fix so valid productive ToolManager-backed skills are accepted again in this passive-learning path, while truly unknown skills still fail validation. Add focused regression coverage in backend/tests/test_routine_store.py. Run only the listed pytest check. Do not commit. Return concise JSON-compatible output with status, root_cause, changed_files, command_results, summary, and blockers."
+}

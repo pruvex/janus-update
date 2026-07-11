@@ -1,0 +1,10 @@
+{
+  "summary_header": "BOUNDED DELEGATION DISPATCH RESULT",
+  "workflow_id": "BOUNDED-DISPATCH-LOCAL-001",
+  "task_class": "quickchange_patch_review",
+  "task_label": "Dispatcher local validation",
+  "selected_path": "codex_only_operator_choice",
+  "validation_result": "PASS",
+  "final_outcome": "LOCAL_CODEX_PATH_SELECTED",
+  "operator_message": "Operator chose the normal Codex-only path. No delegated helper was invoked."
+}

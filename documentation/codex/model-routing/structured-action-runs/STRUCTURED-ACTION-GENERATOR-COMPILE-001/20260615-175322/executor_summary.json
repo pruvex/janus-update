@@ -1,0 +1,34 @@
+{
+  "workflow_id": "STRUCTURED-ACTION-GENERATOR-COMPILE-001",
+  "skill_id": "janus-test-pipeline",
+  "action_type": "run_generator",
+  "executor_status": "PASS",
+  "schema_validation": "PASS",
+  "mapping_resolution": "PASS",
+  "allowlist_status": "PASS",
+  "output_artifact_status": "PASS",
+  "codex_review_required": true,
+  "detail": "Generator executed through deterministic local mapping.",
+  "action_summary": {
+    "generator_id": "compile_testspec_to_testplan_v1",
+    "command": [
+      "C:\\nvm4w\\nodejs\\node.exe",
+      "tests/e2e/generator/compile-testspec-to-testplan.mjs",
+      "--spec",
+      "documentation/TEST_SPEC/07_regression_suite/18_testspec_testplan_generator_regression.md",
+      "--test-run-id",
+      "TEST-RUN-2099-12-31-997",
+      "--output-dir",
+      "documentation/codex/model-routing/structured-action-runs/STRUCTURED-ACTION-GENERATOR-COMPILE-001/20260615-175322/generated",
+      "--skip-skill2-handover"
+    ],
+    "output_artifacts": [
+      "documentation/codex/model-routing/structured-action-runs/STRUCTURED-ACTION-GENERATOR-COMPILE-001/20260615-175322/generated/TEST-RUN-2099-12-31-997_plan.json",
+      "documentation/codex/model-routing/structured-action-runs/STRUCTURED-ACTION-GENERATOR-COMPILE-001/20260615-175322/generated/TEST-RUN-2099-12-31-997_generated.spec.js"
+    ],
+    "stdout_path": "documentation/codex/model-routing/structured-action-runs/STRUCTURED-ACTION-GENERATOR-COMPILE-001/20260615-175322/stdout.log",
+    "stderr_path": "documentation/codex/model-routing/structured-action-runs/STRUCTURED-ACTION-GENERATOR-COMPILE-001/20260615-175322/stderr.log",
+    "exit_code_path": "documentation/codex/model-routing/structured-action-runs/STRUCTURED-ACTION-GENERATOR-COMPILE-001/20260615-175322/exit_code.txt"
+  },
+  "run_directory": "documentation/codex/model-routing/structured-action-runs/STRUCTURED-ACTION-GENERATOR-COMPILE-001/20260615-175322"
+}

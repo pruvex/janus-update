@@ -1,0 +1,13 @@
+﻿
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1781875981-8RpEqIvMSkD1M8Ei3kOv","object":"response","created_at":1781875981,"model":"qwen/qwen3-coder-flash","status":"completed","completed_at":1781875984,"output":[{"type":"openrouter:apply_patch","id":"st_tmp_lmwz2ct6z3b","status":"in_progress","call_id":"call_e49c674a96bb4892bb18b443","operation":{"type":"update_file","path":"frontend/index.html","diff":"@@ -433,7 +433,7 @@\n                       <textarea\n                         id=\"user-input-A\"\n                         rows=\"1\"\n-                        placeholder=\"Nachricht an Janus schreiben...\"\n+                        placeholder=\"Nachricht an Janus senden...\"\n                         autocomplete=\"off\"\n                         spellcheck=\"true\"\n                       ></textarea>\n@@ -529,7 +529,7 @@\n                       <textarea\n                         id=\"user-input-B\"\n                         rows=\"1\"\n-                        placeholder=\"Nachricht an Janus schreiben...\"\n+                        placeholder=\"Nachricht an Janus senden...\"\n                         autocomplete=\"off\"\n                         spellcheck=\"true\"\n                       ></textarea>"}}],"error":null,"incomplete_details":null,"tools":[],"tool_choice":"auto","parallel_tool_calls":false,"max_output_tokens":1800,"temperature":0,"top_p":1,"presence_penalty":0,"frequency_penalty":0,"top_logprobs":0,"max_tool_calls":1,"metadata":{},"background":false,"previous_response_id":null,"service_tier":"auto","truncation":"disabled","store":false,"instructions":null,"text":{"format":{"type":"text"}},"reasoning":null,"safety_identifier":null,"prompt_cache_key":null,"usage":{"input_tokens":1024,"input_tokens_details":{"cached_tokens":0},"output_tokens":200,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":1224,"cost":0.00039468,"cost_details":{"upstream_inference_cost":0.00039468,"upstream_inference_input_cost":0.00019968,"upstream_inference_output_cost":0.000195}}}

@@ -1,0 +1,21 @@
+{
+  "testRunId": "TEST-RUN-2026-06-09-004",
+  "testCaseId": "TC-007-GPT",
+  "result": "PASS",
+  "classification": "ASSERTION_PASS",
+  "prompt": "was weißt du über olix?",
+  "response": "Zu Olix weiß ich bisher nur: Er wohnt in Köln-Stammheim und seine Vorliebe liegt bei Strategiespielen wie Panzer General.  💡 Passende nächste Schritte:• Ich kann dir daraus eine kurze, saubere Personennotiz machen.• Ich kann die Infos auch in Stichpunkten für dich ordnen.20:00",
+  "networkEvents": [],
+  "consoleErrors": [],
+  "uiState": {},
+  "durationMs": 0,
+  "strategyVersions": {
+    "send": "chat_button_click_send_v1",
+    "wait": "assistant_stream_complete_v1",
+    "evidence": "capture_network_v1",
+    "evaluate": "contains_any_v1",
+    "modelSelect": "model_selection_v2_5"
+  },
+  "notes": "Expectations met",
+  "timestamp": "2026-06-09T18:01:09.183Z"
+}

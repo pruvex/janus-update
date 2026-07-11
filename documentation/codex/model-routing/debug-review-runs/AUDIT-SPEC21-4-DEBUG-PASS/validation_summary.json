@@ -1,0 +1,10 @@
+{
+  "workflow_id": "AUDIT-SPEC21-4-DEBUG-PASS",
+  "input_validation_pass": true,
+  "result_validation_pass": true,
+  "input_issues": [],
+  "result_issues": [],
+  "redaction_ready": true,
+  "redaction_check": "PASS",
+  "accepted_for_local_debug": true
+}

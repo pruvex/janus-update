@@ -1,0 +1,20 @@
+{
+  "summary_header": "EXECUTION WRITE APPLY CANDIDATE RESULT",
+  "workflow_id": "EXEC-WRITE-APPLY-LIVE-PILOT-001",
+  "skill": "janus-executioner",
+  "task_label": "BACKLOG-108 first live write-apply pilot",
+  "selected_path": "delegated_execution_write_apply_candidate_sidecar_live",
+  "normal_target_model": "5.4 medium",
+  "delegated_model_label": "Codex CLI sidecar / gpt-5.4",
+  "validation_result": "PASS",
+  "final_outcome": "EXECUTION_WRITE_APPLY_LIVE_WRITE_READY_FOR_CODEX_ACCEPT_REJECT",
+  "accepted_source_run_dir": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-source-bridges\\EXEC-WRITE-APPLY-SOURCE-BRIDGE-001",
+  "source_validation_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-runs\\EXEC-WRITE-APPLY-LIVE-PILOT-001\\source_validation.json",
+  "live_validation_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-runs\\EXEC-WRITE-APPLY-LIVE-PILOT-001\\live_validation_summary.json",
+  "sidecar_prompt_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-runs\\EXEC-WRITE-APPLY-LIVE-PILOT-001\\sidecar_prompt.md",
+  "sidecar_run_dir": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-runs\\EXEC-WRITE-APPLY-LIVE-PILOT-001\\sidecar_run",
+  "runner_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\execution-write-apply-runs\\EXEC-WRITE-APPLY-LIVE-PILOT-001\\sidecar_run\\summary.json",
+  "operator_message": "Delegated bounded live write completed inside the exact accepted-source allowlist. Codex still owns diff review, acceptance, and final task completion.",
+  "codex_owned_outcome_status": "CODEX_REVIEW_REQUIRED",
+  "codex_owned_outcome_final": false
+}

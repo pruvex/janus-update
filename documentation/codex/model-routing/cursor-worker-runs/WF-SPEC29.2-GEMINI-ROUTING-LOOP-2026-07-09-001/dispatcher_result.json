@@ -1,0 +1,85 @@
+{
+  "backend": "cursor",
+  "lane_id": "debug_repro_investigation",
+  "workflow_id": "WF-SPEC29.2-GEMINI-ROUTING-LOOP-2026-07-09-001",
+  "selected_model": "composer-2.5",
+  "cursor_pool": "auto_composer",
+  "estimated_cost_usd_static": 0.0104,
+  "session_id": "3a896a85-319e-48ea-a3d0-392bad0ea817",
+  "validation_result": "PASS",
+  "selected_path": "cursor_worker_live_mockable",
+  "final_outcome": "CURSOR_WORKER_READY_FOR_CODEX_REVIEW",
+  "package_validation": {
+    "validation_result": "PASS",
+    "contract_status": "TASK_PACKAGE_VALID_VIA_WORKER_REFERENCE",
+    "issues": [],
+    "task_label": "Fix Gemini mixed calendar-routing loop breaker blocking passive routine promotion",
+    "worker_profile": "cursor-agent",
+    "allowed_edit_paths": [
+      "backend/services/orchestrator/execution_dispatcher.py",
+      "backend/tests/test_calendar_routing_fix.py"
+    ],
+    "required_result_artifacts": [
+      "RESULT.json",
+      "RESULT.md",
+      "DIFF.patch",
+      "FILES_CHANGED.txt",
+      "CHECKS.log",
+      "COST.json"
+    ],
+    "source_package_path": "development\\openrouter-skill-tests\\janus-debug\\workflow_spec29_2_gemini_routing_loop_breaker_2026-07-09\\input_package.json",
+    "worker_package_path": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-debug\\workflow_spec29_2_gemini_routing_loop_breaker_2026-07-09\\worker_package.json"
+  },
+  "allowlist_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "allowlist": [
+      "backend/services/orchestrator/execution_dispatcher.py",
+      "backend/tests/test_calendar_routing_fix.py"
+    ]
+  },
+  "allowlist_consistency_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "package_allowed_edit_paths": [
+      "backend/services/orchestrator/execution_dispatcher.py",
+      "backend/tests/test_calendar_routing_fix.py"
+    ],
+    "allowlist": [
+      "backend/services/orchestrator/execution_dispatcher.py",
+      "backend/tests/test_calendar_routing_fix.py"
+    ],
+    "declared_allowlist_file": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-debug\\workflow_spec29_2_gemini_routing_loop_breaker_2026-07-09\\allowlist.txt"
+  },
+  "accepted_source_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "accepted_source_run_dir": null,
+    "recognized_artifacts": []
+  },
+  "accepted_source_run_dir": null,
+  "planned_command": [
+    "C:\\Users\\pruve\\AppData\\Local\\cursor-agent\\agent.CMD",
+    "-p",
+    "--workspace",
+    "C:\\KI\\Janus-Projekt\\backend",
+    "--model",
+    "composer-2.5",
+    "--output-format",
+    "json",
+    "--force",
+    "--trust",
+    "--approve-mcps",
+    "Execute this bounded Janus delegated worker task now. Treat the full prompt below as instructions, not as text to analyze. Do not ask clarifying questions unless the task is impossible with the provided files and rules.\n\nStable prefix:\n- lane: debug_repro_investigation\n- worker_contract: janus-delegated-worker\n- output_schema: status, changed_files, command_results, summary, blockers\n- hard_rules: stay bounded, do not commit, do not leave the allowlist\n\nVariable suffix:\nInvestigate only the allowlisted mixed calendar-plus-routing dispatch files. Live Janus behavior on 2026-07-09 after reload shows that GPT chat 4235 successfully created a silent routine candidate for `system.routing + calendar.list_events`, but Gemini chat 4236 on the same prompt `Welche Termine habe ich heute und wie weit ist es von Berlin nach Hamburg?` repeated `system.routing` calls until the hard loop breaker stopped the turn with `Ich habe den gleichen Tool-Aufruf erneut erkannt und den Vorgang gestoppt, um eine Schleife zu vermeiden.` The most likely bounded seam is that routing-only forcing/guardrail logic is still being applied to a mixed calendar-plus-routing question, especially on Gemini. Apply the smallest bounded product fix so mixed calendar-plus-routing turns preserve the combined tool path and do not keep routing-only force/ban logic that can starve calendar execution, while pure routing-only questions still force `system.routing`. Add focused regression coverage in backend/tests/test_calendar_routing_fix.py. Run only the listed pytest check. Do not commit. Return concise JSON-compatible output with status, root_cause, changed_files, command_results, summary, and blockers.\nTask label: Debug Gemini mixed calendar-routing loop breaker\nAcceptance criteria:\n- Fix only the mixed calendar-plus-routing dispatch seam on the allowlisted files.\n- Mixed calendar-plus-routing questions must not be trapped in routing-only repeated calls.\n- Pure routing-only questions must still force system.routing.\n- Run the focused pytest command before returning.\nAllowed edit paths:\n- backend/services/orchestrator/execution_dispatcher.py\n- backend/tests/test_calendar_routing_fix.py\nReturn status, changed_files, command_results, summary, and blockers as concise JSON-compatible output.\n\nWorkspace root: C:\\KI\\Janus-Projekt\\backend\nWorkspace-relative edit paths:\n- services/orchestrator/execution_dispatcher.py\n- tests/test_calendar_routing_fix.py"
+  ],
+  "mode": "proposal_first",
+  "workspace_root": "C:\\KI\\Janus-Projekt\\backend",
+  "live_execution_allowed": false,
+  "codex_review_required": true,
+  "changed_files": [
+    "backend/services/orchestrator/execution_dispatcher.py",
+    "backend/tests/test_calendar_routing_fix.py"
+  ],
+  "changed_outside_allowlist": [],
+  "operator_message": "Cursor worker finished the bounded slice and returned artifacts for Codex review."
+}

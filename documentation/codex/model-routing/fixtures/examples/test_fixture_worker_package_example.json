@@ -1,0 +1,70 @@
+{
+  "task_label": "Bounded test fixture worker example package",
+  "worker_profile": "aider-openrouter-kimi",
+  "task_prompt": "Create or adjust only the bounded contact-memory fixture and its matching unit test. Keep the task fixture-only. Do not refactor unrelated source code. Do not claim final PASS or release readiness.",
+  "workspace_files": [
+    {
+      "repo_path": "development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/test_fixture_arbeit/fixtures/contact_memory_fixture.json",
+      "workspace_path": "fixtures/contact_memory_fixture.json",
+      "allow_edit": true,
+      "copy_back": true
+    },
+    {
+      "repo_path": "development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/test_fixture_arbeit/tests/test_contact_memory_fixture.py",
+      "workspace_path": "tests/test_contact_memory_fixture.py",
+      "allow_edit": true,
+      "copy_back": true
+    }
+  ],
+  "allowed_edit_paths": [
+    "development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/test_fixture_arbeit/fixtures/contact_memory_fixture.json",
+    "development/openrouter-skill-tests/janus-worker-gateway-shadow-eval/test_fixture_arbeit/tests/test_contact_memory_fixture.py"
+  ],
+  "forbidden_actions": [
+    "architecture",
+    "auth",
+    "commit",
+    "dependency",
+    "merge",
+    "migration",
+    "privacy",
+    "publish",
+    "push",
+    "release",
+    "secret",
+    "security",
+    "tag"
+  ],
+  "acceptance_criteria": [
+    "Only the bounded fixture and test file may change.",
+    "The task must stay on fixture or test shaping, not source-code refactors.",
+    "No change may imply global worker approval or product activation."
+  ],
+  "checks": [
+    {
+      "label": "fixture_files_exist",
+      "command": [
+        "python",
+        "-c",
+        "from pathlib import Path; ok = Path('fixtures/contact_memory_fixture.json').exists() and Path('tests/test_contact_memory_fixture.py').exists(); raise SystemExit(0 if ok else 1)"
+      ],
+      "expected_exit_codes": [0]
+    },
+    {
+      "label": "fixture_unit_test",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "tests/test_contact_memory_fixture.py",
+        "-q"
+      ],
+      "expected_exit_codes": [0]
+    }
+  ],
+  "requested_actions": ["edit"],
+  "notes": [
+    "Example worker package for OR path 3 via isolated Aider.",
+    "For Cursor path 2, use test_fixture_worker_input_package_example.json plus allowlist instead of this worker package."
+  ]
+}

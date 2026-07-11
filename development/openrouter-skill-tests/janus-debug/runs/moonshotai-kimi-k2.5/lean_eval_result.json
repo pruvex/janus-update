@@ -1,0 +1,11 @@
+{
+  "model": "moonshotai/kimi-k2.5",
+  "pass": true,
+  "failures": [],
+  "finish_reason": "stop",
+  "actual_or_cost": 0.00374112,
+  "latency_ms": 41319,
+  "generation_id": "gen-1782398081-8Ugqawf1u3PpT7geRWjB",
+  "parse_error": null,
+  "response_path": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-debug\\runs\\moonshotai-kimi-k2.5\\response_body.json"
+}

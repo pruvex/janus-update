@@ -1,0 +1,84 @@
+{
+  "backend": "cursor",
+  "lane_id": "debug_repro_investigation",
+  "workflow_id": "WF-CURSOR-M3.3-DBG-2026-07-08-001",
+  "selected_model": "composer-2.5",
+  "cursor_pool": "auto_composer",
+  "estimated_cost_usd_static": 0.0104,
+  "session_id": "0fdf0c7a-ada3-47d5-a8bc-6a310591bf60",
+  "validation_result": "PASS",
+  "selected_path": "cursor_worker_live_mockable",
+  "final_outcome": "CURSOR_WORKER_READY_FOR_CODEX_REVIEW",
+  "package_validation": {
+    "validation_result": "PASS",
+    "contract_status": "TASK_PACKAGE_VALID_VIA_WORKER_REFERENCE",
+    "issues": [],
+    "task_label": "Reproduce and fix the bounded M3.3 routine-offer shadow mismatch",
+    "worker_profile": "cursor-agent",
+    "allowed_edit_paths": [
+      "development/openrouter-skill-tests/janus-debug/workflow_m3_3_cursor_debug_2026-07-08/sandbox/workflow_m3_3_shadow.py",
+      "development/openrouter-skill-tests/janus-debug/workflow_m3_3_cursor_debug_2026-07-08/sandbox/test_workflow_m3_3_shadow.py"
+    ],
+    "required_result_artifacts": [
+      "RESULT.json",
+      "RESULT.md",
+      "DIFF.patch",
+      "FILES_CHANGED.txt",
+      "CHECKS.log",
+      "COST.json"
+    ],
+    "source_package_path": "development\\openrouter-skill-tests\\janus-debug\\workflow_m3_3_cursor_debug_2026-07-08\\input_package.json",
+    "worker_package_path": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-debug\\workflow_m3_3_cursor_debug_2026-07-08\\worker_package.json"
+  },
+  "allowlist_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "allowlist": [
+      "development/openrouter-skill-tests/janus-debug/workflow_m3_3_cursor_debug_2026-07-08/sandbox/workflow_m3_3_shadow.py",
+      "development/openrouter-skill-tests/janus-debug/workflow_m3_3_cursor_debug_2026-07-08/sandbox/test_workflow_m3_3_shadow.py"
+    ]
+  },
+  "allowlist_consistency_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "package_allowed_edit_paths": [
+      "development/openrouter-skill-tests/janus-debug/workflow_m3_3_cursor_debug_2026-07-08/sandbox/workflow_m3_3_shadow.py",
+      "development/openrouter-skill-tests/janus-debug/workflow_m3_3_cursor_debug_2026-07-08/sandbox/test_workflow_m3_3_shadow.py"
+    ],
+    "allowlist": [
+      "development/openrouter-skill-tests/janus-debug/workflow_m3_3_cursor_debug_2026-07-08/sandbox/workflow_m3_3_shadow.py",
+      "development/openrouter-skill-tests/janus-debug/workflow_m3_3_cursor_debug_2026-07-08/sandbox/test_workflow_m3_3_shadow.py"
+    ],
+    "declared_allowlist_file": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-debug\\workflow_m3_3_cursor_debug_2026-07-08\\allowlist.txt"
+  },
+  "accepted_source_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "accepted_source_run_dir": null,
+    "recognized_artifacts": []
+  },
+  "accepted_source_run_dir": null,
+  "planned_command": [
+    "C:\\Users\\pruve\\AppData\\Local\\cursor-agent\\agent.CMD",
+    "-p",
+    "--workspace",
+    "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-debug\\workflow_m3_3_cursor_debug_2026-07-08\\sandbox",
+    "--model",
+    "composer-2.5",
+    "--output-format",
+    "json",
+    "--force",
+    "--trust",
+    "--approve-mcps",
+    "Execute this bounded Janus delegated worker task now. Treat the full prompt below as instructions, not as text to analyze. Do not ask clarifying questions unless the task is impossible with the provided files and rules.\n\nStable prefix:\n- lane: debug_repro_investigation\n- worker_contract: janus-delegated-worker\n- output_schema: status, changed_files, command_results, summary, blockers\n- hard_rules: stay bounded, do not commit, do not leave the allowlist\n\nVariable suffix:\nInvestigate only the allowlisted M3.3 shadow repro files. Reproduce the stated mismatch and make the smallest bounded fix that resolves it. Run only the listed pytest check. Do not commit. Return concise JSON-compatible output with status, root_cause, changed_files, command_results, summary, and blockers.\nTask label: Reproduce and fix the bounded M3.3 routine-offer shadow mismatch\nInvestigate only the allowlisted M3.3 shadow repro files, run only the focused pytest command, and return concise JSON-friendly output with root cause and changed_files.\nAcceptance criteria:\n- Only the allowlisted shadow debug files may change.\n- The mixed calendar-plus-weather shadow case must preserve both tool families.\n- The follow-up shadow case must prioritize the pending routine offer over stale mail confirmation.\n- The focused pytest command must pass before Codex review.\nAllowed edit paths:\n- development/openrouter-skill-tests/janus-debug/workflow_m3_3_cursor_debug_2026-07-08/sandbox/workflow_m3_3_shadow.py\n- development/openrouter-skill-tests/janus-debug/workflow_m3_3_cursor_debug_2026-07-08/sandbox/test_workflow_m3_3_shadow.py\nReturn status, changed_files, command_results, summary, and blockers as concise JSON-compatible output.\n\nWorkspace root: C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-debug\\workflow_m3_3_cursor_debug_2026-07-08\\sandbox\nWorkspace-relative edit paths:\n- workflow_m3_3_shadow.py\n- test_workflow_m3_3_shadow.py"
+  ],
+  "mode": "proposal_first",
+  "workspace_root": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-debug\\workflow_m3_3_cursor_debug_2026-07-08\\sandbox",
+  "live_execution_allowed": false,
+  "codex_review_required": true,
+  "changed_files": [
+    "development/openrouter-skill-tests/janus-debug/workflow_m3_3_cursor_debug_2026-07-08/sandbox/workflow_m3_3_shadow.py"
+  ],
+  "changed_outside_allowlist": [],
+  "operator_message": "Cursor worker finished the bounded slice and returned artifacts for Codex review."
+}

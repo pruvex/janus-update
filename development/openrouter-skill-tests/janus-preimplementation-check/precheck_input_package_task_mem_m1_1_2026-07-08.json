@@ -1,0 +1,49 @@
+{
+  "workflow_id": "WF-MEM-M1-1-CURSOR-REVIEW-2026-07-08-001",
+  "bound_skill_context": "janus-preimplementation-check",
+  "target_task": "TASK-MEM-M1.1",
+  "task_path": "documentation/tasks/TASK-MEM-M1_memory_phase_ab_hot_layer_caps_and_on_demand_injection.md",
+  "spec_path": "documentation/Cursor specs/MEMORY_HERMES_INSPIRED_UPGRADE_PLAN.md",
+  "backlog_item": "N/A",
+  "assigned_model": "5.4",
+  "task_label": "Review precheck package for Memory MA/MB bounded implementation slice",
+  "task_id": "TASK-PC-001",
+  "lane_id": "precheck_review",
+  "allowlist_file": "development/openrouter-skill-tests/janus-preimplementation-check/task_mem_m1_1_cursor_allowlist_2026-07-08.txt",
+  "worker_package_json": "development/openrouter-skill-tests/janus-preimplementation-check/task_mem_m1_1_cursor_worker_package_2026-07-08.json",
+  "scope_summary": "Atomic precheck review for one Memory Phase A+B implementation slice only. Verify bounded scope, health/medical protection, flag-off parity, and weather-vs-personal memory gating before janus-executioner starts. No implementation, no M2, no Session-Search, no Frozen Core, no transport/provider work.",
+  "acceptance_focus": [
+    "target task identity is unique and consistent",
+    "scope stays bounded to Memory Phase A Hot-Layer-Caps and Phase B On-Demand Injection only",
+    "health and medical protection paths remain explicit and ungated",
+    "flag-off behavior remains equivalent to current behavior",
+    "weather/external-context and personal-scope gating edge cases are covered by the evidence plan"
+  ],
+  "affected_files": [
+    "backend/services/memory/retrieval_service.py",
+    "backend/services/memory_budget.py",
+    "backend/services/memory_observability.py",
+    "backend/services/chat_orchestrator.py",
+    "backend/services/orchestrator/intent_engine.py",
+    "backend/tests/test_memory_hot_layer_cap.py",
+    "backend/tests/test_memory_on_demand_injection.py",
+    "backend/tests/test_memory_diamond.py",
+    "backend/tests/test_memory_regression.py",
+    "backend/tests/test_memory_tools.py",
+    "backend/tests/test_memory_retrieval_relevance_priority.py"
+  ],
+  "evidence_focus": [
+    "health/medical protected-core edge cases",
+    "flag-off parity expectations",
+    "weather vs personal-scope memory-injection gating",
+    "explicit py_compile and focused pytest coverage"
+  ],
+  "acceptance_criteria": [
+    "Only the allowlisted bounded memory source and test files may be considered for any concrete suggestion.",
+    "The review must stay inside Memory Phase A+B and must not widen into later memory phases or intent/transport work.",
+    "Health and medical safety paths, flag-off parity, and weather-vs-personal gating must be treated as first-class risk boundaries."
+  ],
+  "task_prompt": "Review this bounded Janus preimplementation package for TASK-MEM-M1.1. Do not implement code. Identify the highest-risk pitfalls, especially around health/medical protected slots, accidental gating of health injection, flag-off parity drift, and weather-vs-personal query routing. If helpful, suggest a compact implementation order or test emphasis list. Stay strictly inside Memory Phase A+B. Do not widen into Session-Search, Frozen Core, USER.md export, Intent M2, Recall-gap work, Transport, OAuth, OpenRouter, or delegation hardening.",
+  "redaction_ready": true,
+  "cursor_prompt_contract": "Review only the allowlisted bounded memory files and the bound Janus artifacts. Do not commit. Return concise JSON-friendly review output with top risks, bounded plan, and test emphasis."
+}

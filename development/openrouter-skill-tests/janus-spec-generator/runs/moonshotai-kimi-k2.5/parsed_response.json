@@ -1,0 +1,106 @@
+{
+  "status": "PASS",
+  "source_type": "LATEST_DECISION_SUMMARY",
+  "source_path": "documentation/codex/model-routing/codex_first_real_or_pilot_decision_summary_2026-06-16.md",
+  "target_spec_path": "documentation/SPEC/first_real_or_pilot_for_bounded_janus_delegation.md",
+  "recommended_next_skill": "janus-spec-review",
+  "mechanical_cleanup_required": "NO",
+  "notes": [
+    "Derived from locked decision summary package",
+    "Pilot scope strictly limited to single quickchange",
+    "Requires Codex review before implementation"
+  ],
+  "structured_spec": {
+    "routing": {
+      "target_skill": "janus-spec-review",
+      "recommended_model": "5.4",
+      "recommended_reasoning": "medium",
+      "new_chat": "no",
+      "complexity_score": 3,
+      "confidence": "MEDIUM",
+      "dashboard_hint": "CAUTION",
+      "reason": "First pilot for bounded delegation requires careful review of safety constraints and fallback behaviors"
+    },
+    "feature_identity": {
+      "name": "First Real OR Pilot for Bounded Janus Delegation",
+      "type": "Pilot/Proof of Concept",
+      "scope": "Single allowlisted quickchange task delegation with Codex-owned final authority"
+    },
+    "user_value": {
+      "problem": "Suitable low-risk Janus work should be delegable to a cheaper external worker path without losing local validation, diff review, or final acceptance control",
+      "benefit": "Cost reduction for low-risk changes while maintaining quality gates and local control"
+    },
+    "target_surface": {
+      "primary": "janus-quickchange bounded delegated write candidate",
+      "interfaces": [
+        "External worker delegation gateway",
+        "Codex review dashboard"
+      ]
+    },
+    "user_action_surface": {
+      "actions": [
+        "Initiate delegated quickchange",
+        "Review returned diff and artifacts",
+        "Accept or reject changes via explicit handoff"
+      ]
+    },
+    "system_behavior": {
+      "success": "One tiny allowlisted quickchange returns a reviewable diff, changed-files list, validation evidence, and an explicit Codex-owned accept-or-reject handoff with no authority drift",
+      "failure": "Any missing artifact, allowlist escape, touched-file-cap escape, delete or rename or move activity, or failed validation discards the delegated result and falls back to local Codex handling without claiming task completion"
+    },
+    "data_persistence": {
+      "transient": "Delegated results pending acceptance stored in temporary review queue",
+      "persistent": "Accepted changes written to repo, rejection logs and audit trail retained"
+    },
+    "constraints": {
+      "allowlist_required": true,
+      "file_count_cap": "Strict limit for tiny changes only",
+      "no_deletes": true,
+      "no_renames": true,
+      "no_moves": true,
+      "validation_required": true,
+      "single_task_only": true
+    },
+    "security_privacy": {
+      "authority_boundary": "Codex retains final accept/reject authority exclusively",
+      "no_drift": "Explicit handoff only, no autonomous completion or release actions permitted",
+      "sandbox": "External worker cannot access production routing, canonical tables, or Git actions"
+    },
+    "edge_cases": {
+      "escape_attempts": "Allowlist violation or touched-file-cap exceeded triggers immediate discard",
+      "validation_failure": "Any validation error results in fallback to local handling",
+      "missing_artifacts": "Incomplete return package (missing diff, changed-files list, or evidence) triggers discard",
+      "worker_failure": "External worker timeout or disconnect safely aborts without partial writes"
+    },
+    "definition_of_done": [
+      "One real bounded OR-assisted write task completed under Codex-owned review",
+      "Reviewable diff artifact generated and returned to Codex",
+      "Changed-files list explicitly enumerated in return package",
+      "Validation evidence attached to result package",
+      "Explicit accept-or-reject handoff presented to Codex operator",
+      "No authority drift detected in execution path",
+      "Fallback to local handling tested and verified for all failure modes"
+    ],
+    "test_strategy": {
+      "unit": "Allowlist validator logic and file-cap enforcement",
+      "integration": "End-to-end delegation and handoff flow with mock external worker",
+      "security": "Escape attempt simulation and boundary validation"
+    },
+    "out_of_scope": [
+      "Broad janus-executioner code delegation",
+      "Test-pipeline write retries",
+      "Auto Router integration",
+      "Production routing",
+      "Canonical routing-table updates",
+      "Git or release actions",
+      "Multi-task delegation",
+      "Architecture-changing write attempts"
+    ],
+    "internal_complexity_breakdown": {
+      "delegation_protocol": "Medium - External worker contract and artifact exchange definition",
+      "safety_guards": "Low - Allowlist and cap enforcement logic",
+      "handoff_mechanism": "Low-Medium - Review state management and UI presentation",
+      "fallback_logic": "Low - Local Codex path activation on validation failure"
+    }
+  }
+}

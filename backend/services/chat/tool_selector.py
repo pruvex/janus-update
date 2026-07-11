@@ -1,8 +1,18 @@
+import re
 from typing import List, Dict, Any
 from backend.tool_registry import get_all_tool_definitions
 from backend.services.tool_manager import tool_manager
 
 WEBSEARCH_SKILL_ID = "system.websearch"
+CONTACT_EXTRACTION_TOOL = "contacts.extract_from_text"
+_PET_LED_CONTACT_FACT_STATEMENT_RE = re.compile(
+    r"\b[\wÄÖÜäöüß]+s\s+(?:hund|katze|haustier)\s+[\wÄÖÜäöüß-]+\s+ist\b",
+    re.IGNORECASE,
+)
+_CONTACT_FACT_STATEMENT_RE = re.compile(
+    r"\b(?:wohnt|lebt|hei(?:ß|ss)t|mag|liebt|hasst|hat\s+(?:einen|eine|ein)|besitzt\s+(?:einen|eine|ein))\b",
+    re.IGNORECASE,
+)
 
 class ToolSelector:
     """
@@ -34,8 +44,8 @@ class ToolSelector:
         "morgen": ["get_calendar_events", "get_weather_from_api_tool"],
 
         # Kontakte
-        "kontakt": ["create_or_update_contact_tool", "list_contacts_wrapper", "delete_contact_by_id_wrapper"],
-        "adressbuch": ["create_or_update_contact_tool", "list_contacts_wrapper", "delete_contact_by_id_wrapper"],
+        "kontakt": [CONTACT_EXTRACTION_TOOL, "create_or_update_contact_tool", "list_contacts_wrapper", "delete_contact_by_id_wrapper"],
+        "adressbuch": [CONTACT_EXTRACTION_TOOL, "create_or_update_contact_tool", "list_contacts_wrapper", "delete_contact_by_id_wrapper"],
         "nummer": ["list_contacts_wrapper"], # "Gib mir die Nummer von..."
         
         # Dateien
@@ -135,7 +145,20 @@ class ToolSelector:
                             "tool_name": tool_name,
                             "confidence": 0.65
                         })
-        
+
+        if (
+            (
+                _CONTACT_FACT_STATEMENT_RE.search(user_prompt)
+                or _PET_LED_CONTACT_FACT_STATEMENT_RE.search(user_prompt)
+            )
+            and "?" not in user_prompt
+        ):
+            if not any(c["tool_name"] == CONTACT_EXTRACTION_TOOL for c in candidates):
+                candidates.append({
+                    "tool_name": CONTACT_EXTRACTION_TOOL,
+                    "confidence": 0.8
+                })
+
         return candidates
 
     @classmethod

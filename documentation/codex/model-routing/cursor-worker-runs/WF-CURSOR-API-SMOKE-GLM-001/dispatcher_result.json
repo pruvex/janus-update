@@ -1,0 +1,67 @@
+{
+  "backend": "cursor",
+  "lane_id": "backlog_handoff_review",
+  "workflow_id": "WF-CURSOR-API-SMOKE-GLM-001",
+  "selected_model": "glm-5.2-high",
+  "cursor_pool": "api",
+  "estimated_cost_usd_static": 0.028519999999999997,
+  "session_id": null,
+  "validation_result": "BLOCKED",
+  "selected_path": "cursor_worker_blocked",
+  "final_outcome": "CURSOR_WORKER_INPUT_BLOCKED",
+  "package_validation": {
+    "validation_result": "FAIL",
+    "contract_status": "TASK_PACKAGE_INVALID",
+    "issues": [
+      "missing task_label",
+      "missing worker_profile",
+      "allowed_edit_paths must contain at least one path",
+      "acceptance_criteria must contain at least one item",
+      "checks must be a list",
+      "forbidden_actions missing required boundaries: architecture, auth, commit, dependency, merge, migration, privacy, publish, push, release, secret, security, tag",
+      "task_prompt or task_prompt_path is required"
+    ],
+    "task_label": "N_A",
+    "worker_profile": "N_A",
+    "allowed_edit_paths": [],
+    "required_result_artifacts": [
+      "RESULT.json",
+      "RESULT.md",
+      "DIFF.patch",
+      "FILES_CHANGED.txt",
+      "CHECKS.log",
+      "COST.json"
+    ]
+  },
+  "allowlist_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "allowlist": []
+  },
+  "allowlist_consistency_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "package_allowed_edit_paths": [],
+    "allowlist": [],
+    "declared_allowlist_file": null
+  },
+  "codex_review_required": true,
+  "operator_message": "Cursor worker input was blocked before invocation.",
+  "accepted_source_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "accepted_source_run_dir": null,
+    "recognized_artifacts": []
+  },
+  "planned_command": [
+    "C:\\Users\\pruve\\AppData\\Local\\cursor-agent\\agent.CMD",
+    "-p",
+    "--workspace",
+    "C:\\KI\\Janus-Projekt",
+    "--model",
+    "glm-5.2-high",
+    "--output-format",
+    "json",
+    "Execute this bounded Janus delegated worker task now. Treat the full prompt below as instructions, not as text to analyze. Do not ask clarifying questions unless the task is impossible with the provided files and rules.\n\nStable prefix:\n- lane: backlog_handoff_review\n- worker_contract: janus-delegated-worker\n- output_schema: status, changed_files, command_results, summary, blockers\n- hard_rules: stay bounded, do not commit, do not leave the allowlist\n\nVariable suffix:\nReturn status, changed_files, command_results, summary, and blockers as concise JSON-compatible output."
+  ]
+}

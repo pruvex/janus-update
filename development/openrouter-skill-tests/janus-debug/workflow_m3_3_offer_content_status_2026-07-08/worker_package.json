@@ -1,0 +1,48 @@
+{
+  "task_label": "Debug M3.3 missing offer for content-only successful tool results",
+  "worker_profile": "cursor-agent",
+  "allowed_edit_paths": [
+    "backend/services/workflow/step_trace_extractor.py",
+    "backend/tests/test_workflow_detector.py",
+    "backend/tests/test_workflow_offer_service.py"
+  ],
+  "acceptance_criteria": [
+    "Only the allowlisted extractor and focused tests may change.",
+    "Tool results with name plus JSON content/_raw_content status ok must extract successful routine steps even when top-level status/success is absent.",
+    "calendar_list_events and system_weather must canonicalize to calendar.list_events and system.weather.",
+    "The focused pytest command must pass before Codex review."
+  ],
+  "checks": [
+    {
+      "label": "pytest",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "backend/tests/test_workflow_detector.py",
+        "backend/tests/test_workflow_offer_service.py",
+        "-q"
+      ]
+    }
+  ],
+  "forbidden_actions": [
+    "commit",
+    "push",
+    "tag",
+    "merge",
+    "release",
+    "publish",
+    "dependency",
+    "secret",
+    "auth",
+    "security",
+    "privacy",
+    "migration",
+    "architecture"
+  ],
+  "requested_actions": [
+    "edit",
+    "run_checks"
+  ],
+  "task_prompt": "Investigate only the allowlisted M3.3 step extraction files. The latest live retest still shows no routine offer after a successful calendar-plus-weather answer. Previous Codex fix canonicalized name aliases, but likely still misses real finalizer tool results shaped as role/name/content or role/name/_raw_content where the JSON content has status ok and data/message/output, while the top-level tool result has no status/success. Apply the smallest bounded fix so content-only successful results extract routine steps for calendar_list_events/system_weather and canonical calendar.list_events/system.weather. Add focused regression tests. Do not commit. Run only the listed pytest check. Return concise JSON-compatible output with status, root_cause, changed_files, command_results, summary, and blockers."
+}

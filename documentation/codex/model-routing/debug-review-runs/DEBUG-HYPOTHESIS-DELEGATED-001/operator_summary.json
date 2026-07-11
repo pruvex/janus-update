@@ -1,0 +1,15 @@
+{
+  "summary_header": "DEBUG HYPOTHESIS REVIEW RESULT",
+  "workflow_id": "DEBUG-HYPOTHESIS-DELEGATED-001",
+  "skill": "janus-debug",
+  "task_label": "Debug hypothesis delegated fixture validation",
+  "selected_path": "delegated_assist_only_hypothesis_review",
+  "normal_target_model": "5.4/medium",
+  "delegated_model_label": "bounded delegated review / fixture mode",
+  "validation_result": "PASS",
+  "final_outcome": "DEBUG_HYPOTHESIS_REVIEW_READY_FOR_CODEX_VALIDATION",
+  "input_package_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\debug-review-runs\\DEBUG-HYPOTHESIS-DELEGATED-001\\input_package.json",
+  "delegated_result_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\debug-review-runs\\DEBUG-HYPOTHESIS-DELEGATED-001\\delegated_result.md",
+  "validation_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\debug-review-runs\\DEBUG-HYPOTHESIS-DELEGATED-001\\validation_summary.json",
+  "operator_message": "Delegated debug hypothesis review stayed bounded and assist-only. Codex must still validate the hypotheses and choose the next local debug step."
+}

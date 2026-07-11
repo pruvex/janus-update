@@ -1,0 +1,19 @@
+{
+  "summary_header": "BOUNDED DELEGATION DISPATCH RESULT",
+  "workflow_id": "TASK-SPEC21.1-AUDIT-RECHECK-001",
+  "task_class": "quickchange_patch_review",
+  "task_label": "Spec21 scope audit",
+  "selected_path": "codex_only_pre_dispatch",
+  "eligibility_result": "OR_NOT_ELIGIBLE",
+  "eligibility_reason_code": "SKILL_NOT_ALLOWED",
+  "evidence_status": "N_A",
+  "validation_result": "PASS",
+  "final_outcome": "LOCAL_CODEX_PATH_SELECTED",
+  "operator_result_lines": [
+    "Ergebnis: OR_NOT_ELIGIBLE",
+    "Route: quickchange_patch_review bleibt lokal"
+  ],
+  "operator_message": "Skill is outside the approved assistive OR workhorse pilot scope.",
+  "codex_owned_outcome_status": "CODEX_LOCAL_PATH",
+  "codex_owned_outcome_final": false
+}

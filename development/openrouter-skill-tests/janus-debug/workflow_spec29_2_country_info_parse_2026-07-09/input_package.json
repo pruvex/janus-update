@@ -1,0 +1,41 @@
+{
+  "task_id": "TASK-SPEC29.2-DBG-COUNTRY-PARSE",
+  "lane_id": "debug_repro_investigation",
+  "bound_skill_context": "janus-debug",
+  "task_label": "Debug system.country_info parse failure blocking silent-learning verification",
+  "worker_package_json": "development/openrouter-skill-tests/janus-debug/workflow_spec29_2_country_info_parse_2026-07-09/worker_package.json",
+  "allowlist_file": "development/openrouter-skill-tests/janus-debug/workflow_spec29_2_country_info_parse_2026-07-09/allowlist.txt",
+  "failure_code": "SPEC29_2_COUNTRY_INFO_PARSE_ERROR_PREVENTS_SILENT_LEARNING_VERIFICATION",
+  "latest_user_evidence": {
+    "timestamp_local": "2026-07-09 18:00 +02:00",
+    "prompt": "Ich plane eine Reise nach Japan. Was ist die Hauptstadt und Waehrung von Japan und wie weit ist es von Tokio nach Kyoto?",
+    "actual": "Janus returned only the routing answer `454.8 km, ca. 5 Std. 35 Min.` with `Quelle: OSRM`.",
+    "expected": "Janus should answer both the country-facts part and the routing part so the turn can qualify as a real two-skill silent-learning candidate."
+  },
+  "bounded_root_cause": {
+    "log_summary": [
+      "chat_id 4232 executed system.routing successfully",
+      "system.country_info was attempted twice with language=de and language=de_DE",
+      "both country_info calls returned PARSE_ERROR with detail `Unerwartetes API-Format.`"
+    ],
+    "upstream_probe": [
+      "restcountries translation endpoint now ends at files-03.restcountries.com/countries.00/legacy.json",
+      "payload type is dict, not list",
+      "payload sample has success=false, data=null, errors=[deprecation message]"
+    ],
+    "source_code_summary": "backend/tools/geo_service.py currently expects response.json() to always be a non-empty list and otherwise emits PARSE_ERROR."
+  },
+  "acceptance_criteria": [
+    "Only the allowlisted country-info parser and focused geo-service tests may change.",
+    "The current live Rest Countries deprecation object must be handled robustly and no longer collapse into an opaque generic PARSE_ERROR path if a better bounded behavior is possible.",
+    "Normal successful list-payload parsing must remain green.",
+    "Run the focused pytest command before returning."
+  ],
+  "local_validation_command": "python -m pytest backend/tests/tools/test_geo_service.py -q",
+  "redaction_ready": true,
+  "estimated_codex_saved_tokens": 9000,
+  "estimated_delegation_overhead_tokens": 3000,
+  "recommended_backend": "cursor",
+  "recommended_model": "composer-2.5",
+  "cursor_prompt_contract": "Use Cursor Composer for one bounded debug slice. Inspect only the allowlisted country-info parser and test file, fix the Rest Countries payload handling, run the listed pytest command, and return concise JSON-compatible output."
+}

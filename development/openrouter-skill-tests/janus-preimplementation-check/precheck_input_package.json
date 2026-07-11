@@ -1,0 +1,35 @@
+{
+  "workflow_id": "WF-PRECHECK-EVERYDAY-PACKAGE-001",
+  "bound_skill_context": "janus-preimplementation-check",
+  "target_task": "BACKLOG-114",
+  "task_path": "documentation/tasks/backlog_BACKLOG-114_installierte_janus_skill_arbeitskopien_uebernehmen_spec26_alltagsgates.md",
+  "spec_path": "documentation/SPEC/26_operator_facing_codex_oder_or_wahl_in_bestehenden_janus_skills.md",
+  "backlog_item": "BACKLOG-114",
+  "assigned_model": "5.4",
+  "scope_summary": "Atomic precheck for one installed-skill rollout slice only. Verify artifact identity, bounded scope, affected file cluster, risk level, and evidence gate before janus-executioner starts. No product-code implementation, no routing-table activation, no new OR lane enablement.",
+  "acceptance_focus": [
+    "target task identity is unique and consistent",
+    "scope stays bounded to the installed skill copies and one small workflow verification",
+    "affected files are explicit",
+    "required evidence is concrete and executable",
+    "no architecture drift or provider fallback is introduced"
+  ],
+  "affected_files": [
+    "documentation/codex/skills/janus-executioner/SKILL.md",
+    "documentation/codex/skills/janus-debug/SKILL.md",
+    "documentation/codex/skills/janus-test-pipeline/SKILL.md",
+    "documentation/codex/skills/janus-quickchange/SKILL.md",
+    "documentation/codex/skills/janus-documentation-update/SKILL.md",
+    "C:\\Users\\pruve\\.codex\\skills\\janus-executioner\\SKILL.md",
+    "C:\\Users\\pruve\\.codex\\skills\\janus-debug\\SKILL.md",
+    "C:\\Users\\pruve\\.codex\\skills\\janus-test-pipeline\\SKILL.md",
+    "C:\\Users\\pruve\\.codex\\skills\\janus-quickchange\\SKILL.md",
+    "C:\\Users\\pruve\\.codex\\skills\\janus-documentation-update\\SKILL.md"
+  ],
+  "evidence_focus": [
+    "repo-vs-installed parity or diff check for each bound skill copy",
+    "one visible approved lane workflow verification",
+    "one hidden lane workflow verification"
+  ],
+  "redaction_ready": true
+}

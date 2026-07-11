@@ -1,0 +1,26 @@
+{
+  "summary_header": "BOUNDED OR WORKER GATE RESULT",
+  "workflow_id": "WF-QUICKCHANGE-WRITE-APPLY-CURRENT-001",
+  "task_label": "Quickchange write apply current-shape proof",
+  "selected_path": "codex_only_prompt_data_missing",
+  "normal_target_model": "5.4 medium",
+  "operator_gate_visibility": "HIDDEN_FAIL_CLOSED",
+  "validation_result": "PASS",
+  "final_outcome": "LOCAL_CODEX_PATH_SELECTED",
+  "missing_gate_fields": [
+    "estimated_or_cost",
+    "cost_estimate_confidence_percent"
+  ],
+  "choice_1": "Codex",
+  "operator_result_lines": [
+    "Ergebnis: OR-Gate unterdrueckt",
+    "Route: Codex-only wegen fehlender Pflichtdaten"
+  ],
+  "operator_message": "The OR gate was suppressed because required prompt fields are missing: estimated_or_cost, cost_estimate_confidence_percent. Codex-only remains the safe path.",
+  "task_class": "quickchange_write_apply",
+  "eligibility_result": "OR_ALLOWED",
+  "eligibility_reason_code": "ELIGIBILITY_CONFIRMED",
+  "evidence_status": "BOUNDED_LIVE_EVIDENCE_CONFIRMED",
+  "codex_owned_outcome_status": "CODEX_LOCAL_PATH",
+  "codex_owned_outcome_final": false
+}

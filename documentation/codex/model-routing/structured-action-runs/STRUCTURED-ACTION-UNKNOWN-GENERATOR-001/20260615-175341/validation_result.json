@@ -1,0 +1,5 @@
+{
+  "status": "FAIL",
+  "error": "Unsupported generator_id in TASK-SPEC17.2 executor slice: unknown_generator_v1",
+  "schema_path": "documentation/codex/model-routing/schemas/codex_delegated_action_request.schema.json"
+}

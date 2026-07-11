@@ -1,0 +1,18 @@
+﻿{
+  "id": "gen_assistive_fixture_consumer_001",
+  "model": "qwen/qwen3.5-flash-02-23",
+  "choices": [
+    {
+      "message": {
+        "content": "{\"status\": \"PASS\", \"primary_failure_code\": \"RUNNER_ARTIFACT_MISMATCH\", \"likely_subsystem\": \"test_pipeline_sidecar_write_pilot_runner\", \"hypotheses\": [{\"title\": \"Artifact target name is built differently in the runner and the post-validator.\", \"confidence\": \"HIGH\", \"evidence\": \"The evidence snippets show PASS status but zero accepted artifacts, which fits a path or naming mismatch more than a runtime crash.\"}, {\"title\": \"The helper writes artifacts into a nested run directory that the validator does not inspect.\", \"confidence\": \"MEDIUM\", \"evidence\": \"The validator reports output-path mismatch, which is consistent with an unexpected subdirectory boundary.\"}], \"suggested_local_verifiers\": \"Compare the runner's computed output paths with the validator's expected output paths; log both in one local dry-run.\", \"instrumentation_suggestion\": \"Add one temporary local debug line that prints the resolved output artifact paths before validation starts.\", \"escalation_trigger\": \"Escalate if the computed path and expected path already match but the artifact is still absent after a local dry-run.\", \"redaction_check\": \"PASS\", \"notes\": \"Assist-only hypothesis review. No fix claim and no command execution.\"}"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 123,
+    "completion_tokens": 345,
+    "total_tokens": 468,
+    "cost": 0.00045678
+  }
+}

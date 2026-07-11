@@ -1,0 +1,14 @@
+{
+  "summary_header": "BOUNDED DELEGATION DISPATCH RESULT",
+  "workflow_id": "BOUNDED-DISPATCH-DOC-SPEC17-3-LOCAL",
+  "task_class": "documentation_draft",
+  "task_label": "TASK-SPEC17.3 read only regression",
+  "selected_path": "codex_only_operator_choice",
+  "validation_result": "PASS",
+  "final_outcome": "LOCAL_CODEX_PATH_SELECTED",
+  "operator_result_lines": [
+    "Ergebnis: Codex lokal ausgewaehlt",
+    "Route: documentation_draft bleibt lokal"
+  ],
+  "operator_message": "Operator chose the normal Codex-only path. No delegated helper was invoked."
+}

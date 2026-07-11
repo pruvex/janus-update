@@ -1,0 +1,15 @@
+{
+  "model": "moonshotai/kimi-k2.5",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are a bounded Janus spec-review assistant. Use only the provided spec review package. Return exactly one JSON object and no prose outside that JSON. Do not create tasks, do not claim authoritative spec writes, and do not invent product decisions."
+    },
+    {
+      "role": "user",
+      "content": "Return a JSON object with these exact top-level fields: decision, spec_path, mode, complexity_score, risk, model_recommendation, readiness_checklist, key_issues, required_refinements, split_recommendation, metadata_written, next_skill, metadata_suggestion, notes.\n\nRules:\n- decision must be APPROVED, NEEDS_REVISION, or BLOCKED\n- spec_path must match the input package exactly\n- mode must be REVIEW_ONLY\n- complexity_score must be an integer from 0 to 100\n- risk must be LOW, MEDIUM, HIGH, or CRITICAL\n- model_recommendation must be 5.4 or 5.5\n- split_recommendation and metadata_written must be YES or NO\n- next_skill must be janus-spec-to-task, janus-spec-generator, or janus-feature-design\n- metadata_suggestion must be an object with review_status, complexity_score, risk, recommended_review_model, skill_1_ready, split_required, review_confidence, review_source\n- do not create tasks and do not claim authoritative spec writes\n\nBounded review package JSON:\n{\n  \"workflow_id\": \"WF-SPEC-REVIEW-PACKAGE-001\",\n  \"bound_skill_context\": \"janus-spec-review\",\n  \"spec_path\": \"documentation/SPEC/Spec Done/21_assisted_or_workhorse_mode_for_janus_skills.md\",\n  \"mode\": \"REVIEW_ONLY\",\n  \"feature_name\": \"Assistierter OR-Arbeitspferd-Modus fuer Janus-Skills\",\n  \"spec_snapshot\": {\n    \"routing_block\": {\n      \"target_skill\": \"janus-spec-review\",\n      \"recommended_model\": \"5.4\",\n      \"recommended_reasoning\": \"medium\",\n      \"new_chat\": \"no\",\n      \"complexity_score\": \"61\",\n      \"confidence\": \"HIGH\",\n      \"dashboard_hint\": \"CAUTION\"\n    },\n    \"key_scope_summary\": [\n      \"OR only inside janus-debug and janus-test-pipeline in the first rollout\",\n      \"No production routing activation\",\n      \"No canonical routing-table update\",\n      \"Codex/Janus keeps local validation and final acceptance authority\"\n    ],\n    \"metadata_snapshot\": {\n      \"review_status\": \"APPROVED_WITH_NOTES\",\n      \"complexity_score\": \"61\",\n      \"risk\": \"HIGH\",\n      \"recommended_review_model\": \"5.4\",\n      \"skill_1_ready\": \"YES\",\n      \"split_required\": \"NO\",\n      \"reviewed_at\": \"2026-06-20\",\n      \"review_confidence\": \"HIGH\",\n      \"review_source\": \"janus-spec-review\"\n    },\n    \"validator_status\": \"PASS\"\n  },\n  \"expected_review_decision\": \"APPROVED\",\n  \"expected_next_skill\": \"janus-spec-to-task\",\n  \"expected_output\": \"One bounded spec review decision with key issues, required refinements, split recommendation, and metadata suggestion only. No task creation or authoritative spec write claim.\",\n  \"redaction_ready\": true\n}"
+    }
+  ],
+  "temperature": 0,
+  "max_tokens": 1800
+}

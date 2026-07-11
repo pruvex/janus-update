@@ -1,0 +1,147 @@
+{
+  "manifest_version": "2026-07-07",
+  "operator_gate_version": "4choice_cost_aware_2026-07-07",
+  "status": "OPERATOR_CHOICE_READY",
+  "lane_id": "debug_repro_investigation",
+  "task_id": "TASK-DBG-002",
+  "skill": "janus-debug",
+  "lane_class": "TOOL_WORKER",
+  "operator_gate_lines": [
+    "1 = Codex",
+    "3 = Cursor Composer"
+  ],
+  "visible_backends": [
+    "codex",
+    "cursor"
+  ],
+  "visible_choices": [
+    {
+      "choice_id": "1",
+      "label": "Codex",
+      "backend": "codex",
+      "pool": null,
+      "model": "5.4",
+      "cost_hint": "Codex-Tokens",
+      "cost_estimate_usd_static": null,
+      "recommended": false,
+      "operator_gate_line": "1 = Codex"
+    },
+    {
+      "choice_id": "3",
+      "label": "Cursor Composer",
+      "backend": "cursor",
+      "pool": "auto_composer",
+      "model": "composer-2.5",
+      "cost_hint": "0.4-0.8 % Monatskontingent",
+      "cost_estimate_usd_static": 0.0104,
+      "recommended": true,
+      "operator_gate_line": "3 = Cursor Composer"
+    }
+  ],
+  "recommended_backend": "cursor",
+  "recommended_choice": "3",
+  "models": {
+    "codex": "5.4",
+    "cursor_composer": "composer-2.5"
+  },
+  "roi": {
+    "status": "POSITIVE",
+    "estimated_codex_saved_tokens": 18000,
+    "estimated_delegation_overhead_tokens": 7000,
+    "minimum_net_codex_saved_tokens": 5000,
+    "net_codex_saved_tokens": 11000
+  },
+  "negative_roi_visibility_mode": null,
+  "negative_roi_visibility_reason": null,
+  "codex_final_owner": true,
+  "no_production_routing": true,
+  "backend": "cursor",
+  "selected_model": "composer-2.5",
+  "selected_choice": "3",
+  "codex_review_required": true,
+  "validation_result": "PASS",
+  "workflow_id": "WF-BACKLOG-124-PRECHECK-CONTRACT-001",
+  "cursor_pool": "auto_composer",
+  "estimated_cost_usd_static": 0.0104,
+  "session_id": "c5e6de21-69af-4543-a08f-323964acafc5",
+  "selected_path": "cursor_worker_live_via_delegate",
+  "final_outcome": "CURSOR_WORKER_READY_FOR_CODEX_REVIEW",
+  "package_validation": {
+    "validation_result": "PASS",
+    "contract_status": "TASK_PACKAGE_VALID",
+    "issues": [],
+    "task_label": "Reconcile Janus precheck validator and executioner handoff contract",
+    "worker_profile": "janus-debug-repro-worker",
+    "allowed_edit_paths": [
+      "documentation/codex/skills/janus-preimplementation-check/SKILL.md",
+      "documentation/codex/skills/janus-preimplementation-check/scripts/validate_precheck.py",
+      "documentation/codex/skills/janus-executioner/SKILL.md"
+    ],
+    "required_result_artifacts": [
+      "RESULT.json",
+      "RESULT.md",
+      "DIFF.patch",
+      "FILES_CHANGED.txt",
+      "CHECKS.log",
+      "COST.json"
+    ]
+  },
+  "allowlist_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "allowlist": [
+      "documentation/codex/skills/janus-preimplementation-check/SKILL.md",
+      "documentation/codex/skills/janus-preimplementation-check/scripts/validate_precheck.py",
+      "documentation/codex/skills/janus-executioner/SKILL.md"
+    ]
+  },
+  "allowlist_consistency_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "package_allowed_edit_paths": [
+      "documentation/codex/skills/janus-preimplementation-check/SKILL.md",
+      "documentation/codex/skills/janus-preimplementation-check/scripts/validate_precheck.py",
+      "documentation/codex/skills/janus-executioner/SKILL.md"
+    ],
+    "allowlist": [
+      "documentation/codex/skills/janus-preimplementation-check/SKILL.md",
+      "documentation/codex/skills/janus-preimplementation-check/scripts/validate_precheck.py",
+      "documentation/codex/skills/janus-executioner/SKILL.md"
+    ],
+    "declared_allowlist_file": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\debug-review-runs\\WF-BACKLOG-124-PRECHECK-CONTRACT-001\\allowlist.txt"
+  },
+  "accepted_source_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "accepted_source_run_dir": null,
+    "recognized_artifacts": []
+  },
+  "accepted_source_run_dir": null,
+  "planned_command": [
+    "python",
+    "documentation\\codex\\model-routing\\scripts\\janus_cursor_worker_runner.py",
+    "--lane",
+    "debug_repro_investigation",
+    "--workflow-id",
+    "WF-BACKLOG-124-PRECHECK-CONTRACT-001",
+    "--model",
+    "composer-2.5",
+    "--cursor-pool",
+    "auto_composer",
+    "--execute-live",
+    "--require-allowlist",
+    "--input-package-json",
+    "documentation\\codex\\model-routing\\debug-review-runs\\WF-BACKLOG-124-PRECHECK-CONTRACT-001\\input_package.json",
+    "--allowlist-file",
+    "documentation\\codex\\model-routing\\debug-review-runs\\WF-BACKLOG-124-PRECHECK-CONTRACT-001\\allowlist.txt"
+  ],
+  "mode": "proposal_first",
+  "workspace_root": "C:\\KI\\Janus-Projekt\\documentation\\codex\\skills",
+  "live_execution_allowed": true,
+  "changed_files": [],
+  "changed_outside_allowlist": [],
+  "operator_message": "Cursor worker finished the bounded slice and returned artifacts for Codex review.",
+  "cost_estimate_usd_static": 0.0104,
+  "downstream_exit_code": 0,
+  "downstream_stderr": ""
+}

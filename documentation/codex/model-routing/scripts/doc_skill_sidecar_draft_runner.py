@@ -80,8 +80,8 @@ def prompt_mode_summary(
         "skill": "janus-documentation-update",
         "normal_target_model": normal_target_model,
         "choice_1": "Codex",
-        "choice_2": "Sidecar",
-        "sidecar_model_provider": f"Codex CLI sidecar / {sidecar_model}",
+        "choice_2": "OR",
+        "sidecar_model_provider": f"External draft helper (Codex CLI sidecar) / {sidecar_model}",
         "sandbox": sandbox,
         "timeout_seconds": timeout_seconds,
         "estimated_cost_quota_impact": (
@@ -96,7 +96,7 @@ def prompt_mode_summary(
         "validation_result": "PASS",
         "operator_prompt_lines": [
             "Willst du 1 Codex das machen lassen?",
-            "Oder 2 das ueber den bounded Delegation-Dispatcher als read-only, non-binding Draft laufen lassen?",
+            "Oder 2 das ueber den bounded Delegation-Dispatcher als externen read-only, non-binding Draft-Helfer laufen lassen?",
         ],
         "boundaries": [
             "No production routing",
@@ -121,14 +121,14 @@ def local_mode_summary(
         "selected_path": "codex_only_operator_choice",
         "skill": "janus-documentation-update",
         "normal_target_model": normal_target_model,
-        "sidecar_model_provider": f"Codex CLI sidecar / {sidecar_model}",
+        "sidecar_model_provider": f"External draft helper (Codex CLI sidecar) / {sidecar_model}",
         "final_outcome": "LOCAL_CODEX_PATH_SELECTED",
         "validation_result": "PASS",
         "operator_result_lines": [
             "Ergebnis: Codex lokal ausgewaehlt",
-            "Tatsaechliche Kosten: N/A (kein Sidecar-Lauf)",
+            "Tatsaechliche Kosten: N/A (kein externer Draft-Lauf)",
         ],
-        "operator_message": "Operator chose the normal Codex path. No sidecar run was made.",
+        "operator_message": "Operator chose the normal Codex path. No external draft helper run was made.",
     }
 
 
@@ -264,7 +264,7 @@ def main() -> int:
                 "selected_path": "sidecar_failed",
                 "validation_result": "FAIL",
                 "final_outcome": "SIDECAR_SUMMARY_MISSING",
-                "operator_message": "Sidecar runner did not produce summary.json.",
+                "operator_message": "External draft helper runner did not produce summary.json.",
             }
         )
         return 1
@@ -283,7 +283,7 @@ def main() -> int:
                 "final_outcome": "SIDECAR_DRAFT_NOT_ACCEPTED",
                 "runner_summary_path": str(summary_path),
                 "last_message_path": str(last_message_path),
-                "operator_message": "Sidecar run completed without an accepted PASS draft result.",
+                "operator_message": "External draft helper run completed without an accepted PASS draft result.",
             }
         )
         return 1
@@ -295,7 +295,7 @@ def main() -> int:
         "selected_path": "sidecar_read_only_draft",
         "skill": "janus-documentation-update",
         "normal_target_model": args.normal_target_model,
-        "sidecar_model_provider": f"Codex CLI sidecar / {args.sidecar_model}",
+        "sidecar_model_provider": f"External draft helper (Codex CLI sidecar) / {args.sidecar_model}",
         "sandbox": args.sandbox,
         "timeout_seconds": args.timeout_seconds,
         "validation_result": "PASS",
@@ -303,12 +303,12 @@ def main() -> int:
         "runner_summary_path": str(summary_path),
         "last_message_path": str(last_message_path),
         "operator_result_lines": [
-            "Ergebnis: Sidecar-Draft erfolgreich",
+            "Ergebnis: Externer Draft erfolgreich",
             "Route: bounded Delegation-Dispatcher -> documentation_draft",
             "Tatsaechliche Kosten: N/A (lokaler Codex CLI Sidecar-Pfad)",
         ],
         "operator_message": (
-            "Read-only sidecar draft completed. Codex App must still review and perform any binding documentation writes locally."
+            "Read-only external draft helper completed. Codex App must still review and perform any binding documentation writes locally."
         ),
     }
 
@@ -325,7 +325,7 @@ def main() -> int:
             result["final_outcome"] = "SIDECAR_DRAFT_ACCEPTED_BUT_STRUCTURED_BRIDGE_FAILED"
             result["structured_bridge_status"] = "FAIL"
             result["operator_message"] = (
-                "Sidecar draft was accepted, but the follow-up structured review flow failed before producing a reviewed local artifact."
+                "The external draft helper was accepted, but the follow-up structured review flow failed before producing a reviewed local artifact."
             )
             write_json(run_directory / "operator_summary.json", result)
             output_summary(result)
@@ -336,13 +336,13 @@ def main() -> int:
         result["structured_bridge_summary"] = bridge_summary
         result["final_outcome"] = "SIDECAR_DRAFT_ACCEPTED_AND_STRUCTURED_REVIEW_READY"
         result["operator_result_lines"] = [
-            "Ergebnis: Sidecar-Draft erfolgreich",
+            "Ergebnis: Externer Draft erfolgreich",
             "Route: bounded Delegation-Dispatcher -> documentation_draft -> structured review",
             "Structured Review Flow: Builder -> Executor erfolgreich",
             "Tatsaechliche Kosten: N/A (lokaler Codex CLI Sidecar-Pfad)",
         ]
         result["operator_message"] = (
-            "Read-only sidecar draft completed and was converted into a structured local review artifact. Codex App still owns any binding documentation write."
+            "Read-only external draft helper completed and was converted into a structured local review artifact. Codex App still owns any binding documentation write."
         )
 
     write_json(run_directory / "operator_summary.json", result)

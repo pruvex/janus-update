@@ -1,0 +1,30 @@
+{
+  "summary_header": "TEST RESULT TRIAGE REVIEW GATE",
+  "workflow_id": "WF-TRIAGE-LEAN-CHECK-2026-06-25",
+  "skill": "janus-test-pipeline",
+  "task_label": "Triage OR gate proof current-shape",
+  "selected_path": "operator_choice_pending",
+  "normal_target_model": "5.4 medium",
+  "selected_or_model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "estimated_or_cost": 0.0002,
+  "cost_estimate_confidence_percent": 80.0,
+  "choice_1": "Codex",
+  "choice_2": "OR",
+  "delegated_model_label": "qwen/qwen3-coder-30b-a3b-instruct",
+  "expected_delegation_value": "bounded assist-only triage review with no live execution and no final PASS decision",
+  "operator_prompt_lines": [
+    "1 = Codex",
+    "2 = OR",
+    "OR ist hier die externe Option, um Codex-Guthaben zu sparen.",
+    "Fest empfohlenes OR-Modell: qwen/qwen3-coder-30b-a3b-instruct",
+    "Voraussichtliche OR-Kosten 0.000200000, Evidenzgenauigkeit 80%"
+  ],
+  "boundaries": [
+    "No delegated live test execution",
+    "No delegated runner generation",
+    "No delegated final PASS or release decision",
+    "Codex remains validation and routing owner"
+  ],
+  "final_outcome": "AWAITING_OPERATOR_CHOICE",
+  "validation_result": "PASS"
+}

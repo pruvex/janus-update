@@ -1,0 +1,26 @@
+{
+  "status": "WEAK_SIGNAL",
+  "primary_failure_code": "RUNNER_ARTIFACT_MISMATCH",
+  "likely_subsystem": "Artifact Manager",
+  "hypotheses": [
+    {
+      "title": "Artifact version mismatch due to bound slice scope",
+      "confidence": "MEDIUM",
+      "evidence": "Failure code already isolated to runner artifact mismatch; evidence snippet indicates 'One bounded slice only', suggesting the slice may exclude the correct artifact version."
+    },
+    {
+      "title": "Redaction filtering removed critical artifact identifiers",
+      "confidence": "LOW",
+      "evidence": "Snippet 'No local command execution will be delegated' and redaction context imply filtering may have stripped identifiers needed for artifact resolution."
+    }
+  ],
+  "suggested_local_verifiers": [
+    "Check that the artifact version in the bound slice matches the expected version from the workflow definition.",
+    "Verify that the redaction pattern does not exclude critical artifact identifiers such as version tags or hashes.",
+    "Confirm that the runner's artifact retrieval logic is using the intended artifact path from the slice."
+  ],
+  "instrumentation_suggestion": "Add logging around artifact retrieval to capture the expected vs actual artifact hash and version at the point of mismatch.",
+  "escalation_trigger": "If the artifact mismatch persists after verifying the bound slice and redaction rules, escalate to the workflow engine team for runner-side artifact resolution investigation.",
+  "redaction_check": "PASS",
+  "notes": "No command execution delegated; all verifiers are local Codex-side checks only."
+}

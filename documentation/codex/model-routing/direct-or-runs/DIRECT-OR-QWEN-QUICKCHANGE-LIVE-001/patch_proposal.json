@@ -1,0 +1,9 @@
+{
+  "file": "frontend/index.html",
+  "diff": "--- a/frontend/index.html\n+++ b/frontend/index.html\n@@ -1,5 +1,5 @@\n <html>\n   <head>\n     <title>Janus Chat</title>\n   </head>\n   <body>\n-    <input type=\"text\" placeholder=\"Nachricht an Janus senden...\" />\n+    <input type=\"text\" placeholder=\"Nachricht an Janus schreiben...\" />\n   </body>\n</html>",
+  "summary": {
+    "file_changed": "frontend/index.html",
+    "text_changed": "Nachricht an Janus senden... -> Nachricht an Janus schreiben...",
+    "confirmation": "No other file or wording was touched."
+  }
+}

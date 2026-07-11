@@ -1,0 +1,8 @@
+{
+  "workflow_id": "WF-SPEC-TO-TASK-FIXTURE-CHECK-2026-06-26",
+  "task_label": "Lean spec-to-task delegated fixture check",
+  "validation_issues": [],
+  "finish_reason": "stop",
+  "actual_or_cost": 0.00068685,
+  "validator_returncode": 0
+}

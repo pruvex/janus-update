@@ -1,0 +1,12 @@
+{
+  "workflow_id": "WF-PRECHECK-REVIEW-LIVE-PROD-2026-07-05-001",
+  "task_label": "Precheck review productive OR pilot",
+  "input_validation_pass": true,
+  "result_validation_pass": true,
+  "telemetry_validation_pass": true,
+  "input_issues": [],
+  "result_issues": [],
+  "telemetry_issues": [],
+  "redaction_ready": true,
+  "accepted_for_local_codex_validation": true
+}

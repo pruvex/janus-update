@@ -1114,12 +1114,26 @@ function generateTestCase(testCase, plan) {
   const body = [];
   body.push(`    test.setTimeout(TEST_CASE_TIMEOUT_MS);`);
   body.push(`    const prompt = '${testCase.prompt.replace(/'/g, "\\'")}';`);
+  if (Array.isArray(testCase.promptSequence) && testCase.promptSequence.length > 0) {
+    const sequenceLiteral = JSON.stringify(testCase.promptSequence);
+    body.push(`    const promptSequence = ${sequenceLiteral};`);
+  }
 
   if (exp.responseTimeMsMax) {
     body.push(`    const startTime = Date.now();`);
   }
 
-  body.push(`    const { responseText, triggeredTools } = await runPromptInChatWindow(page, prompt, '${callWin}');`);
+  if (Array.isArray(testCase.promptSequence) && testCase.promptSequence.length > 0) {
+    body.push(`    let responseText = '';`);
+    body.push(`    const triggeredTools = [];`);
+    body.push(`    for (const stepPrompt of promptSequence) {`);
+    body.push(`      const stepResult = await runPromptInChatWindow(page, stepPrompt, '${callWin}');`);
+    body.push(`      responseText = stepResult.responseText;`);
+    body.push(`      if (Array.isArray(stepResult.triggeredTools)) triggeredTools.push(...stepResult.triggeredTools);`);
+    body.push(`    }`);
+  } else {
+    body.push(`    const { responseText, triggeredTools } = await runPromptInChatWindow(page, prompt, '${callWin}');`);
+  }
 
   if (exp.responseTimeMsMax) {
     body.push(`    const responseTime = Date.now() - startTime;`);

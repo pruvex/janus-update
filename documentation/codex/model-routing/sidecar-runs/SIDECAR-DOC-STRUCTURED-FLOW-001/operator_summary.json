@@ -1,0 +1,29 @@
+{
+  "summary_header": "CODEX SIDECAR DELEGATION RESULT",
+  "workflow_id": "SIDECAR-DOC-STRUCTURED-FLOW-001",
+  "task_label": "Structured review flow validation",
+  "selected_path": "sidecar_read_only_draft",
+  "skill": "janus-documentation-update",
+  "normal_target_model": "5.4/medium",
+  "sidecar_model_provider": "Codex CLI sidecar / gpt-5.4",
+  "sandbox": "read-only",
+  "timeout_seconds": 180,
+  "validation_result": "PASS",
+  "final_outcome": "SIDECAR_DRAFT_ACCEPTED_AND_STRUCTURED_REVIEW_READY",
+  "runner_summary_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-DOC-STRUCTURED-FLOW-001\\summary.json",
+  "last_message_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\sidecar-runs\\SIDECAR-DOC-STRUCTURED-FLOW-001\\last_message.md",
+  "operator_result_lines": [
+    "Ergebnis: Sidecar-Draft erfolgreich",
+    "Structured Review Flow: Builder -> Executor erfolgreich",
+    "Tatsaechliche Kosten: N/A (lokaler Codex CLI Sidecar-Pfad)"
+  ],
+  "operator_message": "Read-only sidecar draft completed and was converted into a structured local review artifact. Codex App still owns any binding documentation write.",
+  "structured_bridge_status": "PASS",
+  "structured_bridge_summary": {
+    "status": "PASS",
+    "sidecar_run_dir": "documentation/codex/model-routing/sidecar-runs/SIDECAR-DOC-STRUCTURED-FLOW-001",
+    "built_request_json": "documentation/codex/model-routing/structured-action-fixtures/SIDECAR-DOC-STRUCTURED-FLOW-001-STRUCTURED_built_from_sidecar.json",
+    "builder_status": "PASS",
+    "executor_status": "PASS"
+  }
+}

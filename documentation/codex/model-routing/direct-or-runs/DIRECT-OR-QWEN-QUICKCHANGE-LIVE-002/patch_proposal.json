@@ -1,0 +1,14 @@
+{
+  "summary": "Changed file: frontend/index.html. Exact text changed: 'Nachricht an Janus senden...' replaced with 'Nachricht an Janus schreiben...'. Confirmation: No other file or wording was touched.",
+  "diff": [
+    {
+      "filename": "frontend/index.html",
+      "lines": [
+        {
+          "line_number": 1,
+          "content": "<input type=\"text\" id=\"chatInput\" placeholder=\"Nachricht an Janus schreiben...\" />"
+        }
+      ]
+    }
+  ]
+}

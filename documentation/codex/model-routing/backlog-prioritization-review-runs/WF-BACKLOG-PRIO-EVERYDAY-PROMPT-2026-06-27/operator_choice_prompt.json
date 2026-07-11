@@ -1,0 +1,30 @@
+{
+  "summary_header": "BACKLOG PRIORITIZATION REVIEW GATE",
+  "workflow_id": "WF-BACKLOG-PRIO-EVERYDAY-PROMPT-2026-06-27",
+  "skill": "janus-backlog-prioritization",
+  "task_label": "Backlog prioritization everyday prompt proof current-shape",
+  "selected_path": "operator_choice_pending",
+  "normal_target_model": "5.4 medium",
+  "selected_or_model": "qwen/qwen3-coder-30b-a3b-instruct",
+  "estimated_or_cost": 0.00035,
+  "cost_estimate_confidence_percent": 78.0,
+  "choice_1": "Codex",
+  "choice_2": "OR",
+  "delegated_model_label": "qwen/qwen3-coder-30b-a3b-instruct",
+  "expected_delegation_value": "bounded DELTA backlog prioritization review with no handoff or implementation authority",
+  "operator_prompt_lines": [
+    "1 = Codex",
+    "2 = OR",
+    "OR ist hier die externe Option, um Codex-Guthaben zu sparen.",
+    "Fest empfohlenes OR-Modell: qwen/qwen3-coder-30b-a3b-instruct",
+    "Voraussichtliche OR-Kosten 0.000350000, Evidenzgenauigkeit 78%"
+  ],
+  "boundaries": [
+    "No delegated final backlog write acceptance",
+    "No delegated handoff creation",
+    "No delegated implementation routing",
+    "Codex remains final prioritization and backlog owner"
+  ],
+  "final_outcome": "AWAITING_OPERATOR_CHOICE",
+  "validation_result": "PASS"
+}

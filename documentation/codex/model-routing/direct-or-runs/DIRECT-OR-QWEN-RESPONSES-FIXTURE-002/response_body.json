@@ -1,0 +1,41 @@
+﻿{
+  "id": "resp_qwen_apply_patch_fixture_001",
+  "object": "response",
+  "status": "completed",
+  "model": "qwen/qwen3-coder-flash",
+  "usage": {
+    "prompt_tokens": 812,
+    "completion_tokens": 143,
+    "total_tokens": 955,
+    "cost": 0.00029814,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "output": [
+    {
+      "id": "msg_fixture_001",
+      "type": "message",
+      "status": "completed",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "Patch proposal prepared."
+        }
+      ]
+    },
+    {
+      "id": "apc_fixture_001",
+      "type": "apply_patch_call",
+      "status": "completed",
+      "name": "openrouter:apply_patch",
+      "arguments": {
+        "patch": "*** Begin Patch\n*** Update File: frontend/index.html\n@@\n-                        placeholder=\"Nachricht an Janus schreiben...\"\n+                        placeholder=\"Nachricht an Janus senden...\"\n@@\n-                        placeholder=\"Nachricht an Janus schreiben...\"\n+                        placeholder=\"Nachricht an Janus senden...\"\n*** End Patch"
+      }
+    }
+  ]
+}
+

@@ -1,0 +1,11 @@
+{
+  "model": "qwen/qwen3.5-flash-02-23",
+  "pass": true,
+  "failures": [],
+  "finish_reason": "stop",
+  "actual_or_cost": 0.000702715,
+  "latency_ms": 13171,
+  "generation_id": "gen-1782398050-Gd8D618BCemRXOleeQAO",
+  "parse_error": null,
+  "response_path": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-debug\\runs\\qwen-qwen3.5-flash-02-23\\response_body.json"
+}

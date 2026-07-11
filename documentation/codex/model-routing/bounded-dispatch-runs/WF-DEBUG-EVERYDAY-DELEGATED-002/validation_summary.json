@@ -1,0 +1,19 @@
+{
+  "workflow_id": "WF-DEBUG-EVERYDAY-DELEGATED-002",
+  "task_class": "debug_hypothesis_review",
+  "input_validation_pass": true,
+  "result_validation_pass": false,
+  "telemetry_validation_pass": false,
+  "input_issues": [],
+  "result_issues": [
+    "response content parse failed: response content is not a JSON object"
+  ],
+  "telemetry_issues": [
+    "generation_id missing",
+    "usage missing",
+    "actual OR cost missing"
+  ],
+  "redaction_ready": true,
+  "redaction_check": null,
+  "accepted_for_local_codex_validation": false
+}

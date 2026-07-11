@@ -458,6 +458,7 @@ async def test_memory_read_pet_overview_supplements_contact_pet_details(db_sessi
                 "hat eine Katze namens garfield",
                 "Hund Tasso ist ein podenco",
                 "Hund Tasso frisst gerne thunfisch",
+                "Katze Garfield mag Thunfisch \u00fcberhaupt nicht",
             ],
         ),
     )
@@ -512,8 +513,154 @@ async def test_memory_read_pet_overview_supplements_contact_pet_details(db_sessi
     assert any("Oliver Schwab hat eine Katze namens garfield" in fact for fact in facts)
     assert any("Hund Tasso ist ein podenco" in fact for fact in facts)
     assert any("Hund Tasso frisst gerne thunfisch" in fact for fact in facts)
-    assert not any("Garfield" in fact and "Thunfisch" in fact for fact in facts)
+    assert any("Katze Garfield mag Thunfisch \u00fcberhaupt nicht" in fact for fact in facts)
+    assert not any("gar keinen Thunfisch" in fact for fact in facts)
     assert all(str(mem["memory_id"]).startswith("contact-") for mem in result["data"]["memories"])
+
+
+@pytest.mark.asyncio
+async def test_memory_read_pet_overview_recovers_missing_pet_detail_from_live_style_contact_state(db_session):
+    contact = crud.create_contact(
+        db_session,
+        contact_schemas.ContactCreate(
+            name="Oliver Schwab",
+            nickname="Oli",
+            category="Privat",
+            contact_type="private_person",
+            personal_details=[
+                "hat einen Hund namens tasso",
+                "hat eine Katze namens garfield",
+                "Hund Tasso ist ein podenco",
+                "Hund Tasso frisst gerne thunfisch",
+            ],
+        ),
+    )
+    assert contact is not None
+
+    chat_id = db_session.query(models.Chat).first().id
+    write_result = _md(
+        await handle_memory_write(
+            params={
+                "fact": "Garfield mag Thunfisch überhaupt nicht",
+                "subject_name": "Garfield",
+                "category": "Haustier-Details",
+            },
+            db=db_session,
+            chat_id=chat_id,
+            original_user_text="garfield mag thunfisch überhaupt nicht",
+        )
+    )
+    assert write_result["status"] == "ok"
+
+    db_contact = db_session.query(models.Contact).filter(models.Contact.id == contact.id).first()
+    assert db_contact is not None
+    db_contact.preferences = ["thunfisch überhaupt nicht"]
+    db_contact.personal_details = [
+        "hat einen Hund namens tasso",
+        "hat eine Katze namens garfield",
+        "Hund Tasso ist ein podenco",
+        "Hund Tasso frisst gerne thunfisch",
+    ]
+    db_session.commit()
+
+    result = _md(
+        await handle_memory_read(
+            params={"query": "was weißt du über olis haustiere?", "limit": 10},
+            db=db_session,
+            chat_id=chat_id,
+        )
+    )
+
+    facts = [mem["fact"] for mem in result["data"]["memories"]]
+    assert any("Oliver Schwab hat einen Hund namens tasso" in fact for fact in facts)
+    assert any("Oliver Schwab hat eine Katze namens garfield" in fact for fact in facts)
+    assert any("Hund Tasso ist ein podenco" in fact for fact in facts)
+    assert any("Hund Tasso frisst gerne thunfisch" in fact for fact in facts)
+    assert any("Katze Garfield mag Thunfisch überhaupt nicht" in fact for fact in facts)
+    assert not any(fact.strip().casefold() == "thunfisch überhaupt nicht" for fact in facts)
+    assert all(str(mem["memory_id"]).startswith("contact-") for mem in result["data"]["memories"])
+
+
+@pytest.mark.asyncio
+async def test_memory_write_relationship_name_fact_applies_to_existing_contact_card(db_session):
+    contact = crud.create_contact(
+        db_session,
+        contact_schemas.ContactCreate(
+            name="Nathan Raimann",
+            category="Privat",
+            contact_type="private_person",
+        ),
+    )
+    assert contact is not None
+
+    chat_id = db_session.query(models.Chat).first().id
+    result = _md(
+        await handle_memory_write(
+            params={
+                "fact": "Nathans Freundin heisst Elena.",
+                "subject_name": "Nathan",
+                "category": "Beziehungen",
+                "evidence": "nathans freundin heisst elena",
+            },
+            db=db_session,
+            chat_id=chat_id,
+            original_user_text="nathans freundin heisst elena",
+        )
+    )
+
+    refreshed = crud.get_contact(db_session, contact.id)
+    synced_facts = [
+        _parse_snippet(memory.snippet).get("fact", "")
+        for memory in db_session.query(models.Memory).all()
+        if str(memory.source_type or "") == "contact_sync"
+    ]
+
+    assert result["status"] == "ok"
+    assert result["data"]["contact_proposal"]["status"] == "applied"
+    assert refreshed is not None
+    assert refreshed.personal_details == ["Freundin heisst Elena"]
+    assert any("freundin heisst elena" in fact.casefold() for fact in synced_facts)
+
+
+@pytest.mark.asyncio
+async def test_memory_write_relationship_named_owner_fact_applies_to_existing_contact_card(db_session):
+    contact = crud.create_contact(
+        db_session,
+        contact_schemas.ContactCreate(
+            name="Nathan Raimann",
+            category="Privat",
+            contact_type="private_person",
+        ),
+    )
+    assert contact is not None
+
+    chat_id = db_session.query(models.Chat).first().id
+    result = _md(
+        await handle_memory_write(
+            params={
+                "fact": "Nathan hat eine Freundin namens Elena.",
+                "subject_name": "Nathan",
+                "category": "Beziehungen",
+                "evidence": "nathan hat eine freundin namens elena",
+            },
+            db=db_session,
+            chat_id=chat_id,
+            original_user_text="nathan hat eine freundin namens elena",
+        )
+    )
+
+    refreshed = crud.get_contact(db_session, contact.id)
+    synced_facts = [
+        _parse_snippet(memory.snippet).get("fact", "")
+        for memory in db_session.query(models.Memory).all()
+        if str(memory.source_type or "") == "contact_sync"
+    ]
+
+    assert result["status"] == "ok"
+    assert result["data"]["contact_proposal"]["status"] == "applied"
+    assert refreshed is not None
+    assert refreshed.personal_details == ["Freundin heisst Elena"]
+    assert any("freundin heisst elena" in fact.casefold() for fact in synced_facts)
 
 
 @pytest.mark.asyncio
@@ -800,6 +947,64 @@ async def test_memory_read_filters_contact_recall_to_matching_subject(db_session
     assert result["status"] == "ok"
     assert any(fact.casefold() == "oli liebt big bang theory" for fact in facts)
     assert all("chris gier" not in fact.casefold() for fact in facts)
+
+
+@pytest.mark.asyncio
+async def test_memory_read_filters_relationship_recall_to_matching_possessive_subject(db_session):
+    chat_id = db_session.query(models.Chat).first().id
+    crud.create_contact(
+        db_session,
+        contact_schemas.ContactCreate(
+            name="Timo Testmann",
+            nickname="Timo",
+            category="Privat",
+            contact_type="private_person",
+        ),
+    )
+    crud.create_contact(
+        db_session,
+        contact_schemas.ContactCreate(
+            name="Nathan Raimann",
+            nickname="Nathan",
+            category="Privat",
+            contact_type="private_person",
+        ),
+    )
+
+    await handle_memory_write(
+        params={
+            "fact": "Timos Freundin heisst Mira.",
+            "subject_name": "Timo",
+            "category": "Beziehungen",
+        },
+        db=db_session,
+        chat_id=chat_id,
+        original_user_text="timos freundin heisst mira",
+    )
+    await handle_memory_write(
+        params={
+            "fact": "Nathans Freundin heisst Elena.",
+            "subject_name": "Nathan",
+            "category": "Beziehungen",
+        },
+        db=db_session,
+        chat_id=chat_id,
+        original_user_text="nathans freundin heisst elena",
+    )
+
+    result = _md(
+        await handle_memory_read(
+            params={"query": "wer ist timos freundin?", "limit": 10},
+            db=db_session,
+            chat_id=chat_id,
+        )
+    )
+
+    facts = [mem["fact"].casefold() for mem in result["data"]["memories"]]
+
+    assert result["status"] == "ok"
+    assert any("timo" in fact and "mira" in fact for fact in facts)
+    assert all("nathan" not in fact for fact in facts)
 
 
 @pytest.mark.asyncio

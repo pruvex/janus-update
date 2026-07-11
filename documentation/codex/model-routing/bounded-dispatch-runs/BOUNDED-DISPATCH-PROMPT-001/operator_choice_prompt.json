@@ -1,0 +1,19 @@
+{
+  "summary_header": "BOUNDED DELEGATION DISPATCH GATE",
+  "workflow_id": "BOUNDED-DISPATCH-PROMPT-001",
+  "task_class": "documentation_draft",
+  "task_label": "Dispatcher prompt validation",
+  "normal_target_model": "5.4/medium",
+  "choice_1": "Codex",
+  "choice_2": "Delegated",
+  "delegated_meaning": "Sidecar read-only draft, then Codex review.",
+  "route_note": "Uses the read-only documentation sidecar draft runner.",
+  "final_outcome": "AWAITING_OPERATOR_CHOICE",
+  "validation_result": "PASS",
+  "boundaries": [
+    "No production routing",
+    "No canonical routing-table update",
+    "No Git/release authority by delegated path",
+    "Codex App remains final reviewer"
+  ]
+}

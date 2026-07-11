@@ -1,0 +1,13 @@
+{
+  "workflow_id": "WF-TEST-PIPELINE-STRUCTURED-BRIDGE-2026-06-27",
+  "skill_id": "janus-test-pipeline",
+  "action_type": "run_generator",
+  "executor_status": "FAILED",
+  "schema_validation": "PASS",
+  "mapping_resolution": "NOT_RUN",
+  "allowlist_status": "NOT_RUN",
+  "output_artifact_status": "NOT_RUN",
+  "codex_review_required": true,
+  "detail": "Generator execution failed or output missing for compile_testspec_to_testplan_v1. exit_code=1 missing_outputs=documentation/codex/model-routing/structured-action-runs/WF-TEST-PIPELINE-STRUCTURED-BRIDGE-2026-06-27/20260627-195856/generated/TEST-RUN-2026-06-27-STRUCTURED-001_plan.json,documentation/codex/model-routing/structured-action-runs/WF-TEST-PIPELINE-STRUCTURED-BRIDGE-2026-06-27/20260627-195856/generated/TEST-RUN-2026-06-27-STRUCTURED-001_generated.spec.js",
+  "run_directory": "documentation/codex/model-routing/structured-action-runs/WF-TEST-PIPELINE-STRUCTURED-BRIDGE-2026-06-27/20260627-195856"
+}

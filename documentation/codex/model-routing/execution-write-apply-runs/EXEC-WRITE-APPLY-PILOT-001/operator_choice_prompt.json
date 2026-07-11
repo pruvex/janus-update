@@ -1,0 +1,24 @@
+{
+  "summary_header": "EXECUTION WRITE APPLY CANDIDATE GATE",
+  "workflow_id": "EXEC-WRITE-APPLY-PILOT-001",
+  "skill": "janus-executioner",
+  "task_label": "BACKLOG-108 first write-apply pilot",
+  "selected_path": "operator_choice_pending",
+  "normal_target_model": "5.4 medium",
+  "choice_1": "Codex",
+  "choice_2": "Delegated",
+  "delegated_model_label": "bounded workspace-write execution candidate / accepted proposal-first evidence path",
+  "expected_delegation_value": "bounded workspace-write execution candidate backed by an accepted proposal-first execution package and Codex-owned acceptance",
+  "operator_prompt_lines": [
+    "Willst du 1 Codex das machen lassen?",
+    "Oder 2 den bounded execution_write_apply_candidate Delegation-Pfad nutzen?"
+  ],
+  "boundaries": [
+    "No delegated broad repo write authority",
+    "No delegated test execution",
+    "No delegated task completion claim",
+    "Codex remains validation and acceptance owner"
+  ],
+  "final_outcome": "AWAITING_OPERATOR_CHOICE",
+  "validation_result": "PASS"
+}

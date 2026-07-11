@@ -18,6 +18,19 @@ Stay in the same Codex context when the validated marker, evidence bundle, and d
 
 If control must move across an actor or chat boundary, emit exactly one compact fenced `text` handoff block. Do not use bare acknowledgements like `ok` as a handoff substitute.
 
+## Tri-Modal Rollout Note
+
+Global delegation vocabulary across Janus is now:
+
+- `1 = Codex`
+- `2 = OpenRouter`
+- `3 = Cursor Composer`
+- `4 = Cursor API`
+
+Use that vocabulary whenever this skill refers to the shared cross-skill operator posture.
+
+The bounded external draft-helper path documented below is now wired through the shared manifest-backed `documentation/codex/model-routing/scripts/janus_delegate.py` entry. The separate fixed-OR documentation-skill lane above remains a documentation-specific special path and is not folded into the shared tri-modal delegate in this slice.
+
 ## Source References
 
 Read only when exact legacy wording is needed:
@@ -58,9 +71,9 @@ If the routing table marks any requested scope as blocked or upstream-owned, do 
 For real-world documentation-skill testing, this skill may offer one bounded `local` versus fixed `or` choice only when all of the following are true:
 
 - the classified row is exactly one of `DOC-SKILL-001`, `DOC-SKILL-002`, `DOC-SKILL-003`, `DOC-SKILL-006`, `DOC-SKILL-008`, `DOC-SKILL-009`, or `DOC-SKILL-010`
-- the normal target remains `GPT-5.4 mini`
+- the normal target remains `GPT-5.6 Luna`
 - the request stays inside documentation-skill safe scope
-- the request does not drift into release, git-governance, canonical routing-table, production routing, `DOC-SKILL-011`, `DOC-SKILL-012`, or broader `5.4` candidate work
+- the request does not drift into release, git-governance, canonical routing-table, production routing, `DOC-SKILL-011`, `DOC-SKILL-012`, or broader workhorse-model candidate work
 
 Binding implementation artifacts:
 
@@ -81,9 +94,12 @@ FIXED OR OPERATOR CHOICE
 - Skill ID:
 - 1 = Codex
 - 2 = OpenRouter
-- Selected OR model:
-- Voraussichtliche Kosten:
-- Genauigkeit:
+- OpenRouter spart hier Codex-Guthaben fuer diesen Schritt.
+- Live-Evidenz:
+- Einordnung:
+- Fest empfohlenes OR-Modell:
+- Voraussichtliche OR-Kosten:
+- Evidenzgenauigkeit:
 - User action:
 - Boundaries:
 ```
@@ -98,19 +114,21 @@ Gate rules:
 
 Forbidden inside this path:
 
+- this fixed OpenRouter block is an intentional documentation-specific exception alongside the newer shared tri-modal delegate entry above
 - Auto Router
 - dynamic model substitution outside the fixed config
 - any OR use for out-of-scope documentation skills
 - any claim that this is production routing or global OR approval
 
-## Bounded Sidecar Draft Operator Choice
+## Bounded External Draft Operator Choice
 
-For normal documentation-update workflow use, this skill may offer one bounded `Codex` versus `Sidecar` choice only when all of the following are true:
+For normal documentation-update workflow use, this skill may offer one bounded `Codex` versus external draft-helper choice only when all of the following are true:
 
 - the request is inside documentation-skill safe scope
 - the work is a non-binding draft, summary, milestone note, changelog draft, or handoff draft
 - no release, git-governance, final audit, canonical routing-table, production routing, backlog move, registry write, or `CURRENT_STATE` authority is being delegated
-- the sidecar can stay `read-only`
+- the external helper can stay `read-only`
+- the current delegated backend remains the local Codex CLI sidecar draft helper; this lane is not a production OpenRouter write path
 
 Binding implementation artifacts:
 
@@ -120,45 +138,39 @@ Binding implementation artifacts:
 - `C:\KI\Janus-Projekt\documentation\codex\model-routing\scripts\codex_structured_action_sidecar_bridge.py`
 - `C:\KI\Janus-Projekt\documentation\codex\model-routing\codex_sidecar_agent_live_pilot_result_2026-06-14.md`
 
-When the task is eligible, prefer the bounded delegation dispatcher as the operator-facing entry and use its prompt mode output as the gate:
+When the task is eligible, prefer the shared tri-modal delegate entry first:
 
 ```powershell
-python documentation/codex/model-routing/scripts/codex_bounded_delegation_dispatcher.py --task-class documentation_draft --task-label "<short documentation draft task>" --normal-target-model "<declared model/reasoning>" --operator-choice prompt --workflow-id <WORKFLOW-ID>
+python documentation/codex/model-routing/scripts/janus_delegate.py --lane documentation_draft_review --task-id TASK-DU-001 --workflow-id <WORKFLOW-ID> --operator-choice prompt --estimated-codex-saved-tokens 8000 --estimated-delegation-overhead-tokens 4000
 ```
 
-Then present this exact user-facing gate:
+Current lane behavior:
 
-```text
-CODEX SIDECAR DELEGATION GATE
-- Skill:
-- Task:
-- 1 = Codex
-- 2 = Sidecar
-- Sidecar model/provider:
-- Sandbox:
-- Estimated cost/quota impact:
-- Expected delegation value:
-- Codex App review after sidecar:
-- User action:
-- Boundaries:
-```
+- `1 = Codex`
+- `2 = OpenRouter`
+- `4 = Cursor API`
+- For this transitional lane, visible option `2` enters the existing bounded read-only documentation draft helper path under the shared delegate entry.
+- The downstream implementation helper remains the existing `codex_bounded_delegation_dispatcher.py` -> `doc_skill_sidecar_draft_runner.py` path.
+- This slice does not convert the lane into a live OpenRouter write path and does not touch the fixed-OR documentation-specific lane above.
+- only the approved `documentation_draft_review` lane should surface this normal shared delegated choice; the separate fixed-OR block above remains a documentation-specific exception rather than a second general everyday gate
 
 Gate rules:
 
-- if the user chooses `1`, `local`, or `codex`, invoke the dispatcher with `--operator-choice local`
-- if the user chooses `2` or `sidecar`, invoke the dispatcher with `--operator-choice delegated --prompt-path <bounded prompt path>`
-- if a reviewed local artifact is preferred after a successful sidecar draft, add `--structured-review-flow` so the delegated documentation-draft path chains the accepted sidecar package through the structured-action bridge and local executor
+- if the user chooses `1`, `local`, or `codex`, stay local in Codex
+- if the user chooses `2`, `or`, `opr`, or `openrouter`, the shared delegate currently plans the bounded documentation-draft helper path and hands off to the existing dispatcher/runtime pair
+- if the user chooses `4`, `cursor-api`, `cursor_api`, or `api`, the shared delegate plans the bounded Cursor API review path and keeps Codex as final owner
+- if a reviewed local artifact is preferred after a successful external draft, add `--structured-review-flow` so the delegated documentation-draft path chains the accepted draft package through the structured-action bridge and local executor
 - `doc_skill_sidecar_draft_runner.py` remains the delegated implementation helper underneath this path and may still be used directly for bounded validation work
-- keep sidecar runs `read-only` unless a later explicit validation artifact proves a write-capable path is safe
+- keep delegated draft runs `read-only` unless a later explicit validation artifact proves a write-capable path is safe
 - Codex App must review the returned draft and perform any binding documentation writes locally
-- do not treat a sidecar draft as authoritative state
+- do not treat a delegated draft as authoritative state
 
 Forbidden inside this path:
 
-- sidecar file writes
-- sidecar Git commands
-- sidecar release or routing decisions
-- sidecar updates to `CURRENT_STATE`, backlog sections, registries, changelog acceptance, or final completion markers
+- delegated helper file writes
+- delegated helper Git commands
+- delegated helper release or routing decisions
+- delegated helper updates to `CURRENT_STATE`, backlog sections, registries, changelog acceptance, or final completion markers
 
 ## Required Gate
 

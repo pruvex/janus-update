@@ -20,6 +20,12 @@ from backend.services.orchestrator.identity_manager import identity_manager
 from backend.services.orchestrator.modal_request_builder import resolve_modal_request_for_execution
 from backend.services.orchestrator.schemas import AuditContext, ExecutionResponse
 from backend.services.skill_router import is_realtime_search_query
+from backend.services.workflow.workflow_offer_service import (
+    handle_offer_response,
+    maybe_append_workflow_offer,
+    maybe_learn_routine_passively,
+)
+from backend.services.workflow.calendar_wikipedia_presenter import resolve_calendar_wikipedia_final_text
 from backend.utils import intent_classifier
 from backend.renderers.attribution import append_tool_attributions_from_tools, render_weather_forecast_from_tools
 
@@ -64,6 +70,15 @@ _BACKGROUND_MODEL_BY_PROVIDER: Dict[str, str] = {
 
 def _is_e2e_fast_mode() -> bool:
     return str(os.environ.get("JANUS_E2E_FAST_MODE", "")).strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
+
+
+def _allow_e2e_fact_extraction() -> bool:
+    return str(os.environ.get("JANUS_E2E_ENABLE_FACT_EXTRACTION", "")).strip().lower() in {
         "1",
         "true",
         "yes",
@@ -283,6 +298,114 @@ _MEMORY_REFERENCE_SENTENCE_RE = re.compile(
 
 def has_websearch_tool(tool_results: List[Dict[str, Any]]) -> bool:
     return any(isinstance(msg, dict) and msg.get("role") == "tool" and _is_websearch_tool_result(msg) for msg in (tool_results or []))
+
+
+def _build_calendar_weather_combo_response(tool_results: Any) -> str:
+    calendar_message = ""
+    saw_calendar = False
+    saw_weather = False
+
+    for item in tool_results or []:
+        if not isinstance(item, dict):
+            continue
+        name = str(item.get("name") or "").strip().lower()
+        skill_id = str(item.get("_skill_id") or item.get("skill_id") or "").strip().lower()
+        normalized = skill_id or name
+        raw = item.get("_raw_content") or item.get("content") or "{}"
+        try:
+            payload = json.loads(raw) if isinstance(raw, str) else dict(raw or {})
+        except Exception:
+            continue
+        if not isinstance(payload, dict) or payload.get("status") != "ok":
+            continue
+        data = payload.get("data") if isinstance(payload.get("data"), dict) else {}
+
+        if normalized in {"calendar.list_events", "calendar_list_events"}:
+            saw_calendar = True
+            candidate = (
+                str(data.get("listing_text") or "").strip()
+                or str(payload.get("message") or "").strip()
+                or str(payload.get("output") or "").strip()
+            )
+            if candidate:
+                calendar_message = candidate
+        elif normalized in {"system.weather", "system_weather"}:
+            saw_weather = True
+
+    if not (saw_calendar and saw_weather):
+        return ""
+
+    weather_message = render_weather_forecast_from_tools(tool_results)
+    if not weather_message:
+        return ""
+    if calendar_message:
+        return f"{calendar_message}\n\n{weather_message}"
+    return weather_message
+
+
+def _build_calendar_wikipedia_combo_response(tool_results: Any) -> str:
+    calendar_message = ""
+    wikipedia_message = ""
+    wikipedia_error_message = ""
+    saw_calendar = False
+    saw_wikipedia = False
+    saw_wikipedia_tool = False
+
+    for item in tool_results or []:
+        if not isinstance(item, dict):
+            continue
+        name = str(item.get("name") or "").strip().lower()
+        skill_id = str(item.get("_skill_id") or item.get("skill_id") or "").strip().lower()
+        normalized = skill_id or name
+        raw = item.get("_raw_content") or item.get("content") or "{}"
+        try:
+            payload = json.loads(raw) if isinstance(raw, str) else dict(raw or {})
+        except Exception:
+            continue
+        if not isinstance(payload, dict):
+            continue
+        data = payload.get("data") if isinstance(payload.get("data"), dict) else {}
+
+        if normalized in {"calendar.list_events", "calendar_list_events"}:
+            if payload.get("status") != "ok":
+                continue
+            saw_calendar = True
+            candidate = (
+                str(data.get("listing_text") or "").strip()
+                or str(payload.get("message") or "").strip()
+                or str(payload.get("output") or "").strip()
+            )
+            if candidate:
+                calendar_message = candidate
+        elif normalized in {"system.wikipedia_summary", "system_wikipedia_summary"}:
+            saw_wikipedia_tool = True
+            if payload.get("status") == "ok":
+                saw_wikipedia = True
+                candidate = (
+                    str(data.get("summary") or "").strip()
+                    or str(payload.get("message") or "").strip()
+                    or str(payload.get("output") or "").strip()
+                )
+                if candidate:
+                    wikipedia_message = candidate
+            else:
+                error_obj = payload.get("error") if isinstance(payload.get("error"), dict) else {}
+                wikipedia_error_message = (
+                    str(error_obj.get("message") or "").strip()
+                    or str(payload.get("message") or "").strip()
+                )
+
+    if saw_calendar and saw_wikipedia and calendar_message and wikipedia_message:
+        return f"{calendar_message}\n\n{wikipedia_message}"
+
+    parts = [part for part in (calendar_message, wikipedia_message) if part]
+    if parts:
+        return "\n\n".join(parts)
+    if saw_calendar and saw_wikipedia_tool and wikipedia_error_message:
+        if calendar_message:
+            return f"{calendar_message}\n\n{wikipedia_error_message}"
+        return wikipedia_error_message
+    return ""
 
 
 def strip_memory_references_from_live_answer(text: str) -> str:
@@ -506,7 +629,7 @@ def trigger_fact_extraction(
     model_hierarchy: Dict[str, Any],
 ) -> None:
     """Schedule fact extraction as a background task (fire-and-forget)."""
-    if _is_e2e_fast_mode():
+    if _is_e2e_fast_mode() and not _allow_e2e_fact_extraction():
         logger.info("FACT EXTRACTION SKIPPED (chat=%s): JANUS_E2E_FAST_MODE active.", chat_id)
         return
     if skip_fact_extraction:
@@ -840,8 +963,18 @@ async def finalize_response(
     wf.has_websearch_result = has_websearch_tool(getattr(wf, "tool_results", []) or [])
     if wf.has_websearch_result:
         wf.final_text = strip_memory_references_from_live_answer(wf.final_text)
+    wf.calendar_weather_combo = _build_calendar_weather_combo_response(getattr(wf, "tool_results", []) or [])
+    wf.calendar_wikipedia_combo = _build_calendar_wikipedia_combo_response(getattr(wf, "tool_results", []) or [])
     wf.rendered_weather = render_weather_forecast_from_tools(getattr(wf, "tool_results", []) or [])
-    if wf.rendered_weather:
+    if wf.calendar_wikipedia_combo:
+        wf.final_text = resolve_calendar_wikipedia_final_text(
+            wf.final_text,
+            getattr(wf, "tool_results", []) or [],
+            build_combo_response=_build_calendar_wikipedia_combo_response,
+        )
+    elif wf.calendar_weather_combo:
+        wf.final_text = wf.calendar_weather_combo
+    elif wf.rendered_weather:
         wf.final_text = wf.rendered_weather
     wf.final_text = append_tool_attributions_from_tools(wf.final_text, getattr(wf, "tool_results", []) or [])
     wf.final_text = _normalize_inline_weather_source_footer(wf.final_text)
@@ -855,6 +988,43 @@ async def finalize_response(
         wf.final_text = _normalize_inline_weather_source_footer(wf.final_text)
     except Exception as e:
         logger.warning("DIAMOND: Websearch-Renderer Fehler vor Persistierung (non-critical): %s", e)
+    try:
+        executor = getattr(wf, "executor", None)
+        capability_registry = getattr(executor, "tool_manager", None) if executor is not None else None
+        offer_reply = None
+        if capability_registry is not None:
+            offer_reply = handle_offer_response(
+                wf.user_text,
+                messages=getattr(wf, "messages", []) or [],
+                db=db,
+                capability_registry=capability_registry,
+                chat_id=request.chat_id,
+            )
+        if offer_reply and offer_reply.handled and offer_reply.response_text:
+            wf.final_text = offer_reply.response_text
+        else:
+            passive_learning = maybe_learn_routine_passively(
+                wf.final_text,
+                tool_results=getattr(wf, "tool_results", []) or [],
+                user_text=wf.user_text,
+                messages=getattr(wf, "messages", []) or [],
+                db=db,
+                capability_registry=capability_registry,
+                chat_id=request.chat_id,
+                routines_offer_enabled=True,
+            )
+            if passive_learning.handled:
+                wf.final_text = passive_learning.final_text
+            else:
+                wf.final_text = maybe_append_workflow_offer(
+                    wf.final_text,
+                    tool_results=getattr(wf, "tool_results", []) or [],
+                    user_text=wf.user_text,
+                    messages=getattr(wf, "messages", []) or [],
+                    routines_offer_enabled=True,
+                )
+    except Exception as exc:
+        logger.warning("WORKFLOW-OFFER: skipped due to non-critical error: %s", exc)
     # MCL: modal_request / Video-URL-Erkennung erst nach finalem assistant-Text (alle Backfills, Platzhalter, Audit-KÃ¼rzungen).
     wf_modal = resolve_modal_request_for_execution(wf)
     wf.execution_for_persist = ExecutionResponse(

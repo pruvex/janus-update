@@ -1,0 +1,8 @@
+{
+  "status": "PASS",
+  "bridge_mode": "patch",
+  "sidecar_run_dir": "documentation/codex/model-routing/sidecar-runs/SIDECAR-QUICKCHANGE-LIVE-001",
+  "built_request_json": "documentation/codex/model-routing/structured-action-fixtures/BOUNDED-QUICKCHANGE-DISPATCH-LIVE-001-STRUCTURED_built_from_sidecar.json",
+  "builder_status": "PASS",
+  "executor_status": "PASS"
+}

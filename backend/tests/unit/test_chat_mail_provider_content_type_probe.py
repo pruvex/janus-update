@@ -133,3 +133,13 @@ def test_recipe_provider_query_is_not_attachment_query():
     text = "welche rezepte von picnic finden wir in meinen mails?"
     assert ChatOrchestrator._sender_keyword_mail_probe(text) is not None
     assert ChatOrchestrator._CHAT_MAIL_ATTACHMENTS_RE.match(text) is None
+
+
+def test_mail_confirmation_only_accepts_pure_confirmation():
+    assert ChatOrchestrator._is_mail_confirmation_only("genau.") is True
+    assert ChatOrchestrator._is_mail_confirmation_only("Ja!") is True
+
+
+def test_mail_confirmation_only_rejects_confirmation_plus_new_content():
+    assert ChatOrchestrator._is_mail_confirmation_only("genau. und chris liebt starwars") is False
+    assert ChatOrchestrator._is_mail_confirmation_only("ja, und trag bitte noch vegetarier ein") is False

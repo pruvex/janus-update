@@ -1,0 +1,19 @@
+{
+  "changed_files": [
+    "backend/services/contact_manager.py"
+  ],
+  "codex_acceptance_rule": "Codex must review and apply or reject locally.",
+  "manual_validation_note": "Codex must manually validate this patch locally before task completion.",
+  "notes": "Removes unreachable dead code block in stage_contact_update_from_memory. The proposal_payload['memory_sync_status'] = 'ready' and following lines were unreachable because the else branch returns before they execute. No functional change to application logic.",
+  "patch_text": "--- a/backend/services/contact_manager.py\n+++ b/backend/services/contact_manager.py\n@@ -X,XX +XX @@ def stage_contact_update_from_memory(\n             }\n         else:\n             return {\n                 \"status\": \"proposed\",\n                 \"reason\": \"requires_review\",\n                 \"proposals_staged\": 1,\n                 \"proposal_payload\": proposal_payload,\n                 \"target_contact_id\": target_contact.id,\n             }\n-\n-    proposal_payload[\"memory_sync_status\"] = \"ready\"\n-    proposal_payload[\"proposal_metadata\"] = {\n-        \"memory_id\": getattr(memory, \"id\", None),\n-        \"memory_category\": metadata.get(\"category\"),\n-        \"memory_fact\": metadata.get(\"fact\"),\n-        \"sensitive\": bool(metadata.get(\"sensitive\")),\n-        \"source_context\": _MEMORY_PROPOSAL_SOURCE,\n-    }",
+  "risk_list": [
+    "None. Only removes dead code; no behavioral change."
+  ],
+  "status": "PASS",
+  "suggested_validation_steps": [
+    "Run: python -m pytest backend/tests/test_contact_manager.py -q",
+    "Run: python -m pytest backend/tests/test_memory_tools.py -q",
+    "Run: python -m pytest backend/tests/test_memory_write_update_conflict_handling.py -q"
+  ],
+  "target_task": "BACKLOG-108"
+}

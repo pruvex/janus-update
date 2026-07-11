@@ -1,0 +1,40 @@
+{
+  "workflow_id": "WF-SPEC-REVIEW-PACKAGE-001",
+  "bound_skill_context": "janus-spec-review",
+  "spec_path": "documentation/SPEC/Spec Done/21_assisted_or_workhorse_mode_for_janus_skills.md",
+  "mode": "REVIEW_ONLY",
+  "feature_name": "Assistierter OR-Arbeitspferd-Modus fuer Janus-Skills",
+  "spec_snapshot": {
+    "routing_block": {
+      "target_skill": "janus-spec-review",
+      "recommended_model": "5.4",
+      "recommended_reasoning": "medium",
+      "new_chat": "no",
+      "complexity_score": "61",
+      "confidence": "HIGH",
+      "dashboard_hint": "CAUTION"
+    },
+    "key_scope_summary": [
+      "OR only inside janus-debug and janus-test-pipeline in the first rollout",
+      "No production routing activation",
+      "No canonical routing-table update",
+      "Codex/Janus keeps local validation and final acceptance authority"
+    ],
+    "metadata_snapshot": {
+      "review_status": "APPROVED_WITH_NOTES",
+      "complexity_score": "61",
+      "risk": "HIGH",
+      "recommended_review_model": "5.4",
+      "skill_1_ready": "YES",
+      "split_required": "NO",
+      "reviewed_at": "2026-06-20",
+      "review_confidence": "HIGH",
+      "review_source": "janus-spec-review"
+    },
+    "validator_status": "PASS"
+  },
+  "expected_review_decision": "APPROVED",
+  "expected_next_skill": "janus-spec-to-task",
+  "expected_output": "One bounded spec review decision with key issues, required refinements, split recommendation, and metadata suggestion only. No task creation or authoritative spec write claim.",
+  "redaction_ready": true
+}

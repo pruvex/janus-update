@@ -1,0 +1,2 @@
+Apply succeeded: yes.
+Touched files: documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_write_apply_candidate/sandbox/test_gate_prompt_apply_shadow.py

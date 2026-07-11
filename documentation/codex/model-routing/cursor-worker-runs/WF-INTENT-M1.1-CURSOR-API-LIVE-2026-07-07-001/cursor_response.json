@@ -1,0 +1,16 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 13422,
+  "duration_api_ms": 13422,
+  "result": "The task prompt appears to be missing from your message. I see the instruction to execute a bounded Janus delegated worker task, but not the actual task content.\n\nPlease paste the full task prompt and Iâ€™ll execute it according to the provided rules.",
+  "session_id": "1f5214af-0ad0-4c09-af76-0289af25e1dc",
+  "request_id": "91833e68-9588-4972-ba63-af532b8c4e94",
+  "usage": {
+    "inputTokens": 22160,
+    "outputTokens": 389,
+    "cacheReadTokens": 2749,
+    "cacheWriteTokens": 0
+  }
+}

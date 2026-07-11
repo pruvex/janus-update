@@ -1,0 +1,24 @@
+{
+  "schema_version": "codex_delegated_action_request.v1",
+  "workflow_id": "WF-TEST-PIPELINE-STRUCTURED-BRIDGE-2026-06-27",
+  "skill_id": "janus-test-pipeline",
+  "action_type": "run_generator",
+  "summary": "Compile one bound TestSpec through the structured local executor bridge",
+  "requires_codex_review": true,
+  "non_goals": [
+    "No live Playwright execution",
+    "No delegated local shell execution inside sidecar"
+  ],
+  "action_payload": {
+    "generator_id": "compile_testspec_to_testplan_v1",
+    "inputs": {
+      "spec_path": "documentation/TEST_SPEC/07_regression_suite/17_memory_recall_placeholder_regression.md",
+      "test_run_id": "TEST-RUN-2026-06-27-STRUCTURED-001",
+      "output_dir": "__RUN_DIR__/generated"
+    },
+    "declared_output_artifacts": [
+      "__RUN_DIR__/generated/TEST-RUN-2026-06-27-STRUCTURED-001_plan.json",
+      "__RUN_DIR__/generated/TEST-RUN-2026-06-27-STRUCTURED-001_generated.spec.js"
+    ]
+  }
+}

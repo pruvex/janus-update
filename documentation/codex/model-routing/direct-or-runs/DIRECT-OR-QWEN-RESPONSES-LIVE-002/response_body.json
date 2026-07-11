@@ -1,0 +1,27 @@
+﻿
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1781875581-MTMN6fmhunm1EXlac68o","object":"response","created_at":1781875581,"model":"qwen/qwen3-coder-flash","status":"completed","completed_at":1781875587,"output":[{"type":"openrouter:apply_patch","id":"st_tmp_5zjl4js71op","status":"completed","call_id":"call_de9c6ccd6bb140fbbfe3b59f","operation":{"type":"update_file","path":"frontend/index.html","diff":"## excerpt lines 430-436\n                      <textarea\n                        id=\"user-input-A\"\n                        rows=\"1\"\n                        placeholder=\"Nachricht an Janus senden...\"\n                        autocomplete=\"off\"\n                        spellcheck=\"true\"\n                      ></textarea>\n\n## excerpt lines 526-532\n                      <textarea\n                        id=\"user-input-B\"\n                        rows=\"1\"\n                        placeholder=\"Nachricht an Janus senden...\"\n                        autocomplete=\"off\"\n                        spellcheck=\"true\"\n                      ></textarea>"}},{"type":"openrouter:apply_patch","id":"st_tmp_24uoc58q8ut","status":"in_progress","call_id":"call_71b4e73fe6924cd189679852","operation":{"type":"update_file","path":"frontend/index.html","diff":"@@ -1,7 +1,7 @@\n                       <textarea\n                         id=\"user-input-A\"\n                         rows=\"1\"\n-                        placeholder=\"Nachricht an Janus schreiben...\"\n+                        placeholder=\"Nachricht an Janus senden...\"\n                         autocomplete=\"off\"\n                         spellcheck=\"true\"\n                       ></textarea>\n@@ -1,7 +1,7 @@\n                       <textarea\n                         id=\"user-input-B\"\n                         rows=\"1\"\n-                        placeholder=\"Nachricht an Janus schreiben...\"\n+                        placeholder=\"Nachricht an Janus senden...\"\n                         autocomplete=\"off\"\n                         spellcheck=\"true\"\n                       ></textarea>"}}],"error":null,"incomplete_details":null,"tools":[],"tool_choice":"auto","parallel_tool_calls":true,"max_output_tokens":1800,"temperature":0,"top_p":1,"presence_penalty":0,"frequency_penalty":0,"top_logprobs":0,"max_tool_calls":null,"metadata":{},"background":false,"previous_response_id":null,"service_tier":"auto","truncation":"disabled","store":false,"instructions":null,"text":{"format":{"type":"text"}},"reasoning":null,"safety_identifier":null,"prompt_cache_key":null,"usage":{"input_tokens":2017,"input_tokens_details":{"cached_tokens":0},"output_tokens":355,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":2372,"cost":0.0007394400000000001,"cost_details":{"upstream_inference_cost":0.0007394400000000001,"upstream_inference_input_cost":0.000393315,"upstream_inference_output_cost":0.00034612499999999997}}}

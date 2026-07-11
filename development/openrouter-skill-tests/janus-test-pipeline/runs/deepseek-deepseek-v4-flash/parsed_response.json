@@ -1,0 +1,24 @@
+{
+  "status": "WEAK_SIGNAL",
+  "test_run_id": "TEST-RUN-TRIAGE-EVERYDAY-001",
+  "primary_outcome": "Classification review required for potential infrastructure blocker",
+  "likely_classification": "INFRA_BLOCKER",
+  "likely_subsystem": "general",
+  "finding_clusters": [
+    {
+      "title": "Infrastructure blocker suspected",
+      "confidence": "MEDIUM",
+      "evidence": "Classification question indicates INFRA_BLOCKER vs TEST_BUG; candidate blocker category provided; no detailed logs available."
+    }
+  ],
+  "suggested_next_local_verifiers": [
+    "Verify infrastructure connectivity and logs",
+    "Check test environment health"
+  ],
+  "suggested_routing": [
+    "Infrastructure team for further investigation"
+  ],
+  "escalation_trigger": "If confirmed as infra blocker, escalate to infrastructure lead",
+  "redaction_check": "PASS",
+  "notes": "Bounded local result bundle; Codex retains rerun and routing ownership."
+}

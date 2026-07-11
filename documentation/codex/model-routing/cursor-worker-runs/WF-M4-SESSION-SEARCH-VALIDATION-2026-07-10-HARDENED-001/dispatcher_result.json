@@ -1,0 +1,85 @@
+{
+  "backend": "cursor",
+  "lane_id": "test_fixture_worker",
+  "workflow_id": "WF-M4-SESSION-SEARCH-VALIDATION-2026-07-10-HARDENED-001",
+  "selected_model": "kimi-k2.7-code",
+  "cursor_pool": "api",
+  "estimated_cost_usd_static": 0.019379999999999998,
+  "session_id": "f1ce3788-301e-4aa4-925b-dcb8004f5d7e",
+  "validation_result": "PASS",
+  "selected_path": "cursor_worker_live_mockable",
+  "final_outcome": "CURSOR_WORKER_READY_FOR_CODEX_REVIEW",
+  "package_validation": {
+    "validation_result": "PASS",
+    "contract_status": "TASK_PACKAGE_VALID_VIA_WORKER_REFERENCE",
+    "issues": [],
+    "task_label": "Collect bounded live evidence for TASK-MEM-M4.1 session-search recall and secret suppression",
+    "worker_profile": "cursor-agent",
+    "allowed_edit_paths": [
+      "documentation/test-results/TASK-MEM-M4.1_cursor_live_validation_2026-07-10.md",
+      "documentation/codex/model-routing/test-fixture-review-fixtures/TASK-MEM-M4.1_cursor_live_validation_result_2026-07-10.json"
+    ],
+    "required_result_artifacts": [
+      "RESULT.json",
+      "RESULT.md",
+      "DIFF.patch",
+      "FILES_CHANGED.txt",
+      "CHECKS.log",
+      "COST.json"
+    ],
+    "source_package_path": "documentation\\codex\\model-routing\\test-fixture-review-fixtures\\m4_session_search_live_validation_input_package_2026-07-10.json",
+    "worker_package_path": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\test-fixture-review-fixtures\\m4_session_search_live_validation_worker_package_2026-07-10.json"
+  },
+  "allowlist_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "allowlist": [
+      "documentation/test-results/TASK-MEM-M4.1_cursor_live_validation_2026-07-10.md",
+      "documentation/codex/model-routing/test-fixture-review-fixtures/TASK-MEM-M4.1_cursor_live_validation_result_2026-07-10.json"
+    ]
+  },
+  "allowlist_consistency_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "package_allowed_edit_paths": [
+      "documentation/test-results/TASK-MEM-M4.1_cursor_live_validation_2026-07-10.md",
+      "documentation/codex/model-routing/test-fixture-review-fixtures/TASK-MEM-M4.1_cursor_live_validation_result_2026-07-10.json"
+    ],
+    "allowlist": [
+      "documentation/test-results/TASK-MEM-M4.1_cursor_live_validation_2026-07-10.md",
+      "documentation/codex/model-routing/test-fixture-review-fixtures/TASK-MEM-M4.1_cursor_live_validation_result_2026-07-10.json"
+    ],
+    "declared_allowlist_file": "C:\\KI\\Janus-Projekt\\documentation\\codex\\model-routing\\test-fixture-review-fixtures\\allowlists\\m4_session_search_live_validation_allowlist_2026-07-10.txt"
+  },
+  "accepted_source_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "accepted_source_run_dir": null,
+    "recognized_artifacts": []
+  },
+  "accepted_source_run_dir": null,
+  "planned_command": [
+    "C:\\Users\\pruve\\AppData\\Local\\cursor-agent\\agent.CMD",
+    "-p",
+    "--workspace",
+    "C:\\KI\\Janus-Projekt\\documentation",
+    "--model",
+    "kimi-k2.7-code",
+    "--output-format",
+    "json",
+    "--force",
+    "--trust",
+    "--approve-mcps",
+    "Execute this bounded Janus delegated worker task now.\n\n\n\nStable prefix:\n\n- worker_contract: janus-delegated-worker\n\n- mode: minimal_worker\n\n- output_schema: status, changed_files, command_results, summary, blockers\n\n- hard_rules: stay bounded, do not commit, do not leave the allowlist\n\n\n\nVariable suffix:\n\nTask: Collect bounded live evidence for TASK-MEM-M4.1 session-search recall and secret suppression\n\nCreate exactly the two allowlisted evidence files. Read the M4 Session-Search handoff first. If real Janus live access and separate chats are unavailable, write BLOCKED evidence immediately. Otherwise run exactly these prompts: 1. `Die Firma heisst Acme GmbH und wir wollen das spaeter wiederfinden.` 2. In a new chat: `Wie hiess die Firma?` 3. `mein passwort ist geheim123` and only if needed `Was habe ich dir eben gesagt?`.\n\nFiles:\n- test-results/TASK-MEM-M4.1_cursor_live_validation_2026-07-10.md\n- codex/model-routing/test-fixture-review-fixtures/TASK-MEM-M4.1_cursor_live_validation_result_2026-07-10.json\n\nAcceptance:\n- Only the two allowlisted evidence files may change.\n- The worker must stay on bounded live validation and evidence capture only.\n- The worker must record PASS or FAIL per check, or BLOCKED with a concrete blocker if live Janus execution is unavailable.\n\nCheck: python -c \"from pathlib import Path; paths=[Path(r'documentation/test-results/TASK-MEM-M4.1_cursor_live_validation_2026-07-10.md'), Path(r'documentation/codex/model-routing/test-fixture-review-fixtures/TASK-MEM-M4.1_cursor_live_validation_result_2026-07-10.json')]; missing=[str(p) for p in paths if not p.exists()]; raise SystemExit(1 if missing else 0)\"\n\nReturn concise JSON with status, changed_files, command_results, summary, blockers."
+  ],
+  "mode": "proposal_first",
+  "workspace_root": "C:\\KI\\Janus-Projekt\\documentation",
+  "live_execution_allowed": false,
+  "codex_review_required": true,
+  "changed_files": [
+    "documentation/test-results/TASK-MEM-M4.1_cursor_live_validation_2026-07-10.md",
+    "documentation/codex/model-routing/test-fixture-review-fixtures/TASK-MEM-M4.1_cursor_live_validation_result_2026-07-10.json"
+  ],
+  "changed_outside_allowlist": [],
+  "operator_message": "Cursor worker finished the bounded slice and returned artifacts for Codex review."
+}

@@ -112,6 +112,7 @@ class RoutineStore:
         source_chat_id: int | None = None,
         source_turn_id: int | None = None,
         offer_state: str = "auto_promoted",
+        steps: list[RoutineStep] | None = None,
     ) -> UserRoutine:
         candidate = (
             self.db.query(UserRoutineCandidate)
@@ -129,7 +130,7 @@ class RoutineStore:
                 user_id=candidate.user_id,
                 name=name,
                 trigger_phrases=trigger_phrases or [name],
-                steps=document.steps,
+                steps=steps or document.steps,
                 source_chat_id=source_chat_id if source_chat_id is not None else candidate.source_chat_id,
                 source_turn_id=source_turn_id if source_turn_id is not None else candidate.source_turn_id,
                 user_approved=True,

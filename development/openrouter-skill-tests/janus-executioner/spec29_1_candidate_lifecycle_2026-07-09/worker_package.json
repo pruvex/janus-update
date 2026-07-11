@@ -1,0 +1,80 @@
+{
+  "task_label": "Implement hidden routine candidate lifecycle and fail-closed guards",
+  "worker_profile": "cursor-agent",
+  "allowed_edit_paths": [
+    "backend/data/models.py",
+    "backend/data/database.py",
+    "backend/services/workflow/workflow_detector.py",
+    "backend/services/workflow/step_trace_extractor.py",
+    "backend/services/workflow/routine_store.py",
+    "backend/tests/test_workflow_detector.py",
+    "backend/tests/test_routine_store.py"
+  ],
+  "acceptance_criteria": [
+    "One qualifying successful multi-step workflow creates exactly one internal routine candidate instead of a visible saved routine.",
+    "Risky, sensitive, or strongly context-dependent workflows do not create a candidate in v1.",
+    "An unconfirmed candidate expires after 30 days and is no longer treated as active.",
+    "Only allowlisted paths are modified."
+  ],
+  "checks": [
+    {
+      "label": "focused_pytest_workflow_detector",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "backend/tests/test_workflow_detector.py",
+        "-v"
+      ]
+    },
+    {
+      "label": "focused_pytest_routine_store",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "backend/tests/test_routine_store.py",
+        "-v"
+      ]
+    },
+    {
+      "label": "py_compile",
+      "command": [
+        "python",
+        "-m",
+        "py_compile",
+        "backend/data/models.py",
+        "backend/data/database.py",
+        "backend/services/workflow/workflow_detector.py",
+        "backend/services/workflow/step_trace_extractor.py",
+        "backend/services/workflow/routine_store.py"
+      ]
+    }
+  ],
+  "forbidden_actions": [
+    "commit",
+    "push",
+    "tag",
+    "merge",
+    "release",
+    "publish",
+    "dependency",
+    "secret",
+    "auth",
+    "security",
+    "privacy",
+    "oauth",
+    "transport",
+    "ui",
+    "settings_surface",
+    "chat_transparency",
+    "automatic_promotion",
+    "architecture",
+    "migration"
+  ],
+  "requested_actions": [
+    "edit",
+    "run_checks"
+  ],
+  "task_prompt": "Implement TASK-SPEC29.1 only. Add the hidden candidate lifecycle for silent routine learning in v1. After one qualifying successful multi-step workflow, Janus should create exactly one internal candidate rather than a visible saved routine. Risky, sensitive, or strongly context-dependent workflows must fail closed and create no candidate. Unconfirmed candidates must expire after 30 days and no longer count as active learning candidates. Keep the slice strictly backend/persistence-only. Do not add automatic promotion, passive chat hints, settings UI, routines API, OAuth, transport changes, commits, dependencies, or broader architecture changes. Return concise JSON-compatible output with status, root_cause, changed_files, command_results, summary, and blockers."
+}

@@ -1,0 +1,14 @@
+{
+  "skill_id": "DOC-SKILL-006",
+  "model": "deepseek/deepseek-v4-flash",
+  "pass": false,
+  "failures": [
+    "finish_reason_length",
+    "missing_required_doc_skill_006_markers"
+  ],
+  "finish_reason": "length",
+  "actual_or_cost": 0.0,
+  "latency_ms": 11729,
+  "generation_id": "gen-1782397345-3gkbEXK5cNKYGhhveS8K",
+  "response_path": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-documentation-update\\strict-runs\\doc-skill-006\\deepseek-deepseek-v4-flash\\response_body.json"
+}

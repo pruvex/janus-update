@@ -1,0 +1,19 @@
+﻿
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+
+         
+{"id":"gen-1783531083-SDDMmWa6occNGCQSJXwG","object":"chat.completion","created":1783531083,"model":"qwen/qwen3-coder-30b-a3b-instruct","provider":"SiliconFlow","system_fingerprint":null,"service_tier":null,"choices":[{"index":0,"logprobs":null,"finish_reason":"stop","native_finish_reason":"stop","message":{"role":"assistant","content":"{\n  \"status\": \"PASS\",\n  \"target_task\": \"TASK-WORKFLOW-M3.1\",\n  \"precheck_decision\": \"PRECHECK_PASS_CANDIDATE\",\n  \"artifact_identity\": \"PASS\",\n  \"scope_status\": \"ATOMIC\",\n  \"risk_level\": \"LOW\",\n  \"blocking_issues\": [],\n  \"required_evidence\": [\n    \"pytest coverage for routine store CRUD\",\n    \"pytest coverage for step ordering and failed-step filtering\",\n    \"py_compile coverage for new workflow modules\",\n    \"scoped diff hygiene on the bound workflow task chain\"\n  ],\n  \"execution_handoff_ready\": \"YES\",\n  \"notes\": \"All acceptance criteria met. Scope is bounded and atomic. Required evidence is concrete and executable. No blocking issues identified.\"\n}","refusal":null,"reasoning":null}}],"usage":{"prompt_tokens":703,"completion_tokens":160,"total_tokens":863,"cost":0.00009401,"is_byok":false,"prompt_tokens_details":{"cached_tokens":0,"cache_write_tokens":0,"audio_tokens":0,"video_tokens":0},"cost_details":{"upstream_inference_cost":0.00009401,"upstream_inference_prompt_cost":0.00004921,"upstream_inference_completions_cost":0.0000448},"completion_tokens_details":{"reasoning_tokens":0,"image_tokens":0,"audio_tokens":0}}}

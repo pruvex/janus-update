@@ -1,0 +1,50 @@
+{
+  "workflow_id": "WF-BACKLOG-115-EXEC-GATE-2026-06-30-001",
+  "bound_skill_context": "janus-executioner",
+  "target_task": "BACKLOG-115",
+  "spec_path": "documentation/tasks/backlog_BACKLOG-115_oliver_kontaktkarte_zeigt_duplikate_und_unsaubere_haustierdetails.md",
+  "precheck_status": "PRE-CHECK PASSED",
+  "allowed_files": [
+    "backend/services/contact_manager.py",
+    "backend/data/crud.py",
+    "backend/tests/test_contact_manager.py",
+    "backend/tests/test_contact_card_normalization.py"
+  ],
+  "max_touched_files": 4,
+  "mini_test_plan": [
+    "python -m pytest backend/tests/test_contact_manager.py -q",
+    "python -m pytest backend/tests/test_contact_card_normalization.py -q",
+    "python -m py_compile backend/services/contact_manager.py backend/data/crud.py backend/tests/test_contact_manager.py backend/tests/test_contact_card_normalization.py"
+  ],
+  "manual_validation_gate": "Codex must still verify in Janus that the visible address-book path shows only one meaningful Oliver Schwab contact card and that duplicate or tautological Tasso/Garfield details no longer appear after the bounded cleanup.",
+  "delegation_question": "Produce one bounded patch candidate that keeps the visible Oliver Schwab contact selection on the richest real contact, suppresses empty historical exact duplicates from normal list/search presentation, and tightens personal-detail normalization so near-duplicate pet wording and tautological Garfield lines collapse to one clean owner-facing result.",
+  "current_seam_context": "The current local seam already prefers the richest exact duplicate in backend/services/contact_manager.py::_find_existing_contact_candidates for memory-applied pet updates, but the visible address-book path in contact_manager.list_contacts/search_contacts still delegates straight to crud.get_contacts/search_contacts_by_name. In backend/data/crud.py the visible response path already normalizes address and pet details through _normalize_contact_structured_fields, including named-pet collapse and raw pet trait rewrite, but it does not yet suppress empty historical duplicate Oliver rows or collapse close wording variants such as 'frisst gerne thunfisch' versus 'frisst gern thunfisch' and tautologies like 'Katze Garfield ist eine katze' when a stronger owner-facing line exists.",
+  "signature_context": "_find_existing_contact_candidates(db_session: Session, contact_name: str) -> Dict[str, Any]. get_contacts(db: Session, skip: int = 0, limit: int = 100) -> List[contact_schemas.ContactResponse]. search_contacts_by_name(db: Session, name_query: str) -> List[contact_schemas.ContactResponse]. list_contacts() -> List[contact_schemas.ContactResponse]. search_contacts(name_query: str) -> List[contact_schemas.ContactResponse]. Preserve these real local functions and keep the visible path bounded to them plus _normalize_contact_structured_fields.",
+  "call_shape_examples": [
+    "contacts = crud.get_contacts(db, limit=1000)",
+    "contacts = crud.search_contacts_by_name(db, name_query=name_query)",
+    "selected = max(exact_named, key=_candidate_completeness_score)"
+  ],
+  "exact_code_context_blocks": [
+    "backend/services/contact_manager.py::_find_existing_contact_candidates\\nexact_named = [\\n    row\\n    for row in all_contacts\\n    if any(alias[\"value\"] == normalized_name for alias in _candidate_aliases(row))\\n]\\nif len(exact_named) == 1:\\n    return {\"primary\": exact_named[0], \"mode\": \"exact\", \"candidates\": exact_named}\\nif len(exact_named) > 1:\\n    identity_signatures = {_candidate_identity_signature(candidate) for candidate in exact_named}\\n    if len(identity_signatures) == 1:\\n        selected = max(exact_named, key=_candidate_completeness_score)\\n        return {\"primary\": selected, \"mode\": \"exact\", \"candidates\": exact_named}\\n    return {\"primary\": None, \"mode\": \"ambiguous\", \"candidates\": exact_named}",
+    "backend/data/crud.py::_normalize_contact_structured_fields\\ndeduped_preferences = _dedupe_contact_string_list(cleaned_preferences)\\ndeduped_personal_details = _dedupe_contact_string_list(cleaned_personal_details)\\nhas_named_dog = any(detail.casefold().startswith(\"hat einen hund namens \") for detail in deduped_personal_details)\\nhas_named_cat = any(detail.casefold().startswith(\"hat eine katze namens \") for detail in deduped_personal_details)\\nfiltered_personal_details: List[str] = []\\nfor detail in deduped_personal_details:\\n    lowered = detail.casefold()\\n    if has_named_dog and lowered == \"hat einen hund\":\\n        changed = True\\n        continue\\n    if has_named_cat and lowered == \"hat eine katze\":\\n        changed = True\\n        continue\\n    filtered_personal_details.append(detail)",
+    "backend/data/crud.py::get_contacts_search_contacts_by_name\\ndef get_contacts(\\n    db: Session, skip: int = 0, limit: int = 100\\n) -> List[contact_schemas.ContactResponse]:\\n    contacts = db.query(models.Contact).offset(skip).limit(limit).all()\\n    changed = False\\n    responses = []\\n    for contact in contacts:\\n        changed = _normalize_contact_structured_fields(contact) or changed\\n        responses.append(_contact_response_from_model(contact))\\n    if changed:\\n        db.commit()\\n    return responses\\n\\ndef search_contacts_by_name(db: Session, name_query: str) -> List[contact_schemas.ContactResponse]:\\n    contacts = (\\n        db.query(models.Contact).filter(\\n            models.Contact.name.ilike(f'%{name_query}%')\\n        ).all()\\n    )\\n    changed = False\\n    responses = []\\n    for contact in contacts:\\n        changed = _normalize_contact_structured_fields(contact) or changed\\n        responses.append(_contact_response_from_model(contact))\\n    if changed:\\n        db.commit()\\n    return responses",
+    "backend/services/contact_manager.py::list_contacts_search_contacts\\ndef list_contacts() -> List[contact_schemas.ContactResponse]:\\n    logger.info(\"Rufe Liste aller Kontakte ab.\")\\n    db = next(database.get_db_sync())\\n    try:\\n        contacts = crud.get_contacts(db, limit=1000)\\n        return [contact_schemas.ContactResponse.model_validate(c) for c in contacts]\\n    finally:\\n        db.close()\\n\\ndef search_contacts(name_query: str) -> List[contact_schemas.ContactResponse]:\\n    logger.info(f\"Suche nach Kontakten mit '{name_query}' im Namen.\")\\n    db = next(database.get_db_sync())\\n    try:\\n        contacts = crud.search_contacts_by_name(db, name_query=name_query)\\n        return [contact_schemas.ContactResponse.model_validate(c) for c in contacts]\\n    finally:\\n        db.close()"
+  ],
+  "forbidden_anchors": [
+    "class ContactManager",
+    "new contact repository layer",
+    "broad memory architecture redesign",
+    "frontend rewrite",
+    "migration script outside allowlist"
+  ],
+  "required_current_anchors": [
+    "_find_existing_contact_candidates",
+    "_normalize_contact_structured_fields",
+    "_normalize_contact_personal_detail_text",
+    "get_contacts",
+    "search_contacts_by_name",
+    "list_contacts",
+    "search_contacts"
+  ]
+}

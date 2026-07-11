@@ -1,0 +1,98 @@
+{
+  "backend": "cursor",
+  "lane_id": "execution_patch_candidate",
+  "workflow_id": "WF-SPEC31.1-EXEC-PATCH-2026-07-09-002",
+  "selected_model": "kimi-k2.7-code",
+  "cursor_pool": "api",
+  "estimated_cost_usd_static": 0.019379999999999998,
+  "session_id": "23ff3aee-3d5b-49d5-8ff6-a2a24c5c1f54",
+  "validation_result": "PASS",
+  "selected_path": "cursor_worker_live_mockable",
+  "final_outcome": "CURSOR_WORKER_READY_FOR_CODEX_REVIEW",
+  "package_validation": {
+    "validation_result": "PASS",
+    "contract_status": "TASK_PACKAGE_VALID_VIA_WORKER_REFERENCE",
+    "issues": [],
+    "task_label": "Implement semantic multi-step routine reuse core with calendar+routing pilot",
+    "worker_profile": "cursor-agent",
+    "allowed_edit_paths": [
+      "backend/services/orchestrator/intent_engine.py",
+      "backend/services/workflow/routine_runner.py",
+      "backend/services/chat_orchestrator.py",
+      "backend/tests/test_routine_runner.py",
+      "backend/tests/test_workflow_offer_service.py",
+      "backend/tests/unit/test_chat_orchestrator_routine_execution.py"
+    ],
+    "required_result_artifacts": [
+      "RESULT.json",
+      "RESULT.md",
+      "DIFF.patch",
+      "FILES_CHANGED.txt",
+      "CHECKS.log",
+      "COST.json"
+    ],
+    "source_package_path": "development\\openrouter-skill-tests\\janus-executioner\\spec31_1_semantic_routine_reuse_2026-07-09\\input_package.json",
+    "worker_package_path": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-executioner\\spec31_1_semantic_routine_reuse_2026-07-09\\worker_package.json"
+  },
+  "allowlist_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "allowlist": [
+      "backend/services/orchestrator/intent_engine.py",
+      "backend/services/workflow/routine_runner.py",
+      "backend/services/chat_orchestrator.py",
+      "backend/tests/test_routine_runner.py",
+      "backend/tests/test_workflow_offer_service.py",
+      "backend/tests/unit/test_chat_orchestrator_routine_execution.py"
+    ]
+  },
+  "allowlist_consistency_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "package_allowed_edit_paths": [
+      "backend/services/orchestrator/intent_engine.py",
+      "backend/services/workflow/routine_runner.py",
+      "backend/services/chat_orchestrator.py",
+      "backend/tests/test_routine_runner.py",
+      "backend/tests/test_workflow_offer_service.py",
+      "backend/tests/unit/test_chat_orchestrator_routine_execution.py"
+    ],
+    "allowlist": [
+      "backend/services/orchestrator/intent_engine.py",
+      "backend/services/workflow/routine_runner.py",
+      "backend/services/chat_orchestrator.py",
+      "backend/tests/test_routine_runner.py",
+      "backend/tests/test_workflow_offer_service.py",
+      "backend/tests/unit/test_chat_orchestrator_routine_execution.py"
+    ],
+    "declared_allowlist_file": "C:\\KI\\Janus-Projekt\\development\\openrouter-skill-tests\\janus-executioner\\spec31_1_semantic_routine_reuse_2026-07-09\\allowlist.txt"
+  },
+  "accepted_source_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "accepted_source_run_dir": null,
+    "recognized_artifacts": []
+  },
+  "accepted_source_run_dir": null,
+  "planned_command": [
+    "C:\\Users\\pruve\\AppData\\Local\\cursor-agent\\agent.CMD",
+    "-p",
+    "--workspace",
+    "C:\\KI\\Janus-Projekt\\backend",
+    "--model",
+    "kimi-k2.7-code",
+    "--output-format",
+    "json",
+    "--force",
+    "--trust",
+    "--approve-mcps",
+    "Execute this bounded Janus delegated worker task now. Treat the full prompt below as instructions, not as text to analyze. Do not ask clarifying questions unless the task is impossible with the provided files and rules.\n\nStable prefix:\n- lane: execution_patch_candidate\n- worker_contract: janus-delegated-worker\n- output_schema: status, changed_files, command_results, summary, blockers\n- hard_rules: stay bounded, do not commit, do not leave the allowlist\n\nVariable suffix:\nImplement TASK-SPEC31.1 only. Current behavior already has a narrow natural reuse path for calendar+weather, but Spec 31 now requires a general semantic multi-step routine reuse core on the existing saved-routine path plus the first safe calendar.list_events + system.routing pilot. A later natural request from that pilot family must reuse a matching saved routine when the semantic structure matches and current request values can be rebound safely. Current request values for date, start, or destination must override historical routine-run values. Preserve the existing calendar+weather natural reuse behavior and keep the short passive routine-used hint. Add focused regression tests. Do not add UI, routine management, embeddings, vector search, provider fallback, transport changes, OAuth, product OpenRouter, migrations, commits, or broader architecture changes. Return concise JSON-compatible output with status, root_cause, changed_files, command_results, summary, and blockers.\nTask label: Implement semantic multi-step routine reuse core with calendar+routing pilot\nUse Cursor for one bounded execution patch. Inspect only allowlisted files, implement the smallest safe semantic multi-step routine reuse core plus the calendar+routing pilot with fresh parameter precedence, preserve the weather regression path, run the listed checks, and return concise JSON-compatible output.\nAcceptance criteria:\n- Only allowlisted backend routine/orchestrator files and focused tests may change.\n- A natural request from the pilot family calendar.list_events + system.routing can reuse a matching saved routine through the general semantic multi-step reuse core.\n- Current request values for date, start, or destination override historical routine-run values.\n- The existing natural reuse path for calendar.list_events + system.weather remains intact.\n- Successful reuse still shows only the short passive routine-used hint.\n- Do not add UI, routine management, embeddings, vector search, provider fallback, transport changes, OAuth, Git, release, or broader architecture changes.\nAllowed edit paths:\n- backend/services/orchestrator/intent_engine.py\n- backend/services/workflow/routine_runner.py\n- backend/services/chat_orchestrator.py\n- backend/tests/test_routine_runner.py\n- backend/tests/test_workflow_offer_service.py\n- backend/tests/unit/test_chat_orchestrator_routine_execution.py\nReturn status, changed_files, command_results, summary, and blockers as concise JSON-compatible output.\n\nWorkspace root: C:\\KI\\Janus-Projekt\\backend\nWorkspace-relative edit paths:\n- services/orchestrator/intent_engine.py\n- services/workflow/routine_runner.py\n- services/chat_orchestrator.py\n- tests/test_routine_runner.py\n- tests/test_workflow_offer_service.py\n- tests/unit/test_chat_orchestrator_routine_execution.py"
+  ],
+  "mode": "proposal_first",
+  "workspace_root": "C:\\KI\\Janus-Projekt\\backend",
+  "live_execution_allowed": false,
+  "codex_review_required": true,
+  "changed_files": [],
+  "changed_outside_allowlist": [],
+  "operator_message": "Cursor worker finished the bounded slice and returned artifacts for Codex review."
+}

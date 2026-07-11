@@ -1,0 +1,19 @@
+{
+  "changed_files": [
+    "backend/services/contact_manager.py"
+  ],
+  "codex_acceptance_rule": "Codex must review and apply or reject locally.",
+  "manual_validation_note": "Codex must manually validate this patch locally before task completion.",
+  "notes": "The patch fixes unreachable code in stage_contact_update_from_memory by moving the proposal persistence block after the else clause that returns a proposed dict. This ensures that proposals are properly handled when auto-apply is disabled.",
+  "patch_text": "--- a/backend/services/contact_manager.py\n+++ b/backend/services/contact_manager.py\n@@ -120,10 +120,10 @@ def stage_contact_update_from_memory(\n         )\n \n     if _should_auto_apply_contact_memory_update(\n-        memory=memory,\n-        match_mode=match_mode,\n-        metadata=metadata,\n-        proposal_payload=proposal_payload,\n-    ):\n-        return _apply_contact_memory_update_directly(\n-            db_session,\n-            target_contact=target_contact,\n-            proposal_payload=proposal_payload,\n-        )\n-    else:\n-        return {\n-            \"status\": \"proposed\",\n-            \"reason\": \"requires_review\",\n-            \"proposals_staged\": 1,\n-            \"proposal_payload\": proposal_payload,\n-            \"target_contact_id\": target_contact.id,\n-        }\n-\n-    proposal_payload[\"memory_sync_status\"] = \"ready\"\n-    proposal_payload[\"proposal_metadata\"] = {\n-        \"memory_id\": getattr(memory, \"id\", None),\n-        \"memory_category\": metadata.get(\"category\"),\n-        \"memory_fact\": metadata.get(\"fact\"),\n-        \"sensitive\": bool(metadata.get(\"sensitive\")),\n-        \"source_context\": _MEMORY_PROPOSAL_SOURCE,\n-    }\n+        memory=memory,\n+        match_mode=match_mode,\n+        metadata=metadata,\n+        proposal_payload=proposal_payload,\n+    ):\n+        return _apply_contact_memory_update_directly(\n+            db_session,\n+            target_contact=target_contact,\n+            proposal_payload=proposal_payload,\n+        )\n+    else:\n+        proposal_payload[\"memory_sync_status\"] = \"ready\"\n+        proposal_payload[\"proposal_metadata\"] = {\n+            \"memory_id\": getattr(memory, \"id\", None),\n+            \"memory_category\": metadata.get(\"category\"),\n+            \"memory_fact\": metadata.get(\"fact\"),\n+            \"sensitive\": bool(metadata.get(\"sensitive\")),\n+            \"source_context\": _MEMORY_PROPOSAL_SOURCE,\n+        }\n+        return {\n+            \"status\": \"proposed\",\n+            \"reason\": \"requires_review\",\n+            \"proposals_staged\": 1,\n+            \"proposal_payload\": proposal_payload,\n+            \"target_contact_id\": target_contact.id,\n+        }\n",
+  "risk_list": [
+    "Risk of introducing a logic regression if the moved code block is not correctly integrated into the control flow.",
+    "Risk of breaking existing tests if the order of operations in the proposal handling changes unexpectedly."
+  ],
+  "status": "PASS",
+  "suggested_validation_steps": [
+    "Run backend/tests/test_contact_manager.py to verify contact manager behavior.",
+    "Run backend/tests/test_memory_tools.py to verify memory tool integration."
+  ],
+  "target_task": "BACKLOG-108"
+}

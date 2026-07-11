@@ -1,0 +1,29 @@
+{
+  "task_id": "TASK-SPEC29.2-DBG-DATE-GUARD",
+  "lane_id": "debug_repro_investigation",
+  "bound_skill_context": "janus-debug",
+  "task_label": "Debug semantic routine reuse across mismatched weather date references",
+  "worker_package_json": "development/openrouter-skill-tests/janus-debug/workflow_spec29_2_routine_date_guard_2026-07-09/worker_package.json",
+  "allowlist_file": "development/openrouter-skill-tests/janus-debug/workflow_spec29_2_routine_date_guard_2026-07-09/allowlist.txt",
+  "failure_code": "SPEC29_2_SEMANTIC_REUSE_IGNORES_WEATHER_DATE_REFERENCE",
+  "latest_user_evidence": {
+    "timestamp_local": "2026-07-09 17:38 +02:00",
+    "prompt": "habe ich heute noch termine und wie wird morgen das wetter in köln?",
+    "actual": "Janus reused a saved routine and answered with weather for Koeln today instead of tomorrow.",
+    "expected": "Semantic routine reuse must not trigger when the stored weather step is bound to today but the user asks for tomorrow."
+  },
+  "acceptance_criteria": [
+    "Only the allowlisted routine runner and focused routine tests may change.",
+    "Semantic reuse must reject mismatched weather date/time references such as today versus tomorrow.",
+    "Semantic reuse must still work for same-date calendar plus weather requests.",
+    "Existing city guard behavior must remain intact.",
+    "Run the focused pytest command before returning."
+  ],
+  "local_validation_command": "python -m pytest backend/tests/test_routine_runner.py -q",
+  "redaction_ready": true,
+  "estimated_codex_saved_tokens": 12000,
+  "estimated_delegation_overhead_tokens": 3000,
+  "recommended_backend": "cursor",
+  "recommended_model": "composer-2.5",
+  "cursor_prompt_contract": "Use Cursor Composer for one bounded debug slice. Inspect only the allowlisted routine runner and test file, fix the weather date/time-reference guard for semantic routine reuse, run the listed pytest command, and return concise JSON-compatible output."
+}

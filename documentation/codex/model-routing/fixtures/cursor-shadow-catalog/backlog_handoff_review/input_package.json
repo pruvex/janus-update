@@ -1,0 +1,20 @@
+{
+  "task_id": "TASK-BH-001",
+  "lane_id": "backlog_handoff_review",
+  "bound_skill_context": "janus-backlog-handoff",
+  "task_label": "Add one explicit precheck entry recommendation to the shadow backlog handoff summary",
+  "worker_package_json": "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/backlog_handoff_review/worker_package.json",
+  "allowlist_file": "documentation/codex/model-routing/fixtures/cursor-shadow-catalog/backlog_handoff_review/allowlist.txt",
+  "acceptance_criteria": [
+    "Only the allowlisted shadow summary file may change.",
+    "The summary must recommend PRE_IMPLEMENTATION_VERIFICATION exactly once.",
+    "The focused shadow pytest command must pass before Codex review."
+  ],
+  "local_validation_command": "python -m pytest documentation/codex/model-routing/fixtures/cursor-shadow-catalog/backlog_handoff_review/sandbox/test_backlog_handoff_shadow.py -q",
+  "redaction_ready": true,
+  "estimated_codex_saved_tokens": 12000,
+  "estimated_delegation_overhead_tokens": 4000,
+  "recommended_backend": "cursor",
+  "recommended_model": "glm-5.2-high",
+  "cursor_prompt_contract": "Edit only the allowlisted shadow handoff summary file. Run only the focused pytest command. Do not commit. Return concise JSON-friendly output."
+}

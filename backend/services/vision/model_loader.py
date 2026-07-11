@@ -1,11 +1,21 @@
 import logging
 import threading
 import torch
-import clip
 from pathlib import Path
 import sys
 
 logger = logging.getLogger("janus_backend")
+
+try:
+    import clip  # type: ignore
+    _CLIP_IMPORT_ERROR = None
+except Exception as exc:  # pragma: no cover - depends on local native deps
+    clip = None  # type: ignore
+    _CLIP_IMPORT_ERROR = exc
+    logger.warning(
+        "VISION: CLIP import failed during model_loader import; local vision stays disabled until dependencies are fixed."
+    )
+    logger.debug("VISION: CLIP import error details: %s", exc, exc_info=True)
 
 
 class ModelLoadingState:
@@ -26,9 +36,17 @@ class ClipModelLoader:
         self.error_message = None
         self._load_thread = None
         self._load_started = False
+        if _CLIP_IMPORT_ERROR is not None or clip is None:
+            self.state = ModelLoadingState.MODEL_ERROR
+            self.error_message = f"clip import failed: {_CLIP_IMPORT_ERROR}"
         
     def start_async_load(self):
         """Startet den asynchronen Download im Hintergrund."""
+        if clip is None:
+            self.state = ModelLoadingState.MODEL_ERROR
+            self.error_message = f"clip import failed: {_CLIP_IMPORT_ERROR}"
+            logger.warning("MODEL-LOADER: Async CLIP load skipped because clip import is unavailable.")
+            return
         if self._load_started:
             logger.info("MODEL-LOADER: Download bereits gestartet.")
             return
@@ -40,6 +58,11 @@ class ClipModelLoader:
         
     def _load_clip_model(self):
         """Lädt das CLIP-Model asynchron im Hintergrund."""
+        if clip is None:
+            self.state = ModelLoadingState.MODEL_ERROR
+            self.error_message = f"clip import failed: {_CLIP_IMPORT_ERROR}"
+            logger.warning("MODEL-LOADER: CLIP load aborted because clip import is unavailable.")
+            return
         try:
             logger.info(f"MODEL-LOADER: Starte CLIP-Model-Download auf {self.device}...")
             self.model, self.preprocess = clip.load("ViT-B/32", device=self.device)

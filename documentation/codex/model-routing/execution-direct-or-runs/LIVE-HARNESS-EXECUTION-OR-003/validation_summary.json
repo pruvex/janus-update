@@ -1,0 +1,19 @@
+{
+  "workflow_id": "LIVE-HARNESS-EXECUTION-OR-003",
+  "validation_result": "FAIL",
+  "budget_profile": "execution_patch_candidate",
+  "issues": [
+    "BLOCKED result must not include patch_text content",
+    "BLOCKED result must not declare changed_files"
+  ],
+  "allowed_files": [
+    "development/openrouter-skill-tests/execution_patch_candidate_live_harness/math_utils.py"
+  ],
+  "changed_files": [
+    "development/openrouter-skill-tests/execution_patch_candidate_live_harness/math_utils.py"
+  ],
+  "max_touched_files": 1,
+  "finish_reason": "stop",
+  "actual_or_cost": 0.00607275,
+  "cost_cap": 0.05
+}

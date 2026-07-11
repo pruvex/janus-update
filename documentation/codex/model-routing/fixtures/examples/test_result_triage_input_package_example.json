@@ -1,0 +1,19 @@
+{
+  "task_id": "TASK-TP-005",
+  "lane_id": "test_result_triage_review",
+  "workflow_id": "WF-TRIAGE-EXAMPLE-001",
+  "bound_skill_context": "janus-test-pipeline",
+  "test_run_id": "TEST-RUN-042",
+  "result_outcome_summary": "Live run failed with one infra-style auth/setup blocker and one assertion mismatch.",
+  "evidence_snippets": [
+    "Result JSON reports failed=2, passed=0.",
+    "First failure mentions missing local dev auth header reference without exposing secret value.",
+    "Second failure is RUNNER_ARTIFACT_MISMATCH between generated plan and executed runner.",
+    "Codex keeps rerun, Backlog routing, and final classification ownership."
+  ],
+  "classification_question": "Split the failures into INFRA_BLOCKER vs TEST_BUG vs PRODUCT_BUG and name the best next skill for each.",
+  "redaction_ready": true,
+  "candidate_blocker_category": "INFRA_BLOCKER",
+  "recommended_backend": "openrouter",
+  "recommended_model": "qwen/qwen3-coder-30b-a3b-instruct"
+}
