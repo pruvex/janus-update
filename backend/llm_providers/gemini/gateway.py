@@ -12,7 +12,7 @@ import json
 import logging
 import re
 import uuid
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from .compiler import GeminiCompiler
 from .link_renderer import get_link_renderer
@@ -753,6 +753,13 @@ class GeminiGateway(BaseProviderGateway):
         return response
 
     async def _run_simple_tool_loop(self, **kwargs) -> Dict[str, Any]:
+        from backend.llm_providers.shared.tool_loop_runner import TRANSPORT_TOOL_LOOP_RUNNER_ENABLED
+
+        if TRANSPORT_TOOL_LOOP_RUNNER_ENABLED:
+            return await self._run_simple_tool_loop_with_runner(**kwargs)
+        return await self._run_legacy_simple_tool_loop(**kwargs)
+
+    async def _run_legacy_simple_tool_loop(self, **kwargs) -> Dict[str, Any]:
         """
         Interne Implementierung des Tool-Loops.
         MoA-Integration: Tool-Loop mit optimiertem Modell, Synthese mit User-Modell.
@@ -971,6 +978,242 @@ class GeminiGateway(BaseProviderGateway):
             )
 
         return {"text": "Maximale Tool-Runden erreicht.", "tool_limit_reached": True}
+
+    async def _run_simple_tool_loop_with_runner(self, **kwargs) -> Dict[str, Any]:
+        from backend.llm_providers.shared.moa import resolve_moa_model
+        from backend.llm_providers.shared.tool_loop_runner import (
+            NonToolResponseAction,
+            ToolLoopContext,
+            ToolLoopRunner,
+        )
+        from backend.llm_providers.shared.utils import (
+            _apply_routing_quality_guards,
+            _build_tool_definitions_for_llm,
+            _filter_tools_by_skill_ids,
+            _prevalidate_tool_calls,
+        )
+
+        passthrough_kwargs = dict(kwargs or {})
+        provider = passthrough_kwargs.pop("provider", None)
+        model = passthrough_kwargs.pop("model", None)
+        api_key = passthrough_kwargs.pop("api_key", None)
+        chat_history = passthrough_kwargs.pop("chat_history", [])
+        user_prompt = passthrough_kwargs.pop("user_prompt", "")
+        allowed_skill_ids = passthrough_kwargs.pop("allowed_skill_ids", None)
+        tool_executor = passthrough_kwargs.pop("tool_executor", None)
+        max_tool_rounds = passthrough_kwargs.pop("max_tool_rounds", 5)
+        passthrough_kwargs.pop("background_tasks", None)
+        image_data = passthrough_kwargs.pop("image_data", None)
+        force_tool_name = str(passthrough_kwargs.pop("force_tool_name", "") or "").strip() or None
+        provider_service = passthrough_kwargs.pop("provider_service", None) or self.service
+        db = passthrough_kwargs.pop("db", None)
+        chat_id = passthrough_kwargs.pop("chat_id", None)
+        is_list_query = passthrough_kwargs.pop("is_list_query", None)
+        if is_list_query is None:
+            is_list_query = self._is_list_query(str(user_prompt or "").strip().lower())
+
+        round_state: Dict[str, Any] = {"grounding_metadata": {}}
+
+        context = ToolLoopContext(
+            provider=str(provider or "gemini"),
+            model=model,
+            api_key=api_key,
+            chat_history=list(chat_history),
+            user_prompt=user_prompt,
+            allowed_skill_ids=allowed_skill_ids,
+            tool_executor=tool_executor,
+            max_tool_rounds=max_tool_rounds,
+            image_data=image_data,
+            force_tool_name=force_tool_name,
+            passthrough_kwargs=passthrough_kwargs,
+        )
+
+        def resolve_gemini_execution_model(loop_context: ToolLoopContext) -> Tuple[str, bool]:
+            user_base_model = loop_context.model
+            visible_override = self._extract_visible_model_override(loop_context.chat_history)
+            if loop_context.allowed_skill_ids and "system.websearch" in loop_context.allowed_skill_ids:
+                tool_execution_model = visible_override or "gemini-3-flash-preview"
+                moa_active = bool(visible_override)
+                if visible_override:
+                    logger.info(
+                        "GEMINI-OVERRIDE: Visible override '%s' applied for system.websearch.",
+                        visible_override,
+                    )
+                elif tool_execution_model != user_base_model:
+                    logger.info(
+                        "GEMINI-WEBSEARCH-POLICY: Defaulting system.websearch to '%s'.",
+                        tool_execution_model,
+                    )
+            else:
+                tool_execution_model, moa_active = resolve_moa_model(
+                    provider=loop_context.provider,
+                    user_base_model=user_base_model,
+                    allowed_skill_ids=loop_context.allowed_skill_ids,
+                )
+                if visible_override:
+                    tool_execution_model = visible_override
+                    moa_active = True
+                    logger.info(
+                        "GEMINI-OVERRIDE: Forced model '%s' successfully applied.",
+                        visible_override,
+                    )
+
+            if moa_active and tool_execution_model != user_base_model:
+                logger.info(
+                    "GEMINI MOA: Force model switch %s -> %s",
+                    user_base_model,
+                    tool_execution_model,
+                )
+            return tool_execution_model, moa_active
+
+        def resolve_gemini_max_tool_rounds(loop_context: ToolLoopContext) -> int:
+            effective_rounds = loop_context.max_tool_rounds
+            if is_list_query:
+                previous_round_cap = effective_rounds
+                effective_rounds = max(effective_rounds, 12)
+                if effective_rounds != previous_round_cap:
+                    logger.info(
+                        "DIAMOND-RESEARCH: Listen-Anfrage. Max Tool-Rounds auf %s erhoeht.",
+                        effective_rounds,
+                    )
+            return effective_rounds
+
+        def on_gemini_round_response(response: Dict[str, Any], loop_context: ToolLoopContext) -> None:
+            grounding_metadata = response.get("grounding_metadata") or {}
+            round_state["grounding_metadata"] = grounding_metadata
+            raw_queries = (
+                grounding_metadata.get("web_search_queries")
+                or grounding_metadata.get("webSearchQueries")
+                or []
+            )
+            valid_queries = [str(query or "").strip() for query in raw_queries if str(query or "").strip()]
+            search_cost = len(valid_queries) * 0.01
+            loop_context.loop_websearch_queries += len(valid_queries)
+            loop_context.loop_cost_eur += search_cost
+            if valid_queries:
+                logger.info(
+                    "GEMINI-SEARCH-BILLING: %d queries billed at %.4f EUR.",
+                    len(valid_queries),
+                    search_cost,
+                )
+
+        def _apply_gemini_grounding_cost(
+            response: Dict[str, Any],
+            loop_context: ToolLoopContext,
+        ) -> Dict[str, Any]:
+            grounding_metadata = response.get("grounding_metadata") or {}
+            raw_queries = (
+                grounding_metadata.get("web_search_queries")
+                or grounding_metadata.get("webSearchQueries")
+                or []
+            )
+            valid_queries = [str(query or "").strip() for query in raw_queries if str(query or "").strip()]
+            search_cost = len(valid_queries) * 0.01
+            loop_context.loop_websearch_queries += len(valid_queries)
+            loop_context.loop_cost_eur += search_cost
+            if valid_queries:
+                logger.info(
+                    "GEMINI-SEARCH-BILLING: %d queries billed at %.4f EUR.",
+                    len(valid_queries),
+                    search_cost,
+                )
+            return grounding_metadata
+
+        async def handle_non_tool_response(
+            response: Dict[str, Any],
+            loop_context: ToolLoopContext,
+            round_force: Optional[str],
+        ) -> NonToolResponseAction:
+            grounding_metadata = round_state.get("grounding_metadata") or {}
+
+            if loop_context.moa_active:
+                logger.info(
+                    "SKILL-MOA RETURN: Tool-Loop abgeschlossen mit '%s'.",
+                    loop_context.tool_execution_model,
+                )
+                synthesis_response = await provider_service.generate_response(
+                    api_key=api_key,
+                    model=loop_context.tool_execution_model,
+                    messages=loop_context.chat_history,
+                    tools=None,
+                    image_data=None,
+                )
+                synthesis_response = _apply_routing_quality_guards(
+                    synthesis_response,
+                    loop_context.chat_history,
+                )
+                synthesis_cost = synthesis_response.get("cost") or {}
+                synthesis_usage = synthesis_response.get("usage") or {}
+                loop_context.loop_cost_eur += float(synthesis_cost.get("total_cost", 0.0))
+                loop_context.loop_input_tokens += int(synthesis_usage.get("input_tokens", 0))
+                loop_context.loop_output_tokens += int(synthesis_usage.get("output_tokens", 0))
+                synthesis_grounding_metadata = _apply_gemini_grounding_cost(
+                    synthesis_response,
+                    loop_context,
+                )
+                synthesis_response["cost"] = {"total_cost": loop_context.loop_cost_eur}
+                synthesis_response["usage"] = {
+                    "input_tokens": loop_context.loop_input_tokens,
+                    "output_tokens": loop_context.loop_output_tokens,
+                }
+                attribution_result = self._persist_gemini_request_costs(
+                    db=db,
+                    provider=provider,
+                    model=loop_context.tool_execution_model,
+                    chat_id=chat_id,
+                    conversation_cost_eur=loop_context.loop_cost_eur,
+                    input_tokens=loop_context.loop_input_tokens,
+                    output_tokens=loop_context.loop_output_tokens,
+                    websearch_query_count=loop_context.loop_websearch_queries,
+                    grounding_metadata=synthesis_grounding_metadata or grounding_metadata,
+                    request_kind="simple_tool_loop",
+                )
+                synthesis_response["_preserved_metadata"] = (
+                    synthesis_response.get("grounding_metadata")
+                    or synthesis_response.get("groundingMetadata")
+                )
+                synthesis_response["_cost_attribution"] = attribution_result
+                synthesis_response["moa_tool_model"] = loop_context.tool_execution_model
+                synthesis_response["moa_synthesis_model"] = loop_context.tool_execution_model
+                return NonToolResponseAction(kind="return", response=synthesis_response)
+
+            response = _apply_routing_quality_guards(response, loop_context.chat_history)
+            response["cost"] = {"total_cost": loop_context.loop_cost_eur}
+            response["usage"] = {
+                "input_tokens": loop_context.loop_input_tokens,
+                "output_tokens": loop_context.loop_output_tokens,
+            }
+            attribution_result = self._persist_gemini_request_costs(
+                db=db,
+                provider=provider,
+                model=loop_context.tool_execution_model,
+                chat_id=chat_id,
+                conversation_cost_eur=loop_context.loop_cost_eur,
+                input_tokens=loop_context.loop_input_tokens,
+                output_tokens=loop_context.loop_output_tokens,
+                websearch_query_count=loop_context.loop_websearch_queries,
+                grounding_metadata=grounding_metadata,
+                request_kind="simple_tool_loop",
+            )
+            response["_preserved_metadata"] = response.get("grounding_metadata") or response.get(
+                "groundingMetadata"
+            )
+            response["_cost_attribution"] = attribution_result
+            return NonToolResponseAction(kind="return", response=response)
+
+        return await ToolLoopRunner().run(
+            service=provider_service,
+            context=context,
+            sanitize_generate_response_kwargs=self._sanitize_generate_response_kwargs,
+            prepare_history_for_second_call=self.service.prepare_history_for_second_call,
+            handle_non_tool_response=handle_non_tool_response,
+            filter_tools_by_skill_ids=_filter_tools_by_skill_ids,
+            build_tool_definitions_for_llm=_build_tool_definitions_for_llm,
+            prevalidate_tool_calls=_prevalidate_tool_calls,
+            resolve_execution_model=resolve_gemini_execution_model,
+            resolve_max_tool_rounds=resolve_gemini_max_tool_rounds,
+            on_round_response=on_gemini_round_response,
+        )
 
     async def _run_drill_down_list_research(
         self,

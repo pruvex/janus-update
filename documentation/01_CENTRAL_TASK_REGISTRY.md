@@ -4,6 +4,14 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-M6.4 - Migrate the Gemini gateway to the shared ToolLoopRunner
+
+- **Status**: DONE WITH NON-BLOCKING FOLLOW-UP
+- **Final Audit**: `documentation/tasks/TASK-M6.4_final_audit.md` (PASS WITH FIXES)
+- **Spec**: `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md` (Section 3.3.2 / Phase-A T-A4 only; parent Spec remains in progress)
+- **Validation**: Gemini runner `6/6`, syntax, execution-result, and final-audit validation passed; gateway-owned policy, grounding, attribution, history, and synthesis remain intact.
+- **Follow-up**: Cursor Windows output decoding and the local ChromaDB SQLite panic remain separate infrastructure work. `T-A5` remains open.
+
 ### TASK-M6.3 - Extract the OpenAI ToolLoopRunner behind a default-off flag
 
 - **Status**: DONE WITH NON-BLOCKING FOLLOW-UP

@@ -1,0 +1,3 @@
+backend/llm_providers/gemini/gateway.py
+backend/llm_providers/shared/tool_loop_runner.py
+backend/tests/test_gemini_tool_loop_runner.py

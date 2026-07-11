@@ -299,6 +299,25 @@ class ToolLoopRunner:
 - Non-blocking follow-up: Cursor Composer started through the valid direct worker package but timed out without structured output; the shared delegate/worker contract requires a separate infrastructure debug slice before Cursor can be treated as autonomous/productive.
 - Spec status remains in progress: `T-A4` and `T-A5` remain separate, open Phase-A tasks.
 
+### 3.3.2 Phase-A T-A4 Gemini runner-boundary decision
+
+**Decision (2026-07-11):** `ToolLoopRunner` remains provider-neutral. Gemini supplies gateway-owned callbacks/context for model selection, effective round limit, and per-response observability; it retains all Gemini-native policy and post-loop behavior.
+
+**Gemini gateway retains:**
+- visible model override and the `system.websearch` Flash-default policy;
+- list-query round-cap policy;
+- grounding metadata/query-cost accumulation and Gemini request-cost attribution;
+- native proto/schema/history bridging, routing guards, synthesis, preserved metadata, engine-owned handling, and drill-down paths.
+
+**Runner receives only:** resolved model/MoA state, the effective max-round value, and generic per-response facts needed to drive the bounded tool round. It must not embed Gemini policy, grounding, attribution, synthesis, or drill-down logic.
+
+**Consequences for T-A4:**
+- the default-off behavior remains unchanged until the bounded Gemini runner route is enabled;
+- `T-A4` migrates only `_run_simple_tool_loop`; engine-owned and drill-down paths stay outside this task;
+- focused regressions must prove native Gemini policy/metadata/history preservation alongside runner ownership.
+
+**T-A4 implementation status (2026-07-11):** `TASK-M6.4` final audit is `PASS WITH FIXES` (`documentation/tasks/TASK-M6.4_final_audit.md`). Focused Gemini runner evidence (`6/6`) preserves the gateway-owned policy, grounding, attribution, native history, and synthesis boundary. `T-A5` remains the only open Phase-A task.
+
 ### 3.4 Eine `MODEL_HIERARCHY`
 
 **Entscheidung:** `MOA_MODEL_HIERARCHY` in `shared/moa.py` wird **einzige Quelle**.
@@ -561,4 +580,4 @@ Constraints: OpenAICompatTransport zuerst; GeminiNativeTransport 1:1 Wrap besteh
 - **Reviewed At:** 2026-07-11
 - **Review Confidence:** HIGH
 - **Review Source:** janus-spec-review
-- **Approved Decision:** Preserve the active orchestrator mapping by migrating its OpenAI, Gemini, and Ollama values into `MOA_MODEL_HIERARCHY`, including the `fast` tier.
+- **Approved Decision:** Preserve the active orchestrator mapping by migrating its OpenAI, Gemini, and Ollama values into `MOA_MODEL_HIERARCHY`, including the `fast` tier; keep `ToolLoopRunner` provider-neutral while Gemini supplies callback/context inputs and retains native policy, grounding, attribution, synthesis, and drill-down behavior.

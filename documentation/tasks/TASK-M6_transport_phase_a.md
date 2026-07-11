@@ -125,6 +125,11 @@ TASK-M6
 - Model: 5.6 Terra
 - Reason:
   - This follows the explicit Spec migration order and must remain separate from OpenAI extraction for diagnosis.
+- Closeout:
+  - Final Audit: `PASS WITH FIXES` in `documentation/tasks/TASK-M6.4_final_audit.md`.
+  - Gemini now uses the provider-neutral runner only through gateway-owned callbacks; Flash/override policy, list rounds, grounding/cost attribution, native history, synthesis, engine-owned, and drill-down behavior remain in the gateway.
+  - Focused Gemini runner (`6/6`), syntax, execution-result, and final-audit validation passed.
+  - `T-A5` remains open; changelog skipped because this is internal default-off provider-routing work.
 
 ### TASK-M6.5 Route streaming through the gateway and ToolLoopRunner path
 - Ziel:

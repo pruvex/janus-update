@@ -1,6 +1,158 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-11 19:25 +02:00`, `TASK-M6.4` implementation is complete locally. Gemini `_run_simple_tool_loop` now dispatches through `ToolLoopRunner` when `TRANSPORT_TOOL_LOOP_RUNNER_ENABLED=true`; the legacy path remains default-off and behavior-preserving. Gemini gateway callbacks own model/Flash override policy, list-query round caps, grounding query-cost accumulation, synthesis, attribution, and native history bridging.
+
+Current goal: manual Janus validation and `janus-final-audit` for `TASK-M6.4`.
+
+Active phase: `janus-executioner`, canonical state `PASS`.
+
+Last Codex work:
+- extended `ToolLoopRunner` with provider-neutral `resolve_execution_model`, `resolve_max_tool_rounds`, and `on_round_response` callbacks
+- migrated Gemini `_run_simple_tool_loop` to `_run_simple_tool_loop_with_runner` behind the default-off flag while preserving `_run_legacy_simple_tool_loop`
+- added focused Gemini runner regressions in `backend/tests/test_gemini_tool_loop_runner.py`
+- made no commit, push, release, or remote CURRENT_STATE sync
+
+Changed files in this block:
+- `backend/llm_providers/shared/tool_loop_runner.py`
+- `backend/llm_providers/gemini/gateway.py`
+- `backend/tests/test_gemini_tool_loop_runner.py`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python -m py_compile backend/llm_providers/gemini/gateway.py backend/llm_providers/shared/tool_loop_runner.py`: PASS
+- `python -m pytest --noconftest backend/tests/test_gemini_tool_loop_runner.py -q`: PASS (`6/6`)
+- `python -m pytest --noconftest backend/tests/test_openai_tool_loop_runner.py -q`: PASS (`4/4`, regression guard)
+- `python -m pytest --noconftest backend/tests/test_backlog_007_tool_routing_performance.py -q`: BLOCKED locally by ChromaDB SQLite panic during collection
+
+Open risks:
+- `TRANSPORT_TOOL_LOOP_RUNNER_ENABLED` remains default-off; production behavior unchanged until explicitly enabled
+- `test_backlog_007_tool_routing_performance.py` could not run in this environment due to ChromaDB panic
+- M6.4 changes are local and uncommitted; remotes, including `origin/codex-sync`, do not contain this CURRENT_STATE
+
+Next recommended step for ChatGPT: confirm manual Gemini websearch/list-query behavior with runner flag on in a dev session before audit closure.
+
+Next recommended step for Codex: run `janus-final-audit` for `TASK-M6.4` on `5.6 Terra`, `high`, after manual validation.
+
+Last updated: `2026-07-11 19:25 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-11 18:30 +02:00`, `TASK-M6.4` documentation is synchronized after final audit `PASS WITH FIXES`. Gemini policy, grounding, attribution, native history, and synthesis remain gateway-owned; `T-A5` remains open.
+
+Current goal: prepare the documented M6.4 checkpoint when explicitly approved.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work: synchronized M6.4 task, Spec, registry, and project status; no staging, commit, push, release, or remote sync.
+
+Open risks: Cursor Windows output decoding and local ChromaDB SQLite remain separate infrastructure blockers; M6.4 is local and uncommitted.
+
+Next recommended step for Codex: run `janus-git-governance` on `5.6 Terra`, `medium` for a scoped M6.4 checkpoint.
+
+Last updated: `2026-07-11 18:30 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-11 18:15 +02:00`, `TASK-M6.4` passed preimplementation check for the Gemini-only ToolLoopRunner migration. Gemini gateway-owned model policy, round limits, grounding/cost attribution, native bridge, synthesis, engine-owned, and drill-down behavior remain explicitly outside the shared runner. No implementation or test execution occurred.
+
+Current goal: execute `TASK-M6.4` only in the clean M6 worktree, then collect focused Gemini runner and attribution evidence.
+
+Active phase: `janus-preimplementation-check`, canonical state `HANDOFF`.
+
+Last Codex work:
+- confirmed the approved Gemini gateway-owned callback/context boundary and recorded a strict M6.4 PASS precheck
+- made no product-code edit, test execution, staging, commit, push, release, or remote CURRENT_STATE sync
+
+Changed files in this block:
+- `documentation/tasks/TASK-M6.4_preimplementation_check.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- scoped WHAT_I_LEARNED search and task/spec/source identity: PASS
+- OpenRouter precheck review: `OPENROUTER_WORKER_DRY_RUN_READY`, no delegated live review
+- precheck validator and scoped whitespace check: PASS
+
+Open risks:
+- Gemini policy, grounding, attribution, and synthesis must remain in the gateway during implementation
+- broad Gemini/OpenAI regressions may remain blocked by the local ChromaDB SQLite panic
+- M6.4 handoff is local and uncommitted; remotes, including `origin/codex-sync`, do not contain this CURRENT_STATE
+
+Next recommended step for ChatGPT: keep M6.4 limited to `_run_simple_tool_loop`; do not include engine-owned or drill-down paths.
+
+Next recommended step for Codex: execute `TASK-M6.4` through `janus-executioner` on `5.6 Terra`, `high`.
+
+Last updated: `2026-07-11 18:15 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-11 18:05 +02:00`, the M6.4 Gemini runner-boundary decision is approved and recorded in Spec Section 3.3.2. `ToolLoopRunner` remains provider-neutral; Gemini retains model policy, list-round policy, grounding/cost attribution, native bridge, synthesis, engine-owned, and drill-down behavior. The M6.4 task breakdown is again ready for preimplementation check; no product code or test execution occurred.
+
+Current goal: run one strict preimplementation check for `TASK-M6.4` before changing the Gemini gateway or shared runner.
+
+Active phase: `janus-spec-review`, canonical state `HANDOFF`.
+
+Last Codex work:
+- recorded the user-approved Gemini gateway-owned callback/context boundary in the provider transport Spec
+- updated the M6.4 handoff from blocked to precheck-ready without expanding its product scope
+- made no product-code edit, test execution, staging, commit, push, release, or remote CURRENT_STATE sync
+
+Changed files in this block:
+- `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md`
+- `documentation/tasks/TASK-M6.4_task_breakdown.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- M6.4 responsibility boundary review: APPROVED
+- spec-review validator: PASS
+- task-breakdown validator: PASS
+- scoped whitespace check: PASS
+
+Open risks:
+- Gemini policy, grounding, attribution, and synthesis must remain in the gateway during M6.4 implementation
+- the parent M6 Spec remains open and M6.4 has not yet passed preimplementation check
+- the M6.4 decision remains local and uncommitted; remotes, including `origin/codex-sync`, do not contain this CURRENT_STATE
+
+Next recommended step for ChatGPT: keep M6.4 limited to `_run_simple_tool_loop`; do not include engine-owned or drill-down paths.
+
+Next recommended step for Codex: run `janus-preimplementation-check` for `TASK-M6.4` on `5.6 Terra`, `high`.
+
+Last updated: `2026-07-11 18:05 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-11 17:55 +02:00`, `TASK-M6.4` task breakdown is blocked for one narrow Gemini runner-boundary decision. The existing runner lacks explicit seams for Gemini's visible model override/Flash policy, list-query round bump, grounding-cost attribution, and native synthesis boundary. No implementation or test execution occurred.
+
+Current goal: resolve the Gemini policy/observability ownership boundary through spec review, then rerun M6.4 task breakdown.
+
+Active phase: `janus-task-breakdown`, canonical state `BLOCKED`.
+
+Last Codex work:
+- inspected the actual Gemini simple loop and compared its native policy/grounding/persistence responsibilities to the existing shared runner interface
+- recorded the OpenRouter review selection as a planned-only dry run and documented the exact M6.4 source-of-truth gap
+- made no product-code edit, test execution, staging, commit, push, release, or remote CURRENT_STATE sync
+
+Changed files in this block:
+- `documentation/tasks/TASK-M6.4_task_breakdown.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- task/spec/source identity and runner-versus-Gemini responsibility inspection: PASS
+- OpenRouter delegation gate: `OPENROUTER_WORKER_DRY_RUN_READY`, no live worker execution
+- task-breakdown validator: PASS
+- scoped whitespace check: PASS
+
+Open risks:
+- migrating Gemini without an explicit policy/observability boundary can regress Flash-default websearch, grounding attribution, list-query round limits, or native history behavior
+- the parent M6 Spec remains open and M6.4 is not precheck-ready
+- the M6.4 handoff remains local and uncommitted; remotes, including `origin/codex-sync`, do not contain this CURRENT_STATE
+
+Next recommended step for ChatGPT: approve one narrow Gemini runner-boundary decision; do not authorize implementation from this blocked handoff.
+
+Next recommended step for Codex: run `janus-spec-review` for the M6.4 boundary on `5.6 Terra`, `high`.
+
+Last updated: `2026-07-11 17:55 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-11 17:45 +02:00`, `TASK-M6.3` documentation is synchronized after its `PASS WITH FIXES` final audit. The default-off OpenAI ToolLoopRunner slice is recorded closed with focused automated evidence; Chroma and Cursor remain separate non-blocking infrastructure follow-ups. The parent M6 transport Spec remains in progress because `T-A4` and `T-A5` are separate tasks.
 
 Current goal: preserve the documented M6.3 slice in one local checkpoint; explicit commit approval is granted, with no push requested.

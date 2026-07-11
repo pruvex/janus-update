@@ -37,6 +37,7 @@ class ToolLoopContext:
     loop_cost_eur: float = 0.0
     loop_input_tokens: int = 0
     loop_output_tokens: int = 0
+    loop_websearch_queries: int = 0
 
 
 @dataclass
@@ -50,6 +51,10 @@ HandleNonToolResponse = Callable[
     [Dict[str, Any], ToolLoopContext, Optional[str]],
     Awaitable[NonToolResponseAction],
 ]
+
+ResolveExecutionModel = Callable[[ToolLoopContext], Tuple[str, bool]]
+ResolveMaxToolRounds = Callable[[ToolLoopContext], int]
+OnRoundResponse = Callable[[Dict[str, Any], ToolLoopContext], None]
 
 
 class ToolLoopRunner:
@@ -133,6 +138,9 @@ class ToolLoopRunner:
         filter_tools_by_skill_ids: Optional[Callable[[Optional[List[str]]], List[Dict[str, Any]]]] = None,
         build_tool_definitions_for_llm: Optional[Callable[[List[Dict[str, Any]]], List[Dict[str, Any]]]] = None,
         prevalidate_tool_calls: Optional[Callable[..., Dict[str, Any]]] = None,
+        resolve_execution_model: Optional[ResolveExecutionModel] = None,
+        resolve_max_tool_rounds: Optional[ResolveMaxToolRounds] = None,
+        on_round_response: Optional[OnRoundResponse] = None,
     ) -> Dict[str, Any]:
         if (
             filter_tools_by_skill_ids is None
@@ -152,12 +160,17 @@ class ToolLoopRunner:
             )
             prevalidate_tool_calls = prevalidate_tool_calls or _prevalidate_tool_calls
 
-        context.tool_execution_model, context.moa_active = self.resolve_tool_execution_model(
-            provider=context.provider,
-            model=context.model,
-            chat_history=context.chat_history,
-            allowed_skill_ids=context.allowed_skill_ids,
-        )
+        if resolve_execution_model is not None:
+            context.tool_execution_model, context.moa_active = resolve_execution_model(context)
+        else:
+            context.tool_execution_model, context.moa_active = self.resolve_tool_execution_model(
+                provider=context.provider,
+                model=context.model,
+                chat_history=context.chat_history,
+                allowed_skill_ids=context.allowed_skill_ids,
+            )
+        if resolve_max_tool_rounds is not None:
+            context.max_tool_rounds = resolve_max_tool_rounds(context)
         tools_for_call = self.prepare_tools(
             context.allowed_skill_ids,
             filter_tools_by_skill_ids=filter_tools_by_skill_ids,
@@ -190,6 +203,8 @@ class ToolLoopRunner:
                 **loop_kwargs,
             )
             self._accumulate_usage(context, response)
+            if on_round_response is not None:
+                on_round_response(response, context)
 
             if response.get("type") != "tool_code":
                 action = await handle_non_tool_response(response, context, round_force)
