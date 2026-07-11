@@ -4,6 +4,19 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-M6.1 - Unify the model hierarchy as the single MoA source
+
+- **Status**: DONE WITH NON-BLOCKING FOLLOW-UP
+- **Final Audit**: `documentation/tasks/TASK-M6.1_final_audit.md` (PASS WITH FIXES)
+- **Spec**: `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md` (Section 3.4 / Phase-A T-A1 only; parent Spec remains in progress)
+- **Parent Task**: `documentation/tasks/TASK-M6_transport_phase_a.md`
+- **Task Breakdown**: `documentation/tasks/TASK-M6.1_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-M6.1_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-M6.1_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-M6.1_AUDIT_PACKAGE.md`
+- **Validation**: `TASK-M6.1` consolidates the active OpenAI, Gemini, and Ollama tier matrix into `MOA_MODEL_HIERARCHY`, removes the orchestrator duplicate, and moves the Gemini websearch override to the shared source. Isolated hierarchy (`3/3`) and MoA routing (`13/13`) regressions, syntax, scoped diff, and manual Gemini current-news evidence passed. Full pytest collection remains independently blocked by the local ChromaDB SQLite panic before collection.
+- **Follow-up**: Correct the obsolete Ollama-no-tier source comment before `TASK-M6.2`; `T-A2` through `T-A5` remain open.
+
 ### TASK-MEM-M4.1 - Implement Memory Phase C Session-Search as one bounded FTS5 slice
 
 - **Status**: DONE

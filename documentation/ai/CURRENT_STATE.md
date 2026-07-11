@@ -1,6 +1,319 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-11 15:26 +02:00`, the `TASK-M6.1` audit closure is synchronized across the task, parent M6 Spec progress note, central registry, project state, and reusable learning memory. Only this Phase-A T-A1 slice is closed; the parent provider-transport Spec and `T-A2` through `T-A5` remain open.
+
+Current goal: create a clean Git checkpoint for the documented and audited `TASK-M6.1` slice when explicitly approved.
+
+Active phase: `janus-documentation-update`, canonical state `HANDOFF`.
+
+Last Codex work:
+- recorded the `PASS WITH FIXES` closeout for `TASK-M6.1` without marking the parent M6 Spec complete
+- added the central task-registry and project-state entries, plus the validated one-owner hierarchy drift pattern
+- documented exact skips: no Backlog or dashboard item exists; changelog is not applicable because no user-facing feature or release changed
+- made no product edit, staging, commit, push, release, or remote CURRENT_STATE sync
+
+Changed files in this block:
+- `documentation/tasks/TASK-M6_transport_phase_a.md`
+- `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md`
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `WHAT_I_LEARNED.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- final audit gate: PASS WITH FIXES
+- M6.1 final-audit artifact validator: PASS
+- documentation marker validation: pending after this snapshot and skill-usage log update
+
+Open risks:
+- correct the obsolete Ollama-no-tier comment in `backend/llm_providers/shared/moa.py` before `TASK-M6.2`
+- full pytest collection remains independently blocked by the local ChromaDB SQLite panic before collection
+- the clean M6 branch remains local and uncommitted; remotes, including `origin/codex-sync`, may not contain this CURRENT_STATE
+
+Next recommended step for ChatGPT: do not mark the overall provider transport Spec or Phase A complete.
+
+Next recommended step for Codex: run `janus-git-governance` for an intentional M6.1 checkpoint after explicit commit approval, then fix the stale source comment as the first bounded prerequisite of `TASK-M6.2`.
+
+Last updated: `2026-07-11 15:26 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-11 15:26 +02:00`, `TASK-M6.1` has passed final audit with one non-blocking documentation-quality follow-up. The manual Gemini websearch validation returned the expected current-news briefing without a provider or import failure. The task-level M6.1 scope is closed for documentation sync; Phase-A tasks `T-A2` through `T-A5` remain deliberately unimplemented and the parent M6 Spec remains in progress.
+
+Current goal: synchronize `TASK-M6.1` audit closure into the M6 task and project documentation without closing the parent transport Spec.
+
+Active phase: `janus-final-audit`, canonical state `HANDOFF`.
+
+Last Codex work:
+- refreshed the M6.1 audit package with the exact Spec path and user-confirmed manual Gemini evidence
+- reran isolated hierarchy and MoA routing regressions, syntax compilation, scoped diff check, and hierarchy-consumer scans
+- recorded `TASK-M6.1_final_audit.md` as `PASS WITH FIXES`
+- made no staging, commit, push, or remote CURRENT_STATE sync
+
+Changed files in this block:
+- `documentation/tasks/TASK-M6.1_execution_result.md`
+- `documentation/tasks/TASK-M6.1_AUDIT_PACKAGE.md`
+- `documentation/tasks/TASK-M6.1_final_audit.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- isolated hierarchy regression: PASS, `3/3`
+- isolated MoA routing regression: PASS, `13/13`
+- Python syntax compilation: PASS
+- scoped whitespace check: PASS
+- hierarchy-definition and stale-consumer scans: PASS
+- final-audit artifact validator: PASS
+- manual Gemini websearch validation: PASS
+- normal pytest collection including calendar routing: N/A for this audit because the pre-existing ChromaDB SQLite panic occurs before collection
+
+Open risks:
+- remove or correct the obsolete Ollama-no-tier comment in `backend/llm_providers/shared/moa.py` before `TASK-M6.2`; it is non-executable and non-blocking
+- full pytest collection remains unavailable until the independent local ChromaDB SQLite panic is repaired
+- the clean M6 branch remains local and uncommitted; `origin/codex-sync` and other remotes may not contain this CURRENT_STATE
+
+Next recommended step for ChatGPT: do not treat the parent M6 transport Spec as complete; only `TASK-M6.1` passed audit.
+
+Next recommended step for Codex: run `janus-documentation-update` for `TASK-M6.1` on `5.6 Terra`, `medium`, then request explicit commit approval through `janus-git-governance`.
+
+Last updated: `2026-07-11 15:26 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-11 15:26 +02:00`, `TASK-M6.1` implementation is complete in the clean M6 worktree. `MOA_MODEL_HIERARCHY` is now the sole runtime hierarchy source for the orchestrator and Gemini gateway, using the approved behavior-preserving OpenAI, Gemini, and Ollama matrix. Focused isolated routing evidence is green; final audit is held for one manual Gemini websearch validation.
+
+Current goal: complete the manual Gemini websearch validation for `TASK-M6.1`, then run the bounded final audit.
+
+Active phase: `janus-executioner`, canonical state `HANDOFF`.
+
+Last Codex work:
+- implemented only `TASK-M6.1`: migrated all `ChatOrchestrator` hierarchy consumers and the Gemini websearch override to `MOA_MODEL_HIERARCHY`
+- adopted the approved mapping exactly and added Ollama `fast` to the MoA valid tiers
+- added a drift regression and updated MoA routing expectations
+- made no staging, commit, push, or manual live-provider call
+
+Changed files in this block:
+- `backend/llm_providers/shared/moa.py`
+- `backend/services/chat_orchestrator.py`
+- `backend/llm_providers/gemini/gateway.py`
+- `backend/tests/test_moa_routing.py`
+- `backend/tests/test_model_hierarchy_single_source.py`
+- `documentation/tasks/TASK-M6.1_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- isolated hierarchy regression: PASS, `3/3`
+- isolated MoA routing regression: PASS, `13/13`
+- Python syntax compilation: PASS
+- scoped whitespace check: PASS
+- hierarchy-definition and stale-consumer scans: PASS
+- normal pytest collection including calendar routing: BLOCKED by the pre-existing local ChromaDB SQLite panic during `backend/tests/conftest.py` import
+
+Open risks:
+- a real Gemini `system.websearch` turn has not yet been run from the clean M6 worktree
+- full pytest collection remains unavailable until the local ChromaDB SQLite panic is repaired independently
+- the clean M6 branch remains local and uncommitted; no remote synchronization has occurred
+
+Next recommended step for ChatGPT: do not assume a remote has the current state because no sync or push occurred.
+
+Next recommended step for Codex: after the user reports the manual Gemini validation PASS, run `janus-final-audit` for `TASK-M6.1` on `5.6 Terra`, `high`.
+
+Last updated: `2026-07-11 15:26 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-11`, `TASK-M6.1` has passed preimplementation check. The approved behavior-preserving model matrix is bound into the canonical precheck artifact, which limits implementation to a single MoA-hierarchy consolidation plus one drift test. Phase-A tasks `T-A2` through `T-A5`, all transport-layer work, and all provider expansion remain explicitly out of scope.
+
+Current goal: implement `TASK-M6.1` only in the clean M6 worktree, then collect focused hierarchy, MoA, and calendar-routing evidence.
+
+Active phase: `janus-preimplementation-check`, canonical state `HANDOFF`.
+
+Last Codex work:
+- reran the exact M6.1 gate after the Spec decision was approved
+- wrote and validated the PASS precheck artifact with concrete files, mapping values, exclusions, and evidence commands
+- made no product-code change, test execution, staging, commit, or push
+
+Changed files in this block:
+- `documentation/tasks/TASK-M6.1_preimplementation_check.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `validate_precheck.py documentation/tasks/TASK-M6.1_preimplementation_check.md`: PASS
+- scoped `git diff --check`: PASS
+
+Open risks:
+- hierarchy consolidation is high-risk routing work; implementation must preserve the approved OpenAI, Gemini, and Ollama matrix exactly
+- the clean M6 branch remains local and uncommitted
+
+Next recommended step for ChatGPT: present only `TASK-M6.1` as precheck-PASS and keep later M6 work separate.
+
+Next recommended step for Codex: execute `TASK-M6.1` through `janus-executioner` on `5.6 Terra`, `medium`.
+
+Last updated: `2026-07-11`.
+
+## Current Snapshot Update
+As of `2026-07-11`, the bounded M6 Spec review is `APPROVED` after the user selected behavior-preserving migration policy. `MOA_MODEL_HIERARCHY` will become the only source while first adopting the active OpenAI, Gemini, and Ollama mappings verbatim, including the `fast` tier. This resolves the prior authority conflict without introducing a model-selection behavior change in T-A1.
+
+Current goal: rerun the preimplementation check for `TASK-M6.1` against the approved canonical mapping before any code work.
+
+Active phase: `janus-spec-review`, canonical state `HANDOFF`.
+
+Last Codex work:
+- recorded the approved behavior-preserving migration matrix in the M6 transport Spec
+- set review metadata to `APPROVED`, `Skill-1 Ready: YES`, and validated it
+- made no implementation, test run, staging, commit, or push
+
+Changed files in this block:
+- `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `validate_spec_review.py --spec documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md`: PASS
+- scoped `git diff --check`: PASS
+
+Open risks:
+- T-A1 remains precheck-gated; the new drift test must enforce the approved matrix and all bound consumers must be reviewed before implementation
+- the clean M6 branch remains local and uncommitted
+
+Next recommended step for ChatGPT: rerun `janus-preimplementation-check` for `TASK-M6.1` on the approved mapping.
+
+Next recommended step for Codex: execute that one precheck on `5.6 Terra`, `medium`; do not start `janus-executioner` until it passes.
+
+Last updated: `2026-07-11`.
+
+## Current Snapshot Update
+As of `2026-07-11`, the bounded M6 Spec review is `BLOCKED` with high confidence. The imported transport Spec now records the exact missing decision: before `MOA_MODEL_HIERARCHY` can replace `ChatOrchestrator.MODEL_HIERARCHY`, the canonical OpenAI `balanced`, Gemini `logic`, and Ollama tier/fallback values must be selected. The review does not choose these values because either direction changes provider model-selection behavior.
+
+Current goal: obtain one explicit migration-policy choice, amend only that decision in the M6 Spec, then rerun the existing `TASK-M6.1` precheck.
+
+Active phase: `janus-spec-review`, canonical state `BLOCKED`.
+
+Last Codex work:
+- reviewed the M6 transport Spec against the live MoA and orchestrator model mappings
+- wrote the required `SPEC REVIEW METADATA` block with `BLOCKED`, score `76`, risk `HIGH`, and the exact missing decision
+- made no code, task-scope, test, staging, commit, or push change
+
+Changed files in this block:
+- `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `validate_spec_review.py --spec documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md`: PASS
+- scoped `git diff --check`: PASS
+
+Open risks:
+- choosing either hierarchy policy changes model selection/fallback behavior; implementation remains blocked until the decision is recorded
+- the clean M6 branch and all artifacts remain local and uncommitted
+
+Next recommended step for ChatGPT: ask exactly one decision question: preserve the active orchestrator mapping by migrating it into MoA, or normalize all consumers to the existing MoA mapping and its Ollama fallback policy.
+
+Next recommended step for Codex: after the user chooses, update only the Spec decision, rerun `janus-spec-review`, then rerun `janus-preimplementation-check` for `TASK-M6.1`.
+
+Last updated: `2026-07-11`.
+
+## Current Snapshot Update
+As of `2026-07-11`, `TASK-M6.1` is precheck-blocked by a real model-hierarchy authority conflict, not by missing files or test coverage. The transport Spec requires `MOA_MODEL_HIERARCHY` as the single source, while the current MoA and orchestrator mappings disagree on OpenAI `balanced`, Gemini `logic`, and whether Ollama has tiers. The precheck correctly refuses to select migration values because that would alter provider model-selection and fallback behavior.
+
+Current goal: resolve the three explicit hierarchy-policy values in a bounded M6 Spec review, then rerun precheck for `TASK-M6.1` only.
+
+Active phase: `janus-preimplementation-check`, canonical state `BLOCKED`.
+
+Last Codex work:
+- inspected the bound M6 hierarchy sources, Gemini consumer, and existing MoA regression surface
+- wrote `documentation/tasks/TASK-M6.1_preimplementation_check.md` with the exact authority conflict and required upstream decision
+- made no product-code change, implementation, test run, staging, commit, or push
+
+Changed files in this block:
+- `documentation/tasks/TASK-M6.1_preimplementation_check.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- task/spec/target identity: PASS
+- source-file presence: PASS
+- hierarchy source scan: BLOCKED by explicit MoA/orchestrator value conflict
+- scoped `git diff --check`: pending after the final tracking writes
+
+Open risks:
+- choosing a hierarchy winner without Spec review can silently change OpenAI/Gemini tier selection or Ollama fallback behavior
+- the clean M6 branch remains local and uncommitted; no remote synchronization has occurred
+
+Next recommended step for ChatGPT: approve `janus-spec-review` for the bounded hierarchy mapping decision, using Terra/high fallback because Sol is unavailable in this Codex runtime.
+
+Next recommended step for Codex: after Spec review, amend the M6 task only for the approved mapping and rerun `janus-preimplementation-check` for `TASK-M6.1`.
+
+Last updated: `2026-07-11`.
+
+## Current Snapshot Update
+As of `2026-07-11`, the binding M6 Transport Spec is now byte-identically imported into the clean worktree and Phase A is compiled under `documentation/tasks/TASK-M6_transport_phase_a.md`. Exactly one first target, `TASK-M6.1` (single MoA model hierarchy), is released for preimplementation check in `documentation/tasks/TASK-M6.1_task_breakdown.md`. No implementation, precheck, source-code change, feature-flag flip, staging, commit, or push has occurred in this M6 worktree.
+
+Current goal: run one preimplementation check for `TASK-M6.1` only, then decide whether its bounded hierarchy consolidation is safe to implement.
+
+Active phase: `janus-task-breakdown`, canonical state `HANDOFF`.
+
+Last Codex work:
+- imported the approved-ready provider transport Spec byte-identically from the prior worktree after explicit user approval
+- compiled Phase A into deterministic `T-A1` through `T-A5` task structure
+- released only `TASK-M6.1` for the next precheck, keeping all later Phase-A tasks separate
+
+Changed files in this block:
+- `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md`
+- `documentation/tasks/TASK-M6_transport_phase_a.md`
+- `documentation/tasks/TASK-M6.1_task_breakdown.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- source-import SHA-256 equality: PASS (`ED7CC8B9C198629B6E6E1839D5109C97DAADEF6A8AE000338AA2B64B6C370CB4`)
+- `validate_task_artifact.py --task documentation/tasks/TASK-M6_transport_phase_a.md`: PASS
+- `validate_task_handoff.py --task documentation/tasks/TASK-M6_transport_phase_a.md --target TASK-M6.1`: PASS
+- scoped `git diff --check`: PASS
+
+Open risks:
+- the clean M6 worktree and imported Spec remain local and uncommitted; no remote sync has happened
+- model-tier drift is a core routing risk, so precheck must prove concrete consumers and regressions before code changes
+
+Next recommended step for ChatGPT: present `TASK-M6.1` as the sole released next slice and keep `T-A2` through `T-A5` out of scope.
+
+Next recommended step for Codex: run `janus-preimplementation-check` for `TASK-M6.1` on `5.6 Terra`, `medium`.
+
+Last updated: `2026-07-11`.
+
+## Current Snapshot Update
+As of `2026-07-11`, the clean M6 preparation worktree exists on `codex/m6-transport-prep` at `666391b44`, but task breakdown is blocked before any task artifact is created. The binding source `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md` and a compiled M6 task artifact are not present in this clean branch; they exist only as uncommitted material in the original mixed worktree. The branch must not silently treat that external uncommitted file as its authoritative source.
+
+Current goal: establish one versioned M6 Transport T-A source Spec in the clean worktree, then run one task-breakdown pass.
+
+Active phase: `janus-task-breakdown`, canonical state `BLOCKED`.
+
+Last Codex work:
+- created the clean `codex/m6-transport-prep` worktree from local `develop` at `666391b44`
+- confirmed the roadmap is available but the required transport Spec and M6 task artifact are absent from this branch
+- made no implementation, precheck, staging, commit, push, reset, or copy from the mixed worktree
+
+Changed files in this block:
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- clean worktree branch and HEAD check: PASS (`codex/m6-transport-prep`, `666391b44`)
+- binding source presence check: BLOCKED - `PROVIDER_TRANSPORT_REFACTOR_SPEC.md` missing
+- task-artifact presence check: BLOCKED - no M6 task artifact exists
+
+Open risks:
+- copying an uncommitted Spec from the old worktree without an explicit decision would make the clean branch depend on unreviewed external state
+- no push or remote sync has happened; the new branch is local only
+
+Next recommended step for ChatGPT: ask whether the existing uncommitted M6 Transport Spec should be explicitly imported and versioned on this clean branch before task breakdown.
+
+Next recommended step for Codex: after explicit user approval, import only the bound transport Spec into this worktree, validate its source identity, then resume `janus-task-breakdown`.
+
+Last updated: `2026-07-11`.
+
+## Current Snapshot Update
 As of `2026-07-10 01:02 +02:00`, the Spec-31 documentation sync is complete. `TASK-SPEC31.2` has been recorded after final audit PASS, `BACKLOG-123` is now DONE, the parent Spec 31 is marked `Implementation Status: DONE`, and the spec file has moved to `documentation/SPEC/Spec Done/31_semantisches_parameterisiertes_routine_reuse_mehrschrittige_routinen.md`.
 
 Current goal: finish this closed Spec-31 block as a documentation-complete checkpoint and hand off cleanly to Git governance for optional staging/commit decisions.

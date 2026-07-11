@@ -255,3 +255,15 @@
 - **Epic:** BACKLOG-124
 - **Confidence:** High
 - **Tags:** codex,gpt56,model-routing,runtime-entitlement,audit-fallback
+
+
+## [PATTERN] #SingleRuntimeHierarchyNeedsDriftTripwire "A runtime model hierarchy needs one owner and a structural drift tripwire"
+- **Kontext:** TASK-M6.1 provider transport Phase-A consolidation, 2026-07-11. (2026-07-11).
+- **Problem:** MoA and ChatOrchestrator carried conflicting tier matrices, allowing provider behavior to drift by consumer and creating a Gemini dependency back into the orchestrator.
+- **Loesung:** Make MOA_MODEL_HIERARCHY the sole runtime source; migrate bound consumers and Gemini websearch routing to it while preserving the explicitly approved active matrix.
+- **Haertung:** Add an AST/source-level regression that rejects a ChatOrchestrator MODEL_HIERARCHY definition, rejects Gemini references to ChatOrchestrator.MODEL_HIERARCHY, and asserts the full approved provider matrix.
+- **Tripwire:** If a new provider consumer declares MODEL_HIERARCHY, imports the orchestrator only to select a tier, or changes a tier without a dedicated approved task, stop and route through precheck/spec review.
+- **Location:** backend/llm_providers/shared/moa.py, backend/services/chat_orchestrator.py, backend/llm_providers/gemini/gateway.py, backend/tests/test_model_hierarchy_single_source.py
+- **Epic:** EPIC-ARCH-TRANSPORT-001
+- **Confidence:** High
+- **Tags:** provider-routing,moa,drift,architecture

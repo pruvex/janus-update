@@ -18,6 +18,7 @@ from .compiler import GeminiCompiler
 from .link_renderer import get_link_renderer
 from .constants import LIST_QUERY_TOKENS
 from ..shared.base_gateway import BaseProviderGateway
+from ..shared.moa import MOA_MODEL_HIERARCHY
 from ..shared.utils import (
     _extract_tool_payload,
     _extract_websearch_sources_for_compaction,
@@ -373,10 +374,9 @@ class GeminiGateway(BaseProviderGateway):
         original_model = model
         if allowed_skill_ids and "system.websearch" in allowed_skill_ids:
             from backend.services.tool_manager import tool_manager
-            from backend.services.chat_orchestrator import ChatOrchestrator
 
             tier = tool_manager.get_optimal_model_tier("system.websearch", "gemini")
-            forced_model = ChatOrchestrator.MODEL_HIERARCHY["gemini"].get(tier, model)
+            forced_model = MOA_MODEL_HIERARCHY["gemini"].get(tier, model)
 
             if forced_model != model:
                 logger.info(f"💎 GEMINI MOA: Forciere Modell-Switch von {model} auf {forced_model}")

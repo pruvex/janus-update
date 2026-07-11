@@ -39,10 +39,10 @@ class TestResolveMoaModel:
         assert active is True
 
     @patch(_TM_PATCH, return_value=SkillMetadata(optimal_model_tier="vision"))
-    def test_vision_tier_gemini_resolves_to_pro_vision(self, _mock):
+    def test_vision_tier_gemini_resolves_to_flash(self, _mock):
         model, active = resolve_moa_model("gemini", "gemini-3-flash-preview", ["system.analyze_image"])
-        assert model == "gemini-pro-vision"
-        assert active is True
+        assert model == "gemini-3-flash-preview"
+        assert active is False
 
 
     # ---------------------------------------------------------------------------
@@ -64,11 +64,10 @@ class TestResolveMoaModel:
         assert active is False
 
     @patch(_TM_PATCH, return_value=SkillMetadata(optimal_model_tier="speed"))
-    def test_ollama_always_falls_back(self, _mock):
-        """Ollama hat keine Tier-Hierarchie → immer Fallback."""
+    def test_ollama_speed_tier_resolves_to_llama(self, _mock):
         model, active = resolve_moa_model("ollama", "qwen2.5:14b", ["system.websearch"])
-        assert model == "qwen2.5:14b"
-        assert active is False
+        assert model == "llama3.1:8b"
+        assert active is True
 
     def test_no_allowed_skills_falls_back(self):
         """Keine allowed_skill_ids → Kein MoA."""
