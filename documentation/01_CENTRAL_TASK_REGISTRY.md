@@ -4,6 +4,19 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-MEM-M4.1 - Implement Memory Phase C Session-Search as one bounded FTS5 slice
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-MEM-M4.1_final_audit.md` (PASS)
+- **Spec**: `documentation/Cursor specs/MEMORY_HERMES_INSPIRED_UPGRADE_PLAN.md` (Section 6 / Memory Phase C only)
+- **Parent Task**: `documentation/tasks/TASK-MEM-M4_session_search_fts5.md`
+- **Task Breakdown**: `documentation/tasks/TASK-MEM-M4.1_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-MEM-M4.1_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-MEM-M4.1_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-MEM-M4.1_AUDIT_PACKAGE.md`
+- **Validation**: `TASK-MEM-M4.1` schliesst Memory Phase C als bounded Session-Search-Slice ab. Ein separater FTS5-Store indiziert Chat-Messages ueber den zentralen Write-Hook, das registrierte `session_search`-Tool liefert begrenzte episodische Treffer und die produktive Intent-/Dispatcher-Kette kann passende Recall-Anfragen gezielt darauf routen. Enabled-runtime Janus-Evidenz bestaetigt Chat-uebergreifenden Recall fuer `Acme GmbH` ueber den echten Toolpfad sowie sichere Passwort-Verweigerung; fokussierte Tests, Memory-Regression (`20 passed`), Compile-, Debug- und Audit-Validatoren sind PASS. Das Flag bleibt standardmaessig `false`. Zwei alternative Passwort-Paraphrasen drifteten in `calendar.list_events`, ohne ein Secret preiszugeben; das ist angrenzende Routing-Schuld ausserhalb der engen M4-Akzeptanz.
+- **Changed Files**: `backend/services/memory/session_fts_store.py`, `backend/services/memory/session_search_service.py`, `backend/tools/session_search_tools.py`, `backend/scripts/backfill_session_fts.py`, `backend/skills/system/session_search.json`, `backend/data/schemas.py`, `backend/data/crud.py`, `backend/services/orchestrator/intent_engine.py`, `backend/services/orchestrator/execution_dispatcher.py`, `backend/tool_registry.py`, `backend/tests/test_session_fts_store.py`, `backend/tests/test_session_search_tools.py`, and bound task/evidence artifacts.
+
 ### TASK-SPEC31.2 - Fail-Closed Guards, Mehrdeutigkeitsgrenzen und Regressionshaertung fuer parameterisiertes Routine-Reuse
 
 - **Status**: DONE

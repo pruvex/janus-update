@@ -1886,6 +1886,16 @@ async def execute_generation_prepare_gateway(
             }
             logger.info("CONTACT-RECALL: Forcing memory.read for provider=%s", request.provider)
 
+        elif bool(getattr(_idr, "is_session_search_intent", False)):
+            wf.gateway_kwargs["forced_tool"] = {
+                "skill_id": "session_search",
+                "provider_tool_name": "session_search",
+            }
+            wf.gateway_kwargs["force_tool_name"] = "session_search"
+            wf.gateway_kwargs["forced_tool_args"] = {
+                "query": str(wf.user_text or "").strip(),
+            }
+            logger.info("SESSION-SEARCH: Forcing session_search for provider=%s", request.provider)
         elif _wikipedia:
             wf.gateway_kwargs["forced_tool"] = {
                 "skill_id": "system.wikipedia_summary",

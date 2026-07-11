@@ -975,6 +975,8 @@ class IntentDetectionResult:
     is_wikipedia_intent: bool = False
     # News / RSS (BACKLOG-031: mandatory tool routing)
     is_news_intent: bool = False
+    # Session-Search / episodic recall over prior messages (M4 Memory C)
+    is_session_search_intent: bool = False
     # 💎 BACKLOG-037: Ambiguity-Detection für Gemini
     is_ambiguous: bool = False
     ambiguity_confidence: float = 0.0  # 0.0-1.0, höher = ambiger
@@ -1898,6 +1900,22 @@ class IntentEngine:
         return False
 
     @staticmethod
+    def detect_session_search_intent(user_text: str) -> bool:
+        if not user_text or not user_text.strip():
+            return False
+        t = user_text.casefold()
+        patterns = (
+            r"\bwas\s+haben\s+wir\b",
+            r"\bwas\s+habe\s+ich\s+(?:dir\s+)?gesagt\b",
+            r"\bfr[üu]her\s+(?:mal\s+)?(?:gesagt|besprochen|erw[äa]hnt)\b",
+            r"\bzitier(?:e)?\s+mir\b",
+            r"\bim\s+letzten\s+(?:chat|gespr[äa]ch)\b",
+            r"\bwie\s+hie(?:ß|ss)\s+die\b",
+            r"\bwas\s+haben\s+wir\s+ü?ber\b",
+        )
+        return any(re.search(pattern, t) for pattern in patterns)
+
+    @staticmethod
     def detect_explicit_pdf_intent(user_text: str) -> bool:
         """True, wenn der Nutzer ausdrücklich ein PDF-/Export-Ziel fordert."""
         if not user_text or not user_text.strip():
@@ -1992,6 +2010,7 @@ class IntentEngine:
         weather_on = self.detect_weather_intent(user_text)
         wikipedia_on = self.detect_wikipedia_intent(user_text)
         news_on = self.detect_news_intent(user_text)
+        session_search_on = self.detect_session_search_intent(user_text)
         snapshot_overlap = calendar_user_text_overlap_snapshot(user_text, calendar_snapshot)
 
         commerce_blocks_snapshot_calendar = (
@@ -2116,6 +2135,7 @@ class IntentEngine:
             is_weather_intent=weather_on,
             is_wikipedia_intent=wikipedia_on,
             is_news_intent=news_on,
+            is_session_search_intent=session_search_on,
             is_explicit_pdf_intent=self.detect_explicit_pdf_intent(user_text),
             is_filesystem_intent=self.detect_filesystem_intent(user_text),
             is_ambiguous=_is_ambiguous,
@@ -2146,6 +2166,7 @@ class IntentEngine:
             ("weather", result.is_weather_intent),
             ("wikipedia", result.is_wikipedia_intent),
             ("news", result.is_news_intent),
+            ("session_search", result.is_session_search_intent),
             ("video_list", result.is_video_list_intent),
             ("video", result.is_video_intent),
             ("personal_recall", result.is_personal_recall),

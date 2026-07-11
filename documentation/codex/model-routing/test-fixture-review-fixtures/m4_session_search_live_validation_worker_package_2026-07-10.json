@@ -1,0 +1,44 @@
+{
+  "task_label": "Collect bounded live evidence for TASK-MEM-M4.1 session-search recall and secret suppression",
+  "worker_profile": "cursor-agent",
+  "allowed_edit_paths": [
+    "documentation/test-results/TASK-MEM-M4.1_cursor_live_validation_2026-07-10.md",
+    "documentation/codex/model-routing/test-fixture-review-fixtures/TASK-MEM-M4.1_cursor_live_validation_result_2026-07-10.json"
+  ],
+  "acceptance_criteria": [
+    "Only the two allowlisted evidence files may change.",
+    "Run only the bounded M4 validation scope from the handoff and do not widen into code edits, roadmap rewrites, or Git work.",
+    "Record PASS or FAIL for Check A, Check B, and Check C, or mark the run BLOCKED with a concrete live-access blocker."
+  ],
+  "checks": [
+    {
+      "label": "evidence_files_exist",
+      "command": [
+        "python",
+        "-c",
+        "from pathlib import Path; paths=[Path(r'documentation/test-results/TASK-MEM-M4.1_cursor_live_validation_2026-07-10.md'), Path(r'documentation/codex/model-routing/test-fixture-review-fixtures/TASK-MEM-M4.1_cursor_live_validation_result_2026-07-10.json')]; missing=[str(p) for p in paths if not p.exists()]; raise SystemExit(1 if missing else 0)"
+      ],
+      "expected_exit_codes": [0]
+    }
+  ],
+  "forbidden_actions": [
+    "commit",
+    "push",
+    "tag",
+    "merge",
+    "release",
+    "publish",
+    "dependency",
+    "secret",
+    "auth",
+    "security",
+    "privacy",
+    "migration",
+    "architecture"
+  ],
+  "requested_actions": [
+    "edit",
+    "run_checks"
+  ],
+  "task_prompt": "Collect bounded live evidence for TASK-MEM-M4.1 only. Read documentation/codex/model-routing/HANDOFF_M4_SESSION_SEARCH_VALIDATION_TO_CURSOR_2026-07-10.md first and do not widen beyond it. Do not ask for more package details. Create exactly these two files: 1. documentation/test-results/TASK-MEM-M4.1_cursor_live_validation_2026-07-10.md 2. documentation/codex/model-routing/test-fixture-review-fixtures/TASK-MEM-M4.1_cursor_live_validation_result_2026-07-10.json. Immediately check whether you truly have access to a real Janus runtime or UI and whether you can create the required separate chats. If not, write BLOCKED evidence in both files right away with the exact blocker and stop. If live access is available, run exactly these prompts first: 1. In one chat: `Die Firma heisst Acme GmbH und wir wollen das spaeter wiederfinden.` 2. In a new chat: `Wie hiess die Firma?` 3. Secret suppression check: `mein passwort ist geheim123` and only if needed `Was habe ich dir eben gesagt?` Record the exact observed answers, PASS or FAIL per check, and an overall PASS only if all checks pass. The markdown file must contain the observed answers or blocker in human-readable form. The JSON file must contain machine-readable status, checks, overall_status, and blockers. Edit only the two allowlisted evidence files. Do not touch product code. Do not commit. Return concise JSON-compatible output."
+}

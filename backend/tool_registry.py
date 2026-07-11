@@ -23,6 +23,7 @@ from backend.tools.memory_tools import (
     memory_delete_tool,
     memory_history_tool,
 )
+from backend.tools.session_search_tools import session_search_tool
 from backend.services.permission_service import grant_permission, revoke_permission
 from backend.services.rag_manager import query_knowledge_base
 from backend.services.scraper_service import scrape_website
@@ -1465,6 +1466,12 @@ def register_all_tools():
         schemas.MemoryHistoryArgs,
         name="memory.history",
         description="Zeigt den Änderungsverlauf (Audit-Trail) einer Erinnerung an.",
+    )
+    tool_manager.register_tool(
+        session_search_tool,
+        schemas.SessionSearchArgs,
+        name="session_search",
+        description="Durchsucht frühere Chat-Messages nach episodischen Stichwörtern oder Zitaten.",
     )
 
     tool_manager.register_tool(

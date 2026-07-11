@@ -1255,6 +1255,14 @@ class MemoryHistoryArgs(BaseModel):
     memory_id: int = Field(..., description="ID der Memory (von memory_read).")
 
 
+class SessionSearchArgs(BaseModel):
+    """Arguments for session_search tool - searches prior chat messages."""
+    query: str = Field(..., min_length=1, description="Stichwort oder episodische Recall-Frage fuer die Session-Suche.")
+    limit: int = Field(5, ge=1, le=20, description="Maximale Anzahl Treffer.")
+    chat_id: Optional[int] = Field(None, description="Optional: nur diesen Chat durchsuchen.")
+    since_days: Optional[int] = Field(None, ge=0, le=3650, description="Optional: nur Treffer aus den letzten N Tagen.")
+
+
 # --- Gmail Tool Schemas ---
 
 class GetLatestEmailsArgs(BaseModel):

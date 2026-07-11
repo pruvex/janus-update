@@ -1,0 +1,34 @@
+{
+  "legacy_name": "session_search_tool",
+  "skill": "session_search",
+  "id": "session_search",
+  "name": "Chat-Verlauf durchsuchen",
+  "description": "Durchsucht fruehere Chat-Messages nach Stichwoertern oder Themen. Nutzen fuer: 'Was haben wir besprochen?', 'Wie hiess die Firma?', Zitate.",
+  "version": "1.0.0",
+  "category": "memory",
+  "risk_level": "medium",
+  "parameters": {
+    "type": "object",
+    "required": ["query"],
+    "properties": {
+      "query": {
+        "type": "string",
+        "description": "Suchbegriff oder episodische Frage, zum Beispiel 'Was haben wir ueber Oli besprochen?'."
+      },
+      "limit": {
+        "type": "integer",
+        "default": 5,
+        "minimum": 1,
+        "maximum": 20
+      },
+      "chat_id": {
+        "type": "integer",
+        "description": "Optional: nur diesen Chat durchsuchen."
+      },
+      "since_days": {
+        "type": "integer",
+        "description": "Optional: nur Treffer aus den letzten N Tagen."
+      }
+    }
+  }
+}

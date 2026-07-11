@@ -121,6 +121,19 @@ def create_message(
     db.add(db_message)
     db.commit()
     db.refresh(db_message)
+    try:
+        from backend.services.memory.session_search_service import index_session_message
+
+        index_session_message(
+            message_id=db_message.id,
+            chat_id=db_message.chat_id,
+            role=db_message.role,
+            content=db_message.content,
+            created_at=db_message.created_at,
+        )
+    except Exception:
+        # Session-Search indexing is best-effort and must not block canonical message persistence.
+        pass
     return db_message
 
 

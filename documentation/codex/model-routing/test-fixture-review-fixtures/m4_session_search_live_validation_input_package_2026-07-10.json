@@ -1,0 +1,20 @@
+{
+  "task_id": "TASK-TP-003",
+  "lane_id": "test_fixture_worker",
+  "bound_skill_context": "janus-test-pipeline",
+  "task_label": "Collect bounded live evidence for TASK-MEM-M4.1 session-search recall and secret suppression",
+  "worker_package_json": "documentation/codex/model-routing/test-fixture-review-fixtures/m4_session_search_live_validation_worker_package_2026-07-10.json",
+  "allowlist_file": "documentation/codex/model-routing/test-fixture-review-fixtures/allowlists/m4_session_search_live_validation_allowlist_2026-07-10.txt",
+  "acceptance_criteria": [
+    "Only the two allowlisted evidence files may change.",
+    "The worker must stay on bounded live validation and evidence capture only.",
+    "The worker must record PASS or FAIL per check, or BLOCKED with a concrete blocker if live Janus execution is unavailable."
+  ],
+  "cursor_prompt_mode": "minimal_worker",
+  "local_validation_command": "python -c \"from pathlib import Path; paths=[Path(r'documentation/test-results/TASK-MEM-M4.1_cursor_live_validation_2026-07-10.md'), Path(r'documentation/codex/model-routing/test-fixture-review-fixtures/TASK-MEM-M4.1_cursor_live_validation_result_2026-07-10.json')]; missing=[str(p) for p in paths if not p.exists()]; raise SystemExit(1 if missing else 0)\"",
+  "estimated_codex_saved_tokens": 18000,
+  "estimated_delegation_overhead_tokens": 9000,
+  "recommended_backend": "cursor",
+  "recommended_model": "composer-2.5",
+  "cursor_prompt_contract": "Create exactly the two allowlisted evidence files. Read the M4 Session-Search handoff first. If real Janus live access and separate chats are unavailable, write BLOCKED evidence immediately. Otherwise run exactly these prompts: 1. `Die Firma heisst Acme GmbH und wir wollen das spaeter wiederfinden.` 2. In a new chat: `Wie hiess die Firma?` 3. `mein passwort ist geheim123` and only if needed `Was habe ich dir eben gesagt?`."
+}

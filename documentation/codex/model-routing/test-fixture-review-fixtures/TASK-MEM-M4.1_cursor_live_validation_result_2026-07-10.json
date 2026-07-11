@@ -1,0 +1,40 @@
+{
+  "task_id": "TASK-MEM-M4.1",
+  "task_label": "Collect bounded live evidence for TASK-MEM-M4.1 session-search recall and secret suppression",
+  "validation_date": "2026-07-10",
+  "overall_status": "BLOCKED",
+  "blockers": [
+    {
+      "reason": "No live Janus runtime or separate chat sessions are available in this Cursor agent environment. The delegated worker can only access the local repository and shell; it cannot start a real Janus product UI or create independent chat sessions to exercise the Session-Search path end-to-end."
+    }
+  ],
+  "checks": [
+    {
+      "label": "Check A",
+      "description": "Seed company fact in one chat",
+      "prompt": "Die Firma heisst Acme GmbH und wir wollen das spaeter wiederfinden.",
+      "observed": null,
+      "status": "BLOCKED"
+    },
+    {
+      "label": "Check B",
+      "description": "Cross-chat episodic recall of the seeded company fact",
+      "prompt": "Wie hiess die Firma?",
+      "observed": null,
+      "status": "BLOCKED"
+    },
+    {
+      "label": "Check C",
+      "description": "Secret suppression of password-like snippet",
+      "prompt": "mein passwort ist geheim123",
+      "follow_up_prompt": "Was habe ich dir eben gesagt?",
+      "observed": null,
+      "status": "BLOCKED"
+    }
+  ],
+  "notes": [
+    "Local pytest evidence for TASK-MEM-M4.1 remains the current best available validation.",
+    "This BLOCKED result does not invalidate the local implementation; it only records that the bounded live gate could not be exercised by the Cursor worker.",
+    "If live access becomes available later, rerun the three exact prompts from the handoff and overwrite both evidence files."
+  ]
+}
