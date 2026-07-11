@@ -28,7 +28,7 @@ SCRIPTS_DIR = MODEL_ROUTING_DIR / "scripts"
 if str(SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_DIR))
 
-from delegation_routing import DEFAULT_MANIFEST_PATH, find_lane, lane_model, load_manifest  # noqa: E402
+from delegation_routing import DEFAULT_MANIFEST_PATH, estimate_run_cost_usd, find_lane, lane_cursor_model, load_manifest  # noqa: E402
 from janus_worker_contract import validate_worker_task_package_file  # noqa: E402
 
 
@@ -51,6 +51,97 @@ ACCEPTED_SOURCE_REQUIRED_ARTIFACTS = (
     "changed_files.txt",
 )
 DEFAULT_LIVE_TIMEOUT_SECONDS = 180
+ASSIST_OR_REVIEW_TIMEOUT_SECONDS = 180
+SINGLE_FILE_TOOL_TIMEOUT_SECONDS = 240
+MULTI_FILE_TOOL_TIMEOUT_SECONDS = 300
+EXPLICIT_NO_OP_PACKAGE_KEYS = (
+    "explicit_no_op_ok",
+    "allow_zero_file_pass",
+    "cursor_explicit_no_op",
+)
+
+
+def resolve_live_timeout_seconds(
+    *,
+    cursor_config: dict[str, Any],
+    allowlist: list[str],
+) -> tuple[int, str]:
+    env_override = os.environ.get("JANUS_CURSOR_LIVE_TIMEOUT_SECONDS")
+    if env_override is not None and str(env_override).strip():
+        return int(str(env_override).strip()), "env_override"
+    mode = str(cursor_config.get("mode") or "")
+    allow_write = bool(cursor_config.get("allow_write"))
+    if mode in {"assist_only", "review_only"} or not allow_write:
+        return ASSIST_OR_REVIEW_TIMEOUT_SECONDS, "assist_or_review_default"
+    if len(allowlist) <= 1:
+        return SINGLE_FILE_TOOL_TIMEOUT_SECONDS, "single_file_tool_lane"
+    return MULTI_FILE_TOOL_TIMEOUT_SECONDS, "multi_file_tool_lane"
+
+
+def package_allows_explicit_no_op(package_payload: dict[str, Any] | None) -> bool:
+    if not isinstance(package_payload, dict):
+        return False
+    return any(package_payload.get(key) is True for key in EXPLICIT_NO_OP_PACKAGE_KEYS)
+
+
+def write_capable_lane_requires_file_changes(
+    *,
+    cursor_config: dict[str, Any],
+    package_payload: dict[str, Any] | None,
+) -> bool:
+    if bool(cursor_config.get("allow_write")) is not True:
+        return False
+    mode = str(cursor_config.get("mode") or "")
+    if mode not in {"proposal_first"}:
+        return False
+    return not package_allows_explicit_no_op(package_payload)
+
+
+def classify_live_run_outcome(
+    *,
+    completed: subprocess.CompletedProcess[str],
+    changed_files: list[str],
+    changed_outside_allowlist: list[str],
+    cursor_config: dict[str, Any],
+    package_payload: dict[str, Any] | None,
+) -> dict[str, str]:
+    if completed.returncode != 0:
+        return {
+            "transport_result": "TRANSPORT_FAIL",
+            "semantic_result": "SEMANTIC_FAIL",
+            "validation_result": "FAIL",
+            "final_outcome": "CURSOR_AGENT_EXIT_NONZERO",
+            "operator_message": "Cursor agent returned a non-zero exit code.",
+        }
+    if changed_outside_allowlist:
+        return {
+            "transport_result": "TRANSPORT_FAIL",
+            "semantic_result": "SEMANTIC_FAIL",
+            "validation_result": "FAIL",
+            "final_outcome": "CURSOR_ALLOWLIST_VIOLATION",
+            "operator_message": "Cursor changed files outside the bounded allowlist.",
+        }
+    if write_capable_lane_requires_file_changes(
+        cursor_config=cursor_config,
+        package_payload=package_payload,
+    ) and not changed_files:
+        return {
+            "transport_result": "TRANSPORT_PASS",
+            "semantic_result": "SEMANTIC_FAIL",
+            "validation_result": "FAIL",
+            "final_outcome": "CURSOR_SEMANTIC_FAIL_NO_CHANGES",
+            "operator_message": (
+                "Cursor agent finished without allowlisted file changes on a write-capable lane. "
+                "Treat as semantic failure; do not accept the result."
+            ),
+        }
+    return {
+        "transport_result": "TRANSPORT_PASS",
+        "semantic_result": "SEMANTIC_PASS",
+        "validation_result": "PASS",
+        "final_outcome": "CURSOR_WORKER_READY_FOR_CODEX_REVIEW",
+        "operator_message": "Cursor worker finished the bounded slice and returned artifacts for Codex review.",
+    }
 
 
 def resolve_agent_binary() -> str | None:
@@ -140,6 +231,24 @@ def load_optional_package(path: Path | None) -> dict[str, Any]:
         return {}
 
 
+def load_prompt_text_from_package(package: dict[str, Any], *, base_path: Path | None = None) -> str:
+    prompt = package.get("task_prompt")
+    if isinstance(prompt, str) and prompt.strip():
+        return prompt.strip()
+
+    prompt_path_value = package.get("task_prompt_path")
+    if not isinstance(prompt_path_value, str) or not prompt_path_value.strip():
+        return ""
+
+    resolved_base = base_path.parent if base_path is not None else REPO_ROOT
+    prompt_path = (resolved_base / prompt_path_value.replace("\\", "/")).resolve()
+    try:
+        prompt_text = prompt_path.read_text(encoding="utf-8-sig")
+    except OSError:
+        return ""
+    return prompt_text.strip()
+
+
 def load_allowlist(path: Path | None) -> list[str]:
     if path is None:
         return []
@@ -200,9 +309,10 @@ def derive_workspace_root(allowlist: list[str]) -> Path:
     resolved_files: list[Path] = []
     for item in allowlist:
         absolute = (REPO_ROOT / item).resolve()
-        if not absolute.exists():
-            return REPO_ROOT
-        resolved_files.append(absolute if absolute.is_dir() else absolute.parent)
+        if absolute.exists():
+            resolved_files.append(absolute if absolute.is_dir() else absolute.parent)
+            continue
+        resolved_files.append(absolute.parent)
     if not resolved_files:
         return REPO_ROOT
     common_root = Path(os.path.commonpath([str(path) for path in resolved_files]))
@@ -249,6 +359,12 @@ def build_cursor_agent_command(
         command.extend(["--resume", resume_session_id])
     command.append(task_prompt)
     return command
+
+
+def infer_cursor_pool(model: str, explicit_pool: str | None) -> str:
+    if explicit_pool in {"auto_composer", "api"}:
+        return explicit_pool
+    return "auto_composer" if model in {"auto", "composer-2.5"} else "api"
 
 
 def run_command(
@@ -470,57 +586,86 @@ def accepted_source_summary_line(path: Path | None) -> str:
 def task_prompt_from_package(package_path: Path | None, lane_id: str, allowlist: list[str]) -> str:
     if package_path is None:
         return (
-            f"Run the bounded Cursor delegated worker for lane {lane_id}. "
-            "Keep changes inside the allowlist, run only bounded checks, and return a concise JSON summary."
+            "Execute this bounded Janus delegated worker task now. Treat the full prompt below as instructions, not as text to analyze. Do not ask clarifying questions unless the task is impossible with the provided files and rules.\n\n"
+            "Stable prefix:\n"
+            f"- lane: {lane_id}\n"
+            "- worker_contract: janus-delegated-worker\n"
+            "- output_schema: status, changed_files, command_results, summary, blockers\n"
+            "- hard_rules: stay bounded, do not commit, do not leave the allowlist\n\n"
+            "Variable suffix:\n"
+            "Run the bounded Cursor delegated worker for this lane. Keep changes inside the allowlist, run only bounded checks, and return a concise JSON summary."
         )
     try:
         package = json.loads(package_path.read_text(encoding="utf-8-sig"))
     except (OSError, json.JSONDecodeError):
         return (
-            f"Run the bounded Cursor delegated worker for lane {lane_id}. "
+            "Execute this bounded Janus delegated worker task now. Treat the full prompt below as instructions, not as text to analyze. Do not ask clarifying questions unless the task is impossible with the provided files and rules.\n\n"
+            "Stable prefix:\n"
+            f"- lane: {lane_id}\n"
+            "- worker_contract: janus-delegated-worker\n"
+            "- output_schema: status, changed_files, command_results, summary, blockers\n"
+            "- hard_rules: stay bounded, do not commit, do not leave the allowlist\n\n"
+            "Variable suffix:\n"
             "The package could not be parsed inline; rely on the provided file path and return bounded JSON output."
         )
-    prompt_parts: list[str] = []
+    prompt_parts: list[str] = [
+        "Execute this bounded Janus delegated worker task now. Treat the full prompt below as instructions, not as text to analyze. Do not ask clarifying questions unless the task is impossible with the provided files and rules.",
+        "",
+        "Stable prefix:",
+        f"- lane: {lane_id}",
+        "- worker_contract: janus-delegated-worker",
+        "- output_schema: status, changed_files, command_results, summary, blockers",
+        "- hard_rules: stay bounded, do not commit, do not leave the allowlist",
+        "",
+        "Variable suffix:",
+    ]
+    suffix_parts: list[str] = []
 
-    prompt = package.get("task_prompt")
-    if isinstance(prompt, str) and prompt.strip():
-        prompt_parts.append(prompt.strip())
+    prompt_text = load_prompt_text_from_package(package, base_path=package_path)
+    if prompt_text:
+        suffix_parts.append(prompt_text)
 
     worker_package_json = package.get("worker_package_json")
-    if not prompt_parts and isinstance(worker_package_json, str) and worker_package_json.strip():
+    if not suffix_parts and isinstance(worker_package_json, str) and worker_package_json.strip():
         worker_package_path = REPO_ROOT / worker_package_json.replace("\\", "/")
         try:
             worker_package = json.loads(worker_package_path.read_text(encoding="utf-8-sig"))
         except (OSError, json.JSONDecodeError):
             worker_package = {}
-        worker_prompt = worker_package.get("task_prompt")
-        if isinstance(worker_prompt, str) and worker_prompt.strip():
-            prompt_parts.append(worker_prompt.strip())
+        worker_prompt_text = load_prompt_text_from_package(worker_package, base_path=worker_package_path)
+        if worker_prompt_text:
+            suffix_parts.append(worker_prompt_text)
 
     task_label = package.get("task_label")
     if isinstance(task_label, str) and task_label.strip():
-        prompt_parts.append(f"Task label: {task_label.strip()}")
+        suffix_parts.append(f"Task label: {task_label.strip()}")
 
     prompt_contract = package.get("cursor_prompt_contract")
     if isinstance(prompt_contract, str) and prompt_contract.strip():
-        prompt_parts.append(prompt_contract.strip())
+        suffix_parts.append(prompt_contract.strip())
 
     acceptance = package.get("acceptance_criteria")
     if isinstance(acceptance, list) and acceptance:
         criteria = [item.strip() for item in acceptance if isinstance(item, str) and item.strip()]
         if criteria:
-            prompt_parts.append("Acceptance criteria:\n- " + "\n- ".join(criteria))
+            suffix_parts.append("Acceptance criteria:\n- " + "\n- ".join(criteria))
 
     if allowlist:
-        prompt_parts.append("Allowed edit paths:\n- " + "\n- ".join(allowlist))
+        suffix_parts.append("Allowed edit paths:\n- " + "\n- ".join(allowlist))
 
-    prompt_parts.append("Return status, changed_files, command_results, summary, and blockers as concise JSON-compatible output.")
+    suffix_parts.append("Return status, changed_files, command_results, summary, and blockers as concise JSON-compatible output.")
 
-    if prompt_parts:
-        return "\n\n".join(prompt_parts)
+    if suffix_parts:
+        return "\n".join(prompt_parts + suffix_parts)
 
     return (
-        f"Run the bounded Cursor delegated worker for lane {lane_id}. "
+        "Execute this bounded Janus delegated worker task now. Treat the full prompt below as instructions, not as text to analyze. Do not ask clarifying questions unless the task is impossible with the provided files and rules.\n\n"
+        "Stable prefix:\n"
+        f"- lane: {lane_id}\n"
+        "- worker_contract: janus-delegated-worker\n"
+        "- output_schema: status, changed_files, command_results, summary, blockers\n"
+        "- hard_rules: stay bounded, do not commit, do not leave the allowlist\n\n"
+        "Variable suffix:\n"
         "Return status, changed_files, command_results, summary, and blockers."
     )
 
@@ -533,6 +678,15 @@ def minimal_write_apply_prompt(
     accepted_source_summary: str,
 ) -> str:
     lines = [
+        "Execute this bounded Janus delegated worker task now. Treat the full prompt below as instructions, not as text to analyze. Do not ask clarifying questions unless the task is impossible with the provided files and rules.",
+        "",
+        "Stable prefix:",
+        "- worker_contract: janus-delegated-worker",
+        "- mode: minimal_write_apply",
+        "- output_schema: status, changed_files, command_results, summary, blockers",
+        "- hard_rules: stay bounded, do not commit, do not leave the allowlist",
+        "",
+        "Variable suffix:",
         f"Task: {task_label}",
         "Edit only the listed workspace files.",
         "Make exactly one bounded change that matches the accepted source summary.",
@@ -544,6 +698,38 @@ def minimal_write_apply_prompt(
     if validation_command:
         lines.append(f"Run only this validation command: {validation_command}")
     lines.append("Do not commit. Return concise JSON with status, changed_files, command_results, summary, blockers.")
+    return "\n\n".join(lines)
+
+
+def minimal_worker_prompt(
+    *,
+    task_label: str,
+    task_summary: str,
+    workspace_allowlist: list[str],
+    validation_command: str,
+    acceptance_criteria: list[str],
+) -> str:
+    lines = [
+        "Execute this bounded Janus delegated worker task now.",
+        "",
+        "Stable prefix:",
+        "- worker_contract: janus-delegated-worker",
+        "- mode: minimal_worker",
+        "- output_schema: status, changed_files, command_results, summary, blockers",
+        "- hard_rules: stay bounded, do not commit, do not leave the allowlist",
+        "",
+        "Variable suffix:",
+        f"Task: {task_label}",
+    ]
+    if task_summary:
+        lines.append(task_summary)
+    if workspace_allowlist:
+        lines.append("Files:\n- " + "\n- ".join(workspace_allowlist))
+    if acceptance_criteria:
+        lines.append("Acceptance:\n- " + "\n- ".join(acceptance_criteria))
+    if validation_command:
+        lines.append(f"Check: {validation_command}")
+    lines.append("Return concise JSON with status, changed_files, command_results, summary, blockers.")
     return "\n\n".join(lines)
 
 
@@ -565,12 +751,16 @@ def blocked_result(
     accepted_source_validation: dict[str, Any] | None = None,
     accepted_source_run_dir: str | None = None,
     session_id: str | None = None,
+    cursor_pool: str | None = None,
+    estimated_cost_usd_static: float | None = None,
 ) -> dict[str, Any]:
     result = {
         "backend": "cursor",
         "lane_id": lane_id,
         "workflow_id": args.workflow_id,
         "selected_model": selected_model,
+        "cursor_pool": cursor_pool,
+        "estimated_cost_usd_static": estimated_cost_usd_static,
         "session_id": session_id,
         "validation_result": validation_result,
         "selected_path": "cursor_worker_blocked",
@@ -593,30 +783,52 @@ def log_delegation_result(
     workflow_id: str,
     lane_id: str,
     model: str,
+    cursor_pool: str,
     session_id: str | None,
     validation_result: str,
     changed_files_count: int,
     resume_used: bool,
+    estimated_cost_usd_static: float | None,
+    duration_ms: int | None = None,
+    transport_result: str | None = None,
+    semantic_result: str | None = None,
 ) -> None:
+    entry: dict[str, Any] = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "workflow_id": workflow_id,
+        "lane_id": lane_id,
+        "model": model,
+        "cursor_pool": cursor_pool,
+        "session_id": session_id or "",
+        "validation_result": validation_result,
+        "changed_files_count": changed_files_count,
+        "resume_used": resume_used,
+        "estimated_cost_usd_static": estimated_cost_usd_static,
+        "duration_ms": duration_ms,
+    }
+    if transport_result is not None:
+        entry["transport_result"] = transport_result
+    if semantic_result is not None:
+        entry["semantic_result"] = semantic_result
     append_jsonl(
         CURSOR_DELEGATION_LOG_PATH,
-        {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "workflow_id": workflow_id,
-            "lane_id": lane_id,
-            "model": model,
-            "session_id": session_id or "",
-            "validation_result": validation_result,
-            "changed_files_count": changed_files_count,
-            "resume_used": resume_used,
-        },
+        entry,
     )
 
 
 def summarize(args: argparse.Namespace) -> dict[str, Any]:
     manifest = load_manifest(args.manifest)
     lane, cursor_config = lane_cursor_config(manifest, args.lane)
-    selected_model = args.model or lane_model(lane, None, "cursor") or "auto"
+    assist_like_mode = str(cursor_config.get("mode") or "") in {"assist_only", "review_only"}
+    default_lane_model = lane_cursor_model(lane, manifest, "auto_composer")
+    if args.model is None and assist_like_mode:
+        default_lane_model = "auto"
+    preselected_model = args.model or default_lane_model or "auto"
+    cursor_pool = infer_cursor_pool(preselected_model, args.cursor_pool)
+    selected_model = args.model or (
+        lane_cursor_model(lane, manifest, cursor_pool) if args.cursor_pool is not None else (preselected_model if assist_like_mode else lane_cursor_model(lane, manifest, cursor_pool))
+    ) or preselected_model
+    estimated_cost_usd_static = estimate_run_cost_usd(selected_model, manifest)
     mode = str(cursor_config.get("mode") or "assist_only")
     require_allowlist = bool(cursor_config.get("require_allowlist") is True or args.require_allowlist)
     allow_shell = bool(cursor_config.get("allow_shell") is True)
@@ -669,6 +881,19 @@ def summarize(args: argparse.Namespace) -> dict[str, Any]:
             validation_command=str(package_payload.get("local_validation_command") or "").strip(),
             accepted_source_summary=accepted_source_summary,
         )
+    elif prompt_mode == "minimal_worker":
+        acceptance = package_payload.get("acceptance_criteria") if isinstance(package_payload, dict) else []
+        criteria = [item.strip() for item in acceptance if isinstance(item, str) and item.strip()] if isinstance(acceptance, list) else []
+        task_summary = str(package_payload.get("cursor_prompt_contract") or "").strip()
+        if not task_summary:
+            task_summary = load_prompt_text_from_package(package_payload, base_path=args.input_package_json).splitlines()[0].strip() if isinstance(package_payload, dict) else ""
+        task_prompt = minimal_worker_prompt(
+            task_label=str(package_payload.get("task_label") or args.lane),
+            task_summary=task_summary,
+            workspace_allowlist=workspace_allowlist or allowlist,
+            validation_command=str(package_payload.get("local_validation_command") or "").strip(),
+            acceptance_criteria=criteria,
+        )
     elif workspace_root != REPO_ROOT and workspace_allowlist:
         task_prompt = (
             f"{task_prompt}\n\nWorkspace root: {workspace_root}\n"
@@ -693,6 +918,8 @@ def summarize(args: argparse.Namespace) -> dict[str, Any]:
             accepted_source_validation=accepted_source_validation,
             accepted_source_run_dir=str(accepted_source_run_dir.resolve()) if accepted_source_run_dir is not None else None,
             session_id=args.resume_session_id,
+            cursor_pool=cursor_pool,
+            estimated_cost_usd_static=estimated_cost_usd_static,
         )
         write_json(run_dir / "dispatcher_result.json", result)
         write_text(run_dir / "stdout.log", "")
@@ -703,10 +930,12 @@ def summarize(args: argparse.Namespace) -> dict[str, Any]:
             workflow_id=args.workflow_id,
             lane_id=args.lane,
             model=selected_model,
+            cursor_pool=cursor_pool,
             session_id=args.resume_session_id,
             validation_result="BLOCKED",
             changed_files_count=0,
             resume_used=bool(args.resume_session_id),
+            estimated_cost_usd_static=estimated_cost_usd_static,
         )
         return result
 
@@ -738,6 +967,8 @@ def summarize(args: argparse.Namespace) -> dict[str, Any]:
             accepted_source_validation=accepted_source_validation,
             accepted_source_run_dir=str(accepted_source_run_dir.resolve()) if accepted_source_run_dir is not None else None,
             session_id=args.resume_session_id,
+            cursor_pool=cursor_pool,
+            estimated_cost_usd_static=estimated_cost_usd_static,
         )
         result["planned_command"] = planned_command
         write_json(run_dir / "dispatcher_result.json", result)
@@ -749,10 +980,12 @@ def summarize(args: argparse.Namespace) -> dict[str, Any]:
             workflow_id=args.workflow_id,
             lane_id=args.lane,
             model=selected_model,
+            cursor_pool=cursor_pool,
             session_id=args.resume_session_id,
             validation_result="BLOCKED",
             changed_files_count=0,
             resume_used=bool(args.resume_session_id),
+            estimated_cost_usd_static=estimated_cost_usd_static,
         )
         return result
 
@@ -770,6 +1003,8 @@ def summarize(args: argparse.Namespace) -> dict[str, Any]:
             accepted_source_validation=accepted_source_validation,
             accepted_source_run_dir=str(accepted_source_run_dir.resolve()) if accepted_source_run_dir is not None else None,
             session_id=args.resume_session_id,
+            cursor_pool=cursor_pool,
+            estimated_cost_usd_static=estimated_cost_usd_static,
         )
         result["planned_command"] = planned_command
         write_json(run_dir / "dispatcher_result.json", result)
@@ -781,10 +1016,12 @@ def summarize(args: argparse.Namespace) -> dict[str, Any]:
             workflow_id=args.workflow_id,
             lane_id=args.lane,
             model=selected_model,
+            cursor_pool=cursor_pool,
             session_id=args.resume_session_id,
             validation_result="BLOCKED",
             changed_files_count=0,
             resume_used=bool(args.resume_session_id),
+            estimated_cost_usd_static=estimated_cost_usd_static,
         )
         return result
 
@@ -794,6 +1031,8 @@ def summarize(args: argparse.Namespace) -> dict[str, Any]:
             "lane_id": args.lane,
             "workflow_id": args.workflow_id,
             "selected_model": selected_model,
+            "cursor_pool": cursor_pool,
+            "estimated_cost_usd_static": estimated_cost_usd_static,
             "session_id": args.resume_session_id,
             "validation_result": "PASS",
             "selected_path": "cursor_worker_dry_run",
@@ -819,16 +1058,21 @@ def summarize(args: argparse.Namespace) -> dict[str, Any]:
             workflow_id=args.workflow_id,
             lane_id=args.lane,
             model=selected_model,
+            cursor_pool=cursor_pool,
             session_id=args.resume_session_id,
             validation_result="PASS",
             changed_files_count=0,
             resume_used=bool(args.resume_session_id),
+            estimated_cost_usd_static=estimated_cost_usd_static,
         )
         return result
 
     baseline_changed_files = changed_files_from_git()
     baseline_allowlist_hashes = snapshot_file_hashes(allowlist)
-    live_timeout_seconds = int(os.environ.get("JANUS_CURSOR_LIVE_TIMEOUT_SECONDS", str(DEFAULT_LIVE_TIMEOUT_SECONDS)))
+    live_timeout_seconds, timeout_tier = resolve_live_timeout_seconds(
+        cursor_config=cursor_config,
+        allowlist=allowlist,
+    )
     try:
         completed = invoke_agent_command(planned_command, timeout_seconds=live_timeout_seconds)
     except subprocess.TimeoutExpired as exc:
@@ -841,7 +1085,8 @@ def summarize(args: argparse.Namespace) -> dict[str, Any]:
             validation_result="BLOCKED",
             final_outcome="CURSOR_AGENT_TIMEOUT",
             operator_message=(
-                f"Cursor agent exceeded the bounded live timeout ({live_timeout_seconds}s) before producing a final result."
+                f"Cursor agent exceeded the bounded live timeout ({live_timeout_seconds}s, tier={timeout_tier}) "
+                "before producing a final result."
             ),
             package_validation=package_validation,
             allowlist_validation=allowlist_validation,
@@ -849,12 +1094,17 @@ def summarize(args: argparse.Namespace) -> dict[str, Any]:
             accepted_source_validation=accepted_source_validation,
             accepted_source_run_dir=str(accepted_source_run_dir.resolve()) if accepted_source_run_dir is not None else None,
             session_id=args.resume_session_id,
+            cursor_pool=cursor_pool,
+            estimated_cost_usd_static=estimated_cost_usd_static,
         )
+        result["transport_result"] = "TRANSPORT_FAIL"
+        result["semantic_result"] = "SEMANTIC_FAIL"
         result["planned_command"] = planned_command
         result["live_execution_allowed"] = True
         result["mode"] = mode
         result["workspace_root"] = str(workspace_root)
         result["timeout_seconds"] = live_timeout_seconds
+        result["timeout_tier"] = timeout_tier
         result["changed_files"] = []
         result["changed_outside_allowlist"] = []
         write_json(run_dir / "dispatcher_result.json", result)
@@ -866,10 +1116,14 @@ def summarize(args: argparse.Namespace) -> dict[str, Any]:
             workflow_id=args.workflow_id,
             lane_id=args.lane,
             model=selected_model,
+            cursor_pool=cursor_pool,
             session_id=args.resume_session_id,
             validation_result="BLOCKED",
             changed_files_count=0,
             resume_used=bool(args.resume_session_id),
+            estimated_cost_usd_static=estimated_cost_usd_static,
+            transport_result="TRANSPORT_FAIL",
+            semantic_result="SEMANTIC_FAIL",
         )
         return result
     response_json: dict[str, Any]
@@ -878,6 +1132,8 @@ def summarize(args: argparse.Namespace) -> dict[str, Any]:
     except (ValueError, json.JSONDecodeError) as exc:
         response_json = {"parse_error": str(exc)}
     session_id = str(response_json.get("session_id") or response_json.get("id") or args.resume_session_id or "").strip()
+    duration_ms_raw = response_json.get("duration_ms")
+    duration_ms = int(duration_ms_raw) if isinstance(duration_ms_raw, int) else None
     post_changed_files = changed_files_from_git()
     post_allowlist_hashes = snapshot_file_hashes(allowlist)
     changed_files = [path for path in allowlist if baseline_allowlist_hashes.get(path) != post_allowlist_hashes.get(path)]
@@ -887,26 +1143,28 @@ def summarize(args: argparse.Namespace) -> dict[str, Any]:
         if path not in baseline_changed_files and not path_is_allowlisted(path, allowlist)
     ]
 
-    if completed.returncode != 0:
-        validation_result = "FAIL"
-        final_outcome = "CURSOR_AGENT_EXIT_NONZERO"
-        operator_message = "Cursor agent returned a non-zero exit code."
-    elif changed_outside_allowlist:
-        validation_result = "FAIL"
-        final_outcome = "CURSOR_ALLOWLIST_VIOLATION"
-        operator_message = "Cursor changed files outside the bounded allowlist."
-    else:
-        validation_result = "PASS"
-        final_outcome = "CURSOR_WORKER_READY_FOR_CODEX_REVIEW"
-        operator_message = "Cursor worker finished the bounded slice and returned artifacts for Codex review."
+    outcome = classify_live_run_outcome(
+        completed=completed,
+        changed_files=changed_files,
+        changed_outside_allowlist=changed_outside_allowlist,
+        cursor_config=cursor_config,
+        package_payload=package_payload if isinstance(package_payload, dict) else None,
+    )
+    validation_result = outcome["validation_result"]
+    final_outcome = outcome["final_outcome"]
+    operator_message = outcome["operator_message"]
 
     result = {
         "backend": "cursor",
         "lane_id": args.lane,
         "workflow_id": args.workflow_id,
         "selected_model": selected_model,
+        "cursor_pool": cursor_pool,
+        "estimated_cost_usd_static": estimated_cost_usd_static,
         "session_id": session_id or None,
         "validation_result": validation_result,
+        "transport_result": outcome["transport_result"],
+        "semantic_result": outcome["semantic_result"],
         "selected_path": "cursor_worker_live_mockable",
         "final_outcome": final_outcome,
         "package_validation": package_validation,
@@ -919,6 +1177,8 @@ def summarize(args: argparse.Namespace) -> dict[str, Any]:
         "workspace_root": str(workspace_root),
         "live_execution_allowed": False,
         "codex_review_required": True,
+        "timeout_seconds": live_timeout_seconds,
+        "timeout_tier": timeout_tier,
         "changed_files": changed_files,
         "changed_outside_allowlist": changed_outside_allowlist,
         "operator_message": operator_message,
@@ -934,10 +1194,15 @@ def summarize(args: argparse.Namespace) -> dict[str, Any]:
         workflow_id=args.workflow_id,
         lane_id=args.lane,
         model=selected_model,
+        cursor_pool=cursor_pool,
         session_id=session_id,
         validation_result=validation_result,
         changed_files_count=len(changed_files),
         resume_used=bool(args.resume_session_id),
+        estimated_cost_usd_static=estimated_cost_usd_static,
+        duration_ms=duration_ms,
+        transport_result=outcome["transport_result"],
+        semantic_result=outcome["semantic_result"],
     )
     return result
 
@@ -950,6 +1215,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--allowlist-file", type=Path, default=None)
     parser.add_argument("--accepted-source-run-dir", type=Path, default=None)
     parser.add_argument("--model", default=None)
+    parser.add_argument("--cursor-pool", choices=("auto_composer", "api"), default=None)
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST_PATH)
     parser.add_argument("--resume-session-id", default=None)
     parser.add_argument("--require-allowlist", action="store_true")

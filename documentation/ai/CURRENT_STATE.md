@@ -1,6 +1,1127 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-11 22:52:00 +02:00`, DBG-002 golden-path rerun PASS after shadow re-seed (`executed_runner_shadow.json` mismatch). All three skills now have end-to-end PASS live evidence on the hardened runner: EX-001, DBG-002 rerun, TP-003. Still uncommitted; Codex owns commit.
+
+Current goal: hand full smoke + hardening evidence to Codex for review/commit.
+
+Active phase: Lean Dev Track B hardening + live validation, canonical state `PASS`.
+
+Last Codex work:
+- re-seeded DBG-002 shadow mismatch and reran live smoke `WF-GOLDEN-DBG-002-HARDENING-RERUN-2026-07-11` PASS (~32s)
+- updated `documentation/test-runs/CURSOR_GOLDEN_PATH_HARDENING_SMOKE_2026-07-11.md`
+
+Changed files in this block:
+- `debug_repro_investigation/sandbox/executed_runner_shadow.json` (re-seed + Cursor fix)
+- `documentation/test-runs/CURSOR_GOLDEN_PATH_HARDENING_SMOKE_2026-07-11.md`
+- `documentation/codex/model-routing/cursor-worker-runs/WF-GOLDEN-DBG-002-HARDENING-RERUN-2026-07-11/`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- DBG-002 rerun post-pytest PASS
+
+Open risks:
+- all changes remain local/uncommitted
+
+Next recommended step for Codex: review and commit hardening + smoke evidence as one bounded changeset when approved.
+
+Last updated: `2026-07-11 22:52:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-11 22:45:00 +02:00`, three golden-path live Cursor smokes ran on the hardened runner without commit. EX-001 and TP-003 PASS with real allowlisted edits and green focused pytest; DBG-002 correctly returned `CURSOR_SEMANTIC_FAIL_NO_CHANGES` because the shadow fixture was already green (H-001 evidence). Evidence: `documentation/test-runs/CURSOR_GOLDEN_PATH_HARDENING_SMOKE_2026-07-11.md`.
+
+Current goal: hand uncommitted hardening + smoke evidence to Codex for review/commit; use hardened delegate path for everyday bounded execution/debug/test slices.
+
+Active phase: Lean Dev Track B hardening + live validation, canonical state `PASS WITH FINDINGS`.
+
+Last Codex work:
+- live smokes EX-001 / DBG-002 / TP-003 via `janus_delegate` choice `3` + `--execute-live-cursor`
+- documented results in `documentation/test-runs/CURSOR_GOLDEN_PATH_HARDENING_SMOKE_2026-07-11.md`
+- no git commit per operator request
+
+Changed files in this block:
+- shadow files from EX-001 and TP-003 live runs (uncommitted)
+- `documentation/test-runs/CURSOR_GOLDEN_PATH_HARDENING_SMOKE_2026-07-11.md`
+- `documentation/codex/model-routing/cursor-worker-runs/WF-GOLDEN-*` (new run artifacts)
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- EX-001 post-pytest PASS
+- TP-003 post-pytest PASS (24 tests)
+- DBG-002 semantic gate PASS (expected fail on zero edits)
+
+Open risks:
+- all changes remain local/uncommitted
+- DBG-002 full PASS smoke needs shadow mismatch re-seed if operator wants end-to-end green on that lane too
+
+Next recommended step for ChatGPT: read smoke evidence doc; treat DBG-002 semantic fail as positive hardening proof, not integration regression.
+
+Next recommended step for Codex: review uncommitted runner/delegate diffs + shadow edits; commit when approved.
+
+Last updated: `2026-07-11 22:45:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-11 22:30:00 +02:00`, Cursor delegation hardening H-001/H-002/H-003 landed locally for the executioner/debug/test-pipeline worker lanes. The shared runner now applies automatic timeout tiers (180/240/300), distinguishes `transport_result` vs `semantic_result`, fails write-capable lanes with zero allowlisted edits, and the delegate invokes the runner via absolute path.
+
+Current goal: use the hardened runner for everyday bounded Composer delegation on execution/debug/test lanes; optional golden-path live smokes next.
+
+Active phase: Lean Dev Track B hardening, canonical state `PASS`.
+
+Last Codex work:
+- implemented H-001 semantic fail, H-002 transport/semantic fields, H-003 timeout tiers in `janus_cursor_worker_runner.py`
+- hardened `janus_delegate.py` runner invocation (absolute path, guarded `--cursor-pool`)
+- added status doc `documentation/codex/model-routing/CURSOR_DELEGATION_STATUS_2026-07-11.md`
+- updated runner/delegate tests; user reported M6 Phase A manual smokes PASS separately in M6 worktree
+
+Changed files in this block:
+- `documentation/codex/model-routing/scripts/janus_cursor_worker_runner.py`
+- `documentation/codex/model-routing/scripts/janus_delegate.py`
+- `documentation/codex/model-routing/tests/test_janus_cursor_worker_runner.py`
+- `documentation/codex/model-routing/tests/test_janus_delegate.py`
+- `documentation/codex/model-routing/CURSOR_DELEGATION_STATUS_2026-07-11.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_janus_cursor_worker_runner.py documentation/codex/model-routing/tests/test_janus_delegate.py -q`: PASS, `37 passed`
+
+Open risks:
+- changes are local/uncommitted; golden-path live smokes on EX-001 / DBG-002 / TP-003 still recommended after hardening
+- M6 transport work lives in separate worktree `Janus-M6-Transport-Prep`; not merged here
+
+Next recommended step for ChatGPT: treat `CURSOR_DELEGATION_STATUS_2026-07-11.md` as operator truth for execution/debug/test delegation.
+
+Next recommended step for Codex: on next bounded slice, use `janus_delegate` choice `3` once with automatic timeout tiers; on `SEMANTIC_FAIL` or timeout, implement locally without retry loops.
+
+Last updated: `2026-07-11 22:30:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-11 14:39:29 +02:00`, the bounded `TASK-SPEC25.2` evidence-only checkpoint is committed locally on `develop` as `666391b44` (`docs(spec25): record dev workhorse audit evidence`). The commit contains exactly its five task/audit artifacts and intentionally excludes the ownership-ambiguous runner test and all product code. Alongside the earlier M4 checkpoint `e7af550d8`, this reduces the visible mixed worktree to 1,031 entries, none staged.
+
+Current goal: preserve the two safe local checkpoints while selecting the next genuinely isolated remaining family before any roadmap implementation resumes.
+
+Active phase: `janus-git-governance`, canonical state `PASS` for the Spec25.2 checkpoint.
+
+Last Codex work:
+- staged only the five untracked Spec25.2 task/audit artifacts after explicit approval
+- validated the cached diff and final-audit artifact, then committed locally as `666391b44`
+- left all remaining source changes, runner test changes, shared docs, and generated artifacts untouched
+
+Changed files in this block:
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `git diff --cached --check`: PASS
+- `validate_final_audit.py documentation/tasks/TASK-SPEC25.2_final_audit.md`: PASS
+- post-commit check: `HEAD=666391b44`, 1,031 dirty entries, 0 staged entries
+
+Open risks:
+- both M4 and Spec25.2 checkpoints are local only; no push to `backup` and no `origin/codex-sync` update happened
+- the remaining worktree is still mixed and must not be treated as M6-ready
+
+Next recommended step for ChatGPT: report the local checkpoints but no remote sync, then select one next small isolated family or pause cleanup.
+
+Next recommended step for Codex: stop checkpointing by default; continue candidate discovery only when the user wants another bounded checkpoint.
+
+Last updated: `2026-07-11 14:39:29 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-11 14:11:47 +02:00`, candidate discovery found a smaller isolated documentation/evidence checkpoint: `TASK-SPEC25.2` (productive Dev Workhorse). Its five untracked task/audit artifacts are bounded and its audited runner source files have no remaining working-tree diffs, so they are already present in the current code baseline. The still-modified `test_codex_dev_workhorse_runner.py` is deliberately excluded because its current diff needs independent ownership review.
+
+Current goal: decide whether to checkpoint the bounded `TASK-SPEC25.2` evidence-only family or continue candidate discovery.
+
+Active phase: `janus-git-governance`, canonical state `HANDOFF`.
+
+Last Codex work:
+- scanned untracked final-audit artifacts for PASS markers and compared the smallest candidates against their declared source files
+- selected `TASK-SPEC25.2` as a narrow documentation/evidence-only candidate, not as a source-code checkpoint
+- left the modified shared runner-test file and all broader task families unmodified and unstaged
+
+Changed files in this block:
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- PASS-audit discovery over untracked final-audit artifacts: completed
+- `TASK-SPEC25.2` audit-scope versus Git-status comparison: candidate source scripts clean; one related test file remains ownership-ambiguous and excluded
+
+Open risks:
+- an evidence-only checkpoint must not imply that the modified runner test belongs to `TASK-SPEC25.2`
+- the worktree remains broadly mixed and no remote synchronization has happened
+
+Next recommended step for ChatGPT: ask for explicit approval for a `TASK-SPEC25.2` documentation/evidence-only checkpoint, or ask Codex to continue candidate discovery.
+
+Next recommended step for Codex: after explicit approval, stage only the five bound `TASK-SPEC25.2` artifacts, validate the cached diff, and commit locally without the modified runner test.
+
+Last updated: `2026-07-11 14:11:47 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-11 14:11:47 +02:00`, the approved `BACKLOG-124` checkpoint was stopped before staging. The final-audit and documentation markers are valid, but the detailed source-skill review found that all 15 candidate files also contain substantial later, unrelated skill evolution: several diffs are 40-156 lines and some contain no BACKLOG-124/GPT-5.6 marker at all. The original approval does not safely authorize a broad hunk-mining exercise across those mixed files.
+
+Current goal: preserve the clean M4 checkpoint and choose a genuinely isolated next delivery group rather than force a misleading BACKLOG-124 commit.
+
+Active phase: `janus-git-governance`, canonical state `NEEDS_INFO`.
+
+Last Codex work:
+- re-read the full Git-governance rules and inspected each of the 15 proposed BACKLOG-124 skill source diffs
+- confirmed PASS final-audit and documentation markers, then rejected the source scope as mixed before any staging occurred
+- made no staging, commit, push, reset, deletion, or ignore-rule change
+
+Changed files in this block:
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- BACKLOG-124 final-audit validator: PASS
+- BACKLOG-124 documentation marker validator: PASS
+- scoped skill-source `git diff --check`: PASS
+- per-file numstat and model-marker review: FAILED AS A COHERENCE GATE - 15 files include substantial unrelated deltas
+
+Open risks:
+- broad hunk-level extraction across the mixed 15-file skill set could silently omit required related changes or include later unrelated behavior
+- the remaining worktree remains 1,036 visible dirty entries; no remote synchronization has happened
+
+Next recommended step for ChatGPT: do not treat BACKLOG-124 as ready to commit; choose a smaller task file family with code/tests/evidence that is isolated in both source and documentation.
+
+Next recommended step for Codex: return to candidate discovery and prefer an untracked task/artifact family whose shared source files have small, marker-aligned diffs.
+
+Last updated: `2026-07-11 14:11:47 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-11 14:11:47 +02:00`, the next bounded checkpoint candidate is `BACKLOG-124` (GPT-5.6 Codex/Janus model-matrix synchronization). Its final-audit and documentation markers validate PASS, and the scoped source-skill diff is whitespace-clean. The candidate consists of the 15 changed repo-owned Janus skill sources, BACKLOG-124 task/audit artifacts, and only the directly bound Cursor evidence; broad development fixtures, generated runs, shared snapshots, and unrelated product code remain parked.
+
+Current goal: obtain explicit approval for a reviewed `BACKLOG-124` checkpoint, then stage only its bound source skills and evidence.
+
+Active phase: `janus-git-governance`, canonical state `HANDOFF`.
+
+Last Codex work:
+- selected `BACKLOG-124` from the classified worktree as the next coherent validated family
+- verified its final-audit marker, documentation marker, and the scoped skill-source diff
+- made no staging, commit, push, reset, deletion, or additional ignore-rule change
+
+Changed files in this block:
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `validate_final_audit.py documentation/tasks/BACKLOG-124_final_audit.md`: PASS
+- `validate_doc_update.py --marker BACKLOG-124 --require documentation/backlog/BACKLOG.md --require documentation/ai/CURRENT_STATE.md`: PASS
+- scoped `git diff --check` for the 15 candidate Janus skill sources: PASS
+
+Open risks:
+- the candidate must still be hunk-reviewed where any source skill contains changes from a later unrelated task; no whole-file staging is authorized by this review alone
+- no push to `backup` and no `origin/codex-sync` update happened; remote surfaces do not contain the local M4 checkpoint or current worktree state
+
+Next recommended step for ChatGPT: ask for one explicit `BACKLOG-124 commit: YES` approval or choose another candidate.
+
+Next recommended step for Codex: after explicit approval, prepare the exact BACKLOG-124 staged set, validate the cached diff, and commit locally without pushing.
+
+Last updated: `2026-07-11 14:11:47 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-11 14:11:47 +02:00`, the bounded worktree-stabilization pass is complete. The M4 checkpoint remains local at `e7af550d8`; no further source or documentation changes were staged. Three unequivocally local runtime-artifact paths are now parked in the unversioned `.git/info/exclude` file, reducing visible dirty entries from 1,039 to 1,036 without deleting or hiding any product, task, audit, or evidence artifact. The remaining tree is classified into candidate families, not treated as one bulk commit.
+
+Current goal: select the next coherent reviewed delivery group from the still-mixed worktree before continuing the product roadmap.
+
+Active phase: `janus-git-governance`, canonical state `HANDOFF`.
+
+Last Codex work:
+- ran the repository changeset proposal and confirmed that its coarse buckets need task-marker review before staging
+- parked only `.tmp_task_spec21_2_compile/`, `.tmpappdata/`, and `test-results/.playwright-artifacts-0/` as local-only runtime artifacts via `.git/info/exclude`
+- left 1,036 real working-tree entries visible, unstaged, and unchanged
+
+Changed files in this block:
+- `.git/info/exclude` (local, unversioned Git metadata)
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `propose_changesets.py C:\KI\Janus-Projekt`: completed; identified coarse backend, skill-rules, backlog/dashboard, generated-artifact, and manual-review families
+- `git check-ignore -v` for the three local runtime paths: PASS
+- post-pass Git status: 1,036 dirty entries, 0 staged entries
+
+Open risks:
+- the remaining working tree is still too mixed for M6 implementation or a bulk checkpoint; most of the 922 documentation entries require task-marker rather than path-only grouping
+- no push to `backup` and no `origin/codex-sync` update happened; remote surfaces do not contain M4 or this current local state
+
+Next recommended step for ChatGPT: choose the next existing coherent family to review; do not request broad cleanup or M6 implementation on the mixed tree.
+
+Next recommended step for Codex: continue `janus-git-governance` by selecting one bounded family, preferably a validated completed task group with its code, tests, and evidence, then present a staging plan before any commit.
+
+Last updated: `2026-07-11 14:11:47 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-11 14:11:47 +02:00`, the reviewed M4 Session-Search changeset is checkpointed locally on `develop` as `e7af550d8` (`feat(memory): add bounded session search FTS5`). The commit contains only the M4 code path, its focused tests, task/audit artifacts, Cursor evidence, direct enabled-runtime evidence, and the isolated central-registry marker. The remaining worktree is still intentionally mixed (1,039 dirty entries, none staged), including shared rolling documentation and unrelated product/delegation work; it was not modified by this checkpoint.
+
+Current goal: preserve the safe M4 checkpoint while deciding which next coherent group should be reviewed from the remaining mixed worktree.
+
+Active phase: `janus-git-governance`, canonical state `PASS` for the M4 checkpoint.
+
+Last Codex work:
+- hunk-reviewed and staged only the M4 Session-Search additions from shared backend files
+- excluded adjacent Wikipedia, contact, workflow, and broader documentation deltas from the commit
+- committed local checkpoint `e7af550d8` after focused tests, validators, compile, and cached-diff checks passed
+
+Changed files in this block:
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `pytest backend/tests/test_session_fts_store.py -q`: PASS (`4 passed`)
+- `pytest backend/tests/test_session_search_tools.py -q`: PASS (`5 passed`)
+- `pytest backend/tests/test_memory_regression.py -q`: PASS (`20 passed`)
+- M4 `py_compile`, final-audit validator, documentation validator, and `git diff --cached --check`: PASS
+- post-commit check: `HEAD=e7af550d8`, no staged files, 1,039 remaining mixed dirty entries
+
+Open risks:
+- the M4 checkpoint is local only; no push to `backup` and no `origin/codex-sync` update happened, so remote surfaces do not contain the committed M4 state
+- shared project state, roadmap, `CURRENT_STATE`, skill log, and learning-memory deltas remain in the mixed worktree for later coherent documentation/governance grouping
+
+Next recommended step for ChatGPT: report M4 as locally checkpointed but not remotely synchronized; do not infer a clean repository.
+
+Next recommended step for Codex: stop checkpointing by default and select one next coherent group from the remaining worktree before any further staging.
+
+Last updated: `2026-07-11 14:11:47 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-11 00:24:26 +02:00`, the requested worktree-order pass has classified the current state without destructive cleanup. `develop` contains 1,062 dirty entries: 922 documentation, 70 backend, 48 development, and smaller frontend/test/config/temporary groups. M4 is a valid checkpoint candidate, but its exact code path overlaps shared modified files with substantial unrelated hunks. The safe order is therefore: isolate and review the M4 candidate first, then checkpoint independent completed task groups, and leave temporary/generated paths parked until their ownership is explicit.
+
+Current goal: turn the mixed tree into deliberate commit candidates without staging or committing unreviewed shared-file hunks.
+
+Active phase: `janus-git-governance`, canonical state `HANDOFF`.
+
+Last Codex work:
+- grouped all dirty paths by top-level concern and identified the M4-specific untracked code, tests, task artifacts, and live-validation evidence
+- inspected M4 overlap in `crud.py`, `schemas.py`, `intent_engine.py`, `execution_dispatcher.py`, and `tool_registry.py`; the M4 additions are identifiable, but several shared files also contain large unrelated deltas
+- preserved every file as-is: no reset, deletion, staging, commit, push, or ignore-rule change
+
+Changed files in this block:
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `git status --porcelain=v1` classification: 1,062 dirty entries across 7 groups
+- M4 path inventory: separate Session-Search files and evidence identified; shared-file hunk review completed
+- branch/remotes/staging review: `develop`, no staged files, `backup` private and `origin` public/release-only for this workflow
+
+Open risks:
+- shared M4 code/doc files cannot be staged whole without absorbing unrelated work; hunk-level review is required before any checkpoint
+- 922 documentation entries and many generated/delegation artifacts must be assigned to their owning completed slices or deliberately kept local before the tree can become clean
+- no commit, push, or `origin/codex-sync` update has happened, so remote surfaces may not contain the newest M4 state
+
+Next recommended step for ChatGPT: offer a bounded first isolation decision: review and stage only the M4 candidate as one commit, while leaving every other group parked.
+
+Next recommended step for Codex: on explicit commit approval, run hunk-level staging/review for the listed M4 scope, validate the staged diff, then present the exact commit message before committing.
+
+Last updated: `2026-07-11 00:24:26 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-11 00:24:26 +02:00`, the optional Git checkpoint for the completed M4 closeout is not safe to prepare yet. The repository is on `develop`, but the worktree is a large mixed, entirely unstaged set spanning unrelated product work, Specs, delegation infrastructure, generated artifacts, and temporary files. `TASK-MEM-M4.1` itself remains documentation-complete and audit-PASS; the Git gate is `NEEDS_INFO` only because a targeted commit cannot be separated responsibly without reviewing the overlapping dirty files.
+
+Current goal: preserve the passed M4 state while waiting for an explicit decision on how to isolate the intended checkpoint from the existing mixed worktree.
+
+Active phase: `janus-git-governance`, canonical state `NEEDS_INFO`.
+
+Last Codex work:
+- inspected branch, remotes, staging state, dirty-path scope, and large-diff risk before proposing a checkpoint
+- confirmed `develop`, no staged files, private `backup` and public `origin` remotes, and a large mixed worktree with an existing large contact-test diff
+- deliberately made no staging, commit, push, reset, cleanup, or file move
+
+Changed files in this block:
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `git branch --show-current`: PASS (`develop`)
+- `git status --short`, `git diff --cached --name-only`, `git diff --name-only`, and diff-size scan: inspected; no staged changes and mixed dirty scope confirmed
+- remote inspection: `backup` and `origin` configured; development commits must not go to `origin`
+
+Open risks:
+- the M4 commit surface overlaps modified shared files such as registry, roadmap, project state, `CURRENT_STATE`, and skill usage log; blindly staging paths could capture unrelated work
+- a large existing diff in `backend/tests/test_contact_manager.py` and many untracked/generated paths confirm that this is not a clean single-slice checkpoint
+- no commit, push, or `origin/codex-sync` update has happened, so remote surfaces may not contain the newest M4 state
+
+Next recommended step for ChatGPT: explain that M4 is closed but its Git checkpoint is waiting on worktree isolation; do not infer a remote sync.
+
+Next recommended step for Codex: after the user selects a commit-isolation approach, continue `janus-git-governance` and stage only reviewed M4 paths before asking for one final commit confirmation.
+
+Last updated: `2026-07-11 00:24:26 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-11`, `TASK-MEM-M4.1` has passed `janus-final-audit` and its documentation closeout is synchronized. Memory Phase C now has an evidence-backed, bounded Session-Search FTS5 slice: the canonical message write path indexes eligible messages into a separate store, `session_search` is registered for episodic recall, and enabled-runtime Janus evidence confirms cross-chat `Acme GmbH` recall through the real tool path plus password refusal. The feature flag remains default-off; no broad memory-policy change, release, or product flag flip is implied.
+
+Current goal: retain the completed M4 documentation checkpoint and decide whether to create a governed Git checkpoint before preparing M6 Transport T-A.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- synchronized the passed M4 audit and enabled-runtime evidence into the M4 task, roadmap, central registry, project state, reusable learning memory, and this rolling snapshot
+- recorded the explicit adjacent routing risk: two password paraphrases reached `calendar.list_events`, but neither leaked a secret and this is outside the narrow M4 acceptance boundary
+
+Changed files in this block:
+- `documentation/tasks/TASK-MEM-M4_session_search_fts5.md`
+- `documentation/tasks/TASK-MEM-M4.1_documentation_update.md`
+- `documentation/Cursor specs/ROADMAP_EPIC_ORDER.md`
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `WHAT_I_LEARNED.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `validate_final_audit.py documentation/tasks/TASK-MEM-M4.1_final_audit.md`: PASS
+- M4 final-audit evidence includes focused FTS/tool pytest PASS (`4` + `5`), Memory regression PASS (`20 passed`), compile PASS, scoped diff PASS, and enabled-runtime Janus recall/password-refusal PASS
+- marker-scoped documentation validator: PASS
+- scoped `git diff --check`: PASS WITH PRE-EXISTING ROADMAP WARNING for two pre-existing trailing-whitespace header lines; no M4 closeout diff defect reported
+
+Open risks:
+- `MEMORY_SESSION_SEARCH_ENABLED` remains default-off; the green live proof used a separate local flag-on runtime, not the default product process
+- alternative password-paraphrase requests can still drift to `calendar.list_events`; no secret leakage was observed, but this is follow-up routing debt
+- no commit, push, or `origin/codex-sync` update has happened, so remote surfaces may not contain this newest CURRENT_STATE or M4 closeout
+
+Next recommended step for ChatGPT: treat M4 Memory C as closed, keep the flag/default and adjacent routing caveat visible, and only then discuss M6 Transport T-A planning.
+
+Next recommended step for Codex: route to `janus-git-governance` for an optional scoped checkpoint; after explicit Git approval, prepare the next M6 preimplementation route.
+
+Last updated: `2026-07-11 00:24:26 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-10 23:02 +02:00`, the bounded Cursor worker path for this M4 evidence lane is now productively hardened. Codex fixed three narrow shared-runner issues: support for `task_prompt_path`, narrower workspace-root derivation even when allowlisted target files do not yet exist, and a new compact `minimal_worker` prompt mode for bounded evidence/edit slices. After that hardening, the next real Cursor API run `WF-M4-SESSION-SEARCH-VALIDATION-2026-07-10-HARDENED-001` completed successfully, stayed inside the allowlist, and wrote the two requested evidence files. The resulting M4 live-validation outcome is still `BLOCKED`, but now for the correct, honest reason: the delegated Cursor environment cannot access a real Janus runtime or create separate chat sessions.
+
+Current goal: use the now-productive Cursor worker path as a reliable bounded evidence lane, while routing true live Janus product validation to an environment that actually has runtime/chat access.
+
+Active phase: `janus-debug`, canonical state `PASS`.
+
+Last Codex work:
+- hardened `janus_cursor_worker_runner.py` so bounded worker packages can use `task_prompt_path`, compact `minimal_worker` prompts, and narrower workspaces for not-yet-created allowlisted files
+- added focused regression tests for the new runner behavior and kept the existing bounded runner suite green
+- reran the real M4 Cursor evidence job and verified that Cursor now returns a valid bounded result with allowlisted artifacts instead of semantically claiming the prompt/package is missing
+
+Changed files in this block:
+- `documentation/codex/model-routing/scripts/janus_cursor_worker_runner.py`
+- `documentation/codex/model-routing/tests/test_janus_cursor_worker_runner.py`
+- `documentation/codex/model-routing/test-fixture-review-fixtures/m4_session_search_live_validation_input_package_2026-07-10.json`
+- `documentation/test-results/TASK-MEM-M4.1_cursor_live_validation_2026-07-10.md`
+- `documentation/codex/model-routing/test-fixture-review-fixtures/TASK-MEM-M4.1_cursor_live_validation_result_2026-07-10.json`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest documentation/codex/model-routing/tests/test_janus_cursor_worker_runner.py -q`: PASS (`18 passed`)
+- `python -m py_compile documentation/codex/model-routing/scripts/janus_cursor_worker_runner.py`: PASS
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane test_fixture_worker --task-id TASK-TP-003 --workflow-id WF-M4-SESSION-SEARCH-VALIDATION-2026-07-10-HARDENED-001 --operator-choice prompt --input-package-json documentation/codex/model-routing/test-fixture-review-fixtures/m4_session_search_live_validation_input_package_2026-07-10.json --allowlist-file documentation/codex/model-routing/test-fixture-review-fixtures/allowlists/m4_session_search_live_validation_allowlist_2026-07-10.txt --estimated-codex-saved-tokens 18000 --estimated-delegation-overhead-tokens 9000 --minimum-net-codex-saved-tokens 8000`: PASS, gate still recommends Cursor
+- `JANUS_CURSOR_LIVE_TIMEOUT_SECONDS=180 python documentation/codex/model-routing/scripts/janus_delegate.py --lane test_fixture_worker --task-id TASK-TP-003 --workflow-id WF-M4-SESSION-SEARCH-VALIDATION-2026-07-10-HARDENED-001 --operator-choice 4 ... --execute-live-cursor`: PASS (`CURSOR_WORKER_READY_FOR_CODEX_REVIEW`)
+- resulting evidence files:
+  - `documentation/test-results/TASK-MEM-M4.1_cursor_live_validation_2026-07-10.md`
+  - `documentation/codex/model-routing/test-fixture-review-fixtures/TASK-MEM-M4.1_cursor_live_validation_result_2026-07-10.json`
+- `git diff --check -- documentation/codex/model-routing/scripts/janus_cursor_worker_runner.py documentation/codex/model-routing/tests/test_janus_cursor_worker_runner.py documentation/codex/model-routing/test-fixture-review-fixtures/m4_session_search_live_validation_input_package_2026-07-10.json documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS
+
+Open risks:
+- the shared Cursor worker is now productive for this bounded lane, but it still cannot substitute for a true live Janus runtime when the validation requires real chat/session state
+- `TASK-MEM-M4.1` remains product-blocked for live validation until the same three prompts are run in an owning environment that can actually create and separate chats
+- no commit, push, or `origin/codex-sync` update happened; remote surfaces may not contain this newest state
+
+Next recommended step for ChatGPT: treat Cursor as productive again for bounded evidence writing on this lane, but do not describe M4 live validation as passed; the current evidence honestly says the worker environment lacks Janus runtime/chat access.
+
+Next recommended step for Codex: either route the three M4 prompts into a true owning runtime/UI environment, or move to the next Cursor-first bounded slice now that the worker path itself is no longer the blocker.
+
+Last updated: `2026-07-10 23:02:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-10 22:39 +02:00`, the Cursor-first M4 live-validation delegation was executed for real, and the truth is now sharper: the shared `janus_delegate.py -> Cursor` path itself works, but this specific `TASK-MEM-M4.1` evidence job is still blocked at the worker-semantics layer. Codex created a bounded `TASK-TP-003` package for Session-Search validation, ran one live Cursor Composer attempt that timed out after 300 seconds, then ran two live Cursor API attempts that completed transport-wise but returned no bounded evidence files. Instead, both API runs replied that the delegated worker task/prompt was effectively missing, despite the inlined package prompt.
+
+Current goal: convert the new Cursor-run evidence into the next bounded implementation or delegation-hardening step for `TASK-MEM-M4.1` live validation.
+
+Active phase: `janus-test-pipeline`, canonical state `BLOCKED`.
+
+Last Codex work:
+- created a real `TASK-TP-003` package triplet for M4 Session-Search live validation under `documentation/codex/model-routing/test-fixture-review-fixtures/`
+- executed three real Cursor delegated runs:
+  - `WF-M4-SESSION-SEARCH-VALIDATION-2026-07-10-001`: Cursor Composer timeout
+  - `WF-M4-SESSION-SEARCH-VALIDATION-2026-07-10-RETRY-001`: Cursor API transport PASS but semantic no-op
+  - `WF-M4-SESSION-SEARCH-VALIDATION-2026-07-10-RETRY-002`: Cursor API transport PASS but semantic no-op
+- reviewed the resulting `cursor-worker-runs/...` artifacts and confirmed that no allowlisted evidence files were produced
+
+Changed files in this block:
+- `documentation/codex/model-routing/test-fixture-review-fixtures/m4_session_search_live_validation_input_package_2026-07-10.json`
+- `documentation/codex/model-routing/test-fixture-review-fixtures/m4_session_search_live_validation_worker_package_2026-07-10.json`
+- `documentation/codex/model-routing/test-fixture-review-fixtures/allowlists/m4_session_search_live_validation_allowlist_2026-07-10.txt`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python documentation/codex/model-routing/scripts/janus_delegate.py --lane test_fixture_worker --task-id TASK-TP-003 --workflow-id WF-M4-SESSION-SEARCH-VALIDATION-2026-07-10-001 --operator-choice prompt --input-package-json documentation/codex/model-routing/test-fixture-review-fixtures/m4_session_search_live_validation_input_package_2026-07-10.json --allowlist-file documentation/codex/model-routing/test-fixture-review-fixtures/allowlists/m4_session_search_live_validation_allowlist_2026-07-10.txt --estimated-codex-saved-tokens 18000 --estimated-delegation-overhead-tokens 9000 --minimum-net-codex-saved-tokens 8000`: PASS, recommended `3 = Cursor Composer`
+- `JANUS_CURSOR_LIVE_TIMEOUT_SECONDS=300 python documentation/codex/model-routing/scripts/janus_delegate.py --lane test_fixture_worker --task-id TASK-TP-003 --workflow-id WF-M4-SESSION-SEARCH-VALIDATION-2026-07-10-001 --operator-choice 3 ... --execute-live-cursor`: BLOCKED (`CURSOR_AGENT_TIMEOUT`)
+- `JANUS_CURSOR_LIVE_TIMEOUT_SECONDS=240 python documentation/codex/model-routing/scripts/janus_delegate.py --lane test_fixture_worker --task-id TASK-TP-003 --workflow-id WF-M4-SESSION-SEARCH-VALIDATION-2026-07-10-RETRY-001 --operator-choice 4 ... --execute-live-cursor`: transport PASS, semantic FAIL, `cursor_response.json` said the bounded task package was missing
+- `JANUS_CURSOR_LIVE_TIMEOUT_SECONDS=180 python documentation/codex/model-routing/scripts/janus_delegate.py --lane test_fixture_worker --task-id TASK-TP-003 --workflow-id WF-M4-SESSION-SEARCH-VALIDATION-2026-07-10-RETRY-002 --operator-choice 4 ... --execute-live-cursor`: transport PASS, semantic FAIL, `cursor_response.json` said the task prompt was missing
+- `git diff --check -- documentation/codex/model-routing/test-fixture-review-fixtures/m4_session_search_live_validation_input_package_2026-07-10.json documentation/codex/model-routing/test-fixture-review-fixtures/m4_session_search_live_validation_worker_package_2026-07-10.json documentation/codex/model-routing/test-fixture-review-fixtures/allowlists/m4_session_search_live_validation_allowlist_2026-07-10.txt`: PASS
+
+Open risks:
+- `TASK-MEM-M4.1` still has no real live Session-Search verdict; only local code validation is green
+- the current shared Cursor worker prompt shape can reach transport success while still failing semantically to recognize this test-pipeline evidence task
+- no commit, push, or `origin/codex-sync` update happened; remote surfaces may not contain this newest state
+
+Next recommended step for ChatGPT: treat the Cursor evidence as a real delegation blocker, not as missing effort; the next useful move is either a bounded delegation-hardening slice for this worker prompt path or direct Codex/manual live validation outside Cursor.
+
+Next recommended step for Codex: route the next slice as `janus-debug` on `5.6 Terra` medium to harden the Cursor worker prompt/package handoff for `TASK-TP-003`, or bypass Cursor and run the live M4 checks directly in the owning environment if that is the true goal.
+
+Last updated: `2026-07-10 22:39:15 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-10 22:12 +02:00`, the next M4 step is explicitly prepared as a Cursor-first evidence collection block. `TASK-MEM-M4.1` remains locally green and still awaits live validation; Codex has now created a bounded Cursor handoff that asks for exactly three runtime checks: seed a company fact, verify cross-chat episodic recall, and verify secret suppression on the new Session-Search seam.
+
+Current goal: collect bounded live evidence for `TASK-MEM-M4.1` through Cursor without widening scope or pretending the live gate already passed.
+
+Active phase: `janus-test-pipeline`, canonical state `HANDOFF`.
+
+Last Codex work:
+- routed the next step into a bounded `janus-test-pipeline` evidence block instead of reopening implementation
+- created a dedicated Cursor handoff for M4 Session-Search live validation with exact prompts, expected truths, and reporting rules
+- kept Codex as final owner of PASS/BLOCKED interpretation and any follow-up debug routing
+
+Changed files in this block:
+- `documentation/codex/model-routing/HANDOFF_M4_SESSION_SEARCH_VALIDATION_TO_CURSOR_2026-07-10.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- bound M4 execution artifact review: PASS
+- Cursor handoff pattern review against existing Janus Cursor handoffs: PASS
+- `git diff --check -- documentation/codex/model-routing/HANDOFF_M4_SESSION_SEARCH_VALIDATION_TO_CURSOR_2026-07-10.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS
+
+Open risks:
+- no live evidence has been returned yet, so `TASK-MEM-M4.1` still cannot be treated as test-pipeline green
+- Cursor evidence must stay on the exact three-check seam; broader exploration would drift scope and weaken the truth boundary
+- no commit, push, or `origin/codex-sync` update happened; remote surfaces may not contain this newest state
+
+Next recommended step for ChatGPT: hand the new Cursor packet over exactly as written and wait for the three observed outputs before summarizing M4 status.
+
+Next recommended step for Codex: once Cursor evidence comes back, classify the result as `PASS` into `janus-test-pipeline` or `BLOCKED` into `janus-debug` on `5.6 Terra` medium.
+
+Last updated: `2026-07-10 22:12:20 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-10 22:10 +02:00`, `TASK-MEM-M4.1` is now implemented locally and validator-backed as a bounded M4 Memory C slice. Session-Search FTS5 exists as a separate `session_fts.db` path with a central message write-hook, a new `session_search` tool/skill, focused episodic intent routing, and green targeted tests plus the full bound memory regression suite. The next gate is live Janus validation, not final audit yet.
+
+Current goal: validate the new Session-Search behavior in a real Janus chat before promoting M4 Memory C to test/audit follow-up.
+
+Active phase: `janus-executioner`, canonical state `NEEDS_INFO`.
+
+Last Codex work:
+- implemented `SessionFTSStore`, `session_search_service`, `session_search_tools`, and a backfill script for Memory Phase C
+- wired the best-effort Session-Search indexing hook into `crud.create_message(...)`, registered the new tool in `tool_registry.py`, and added bounded episodic intent forcing in `intent_engine.py` plus `execution_dispatcher.py`
+- added focused tests for FTS search, write-hook indexing, and secret suppression, then wrote the formal execution artifact for `TASK-MEM-M4.1`
+
+Changed files in this block:
+- `backend/services/memory/session_fts_store.py`
+- `backend/services/memory/session_search_service.py`
+- `backend/tools/session_search_tools.py`
+- `backend/scripts/backfill_session_fts.py`
+- `backend/skills/system/session_search.json`
+- `backend/data/schemas.py`
+- `backend/data/crud.py`
+- `backend/services/orchestrator/intent_engine.py`
+- `backend/services/orchestrator/execution_dispatcher.py`
+- `backend/tool_registry.py`
+- `backend/tests/test_session_fts_store.py`
+- `backend/tests/test_session_search_tools.py`
+- `documentation/tasks/TASK-MEM-M4.1_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest backend/tests/test_session_fts_store.py -v`: PASS (`2 passed`)
+- `python -m pytest backend/tests/test_session_search_tools.py -v`: PASS (`2 passed`)
+- `python -m pytest backend/tests/test_memory_regression.py -q`: PASS (`20 passed`)
+- `python -m py_compile backend/services/memory/session_fts_store.py backend/services/memory/session_search_service.py backend/tools/session_search_tools.py backend/data/crud.py backend/services/orchestrator/intent_engine.py backend/tool_registry.py backend/scripts/backfill_session_fts.py`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py documentation\tasks\TASK-MEM-M4.1_execution_result.md`: PASS
+- `git diff --check -- backend/services/memory/session_fts_store.py backend/services/memory/session_search_service.py backend/tools/session_search_tools.py backend/scripts/backfill_session_fts.py backend/skills/system/session_search.json backend/tests/test_session_fts_store.py backend/tests/test_session_search_tools.py backend/data/schemas.py backend/data/crud.py backend/services/orchestrator/intent_engine.py backend/services/orchestrator/execution_dispatcher.py backend/tool_registry.py documentation/tasks/TASK-MEM-M4.1_execution_result.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS
+
+Open risks:
+- live Janus validation is still pending, so cross-chat recall and secret suppression are only locally proven right now
+- Session-Search indexing currently depends on the canonical `crud.create_message(...)` path; any future alternate message persistence seam must also keep the index in sync
+- the existing local sentence-transformer/tokenizers mismatch still appears in the broader memory regression logs as a non-blocking environment warning and was not addressed in this slice
+- no commit, push, or `origin/codex-sync` update happened; remote surfaces may not contain this newest state
+
+Next recommended step for ChatGPT: run the manual Session-Search gate with the Acme/secret prompts and only describe M4 Memory C as locally green until that live check is complete.
+
+Next recommended step for Codex: after the user supplies live results or says `weiter` after a PASS run, route `TASK-MEM-M4.1` into `janus-test-pipeline` on `5.6 Terra` medium; if the live gate fails, route to `janus-debug`.
+
+Last updated: `2026-07-10 22:10:55 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-10 22:03 +02:00`, the Block-2 Calendar+Wikipedia follow-up is documentation-synced with fresh local evidence, and M4 Memory C is now released through a bounded preimplementation handoff. The current product truth remains: M3 stays `EXIT PASS`, Calendar+Wikipedia live validation extends the workflow surface with Diamond-style LLM preservation plus Wikipedia snapshot/rebind behavior, and the next Track-A step is `TASK-MEM-M4.1` for Session-Search FTS5 with `MEMORY_SESSION_SEARCH_ENABLED=false` by default.
+
+Current goal: keep the new Block-2 truth visible in shared Janus tracking and prepare exactly one precheck-passed M4 execution slice without starting implementation yet.
+
+Active phase: `janus-preimplementation-check`, canonical state `HANDOFF`.
+
+Last Codex work:
+- re-read the bound Block-2 and roadmap handoffs and preserved the later M3.4 closeout truth instead of regressing documentation to an older snapshot
+- re-ran the focused Block-2 regression package locally and confirmed Calendar+Wikipedia presenter, routine snapshot/rebind behavior, Wikipedia condensation, and dispatcher guards are green
+- compiled M4 Memory C into one bounded task artifact, refined it into `TASK-MEM-M4.1`, and released a validator-backed preimplementation handoff for Session-Search FTS5
+
+Changed files in this block:
+- `documentation/tasks/TASK-MEM-M4_session_search_fts5.md`
+- `documentation/tasks/TASK-MEM-M4.1_task_breakdown.md`
+- `documentation/tasks/TASK-MEM-M4.1_preimplementation_check.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest backend/tests/test_calendar_wikipedia_presenter.py -q`: PASS (`6 passed`)
+- `python -m pytest backend/tests/test_routine_runner.py -k "wikipedia" -q`: PASS (`3 passed, 23 deselected`)
+- `python -m pytest backend/tests/tools/test_system_skills_diamond.py::TestWikipediaService -q`: PASS (`4 passed`)
+- `python -m pytest backend/tests/test_execution_dispatcher_wikipedia_guard.py -q`: PASS (`6 passed`)
+- `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py documentation\tasks\TASK-MEM-M4.1_preimplementation_check.md`: PASS
+- `git diff --check -- documentation/tasks/TASK-MEM-M4_session_search_fts5.md documentation/tasks/TASK-MEM-M4.1_task_breakdown.md documentation/tasks/TASK-MEM-M4.1_preimplementation_check.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS
+
+Open risks:
+- `TASK-MEM-M4.1` is precheck-ready only; no M4 implementation, backfill run, or live Session-Search validation has happened yet
+- the precheck assumes the message-write hook stays centralized in `backend/data/crud.py`; if another persistence path bypasses `create_message`, that drift must be caught during execution
+- no commit, push, or `origin/codex-sync` update happened for this block; remote surfaces may not contain this newest state
+
+Next recommended step for ChatGPT: treat Block 2 as live-validated and documentation-synced, then decide whether to start `TASK-MEM-M4.1` immediately or hold for a separate Git checkpoint first.
+
+Next recommended step for Codex: after explicit user `ok`, run `janus-executioner` for `TASK-MEM-M4.1` on `5.6 Terra` medium and keep scope strictly inside Session-Search FTS5 without widening into Frozen Core, Transport, OAuth, or OpenRouter work.
+
+Last updated: `2026-07-10 22:03:59 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-10 18:30 +02:00`, `TASK-WORKFLOW-M3.4` documentation closeout is `PASS`; M3 Workflows is now `EXIT PASS` in the binding roadmap. The next Track-A work is M4 Memory C, while optional routine UI, silent routine learning, and Cursor runner hardening H-003 remain separate.
+
+Current goal: choose and prepare the next M4 Memory C slice; do not reopen M3.4 or implement H-003 on the product critical path.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- synchronized the M3.4 final audit into the roadmap, task metadata, registry, project state, changelog, and test-pipeline log
+- recorded the validated Cursor Composer operating posture: 240s for one-file tool work, 300s for two-file/debug work, one attempt, artifact review, then local Codex fallback on timeout
+- recorded H-003 as Track B only; it does not block M4
+
+Changed files in this block:
+- `documentation/Cursor specs/ROADMAP_EPIC_ORDER.md`
+- `documentation/tasks/TASK-WORKFLOW-M3_offer_runner.md`
+- `documentation/tasks/TASK-WORKFLOW-M3.4_documentation_update.md`
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `CHANGELOG.md`
+- `documentation/pipeline/TEST_PIPELINE_RUN_LOG.md`
+- `WHAT_I_LEARNED.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- M3.4 final-audit validator: PASS
+- focused M3.4 regression: PASS (`40 passed`)
+- marker-scoped documentation update validation: PASS
+
+Open risks:
+- no commit, push, or `origin/codex-sync` update happened for the M3.4 closeout; remote surfaces may not contain the current snapshot
+- H-003 has operating evidence but no runner implementation slice yet
+
+Next recommended step for ChatGPT: choose whether to start M4 Memory C or schedule H-003 as a separate Track-B backlog item.
+
+Next recommended step for Codex: route the selected next goal through `janus-feature-design` or `janus-backlog-intake`; do not begin implementation without a bound task.
+
+Last updated: `2026-07-10 18:30:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-10 18:10 +02:00`, `TASK-WORKFLOW-M3.4` final audit is `PASS`. The M3 workflow scope is ready for roadmap/documentation closeout: a saved calendar-plus-weather routine is reused from a natural user request on both providers, explicit triggers remain supported, and unrelated or conflicting city/date requests remain fail-closed.
+
+Current goal: run `janus-documentation-update` to record the M3.4 PASS and change the M3 roadmap tracker from audit handoff to exit pass without widening into optional routine UI.
+
+Active phase: `janus-final-audit`, canonical state `PASS`.
+
+Last Codex work:
+- built the compact `TASK-WORKFLOW-M3.4_AUDIT_PACKAGE.md` from the task, precheck, execution result, Cursor evidence, and bounded validation
+- re-ran focused routine, offer, and chat-finalize regression coverage: PASS (`40 passed`)
+- final-audited M3.4 on `5.6 Terra/high` because Sol is unavailable for the active ChatGPT-backed Codex account
+
+Changed files in this block:
+- `documentation/tasks/TASK-WORKFLOW-M3.4_AUDIT_PACKAGE.md`
+- `documentation/tasks/TASK-WORKFLOW-M3.4_validation_2026-07-10.md`
+- `documentation/tasks/TASK-WORKFLOW-M3.4_final_audit.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- focused M3.4 routine/offer/chat-finalize pytest: PASS (`40 passed`)
+- M3.4 Python compile check: PASS
+- scoped M3.4 `git diff --check`: PASS
+- final-audit validator: PASS
+
+Open risks:
+- optional routine-management UI remains open and is outside the completed M3.4 scope
+- no commit, push, or `origin/codex-sync` update happened for this M3.4 audit block; remote surfaces may not contain the current snapshot
+
+Next recommended step for ChatGPT: accept the M3.4 final-audit PASS and proceed to documentation closeout.
+
+Next recommended step for Codex: run `janus-documentation-update` on `5.6 Terra` low/medium; do not start a new code slice.
+
+Last updated: `2026-07-10 18:10:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-10 17:15 +02:00`, `BACKLOG-124` is `DONE` and its final audit is `PASS`. The GPT-5.6 matrix uses `5.6 Luna` for mechanical documentation/status work, `5.6 Terra` as workhorse, and `5.6 Sol` only for high-risk audit escalation when the current Codex execution can actually start it. A ChatGPT-account Sol rejection is handled locally as `SOL_UNAVAILABLE_FOR_CHATGPT_CODEX_ACCOUNT` with `5.6 Terra/high` fallback.
+
+Current goal: checkpoint the completed BACKLOG-124 documentation slice when the user explicitly requests Git governance.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- moved BACKLOG-124 exactly once from READY to DONE and synchronized the dashboard snapshot
+- updated task completion metadata, central registry, project state, reusable learning memory, skill usage log, and this snapshot
+- documented the runtime entitlement distinction between picker visibility and actual Codex execution
+
+Changed files in this block:
+- `documentation/backlog/BACKLOG.md`
+- `janus-dashboard/data/backlog.snapshot.json`
+- `documentation/tasks/backlog_BACKLOG-124_codex_janus_modellmatrix_gpt_5_6_audit_und_update.md`
+- `documentation/tasks/BACKLOG-124_documentation_update.md`
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `CHANGELOG.md`
+- `documentation/pipeline/TEST_PIPELINE_RUN_LOG.md`
+- `WHAT_I_LEARNED.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- Backlog validator: PASS
+- dashboard `npm run sync:backlog`: PASS
+- documentation-update validator: PASS
+- final-audit validator remains PASS
+
+Open risks:
+- no commit, push, or `origin/codex-sync` update happened; remote surfaces may not contain this newest state
+- Cursor Composer timeout and outside-allowlist installed-copy touch remain delegation reliability findings for future hardening
+
+Next recommended step for ChatGPT: review the completed closeout or explicitly request the Git checkpoint.
+
+Next recommended step for Codex: use `janus-git-governance` on `5.6 Terra` low/medium only after explicit commit/checkpoint approval.
+
+Last updated: `2026-07-10 17:15:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-10 16:10 +02:00`, the `GPT56_CODEX_START_GATE_DRIFT` execution delta is `HANDOFF`. The versioned and installed `codex-start-of-work-check` copies no longer prescribe `5.4/low`; targeted and all-active residual scans pass.
+
+Current goal: run the bounded BACKLOG-124 final re-audit after the last start-gate default was synchronized.
+
+Active phase: `janus-executioner`, canonical state `HANDOFF`.
+
+Last Codex work:
+- ran the Cursor Composer candidate through the shared gate with positive ROI
+- recorded the initial choice-contract mismatch (`2` rejected; live Cursor requires `3` or `4`)
+- preserved the Composer timeout and missing-result-artifact evidence
+- reviewed the exact source diff and normalized the installed copy under Codex ownership
+- wrote `documentation/tasks/BACKLOG-124_start_gate_execution_result.md` and refreshed the audit package
+
+Changed files in this block:
+- `documentation/codex/skills/codex-start-of-work-check/SKILL.md`
+- installed `codex-start-of-work-check` copy under `C:\Users\pruve\.codex\skills`
+- `documentation/tasks/BACKLOG-124_start_gate_execution_result.md`
+- `documentation/tasks/BACKLOG-124_AUDIT_PACKAGE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- targeted source/install `5.4/low` scan: PASS
+- source/install targeted model-guidance inspection: PASS
+- all-active source/install residual scans: PASS with explicit fallback/template hits only
+- precheck validator: PASS
+- execution-result validator: PASS
+- scoped diff check: PASS
+
+Open risks:
+- Cursor Composer timed out and unexpectedly touched the installed copy outside its declared allowlist; this is delegation reliability evidence, not accepted autonomous completion
+- shared gate documentation still says Cursor is option `2` while the live runner requires `3`/`4`
+- no commit, push, or `origin/codex-sync` update happened; remote surfaces may not contain this newest state
+
+Next recommended step for ChatGPT: run `janus-final-audit` on `5.6 Sol` high against the refreshed package.
+
+Next recommended step for Codex: after user `ok`, perform the bounded final re-audit in the same chat.
+
+Last updated: `2026-07-10 16:10:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-10 16:05 +02:00`, the narrow precheck for `GPT56_CODEX_START_GATE_DRIFT` is `PRE-CHECK PASSED`. It releases exactly the versioned and installed `codex-start-of-work-check` copies for a GPT-5.6 model-default synchronization; the prior final audit remains blocked until that delta is executed and re-audited.
+
+Current goal: execute the two-copy start-gate model-default repair as a Cursor-first bounded candidate, then refresh the existing BACKLOG-124 audit package and re-audit.
+
+Active phase: `janus-preimplementation-check`, canonical state `HANDOFF`.
+
+Last Codex work:
+- bound the final-audit failure code `GPT56_CODEX_START_GATE_DRIFT` to the existing BACKLOG-124 task
+- verified the Backlog handoff, task identity, audit scope, and both affected skill copies
+- wrote and validator-checked the exact two-copy precheck
+- kept Cursor out of the final precheck decision because this skill has no live Cursor review path; Cursor remains the next execution candidate
+
+Changed files in this block:
+- `documentation/tasks/BACKLOG-124_start_gate_preimplementation_check.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- task/backlog/audit identity: PASS
+- target scope atomicity: PASS
+- source and installed start-gate old default confirmed: PASS (reproduced blocker)
+- installed precheck validator on `documentation/tasks/BACKLOG-124_start_gate_preimplementation_check.md`: PASS
+
+Open risks:
+- the final audit remains blocked until both start-gate copies are synchronized and verified
+- no commit, push, or `origin/codex-sync` update happened; remote surfaces do not necessarily contain this newest state
+
+Next recommended step for ChatGPT: preserve the narrow scope and require Cursor evidence plus Codex validation for the execution delta.
+
+Next recommended step for Codex: run `janus-executioner` on `5.6 Terra` low; try the bounded Cursor candidate first, accept no worker output without local review, then validate source/install targeted parity.
+
+Last updated: `2026-07-10 16:05:43 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-10 16:02 +02:00`, the `BACKLOG-124` GPT-5.6 re-audit is `BLOCKED` by one remaining operational default. The original `janus-*` skill-matrix blocker is resolved, but source and installed `codex-start-of-work-check` still mandate `5.4/low` before handing off to the GPT-5.6 Janus healthcheck path.
+
+Current goal: remove the final `GPT56_CODEX_START_GATE_DRIFT` contradiction through one exact two-copy precheck and Cursor-candidate execution delta, then re-audit the existing package.
+
+Active phase: `janus-final-audit`, canonical state `BLOCKED`.
+
+Last Codex work:
+- re-audited the prior blocker delta against the compact audit package
+- confirmed the original active `janus-*` skill drift is resolved
+- found the remaining active `codex-start-of-work-check` `5.4/low` default in both source and installed copies
+- updated `documentation/tasks/BACKLOG-124_final_audit.md` with failure code `GPT56_CODEX_START_GATE_DRIFT`
+
+Changed files in this block:
+- `documentation/tasks/BACKLOG-124_final_audit.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- targeted `WHAT_I_LEARNED` lookup: PASS
+- original Janus-skill blocker delta: PASS
+- all-active source skill residual scan: FAIL only on active `codex-start-of-work-check` `5.4/low` default plus accepted fallback references
+- installed skill residual scan: FAIL only on active `codex-start-of-work-check` `5.4/low` default plus accepted fallback references
+- focused precheck contract pytest: PASS, 1 passed
+- source and installed precheck validators: PASS
+- execution-result validator: PASS
+- scoped `git diff --check`: PASS
+
+Open risks:
+- the session-entry model recommendation remains contradictory until the two-copy delta is applied
+- full source/install hash parity remains outside this targeted model-guidance audit
+- no commit, push, or `origin/codex-sync` update happened; remote surfaces do not necessarily contain this newest state
+
+Next recommended step for ChatGPT: preserve the final-audit BLOCKED result and allow only the exact `codex-start-of-work-check` delta.
+
+Next recommended step for Codex: run `janus-preimplementation-check` on `5.6 Terra` low for the two source/install skill copies; after PASS, offer/use Cursor as a bounded mechanical execution candidate and locally validate its result.
+
+Last updated: `2026-07-10 16:02:24 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-10 15:57 +02:00`, the `BACKLOG-124` GPT-5.6 operational skill-matrix drift delta is implemented and ready for final audit. Active Janus skill source files and installed working copies now use `5.6 Terra` / `5.6 Luna` / `5.6 Sol` as default operational recommendations, with `5.5` and `5.4` / `5.4 mini` limited to explicit legacy or warm-context fallback language. The audit-package builder script template was also corrected so its generated final-audit handoff uses `5.6 Sol/high` and bounded same-thread re-audits use `5.6 Terra/high`.
+
+Current goal: run an independent final audit of the refreshed `BACKLOG-124` audit package.
+
+Active phase: `janus-executioner`, canonical state `HANDOFF`.
+
+Last Codex work:
+- completed the blocker delta `GPT56_OPERATIONAL_SKILL_MATRIX_DRIFT`
+- updated active Janus skill model guidance in versioned source and installed working copies
+- added router guidance for the Codex app "faster model" runtime prompt: treat it as a `5.6 Luna` or lower-reasoning candidate only for short, mechanical, low-risk remainder work
+- preserved Cursor evidence: live Cursor gate passed for the debug package, but the worker returned unrelated stale `TASK-SPEC31.2` content with no changed files, so no Cursor patch was accepted
+- refreshed `documentation/tasks/BACKLOG-124_AUDIT_PACKAGE.md`
+
+Changed files in this block:
+- `documentation/codex/skills/*/SKILL.md` for the active Janus model-guidance set
+- `documentation/codex/skills/codex-audit-package-builder/scripts/build_audit_package.py`
+- installed counterparts under `C:\Users\pruve\.codex\skills\...`
+- `documentation/tasks/BACKLOG-124_skill_matrix_delta_execution_result.md`
+- `documentation/tasks/BACKLOG-124_AUDIT_PACKAGE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- residual source scan for `5.4` / `5.5` in active Janus SKILL files: PASS, remaining hits are explicit fallback/router legacy references
+- residual installed-copy scan for `5.4` / `5.5`: PASS, remaining hits are explicit fallback/router legacy references
+- `python -m pytest documentation/codex/model-routing/debug-review-runs/WF-BACKLOG-124-PRECHECK-CONTRACT-001/test_precheck_contract.py -q`: PASS, 1 passed
+- installed precheck validator on `documentation/tasks/BACKLOG-124_skill_matrix_delta_preimplementation_check.md`: PASS
+- versioned precheck validator on the same artifact: PASS
+- execution-result validator on `documentation/tasks/BACKLOG-124_skill_matrix_delta_execution_result.md`: PASS
+- scoped `git diff --check`: PASS
+- builder-handoff scan for old `5.5/high` / `5.4/high`: PASS, no hits
+
+Open risks:
+- Final audit still needs to independently decide whether the remaining legacy fallback references are acceptable.
+- Full source/install hash parity is not claimed because some skill source/installed pairs already had unrelated rollout differences; this block claims targeted model-guidance consistency only.
+- Cursor wrong-context behavior remains a delegation reliability finding for future worker hardening.
+- No commit, push, or `origin/codex-sync` update happened; remote surfaces do not necessarily contain this newest state.
+
+Next recommended step for ChatGPT: run `janus-final-audit` against `documentation/tasks/BACKLOG-124_AUDIT_PACKAGE.md` using `5.6 Sol` high.
+
+Next recommended step for Codex: after user `ok`, continue in this same chat with `janus-final-audit` on `5.6 Sol` high unless the user explicitly wants a fresh isolated audit chat.
+
+Last updated: `2026-07-10 15:57:18 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-10 15:31 +02:00`, the `SKILL_CONTRACT_CONTRADICTION` debug slice is `FIXED`. The versioned validator now matches the installed Codex-native contract, active precheck/executioner guidance no longer requires the old copyblock, and the focused regression passes. Cursor live execution was completed through the shared gate but returned an unrelated Spec-31 result with no changes; Codex rejected that output and applied the bounded three-file contract repair locally.
+
+Current goal: resume the original GPT-5.6 model-matrix skill synchronization delta with the newly valid native precheck, while retaining the Cursor wrong-context result as evidence.
+
+Active phase: `janus-debug`, canonical state `HANDOFF`.
+
+Last Codex work:
+- targeted-searched `WHAT_I_LEARNED` and matched `#RepoValidatorsOverrideSkillSummary`
+- compared versioned, HEAD, and installed contract files plus SHA-256 parity
+- created a redacted Cursor debug package, three-file allowlist, valid/invalid fixtures, and independent regression test
+- reproduced the failure with one focused pytest
+- ran the shared `debug_repro_investigation` gate in prompt and live mode; package/allowlist gates passed, but Cursor returned unrelated Spec-31 context and no patch
+- applied the bounded three-file contract repair locally and regenerated the native precheck artifact
+- wrote `documentation/tasks/BACKLOG-124_skill_contract_debug_result.md`
+
+Changed files:
+- `documentation/codex/model-routing/debug-review-runs/WF-BACKLOG-124-PRECHECK-CONTRACT-001/`
+- `documentation/tasks/BACKLOG-124_skill_contract_debug_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- WHAT_I_LEARNED targeted lookup: PASS, one directly relevant pattern
+- source/install hash comparison: FAIL as expected, all three contract pairs differ
+- focused contract pytest after repair: PASS, 1 passed
+- versioned precheck validator on native fixture: PASS
+- invalid legacy fixture rejection: PASS
+- shared Cursor gate: PASS, ROI POSITIVE, live worker completed but returned wrong-context/no-patch evidence
+- scoped diff check: PASS
+
+Open risks:
+- The broader 15-skill GPT-5.6 matrix synchronization remains unresolved.
+- Cursor's wrong-context behavior is a separate delegation reliability finding; no Cursor patch was accepted.
+- No commit or push happened; remote surfaces and `origin/codex-sync` do not contain this newest debug state.
+
+Next recommended step for ChatGPT: report the contract fix and route back to the bounded GPT-5.6 skill-matrix execution delta.
+
+Next recommended step for Codex: run `janus-executioner` for `GPT56_OPERATIONAL_SKILL_MATRIX_DRIFT` on `5.6 Terra` medium, with Cursor considered only if the worker package can be made context-safe.
+
+Last updated: `2026-07-10 15:31:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-10 15:23 +02:00`, the renewed `BACKLOG-124` precheck is `BLOCKED` by a confirmed Janus skill-contract contradiction. The installed executioner requires a V3.2 Skill-4 codeblock handoff, while the installed precheck validator rejects that same codeblock and requires an incompatible output shape. No single artifact can satisfy both active contracts, so the GPT-5.6 skill-matrix synchronization must not start yet.
+
+Current goal: resolve the narrow precheck-validator/executioner contract mismatch, then re-run the already scoped `GPT56_OPERATIONAL_SKILL_MATRIX_DRIFT` precheck, Cursor gate, execution delta, and re-audit.
+
+Active phase: `janus-preimplementation-check`, canonical state `BLOCKED`.
+
+Last Codex work:
+- isolated the final-audit blocker into one deterministic 15-skill source/install scope
+- attempted a current-contract precheck and ran its native validator
+- proved that the current validator and current executioner prescribe mutually incompatible handoff shapes
+- rewrote `documentation/tasks/BACKLOG-124_skill_matrix_delta_preimplementation_check.md` as an honest blocker artifact
+
+Changed files:
+- `documentation/tasks/BACKLOG-124_skill_matrix_delta_preimplementation_check.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- task/audit/backlog identity scan: PASS
+- active 15-skill source inventory and installed-copy availability: PASS
+- attempted precheck validator on the executioner-compatible shape: FAIL, proving the contract contradiction
+
+Open risks:
+- The operational GPT-5.6 model-matrix drift remains unresolved until the contract mismatch is repaired.
+- Cursor cannot be entered safely for this slice until a valid precheck shape exists.
+- No commit or push happened; remote surfaces and `origin/codex-sync` do not contain this newest blocked state.
+
+Next recommended step for ChatGPT: report the contract contradiction as a separate infrastructure blocker and do not treat the model-matrix delta as execution-ready.
+
+Next recommended step for Codex: use `janus-debug` on `5.6 Sol` high to reconcile the active precheck validator and executioner handoff contract, then return to this same narrow delta.
+
+Last updated: `2026-07-10 15:23:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-10 15:16 +02:00`, the blocker-focused `BACKLOG-124` execution delta is formally `BLOCKED` before implementation. The prior precheck still passes its own validator, but it lacks the current executioner's required V3.2 `BEGIN/END COPY FOR SKILL 4` handoff block. No active skill source, installed copy, or Janus product file was changed, and no Cursor delegation was started without a valid current precheck.
+
+Current goal: renew one exact precheck for `GPT56_OPERATIONAL_SKILL_MATRIX_DRIFT`, then use the shared Cursor-aware execution gate for the already identified skill-matrix synchronization delta.
+
+Active phase: `janus-executioner`, canonical state `BLOCKED`.
+
+Last Codex work:
+- validated the bound precheck with its native validator
+- checked the current executioner's stricter V3.2 copyblock contract and found the required begin/end literals absent
+- verified that the shared `janus_delegate.py` gate can surface Cursor after a valid delta precheck exists
+- wrote `documentation/tasks/BACKLOG-124_skill_matrix_delta_execution_result.md`
+
+Changed files:
+- `documentation/tasks/BACKLOG-124_skill_matrix_delta_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- native precheck validator: PASS
+- current executioner V3.2 copyblock scan: FAIL, blocking
+- shared delegation-gate capability check: PASS
+
+Open risks:
+- The operational GPT-5.6 skill-matrix drift remains unresolved until the renewed delta precheck and follow-up execution complete.
+- No commit or push happened; remote surfaces and `origin/codex-sync` do not contain this newest blocker state.
+
+Next recommended step for ChatGPT: keep the state as a formal handoff blocker, not as a failed implementation attempt.
+
+Next recommended step for Codex: run `janus-preimplementation-check` for the exact `GPT56_OPERATIONAL_SKILL_MATRIX_DRIFT` delta on `5.6 Terra` medium, then probe the shared Cursor gate before any local patch.
+
+Last updated: `2026-07-10 15:16:36 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-10 15:13 +02:00`, the `BACKLOG-124` final audit is `BLOCKED`. The local GPT-5.6 evidence and the four updated central governance files are coherent, but active versioned and installed Janus skills still hard-code the prior `5.4` / `5.4 mini` / `5.5` routing matrix. This creates two conflicting operational model truths and fails the explicit acceptance criterion for consistent affected skill recommendations.
+
+Current goal: close only the blocker-focused operational skill-matrix delta, preserve the accepted central GPT-5.6 role mapping, and then re-audit the same bounded package.
+
+Active phase: `janus-final-audit`, canonical state `BLOCKED`.
+
+Last Codex work:
+- built `documentation/tasks/BACKLOG-124_AUDIT_PACKAGE.md` from the bound handoff, precheck, execution result, scoped diff, risks, and validation evidence
+- independently revalidated Backlog, precheck, execution result, dashboard snapshot sync, local model-cache evidence, and scoped whitespace integrity
+- found active stale model gates in the versioned Janus skill sources and confirmed the same drift in installed router, precheck, executioner, and final-audit working copies
+- wrote `documentation/tasks/BACKLOG-124_final_audit.md` with failure code `GPT56_OPERATIONAL_SKILL_MATRIX_DRIFT`
+
+Changed files:
+- `documentation/tasks/BACKLOG-124_AUDIT_PACKAGE.md`
+- `documentation/tasks/BACKLOG-124_final_audit.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `janus-dashboard/data/backlog.snapshot.json` was deterministically resynced without changing the bounded product scope
+
+Checks / validation performed:
+- local GPT-5.6 model-cache evidence reread: PASS
+- role-matrix consistency across the four changed central governance files: PASS
+- versioned and installed operational skill recommendation scan: FAIL, blocking drift confirmed
+- `python C:\Users\pruve\.codex\skills\janus-backlog-handoff\scripts\validate_backlog.py documentation/backlog/BACKLOG.md`: PASS WITH unrelated legacy warnings
+- `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py documentation/tasks/backlog_BACKLOG-124_preimplementation_check.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py documentation/tasks/backlog_BACKLOG-124_execution_result.md`: PASS
+- `npm run sync:backlog`: PASS
+- scoped `git diff --check`: PASS with non-blocking CRLF warnings
+- targeted `WHAT_I_LEARNED` search for model-routing/governance drift: no blocker-specific prior tripwire found
+
+Open risks:
+- Until the operational skill sources and installed copies are synchronized, future gates may continue recommending the old model matrix despite the new central governance baseline.
+- The GPT-5.6 role mapping remains metadata-backed rather than benchmark-backed; this is non-blocking for the current bounded baseline but should be refined by later empirical usage evidence.
+- No commit or push happened for this audit block; remote surfaces and `origin/codex-sync` do not contain the newest audit state.
+
+Next recommended step for ChatGPT: report the single blocker clearly and do not treat `BACKLOG-124` as documentation-ready or DONE.
+
+Next recommended step for Codex: run a blocker-focused `janus-executioner` delta on `5.6 Terra` medium, preferably as a bounded Cursor delegation candidate, update active versioned skill recommendations plus installed-copy parity, refresh the audit package, and re-run `janus-final-audit` in this same task.
+
+Last updated: `2026-07-10 15:13:27 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-10 15:08 +02:00`, `BACKLOG-124` is locally implemented and evidence-backed. The bounded Lean-Dev model-matrix audit/update slice used the local Codex model cache to capture the visible `GPT-5.6` family and then updated the binding Janus governance sources to promote `5.6 Terra` as workhorse, `5.6 Luna` as the low-cost mechanical/status lane, and `5.6 Sol` as the main audit/escalation lane, while demoting `5.4`/`5.4 mini` to legacy fallback status and removing the non-visible `5.2` from the active recommendation matrix.
+
+Current goal: hold the `BACKLOG-124` execution slice at a clean evidence-backed handoff state and route next to final audit before any documentation closeout or Git checkpoint.
+
+Active phase: `janus-executioner`, canonical state `HANDOFF`.
+
+Last Codex work:
+- extracted exact local model evidence from `C:\Users\pruve\.codex\models_cache.json` and the Codex global state, confirming visible `gpt-5.6-sol`, `gpt-5.6-terra`, and `gpt-5.6-luna`
+- compared the new local `GPT-5.6` family against the existing Janus role split and made a bounded role-based decision instead of a blind global replacement
+- updated the binding governance sources `AGENTS.md`, `CODEX_PROJECT_PROFILE.md`, `CODEX_WORKFLOW_PLAYBOOK.md`, and `CODEX_MODEL_MIGRATION_2026-06-02.md`
+- created `documentation/tasks/backlog_BACKLOG-124_execution_result.md`
+
+Changed files:
+- `AGENTS.md`
+- `documentation/codex/CODEX_PROJECT_PROFILE.md`
+- `documentation/codex/CODEX_WORKFLOW_PLAYBOOK.md`
+- `documentation/codex/CODEX_MODEL_MIGRATION_2026-06-02.md`
+- `documentation/tasks/backlog_BACKLOG-124_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- local `models_cache.json` evidence extraction: PASS
+- local `.codex-global-state.json` upgrade-marker extraction: PASS
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py documentation/tasks/backlog_BACKLOG-124_execution_result.md`: PASS
+- `git diff --check -- AGENTS.md documentation/codex/CODEX_PROJECT_PROFILE.md documentation/codex/CODEX_WORKFLOW_PLAYBOOK.md documentation/codex/CODEX_MODEL_MIGRATION_2026-06-02.md documentation/tasks/backlog_BACKLOG-124_execution_result.md documentation/tasks/backlog_BACKLOG-124_preimplementation_check.md documentation/tasks/backlog_BACKLOG-124_codex_janus_modellmatrix_gpt_5_6_audit_und_update.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS
+- targeted consistency reread across the four binding governance files: PASS
+
+Open risks:
+- The decision is grounded in local Codex metadata and role descriptions, but it is not yet backed by a broader empirical Janus productivity benchmark across the new `5.6` family.
+- Historical or lower-priority skill/governance artifacts outside the four bound files may still mention the older `5.4`/`5.5` defaults and would need later cleanup if they are still operationally relevant.
+- Final audit and documentation closeout have not run yet.
+- No commit or push happened for this execution block yet; remote surfaces may not contain this new matrix state.
+
+Next recommended step for ChatGPT: report that the bounded `GPT-5.6` matrix update is locally implemented and route directly to final audit instead of treating it as an already closed documentation state.
+
+Next recommended step for Codex: switch to `5.6 Sol` high for `janus-final-audit`, or use `5.5` high as the fallback audit lane if staying in the current runtime context is preferred.
+
+Last updated: `2026-07-10 15:08:06 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-10 15:03 +02:00`, `BACKLOG-124` has now passed preimplementation check. The GPT-5.6 model-matrix topic is no longer just a routed handoff; it is formally released as one bounded Lean-Dev execution slice whose first mandatory step is capturing the exact visible local `GPT-5.6` model names and reasoning tiers as repo evidence before any matrix decision is made.
+
+Current goal: execute the bounded `BACKLOG-124` governance/model-audit slice without drifting into ad hoc model-policy changes, broad skill rewrites, or Janus product work.
+
+Active phase: `janus-preimplementation-check`, canonical state `HANDOFF`.
+
+Last Codex work:
+- validated the new `BACKLOG-124` handoff against the current binding model-governance sources
+- wrote `documentation/tasks/backlog_BACKLOG-124_preimplementation_check.md`
+- explicitly bound the first execution duty to collecting the exact local `GPT-5.6` model evidence before any default-matrix change is allowed
+
+Changed files:
+- `documentation/tasks/backlog_BACKLOG-124_preimplementation_check.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-preimplementation-check\scripts\validate_precheck.py documentation/tasks/backlog_BACKLOG-124_preimplementation_check.md`: PASS
+- `git diff --check -- documentation/tasks/backlog_BACKLOG-124_preimplementation_check.md documentation/tasks/backlog_BACKLOG-124_codex_janus_modellmatrix_gpt_5_6_audit_und_update.md documentation/backlog/BACKLOG.md documentation/ai/CURRENT_STATE.md documentation/codex/SKILL_USAGE_LOG.md`: PASS WITH CRLF WARNING on `documentation/backlog/BACKLOG.md`
+
+Open risks:
+- The exact names and exposed reasoning tiers of the three visible local `GPT-5.6` models are still not yet in repo evidence; execution must capture them first.
+- The slice touches binding governance/model-matrix text, so execution must stay tightly role-based and evidence-first instead of turning into a broad historical cleanup.
+- No commit or push happened for this precheck block yet; remote surfaces may not contain this newest execution-ready snapshot.
+
+Next recommended step for ChatGPT: state that `BACKLOG-124` is now prechecked and execution-ready as a bounded Lean-Dev model-matrix audit/update slice.
+
+Next recommended step for Codex: run `janus-executioner` for `BACKLOG-124` on `5.4` medium, starting with exact local `GPT-5.6` model evidence capture and then a role-by-role matrix decision.
+
+Last updated: `2026-07-10 15:03:06 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-10 14:55 +02:00`, `BACKLOG-124` has been promoted from intake-only parking to a real bounded Lean-Dev handoff. The new `GPT-5.6` topic is now ready for preimplementation verification as a dedicated model-matrix audit/update slice instead of remaining an informal follow-up idea.
+
+Current goal: move `BACKLOG-124` into a bounded precheck so the Codex/Janus model-matrix audit can start from a clean handoff with explicit scope, evidence paths, and no ad hoc model-policy drift.
+
+Active phase: `janus-backlog-handoff`, canonical state `HANDOFF`.
+
+Last Codex work:
+- re-read the existing `BACKLOG-124` intake plus the binding model-governance sources in `AGENTS.md`, `CODEX_PROJECT_PROFILE.md`, `CODEX_WORKFLOW_PLAYBOOK.md`, and `CODEX_MODEL_MIGRATION_2026-06-02.md`
+- reprioritized `BACKLOG-124` from a parked `SCHEDULE` posture to a bounded `DO NOW` Lean-Dev slice because the active Spec-31 product block is now fully sealed
+- added routing metadata and created the handoff artifact `documentation/tasks/backlog_BACKLOG-124_codex_janus_modellmatrix_gpt_5_6_audit_und_update.md`
+- resynced the dashboard backlog snapshot after the handoff metadata change
+
+Changed files:
+- `documentation/backlog/BACKLOG.md`
+- `documentation/tasks/backlog_BACKLOG-124_codex_janus_modellmatrix_gpt_5_6_audit_und_update.md`
+- `janus-dashboard/data/backlog.snapshot.json`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-backlog-handoff\scripts\validate_backlog.py documentation/backlog/BACKLOG.md`: PASS WITH LEGACY WARNINGS
+- `npm run sync:backlog`: PASS
+- `git diff --check -- documentation/backlog/BACKLOG.md documentation/tasks/backlog_BACKLOG-124_codex_janus_modellmatrix_gpt_5_6_audit_und_update.md`: PASS WITH CRLF WARNING on `documentation/backlog/BACKLOG.md`
+
+Open risks:
+- The exact names, characteristics, and available reasoning tiers of the three visible local `GPT-5.6` models are still not captured as repo evidence; the audit slice must collect that first.
+- No model-matrix decision has been made yet; `AGENTS.md`, the project profile, playbook, and migration note still reflect the current proven `5.4`/`5.4 mini`/`5.5` contract.
+- No commit or push happened for this new handoff block yet; remote surfaces may not contain this snapshot until a later Git-governance step.
+
+Next recommended step for ChatGPT: say that `BACKLOG-124` is no longer just parked intake, but now a real bounded handoff for a `GPT-5.6` model-matrix audit/update slice.
+
+Next recommended step for Codex: run `janus-preimplementation-check` for `BACKLOG-124` on `5.4` medium, keeping the slice Lean-Dev and evidence-first before any governance text or skill-matrix changes are applied.
+
+Last updated: `2026-07-10 14:55:50 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-10 01:02 +02:00`, the Spec-31 documentation sync is complete. `TASK-SPEC31.2` has been recorded after final audit PASS, `BACKLOG-123` is now DONE, the parent Spec 31 is marked `Implementation Status: DONE`, and the spec file has moved to `documentation/SPEC/Spec Done/31_semantisches_parameterisiertes_routine_reuse_mehrschrittige_routinen.md`.
 
 Current goal: finish this closed Spec-31 block as a documentation-complete checkpoint and hand off cleanly to Git governance for optional staging/commit decisions.
@@ -25869,3 +26990,123 @@ Next recommended step for ChatGPT: summarize that `BACKLOG-123` now has a real s
 Next recommended step for Codex: run `janus-spec-generator` against `documentation/Planned Features/backlog_BACKLOG-123_semantisches_parameterisiertes_routine_reuse_mehrschrittige_routinen.md`.
 
 Last updated: `2026-07-09 21:06:55 +02:00`.
+## Current Snapshot Update
+As of `2026-07-11 00:08:53 +02:00`, the bounded M4 Session-Search debug loop has moved from `BLOCKED` to a clean handoff state. Cursor productivity hardening remains valid, direct Janus runtime access is proven, and the last local technical blocker is now fixed too: Session-Search no longer lets repeated question-echo rows outrank the earlier `Acme GmbH` fact rows in the direct flag-on probe. The remaining gap is no longer a code-local debug blocker but the final live Janus validation gate with the feature enabled in the real runtime context.
+
+Current goal: rerun the M4 live-validation gate from this repaired state and decide audit readiness from actual enabled-runtime evidence.
+
+Active phase: `janus-debug`, canonical state `HANDOFF`.
+
+Last Codex work:
+- kept the earlier direct Janus auth/runtime findings and closed the last bounded M4 relevance blocker
+- widened Session-Search retrieval to fetch a broader bounded candidate window instead of trusting the first echo-heavy FTS hit set
+- changed the FTS store to collect fallback candidate hits across multiple query candidates so question-only matches no longer suppress later fact-bearing hits
+- filtered exact question-echo rows for natural recall queries in the service layer
+- added focused regressions for fallback candidate collection and question-echo suppression
+- reran the direct flag-on service probe and confirmed that `Acme GmbH` fact rows now surface before the repeated `Wie hiess die Firma?` echo rows while `secret_count` stays `0`
+- updated `documentation/tasks/TASK-MEM-M4.1_debug_result_2026-07-10.md` from a blocker record to a fixed handoff record
+
+Changed files:
+- `backend/services/memory/session_fts_store.py`
+- `backend/services/memory/session_search_service.py`
+- `backend/tests/test_session_fts_store.py`
+- `backend/tests/test_session_search_tools.py`
+- `documentation/tasks/TASK-MEM-M4.1_debug_result_2026-07-10.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python -m pytest backend/tests/test_session_fts_store.py -q`: PASS (`4 passed`)
+- `python -m pytest backend/tests/test_session_search_tools.py -q`: PASS (`5 passed`)
+- `python -m py_compile backend/services/memory/session_fts_store.py backend/services/memory/session_search_service.py backend/tools/session_search_tools.py`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-debug\scripts\validate_debug_result.py documentation\tasks\TASK-MEM-M4.1_debug_result_2026-07-10.md`: PASS
+- scoped `git diff --check` for the bounded M4 debug files: PASS
+- direct flag-on service probe with `MEMORY_SESSION_SEARCH_ENABLED=true`: PASS for secret suppression (`secret_count 0`) and PASS for recall relevance (`acme_row` now starts with `Die Firma heisst Acme GmbH ...`)
+
+Open risks:
+- the repaired evidence is still service-level and file-level; a final enabled-runtime Janus chat gate has not yet been rerun in the main live product context
+- the direct flag-on probe still logs the existing Chroma/sentence-transformer environment degradation warning, which does not block M4 Session-Search but remains background environment noise
+- no commit or push happened after this documentation block, so any remote such as GitHub, `backup`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: summarize that the bounded M4 debug blockers are fixed locally and that the next clean move is the enabled-runtime live-validation gate.
+
+Next recommended step for Codex: route this repaired state into `janus-test-pipeline` or an equivalent bounded live-validation rerun for `TASK-MEM-M4.1`.
+
+Last updated: `2026-07-11 00:08:53 +02:00`.
+## Current Snapshot Update
+As of `2026-07-11 00:12:32 +02:00`, `TASK-MEM-M4.1` has crossed the next real gate: enabled-runtime Janus validation on a separate local backend instance with `MEMORY_SESSION_SEARCH_ENABLED=true`. The repaired Session-Search slice now proves live cross-chat recall for the `Acme GmbH` case and fail-closed password refusal for the validated secret-recall phrasing. One adjacent routing note remains: some alternative password-paraphrase prompts still drift into `calendar.list_events`, but they do not leak secrets and do not invalidate the bounded M4 acceptance evidence.
+
+Current goal: carry the now live-validated M4 slice into the next formal gate instead of continuing local debug by default.
+
+Active phase: `janus-test-pipeline`, canonical state `HANDOFF`.
+
+Last Codex work:
+- started a separate local Janus backend on `http://127.0.0.1:8011` with `MEMORY_SESSION_SEARCH_ENABLED=true`
+- validated auth and chat creation against the enabled-runtime instance
+- ran the bounded M4 live prompts end-to-end:
+  - seed fact: `Die Firma heisst Acme GmbH und wir wollen das spaeter wiederfinden.`
+  - cross-chat recall: `Wie hiess die Firma?`
+  - secret suppression: `mein passwort ist geheim123` plus safe recall phrasing `Wie lautete das Passwort?`
+- captured real runtime evidence in `documentation/test-results/TASK-MEM-M4.1_direct_live_validation_2026-07-11.md`
+- probed two nearby password-paraphrase variants and recorded the non-blocking routing note that they still drift into `calendar.list_events`
+
+Changed files:
+- `documentation/test-results/TASK-MEM-M4.1_direct_live_validation_2026-07-11.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- enabled-runtime backend startup on port `8011`: PASS
+- direct local auth/token flow against `8011`: PASS
+- live Chat A seed prompt: PASS
+- live Chat B cross-chat recall with `session_search`: PASS
+- live Chat C secret seed refusal: PASS
+- live Chat D safe password-recall refusal (`Wie lautete das Passwort?`): PASS
+- adjacent routing probe for two alternative password phrasings: non-blocking drift noted, no secret leak observed
+
+Open risks:
+- password-related paraphrase routing still has adjacent drift into `calendar.list_events` for some variants and may deserve a separate follow-up slice
+- the enabled-runtime gate ran on a separate local backend instance on `8011`, not on the always-running default product backend on `8001`
+- no commit or push happened after this documentation block, so any remote such as GitHub, `backup`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: summarize that M4 now has real enabled-runtime validation evidence and can move to the next formal gate, with one non-blocking password-paraphrase routing note recorded separately.
+
+Next recommended step for Codex: route `TASK-MEM-M4.1` into the next formal artifact gate from this live-validated state, rather than continuing debug unless the user explicitly wants to chase the adjacent routing note.
+
+Last updated: `2026-07-11 00:12:32 +02:00`.
+## Current Snapshot Update
+As of `2026-07-11 00:20:00 +02:00`, `TASK-MEM-M4.1` has passed final audit. The bounded Session-Search Memory Phase C slice is now not only locally green but also backed by enabled-runtime Janus evidence for cross-chat recall and safe password refusal in the validated phrasing. The only remaining nuance is an adjacent non-blocking routing note for some password-paraphrase prompts, which stays outside the narrow M4 acceptance claim.
+
+Current goal: move the audited M4 slice into `janus-documentation-update` so the closeout and tracking surfaces reflect the new PASS state.
+
+Active phase: `janus-final-audit`, canonical state `HANDOFF`.
+
+Last Codex work:
+- synchronized `TASK-MEM-M4.1_execution_result.md` from `NEEDS_INFO` to a live-validated handoff state
+- built `documentation/tasks/TASK-MEM-M4.1_AUDIT_PACKAGE.md` from the bound M4 task, precheck, execution, debug, Cursor evidence, and enabled-runtime Janus evidence
+- wrote `documentation/tasks/TASK-MEM-M4.1_final_audit.md` with `FINAL AUDIT RESULT: PASS`
+- validated the final-audit artifact and revalidated the updated execution-result artifact
+
+Changed files:
+- `documentation/tasks/TASK-MEM-M4.1_execution_result.md`
+- `documentation/tasks/TASK-MEM-M4.1_AUDIT_PACKAGE.md`
+- `documentation/tasks/TASK-MEM-M4.1_final_audit.md`
+- `documentation/test-results/TASK-MEM-M4.1_direct_live_validation_2026-07-11.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-executioner\scripts\validate_execution_result.py documentation\tasks\TASK-MEM-M4.1_execution_result.md`: PASS
+- `python C:\Users\pruve\.codex\skills\janus-final-audit\scripts\validate_final_audit.py documentation\tasks\TASK-MEM-M4.1_final_audit.md`: PASS
+- scoped `git diff --check` for the M4 execution/audit/live-evidence files: PASS
+- prior enabled-runtime Janus validation on `8011`: PASS for seed fact, cross-chat recall via `session_search`, and validated secret-refusal phrasing
+
+Open risks:
+- adjacent password-paraphrase routing drift remains recorded as non-blocking follow-up debt and is not covered as solved by the narrow M4 PASS
+- no commit or push happened after this documentation block, so any remote such as GitHub, `backup`, or `origin/codex-sync` may not contain this newest `CURRENT_STATE`
+
+Next recommended step for ChatGPT: summarize that `TASK-MEM-M4.1` is now final-audit PASS and the next clean step is `janus-documentation-update`.
+
+Next recommended step for Codex: run `janus-documentation-update` for the bounded M4 closeout and tracking sync.
+
+Last updated: `2026-07-11 00:20:00 +02:00`.

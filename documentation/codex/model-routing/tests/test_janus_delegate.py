@@ -152,6 +152,8 @@ class JanusDelegateTests(unittest.TestCase):
         self.assertEqual(result["cursor_pool"], "auto_composer")
         self.assertIn("--cursor-pool", result["planned_command"])
         self.assertIn("auto_composer", result["planned_command"])
+        self.assertTrue(Path(result["planned_command"][1]).is_absolute())
+        self.assertTrue(str(result["planned_command"][1]).endswith("janus_cursor_worker_runner.py"))
 
     def test_cursor_api_choice_plans_same_runner_with_api_pool(self) -> None:
         result = self.route("--lane", "execution_patch_candidate", "--task-id", "TASK-EX-001", "--operator-choice", "4")

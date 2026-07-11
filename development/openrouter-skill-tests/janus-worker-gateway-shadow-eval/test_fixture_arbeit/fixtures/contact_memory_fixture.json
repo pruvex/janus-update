@@ -1,0 +1,258 @@
+{
+  "fixture_meta": {
+    "fixture_version": "1.4",
+    "purpose": "shadow-eval contact-memory reconciliation sample",
+    "scope": "fixture-only sandbox data",
+    "connected_to_live_janus": false,
+    "inspired_by": "documentation/SPEC/10_contact_memory_reconciliation.md",
+    "primary_scenario_id": "chris_gier_recall_reconciliation",
+    "review_focus": "Chris Gier recall pulls trusted memory facts into empty address-book fields without touching blocked, conflicting, or untrusted facts",
+    "section_review_order": [
+      "sync_policy",
+      "primary_recall_scenario",
+      "field_classification_examples",
+      "blocked_auto_sync_examples",
+      "untrusted_memory_examples",
+      "conflict_scenario",
+      "duplicate_preservation_scenario",
+      "notes"
+    ],
+    "review_checklist": [
+      "Primary recall scenario stays on an existing contact with empty safe fields",
+      "Trusted facts map to the correct non-sensitive contact fields",
+      "Every blocked category has at least one explicit negative example",
+      "Conflict and duplicate cases stay out of silent auto-sync"
+    ]
+  },
+  "contract": {
+    "fixture_meta": "Sandbox metadata, scenario anchor, and reviewer walk order for side-by-side worker review",
+    "sync_policy": "Allowed target fields, trusted origins, and blocked categories from SPEC 10",
+    "primary_recall_scenario": "Main reconciliation case: empty safe fields plus confirmed memory facts",
+    "field_classification_examples": "Trusted facts that sync into non-obvious contact fields",
+    "blocked_auto_sync_examples": "Sensitive facts that must never auto-sync into the address book",
+    "untrusted_memory_examples": "Model-generated facts that must not sync silently",
+    "conflict_scenario": "Memory value that disagrees with an existing address-book field",
+    "duplicate_preservation_scenario": "Trusted fact that already exists and must not create a duplicate",
+    "notes": "Human reviewer hints; not executable product logic"
+  },
+  "sync_policy": {
+    "allowed_target_fields": [
+      "preferences",
+      "dislikes",
+      "personal_details",
+      "hobbies"
+    ],
+    "trusted_origins": [
+      "direct_user_utterance",
+      "confirmed_contact_knowledge"
+    ],
+    "blocked_categories": [
+      "political",
+      "health",
+      "address",
+      "phone",
+      "relationship",
+      "religion",
+      "finance"
+    ]
+  },
+  "primary_recall_scenario": {
+    "id": "chris_gier_recall_reconciliation",
+    "short_label": "Happy path: fill empty safe fields from trusted memory",
+    "narrative": "Chris Gier already exists in the address book, but preference fields are empty while trusted memory facts are available.",
+    "reconciliation_trigger": "contact_recall",
+    "contact_name": "Chris Gier",
+    "user_prompt": "Was weisst du ueber Chris Gier?",
+    "reconciliation_steps": [
+      "User asks a recall question for an existing contact.",
+      "System finds confirmed memory facts for Chris Gier.",
+      "Trusted low-risk facts populate the matching empty address-book fields.",
+      "Blocked, conflicting, and untrusted facts stay out of the address book."
+    ],
+    "address_book_before": {
+      "name": "Chris Gier",
+      "preferences": [],
+      "dislikes": [],
+      "personal_details": [],
+      "hobbies": []
+    },
+    "confirmed_memory_facts": [
+      {
+        "id": "pref_star_wars",
+        "short_label": "Trusted preference: Star Wars",
+        "fact": "Chris Gier liebt Star Wars",
+        "trust": "confirmed_contact_knowledge",
+        "origin": "confirmed_contact_knowledge",
+        "sync_eligible": true,
+        "target_field": "preferences",
+        "value": "Star Wars"
+      },
+      {
+        "id": "pref_kimchi",
+        "short_label": "Trusted preference: Kimchi",
+        "fact": "Chris Gier liebt Kimchi",
+        "trust": "confirmed_contact_knowledge",
+        "origin": "confirmed_contact_knowledge",
+        "sync_eligible": true,
+        "target_field": "preferences",
+        "value": "Kimchi"
+      }
+    ],
+    "expected_after_reconciliation": {
+      "preferences": ["Star Wars", "Kimchi"],
+      "dislikes": [],
+      "personal_details": [],
+      "hobbies": []
+    }
+  },
+  "field_classification_examples": [
+    {
+      "id": "dietary_to_personal_details",
+      "short_label": "Dietary detail belongs in personal_details",
+      "fact": "Chris Gier ist Vegetarier",
+      "sync_eligible": true,
+      "trust": "confirmed_contact_knowledge",
+      "target_field": "personal_details",
+      "value": "Vegetarier",
+      "must_not_target_field": "preferences",
+      "rationale": "Dietary forms belong in personal details, not generic preferences."
+    },
+    {
+      "id": "hobby_to_hobbies",
+      "short_label": "Explicit hobby belongs in hobbies",
+      "fact": "Chris Gier spielt gerne Schach",
+      "sync_eligible": true,
+      "trust": "direct_user_utterance",
+      "target_field": "hobbies",
+      "value": "Schach",
+      "must_not_target_field": "preferences",
+      "rationale": "Explicit hobbies belong in the hobbies field."
+    },
+    {
+      "id": "dislike_to_dislikes",
+      "short_label": "Explicit dislike belongs in dislikes",
+      "fact": "Chris Gier mag keine Pilze",
+      "sync_eligible": true,
+      "trust": "direct_user_utterance",
+      "target_field": "dislikes",
+      "value": "Pilze",
+      "must_not_target_field": "preferences",
+      "rationale": "Explicit dislikes belong in the dislikes field."
+    },
+    {
+      "id": "phrase_preserved_in_hobbies",
+      "short_label": "Multi-word hobby phrase stays intact",
+      "fact": "Chris Gier verbringt gern Zeit im Garten",
+      "sync_eligible": true,
+      "trust": "direct_user_utterance",
+      "target_field": "hobbies",
+      "value": "Zeit im Garten",
+      "must_not_split_into": ["Zeit", "Garten"],
+      "rationale": "Longer hobby phrases stay intact instead of being split into single words."
+    }
+  ],
+  "blocked_auto_sync_examples": [
+    {
+      "id": "blocked_political",
+      "short_label": "Political affiliation",
+      "fact": "Chris Gier ist Mitglied der SPD",
+      "sync_eligible": false,
+      "block_reason": "political"
+    },
+    {
+      "id": "blocked_health",
+      "short_label": "Health condition",
+      "fact": "Chris Gier hat Diabetes",
+      "sync_eligible": false,
+      "block_reason": "health"
+    },
+    {
+      "id": "blocked_address",
+      "short_label": "Residential location",
+      "fact": "Chris Gier wohnt in Hamburg",
+      "sync_eligible": false,
+      "block_reason": "address"
+    },
+    {
+      "id": "blocked_phone",
+      "short_label": "Phone number",
+      "fact": "Chris Gier hat die Nummer 040 123456",
+      "sync_eligible": false,
+      "block_reason": "phone"
+    },
+    {
+      "id": "blocked_relationship",
+      "short_label": "Relationship status",
+      "fact": "Chris Gier ist mit Anna verheiratet",
+      "sync_eligible": false,
+      "block_reason": "relationship"
+    },
+    {
+      "id": "blocked_religion",
+      "short_label": "Religious affiliation",
+      "fact": "Chris Gier ist katholisch",
+      "sync_eligible": false,
+      "block_reason": "religion"
+    },
+    {
+      "id": "blocked_finance",
+      "short_label": "Income detail",
+      "fact": "Chris Gier verdient 120000 Euro im Jahr",
+      "sync_eligible": false,
+      "block_reason": "finance"
+    }
+  ],
+  "untrusted_memory_examples": [
+    {
+      "id": "untrusted_model_generated_hobby",
+      "short_label": "Plausible hobby from model inference",
+      "fact": "Chris Gier spielt gerne Schach",
+      "sync_eligible": false,
+      "trust": "model_inferred",
+      "origin": "model_generated",
+      "block_reason": "untrusted_origin",
+      "rationale": "Model-generated facts must not silently sync even when they look plausible."
+    }
+  ],
+  "conflict_scenario": {
+    "id": "chris_gier_preference_conflict",
+    "short_label": "Existing preference conflicts with memory",
+    "contact_name": "Chris Gier",
+    "memory_fact": {
+      "fact": "Chris Gier liebt Kimchi",
+      "trust": "confirmed_contact_knowledge",
+      "target_field": "preferences",
+      "value": "Kimchi"
+    },
+    "address_book_before": {
+      "preferences": ["Sushi"]
+    },
+    "sync_eligible": false,
+    "expected_behavior": "ask_user",
+    "rationale": "Conflicting memory and address-book values must not be overwritten silently."
+  },
+  "duplicate_preservation_scenario": {
+    "id": "chris_gier_existing_preference",
+    "short_label": "Trusted fact already stored in address book",
+    "contact_name": "Chris Gier",
+    "memory_fact": {
+      "fact": "Chris Gier liebt Star Wars",
+      "trust": "confirmed_contact_knowledge",
+      "target_field": "preferences",
+      "value": "Star Wars"
+    },
+    "address_book_before": {
+      "preferences": ["Star Wars"]
+    },
+    "sync_eligible": false,
+    "expected_behavior": "preserve_existing",
+    "rationale": "An already stored safe fact must not create a duplicate entry."
+  },
+  "notes": [
+    "Synthetic shadow data for worker side-by-side comparison",
+    "Not wired to Janus memory, contacts, or orchestration",
+    "The hobby fact text also appears in untrusted_memory_examples to show origin-based blocking",
+    "Conflict and duplicate scenarios document negative sync paths without changing product code",
+    "short_label fields are reviewer hints only and do not change executable fixture semantics"
+  ]
+}

@@ -190,6 +190,7 @@ class JanusCursorWorkerRunnerTests(unittest.TestCase):
 
         self.assertEqual(result["validation_result"], "PASS")
         self.assertEqual(result["selected_model"], "auto")
+        self.assertEqual(result["cursor_pool"], "auto_composer")
         self.assertEqual(result["planned_command"][0], "C:\\fake\\agent.exe")
         self.assertNotIn("--force", result["planned_command"])
         self.assertNotIn("--approve-mcps", result["planned_command"])
@@ -215,9 +216,34 @@ class JanusCursorWorkerRunnerTests(unittest.TestCase):
 
         self.assertEqual(result["validation_result"], "PASS")
         self.assertEqual(result["selected_model"], "composer-2.5")
+        self.assertEqual(result["cursor_pool"], "auto_composer")
         self.assertEqual(result["planned_command"][0], "C:\\fake\\agent.exe")
         self.assertIn("--force", result["planned_command"])
         self.assertIn("--approve-mcps", result["planned_command"])
+
+    def test_api_pool_dry_run_passes_model_and_pool_to_planned_command(self) -> None:
+        package_path = self.write_valid_package()
+        args = self.parse(
+            "--lane",
+            "documentation_draft_review",
+            "--workflow-id",
+            "WF-CURSOR-API-DRY-001",
+            "--input-package-json",
+            str(package_path),
+            "--cursor-pool",
+            "api",
+            "--dry-run",
+        )
+
+        with patch.dict(os.environ, {"CURSOR_API_KEY": "test-key"}, clear=False):
+            with patch.object(cursor_runner, "resolve_agent_binary", return_value="C:\\fake\\agent.exe"):
+                result = cursor_runner.summarize(args)
+
+        self.assertEqual(result["validation_result"], "PASS")
+        self.assertEqual(result["selected_model"], "gpt-5.4-mini-medium")
+        self.assertEqual(result["cursor_pool"], "api")
+        self.assertIn("--model", result["planned_command"])
+        self.assertIn("gpt-5.4-mini-medium", result["planned_command"])
 
     def test_allowlist_violation_detection_fails_mocked_live_run(self) -> None:
         package_path = self.write_valid_package()
@@ -298,16 +324,28 @@ class JanusCursorWorkerRunnerTests(unittest.TestCase):
         with patch.dict(os.environ, {"CURSOR_API_KEY": "test-key"}, clear=False):
             with patch.object(cursor_runner, "resolve_agent_binary", return_value="C:\\fake\\agent.exe"):
                 with patch.object(cursor_runner, "run_command", side_effect=fake_run):
-                    with patch.object(
-                        cursor_runner,
-                        "invoke_agent_command",
-                        return_value=type(
-                            "Completed",
-                            (),
-                            {"returncode": 0, "stdout": json.dumps({"session_id": "sess-abc", "status": "success"}), "stderr": ""},
-                        )(),
-                    ):
-                        result = cursor_runner.summarize(args)
+                    snapshot_calls = {"count": 0}
+
+                    def fake_snapshot(paths: list[str]) -> dict[str, str | None]:
+                        label = "before" if snapshot_calls["count"] == 0 else "after"
+                        snapshot_calls["count"] += 1
+                        return {path: label for path in paths}
+
+                    with patch.object(cursor_runner, "snapshot_file_hashes", side_effect=fake_snapshot):
+                        with patch.object(
+                            cursor_runner,
+                            "invoke_agent_command",
+                            return_value=type(
+                                "Completed",
+                                (),
+                                {
+                                    "returncode": 0,
+                                    "stdout": json.dumps({"session_id": "sess-abc", "status": "success"}),
+                                    "stderr": "",
+                                },
+                            )(),
+                        ):
+                            result = cursor_runner.summarize(args)
 
         self.assertEqual(result["validation_result"], "PASS")
         self.assertEqual(result["session_id"], "sess-abc")
@@ -361,6 +399,58 @@ class JanusCursorWorkerRunnerTests(unittest.TestCase):
         self.assertIn("Edit only allowlisted files. Return concise summary.", prompt)
         self.assertIn("Allowed edit paths:", prompt)
         self.assertIn("tests/fixtures/example.py", prompt)
+
+    def test_prompt_uses_worker_task_prompt_path_when_present(self) -> None:
+        prompt_path = self.temp_path / "worker_prompt.md"
+        prompt_path.write_text("Use prompt path text.\n", encoding="utf-8")
+        worker_package_path = self.temp_path / "worker_package.json"
+        worker_package_path.write_text(
+            json.dumps(
+                {
+                    "task_label": "Fixture helper",
+                    "worker_profile": "cursor-agent",
+                    "allowed_edit_paths": ["tests/fixtures/example.py"],
+                    "acceptance_criteria": ["writes one bounded fixture"],
+                    "checks": [{"label": "unit", "command": ["python", "-m", "pytest", "tests/fixtures"]}],
+                    "forbidden_actions": [
+                        "commit",
+                        "push",
+                        "tag",
+                        "merge",
+                        "release",
+                        "publish",
+                        "dependency",
+                        "secret",
+                        "auth",
+                        "security",
+                        "privacy",
+                        "migration",
+                        "architecture",
+                    ],
+                    "requested_actions": ["edit"],
+                    "task_prompt_path": "worker_prompt.md",
+                }
+            ),
+            encoding="utf-8",
+        )
+        input_package_path = self.temp_path / "input_package.json"
+        input_package_path.write_text(
+            json.dumps(
+                {
+                    "task_label": "Bounded fixture edit",
+                    "worker_package_json": "worker_package.json",
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        original_repo_root = cursor_runner.REPO_ROOT
+        cursor_runner.REPO_ROOT = self.temp_path
+        self.addCleanup(lambda: setattr(cursor_runner, "REPO_ROOT", original_repo_root))
+
+        prompt = cursor_runner.task_prompt_from_package(input_package_path, "test_fixture_worker", ["tests/fixtures/example.py"])
+
+        self.assertIn("Use prompt path text.", prompt)
 
     def test_dry_run_blocks_when_worker_package_and_allowlist_disagree(self) -> None:
         worker_package_path = self.write_valid_package()
@@ -495,6 +585,35 @@ class JanusCursorWorkerRunnerTests(unittest.TestCase):
         self.assertIn("Workspace root:", prompt)
         self.assertIn("Workspace-relative edit paths:\n- helper.py\n- test_helper.py", prompt)
 
+    def test_dry_run_uses_parent_workspace_root_for_nonexistent_allowlist_targets(self) -> None:
+        sandbox_dir = self.temp_path / "sandbox"
+        sandbox_dir.mkdir(parents=True, exist_ok=True)
+
+        original_repo_root = cursor_runner.REPO_ROOT
+        cursor_runner.REPO_ROOT = self.temp_path
+        self.addCleanup(lambda: setattr(cursor_runner, "REPO_ROOT", original_repo_root))
+
+        package_path = self.write_valid_package()
+        allowlist_path = self.write_allowlist("sandbox/future.md", "sandbox/future.json")
+        args = self.parse(
+            "--lane",
+            "test_fixture_worker",
+            "--workflow-id",
+            "WF-CURSOR-WORKSPACE-NEWFILES-001",
+            "--input-package-json",
+            str(package_path),
+            "--allowlist-file",
+            str(allowlist_path),
+            "--dry-run",
+        )
+
+        with patch.dict(os.environ, {"CURSOR_API_KEY": "test-key"}, clear=False):
+            with patch.object(cursor_runner, "resolve_agent_binary", return_value="C:\\fake\\agent.exe"):
+                result = cursor_runner.summarize(args)
+
+        self.assertEqual(result["validation_result"], "PASS")
+        self.assertEqual(result["workspace_root"], str(sandbox_dir))
+
     def test_minimal_write_apply_prompt_uses_compact_shape(self) -> None:
         allowlist_path = self.write_allowlist("sandbox/helper.py", "sandbox/test_helper.py")
         accepted_source_run_dir = self.write_accepted_source_run_dir()
@@ -546,6 +665,54 @@ class JanusCursorWorkerRunnerTests(unittest.TestCase):
         self.assertIn("Run only this validation command: python -m pytest sandbox/test_helper.py -q", prompt)
         self.assertIn("Accepted source summary: Apply the accepted prompt delta exactly once.", prompt)
         self.assertNotIn("Accepted source package context:", prompt)
+
+    def test_minimal_worker_prompt_uses_compact_shape(self) -> None:
+        sandbox_dir = self.temp_path / "sandbox"
+        sandbox_dir.mkdir(parents=True, exist_ok=True)
+
+        original_repo_root = cursor_runner.REPO_ROOT
+        cursor_runner.REPO_ROOT = self.temp_path
+        self.addCleanup(lambda: setattr(cursor_runner, "REPO_ROOT", original_repo_root))
+
+        package_path = self.write_valid_package()
+        input_package_path = self.temp_path / "input_package.json"
+        input_package_path.write_text(
+            json.dumps(
+                {
+                    "task_label": "Compact worker",
+                    "worker_package_json": "worker_package.json",
+                    "cursor_prompt_mode": "minimal_worker",
+                    "cursor_prompt_contract": "Write exactly two evidence files or a BLOCKED note.",
+                    "local_validation_command": "python -c pass",
+                    "acceptance_criteria": ["Only allowlisted files may change."],
+                }
+            ),
+            encoding="utf-8",
+        )
+        allowlist_path = self.write_allowlist("sandbox/result.md", "sandbox/result.json")
+        args = self.parse(
+            "--lane",
+            "test_fixture_worker",
+            "--workflow-id",
+            "WF-CURSOR-MINIMAL-WORKER-001",
+            "--input-package-json",
+            str(input_package_path),
+            "--allowlist-file",
+            str(allowlist_path),
+            "--dry-run",
+        )
+
+        with patch.dict(os.environ, {"CURSOR_API_KEY": "test-key"}, clear=False):
+            with patch.object(cursor_runner, "resolve_agent_binary", return_value="C:\\fake\\agent.exe"):
+                result = cursor_runner.summarize(args)
+
+        self.assertEqual(result["validation_result"], "PASS")
+        prompt = result["planned_command"][-1]
+        self.assertIn("Task: Compact worker", prompt)
+        self.assertIn("Write exactly two evidence files or a BLOCKED note.", prompt)
+        self.assertIn("Files:\n- result.md\n- result.json", prompt)
+        self.assertIn("Check: python -c pass", prompt)
+        self.assertNotIn("Variable suffix:\nCollect bounded live evidence", prompt)
 
     def test_live_timeout_writes_partial_artifacts_and_blocks(self) -> None:
         package_path = self.write_valid_package()
@@ -605,6 +772,50 @@ class JanusCursorWorkerRunnerTests(unittest.TestCase):
         self.assertEqual((run_dir / "stderr.log").read_text(encoding="utf-8"), "partial stderr")
         cursor_response = json.loads((run_dir / "cursor_response.json").read_text(encoding="utf-8"))
         self.assertTrue(cursor_response["timeout"])
+        self.assertEqual(result["transport_result"], "TRANSPORT_FAIL")
+        self.assertEqual(result["semantic_result"], "SEMANTIC_FAIL")
+
+    def test_resolve_live_timeout_seconds_uses_lane_tiers(self) -> None:
+        assist_config = {"mode": "assist_only", "allow_write": False}
+        tool_config = {"mode": "proposal_first", "allow_write": True}
+        self.assertEqual(
+            cursor_runner.resolve_live_timeout_seconds(cursor_config=assist_config, allowlist=["a.py"]),
+            (180, "assist_or_review_default"),
+        )
+        self.assertEqual(
+            cursor_runner.resolve_live_timeout_seconds(cursor_config=tool_config, allowlist=["a.py"]),
+            (240, "single_file_tool_lane"),
+        )
+        self.assertEqual(
+            cursor_runner.resolve_live_timeout_seconds(cursor_config=tool_config, allowlist=["a.py", "b.py"]),
+            (300, "multi_file_tool_lane"),
+        )
+
+    def test_classify_live_run_outcome_marks_zero_file_write_lane_as_semantic_fail(self) -> None:
+        completed = subprocess.CompletedProcess(args=[], returncode=0, stdout="{}", stderr="")
+        outcome = cursor_runner.classify_live_run_outcome(
+            completed=completed,
+            changed_files=[],
+            changed_outside_allowlist=[],
+            cursor_config={"mode": "proposal_first", "allow_write": True},
+            package_payload={},
+        )
+        self.assertEqual(outcome["transport_result"], "TRANSPORT_PASS")
+        self.assertEqual(outcome["semantic_result"], "SEMANTIC_FAIL")
+        self.assertEqual(outcome["validation_result"], "FAIL")
+        self.assertEqual(outcome["final_outcome"], "CURSOR_SEMANTIC_FAIL_NO_CHANGES")
+
+    def test_classify_live_run_outcome_allows_explicit_no_op_package(self) -> None:
+        completed = subprocess.CompletedProcess(args=[], returncode=0, stdout="{}", stderr="")
+        outcome = cursor_runner.classify_live_run_outcome(
+            completed=completed,
+            changed_files=[],
+            changed_outside_allowlist=[],
+            cursor_config={"mode": "proposal_first", "allow_write": True},
+            package_payload={"explicit_no_op_ok": True},
+        )
+        self.assertEqual(outcome["semantic_result"], "SEMANTIC_PASS")
+        self.assertEqual(outcome["validation_result"], "PASS")
 
 
 if __name__ == "__main__":

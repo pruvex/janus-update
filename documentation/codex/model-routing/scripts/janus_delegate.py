@@ -223,16 +223,16 @@ def build_cursor_command(
 ) -> list[str]:
     command = [
         "python",
-        str(CURSOR_RUNNER_PATH.relative_to(REPO_ROOT)),
+        str(CURSOR_RUNNER_PATH),
         "--lane",
         lane_id,
         "--workflow-id",
         workflow_id,
         "--model",
         selected_model,
-        "--cursor-pool",
-        cursor_pool,
     ]
+    if cursor_pool in {"auto_composer", "api"}:
+        command.extend(["--cursor-pool", cursor_pool])
     command.append("--execute-live" if execute_live else "--dry-run")
     cursor_config = lane.get("cursor") if isinstance(lane.get("cursor"), dict) else {}
     if cursor_config.get("require_allowlist") is True:

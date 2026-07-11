@@ -1,0 +1,16 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 43936,
+  "duration_api_ms": 43936,
+  "result": "I'll locate the delegated worker task instructions in the workspace and read the relevant skill/rules files.\nImproving fixture readability and test clarity within the bounded allowlist, then running the package checks.\nBounded shadow task completed. Only the two allowlisted files were changed.\n\n**Fixture (`contact_memory_fixture.json`)**\n- Bumped `fixture_version` to `1.4`\n- Added `section_review_order` in `fixture_meta` for reviewer walk-through\n- Added `short_label` on scenarios and examples for quicker scanning\n- Clarified contract text and added a note that `short_label` is reviewer-only\n\n**Tests (`test_contact_memory_fixture.py`)**\n- Grouped tests with section comments (envelope, sync policy, happy path, field routing, negative paths)\n- Added helpers: `assert_has_short_label`, `derive_expected_state_from_facts`\n- Added `test_fixture_meta_lists_reviewer_section_order`\n- Used `pytest.param(..., id=...)` for clearer parametrized test names\n- Improved assertion messages where useful\n\n**Validation:** package file-exists check passed; 24/24 pytest tests passed.\n\n```json\n{\n  \"status\": \"PASS\",\n  \"changed_files\": [\n    \"fixtures/contact_memory_fixture.json\",\n    \"tests/test_contact_memory_fixture.py\"\n  ],\n  \"command_results\": [\n    {\n      \"label\": \"fixture_test_file_exists\",\n      \"exit_code\": 0\n    },\n    {\n      \"label\": \"pytest tests/test_contact_memory_fixture.py\",\n      \"exit_code\": 0,\n      \"passed\": 24,\n      \"failed\": 0\n    }\n  ],\n  \"summary\": \"Improved fixture reviewer readability with section order and short_label hints; refactored tests with helpers, section grouping, and one new metadata contract test. All checks green within bounded allowlist.\",\n  \"blockers\": []\n}\n```",
+  "session_id": "a02d9d26-eb30-44e3-bb72-075038bba1f9",
+  "request_id": "aa345a71-6d00-4b97-a74b-27e4008f21d8",
+  "usage": {
+    "inputTokens": 27407,
+    "outputTokens": 6243,
+    "cacheReadTokens": 141307,
+    "cacheWriteTokens": 0
+  }
+}

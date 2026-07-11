@@ -1,0 +1,16 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 39860,
+  "duration_api_ms": 39860,
+  "result": "Searching the sandbox workspace for the delegated worker task instructions.\nChecking how session-budget lines are formatted elsewhere in the codebase.\nAdding the session-budget line to the shadow helper, then running the focused pytest.\nBounded shadow execution patch complete. `build_shadow_operator_prompt_lines` now emits one `Session-Budget:` line using the existing `session_cap_usd` parameter, placed after the cost line with unchanged gate/model/cost wording.\n\n```json\n{\n  \"status\": \"PASS\",\n  \"changed_files\": [\n    \"documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/gate_prompt_shadow.py\"\n  ],\n  \"command_results\": [\n    {\n      \"label\": \"shadow_execution_pytest\",\n      \"command\": \"python -m pytest documentation/codex/model-routing/fixtures/cursor-shadow-catalog/execution_patch_candidate/sandbox/test_gate_prompt_shadow.py -q\",\n      \"exit_code\": 0,\n      \"output\": \"1 passed in 0.13s\"\n    }\n  ],\n  \"summary\": \"Added exactly one session-budget output line (`Session-Budget: Sitzungs-Deckel {session_cap_usd:.6f} USD`) after the existing worker-cost line; removed the unused `_ = session_cap_usd` discard. Focused shadow pytest passes.\",\n  \"blockers\": []\n}\n```",
+  "session_id": "30b26155-cd88-4837-90e3-82043f2d9440",
+  "request_id": "9f591fef-30f3-4c04-9e74-3bd26f6ebd00",
+  "usage": {
+    "inputTokens": 28659,
+    "outputTokens": 2426,
+    "cacheReadTokens": 258449,
+    "cacheWriteTokens": 0
+  }
+}
