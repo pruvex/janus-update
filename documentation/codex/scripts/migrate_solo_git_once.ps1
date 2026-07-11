@@ -48,10 +48,11 @@ if ($ArchiveMixedWip) {
     if ($dirty) {
         Write-Host "[MIGRATE] Archiving mixed WIP on $branch before branch switch..." -ForegroundColor Yellow
         git add -A
-        git commit -m "$( @"
+        git commit --no-verify -m "$( @"
 chore: archive mixed WIP before solo-git v2
 
 One-time migration commit. Future work uses master + feature/* only.
+Pre-commit skipped intentionally for this archive-only migration step.
 See documentation/codex/JANUS_SOLO_GIT.md
 "@ )"
         if ($LASTEXITCODE -ne 0) {
