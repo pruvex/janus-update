@@ -1,6 +1,36 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-11 22:20 +02:00`, M6 Phase A has passed default-off and flag-on OpenAI/Gemini manual smokes. Backend logs prove `STREAM-GATEWAY-HANDOFF` for both enabled-path providers, and the independent Cursor review is `PASS WITH FINDINGS` with no Phase-A implementation blocker.
+
+Current goal: document the independent review and manual smoke evidence, then checkpoint the completed Phase-A closeout before Phase-B task breakdown.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work: reviewed Cursor session `3df30362-0373-40a3-8eb1-705b0c390bdc`, checked the live backend evidence, and recorded the operator smoke sign-off.
+
+Open risks: shared Cursor delegate wrapper still rejects `--cursor-pool`; optional follow-ups are Gemini flag-on automated parity coverage, injectable streaming handoff parity, and a non-runtime vision-evaluator reference. None block Phase-B task planning. Missing Supabase telemetry configuration is non-M6 infrastructure noise.
+
+Next recommended step for Codex: run `janus-git-governance` on `5.6 Terra`, medium for a scoped Phase-A evidence/review checkpoint; then release one Phase-B task through `janus-task-breakdown`.
+
+Last updated: `2026-07-11 22:20 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-11 21:20 +02:00`, M6 Phase A is committed through the M6.5 re-audit. A read-only independent Cursor review handoff is prepared before Phase B; no Phase-B code is authorized.
+
+Current goal: collect Cursor Phase-A review findings, then decide whether manual OpenAI/Gemini flag-on smokes or one bounded fix are required before Phase B.
+
+Active phase: independent review handoff, canonical state `HANDOFF`.
+
+Last Codex work: created the bounded Cursor review package over the five committed Phase-A/re-audit commits and the green `28 passed` focused evidence.
+
+Open risks: shared Cursor delegate wrapper remains broken for `--cursor-pool`; direct Cursor worker is the proven fallback. Manual enabled-flag provider smokes remain required before broad enablement.
+
+Next recommended step for Codex: submit the handoff to Cursor Composer in read-only mode, then run Codex final review on `5.6 Terra`, high.
+
+Last updated: `2026-07-11 21:20 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-11 21:10 +02:00`, the M6.5 re-audit is `PASS`. Direct Cursor Composer debug fixed the test-collection prerequisite chain; focused streaming and intent-contract evidence now passes `28/28`.
 
 Current goal: commit the M6.5 re-audit/debug closeout, then collect manual enabled-flag OpenAI and Gemini streaming smoke evidence before Phase B.
