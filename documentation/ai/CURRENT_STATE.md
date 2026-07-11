@@ -3,15 +3,16 @@
 ## Current Snapshot Update
 As of `2026-07-11 15:26 +02:00`, the `TASK-M6.1` audit closure is synchronized across the task, parent M6 Spec progress note, central registry, project state, and reusable learning memory. Only this Phase-A T-A1 slice is closed; the parent provider-transport Spec and `T-A2` through `T-A5` remain open.
 
-Current goal: create a clean Git checkpoint for the documented and audited `TASK-M6.1` slice when explicitly approved.
+Current goal: keep the audited `TASK-M6.1` checkpoint locally recoverable and prepare the bounded prerequisite for `TASK-M6.2` when selected.
 
-Active phase: `janus-documentation-update`, canonical state `HANDOFF`.
+Active phase: `janus-git-governance`, canonical state `PASS`.
 
 Last Codex work:
 - recorded the `PASS WITH FIXES` closeout for `TASK-M6.1` without marking the parent M6 Spec complete
 - added the central task-registry and project-state entries, plus the validated one-owner hierarchy drift pattern
 - documented exact skips: no Backlog or dashboard item exists; changelog is not applicable because no user-facing feature or release changed
-- made no product edit, staging, commit, push, release, or remote CURRENT_STATE sync
+- created local checkpoint `73b387b30` (`refactor(m6): consolidate MoA model hierarchy`)
+- made no push, release, or remote CURRENT_STATE sync
 
 Changed files in this block:
 - `documentation/tasks/TASK-M6_transport_phase_a.md`
@@ -30,11 +31,11 @@ Checks / validation performed:
 Open risks:
 - correct the obsolete Ollama-no-tier comment in `backend/llm_providers/shared/moa.py` before `TASK-M6.2`
 - full pytest collection remains independently blocked by the local ChromaDB SQLite panic before collection
-- the clean M6 branch remains local and uncommitted; remotes, including `origin/codex-sync`, may not contain this CURRENT_STATE
+- checkpoint `73b387b30` remains local; remotes, including `origin/codex-sync`, do not contain this CURRENT_STATE
 
 Next recommended step for ChatGPT: do not mark the overall provider transport Spec or Phase A complete.
 
-Next recommended step for Codex: run `janus-git-governance` for an intentional M6.1 checkpoint after explicit commit approval, then fix the stale source comment as the first bounded prerequisite of `TASK-M6.2`.
+Next recommended step for Codex: commit this final CURRENT_STATE delta only after explicit approval, then fix the stale source comment as the first bounded prerequisite of `TASK-M6.2`.
 
 Last updated: `2026-07-11 15:26 +02:00`.
 
