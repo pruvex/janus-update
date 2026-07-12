@@ -13,11 +13,11 @@ Changed files: `backend/services/orchestrator/execution_engine.py`; `backend/tes
 
 Tests / validation performed: BACKLOG-127 precheck and final-audit validators PASS; backlog validator PASS with existing legacy warnings; dashboard sync PASS (`total=87`, `active=13`, `done=74`); focused pytest PASS (`27 passed`); `py_compile` PASS; `git diff --check` PASS; manual default-off Ollama weather smoke PASS at 18:06.
 
-Open risks: An explicit Git commit/push/Codex-sync decision remains; no commit, push, or `origin/codex-sync` occurred, so remote state may not include this snapshot.
+Open risks: M6B.4/M6B.5 and separate Cursor-wrapper tooling debt remain; the completed M6B.3/Ollama recovery block is committed and backed up.
 
-Next recommended step for ChatGPT: decide whether to create the scoped Git checkpoint and CURRENT_STATE sync; do not assume GitHub has this snapshot.
+Next recommended step for ChatGPT: `origin/codex-sync` contains this rolling snapshot; M6B.4 is the next Phase-B task when selected.
 
-Next recommended step for Codex: run `janus-git-governance` on `5.6 Terra/medium` only after explicit commit/push/sync approval.
+Next recommended step for Codex: route M6B.4 through `janus-task-breakdown` on `5.6 Terra/high` when selected.
 
 Last updated: `2026-07-12 19:22 +02:00`.
 
