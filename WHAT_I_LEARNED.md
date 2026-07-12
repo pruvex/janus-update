@@ -291,3 +291,15 @@
 - **Epic:** EPIC-ARCH-TRANSPORT-001
 - **Confidence:** High
 - **Tags:** provider-routing,tool-loop,feature-flag,openai,regression
+
+
+## [PATTERN] #AtomicAgentToolCallMustExecuteBeforeRender "Atomic Agent tool calls must execute before response rendering"
+- **Kontext:** BACKLOG-127 local Ollama Atomic-Agent recovery (2026-07-12) (2026-07-12).
+- **Problem:** A provider tool call could reach AgentRuntime and be marked complete by the Atomic loop without ToolExecutor execution, exposing raw tool JSON to chat.
+- **Loesung:** Extract pending Atomic-step tool calls, execute them once through the existing ToolExecutor with the bound phase context, and render deterministic successful tool output before final response selection.
+- **Haertung:** Focused agent-factory regression proves one execution and weather rendering; combined Ollama suite 27 passed; manual default-off Berlin weather smoke passed.
+- **Tripwire:** If an Atomic log says Executing/Task Complete without a ToolExecutor execution entry, or chat shows function JSON, inspect the Atomic execution seam before changing provider prompts or gateways.
+- **Location:** backend/services/orchestrator/execution_engine.py, backend/tests/test_agent_factory_runtime.py
+- **Epic:** BACKLOG-127
+- **Confidence:** High
+- **Tags:** AtomicAgent,Ollama,ToolExecutor,ToolCalls,Weather,Runtime,Regression

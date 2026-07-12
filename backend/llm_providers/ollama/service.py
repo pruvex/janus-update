@@ -152,6 +152,7 @@ class OllamaServiceProvider(BaseLLMProvider):
         elif forced_format == "json" and is_tool_forced:
             logger.debug("OLLAMA-FORMAT-SKIP: format=json ignoriert weil tool_choice=%s erzwungen", tool_choice_val)
 
+        estimated_prompt_tokens = kwargs.pop("_estimated_prompt_tokens", None)
         request_payload.update(kwargs)
         request_payload.pop("provider", None)
         request_payload.pop("_force_tools_override", None)
@@ -200,7 +201,7 @@ class OllamaServiceProvider(BaseLLMProvider):
                 timeout_seconds=request_deadline_seconds,
                 context="synthesis",
                 model=model,
-                estimated_prompt_tokens=gateway_kwargs.get("_estimated_prompt_tokens"),
+                estimated_prompt_tokens=estimated_prompt_tokens,
             )
             elapsed_seconds = time.perf_counter() - started_at
             logger.info("Ollama - Antwort erhalten nach %.1f Sekunden.", elapsed_seconds)
@@ -220,7 +221,7 @@ class OllamaServiceProvider(BaseLLMProvider):
             timeout_seconds=request_deadline_seconds,
             context="chat",
             model=model,
-            estimated_prompt_tokens=gateway_kwargs.get("_estimated_prompt_tokens"),
+            estimated_prompt_tokens=estimated_prompt_tokens,
         )
         if detected_supports_tools is False:
             supports_tools = False

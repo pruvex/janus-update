@@ -4,6 +4,18 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-M6B.3 - Add the Ollama-local transport
+
+- **Status**: DONE WITH NON-BLOCKING FOLLOW-UP
+- **Final Audit**: `documentation/tasks/BACKLOG-127_FINAL_AUDIT.md` (PASS)
+- **Spec**: `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md` (Phase-B T-B4 only; parent Spec remains in progress)
+- **Parent Task**: `documentation/tasks/TASK-M6_transport_phase_b.md`
+- **Precheck**: `documentation/tasks/TASK-M6B.3_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-M6B.3_execution_result.md`
+- **Audit Package**: `documentation/tasks/BACKLOG-127_AUDIT_PACKAGE.md`
+- **Validation**: Combined Ollama transport/service/gateway/Atomic-Agent suite (`27 passed`), syntax, scoped diff, and manual default-off Ollama Berlin-weather smoke PASS. The thin transport remains unintegrated; BACKLOG-125/126/127 closed the pre-existing service, tool-forwarding, and Atomic execution defects found by that smoke.
+- **Follow-up**: The shared Cursor wrapper decoding/argument defect remains separate tooling work. `TASK-M6B.4` and `TASK-M6B.5` remain open.
+
 ### TASK-M6B.1 - Establish the BaseTransport contract and OpenAI-compatible vertical slice
 
 - **Status**: DONE WITH NON-BLOCKING FOLLOW-UP

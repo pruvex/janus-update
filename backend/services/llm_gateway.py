@@ -230,7 +230,7 @@ async def reason_and_respond(
         silo_args["forced_tool"] = forced_tool
 
     force_tool_name = kwargs.get("force_tool_name")
-    if force_tool_name is not None and provider_key in {"openai", "gemini", "google"}:
+    if force_tool_name is not None and provider_key in {"openai", "gemini", "google", "ollama"}:
         silo_args["force_tool_name"] = force_tool_name
 
     all_tool_definitions = kwargs.get("all_tool_definitions")

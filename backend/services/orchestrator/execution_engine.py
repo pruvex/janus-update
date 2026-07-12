@@ -1587,11 +1587,53 @@ class OrchestratorExecutionEngine:
                     )
 
                 logger.info("ATOMIC LOOP RUNDE %s: Executing %s", round_idx, skill_label)
+
+                pending_tool_calls = self._extract_pending_atomic_tool_calls(step_result)
+                step_result_text = step_text
+                if pending_tool_calls:
+                    atomic_trace_id = str(step_trace_id or uuid.uuid4())
+                    atomic_executor = ToolExecutor(
+                        db=self.db,
+                        api_key=api_key or "",
+                        provider=provider,
+                        model=planner_model,
+                        additional_context={
+                            "chat_id": chat_id,
+                            "trace_id": atomic_trace_id,
+                            "allowed_skill_ids": [current_skill],
+                            "original_user_text": user_text,
+                            "provider": provider,
+                            "model": planner_model,
+                        },
+                    )
+                    try:
+                        tool_results = await atomic_executor.execute_tool_calls(pending_tool_calls)
+                    except Exception as exc:
+                        fatal_failed_skills.add(current_skill)
+                        failed_steps.append(
+                            f"[{current_skill}] FAILED_FINAL code=TOOL_EXECUTION_ERROR message={exc}"
+                        )
+                        logger.warning(
+                            "ATOMIC LOOP RUNDE %s: Tool-Ausfuehrung fehlgeschlagen bei %s: %s",
+                            round_idx,
+                            skill_label,
+                            exc,
+                            exc_info=True,
+                        )
+                        logger.info("ATOMIC LOOP: [NEUER LOOP]")
+                        continue
+                    rendered_text = self._render_atomic_step_text(
+                        tool_results,
+                        fallback_text=step_text,
+                    )
+                    if rendered_text:
+                        step_result_text = rendered_text
+
                 logger.info("ATOMIC LOOP RUNDE %s: Task Complete %s", round_idx, skill_label)
 
                 completed_skills.append(current_skill)
-                if step_text:
-                    step_outputs.append(f"[{current_skill}] {step_text}")
+                if step_result_text:
+                    step_outputs.append(f"[{current_skill}] {step_result_text}")
 
                 if self._is_pdf_create_skill(current_skill) and self._is_pdf_creation_request(user_text):
                     planner_lockdown_after_pdf = True
@@ -4182,6 +4224,36 @@ class OrchestratorExecutionEngine:
             if isinstance(error_obj, dict) and error_obj:
                 return error_obj
         return None
+
+    @staticmethod
+    def _extract_pending_atomic_tool_calls(step_result: Dict[str, Any]) -> List[Dict[str, Any]]:
+        if not isinstance(step_result, dict):
+            return []
+        raw_response = step_result.get("raw_response")
+        if not isinstance(raw_response, dict):
+            return []
+        if raw_response.get("executed_tool_call") is True:
+            return []
+        tool_calls = raw_response.get("tool_calls")
+        if not isinstance(tool_calls, list):
+            return []
+        return [tool_call for tool_call in tool_calls if isinstance(tool_call, dict)]
+
+    def _render_atomic_step_text(
+        self,
+        tool_results: List[Dict[str, Any]],
+        *,
+        fallback_text: str = "",
+    ) -> str:
+        weather_text = render_weather_forecast_from_tools(tool_results)
+        if weather_text:
+            text_value = weather_text
+        else:
+            messages = self._success_messages_from_tool_results(tool_results)
+            text_value = "\n\n".join(messages) if messages else str(fallback_text or "").strip()
+        text_value = append_tool_attributions_from_tools(text_value, tool_results)
+        text_value = _normalize_inline_weather_source(text_value, tool_results)
+        return str(text_value or "").strip()
 
     @staticmethod
     def _step_has_tool_call(step_result: Dict[str, Any]) -> bool:

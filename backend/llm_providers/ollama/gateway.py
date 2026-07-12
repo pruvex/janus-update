@@ -13,6 +13,10 @@ from backend.services.request_budget import (
     get_phase_budget,
     should_skip_expensive_synthesis,
 )
+from backend.llm_providers.shared.utils import (
+    _build_tool_definitions_for_llm,
+    _filter_tools_by_skill_ids,
+)
 
 logger = logging.getLogger("janus_backend")
 
@@ -165,6 +169,43 @@ class OllamaGateway(BaseProviderGateway):
         gateway = OllamaGateway()
         return gateway._limit_tools(tool_definitions, limit=10, user_prompt=user_prompt)
 
+    def _resolve_tool_definitions(
+        self,
+        *,
+        validated_tool_definitions: Optional[List[Dict[str, Any]]],
+        all_tool_definitions: Optional[List[Dict[str, Any]]],
+        allowed_skill_ids: Optional[List[str]],
+        tools_override: Optional[List[Dict[str, Any]]],
+    ) -> tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+        if validated_tool_definitions:
+            validated = list(validated_tool_definitions)
+        elif tools_override is not None:
+            validated = list(tools_override)
+        else:
+            validated = _build_tool_definitions_for_llm(_filter_tools_by_skill_ids(allowed_skill_ids))
+
+        if all_tool_definitions:
+            catalog = list(all_tool_definitions)
+        else:
+            catalog = _build_tool_definitions_for_llm(_filter_tools_by_skill_ids(None))
+
+        return validated, catalog
+
+    @staticmethod
+    def _resolve_force_tool_name(
+        force_tool_name: Optional[str],
+        forced_tool: Optional[Dict[str, Any]],
+    ) -> Optional[str]:
+        explicit = str(force_tool_name or "").strip()
+        if explicit:
+            return explicit
+        if not forced_tool:
+            return None
+        return (
+            str(forced_tool.get("provider_tool_name") or forced_tool.get("skill_id") or "").strip()
+            or None
+        )
+
     async def reason_and_respond(
         self,
         provider: str,
@@ -189,13 +230,19 @@ class OllamaGateway(BaseProviderGateway):
         current_round: int = 1,
         forced_tool: Optional[Dict[str, Any]] = None,
         all_tool_definitions: Optional[List[Dict[str, Any]]] = None,
+        force_tool_name: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Ollama-specific reasoning with budget guards and synthesis orchestration.
         Unterstützt sowohl die erste Runde als auch die Synthese.
         """
-        validated_tool_definitions = validated_tool_definitions or []
-        all_tool_definitions = all_tool_definitions or []
+        validated_tool_definitions, all_tool_definitions = self._resolve_tool_definitions(
+            validated_tool_definitions=validated_tool_definitions,
+            all_tool_definitions=all_tool_definitions,
+            allowed_skill_ids=allowed_skill_ids,
+            tools_override=tools_override,
+        )
+        effective_force_tool_name = self._resolve_force_tool_name(force_tool_name, forced_tool)
         # 3. Delegiere Orchestrierung an das Silo
         logger.info(f"OLLAMA-SILO: Starte reasoning (Round {current_round}).")
 
@@ -244,7 +291,10 @@ class OllamaGateway(BaseProviderGateway):
         # 💎 Tools IMMER mitgeben wenn verfügbar (nicht nur für bestimmte Modelle)
         if tools_for_call:
             api_call_params["tools"] = tools_for_call
-            api_call_params["tool_choice"] = "auto"
+            if effective_force_tool_name:
+                api_call_params["force_tool_name"] = effective_force_tool_name
+            else:
+                api_call_params["tool_choice"] = "auto"
 
         if request_budget:
             api_call_params["request_deadline_seconds"] = get_phase_budget(

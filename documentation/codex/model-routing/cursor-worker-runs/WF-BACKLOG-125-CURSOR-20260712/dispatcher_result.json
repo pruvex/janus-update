@@ -1,0 +1,83 @@
+{
+  "backend": "cursor",
+  "lane_id": "execution_patch_candidate",
+  "workflow_id": "WF-BACKLOG-125-CURSOR-20260712",
+  "selected_model": "composer-2.5",
+  "session_id": "e4bf14e5-87bb-49cc-bf70-45775a884107",
+  "validation_result": "PASS",
+  "selected_path": "cursor_worker_live_mockable",
+  "final_outcome": "CURSOR_WORKER_READY_FOR_CODEX_REVIEW",
+  "package_validation": {
+    "validation_result": "PASS",
+    "contract_status": "TASK_PACKAGE_VALID_VIA_WORKER_REFERENCE",
+    "issues": [],
+    "task_label": "BACKLOG-125 Ollama internal token metadata NameError fix",
+    "worker_profile": "cursor-agent",
+    "allowed_edit_paths": [
+      "backend/llm_providers/ollama/service.py",
+      "backend/tests/llm_providers/test_ollama_service.py"
+    ],
+    "required_result_artifacts": [
+      "RESULT.json",
+      "RESULT.md",
+      "DIFF.patch",
+      "FILES_CHANGED.txt",
+      "CHECKS.log",
+      "COST.json"
+    ],
+    "source_package_path": "documentation\\tasks\\BACKLOG-125_cursor_input_package.json",
+    "worker_package_path": "C:\\KI\\Janus-M6-Transport-Prep\\documentation\\tasks\\BACKLOG-125_cursor_worker_package.json"
+  },
+  "allowlist_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "allowlist": [
+      "backend/llm_providers/ollama/service.py",
+      "backend/tests/llm_providers/test_ollama_service.py"
+    ]
+  },
+  "allowlist_consistency_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "package_allowed_edit_paths": [
+      "backend/llm_providers/ollama/service.py",
+      "backend/tests/llm_providers/test_ollama_service.py"
+    ],
+    "allowlist": [
+      "backend/llm_providers/ollama/service.py",
+      "backend/tests/llm_providers/test_ollama_service.py"
+    ],
+    "declared_allowlist_file": "C:\\KI\\Janus-M6-Transport-Prep\\documentation\\tasks\\BACKLOG-125_cursor_worker_allowlist.txt"
+  },
+  "accepted_source_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "accepted_source_run_dir": null,
+    "recognized_artifacts": []
+  },
+  "accepted_source_run_dir": null,
+  "planned_command": [
+    "C:\\Users\\pruve\\AppData\\Local\\cursor-agent\\agent.CMD",
+    "-p",
+    "--workspace",
+    "C:\\KI\\Janus-M6-Transport-Prep",
+    "--model",
+    "composer-2.5",
+    "--output-format",
+    "json",
+    "--force",
+    "--trust",
+    "--approve-mcps",
+    "Implement only BACKLOG-125 using the bound backlog handoff and precheck. Edit only the two allowlisted files. Keep _estimated_prompt_tokens as internal metadata: remove it from kwargs before request_payload.update(kwargs), pass the retained value to the existing deadline helper, and remove both undefined gateway_kwargs references. Add hermetic normal and synthesis tests with mocked service/client seams proving the metadata is not forwarded to the OpenAI-compatible request. Do not run commands or tests, make network requests, enable a feature flag, modify gateway/transport/resolver policy, commit, or create documentation. Return concise JSON-compatible status, changed_files, summary, and blockers for Codex review.\n\nTask label: BACKLOG-125 Ollama internal token metadata NameError fix\n\nUse the bound precheck as the execution authority. Edit only the exact allowlist. Do not run commands, tests, compilation, Git actions, or network calls. Return a concise JSON-compatible candidate summary for Codex review.\n\nAcceptance criteria:\n- Only the two prechecked files may change.\n- _estimated_prompt_tokens remains internal and no gateway_kwargs reference remains.\n- Codex alone runs focused tests, compilation, and final validation after reviewing the Cursor candidate.\n\nAllowed edit paths:\n- backend/llm_providers/ollama/service.py\n- backend/tests/llm_providers/test_ollama_service.py\n\nReturn status, changed_files, command_results, summary, and blockers as concise JSON-compatible output."
+  ],
+  "mode": "proposal_first",
+  "workspace_root": "C:\\KI\\Janus-M6-Transport-Prep",
+  "live_execution_allowed": false,
+  "codex_review_required": true,
+  "changed_files": [
+    "backend/llm_providers/ollama/service.py",
+    "backend/tests/llm_providers/test_ollama_service.py"
+  ],
+  "changed_outside_allowlist": [],
+  "operator_message": "Cursor worker finished the bounded slice and returned artifacts for Codex review."
+}

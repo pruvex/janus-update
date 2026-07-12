@@ -1,0 +1,16 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 32194,
+  "duration_api_ms": 32194,
+  "result": "Implementing TASK-M6B.3 per bound artifacts. Loading the task package, allowlist, and existing Ollama transport patterns.\nImplementing the three allowlisted files using the same thin-wrapper pattern as the existing transports.\n```json\n{\n  \"status\": \"HANDOFF\",\n  \"changed_files\": [\n    \"backend/llm_providers/transports/ollama_local.py\",\n    \"backend/llm_providers/transports/__init__.py\",\n    \"backend/tests/test_ollama_local_transport.py\"\n  ],\n  \"summary\": \"Added OllamaLocalTransport as a thin BaseTransport wrapper over an injected OllamaServiceLike seam. send delegates to generate_response with unchanged args/kwargs; normalize_tools delegates to _convert_tools_to_openai_format; prepare_history_for_second_call delegates unchanged. Exported OllamaLocalTransport from transports/__init__.py. Added four hermetic FakeOllamaService tests covering send pass-through, tool normalization boundary, empty-tool input, and history preparation delegation. No Ollama service/gateway/adapter, resolver, gateway, flag, or routing files touched.\",\n  \"blockers\": [],\n  \"codex_checks_pending\": [\n    \"python -m pytest --noconftest backend/tests/test_ollama_local_transport.py backend/tests/llm_providers/test_ollama_adapter.py -q\",\n    \"python -m py_compile backend/llm_providers/transports/__init__.py backend/llm_providers/transports/ollama_local.py\",\n    \"git diff --check and scoped allowlist review\"\n  ]\n}\n```",
+  "session_id": "7d014ed1-795d-45fc-b47c-f6f6953e5e1a",
+  "request_id": "efc2c5c5-bee5-46a3-959b-e7b2a6d3cf1a",
+  "usage": {
+    "inputTokens": 45396,
+    "outputTokens": 3668,
+    "cacheReadTokens": 195577,
+    "cacheWriteTokens": 0
+  }
+}

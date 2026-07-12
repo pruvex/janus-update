@@ -88,6 +88,13 @@ TASK-M6B
 - Model: 5.6 Terra
 - Reason:
   - This maps directly to the approved Phase-B `T-B4` scope.
+- Closeout:
+  - Final Audit: `PASS` in `documentation/tasks/BACKLOG-127_FINAL_AUDIT.md`.
+  - Added and exported `OllamaLocalTransport` as the same thin existing-service wrapper proven for the preceding transports; no resolver, gateway integration, flag consumer, or live routing changed.
+  - The mandatory default-off Ollama weather smoke passed after the independently tracked BACKLOG-125/126/127 service, gateway, and Atomic-loop fixes. Focused combined suite: `27 passed`; syntax and scoped diff: PASS.
+  - Non-blocking follow-up: the shared Cursor wrapper output decoding/argument path remains separate tooling debt; direct Cursor work stayed bounded and Codex-owned validation accepted the diff.
+  - `TASK-M6B.4` and `TASK-M6B.5` remain open and are not covered by this closeout.
+  - Changelog updated: default-off local-Ollama runtime recovery is user-visible.
 
 ### TASK-M6B.4 Introduce runtime_llm resolution and the transport registry seam
 - Ziel:

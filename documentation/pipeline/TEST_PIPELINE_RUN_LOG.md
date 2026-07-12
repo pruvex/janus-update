@@ -1,5 +1,11 @@
 # Janus Test Pipeline Run Log
 
+## 2026-07-12 - BACKLOG-127 final validation handoff
+
+- Marker: `BACKLOG-127` (with M6B.3 and BACKLOG-125/126 follow-up evidence).
+- Result: PASS - focused Ollama suite `27 passed`, syntax and diff checks PASS, manual default-off Berlin weather smoke PASS.
+- Final audit: `documentation/tasks/BACKLOG-127_FINAL_AUDIT.md` (PASS).
+
 Zweck: Dieses Log sammelt kompakte, auswertbare Beobachtungen aus echten Janus Test-&-Optimierungs-Pipeline-Runs. Es ersetzt nicht `SESSION_LOG.md`, Backlog, TestSpec-Artefakte oder Dashboard-Telemetrie. Es dient dazu, nach mehreren vollstaendigen TestRuns wiederkehrende Fehler, Reibungspunkte und Optimierungspotential in TestSkill-Routen, Handoffs, Security-/Privacy-/Prompt-Injection-Gates und Dashboard-Feldern zu erkennen. Es laeuft parallel zum Feature-Pipeline-Log `documentation/pipeline/PIPELINE_RUN_LOG.md` und darf nicht mit diesem vermischt werden.
 
 ## Nutzungsregel

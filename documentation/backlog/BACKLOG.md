@@ -467,6 +467,123 @@ Dashboard-Regeln:
 
 ## DONE
 
+### BACKLOG-127 - Atomic Agent fuehrt Ollama-Tool-Call aus, gibt aber Roh-JSON statt Ergebnis aus
+
+- **Typ:** BUG
+- **Status:** DONE
+- **Quelle:** Manual Test / Log
+- **Erstellt:** 2026-07-12
+- **Aktualisiert:** 2026-07-12
+- **Kurzbeschreibung:** Nach dem BACKLOG-126-Gateway-Fix erkennt der Atomic Loop den Ollama-`system.weather`-Tool-Call, fuehrt ihn aber nicht aus und zeigt deshalb das Tool-JSON als Chatantwort.
+- **Erwartetes Verhalten:** Der Atomic Agent fuehrt den Tool-Call mit dem bestehenden `ToolExecutor` aus und gibt das Wetterergebnis statt des Modell-JSON aus.
+- **Tatsaechliches Verhalten:** Die Logs enthalten `OLLAMA-TOOL-FALLBACK`, `Executing system.weather` und `Task Complete`, aber keinen `ToolExecutor.execute_tool_calls`-Eintrag; die UI zeigt `{"name":"system.weather","arguments":{"city":"Berlin"}}`.
+- **Reproduktion / Kontext:** M6-Worktree, `TRANSPORT_LAYER_ENABLED=false`, Ollama `qwen2.5-coder:14b@localhost`, Prompt `Wie ist das Wetter in Berlin?` nach BACKLOG-126.
+- **Betroffener Bereich:** Backend / Orchestrator / Atomic Agent Runtime
+- **Nachweise:** `documentation/tasks/backlog_BACKLOG-126_preimplementation_check.md`; `documentation/logs/janus_backend.log` (lokal, untracked); manueller Test 2026-07-12.
+- **Akzeptanzkriterien:**
+  - [ ] Ein Atomic-Step mit nativen oder pseudo-extrahierten Tool-Calls ruft `ToolExecutor.execute_tool_calls` genau einmal auf.
+  - [ ] `system.weather` liefert im Atomic-Flow den gerenderten Wettertext statt Tool-JSON.
+  - [ ] Eine fokussierte Regression prueft Tool-Ausfuehrung und Ergebnisweitergabe.
+  - [ ] BACKLOG-125, BACKLOG-126 und M6B.3 bleiben unveraendert.
+- **Fehlende Informationen:**
+  - Keine
+- **Wichtigkeit:** HIGH
+- **Umsetzungsrisiko:** MEDIUM
+- **Aufwand:** S
+- **Umsetzungsreife:** READY
+- **Empfehlung:** DO NOW
+- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
+- **Routing reason:** One bounded Atomic-loop execution seam has direct manual/log evidence and a focused runtime regression surface.
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-07-12
+- **Handoff:** documentation/tasks/backlog_BACKLOG-127_atomic_tool_execution.md
+- **Recommended next skill:** SKILL 3
+- **Handoff created:** 2026-07-12
+- **Notizen:** Strikt separater Folgefehler: BACKLOG-126 erreicht den Provider; BACKLOG-127 schliesst die Ausfuehrungs-/Ergebniskette im Atomic Loop.
+- **Final audit:** PASS (`documentation/tasks/BACKLOG-127_FINAL_AUDIT.md`)
+- **Validation evidence:** Focused Ollama suite `27 passed`; manual default-off Berlin weather smoke PASS (2026-07-12 18:06).
+- **Completed in version:** N/A (no release preparation)
+- **Completed by task:** BACKLOG-127
+
+### BACKLOG-126 - Ollama-Gateway uebergibt atomaren Wetter-Toolaufruf nicht an den Provider
+
+- **Typ:** BUG
+- **Status:** DONE
+- **Quelle:** Log
+- **Erstellt:** 2026-07-12
+- **Aktualisiert:** 2026-07-12
+- **Kurzbeschreibung:** `system.weather` wird ausgewaehlt, aber der Ollama-Request enthaelt keine Tools und der Atomic Loop endet mit `TEXT_ONLY_STEP`.
+- **Erwartetes Verhalten:** Der gebundene Wetter-Toolaufruf wird bis zum Ollama-Provider weitergegeben und ausgefuehrt.
+- **Tatsaechliches Verhalten:** Live-Evidenz zeigt `has_tools=False`, Modelltext statt Tool-Call und Text-only-Abbruch.
+- **Reproduktion / Kontext:** M6-Worktree, `TRANSPORT_LAYER_ENABLED=false`, Ollama `qwen2.5-coder:14b@localhost`, `Wie ist das Wetter in Berlin?`.
+- **Betroffener Bereich:** Backend / Ollama-Gateway / LLM-Gateway / atomare Agenten-Toolausfuehrung
+- **Nachweise:** `documentation/tasks/BACKLOG-125_tool_handoff_debug_result.md`; `documentation/logs/janus_backend.log` (lokal, untracked); Cursor session `8330201e-3b65-43e8-904b-4edf5aa3c4bd`.
+- **Akzeptanzkriterien:**
+  - [ ] Die gebundene `system.weather`-Tooldefinition erreicht den Provider-Request.
+  - [ ] Der Tool-Call wird ausgefuehrt statt als reiner Modelltext zu enden.
+  - [ ] Eine fokussierte Gateway-/Agentenregression deckt Weitergabe und Text-only-Abbruch ab.
+  - [ ] BACKLOG-125-Servicefix und M6B.3-Transportintegration bleiben unveraendert.
+- **Fehlende Informationen:**
+  - Keine
+- **Wichtigkeit:** HIGH
+- **Umsetzungsrisiko:** MEDIUM
+- **Aufwand:** S
+- **Umsetzungsreife:** READY
+- **Empfehlung:** DO NOW
+- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
+- **Routing reason:** Bounded gateway tool-handoff defect with live trace and Cursor read-only confirmation requires one precheck before edits.
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-07-12
+- **Handoff:** documentation/tasks/backlog_BACKLOG-126_ollama_atomic_tool_handoff.md
+- **Recommended next skill:** SKILL 3
+- **Handoff created:** 2026-07-12
+- **Notizen:** Separater Folgefehler nach BACKLOG-125; kein Scope-Mix.
+- **Final audit:** PASS (`documentation/tasks/BACKLOG-127_FINAL_AUDIT.md`)
+- **Validation evidence:** Gateway/agent regression included in focused Ollama suite `27 passed`; shared manual default-off smoke PASS.
+- **Completed in version:** N/A (no release preparation)
+- **Completed by task:** BACKLOG-126
+
+### BACKLOG-125 - Ollama-Service bricht lokale Antworten durch undefiniertes gateway_kwargs ab
+
+- **Typ:** BUG
+- **Status:** DONE
+- **Quelle:** Log
+- **Erstellt:** 2026-07-12
+- **Aktualisiert:** 2026-07-12
+- **Kurzbeschreibung:** Der bestehende lokale Ollama-Service kann in `generate_response` keine Antwort abschliessen, weil er die nicht definierte Variable `gateway_kwargs` referenziert. Das tritt vor der neuen, default-off M6B.3-Transport-Schicht auf und wird im Chat als generische atomare Agentenmodus-Fallbackmeldung sichtbar.
+- **Erwartetes Verhalten:** Mit einem funktionierenden lokalen Ollama-Modell soll eine Wetteranfrage den bestehenden Ollama-Pfad ohne `NameError` durchlaufen und die normale Wetterantwort liefern, solange `TRANSPORT_LAYER_ENABLED` nicht gesetzt oder `false` ist.
+- **Tatsaechliches Verhalten:** Im M6-Worktree lief `Wie ist das Wetter in Berlin?` mit Provider `ollama`, Modell `qwen2.5-coder:14b@localhost` und `TRANSPORT_LAYER_ENABLED=false` in einen `NameError: name 'gateway_kwargs' is not defined` in `OllamaServiceProvider.generate_response`. Tenacity verpackte den Fehler als `RetryError`; `run_agent_factory` gab danach die atomare Fallbackmeldung aus.
+- **Reproduktion / Kontext:** Janus aus `C:\KI\Janus-M6-Transport-Prep` starten, `TRANSPORT_LAYER_ENABLED=false` setzen, ein vorhandenes lokales Ollama-Modell waehlen und `Wie ist das Wetter in Berlin?` senden. Der Backend-Logeintrag vom 2026-07-12 16:11:35 zeigt die Fehlerkette an `backend/llm_providers/ollama/service.py:223`. `git blame` ordnet die defekte Referenz dem Commit `a044609ddf` vom 2026-04-30 zu; sie ist kein M6B.3-Diff.
+- **Betroffener Bereich:** Backend / Ollama-Service / lokale Provider-Runtime / Agent-Factory
+- **Nachweise:** `documentation/tasks/TASK-M6B.3_debug_result.md`; `documentation/logs/janus_backend.log` (lokal, untracked); `backend/llm_providers/ollama/service.py:203`; `backend/llm_providers/ollama/service.py:223`.
+- **Akzeptanzkriterien:**
+  - [ ] `OllamaServiceProvider.generate_response` referenziert bei Synthese- und normalen Chat-Aufrufen keine undefinierte Variable mehr.
+  - [ ] Eine gezielte, hermetische Ollama-Service-Regression deckt den betroffenen Aufrufpfad ab und verhindert die Rueckkehr des `NameError`.
+  - [ ] Der lokale Ollama-Wetter-Smoke mit `TRANSPORT_LAYER_ENABLED=false` liefert wieder die normale Wetterantwort statt der atomaren Fallbackmeldung.
+  - [ ] Der Fix aendert weder M6B.3-Transportintegration noch Endpoint-/Capability-/Fallback-Policy ausserhalb der unmittelbaren Fehlerkorrektur.
+- **Fehlende Informationen:**
+  - Keine
+- **Wichtigkeit:** HIGH
+- **Umsetzungsrisiko:** LOW
+- **Aufwand:** XS
+- **Umsetzungsreife:** READY
+- **Empfehlung:** DO NOW
+- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
+- **Routing reason:** Ein bestätigter, kleiner Service-Bug mit eindeutiger Traceback-Zeile und hermetisch testbarer Regression braucht vor dem Fix nur einen einzelnen Precheck.
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-07-12
+- **Handoff:** documentation/tasks/backlog_BACKLOG-125_ollama_service_gateway_kwargs_nameerror.md
+- **Recommended next skill:** SKILL 3
+- **Handoff created:** 2026-07-12
+- **Notizen:** Entdeckt im verpflichtenden manuellen M6B.3-Default-off-Smoke. M6B.3 bleibt automatisiert PASS, aber vor Final Audit blockiert, bis dieser unabhängige Service-Bug behoben und der Smoke wiederholt ist.
+- **Final audit:** PASS (`documentation/tasks/BACKLOG-127_FINAL_AUDIT.md`)
+- **Validation evidence:** Service regression included in focused Ollama suite `27 passed`; shared manual default-off smoke PASS.
+- **Completed in version:** N/A (no release preparation)
+- **Completed by task:** BACKLOG-125
+
 ### BACKLOG-124 - Codex-/Janus-Modellmatrix auf neue lokale GPT-5.6-Modelle auditieren und gezielt aktualisieren
 
 - **Typ:** IMPROVEMENT
