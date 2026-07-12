@@ -1,13 +1,465 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
-As of `2026-07-12 15:23 +02:00`, M6B.1 and M6B.2 are final-audited `PASS`, documentation-synchronized, and committed locally as separate Phase-B checkpoints. M6B.2 delivers the thin, unintegrated Gemini-native transport wrapper with Cursor-first execution, independent Codex validation, manual default-off Gemini weather smoke, compact audit-package review, and formal audit/documentation validators.
+As of `2026-07-12 19:22 +02:00`, BACKLOG-127 has passed its manual local-Ollama weather smoke and the consolidated M6B.3 + BACKLOG-125/126/127 final audit has passed. The Atomic-Agent chain now executes `system.weather` and returns the rendered Open-Meteo answer rather than raw tool JSON.
 
-Current goal: leave the validated M6B.2 checkpoint stable; M6B.3 through M6B.5 remain separate open work. A push to `backup` or a `codex-sync` requires separate explicit approval.
+Current goal: prepare one explicit Git checkpoint decision for the documented M6B.3 + BACKLOG-125/126/127 delivery block.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work: refreshed the compact audit package, reran the focused M6/Ollama suite (`27 passed`), and recorded `FINAL AUDIT RESULT: PASS` for M6B.3 plus BACKLOG-125/126/127. The direct Cursor wrapper output-decoding error was independently contained by scoped diff review and Codex-owned validation.
+
+Changed files: `backend/services/orchestrator/execution_engine.py`; `backend/tests/test_agent_factory_runtime.py`; `documentation/backlog/BACKLOG.md`; `documentation/tasks/BACKLOG-127_AUDIT_PACKAGE.md`; `documentation/tasks/BACKLOG-127_FINAL_AUDIT.md`; `documentation/tasks/backlog_BACKLOG-127_*`; `janus-dashboard/data/backlog.snapshot.json`; `documentation/ai/CURRENT_STATE.md`.
+
+Tests / validation performed: BACKLOG-127 precheck and final-audit validators PASS; backlog validator PASS with existing legacy warnings; dashboard sync PASS (`total=87`, `active=13`, `done=74`); focused pytest PASS (`27 passed`); `py_compile` PASS; `git diff --check` PASS; manual default-off Ollama weather smoke PASS at 18:06.
+
+Open risks: An explicit Git commit/push/Codex-sync decision remains; no commit, push, or `origin/codex-sync` occurred, so remote state may not include this snapshot.
+
+Next recommended step for ChatGPT: decide whether to create the scoped Git checkpoint and CURRENT_STATE sync; do not assume GitHub has this snapshot.
+
+Next recommended step for Codex: run `janus-git-governance` on `5.6 Terra/medium` only after explicit commit/push/sync approval.
+
+Last updated: `2026-07-12 19:22 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-12 16:49 +02:00`, BACKLOG-126 is selected `IN PROGRESS` with a bounded preimplementation handoff. Dashboard sync passed (`total=86`, `active=12`, `done=74`, `routing_missing=2`). No gateway code changed.
+
+Current goal: run one BACKLOG-126 precheck before any tool-handoff edit.
+
+Active phase: `janus-backlog-handoff`, canonical state `HANDOFF`.
+
+Last Codex work: moved BACKLOG-126 under `IN PROGRESS`, bound its precheck handoff, and synchronized the dashboard.
+
+Changed files: `documentation/backlog/BACKLOG.md`; `documentation/tasks/backlog_BACKLOG-126_ollama_atomic_tool_handoff.md`; `janus-dashboard/data/backlog.snapshot.json`; `documentation/ai/CURRENT_STATE.md`.
+
+Checks: `npm run sync:backlog` PASS; Backlog validator and `git diff --check` pending.
+
+Open risks: BACKLOG-126 must stay limited to gateway tool-handoff; no commit, push, or CURRENT_STATE sync occurred.
+
+Next recommended step for Codex: `janus-preimplementation-check` for BACKLOG-126 on 5.6 Terra/high.
+
+Last updated: `2026-07-12 16:49 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-12 16:49 +02:00`, BACKLOG-126 is DELTA-prioritized as `HIGH` importance, `MEDIUM` implementation risk, `S` effort, `READY`, recommendation `DO NOW`. It is the next independent local-Ollama recovery slice; BACKLOG-125 and M6B.3 remain separate.
+
+Current goal: create a selected handoff for BACKLOG-126, then precheck the narrowest gateway tool-definition/forced-tool forwarding fix.
+
+Active phase: `janus-backlog-prioritization`, canonical state `HANDOFF`.
+
+Last Codex work: completed a DELTA review of the new gateway tool-handoff bug. The selected OpenRouter prioritization gate was planned-only; Codex retained the final evaluation decision. No code, handoff, dashboard sync, Git, or remote action occurred.
+
+Changed files in this block:
+- `documentation/backlog/BACKLOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- BACKLOG-126 evidence/repro/readiness review: PASS.
+- Shared `backlog_prioritization_review` gate: PASS (`OPENROUTER_WORKER_DRY_RUN_READY`); no live delegated review ran.
+- Backlog validator: PASS WITH LEGACY WARNINGS (bestehende Alt-Eintraege; BACKLOG-126 ist valide).
+- `git diff --check`: PASS.
+
+Open risks:
+- Local Ollama weather remains unable to complete tool execution until BACKLOG-126 is fixed.
+- BACKLOG-126 may need gateway and llm-gateway seams; precheck must reject any wider transport/resolver/policy expansion.
+- No commit, push, or CURRENT_STATE sync occurred, so remote state may not contain this snapshot.
+
+Next recommended step for ChatGPT: select BACKLOG-126 for a bounded handoff; do not treat prioritization as implementation approval.
+
+Next recommended step for Codex: run `janus-backlog-handoff` with `Mode: SELECTED_HANDOFF` for BACKLOG-126 on `5.6 Terra`, `high`.
+
+Last updated: `2026-07-12 16:49 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-12 16:49 +02:00`, the separate Ollama atomic tool-handoff defect is captured as `BACKLOG-126` in `READY`. It records the selected-but-not-forwarded `system.weather` tool, `has_tools=False`, `TEXT_ONLY_STEP`, Cursor read-only evidence, and strict separation from both BACKLOG-125 and M6B.3.
+
+Current goal: prioritize and route BACKLOG-126 as its own gateway tool-handoff slice; do not expand BACKLOG-125 or M6B.3.
+
+Active phase: `janus-backlog-intake`, canonical state `READY`.
+
+Last Codex work: used the selected OpenRouter intake review as planned-only assist evidence and created the authoritative local Backlog entry. No code, handoff, dashboard sync, Git, or remote action occurred.
+
+Changed files in this block:
+- `documentation/backlog/BACKLOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- BACKLOG-126 ID uniqueness and READY placement: PASS.
+- Debug evidence binding and scope separation from BACKLOG-125/M6B.3: PASS.
+- Backlog validator: PASS WITH LEGACY WARNINGS (bestehende Alt-Eintraege; BACKLOG-126 ist valide).
+- `git diff --check`: PASS.
+
+Open risks:
+- Local Ollama weather remains unable to complete tool execution until BACKLOG-126 is fixed.
+- No commit, push, or CURRENT_STATE sync occurred, so remote state may not contain this snapshot.
+
+Next recommended step for ChatGPT: prioritize BACKLOG-126; do not assume BACKLOG-125 or M6B.3 is audit-ready.
+
+Next recommended step for Codex: run `janus-backlog-prioritization` for BACKLOG-126 on `5.6 Terra`, `high`.
+
+Last updated: `2026-07-12 16:49 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-12 16:49 +02:00`, the BACKLOG-125 NameError is no longer present in the valid manual Ollama retest. A separate tool-handoff failure is now confirmed: `system.weather` is selected, but Ollama receives no tools (`has_tools=False`) and the atomic loop exits on model text (`TEXT_ONLY_STEP`). Cursor performed a read-only confirmation; no out-of-scope gateway edit was made.
+
+Current goal: capture and route the separate Ollama tool-definition/forced-tool handoff bug. BACKLOG-125 remains automated PASS but awaits its own final manual gate; M6B.3 remains blocked behind the broader local-Ollama recovery chain.
+
+Active phase: `janus-debug`, canonical state `OUT OF SCOPE` for BACKLOG-125.
+
+Last Codex work: correlated the 16:47-16:49 backend log with a Cursor read-only review. The evidence separates the completed service NameError correction from the new likely Ollama gateway/llm-gateway tool-handoff defect. No code, Git, or remote action occurred.
+
+Changed files in this block:
+- `documentation/tasks/BACKLOG-125_tool_handoff_debug_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- Targeted WHAT_I_LEARNED lookup: PASS.
+- Live log correlation: PASS.
+- Cursor read-only debug session `8330201e-3b65-43e8-904b-4edf5aa3c4bd`: PASS.
+- Debug-result validator: PASS.
+
+Open risks:
+- Local Ollama weather cannot complete tool execution until the separate gateway tool-handoff bug is fixed.
+- Do not expand BACKLOG-125 beyond its completed two-file NameError fix.
+- No commit, push, or CURRENT_STATE sync occurred, so remote state may not contain this snapshot.
+
+Next recommended step for ChatGPT: review the separate tool-handoff backlog item once captured; do not treat the model refusal as a BACKLOG-125 regression.
+
+Next recommended step for Codex: run `janus-backlog-intake` for `OLLAMA_ATOMIC_TEXT_ONLY_TOOL_HANDOFF` on `5.6 Terra`, `high`.
+
+Last updated: `2026-07-12 16:49 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-12 16:15 +02:00`, BACKLOG-125 implementation is complete with automated evidence PASS: Cursor delivered the exact two-file candidate and Codex verified focused normal/synthesis Ollama-service and adapter regressions (`6 passed`), syntax, allowlist, and scoped diff. Final audit is deliberately blocked on the required manual default-off local-Ollama weather smoke.
+
+Current goal: restart the M6 worktree server and collect one manual default-off local-Ollama weather smoke result. On PASS, audit BACKLOG-125, then return to the blocked M6B.3 manual/audit gate.
+
+Active phase: `janus-executioner`, canonical state `NEEDS_INFO`.
+
+Last Codex work: used the approved direct Cursor Composer fallback after the shared delegate wrapper again failed on unsupported `--cursor-pool`. Reviewed the exact allowlisted service fix, then ran Codex-owned focused service plus adapter regressions (`6 passed`), `py_compile`, and `git diff --check`. No gateway, resolver, transport, configuration, flag, Git, or remote change occurred.
+
+Changed files in this block:
+- `backend/llm_providers/ollama/service.py`
+- `backend/tests/llm_providers/test_ollama_service.py`
+- `documentation/tasks/BACKLOG-125_cursor_*`
+- `documentation/codex/model-routing/cursor-worker-runs/WF-BACKLOG-125-CURSOR-20260712/`
+- `documentation/codex/model-routing/cursor_delegation_log.jsonl`
+- `documentation/tasks/backlog_BACKLOG-125_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- BACKLOG-125 precheck handoff validator: PASS.
+- Cursor worker package, exact allowlist, and allowlist-consistency validation: PASS.
+- Codex focused `test_ollama_service.py` plus existing `test_ollama_adapter.py`: PASS (`6 passed in 3.15s`).
+- `py_compile` for the Ollama service: PASS.
+- `git diff --check`: PASS.
+- BACKLOG-125 execution-result validator: PASS.
+
+Open risks:
+- Manual default-off local-Ollama runtime smoke remains required before audit; failure routes to `janus-debug`.
+- BACKLOG-125 must remain a minimal service metadata fix; M6B.3 transport integration, resolver, gateway, capability, and policy work remain excluded.
+- `TRANSPORT_LAYER_ENABLED` remains default-off and has no authorized consumer in either current slice.
+- No commit, push, or CURRENT_STATE sync occurred, so remote state may not contain this snapshot.
+
+Next recommended step for ChatGPT: wait for the explicit manual local-Ollama smoke outcome; do not treat the automated PASS as BACKLOG-125 or M6B.3 audit approval.
+
+Next recommended step for Codex: on manual PASS, build the BACKLOG-125 audit package with `codex-audit-package-builder`, then run `janus-final-audit` on `5.6 Terra`, `high`; on manual failure, route to `janus-debug`.
+
+Last updated: `2026-07-12 16:15 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-12 16:15 +02:00`, `BACKLOG-125` passed its single-task preimplementation gate. The execution handoff permits only `backend/llm_providers/ollama/service.py` and one focused Ollama service regression: consume `_estimated_prompt_tokens` as internal request metadata, eliminate the two undefined `gateway_kwargs` references, and prove normal plus synthesis calls do not leak that internal field into the provider request.
+
+Current goal: execute only the two-file, Cursor-first BACKLOG-125 fix after explicit authorization; then run Codex-owned focused tests and the manual default-off local-Ollama weather smoke before returning to M6B.3 audit.
+
+Active phase: `janus-preimplementation-check`, canonical state `PRE-CHECK PASSED`.
+
+Last Codex work: verified selected-handoff/backlog/debug identity, the legacy service signature, the archived focused Ollama-service test seam, the exact two undefined references, and the `_await_with_deadline` metadata boundary. The selected OpenRouter review gate is planned-only in this worktree; Codex retained final local gate ownership. No implementation or test command ran.
+
+Changed files in this block:
+- `documentation/tasks/backlog_BACKLOG-125_preimplementation_check.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- BACKLOG-125 handoff/debug/service/test-seam identity and atomic-scope review: PASS.
+- Shared `precheck_review` gate: PASS (`OPENROUTER_WORKER_DRY_RUN_READY`); no live delegated review ran.
+- BACKLOG-125 precheck validator: PASS.
+- `git diff --check`: PASS.
+
+Open risks:
+- The fix must keep `_estimated_prompt_tokens` internal; leaking it into the OpenAI-compatible client payload would create a secondary provider failure.
+- Existing local-Ollama runtime remains broken until the two-file fix passes focused evidence and manual default-off smoke; M6B.3 final audit remains blocked on that successful re-smoke.
+- BACKLOG-125 must remain a minimal service variable-reference and regression slice; do not expand into transport integration, resolver, gateway, capability, or policy work.
+- `TRANSPORT_LAYER_ENABLED` remains default-off and has no authorized consumer in either current slice.
+- No commit, push, or CURRENT_STATE sync occurred, so remote state may not contain this snapshot.
+
+Next recommended step for ChatGPT: review only the two-file Cursor execution evidence and the subsequent manual Ollama smoke; do not infer M6B.3 audit readiness yet.
+
+Next recommended step for Codex: run `janus-executioner` for BACKLOG-125 on `5.6 Terra`, `high`, with the exact precheck allowlist.
+
+Last updated: `2026-07-12 16:15 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-12 16:15 +02:00`, `BACKLOG-125` is selected and moved to `IN PROGRESS` through a bounded `PRE_IMPLEMENTATION_VERIFICATION` handoff. The handoff limits the future fix to the existing Ollama service variable-reference bug, one focused regression, and a rerun of the default-off local-Ollama weather smoke; M6B.3 transport integration remains excluded.
+
+Current goal: precheck exactly BACKLOG-125 before any service edit, then execute the smallest validated correction and regression only after explicit authorization.
+
+Active phase: `janus-backlog-handoff`, canonical state `HANDOFF`.
+
+Last Codex work: used the selected Cursor API handoff-review gate as dry-run planning evidence; no delegated write ran. Codex created the authoritative selected handoff, moved the complete Backlog block under `IN PROGRESS`, added routing metadata, and synchronized the dashboard snapshot (`total=85`, `active=11`, `done=74`, `routing_missing=2`).
+
+Changed files in this block:
+- `documentation/backlog/BACKLOG.md`
+- `documentation/tasks/backlog_BACKLOG-125_ollama_service_gateway_kwargs_nameerror.md`
+- `janus-dashboard/data/backlog.snapshot.json`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- Shared `backlog_handoff_review` gate: PASS (`CURSOR_WORKER_DRY_RUN_READY`); no live delegated review ran.
+- `npm run sync:backlog`: PASS (`total=85`, `active=11`, `done=74`, `routing_missing=2`).
+- Backlog validator: PASS WITH LEGACY WARNINGS (bestehende Alt-Eintraege; BACKLOG-125 Handoff ist valide).
+- `git diff --check`: PASS.
+
+Open risks:
+- Existing local-Ollama runtime remains broken for the reproduced request until BACKLOG-125 is fixed; M6B.3 final audit remains blocked on the subsequent successful manual smoke.
+- BACKLOG-125 must remain a minimal service variable-reference and regression slice; do not expand into transport integration, resolver, gateway, capability, or policy work.
+- `TRANSPORT_LAYER_ENABLED` remains default-off and has no authorized consumer in either current slice.
+- The shared Cursor delegate wrapper still forwards unsupported `--cursor-pool`; direct Cursor worker is the documented temporary fallback.
+- `documentation/logs/` remains untracked and excluded.
+- No commit, push, or CURRENT_STATE sync occurred, so remote state may not contain this snapshot.
+
+Next recommended step for ChatGPT: review the single BACKLOG-125 precheck outcome before authorizing a service-file edit.
+
+Next recommended step for Codex: run `janus-preimplementation-check` for BACKLOG-125 on `5.6 Terra`, `high` from the selected handoff only.
+
+Last updated: `2026-07-12 16:15 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-12 16:15 +02:00`, `BACKLOG-125` is DELTA-prioritized as the next work item: `HIGH` importance, `LOW` implementation risk, `XS` effort, `READY`, recommendation `DO NOW`. It blocks the M6B.3 manual default-off Ollama smoke but remains an independent existing-service bug; no handoff or implementation was created in prioritization.
+
+Current goal: prepare a selected `BACKLOG-125` handoff, then precheck the smallest service-and-regression fix slice before any edit.
+
+Active phase: `janus-backlog-prioritization`, canonical state `HANDOFF`.
+
+Last Codex work: completed a DELTA review of only the newly added `BACKLOG-125` against the open backlog. The selected OpenRouter prioritization gate was planned-only because its runner is absent from the isolated worktree; Codex retained the final evaluation decision.
+
+Changed files in this block:
+- `documentation/backlog/BACKLOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- DELTA counts: `READY=5`, `NEEDS INFO=1`, `BLOCKED=0`.
+- BACKLOG-125 evidence/repro/acceptance/readiness review: PASS.
+- Shared `backlog_prioritization_review` gate: PASS (`OPENROUTER_WORKER_DRY_RUN_READY`); no live delegated review ran.
+- Backlog validator: PASS WITH LEGACY WARNINGS (bestehende Alt-Eintraege; BACKLOG-125 ist valide).
+- `git diff --check`: PASS.
+
+Open risks:
+- Existing local-Ollama runtime remains broken for the reproduced request until `BACKLOG-125` is fixed; M6B.3 final audit remains blocked on the subsequent successful manual smoke.
+- BACKLOG-125 must remain a minimal service variable-reference and regression slice; do not expand into transport integration, resolver, gateway, capability, or policy work.
+- `TRANSPORT_LAYER_ENABLED` remains default-off and has no authorized consumer in either current slice.
+- The shared Cursor delegate wrapper still forwards unsupported `--cursor-pool`; direct Cursor worker is the documented temporary fallback.
+- `documentation/logs/` remains untracked and excluded.
+- No commit, push, or CURRENT_STATE sync occurred, so remote state may not contain this snapshot.
+
+Next recommended step for ChatGPT: select the `DO NOW` BACKLOG-125 service-fix slice for a bounded handoff; do not treat prioritization as implementation approval.
+
+Next recommended step for Codex: run `janus-backlog-handoff` with `Mode: SELECTED_HANDOFF` for `BACKLOG-125` on `5.6 Terra`, `high`.
+
+Last updated: `2026-07-12 16:15 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-12 16:15 +02:00`, the confirmed pre-existing local-Ollama service failure is captured as `BACKLOG-125` in `READY`. The item binds the exact `gateway_kwargs` NameError, live manual reproduction, pre-M6 provenance, source lines, minimal acceptance criteria, and the requirement to re-run the default-off M6B.3 smoke after an independently prechecked fix.
+
+Current goal: prioritize and route only `BACKLOG-125`; do not merge its service-fix scope into M6B.3 or start implementation from intake.
+
+Active phase: `janus-backlog-intake`, canonical state `READY`.
+
+Last Codex work: used the selected OpenRouter backlog-review gate as planned-only assist evidence; its runner is absent in the isolated worktree, so Codex completed the final bounded intake locally. No code, task handoff, prioritization, dashboard sync, Git, or remote action occurred.
+
+Changed files in this block:
+- `documentation/backlog/BACKLOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- Backlog ID uniqueness (`BACKLOG-125`) and canonical READY placement: PASS.
+- Debug evidence binding: live traceback, source lines, and pre-M6 provenance: PASS.
+- Shared `backlog_intake_review` gate: PASS (`OPENROUTER_WORKER_DRY_RUN_READY`); no live delegated review ran.
+- Backlog validator: PASS WITH LEGACY WARNINGS (bestehende Alt-Eintraege; BACKLOG-125 ist valide).
+- `git diff --check`: PASS.
+
+Open risks:
+- Existing local-Ollama runtime remains broken for the reproduced request until `BACKLOG-125` is fixed; M6B.3 final audit remains blocked on the subsequent successful manual smoke.
+- M6B.3 must remain a thin wrapper; `BACKLOG-125` must not expand into transport integration, resolver, gateway, capability, or policy work.
+- `TRANSPORT_LAYER_ENABLED` remains default-off and has no authorized consumer in either current slice.
+- The shared Cursor delegate wrapper still forwards unsupported `--cursor-pool`; direct Cursor worker is the documented temporary fallback.
+- `documentation/logs/` remains untracked and excluded.
+- No commit, push, or CURRENT_STATE sync occurred, so remote state may not contain this snapshot.
+
+Next recommended step for ChatGPT: review the priority/risk/recommendation of `BACKLOG-125`; do not assume any service fix exists yet.
+
+Next recommended step for Codex: run `janus-backlog-prioritization` for `BACKLOG-125` on `5.6 Terra`, `high`, then create one bounded precheck handoff only if selected.
+
+Last updated: `2026-07-12 16:15 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-12 16:15 +02:00`, the valid M6B.3 manual default-off Ollama smoke failed before the new transport layer could be reached. Read-only debug isolated `OLLAMA_GATEWAY_KWARGS_NAMEERROR`: the existing Ollama service references an undefined `gateway_kwargs` variable at `backend/llm_providers/ollama/service.py:203` and `:223`; the live `NameError` is retried, then surfaced as the atomic-agent fallback message.
+
+Current goal: create and route one isolated Backlog fix for the pre-existing Ollama-service NameError. Keep M6B.3 code unchanged and its final audit blocked until that service fix is validated and the manual default-off Ollama smoke is rerun.
+
+Active phase: `janus-debug`, canonical state `OUT OF SCOPE` for M6B.3.
+
+Last Codex work: read-only Debug iteration 1 correlated the user's valid M6 worktree smoke with the backend traceback. Git provenance attributes the offending line to `a044609ddf` (2026-04-30), before M6; the Ollama service has no current M6 diff. The M6B.3 wrapper remains unintegrated while `TRANSPORT_LAYER_ENABLED=false`.
+
+Changed files in this block:
+- `documentation/tasks/TASK-M6B.3_debug_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- Targeted WHAT_I_LEARNED search: PASS; canonical tool-boundary pattern retained.
+- Local backend-log search and traceback correlation: PASS.
+- Ollama service source and `gateway_kwargs` reference review: PASS.
+- `git diff -- backend/llm_providers/ollama/service.py`: no M6 change.
+- `git blame` provenance for the faulty line: pre-M6 commit `a044609ddf`.
+- M6B.3 debug-result validator: PASS.
+
+Open risks:
+- Existing local-Ollama runtime is broken for this request class until the isolated service bug is fixed; it is not safe to audit M6B.3 on the failed manual gate.
+- M6B.3 must remain a thin wrapper: endpoint/model-node routing, capability cache, native/non-native tool fallback, response normalization, retry/deadline behavior, and gateway policy remain in the existing Ollama service/gateway seams.
+- `TRANSPORT_LAYER_ENABLED` remains default-off and has no authorized consumer in this slice.
+- The shared Cursor delegate wrapper still forwards unsupported `--cursor-pool`; direct Cursor worker is the documented temporary fallback.
+- `documentation/logs/` remains untracked and excluded.
+- No commit, push, or CURRENT_STATE sync occurred, so remote state may not contain this snapshot.
+
+Next recommended step for ChatGPT: do not treat the atomic-agent fallback as an M6B.3 transport failure. Review the new isolated Ollama service-bug backlog item once created.
+
+Next recommended step for Codex: run `janus-backlog-intake` for `OLLAMA_GATEWAY_KWARGS_NAMEERROR` on `5.6 Terra`, `high`; after its own precheck and fix validation, rerun the M6B.3 manual default-off Ollama smoke.
+
+Last updated: `2026-07-12 16:15 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-12 15:53 +02:00`, `TASK-M6B.3` implementation is complete with automated evidence `PASS`: Cursor delivered the exact three-file Ollama wrapper candidate and Codex verified the focused suite (`8 passed`), syntax, allowlist, and scoped diff. Final audit is deliberately blocked on the required manual default-off local-Ollama smoke.
+
+Current goal: collect one manual default-off Ollama weather smoke result; do not start final audit or alter the three-file implementation until that result is known.
+
+Active phase: `janus-executioner`, canonical state `NEEDS_INFO`.
+
+Last Codex work: used the approved direct Cursor Composer fallback after the shared delegate wrapper again failed on unsupported `--cursor-pool`. Reviewed the exact allowlisted candidate, then ran Codex-owned focused transport plus existing Ollama-adapter regressions (`8 passed`), `py_compile`, and `git diff --check`. No gateway, resolver, service, configuration, flag, Git, or remote change occurred.
+
+Changed files in this block:
+- `backend/llm_providers/transports/ollama_local.py`
+- `backend/llm_providers/transports/__init__.py`
+- `backend/tests/test_ollama_local_transport.py`
+- `documentation/tasks/TASK-M6B.3_cursor_*`
+- `documentation/codex/model-routing/cursor-worker-runs/WF-M6B3-CURSOR-DIRECT-20260712/`
+- `documentation/codex/model-routing/cursor_delegation_log.jsonl`
+- `documentation/tasks/TASK-M6B.3_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- M6B.3 precheck handoff validator: PASS.
+- Cursor worker package, exact allowlist, and allowlist-consistency validation: PASS.
+- Codex focused `test_ollama_local_transport.py` plus existing `test_ollama_adapter.py`: PASS (`8 passed in 3.97s`).
+- `py_compile` for the transport package: PASS.
+- `git diff --check`: PASS.
+- M6B.3 execution-result validator: PASS.
+
+Open risks:
+- Manual default-off local-Ollama runtime smoke remains required before audit; failure routes to `janus-debug`.
+- M6B.3 must remain a thin wrapper: endpoint/model-node routing, capability cache, native/non-native tool fallback, response normalization, retry/deadline behavior, and gateway policy remain in the existing Ollama service/gateway seams.
+- `TRANSPORT_LAYER_ENABLED` remains default-off and has no authorized consumer in this slice.
+- The shared Cursor delegate wrapper still forwards unsupported `--cursor-pool`; direct Cursor worker is the documented temporary fallback.
+- `documentation/logs/` remains untracked and excluded.
+- No commit, push, or CURRENT_STATE sync occurred, so remote state may not contain this snapshot.
+
+Next recommended step for ChatGPT: wait for the explicit manual local-Ollama smoke outcome; do not treat the automated PASS as final audit approval.
+
+Next recommended step for Codex: on manual PASS, build the M6B.3 audit package with `codex-audit-package-builder`, then run `janus-final-audit` on `5.6 Terra`, `high`; on manual failure, route to `janus-debug`.
+
+Last updated: `2026-07-12 15:53 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-12 15:47 +02:00`, `TASK-M6B.3` passed its single-task preimplementation gate. The execution handoff authorizes only an injected-service `OllamaLocalTransport`, its package export, and a hermetic fake-service regression; no live route or Ollama service behavior is authorized to change.
+
+Current goal: run only the bounded, Cursor-first M6B.3 execution slice after explicit authorization; Codex must review the exact three-file candidate and focused evidence.
+
+Active phase: `janus-preimplementation-check`, canonical state `PRE-CHECK PASSED`.
+
+Last Codex work: verified task/spec/breakdown identity, atomic scope, affected files, measurable acceptance criteria, existing Ollama service contract seams, exclusions, risks, and focused evidence. The selected OpenRouter review gate returned `OPENROUTER_WORKER_DRY_RUN_READY`, but its runner is absent in this isolated worktree and the gate permits no live execution; Codex retained final local gate ownership. No implementation or test command was run.
+
+Changed files in this block:
+- `documentation/tasks/TASK-M6B.3_preimplementation_check.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- M6B.3 task/spec/breakdown identity, BaseTransport/Ollama service seam, scope, exclusions, and evidence review: PASS.
+- Shared `precheck_review` delegation gate: PASS (`OPENROUTER_WORKER_DRY_RUN_READY`); no live delegated review ran.
+- M6B.3 precheck validator: PASS.
+- `git diff --check`: PASS.
+
+Open risks:
+- M6B.3 must remain a thin wrapper: local endpoint/model-node routing, capability cache, native/non-native tool fallback, response normalization, retry/deadline behavior, and gateway policy stay in the existing Ollama service/gateway seams.
+- `TRANSPORT_LAYER_ENABLED` remains default-off and has no authorized consumer in this slice.
+- The shared OpenRouter precheck runner is absent from the isolated M6 worktree; treat the gate as planned-only assist evidence, never as a final precheck decision.
+- `documentation/logs/` remains untracked and excluded.
+- The latest local backup/sync outcome note remains uncommitted; `origin/codex-sync` only contains the previously committed M6B.2 snapshot (`081c580c9`).
+
+Next recommended step for ChatGPT: review Cursor-first M6B.3 execution evidence only after Codex completes the bounded three-file slice.
+
+Next recommended step for Codex: run `janus-executioner` for `TASK-M6B.3` on `5.6 Terra`, `high`, with the exact precheck allowlist; do not expand to resolver or gateway integration.
+
+Last updated: `2026-07-12 15:47 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-12 15:44 +02:00`, `TASK-M6B.3` is released as a `HANDOFF`-state, single-task precheck candidate. Source review confirms the existing `OllamaServiceProvider` already exposes the exact Phase-B transport seams: non-streaming `generate_response`, `_convert_tools_to_openai_format`, and `prepare_history_for_second_call`.
+
+Current goal: validate `TASK-M6B.3` through preimplementation check only; do not implement or alter live routing in this block.
+
+Active phase: `janus-task-breakdown`, canonical state `HANDOFF`.
+
+Last Codex work: reviewed the Phase-B T-B4 binding, parent task, existing Ollama service/adapter seams, BaseTransport contract, and completed M6B.2 wrapper pattern. Released a three-file, injected-service wrapper scope with hermetic no-network delegation evidence. No product code, tests, configuration, runtime path, flag, Git state, or remote was changed.
+
+Changed files in this block:
+- `documentation/tasks/TASK-M6B.3_task_breakdown.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- Spec, parent-task, BaseTransport, completed Gemini-wrapper pattern, and existing Ollama service seam review: PASS.
+- `TASK-M6B.3` task-handoff validator: PASS.
+- `git diff --check`: PASS.
+
+Open risks:
+- M6B.3 must remain a thin wrapper: Ollama local endpoint/model-node routing, capability cache, tool fallback, response normalization, retry/deadline behavior, and gateway policy stay in the existing service/gateway seams.
+- `TRANSPORT_LAYER_ENABLED` remains default-off and has no authorized consumer in this slice.
+- `documentation/logs/` remains untracked and excluded.
+- The latest local backup/sync outcome note remains uncommitted; `origin/codex-sync` only contains the previously committed M6B.2 snapshot (`081c580c9`).
+
+Next recommended step for ChatGPT: review the M6B.3 precheck outcome before authorizing Cursor-first execution.
+
+Next recommended step for Codex: run `janus-preimplementation-check` for `TASK-M6B.3` on `5.6 Terra`, `high`, in a new compact handoff context; do not implement in the task-breakdown context.
+
+Last updated: `2026-07-12 15:44 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-12 15:39 +02:00`, M6B.1 and M6B.2 are final-audited `PASS`, documentation-synchronized, committed locally as separate Phase-B checkpoints, and backed up to `backup/codex/m6-transport-prep`. The committed CURRENT_STATE snapshot was published to `origin/codex-sync` (`081c580c9`) through the official sync helper.
+
+Current goal: leave the validated M6B.2 checkpoint stable; M6B.3 through M6B.5 remain separate open work. The current branch remains a legacy `codex/*` worktree branch pending an explicit Solo Git v2 migration decision.
 
 Active phase: `janus-git-governance`, canonical state `PASS`.
 
-Last Codex work: staged, verified, and committed the M6B.2 delivery block on `codex/m6-transport-prep`. The commit contains the Gemini transport, test, task/audit/evidence artifacts, registry/project/spec/state updates, M6B.2 Cursor-run record, and related skill log entries. `documentation/logs/` remains untracked and excluded. No push or release occurred.
+Last Codex work: pushed `codex/m6-transport-prep` to the private `backup` remote and ran the official `sync_codex_current_state.ps1` helper. The helper stashed and restored the parked local worktree state, published the committed CURRENT_STATE to `origin/codex-sync`, and returned to the M6 worktree branch. `documentation/logs/` remains untracked and excluded. No release occurred.
 
 Changed files in this block:
 - `backend/llm_providers/transports/gemini_native.py`
@@ -62,6 +514,7 @@ Checks / validation performed:
 - M6B.2 audit package completeness review and final-audit validator: PASS.
 - M6B.2 marker-scoped documentation-update validation: PASS.
 - Git scope review: PASS; staged `git diff --check` and staged file-scope review passed before the local M6B.2 checkpoint.
+- Backup branch push and official CURRENT_STATE sync: PASS.
 
 Open risks:
 - Main repository hygiene remains `GELB`; do not mix the broad dirty main-repo state into the isolated M6 worktree slice.
@@ -72,11 +525,11 @@ Open risks:
 - The overall provider transport Spec remains in progress; `TASK-M6B.3` through `TASK-M6B.5` are separate and must remain open.
 - No commit, push, or `origin/codex-sync` update occurred, so remote state may not contain this CURRENT_STATE snapshot.
 
-Next recommended step for ChatGPT: do not assume any remote contains this snapshot; approve `Push: YES` only after deciding how the legacy `codex/m6-transport-prep` branch should be backed up under Solo Git v2, or approve `Sync: YES` for the dedicated CURRENT_STATE remote sync.
+Next recommended step for ChatGPT: `origin/codex-sync` now contains the committed M6B.2 CURRENT_STATE snapshot. Do not assume the local-only push/sync outcome note above is remote-visible until this latest local snapshot receives its own approved checkpoint and sync.
 
-Next recommended step for Codex: remain stopped after the local checkpoint. Do not push the legacy branch or run `codex-sync` until the user grants the corresponding explicit approval.
+Next recommended step for Codex: remain stopped after the completed backup/sync. Route M6B.3 through task breakdown and precheck only when explicitly requested; keep the separate Solo Git v2 migration decision out of the provider-transport scope.
 
-Last updated: `2026-07-12 15:23 +02:00`.
+Last updated: `2026-07-12 15:39 +02:00`.
 
 ## Current Snapshot Update
 As of `2026-07-11 22:20 +02:00`, M6 Phase A has passed default-off and flag-on OpenAI/Gemini manual smokes. Backend logs prove `STREAM-GATEWAY-HANDOFF` for both enabled-path providers, and the independent Cursor review is `PASS WITH FINDINGS` with no Phase-A implementation blocker.
