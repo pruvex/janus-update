@@ -17,6 +17,19 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 - **Validation**: BaseTransport/OpenAICompatTransport focused tests (`6/6`), existing ToolCallAdapter regression (`12/12`), combined audit rerun (`18/18`), syntax, scoped diff, Cursor allowlist, and manual default-off OpenAI Berlin-weather smoke all passed. The slice is deliberately unintegrated; no existing runtime path or Phase-B flag consumer changed.
 - **Follow-up**: The shared Cursor delegate wrapper still forwards unsupported `--cursor-pool`; use the validated direct Cursor worker fallback until the separate wrapper-fix slice exists. `TASK-M6B.2` through `TASK-M6B.5` remain open.
 
+### TASK-M6B.2 - Add the Gemini-native transport as a 1:1 service wrapper
+
+- **Status**: DONE WITH NON-BLOCKING FOLLOW-UP
+- **Final Audit**: `documentation/tasks/TASK-M6B.2_final_audit.md` (PASS)
+- **Spec**: `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md` (Phase-B T-B3 only; parent Spec remains in progress)
+- **Parent Task**: `documentation/tasks/TASK-M6_transport_phase_b.md`
+- **Task Breakdown**: `documentation/tasks/TASK-M6B.2_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-M6B.2_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-M6B.2_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-M6B.2_AUDIT_PACKAGE.md`
+- **Validation**: GeminiNativeTransport focused tests (`4/4`), existing ToolCallAdapter plus Gemini-service checks (`14/14`), combined audit rerun (`18/18`), syntax, scoped diff, Cursor allowlist, and manual default-off Gemini Berlin-weather smoke all passed. The slice is deliberately unintegrated; no native Gemini policy, service, gateway, resolver, or Phase-B flag consumer changed.
+- **Follow-up**: The shared Cursor delegate wrapper still forwards unsupported `--cursor-pool`; use the validated direct Cursor worker fallback until the separate wrapper-fix slice exists. `TASK-M6B.3` through `TASK-M6B.5` remain open.
+
 ### TASK-M6.5 - Route streaming through the gateway and ToolLoopRunner path
 
 - **Status**: DONE WITH NON-BLOCKING FOLLOW-UP

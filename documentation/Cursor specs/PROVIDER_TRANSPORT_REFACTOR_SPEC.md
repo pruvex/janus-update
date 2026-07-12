@@ -435,6 +435,8 @@ class ExecutionContext:
 
 **T-B1/T-B2 implementation status (2026-07-11):** `TASK-M6B.1` final audit is `PASS` (`documentation/tasks/TASK-M6B.1_final_audit.md`). The first Phase-B vertical slice adds the abstract `BaseTransport` contract and an injected-service `OpenAICompatTransport` adapter only. It preserves canonical tool IDs through the existing ToolCallAdapter boundary and does not alter any existing gateway, service, runner, resolver, feature-flag consumer, or production route. Focused transport (`6/6`), existing ToolCallAdapter (`12/12`), combined audit (`18/18`), syntax, diff, Cursor allowlist, and manual default-off OpenAI Berlin-weather evidence passed. `T-B3` through `T-B6` remain separate open Phase-B work.
 
+**T-B3 implementation status (2026-07-12):** `TASK-M6B.2` final audit is `PASS` (`documentation/tasks/TASK-M6B.2_final_audit.md`). The Gemini-native transport is a thin injected-service wrapper only; native Gemini proto/schema/history handling, policy, grounding/cost attribution, synthesis, drill-down, streaming, and all runtime routing remain owned by existing service/gateway seams. Focused transport plus existing ToolCallAdapter/Gemini-service evidence (`18/18`), syntax, diff, Cursor allowlist, and manual default-off Gemini Berlin-weather evidence passed. `T-B4` through `T-B6` remain separate open Phase-B work.
+
 **Exit B:**
 - `llm_gateway.reason_and_respond()` nutzt Transport + Runner
 - Alte Service-Pfade nur noch von Transporten aufgerufen

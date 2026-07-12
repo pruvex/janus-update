@@ -62,6 +62,13 @@ TASK-M6B
 - Model: 5.6 Terra
 - Reason:
   - The Spec explicitly requires a 1:1 existing-service wrapper after the OpenAI-compatible first slice.
+- Closeout:
+  - Final Audit: `PASS` in `documentation/tasks/TASK-M6B.2_final_audit.md`.
+  - Added `GeminiNativeTransport` as a thin injected-service wrapper and exported it from the transport package; no Gemini service, gateway, ToolLoopRunner, ToolCallAdapter, resolver, feature-flag consumer, or production path changed.
+  - Focused transport (`4/4`), existing ToolCallAdapter plus Gemini-service checks (`14/14`), combined audit rerun (`18/18`), syntax, scoped diff, Cursor allowlist evidence, and manual default-off Gemini Berlin-weather smoke passed.
+  - Non-blocking follow-up: the shared Cursor delegate wrapper still forwards unsupported `--cursor-pool`; the direct Cursor worker is the documented temporary fallback.
+  - `TASK-M6B.3` through `TASK-M6B.5` remain open and are not covered by this closeout.
+  - Changelog skipped: internal, default-off transport-contract groundwork with no user-facing behavior change.
 
 ### TASK-M6B.3 Add the Ollama-local transport
 - Ziel:

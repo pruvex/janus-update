@@ -1,15 +1,28 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
-As of `2026-07-11 23:59 +02:00`, M6 Phase B's first implementation slice `TASK-M6B.1` is final-audited `PASS`, documentation-synchronized, and committed locally (`refactor(transport): add OpenAI-compatible base transport`). The default-off, unintegrated `BaseTransport` plus `OpenAICompatTransport` vertical slice passed Cursor-first execution, independent Codex validation, manual OpenAI weather smoke, compact audit-package review, formal audit/documentation validators, and staged Git checks.
+As of `2026-07-12 15:23 +02:00`, M6B.1 and M6B.2 are final-audited `PASS`, documentation-synchronized, and committed locally as separate Phase-B checkpoints. M6B.2 delivers the thin, unintegrated Gemini-native transport wrapper with Cursor-first execution, independent Codex validation, manual default-off Gemini weather smoke, compact audit-package review, and formal audit/documentation validators.
 
-Current goal: leave the validated M6B.1 checkpoint stable; M6B.2 through M6B.5 remain separate open work. A push to `backup` requires separate explicit approval.
+Current goal: leave the validated M6B.2 checkpoint stable; M6B.3 through M6B.5 remain separate open work. A push to `backup` or a `codex-sync` requires separate explicit approval.
 
 Active phase: `janus-git-governance`, canonical state `PASS`.
 
-Last Codex work: staged, verified, and committed the M6B.1 delivery block on `codex/m6-transport-prep`. The commit contains the five new backend/test files, task/audit/evidence artifacts, registry/project/spec/state updates, the M6B.1 Cursor-run record, and related skill log entries. `documentation/logs/` remains untracked and excluded. No push or release occurred.
+Last Codex work: staged, verified, and committed the M6B.2 delivery block on `codex/m6-transport-prep`. The commit contains the Gemini transport, test, task/audit/evidence artifacts, registry/project/spec/state updates, M6B.2 Cursor-run record, and related skill log entries. `documentation/logs/` remains untracked and excluded. No push or release occurred.
 
 Changed files in this block:
+- `backend/llm_providers/transports/gemini_native.py`
+- `backend/llm_providers/transports/__init__.py`
+- `backend/tests/test_gemini_native_transport.py`
+- `documentation/tasks/TASK-M6B.2_execution_result.md`
+- `documentation/tasks/TASK-M6B.2_AUDIT_PACKAGE.md`
+- `documentation/tasks/TASK-M6B.2_final_audit.md`
+- `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md`
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `documentation/tasks/TASK-M6B.2_cursor_*`
+- `documentation/codex/model-routing/cursor-worker-runs/WF-M6B2-CURSOR-DIRECT-20260712/`
+- `documentation/tasks/TASK-M6B.2_preimplementation_check.md`
+- `documentation/tasks/TASK-M6B.2_task_breakdown.md`
 - `backend/llm_providers/shared/base_transport.py`
 - `backend/llm_providers/transports/__init__.py`
 - `backend/llm_providers/transports/openai_compat.py`
@@ -42,19 +55,28 @@ Checks / validation performed:
 - audit package completeness review and final-audit validator: PASS.
 - marker-scoped documentation-update validation: PASS.
 - Git scope review: PASS; staged `git diff --check` and staged file-scope review passed before the local M6B.1 checkpoint.
+- M6B.2 task-breakdown handoff validator: PASS.
+- M6B.2 precheck validator: PASS.
+- M6B.2 focused Gemini transport/adapter/service suite: PASS (`18 passed`).
+- M6B.2 `py_compile`, Cursor allowlist, `git diff --check`, and execution-result validator: PASS.
+- M6B.2 audit package completeness review and final-audit validator: PASS.
+- M6B.2 marker-scoped documentation-update validation: PASS.
+- Git scope review: PASS; staged `git diff --check` and staged file-scope review passed before the local M6B.2 checkpoint.
 
 Open risks:
 - Main repository hygiene remains `GELB`; do not mix the broad dirty main-repo state into the isolated M6 worktree slice.
 - `TASK-M6B.1` must remain unintegrated: no existing OpenAI service/gateway/runner file changed and no `TRANSPORT_LAYER_ENABLED` consumer or flip is authorized.
 - The shared Cursor delegate wrapper still rejects `--cursor-pool`; direct Cursor worker execution is the documented temporary fallback.
 - The overall provider transport Spec remains in progress; `TASK-M6B.2` through `TASK-M6B.5` are separate and must not be marked complete by the M6B.1 documentation update.
+- M6B.2 implementation must remain within its three-file allowlist; no existing Gemini service/gateway or Phase-B integration file is authorized.
+- The overall provider transport Spec remains in progress; `TASK-M6B.3` through `TASK-M6B.5` are separate and must remain open.
 - No commit, push, or `origin/codex-sync` update occurred, so remote state may not contain this CURRENT_STATE snapshot.
 
-Next recommended step for ChatGPT: do not assume any remote contains this snapshot; approve `Push backup: YES` only if the local M6B.1 checkpoint should be synchronized to the private backup remote.
+Next recommended step for ChatGPT: do not assume any remote contains this snapshot; approve `Push: YES` only after deciding how the legacy `codex/m6-transport-prep` branch should be backed up under Solo Git v2, or approve `Sync: YES` for the dedicated CURRENT_STATE remote sync.
 
-Next recommended step for Codex: remain stopped after the local checkpoint. On explicit approval, push the current branch to `backup`; never push this development checkpoint to `origin`.
+Next recommended step for Codex: remain stopped after the local checkpoint. Do not push the legacy branch or run `codex-sync` until the user grants the corresponding explicit approval.
 
-Last updated: `2026-07-11 23:59 +02:00`.
+Last updated: `2026-07-12 15:23 +02:00`.
 
 ## Current Snapshot Update
 As of `2026-07-11 22:20 +02:00`, M6 Phase A has passed default-off and flag-on OpenAI/Gemini manual smokes. Backend logs prove `STREAM-GATEWAY-HANDOFF` for both enabled-path providers, and the independent Cursor review is `PASS WITH FINDINGS` with no Phase-A implementation blocker.
