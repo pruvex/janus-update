@@ -1,12 +1,13 @@
 ﻿# PROJECT_STATE.md (Diamond-OS V0.4.31-beta.82)
 **Zweck:** Schlanke Triage-Uebersicht fuer den aktuellen Projektzustand.
-**Aktualisiert:** 2026-07-13 (Phase-B direct-provider foundation final auditiert und dokumentiert)
+**Aktualisiert:** 2026-07-13 (TASK-M6C.1 final auditiert und dokumentiert)
 
 ---
 
 ## CURRENT_SESSION_DELTA (Kompakt)
 
 | Epic / Task | Status | Kurzstand |
+| **TASK-M6C.1 Websearch Boundary Decoupling** | DONE WITH DOCUMENTED FOLLOW-UPS | Phase-C T-C1 ist final auditiert PASS. Bei `TRANSPORT_WEBSEARCH_DECOUPLED=false` bleibt die bestehende Executor-Policy erhalten; bei `true` reicht der Executor nur privaten Kontext weiter und `backend.tool_registry:websearch_wrapper` wendet die bestehende Provider-/Modell-Safety am konsumierten Websearch-Seam an. Validation: fokussierte Websearch-Suite `111 passed, 6 deselected`, Syntax, Diff und aktivierter Gemini-Berlin-Wetter-Smoke mit Open-Meteo PASS. T-C2 bis T-C4 bleiben offen; Phase C ist nicht abgeschlossen. |
 | **TASK-M6B Phase-B Direct-Provider Foundation** | DONE WITH DOCUMENTED FOLLOW-UPS | OpenAI, Gemini und Ollama besitzen default-off, flag-gesteuerte Transport-Delegation unter Beibehaltung ihrer Gateway-Policy und Response-Vertraege. Kombinierte Matrix `63 passed`; aktivierte Berlin-Wetter-Smokes fuer alle drei Provider PASS. OpenRouter bleibt Epic 6, Codex/OAuth Epic 5; Legacy-Entfernung und Branch-Reduktion bleiben Phase C. |
 | **TASK-M6B.7 Ollama Transport Delegation** | DONE WITH NON-BLOCKING FOLLOW-UP | Alle direkten Ollama-Gateway-Aufrufe verwenden bei aktiviertem Flag den duennen `OllamaLocalTransport`; Flag-off bleibt legacy. Atomic/AgentRuntime-Logik, Tool-Ausfuehrung, Filter, Budget und Response-Verhalten bleiben unveraendert. Validation: `19 passed`, Syntax, Diff und manueller Ollama-Wetter-Smoke PASS. |
 | **TASK-M6B.6 Gemini normal Tool-Loop Transport Delegation** | DONE WITH NON-BLOCKING FOLLOW-UP | Phase-B T-B6 ist fuer den bestehenden direkten Gemini-Normal-Tool-Loop final auditiert PASS. `TRANSPORT_LAYER_ENABLED=false` behaelt die vorhandene Silo-Dispatch; bei `true` wird `GeminiNativeTransport` nur an Request-, History-, Runner- und MoA-Synthese-Seams dieses Loops injiziert. Gateway-owned Modellpolicy, Grounding, Kostenattribution, Syntheseverhalten, Response-Shaping und Streaming bleiben erhalten. Engine-owned und Drill-down Gemini, Google, OpenRouter, Ollama und Codex bleiben ausgeschlossen. Validation: Gemini-Suite `31 passed`, kombinierte Gemini/OpenAI-Transport-Suite `40 passed`, Syntax, Diff, Playwright-Discovery und manueller Gemini-Berlin-Wetter-Smoke mit Open-Meteo PASS. Cursor-Wrapper-Tooling-Debt bleibt separat. |

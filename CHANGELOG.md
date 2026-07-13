@@ -9,6 +9,7 @@ und dieses Projekt folgt der [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ### Documentation
 - **TASK-M6B / Phase-B Direct-Provider-Grundlage abgeschlossen:** Die bestehenden direkten OpenAI-, Gemini- und Ollama-Silos sind hinter `TRANSPORT_LAYER_ENABLED=false` transportfaehig. OpenRouter bleibt Epic 6, Codex/OAuth Epic 5; Phase-C-Cleanup wird nicht als abgeschlossen behauptet. Gesamtvalidation: `63 passed` plus aktivierte Wetter-Smokes fuer alle drei Provider.
+- **TASK-M6C.1 / Websearch-Grenze entkoppelt:** Hinter dem weiterhin default-off Flag `TRANSPORT_WEBSEARCH_DECOUPLED` liegt die bestehende Websearch-Provider-/Modell-Policy jetzt am konsumierten `websearch_wrapper`-Seam statt im Executor. Flag-off bleibt unveraendert; T-C2 bis T-C4 bleiben offen. Validation: `111 passed, 6 deselected` plus aktivierter Gemini-Berlin-Wetter-Smoke PASS.
 - **BACKLOG-124 / Codex-/Janus-GPT-5.6-Modellmatrix abgeschlossen:** Interne Codex-Governance, Skill-Routing und Audit-Handhabung sind auf die getrennten Rollen Luna/Terra/Sol ausgerichtet. Die Picker-Sicht gilt dabei nicht als Ausfuehrungszusage: Wird Sol im aktuellen ChatGPT-basierten Codex-Run abgelehnt, dokumentiert `SOL_UNAVAILABLE_FOR_CHATGPT_CODEX_ACCOUNT` den lokalen Fallback auf `5.6 Terra/high`. Kein Janus-Nutzerverhalten, keine Produktlogik und kein Release wurden geaendert. Validation: Precheck-, Execution-Result- und Final-Audit-Validator PASS; targeted Drift-Scans PASS.
 
 ### Fixed

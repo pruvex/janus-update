@@ -861,6 +861,7 @@ class ToolExecutor:
                         arguments_json=raw_arguments,
                         call_type="internal" if is_internal_call else "external",
                     )
+            websearch_runtime_context = None
             if canonical_skill_id == "system.websearch":
                 request_provider = str(
                     self.provider or self.additional_context.get("provider_id") or ""
@@ -869,10 +870,21 @@ class ToolExecutor:
                 forced_websearch_provider = str(
                     self.additional_context.get("websearch_fallback_provider") or ""
                 ).strip().lower()
+                transport_websearch_decoupled = os.getenv(
+                    "TRANSPORT_WEBSEARCH_DECOUPLED", "false"
+                ).strip().lower() in {"1", "true", "yes", "on"}
+
+                if transport_websearch_decoupled:
+                    websearch_runtime_context = {
+                        "provider": request_provider,
+                        "model": request_model,
+                        "websearch_fallback_provider": forced_websearch_provider,
+                        "chat_history": self.additional_context.get("chat_history"),
+                    }
 
                 # HARD POLICY: never honor a forced websearch provider that differs from the
                 # chat session provider (cross-provider fallback is forbidden).
-                if forced_websearch_provider in {"openai", "gemini", "ollama"}:
+                if not transport_websearch_decoupled and forced_websearch_provider in {"openai", "gemini", "ollama"}:
                     if forced_websearch_provider != request_provider:
                         logger.warning(
                             "WEBSEARCH-EXECUTOR: ignoring cross-provider forced provider '%s' "
@@ -891,7 +903,7 @@ class ToolExecutor:
                             tool_args.get("provider"),
                             tool_args.get("model") or "<missing>",
                         )
-                elif request_provider == "openai":
+                elif not transport_websearch_decoupled and request_provider == "openai":
                     tool_args["provider"] = "openai"
                     if request_model.lower().startswith("gemini-"):
                         tool_args["model"] = "gpt-5.4-nano"
@@ -906,7 +918,7 @@ class ToolExecutor:
                         "WEBSEARCH-EXECUTOR: enforced native OpenAI websearch (model='%s').",
                         tool_args.get("model") or request_model or "<missing>",
                     )
-                else:
+                elif not transport_websearch_decoupled:
                     if request_provider:
                         tool_args["provider"] = request_provider
                     if (
@@ -951,11 +963,12 @@ class ToolExecutor:
                     elif request_model and not str(tool_args.get("model") or "").strip():
                         tool_args["model"] = request_model
 
-                logger.info(
-                    "WEBSEARCH-EXECUTOR: forwarding request provider='%s' model='%s' to system.websearch",
-                    tool_args.get("provider") or request_provider or "<missing>",
-                    tool_args.get("model") or request_model or "<missing>",
-                )
+                if not transport_websearch_decoupled:
+                    logger.info(
+                        "WEBSEARCH-EXECUTOR: forwarding request provider='%s' model='%s' to system.websearch",
+                        tool_args.get("provider") or request_provider or "<missing>",
+                        tool_args.get("model") or request_model or "<missing>",
+                    )
                 wf_obj = self.additional_context.get("_workflow")
                 raw_q = str(tool_args.get("query") or "").strip()
                 if raw_q and wf_obj is not None and getattr(wf_obj, "is_video_intent", False):
@@ -1058,6 +1071,9 @@ class ToolExecutor:
                             final_args[key] = value
 
             # 5. Ausführung mit zentralem Timeout-Enforcement (aus Skill-JSON)
+            if websearch_runtime_context is not None:
+                final_args["websearch_runtime_context"] = websearch_runtime_context
+
             timeout_s = self.tool_manager.get_timeout_seconds(canonical_skill_id)
             if asyncio.iscoroutinefunction(callable_func):
                 coro = callable_func(**final_args)

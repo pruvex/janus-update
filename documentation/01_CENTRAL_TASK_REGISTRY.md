@@ -4,6 +4,18 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-M6C.1 - Websearch provider coercion boundary decoupling
+
+- **Status**: DONE WITH DOCUMENTED FOLLOW-UPS
+- **Final Audit**: `documentation/tasks/TASK-M6C.1_FINAL_AUDIT.md` (PASS)
+- **Spec**: `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md` (Phase-C T-C1 only; parent Spec remains active)
+- **Parent Task**: `documentation/tasks/TASK-M6_transport_phase_c.md`
+- **Task Breakdown / Precheck / Execution**: `documentation/tasks/TASK-M6C.1_task_breakdown.md`; `documentation/tasks/TASK-M6C.1_preimplementation_check.md`; `documentation/tasks/TASK-M6C.1_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-M6C.1_AUDIT_PACKAGE.md`
+- **Validation**: focused Websearch regression selection (`111 passed, 6 deselected`), syntax, scoped diff, and enabled Gemini `gemini-3.1-pro-preview` Berlin-weather smoke PASS.
+- **Scope**: flag-off retains the executor-owned provider/model policy. With `TRANSPORT_WEBSEARCH_DECOUPLED=true`, the executor forwards private context and the consumed `backend.tool_registry:websearch_wrapper` boundary owns equivalent policy. No gateway, transport, schema, or Websearch-service implementation change.
+- **Follow-up**: T-C2 through T-C4 remain separate and open; this marker does not close Phase C or the parent Spec.
+
 ### TASK-M6B - Phase-B direct-provider foundation
 
 - **Status**: DONE WITH DOCUMENTED FOLLOW-UPS

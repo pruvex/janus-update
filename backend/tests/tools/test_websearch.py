@@ -18,6 +18,7 @@ from backend.services.websearch.openai_provider import coerce_openai_websearch_m
 from backend.services.websearch.query_bias import augment_query_with_local_bias, normalize_source_url, prioritize_german_sources
 from backend.services.websearch.websearch import execute_websearch_service
 from backend.tool_registry import (
+    _apply_websearch_runtime_context,
     _coerce_websearch_model_for_provider,
     _normalize_websearch_query,
     _resolve_news_detail_sources,
@@ -2538,6 +2539,42 @@ def test_websearch_model_guard_rejects_cross_provider_models():
     assert _coerce_websearch_model_for_provider("openai", "gemini-3-flash-preview") == "gpt-5.4-nano"
     assert _coerce_websearch_model_for_provider("gemini", "gpt-5.4-mini") == "gemini-3-flash-preview"
     assert coerce_openai_websearch_model("gemini-3-flash-preview") == "gpt-5.4-nano"
+
+
+def test_websearch_wrapper_leaves_payload_unchanged_for_cross_provider_forced_fallback(monkeypatch):
+    monkeypatch.setenv("TRANSPORT_WEBSEARCH_DECOUPLED", "true")
+
+    payload = _apply_websearch_runtime_context(
+        schemas.WebsearchArgsV2(query="latest release notes"),
+        {
+            "provider": "gemini",
+            "model": "gpt-5.4-mini",
+            "websearch_fallback_provider": "openai",
+            "chat_history": [],
+        },
+    )
+
+    # This is intentionally the same as the legacy executor behavior: a forced
+    # cross-provider fallback is rejected and no replacement policy runs.
+    assert payload.provider is None
+    assert payload.model is None
+
+
+def test_websearch_wrapper_applies_decoupled_runtime_context_at_boundary(monkeypatch):
+    monkeypatch.setenv("TRANSPORT_WEBSEARCH_DECOUPLED", "true")
+
+    payload = _apply_websearch_runtime_context(
+        schemas.WebsearchArgsV2(query="latest release notes"),
+        {
+            "provider": "gemini",
+            "model": "gpt-5.4-mini",
+            "websearch_fallback_provider": "",
+            "chat_history": [],
+        },
+    )
+
+    assert payload.provider == "gemini"
+    assert payload.model == "gemini-3-flash-preview"
 
 
 def test_websearch_attribution_adds_clickable_source_before_suggestions():

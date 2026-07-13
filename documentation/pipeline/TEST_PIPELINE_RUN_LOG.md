@@ -1,5 +1,12 @@
 # Janus Test Pipeline Run Log
 
+## 2026-07-13 - TASK-M6C.1 Websearch boundary decoupling validation
+
+- Marker: `TASK-M6C.1`.
+- Result: PASS - focused Websearch executor/provider selection `111 passed, 6 deselected`; syntax and scoped-diff checks PASS; enabled Gemini Berlin-weather smoke PASS.
+- Final audit: `documentation/tasks/TASK-M6C.1_FINAL_AUDIT.md` (PASS).
+- Scope: only Phase-C T-C1. Flag-off preserves executor policy; flag-on applies equivalent policy at `backend.tool_registry:websearch_wrapper`. T-C2 through T-C4 remain separate.
+
 ## 2026-07-13 - TASK-M6B direct-provider foundation validation
 
 - Marker: `TASK-M6B` with final direct-provider slice `TASK-M6B.7`.

@@ -339,3 +339,15 @@
 - **Epic:** TASK-M6B.6
 - **Confidence:** High
 - **Tags:** transport,flag,gemini,runner,moa,synthesis,service-seam
+
+
+## [PATTERN] #WebsearchPolicyMustMoveToConsumedBoundary "Websearch policy relocation must bind the consumed wrapper boundary"
+- **Kontext:** TASK-M6C.1 Phase-C Websearch coercion decoupling (2026-07-13).
+- **Problem:** The first Cursor candidate moved policy to a flat Websearch module that is not consumed by system.websearch, so the requested boundary migration could not affect the live ToolExecutor to ToolRegistry path.
+- **Loesung:** Trace the live call chain first and move flag-on policy only to backend.tool_registry:websearch_wrapper while ToolExecutor forwards private runtime context; preserve the legacy executor branch while the flag is false.
+- **Haertung:** Focused flag-off and flag-on policy tests passed; broad Websearch selection passed 111 tests; enabled Gemini Berlin-weather smoke rendered Open-Meteo output; final audit PASS.
+- **Tripwire:** If a Websearch refactor names a service module without proving it is reached from ToolExecutor, stop at task breakdown and bind the consumed wrapper before implementation.
+- **Location:** backend/services/tool_executor.py;backend/tool_registry.py;backend/tests/test_backlog_007_tool_routing_performance.py;backend/tests/tools/test_websearch.py
+- **Epic:** TASK-M6C.1
+- **Confidence:** High
+- **Tags:** websearch,policy,boundary,feature-flag,tool-executor,tool-registry,regression
