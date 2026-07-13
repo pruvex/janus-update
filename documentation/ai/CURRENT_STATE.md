@@ -1,25 +1,25 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
-As of `2026-07-14 01:00 +02:00`, `BACKLOG-129` is closed and documented, `TASK-M6.MERGE.1` final audit is PASS, and M6 is committed on local `master`.
+As of `2026-07-14 01:12 +02:00`, `BACKLOG-129` is closed and documented, `TASK-M6.MERGE.1` final audit is PASS, and M6 is committed and backed up on `master`.
 
-Current goal: complete the approved backup push, safe root-checkout update, and `origin/codex-sync` publication for committed M6.
+Current goal: M6 is complete; begin the next bounded Janus task from the root `master` checkout after this snapshot is published to `origin/codex-sync`.
 
-Active phase: `janus-git-governance`, canonical state `PASS`; approved backup push, root update, and CURRENT_STATE sync are in progress.
+Active phase: `janus-git-governance`, canonical state `PASS`; checkpoint, backup push, and safe root update are complete, with this final snapshot queued for approved `codex-sync` publication.
 
-Last Codex work: completed the bounded whitespace quickchange, re-audited `TASK-M6.MERGE.1` to PASS, recorded the integration closeout, committed the validated M6 merge, and fast-forwarded local `master` to it. The prior Gemini runtime blocker is resolved by final-audited BACKLOG-129.
+Last Codex work: completed the bounded whitespace quickchange, re-audited `TASK-M6.MERGE.1` to PASS, recorded the integration closeout, committed M6 as `551b3c53b`, pushed `backup/master`, and switched `C:\KI\Janus-Projekt` safely to `master`. The prior Gemini runtime blocker is resolved by final-audited BACKLOG-129.
 
 Changed files: existing resolved M6 merge set; BACKLOG-129 code/tests and closed artifacts; `documentation/test-runs/M6_PHASE_A_MANUAL_SMOKE_2026-07-11.md` (three trailing spaces removed only); M6 integration execution/audit/documentation artifacts; registry, project state, changelog, pipeline log, CURRENT_STATE, and skill-usage log.
 
 Tests / validation performed: focused Gemini + duplicate-guard tests PASS (`21 passed`); bound M6 provider/tool/postprocessor/transport/Websearch matrix PASS (`146 passed`); schemas and Gemini `py_compile` PASS; agent-factory test PASS; Playwright discovery PASS (`4032` tests); manual Gemini Berlin-weather smoke PASS; BACKLOG-129 and M6 integration final-audit validators PASS; M6 integration documentation-marker validator PASS; `git diff --check` PASS; `git diff --cached --check` PASS. Debug evidence remains `documentation/logs/janus_backend.log` lines 14121-14151.
 
-Open risks: Root `C:\KI\Janus-Projekt` is still on the unrelated dirty `feature/ollama-dev-workhorse` branch and must be preserved before switching it to `master`. The global Backlog validator retains unrelated historical failures for IDs 125–127; BACKLOG-129 has no finding.
+Open risks: the unrelated Ollama work is preserved in two local stashes on `feature/ollama-dev-workhorse` (`operator-approved preserve feature/ollama-dev-workhorse before M6 root update` and the tracked-files fallback); do not drop either without a dedicated Ollama recovery step. The global Backlog validator retains unrelated historical failures for IDs 125–127; BACKLOG-129 has no finding.
 
-Next recommended step for ChatGPT: after the approved sync completes, read `origin/codex-sync` for this M6 checkpoint state.
+Next recommended step for ChatGPT: read `origin/codex-sync` after this approved sync and use the root `master` checkpoint as the completed M6 baseline.
 
-Next recommended step for Codex: push `backup/master`, preserve the root Ollama work in an explicit stash, switch root to local `master`, then sync CURRENT_STATE to `origin/codex-sync`.
+Next recommended step for Codex: no M6 work remains; route the next user request from the root `master` checkout. Restore the Ollama stashes only in a dedicated, approved Ollama task.
 
-Last updated: `2026-07-14 01:00 +02:00`. Commit and local master update occurred; backup/master push, root update, and CURRENT_STATE sync remain in progress, so a remote may not yet contain this CURRENT_STATE.
+Last updated: `2026-07-14 01:12 +02:00`. Commit, `backup/master` push, and root update are complete; `origin/codex-sync` publication is the final approved operation in progress.
 
 ## Current Snapshot Update
 As of `2026-07-12 01:05:00 +02:00`, Solo Git v2 migration **completed**. Archive commit on legacy develop, fast-forward merge to `master`, clean worktree, pushed `backup/master`, published CURRENT_STATE to `origin/codex-sync`.
