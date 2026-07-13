@@ -4,6 +4,21 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-M6B.6 - Gemini normal tool-loop flag-gated transport delegation
+
+- **Status**: DONE WITH NON-BLOCKING FOLLOW-UP
+- **Final Audit**: `documentation/tasks/TASK-M6B.6_FINAL_AUDIT.md` (PASS)
+- **Spec**: `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md` (Phase-B T-B6 direct Gemini normal-loop slice only; parent Spec remains in progress)
+- **Parent Task**: `documentation/tasks/TASK-M6_transport_phase_b.md`
+- **Decision Summary**: `documentation/tasks/TASK-M6B.6_decision_summary.md`
+- **Task Breakdown**: `documentation/tasks/TASK-M6B.6_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-M6B.6_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-M6B.6_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-M6B.6_AUDIT_PACKAGE.md`
+- **Validation**: focused Gemini gateway/runner/resolver suite (`31 passed`), combined Gemini/OpenAI transport regression suite (`40 passed`), syntax, scoped diff, Playwright discovery, and enabled Gemini Berlin-weather smoke PASS.
+- **Scope**: only direct `gemini` normal tool-loop is enabled when `TRANSPORT_LAYER_ENABLED=true`; flag-off remains legacy. Engine-owned/drill-down Gemini, Google, OpenRouter, Ollama, Codex, and streaming remain unchanged.
+- **Follow-up**: shared Cursor delegate `--cursor-pool` tooling remains separately non-blocking; further provider rollout requires a new task.
+
 ### TASK-M6B.5 - Direct OpenAI flag-gated transport delegation
 
 - **Status**: DONE WITH NON-BLOCKING FOLLOW-UP

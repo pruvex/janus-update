@@ -1,25 +1,25 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
-As of `2026-07-13 15:25 +02:00`, TASK-M6B.5 is final-audit PASS and documentation-closeout ready. The first enabled Phase-B path is direct OpenAI only; flag-off remains the legacy gateway dispatch.
+As of `2026-07-13 15:48 +02:00`, TASK-M6B.6 is final-audit PASS and documentation-complete. The existing direct Gemini normal tool-loop now receives `GeminiNativeTransport` only when `TRANSPORT_LAYER_ENABLED=true`; the flag remains default-off and engine-owned/drill-down Gemini remain unchanged.
 
-Current goal: validate the M6B.5 documentation closure, then create one Git checkpoint.
+Current goal: create one explicit Git checkpoint for the validated M6B.6 delivery, then refresh the ChatGPT snapshot on `origin/codex-sync`.
 
-Active phase: `janus-git-governance`, canonical state `PASS`.
+Active phase: `janus-documentation-update`, canonical state `PASS`.
 
-Last Codex work: completed M6B.5 documentation closure, committed it as `6686c1863`, pushed the active feature branch to `backup`, and is refreshing the ChatGPT snapshot on `origin/codex-sync`.
+Last Codex work: completed the enabled Gemini Berlin-weather smoke at 15:42, built the M6B.6 audit package, final-audited PASS, and synchronized the task source, registry, project state, changelog, reusable learning, test-pipeline log, and documentation-closeout artifact.
 
-Changed files: `backend/services/llm_gateway.py`; `backend/llm_providers/openai/gateway.py`; `backend/tests/test_transport_layer_openai_gateway.py`; M6B.5 decision, breakdown, precheck, Cursor package/evidence, execution, audit, task closeout, registry, project state, changelog, pipeline log, learning memory, CURRENT_STATE, and skill-usage artifacts.
+Changed files: `backend/services/llm_gateway.py`; `backend/llm_providers/gemini/gateway.py`; `backend/tests/test_transport_layer_gemini_gateway.py`; M6B.6 decision, breakdown, precheck, Cursor package/evidence, execution, audit package, final audit, documentation update, task closeout, registry, project state, changelog, learning, pipeline log, skill-usage log, and CURRENT_STATE artifacts.
 
-Tests / validation performed: precheck and final-audit validators PASS; focused flag-off/flag-on OpenAI gateway, runner, and resolver suite PASS (`27 passed`); `py_compile` PASS; `git diff --check` PASS; marker-scoped documentation validator PASS; manual enabled OpenAI Berlin-weather smoke PASS at 14:48.
+Tests / validation performed: precheck, execution-result, and final-audit validators PASS; focused Gemini runner/resolver suite PASS (`31 passed`); combined Gemini/OpenAI transport suite PASS (`40 passed`); `py_compile`, `git diff --check`, and Playwright test discovery PASS; enabled Gemini Berlin-weather smoke PASS with `Quelle: Open-Meteo`.
 
-Open risks: the shared Cursor delegate still forwards unsupported `--cursor-pool` and the direct worker returned no completion artifact; Codex-owned review/validation remains authoritative. OpenRouter has resolver metadata but no direct gateway silo and remains excluded. `documentation/logs/` is intentionally local and untracked and excluded from the commit.
+Open risks: the shared Cursor delegate still forwards unsupported `--cursor-pool`; the direct Cursor worker and Codex-owned review remain the non-blocking fallback. No direct `google` gateway silo exists, so Google remains excluded. `documentation/logs/` remains local and untracked.
 
-Next recommended step for ChatGPT: use the refreshed `origin/codex-sync` commit as the remote snapshot for M6B.5.
+Next recommended step for ChatGPT: do not assume the remote snapshot contains M6B.6 until the explicit `origin/codex-sync` refresh completes.
 
-Next recommended step for Codex: route any later provider rollout as a new bounded task; direct OpenAI M6B.5 is complete.
+Next recommended step for Codex: after explicit approval, use `janus-git-governance` to stage the scoped delivery, commit it, push the feature branch to `backup`, and sync CURRENT_STATE to `origin/codex-sync`.
 
-Last updated: `2026-07-13 15:25 +02:00`.
+Last updated: `2026-07-13 15:48 +02:00`.
 
 ## Current Snapshot Update
 As of `2026-07-12 16:49 +02:00`, BACKLOG-126 is selected `IN PROGRESS` with a bounded preimplementation handoff. Dashboard sync passed (`total=86`, `active=12`, `done=74`, `routing_missing=2`). No gateway code changed.

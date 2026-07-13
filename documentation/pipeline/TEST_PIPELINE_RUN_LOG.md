@@ -1,5 +1,12 @@
 # Janus Test Pipeline Run Log
 
+## 2026-07-13 - TASK-M6B.6 Gemini normal tool-loop transport-gate validation
+
+- Marker: `TASK-M6B.6`.
+- Result: PASS - focused Gemini gateway/runner/resolver suite `31 passed`; combined Gemini/OpenAI transport regression suite `40 passed`; syntax, diff, and Playwright discovery checks PASS; enabled Gemini Berlin-weather smoke PASS.
+- Final audit: `documentation/tasks/TASK-M6B.6_FINAL_AUDIT.md` (PASS).
+- Scope: direct `gemini` normal tool-loop only; engine-owned/drill-down Gemini, Google, OpenRouter, Ollama, and Codex remain excluded.
+
 ## 2026-07-13 - TASK-M6B.5 direct OpenAI transport-gate validation
 
 - Marker: `TASK-M6B.5`.

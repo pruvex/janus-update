@@ -148,3 +148,30 @@ TASK-M6B
   - Gateway-owned policy, tool-loop control, synthesis, response shaping, cost persistence, and streaming remain untouched. OpenRouter, Gemini, Google, Ollama, Codex, and Phase-C work remain outside this delivery.
   - Focused flag-off/flag-on gateway, runner, and resolver regressions (`27 passed`), syntax, scoped diff, and enabled OpenAI Berlin-weather smoke passed.
   - Non-blocking follow-up: the shared Cursor delegate still forwards unsupported `--cursor-pool`; the direct worker did not return a completion artifact, so Codex-owned review and validation remain authoritative.
+
+### TASK-M6B.6 Add the Gemini normal tool-loop to the Phase-B flag
+- Ziel:
+  - Extend Phase-B `T-B6` with one provider-isolated Gemini normal-tool-loop transport path after the direct OpenAI slice.
+- Scope:
+  - With `TRANSPORT_LAYER_ENABLED=true`, inject `GeminiNativeTransport` into the existing direct `gemini` gateway only for `_run_simple_tool_loop` and its existing service request/history seams.
+  - Preserve the legacy route when the flag is absent/false. Gemini engine-owned and drill-down paths, plus Google/OpenRouter/Ollama/Codex, remain excluded.
+- Files:
+  - `backend/services/llm_gateway.py`
+  - `backend/llm_providers/gemini/gateway.py`
+  - focused Gemini flag-off/flag-on regression
+- Acceptance Criteria:
+  - The normal Gemini tool-loop uses the injected native transport only when the Phase-B flag is true.
+  - Flag-off dispatch and all excluded Gemini paths retain existing service seams.
+  - Gemini-native model policy, grounding, cost attribution, synthesis, response shaping, and streaming remain gateway-owned.
+- Tests:
+  - focused Gemini flag-off/flag-on gateway and runner regressions selected by precheck
+- Model: 5.6 Terra
+- Reason:
+  - User selected normal Gemini tool-loop only as the next bounded provider rollout after M6B.5.
+- Closeout:
+  - Final Audit: `PASS` in `documentation/tasks/TASK-M6B.6_FINAL_AUDIT.md`.
+  - With `TRANSPORT_LAYER_ENABLED=true`, only the existing direct `gemini` normal tool-loop receives `GeminiNativeTransport` at existing request, history, runner, and MoA-synthesis service seams. Flag-off retains legacy dispatch.
+  - Engine-owned and drill-down Gemini, direct Google routing, OpenRouter, Ollama, Codex, streaming, grounding, cost attribution, policy, and response shaping remain outside this slice.
+  - Focused Gemini runner/resolver suite (`31 passed`), combined Gemini/OpenAI transport suite (`40 passed`), syntax, diff, Playwright discovery, Cursor allowlist evidence, and enabled Gemini Berlin-weather smoke with `Quelle: Open-Meteo` passed.
+  - Non-blocking follow-up: the shared Cursor delegate still forwards unsupported `--cursor-pool`; the direct Cursor worker plus Codex-owned review is the documented fallback.
+  - Changelog updated: flag-on Gemini normal tool-loop is user-visible provider behavior.

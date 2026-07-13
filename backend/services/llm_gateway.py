@@ -254,6 +254,12 @@ async def reason_and_respond(
             from backend.llm_providers.transports.openai_compat import OpenAICompatTransport
 
             silo_args["provider_transport"] = OpenAICompatTransport(gateway_service)
+    elif TRANSPORT_LAYER_ENABLED and provider_key == "gemini":
+        gateway_service = getattr(selected_silo, "service", None)
+        if gateway_service is not None:
+            from backend.llm_providers.transports.gemini_native import GeminiNativeTransport
+
+            silo_args["provider_transport"] = GeminiNativeTransport(gateway_service)
 
     return await selected_silo.reason_and_respond(**silo_args)
 

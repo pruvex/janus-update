@@ -327,3 +327,15 @@
 - **Epic:** TASK-M6B.5
 - **Confidence:** High
 - **Tags:** transport,flag,gateway,openai,legacy-dispatch,service-seam
+
+
+## [PATTERN] #GeminiTransportRunnerMustPreserveServiceAndSynthesisSeams "Gemini transport runner must preserve service and synthesis seams"
+- **Kontext:** TASK-M6B.6 direct Gemini normal tool-loop Phase-B rollout, 2026-07-13. (2026-07-13).
+- **Problem:** A generic transport seam can accidentally replace an injected Gemini service on flag-off runner calls or bypass the transport for MoA synthesis, creating hidden divergence between legacy, runner, and synthesis paths.
+- **Loesung:** Use the provided Gemini service when no transport is injected; when transport is injected, expose one transport-backed runner service seam and use the same request seam for MoA synthesis.
+- **Haertung:** Focused Gemini flag routing, legacy history, runner, MoA synthesis, engine/drill-down exclusion, resolver, and OpenAI non-regression suites passed 40 tests; enabled Gemini Berlin-weather smoke rendered Open-Meteo output.
+- **Tripwire:** If runner flag-off ignores a supplied provider service or MoA synthesis calls provider_service directly while a transport is present, stop before widening the provider rollout.
+- **Location:** backend/services/llm_gateway.py; backend/llm_providers/gemini/gateway.py; backend/tests/test_transport_layer_gemini_gateway.py
+- **Epic:** TASK-M6B.6
+- **Confidence:** High
+- **Tags:** transport,flag,gemini,runner,moa,synthesis,service-seam

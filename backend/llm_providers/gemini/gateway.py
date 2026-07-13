@@ -12,7 +12,10 @@ import json
 import logging
 import re
 import uuid
-from typing import Any, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
+
+if TYPE_CHECKING:
+    from backend.llm_providers.transports.gemini_native import GeminiNativeTransport
 
 from .compiler import GeminiCompiler
 from .link_renderer import get_link_renderer
@@ -52,6 +55,75 @@ class GeminiGateway(BaseProviderGateway):
         for key in explicit_keys:
             sanitized.pop(key, None)
         return sanitized
+
+    async def _request_via_service_seam(
+        self,
+        *,
+        provider_transport: Optional["GeminiNativeTransport"],
+        provider_service: Optional[GeminiServiceProvider],
+        api_key: str,
+        model: str,
+        messages: List[Dict[str, Any]],
+        tools: Optional[List[Dict[str, Any]]] = None,
+        **kwargs: Any,
+    ) -> Dict[str, Any]:
+        if provider_transport is not None:
+            return await provider_transport.send(
+                api_key=api_key,
+                model=model,
+                messages=messages,
+                tools=tools,
+                **kwargs,
+            )
+        active_service = provider_service or self.service
+        return await active_service.generate_response(
+            api_key=api_key,
+            model=model,
+            messages=messages,
+            tools=tools,
+            **kwargs,
+        )
+
+    def _prepare_history_via_service_seam(
+        self,
+        *,
+        provider_transport: Optional["GeminiNativeTransport"],
+        provider_service: Optional[GeminiServiceProvider],
+        chat_history: List[Dict[str, Any]],
+        raw_assistant_response: Dict[str, Any],
+        tool_results: List[Dict[str, Any]],
+    ) -> List[Dict[str, Any]]:
+        if provider_transport is not None:
+            return provider_transport.prepare_history_for_second_call(
+                chat_history=chat_history,
+                raw_assistant_response=raw_assistant_response,
+                tool_results=tool_results,
+            )
+        active_service = provider_service or self.service
+        return active_service.prepare_history_for_second_call(
+            chat_history=chat_history,
+            raw_assistant_response=raw_assistant_response,
+            tool_results=tool_results,
+        )
+
+    def _service_seam_for_tool_loop_runner(
+        self,
+        provider_transport: Optional["GeminiNativeTransport"],
+        provider_service: GeminiServiceProvider,
+    ) -> Any:
+        if provider_transport is None:
+            return provider_service
+
+        transport = provider_transport
+
+        class _TransportServiceSeam:
+            async def generate_response(self, **kwargs: Any) -> Dict[str, Any]:
+                return await transport.send(**kwargs)
+
+            def prepare_history_for_second_call(self, **kwargs: Any) -> List[Dict[str, Any]]:
+                return transport.prepare_history_for_second_call(**kwargs)
+
+        return _TransportServiceSeam()
 
     @staticmethod
     def _extract_grounding_query_count(grounding_metadata: Optional[Dict[str, Any]]) -> int:
@@ -292,6 +364,7 @@ class GeminiGateway(BaseProviderGateway):
         provider_service: Optional[GeminiServiceProvider] = None,
         _gemini_engine_owned_tool_loop: bool = False,
         force_tool_name: Optional[str] = None,
+        provider_transport: Optional["GeminiNativeTransport"] = None,
     ) -> Dict[str, Any]:
         """
         JANUS ZWANGSJACKE: Einziger Exit-Punkt garantiert Renderer-Aufruf.
@@ -322,6 +395,7 @@ class GeminiGateway(BaseProviderGateway):
             provider_service=provider_service,
             _gemini_engine_owned_tool_loop=_gemini_engine_owned_tool_loop,
             force_tool_name=force_tool_name,
+            provider_transport=provider_transport,
         )
         
         # --- 🔒 ZWANGSJACKE: ABSOLUT LETZTER HOOK ---
@@ -360,6 +434,7 @@ class GeminiGateway(BaseProviderGateway):
         provider_service: Optional[GeminiServiceProvider] = None,
         _gemini_engine_owned_tool_loop: bool = False,
         force_tool_name: Optional[str] = None,
+        provider_transport: Optional["GeminiNativeTransport"] = None,
     ) -> tuple[Dict[str, Any], Optional[Dict[str, Any]]]:
         """
         Interne Implementierung - gibt (final_result, metadata) zurück.
@@ -446,6 +521,7 @@ class GeminiGateway(BaseProviderGateway):
                         db=db,
                         chat_id=chat_id,
                         force_tool_name=force_tool_name,
+                        provider_transport=provider_transport,
                     )
                 # Extrahiere Metadata aus dem Loop-Ergebnis
                 loop_metadata = (
@@ -783,6 +859,7 @@ class GeminiGateway(BaseProviderGateway):
         image_data = passthrough_kwargs.pop("image_data", None)
         force_tool_name = str(passthrough_kwargs.pop("force_tool_name", "") or "").strip() or None
         provider_service = passthrough_kwargs.pop("provider_service", None) or self.service
+        provider_transport = passthrough_kwargs.pop("provider_transport", None)
         db = passthrough_kwargs.pop("db", None)
         chat_id = passthrough_kwargs.pop("chat_id", None)
         is_list_query = passthrough_kwargs.pop("is_list_query", None)
@@ -850,7 +927,9 @@ class GeminiGateway(BaseProviderGateway):
             )
 
             round_force_tool_name = force_tool_name if current_round == 1 else None
-            response = await provider_service.generate_response(
+            response = await self._request_via_service_seam(
+                provider_transport=provider_transport,
+                provider_service=provider_service,
                 api_key=api_key,
                 model=tool_execution_model,
                 messages=current_chat_history,
@@ -971,7 +1050,9 @@ class GeminiGateway(BaseProviderGateway):
 
             executor_results = await tool_executor.execute_tool_calls(validated_tool_calls)
 
-            current_chat_history = self.service.prepare_history_for_second_call(
+            current_chat_history = self._prepare_history_via_service_seam(
+                provider_transport=provider_transport,
+                provider_service=provider_service,
                 chat_history=current_chat_history,
                 raw_assistant_response=response.get("raw_assistant_response"),
                 tool_results=executor_results,
@@ -1006,6 +1087,7 @@ class GeminiGateway(BaseProviderGateway):
         image_data = passthrough_kwargs.pop("image_data", None)
         force_tool_name = str(passthrough_kwargs.pop("force_tool_name", "") or "").strip() or None
         provider_service = passthrough_kwargs.pop("provider_service", None) or self.service
+        provider_transport = passthrough_kwargs.pop("provider_transport", None)
         db = passthrough_kwargs.pop("db", None)
         chat_id = passthrough_kwargs.pop("chat_id", None)
         is_list_query = passthrough_kwargs.pop("is_list_query", None)
@@ -1013,6 +1095,10 @@ class GeminiGateway(BaseProviderGateway):
             is_list_query = self._is_list_query(str(user_prompt or "").strip().lower())
 
         round_state: Dict[str, Any] = {"grounding_metadata": {}}
+        loop_service = self._service_seam_for_tool_loop_runner(
+            provider_transport,
+            provider_service,
+        )
 
         context = ToolLoopContext(
             provider=str(provider or "gemini"),
@@ -1131,7 +1217,9 @@ class GeminiGateway(BaseProviderGateway):
                     "SKILL-MOA RETURN: Tool-Loop abgeschlossen mit '%s'.",
                     loop_context.tool_execution_model,
                 )
-                synthesis_response = await provider_service.generate_response(
+                synthesis_response = await self._request_via_service_seam(
+                    provider_transport=provider_transport,
+                    provider_service=provider_service,
                     api_key=api_key,
                     model=loop_context.tool_execution_model,
                     messages=loop_context.chat_history,
@@ -1202,10 +1290,10 @@ class GeminiGateway(BaseProviderGateway):
             return NonToolResponseAction(kind="return", response=response)
 
         return await ToolLoopRunner().run(
-            service=provider_service,
+            service=loop_service,
             context=context,
             sanitize_generate_response_kwargs=self._sanitize_generate_response_kwargs,
-            prepare_history_for_second_call=self.service.prepare_history_for_second_call,
+            prepare_history_for_second_call=loop_service.prepare_history_for_second_call,
             handle_non_tool_response=handle_non_tool_response,
             filter_tools_by_skill_ids=_filter_tools_by_skill_ids,
             build_tool_definitions_for_llm=_build_tool_definitions_for_llm,
