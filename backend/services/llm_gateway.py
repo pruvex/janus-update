@@ -260,6 +260,12 @@ async def reason_and_respond(
             from backend.llm_providers.transports.gemini_native import GeminiNativeTransport
 
             silo_args["provider_transport"] = GeminiNativeTransport(gateway_service)
+    elif TRANSPORT_LAYER_ENABLED and provider_key == "ollama":
+        gateway_service = getattr(selected_silo, "service", None)
+        if gateway_service is not None:
+            from backend.llm_providers.transports.ollama_local import OllamaLocalTransport
+
+            silo_args["provider_transport"] = OllamaLocalTransport(gateway_service)
 
     return await selected_silo.reason_and_respond(**silo_args)
 

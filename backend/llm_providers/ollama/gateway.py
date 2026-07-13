@@ -1,5 +1,10 @@
+from __future__ import annotations
+
 import logging
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
+
+if TYPE_CHECKING:
+    from backend.llm_providers.transports.ollama_local import OllamaLocalTransport
 
 from ..shared.base_gateway import BaseProviderGateway
 from .service import OllamaServiceProvider
@@ -206,6 +211,23 @@ class OllamaGateway(BaseProviderGateway):
             or None
         )
 
+    async def _request_via_service_seam(
+        self,
+        *,
+        provider_transport: Optional["OllamaLocalTransport"],
+        api_call_params: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        if provider_transport is not None:
+            params = dict(api_call_params)
+            return await provider_transport.send(
+                api_key=params.pop("api_key"),
+                model=params.pop("model"),
+                messages=params.pop("messages"),
+                tools=params.pop("tools", None),
+                **params,
+            )
+        return await self.service.generate_response(**api_call_params)
+
     async def reason_and_respond(
         self,
         provider: str,
@@ -231,6 +253,7 @@ class OllamaGateway(BaseProviderGateway):
         forced_tool: Optional[Dict[str, Any]] = None,
         all_tool_definitions: Optional[List[Dict[str, Any]]] = None,
         force_tool_name: Optional[str] = None,
+        provider_transport: Optional["OllamaLocalTransport"] = None,
     ) -> Dict[str, Any]:
         """
         Ollama-specific reasoning with budget guards and synthesis orchestration.
@@ -307,5 +330,8 @@ class OllamaGateway(BaseProviderGateway):
             api_call_params = apply_synthesis_call_contract(api_call_params, call_type=call_type_for_api)
 
         # Finaler Aufruf
-        response = await self.service.generate_response(**api_call_params)
+        response = await self._request_via_service_seam(
+            provider_transport=provider_transport,
+            api_call_params=api_call_params,
+        )
         return response

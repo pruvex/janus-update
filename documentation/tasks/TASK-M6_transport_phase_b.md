@@ -175,3 +175,23 @@ TASK-M6B
   - Focused Gemini runner/resolver suite (`31 passed`), combined Gemini/OpenAI transport suite (`40 passed`), syntax, diff, Playwright discovery, Cursor allowlist evidence, and enabled Gemini Berlin-weather smoke with `Quelle: Open-Meteo` passed.
   - Non-blocking follow-up: the shared Cursor delegate still forwards unsupported `--cursor-pool`; the direct Cursor worker plus Codex-owned review is the documented fallback.
   - Changelog updated: flag-on Gemini normal tool-loop is user-visible provider behavior.
+
+### TASK-M6B.7 Add the Ollama gateway request/synthesis seam to the Phase-B flag
+- Ziel:
+  - Extend Phase-B T-B6 with one provider-isolated Ollama gateway seam after the direct OpenAI and Gemini slices.
+- Scope:
+  - With `TRANSPORT_LAYER_ENABLED=true`, inject `OllamaLocalTransport` into the existing direct `ollama` gateway only for its existing provider request path, including its synthesis call.
+  - Preserve the legacy route when the flag is absent/false. Atomic/AgentRuntime/engine execution, tool execution ownership, and all other providers remain excluded.
+- Files:
+  - `backend/services/llm_gateway.py`
+  - `backend/llm_providers/ollama/gateway.py`
+  - focused Ollama flag-off/flag-on regression
+- Acceptance Criteria:
+  - The initial tool-capable request and synthesis request use the injected local transport only when the Phase-B flag is true.
+  - Flag-off dispatch and the excluded Atomic/engine path retain existing service seams.
+  - Ollama gateway tool filtering, forced-tool forwarding, budget guard, synthesis selection, and response behavior remain gateway-owned.
+- Tests:
+  - focused Ollama flag-off/flag-on gateway and existing Atomic regression selected by precheck
+- Model: 5.6 Terra
+- Reason:
+  - User selected the existing Ollama gateway request/synthesis seam only; Atomic/engine execution is intentionally a separate risk surface.

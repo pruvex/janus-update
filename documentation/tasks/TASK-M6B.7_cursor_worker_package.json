@@ -1,0 +1,16 @@
+{
+  "task_label": "TASK-M6B.7 direct Ollama gateway request and synthesis flag-gated transport delegation",
+  "worker_profile": "cursor-agent",
+  "allowed_edit_paths": ["backend/services/llm_gateway.py", "backend/llm_providers/ollama/gateway.py", "backend/tests/test_transport_layer_ollama_gateway.py"],
+  "acceptance_criteria": [
+    "With TRANSPORT_LAYER_ENABLED absent or false, direct Ollama silo dispatch injects no transport.",
+    "With the flag true, only direct ollama constructs OllamaLocalTransport from the selected gateway service and injects it into OllamaGateway.",
+    "OllamaGateway uses the injected transport only at existing initial and synthesis provider request seams, preserving tool filtering, force-tool forwarding, budget guard, and response behavior.",
+    "Atomic/AgentRuntime/engine execution receives no transport; OpenAI, Gemini, Google, OpenRouter, and Codex stay isolated.",
+    "Add hermetic flag-off, flag-on request/synthesis, and Atomic exclusion regressions."
+  ],
+  "checks": [{"label": "Codex-owned focused pytest", "command": ["python", "-m", "pytest", "backend/tests/test_transport_layer_ollama_gateway.py", "backend/tests/llm_providers/test_ollama_gateway.py", "backend/tests/test_agent_factory_runtime.py", "backend/tests/test_runtime_llm.py", "-q"]}],
+  "forbidden_actions": ["commit", "push", "tag", "merge", "release", "publish", "dependency", "secret", "auth", "security", "privacy", "migration", "architecture", "atomic", "agent_runtime", "engine", "openai", "gemini", "google", "openrouter", "codex", "streaming", "websearch"],
+  "requested_actions": ["edit"],
+  "task_prompt": "Implement only TASK-M6B.7 in the exact allowlisted files. Preserve legacy dispatch when TRANSPORT_LAYER_ENABLED is absent or false. When true, enable only direct provider=ollama: construct OllamaLocalTransport from the selected OllamaGateway.service in llm_gateway and pass it as an optional dependency. In OllamaGateway use it only at the existing final provider request seam for initial and synthesis calls. Do not change Atomic, AgentRuntime, engine, tool execution ownership, tool filtering, forced-tool forwarding, budget guards, other providers, streaming, fallback, credentials, docs, or Git. Return concise JSON-compatible status, changed files, checks, and blockers."
+}
