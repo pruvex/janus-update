@@ -1,25 +1,86 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
-As of `2026-07-13 20:15 +02:00`, `TASK-M6C.2` is final-audited `PASS` and documentation-synchronized. The central `llm_gateway.reason_and_respond` return seam now selects the shared provider-family finisher: OpenAI-compatible release-list links and Gemini-native preserved-metadata rendering remain visible. T-C3 and T-C4 remain open; Phase C and the parent transport-refactor Spec are not complete.
+As of `2026-07-13 22:26 +02:00`, the final M6 feature-branch checkpoint was created locally as `26cf3d207` (`refactor(providers): close M6 transport refactor`).
 
-Current goal: prepare the explicit Git checkpoint for the completed C2 slice, then continue with the next Phase-C task.
+Current goal: push the M6 feature branch to `backup`, then publish this CURRENT_STATE snapshot to `origin/codex-sync`; a master merge remains separately approval-gated.
 
-Active phase: `janus-documentation-update`, canonical state `PASS`.
+Active phase: `janus-git-governance`, canonical state `PASS`.
 
-Last Codex work: passed the enabled Gemini Berlin-weather smoke at 20:03 with normal Open-Meteo output, created the C2 audit package, passed the final audit, recorded C2 in the Phase-C task, central registry, project state, changelog, pipeline log, and moved the completed C2 delta Spec into `documentation/SPEC/Spec Done/`.
+Last Codex work: committed the validated M6 C3/C4 evidence, aggregate closeout, Cursor PASS re-review result, parity test, and documentation sync in one scoped checkpoint. Local healthcheck reports and `documentation/logs/` remain untracked and excluded.
 
-Changed files in this closeout: bounded C2 source/tests; C2 task, precheck, execution, audit, and final-audit artifacts; `documentation/tasks/TASK-M6_transport_phase_c.md`; `documentation/01_CENTRAL_TASK_REGISTRY.md`; `PROJECT_STATE.md`; `CHANGELOG.md`; `documentation/pipeline/TEST_PIPELINE_RUN_LOG.md`; `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md`. `WHAT_I_LEARNED.md` was intentionally unchanged because existing M6 transport boundary patterns already cover this behavior. Local-only health reports and `documentation/logs/` remain untracked and excluded.
+Tests / validation performed: documentation marker validation PASS; aggregate final-audit validator PASS; `git diff --cached --check` PASS before commit; Cursor re-review PASS.
 
-Tests / validation performed: C2 Spec/task/precheck/execution/final-audit validators PASS; focused response-postprocessor and transport-gateway suite `24 passed`; scoped `py_compile` PASS; `git diff --check` PASS; manual enabled Gemini Berlin-weather smoke PASS.
+Open risks: C3 remains architecture debt and requires a future redesign Spec for any deletion. Backup push and CURRENT_STATE sync are pending; a master merge requires a separate explicit `Merge: YES`.
 
-Open risks: C2 intentionally retains the old OpenAI helper definition as an inactive compatibility surface; active post-response invocation is central. The shared Cursor delegate still forwards unsupported `--cursor-pool auto_composer`; it is a separate non-authoritative tooling defect. No production-wide flag flip is authorized. `documentation/logs/` remains local and untracked by design.
+Next recommended step for ChatGPT: after push/sync confirmation, approve or decline the separately proposed master merge.
 
-Next recommended step for ChatGPT: approve the C2 Git checkpoint only after reviewing the local final-audit/doc-sync status.
+Next recommended step for Codex: amend this snapshot into the same M6 checkpoint, push `codex/m6-transport-prep` to `backup`, and run the approved CURRENT_STATE sync.
 
-Next recommended step for Codex: use `janus-git-governance` on `5.6 Terra`, high intelligence, for a targeted C2 commit; then continue C3 routing.
+Last updated: `2026-07-13 22:26 +02:00`. The local M6 commit exists; no backup push or CURRENT_STATE sync has occurred yet.
 
-Last updated: `2026-07-13 20:15 +02:00`. No commit, push, or CURRENT_STATE sync occurred for this block; remote state remains the prior T-C1-closeout snapshot.
+## Current Snapshot Update
+As of `2026-07-13 22:20 +02:00`, M6 provider transport refactor closure is final-audited `PASS`, and Cursor's external re-review is `PASS` with no remaining review fixes.
+
+Current goal: create the approved M6 feature-branch checkpoint, publish it to backup, sync CURRENT_STATE for ChatGPT, then obtain a separate master-merge approval.
+
+Active phase: `janus-git-governance`, canonical state `PASS`.
+
+Last Codex work: recorded Cursor's final PASS in the aggregate audit package, final audit, review handoff, central task registry, project state, and test-pipeline run log. The direct validation matrix remains Phase-B `63 passed`, C1 `111 passed, 6 deselected`, C2 `24 passed`, and C4 `14 passed`.
+
+Changed files in this closeout: `documentation/tasks/TASK-M6_AGGREGATE_AUDIT_PACKAGE.md`; `documentation/tasks/TASK-M6_AGGREGATE_FINAL_AUDIT.md`; `documentation/tasks/CURSOR_M6_TOTAL_REVIEW_HANDOFF.md`; `documentation/01_CENTRAL_TASK_REGISTRY.md`; `PROJECT_STATE.md`; `documentation/pipeline/TEST_PIPELINE_RUN_LOG.md`; `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md`.
+
+Tests / validation performed: bound Phase-B/C1/C2/C4 evidence PASS; Cursor re-review PASS; documentation marker validation PASS; aggregate final-audit validator PASS; `git diff --check` PASS.
+
+Open risks: C3 deletion remains architecture debt because the inventory found active contracts; it is not M6-blocking and requires a new redesign Spec. Local-only health reports and `documentation/logs/` remain excluded from the checkpoint.
+
+Next recommended step for ChatGPT: explicitly approve `Commit + Push + Sync: YES` for the M6 feature branch; review the separate merge plan afterward.
+
+Next recommended step for Codex: run the targeted checkpoint, push `codex/m6-transport-prep` to `backup`, then run the CURRENT_STATE sync script. Do not merge without a separate `Merge: YES`.
+
+Last updated: `2026-07-13 22:20 +02:00`. No M6 aggregate commit, backup push, or CURRENT_STATE sync has occurred yet; remote state does not contain this final closeout snapshot.
+
+## Current Snapshot Update
+As of `2026-07-13 22:08 +02:00`, M6 aggregate closeout is `PASS WITH FIXES` pending Cursor's final short re-review; the earlier missing Validation transcription is present.
+
+Current goal: obtain Cursor's final short re-review after the aggregate evidence and closeout-text sync, then prepare the approved M6 checkpoint and merge decision.
+
+Active phase: `janus-documentation-update`, canonical state `PASS WITH FIXES`; C4 is complete and C3 remains documented architecture debt.
+
+Last Codex work: verified the Cursor findings locally, added the direct validation transcription, and corrected the remaining historical C2 scope text so it no longer presents C3/C4 as unfinished future tasks. The Phase-C task formatting is also normalized.
+
+Changed files in this routing block: C3/C4 aggregate closeout artifacts; `documentation/tasks/TASK-M6_AGGREGATE_AUDIT_PACKAGE.md`; `documentation/tasks/TASK-M6_transport_phase_c.md`; `documentation/01_CENTRAL_TASK_REGISTRY.md`; `PROJECT_STATE.md`; `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md`. Local-only health reports and `documentation/logs/` remain untracked and excluded.
+
+Tests / validation performed: aggregate package evidence binding review PASS; C4 focused parity plus adapter regression suite `14 passed`; prior Phase-B/C1/C2 evidence is transcribed as `63`, `111`, and `24` passing tests respectively; `git diff --check` PASS.
+
+Open risks: parent T-C3 cannot honestly be marked done: the remaining branches are active contracts, and branch-count reduction would require a new redesign Spec. Cursor's final re-review result is the only external M6 closeout gate. `documentation/logs/` remains local and untracked by design.
+
+Next recommended step for ChatGPT: run Cursor's short re-review using `documentation/tasks/CURSOR_M6_TOTAL_REVIEW_HANDOFF.md` and provide its final `PASS` or `BLOCKED` verdict.
+
+Next recommended step for Codex: after Cursor PASS, use `janus-git-governance` for the explicit checkpoint, sync, and separate master-merge approval.
+
+Last updated: `2026-07-13 22:08 +02:00`. No commit, push, or CURRENT_STATE sync occurred for this routing block; remote state contains the C2 closeout but not this C3/C4 aggregate snapshot.
+
+## Current Snapshot Update
+As of `2026-07-13 20:23 +02:00`, C2 is committed, pushed to `backup/codex/m6-transport-prep`, and CURRENT_STATE is published to `origin/codex-sync`. T-C3 routing is `BLOCKED` only on a required scope decision: the parent Spec’s “dead provider branches” label spans live streaming, Gemini history normalization, provider fallback, and internal generation seams.
+
+Current goal: obtain Cursor's final short re-review after aggregate evidence and C3-debt documentation sync, then prepare the approved M6 checkpoint and merge decision.
+
+Active phase: `janus-documentation-update`, canonical state `PASS` for C4; C3 remains open.
+
+Last Codex work: incorporated Cursor's PASS WITH FIXES review: aggregate validation is now transcribed directly, Phase-C markers consistently retain C3 as debt and C4 as complete, and the Cursor Composer wrapper issue is explicitly non-blocking infrastructure debt.
+
+Changed files in this routing block: C3 inventory/decision artifacts; `documentation/SPEC/M6C4_provider_tool_id_parity.md`; `documentation/tasks/TASK-M6C.4_decision_summary.md`; `documentation/tasks/TASK-M6C.4_provider_tool_id_parity.md`; `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md`. Local-only health reports and `documentation/logs/` remain untracked and excluded.
+
+Tests / validation performed: C4 Spec-review, task-artifact, task-handoff, precheck, execution-result, and final-audit validators PASS; focused parity plus adapter regression suite `14 passed`; `py_compile` and `git diff --check` PASS.
+
+Open risks: parent T-C3 cannot honestly be marked done: the remaining branches are active contracts, and branch-count reduction would require an out-of-scope redesign. M6 needs an explicit closure decision that preserves C3 as documented architecture debt before a full Cursor review. `documentation/logs/` remains local and untracked by design.
+
+Next recommended step for ChatGPT: request Cursor's short re-review using the revised handoff; accept PASS only after the updated closeout artifacts are checked.
+
+Next recommended step for Codex: after Cursor PASS, use `janus-git-governance` for the explicit checkpoint, sync, and separate master-merge approval.
+
+Last updated: `2026-07-13 20:23 +02:00`. No commit, push, or CURRENT_STATE sync occurred for this routing block; remote state contains the C2 closeout but not this C3 routing snapshot.
 
 ## Current Snapshot Update
 As of `2026-07-12 16:49 +02:00`, BACKLOG-126 is selected `IN PROGRESS` with a bounded preimplementation handoff. Dashboard sync passed (`total=86`, `active=12`, `done=74`, `routing_missing=2`). No gateway code changed.
