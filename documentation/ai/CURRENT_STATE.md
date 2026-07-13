@@ -5,19 +5,19 @@ As of `2026-07-13 14:10 +02:00`, TASK-M6B.4 and BACKLOG-128 are final-audit PASS
 
 Current goal: checkpoint the completed M6B.4 + BACKLOG-128 delivery block, then route M6B.5 only after an explicit new scope decision.
 
-Active phase: `janus-documentation-update`, canonical state `PASS`.
+Active phase: `janus-git-governance`, canonical state `PASS`.
 
-Last Codex work: Cursor-first bounded M6B.4 resolver/registry candidate was reviewed; Codex added focused resolver regressions, repaired the independently captured Ollama weather alias, reran validation, and recorded final audit PASS.
+Last Codex work: completed the M6B.4/BACKLOG-128 documentation closeout, committed it as `bf48b9b25`, pushed the active feature branch to `backup`, and refreshed the ChatGPT snapshot on `origin/codex-sync`.
 
 Changed files: `backend/llm_providers/runtime_llm.py`; `backend/services/llm_gateway.py`; `backend/tests/test_runtime_llm.py`; `backend/llm_providers/ollama/service.py`; `backend/tests/llm_providers/test_ollama_service.py`; `documentation/backlog/BACKLOG.md`; M6B.4/BACKLOG-128 task and audit artifacts; registry, project state, changelog, pipeline log, and learning memory.
 
 Tests / validation performed: focused pytest PASS (`17 passed`); `py_compile` PASS; `git diff --check` PASS; final-audit validator PASS; Backlog validator PASS with pre-existing legacy warnings; documentation-update validator PASS; dashboard sync PASS (`total=88`, `active=10`, `done=78`); manual default-off Ollama weather smoke PASS at 23:01.
 
-Open risks: M6B.5 live gateway delegation and separate Cursor-wrapper tooling debt remain. No commit, push, or `origin/codex-sync` refresh has occurred for this delivery block; remote CURRENT_STATE may be stale.
+Open risks: M6B.5 live gateway delegation and separate Cursor-wrapper tooling debt remain. `documentation/logs/` is intentionally local and untracked; it is excluded from the delivery commit.
 
-Next recommended step for ChatGPT: authorize `Commit + Push + Sync: YES` only after the remaining local documentation validations pass.
+Next recommended step for ChatGPT: use `origin/codex-sync` commit `e0dd03f7d` as the remote snapshot for this completed block.
 
-Next recommended step for Codex: complete dashboard/documentation validators, then use `janus-git-governance` for the checkpoint gate on `5.6 Terra/medium`.
+Next recommended step for Codex: route `TASK-M6B.5` only after a new bounded task breakdown and preimplementation check on `5.6 Terra/high`.
 
 Last updated: `2026-07-13 14:10 +02:00`.
 
