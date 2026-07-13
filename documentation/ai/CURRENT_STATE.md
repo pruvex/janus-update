@@ -1,25 +1,25 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
-As of `2026-07-13 15:48 +02:00`, TASK-M6B.6 is final-audit PASS and documentation-complete. The existing direct Gemini normal tool-loop now receives `GeminiNativeTransport` only when `TRANSPORT_LAYER_ENABLED=true`; the flag remains default-off and engine-owned/drill-down Gemini remain unchanged.
+As of `2026-07-13 16:50 +02:00`, TASK-M6B.7 is final-audit PASS: direct Ollama gateway calls use the flag-gated thin transport and the enabled Berlin-weather smoke passed.
 
-Current goal: create one explicit Git checkpoint for the validated M6B.6 delivery, then refresh the ChatGPT snapshot on `origin/codex-sync`.
+Current goal: resolve the M6B.7 Atomic-boundary decision before any Ollama transport code change.
 
-Active phase: `janus-documentation-update`, canonical state `PASS`.
+Active phase: `janus-executioner`, canonical state `BLOCKED`.
 
-Last Codex work: completed the enabled Gemini Berlin-weather smoke at 15:42, built the M6B.6 audit package, final-audited PASS, and synchronized the task source, registry, project state, changelog, reusable learning, test-pipeline log, and documentation-closeout artifact.
+Last Codex work: Cursor-first execution produced no code changes; local call-path review found that direct Ollama gateway calls cannot distinguish Atomic/AgentRuntime from normal calls.
 
-Changed files: `backend/services/llm_gateway.py`; `backend/llm_providers/gemini/gateway.py`; `backend/tests/test_transport_layer_gemini_gateway.py`; M6B.6 decision, breakdown, precheck, Cursor package/evidence, execution, audit package, final audit, documentation update, task closeout, registry, project state, changelog, learning, pipeline log, skill-usage log, and CURRENT_STATE artifacts.
+Changed files: `documentation/tasks/TASK-M6_transport_phase_b.md`; `documentation/tasks/TASK-M6B.7_decision_summary.md`; `documentation/tasks/TASK-M6B.7_task_breakdown.md`; `documentation/tasks/TASK-M6B.7_preimplementation_check.md`; `documentation/codex/SKILL_USAGE_LOG.md`; `documentation/ai/CURRENT_STATE.md`.
 
-Tests / validation performed: precheck, execution-result, and final-audit validators PASS; focused Gemini runner/resolver suite PASS (`31 passed`); combined Gemini/OpenAI transport suite PASS (`40 passed`); `py_compile`, `git diff --check`, and Playwright test discovery PASS; enabled Gemini Berlin-weather smoke PASS with `Quelle: Open-Meteo`.
+Tests / validation performed: M6B.7 precheck validator PASS; Cursor direct worker timed out with no changed files; call-path boundary review BLOCKED. M6B.6 committed as `8e08d0605`, backed up, and CURRENT_STATE synchronized as `8606a38b7`.
 
-Open risks: the shared Cursor delegate still forwards unsupported `--cursor-pool`; the direct Cursor worker and Codex-owned review remain the non-blocking fallback. No direct `google` gateway silo exists, so Google remains excluded. `documentation/logs/` remains local and untracked.
+Open risks: enabling the Ollama transport at the current direct gateway seam would unintentionally include Atomic/AgentRuntime calls. The shared Cursor delegate still forwards unsupported `--cursor-pool`. `documentation/logs/` remains local and untracked.
 
-Next recommended step for ChatGPT: do not assume the remote snapshot contains M6B.6 until the explicit `origin/codex-sync` refresh completes.
+Next recommended step for ChatGPT: do not assume the remote snapshot contains M6B.7 planning until a later explicit sync.
 
-Next recommended step for Codex: after explicit approval, use `janus-git-governance` to stage the scoped delivery, commit it, push the feature branch to `backup`, and sync CURRENT_STATE to `origin/codex-sync`.
+Next recommended step for Codex: use `janus-feature-design` to lock either all-direct-Ollama transport scope or a new upstream Atomic exclusion signal.
 
-Last updated: `2026-07-13 15:48 +02:00`.
+Last updated: `2026-07-13 16:40 +02:00`.
 
 ## Current Snapshot Update
 As of `2026-07-12 16:49 +02:00`, BACKLOG-126 is selected `IN PROGRESS` with a bounded preimplementation handoff. Dashboard sync passed (`total=86`, `active=12`, `done=74`, `routing_missing=2`). No gateway code changed.
