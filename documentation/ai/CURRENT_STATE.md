@@ -1,25 +1,25 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
-As of `2026-07-13 17:26 +02:00`, the M6 Phase-B direct-provider foundation is complete and documented with canonical state `PASS`. The combined final audit is `PASS WITH FIXES`; its documentation-only fixes have been applied. Existing direct OpenAI, Gemini, and Ollama gateway paths now have default-off, flag-gated thin transport delegation while provider-owned policy and response behavior remain in place.
+As of `2026-07-13 17:31 +02:00`, the M6 Phase-B direct-provider foundation is complete, documented, committed, backed up, and published to the ChatGPT sync branch with canonical state `PASS`. The combined final audit is `PASS WITH FIXES`; its documentation-only fixes have been applied. Existing direct OpenAI, Gemini, and Ollama gateway paths now have default-off, flag-gated thin transport delegation while provider-owned policy and response behavior remain in place.
 
-Current goal: create one scoped documentation checkpoint for the completed Phase-B direct-provider foundation, push it to the backup branch, and synchronize the committed CURRENT_STATE to `origin/codex-sync` after explicit user approval.
+Current goal: select the next bounded transport-refactor epic without reopening the completed Phase-B direct-provider foundation.
 
-Active phase: `janus-documentation-update` complete; next gate `janus-git-governance`, canonical state `PASS`.
+Active phase: `janus-git-governance` complete; next gate `janus-skill-router`, canonical state `PASS`.
 
-Last Codex work: closed TASK-M6B.7 as final-audit `PASS`; validated the combined direct-provider foundation; built its audit package; recorded final audit `PASS WITH FIXES`; and synchronized the parent task, registry, project state, changelog, test-pipeline log, documentation-result artifacts, and this rolling snapshot. The bounded closeout deliberately does not claim the original full Exit-B legacy-removal or provider-branch-reduction metrics.
+Last Codex work: closed TASK-M6B.7 as final-audit `PASS`; validated and documented the combined direct-provider foundation; committed the closeout as `626a1256b`; pushed `codex/m6-transport-prep` to `backup`; and verified publication of the committed CURRENT_STATE to `origin/codex-sync`. The bounded closeout deliberately does not claim the original full Exit-B legacy-removal or provider-branch-reduction metrics.
 
 Changed files: `CHANGELOG.md`; `PROJECT_STATE.md`; `documentation/01_CENTRAL_TASK_REGISTRY.md`; `documentation/pipeline/TEST_PIPELINE_RUN_LOG.md`; `documentation/tasks/TASK-M6_transport_phase_b.md`; `documentation/tasks/TASK-M6B.7_DOCUMENTATION_UPDATE.md`; `documentation/tasks/TASK-M6B_phase_b_closeout_decision.md`; `documentation/tasks/TASK-M6B_PHASE_B_VALIDATION_SUMMARY.md`; `documentation/tasks/TASK-M6B_PHASE_B_AUDIT_PACKAGE.md`; `documentation/tasks/TASK-M6B_PHASE_B_FINAL_AUDIT.md`; `documentation/tasks/TASK-M6B_PHASE_B_DOCUMENTATION_UPDATE.md`; `documentation/codex/SKILL_USAGE_LOG.md`; `documentation/ai/CURRENT_STATE.md`.
 
-Tests / validation performed: combined BaseTransport, concrete transport, resolver, OpenAI/Gemini/Ollama flag-routing, gateway, and runner matrix PASS (`63 passed`); manual enabled Berlin-weather smokes for OpenAI, Gemini, and Ollama PASS with rendered `Quelle: Open-Meteo`; M6B.5/M6B.6/M6B.7 final-audit validators PASS; Phase-B final-audit validator PASS; scoped diff check PASS. The last product checkpoint is commit `c1ad55768`, pushed to `backup/codex/m6-transport-prep`; its previous CURRENT_STATE snapshot was synchronized as `origin/codex-sync` commit `a22a1657b`.
+Tests / validation performed: combined BaseTransport, concrete transport, resolver, OpenAI/Gemini/Ollama flag-routing, gateway, and runner matrix PASS (`63 passed`); manual enabled Berlin-weather smokes for OpenAI, Gemini, and Ollama PASS with rendered `Quelle: Open-Meteo`; M6B.5/M6B.6/M6B.7 final-audit validators PASS; Phase-B final-audit validator PASS; documentation validator PASS; staged diff check PASS; backup branch equality PASS; direct `origin/codex-sync` remote verification PASS.
 
 Open risks: OpenRouter transport work remains Epic 6; Codex/OAuth remains Epic 5; legacy service removal and provider-branch reduction remain Phase C. The shared Cursor delegate still forwards unsupported `--cursor-pool`; direct Cursor worker fallback remains the documented workaround. `documentation/logs/` remains local and untracked.
 
-Next recommended step for ChatGPT: do not assume the remote snapshot contains this Phase-B closeout until the next explicitly approved `origin/codex-sync` run succeeds.
+Next recommended step for ChatGPT: treat the Phase-B direct-provider foundation as closed and do not route OpenRouter, Codex/OAuth, or Phase-C cleanup back into TASK-M6B.
 
-Next recommended step for Codex: use `janus-git-governance` on `5.6 Terra`, low intelligence, to stage only the Phase-B documentation closeout, commit it, push the feature branch to `backup`, and run the official CURRENT_STATE sync helper after the user grants `Commit + Push + Sync: YES`.
+Next recommended step for Codex: use `janus-skill-router` on `5.6 Terra`, medium intelligence, to choose one next target: Epic 6 OpenRouter transport, Epic 5 Codex/OAuth transport, or Phase-C legacy cleanup. Do not implement until the selected target has its own bound artifacts and precheck.
 
-Last updated: `2026-07-13 17:26 +02:00`.
+Last updated: `2026-07-13 17:31 +02:00`.
 
 ## Current Snapshot Update
 As of `2026-07-12 16:49 +02:00`, BACKLOG-126 is selected `IN PROGRESS` with a bounded preimplementation handoff. Dashboard sync passed (`total=86`, `active=12`, `done=74`, `routing_missing=2`). No gateway code changed.
