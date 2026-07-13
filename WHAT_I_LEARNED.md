@@ -315,3 +315,15 @@
 - **Epic:** BACKLOG-128
 - **Confidence:** High
 - **Tags:** ollama,weather,tool-call,canonicalization,allowlist,atomic-agent
+
+
+## [PATTERN] #FlagGatedTransportMustInjectAtExistingServiceSeam "Flag-gated transport must inject at the existing service seam"
+- **Kontext:** TASK-M6B.5 direct OpenAI Phase-B transport rollout, 2026-07-13 (2026-07-13).
+- **Problem:** A gateway-level feature flag cannot replace the whole gateway with a service-level transport without migrating policy, tool-loop, synthesis, cost, and streaming ownership.
+- **Loesung:** Keep the gateway as owner and inject the transport only at its existing request and second-call-history seams; preserve legacy dispatch when the flag is absent or false.
+- **Haertung:** Focused flag-off/flag-on gateway, runner, and resolver suite passed 27 tests; enabled OpenAI Berlin weather smoke rendered Open-Meteo output.
+- **Tripwire:** If a flag-on transport change moves gateway policy or causes a non-OpenAI provider to receive an injected transport, stop and reroute before widening the rollout.
+- **Location:** backend/services/llm_gateway.py; backend/llm_providers/openai/gateway.py; backend/tests/test_transport_layer_openai_gateway.py
+- **Epic:** TASK-M6B.5
+- **Confidence:** High
+- **Tags:** transport,flag,gateway,openai,legacy-dispatch,service-seam

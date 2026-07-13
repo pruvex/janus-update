@@ -1,0 +1,57 @@
+{
+  "task_label": "TASK-M6B.5 direct OpenAI flag-gated transport delegation",
+  "worker_profile": "cursor-agent",
+  "allowed_edit_paths": [
+    "backend/services/llm_gateway.py",
+    "backend/llm_providers/openai/gateway.py",
+    "backend/tests/test_transport_layer_openai_gateway.py",
+    "backend/tests/test_runtime_llm.py"
+  ],
+  "acceptance_criteria": [
+    "With TRANSPORT_LAYER_ENABLED absent or false, llm_gateway uses the exact existing silo dispatch and passes no transport dependency.",
+    "With TRANSPORT_LAYER_ENABLED true, only the existing direct openai provider path constructs OpenAICompatTransport from the selected gateway service and injects it into the OpenAI gateway.",
+    "OpenAI gateway uses the injected transport only for its existing service-level request and second-call-history seams; gateway-owned policy, tool loop, synthesis, response shaping, cost persistence, and streaming remain unchanged.",
+    "Gemini, Google, Ollama, OpenRouter, unsupported providers, and the Codex placeholder do not receive or enable a transport path.",
+    "Add hermetic focused regressions for flag-off, flag-on OpenAI, and non-OpenAI isolation."
+  ],
+  "checks": [
+    {
+      "label": "Codex-owned focused pytest",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "backend/tests/test_transport_layer_openai_gateway.py",
+        "backend/tests/test_openai_tool_loop_runner.py",
+        "backend/tests/test_runtime_llm.py",
+        "-q"
+      ]
+    }
+  ],
+  "forbidden_actions": [
+    "commit",
+    "push",
+    "tag",
+    "merge",
+    "release",
+    "publish",
+    "dependency",
+    "secret",
+    "auth",
+    "security",
+    "privacy",
+    "migration",
+    "architecture",
+    "openrouter_live_routing",
+    "gemini",
+    "google",
+    "ollama",
+    "codex",
+    "streaming",
+    "websearch"
+  ],
+  "requested_actions": [
+    "edit"
+  ],
+  "task_prompt": "Implement only TASK-M6B.5 in allowlisted files. Preserve exact legacy dispatch when TRANSPORT_LAYER_ENABLED is absent or false. When true, enable only the direct provider=openai path: construct OpenAICompatTransport from the selected OpenAIGateway.service in llm_gateway and pass it as an optional dependency into OpenAIGateway. In that gateway, use the injected transport only instead of direct service calls at the existing service-level request/history seams. Do not add OpenRouter routing or touch Gemini, Google, Ollama, Codex, streaming, Websearch, fallback, credential, policy, synthesis, response-shaping, cost, docs, or Git behavior. Return status, changed_files, command_results, summary, and blockers as concise JSON-compatible output."
+}

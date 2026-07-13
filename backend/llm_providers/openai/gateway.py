@@ -1,7 +1,7 @@
 import json
 import logging
 import re
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING
 
 from backend.llm_providers.ollama_adapter import build_compact_synthesis_messages
 from backend.llm_providers.shared.base_gateway import BaseProviderGateway
@@ -14,6 +14,9 @@ from backend.llm_providers.shared.utils import (
 )
 
 from .service import OpenAIServiceProvider
+
+if TYPE_CHECKING:
+    from backend.llm_providers.transports.openai_compat import OpenAICompatTransport
 
 logger = logging.getLogger("janus_backend")
 
@@ -70,6 +73,72 @@ class OpenAIGateway(BaseProviderGateway):
             sanitized.pop(key, None)
         return sanitized
 
+    async def _request_via_service_seam(
+        self,
+        *,
+        provider_transport: Optional["OpenAICompatTransport"],
+        provider_service: Optional[OpenAIServiceProvider],
+        api_key: str,
+        model: str,
+        messages: List[Dict[str, Any]],
+        tools: Optional[List[Dict[str, Any]]] = None,
+        **kwargs: Any,
+    ) -> Dict[str, Any]:
+        if provider_transport is not None:
+            return await provider_transport.send(
+                api_key=api_key,
+                model=model,
+                messages=messages,
+                tools=tools,
+                **kwargs,
+            )
+        active_service = provider_service or self.service
+        return await active_service.generate_response(
+            api_key=api_key,
+            model=model,
+            messages=messages,
+            tools=tools,
+            **kwargs,
+        )
+
+    def _prepare_history_via_service_seam(
+        self,
+        *,
+        provider_transport: Optional["OpenAICompatTransport"],
+        chat_history: List[Dict[str, Any]],
+        raw_assistant_response: Dict[str, Any],
+        tool_results: List[Dict[str, Any]],
+    ) -> List[Dict[str, Any]]:
+        if provider_transport is not None:
+            return provider_transport.prepare_history_for_second_call(
+                chat_history=chat_history,
+                raw_assistant_response=raw_assistant_response,
+                tool_results=tool_results,
+            )
+        return self.service.prepare_history_for_second_call(
+            chat_history=chat_history,
+            raw_assistant_response=raw_assistant_response,
+            tool_results=tool_results,
+        )
+
+    def _service_seam_for_tool_loop_runner(
+        self,
+        provider_transport: Optional["OpenAICompatTransport"],
+    ) -> Any:
+        if provider_transport is None:
+            return self.service
+
+        transport = provider_transport
+
+        class _TransportServiceSeam:
+            async def generate_response(self, **kwargs: Any) -> Dict[str, Any]:
+                return await transport.send(**kwargs)
+
+            def prepare_history_for_second_call(self, **kwargs: Any) -> List[Dict[str, Any]]:
+                return transport.prepare_history_for_second_call(**kwargs)
+
+        return _TransportServiceSeam()
+
     async def reason_and_respond(
         self,
         provider: str,
@@ -92,6 +161,7 @@ class OpenAIGateway(BaseProviderGateway):
         tool_limit_reached: bool = False,
         allow_pdf_enrichment: bool = False,
         provider_service: Optional[OpenAIServiceProvider] = None,
+        provider_transport: Optional["OpenAICompatTransport"] = None,
         force_tool_name: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
@@ -113,6 +183,7 @@ class OpenAIGateway(BaseProviderGateway):
                 image_data=image_data,
                 db=db,
                 force_tool_name=force_tool_name,
+                provider_transport=provider_transport,
             )
 
         # 2. Wenn tool_results vorhanden -> Bestehende Synthese-Logik
@@ -120,8 +191,9 @@ class OpenAIGateway(BaseProviderGateway):
         final_messages = self.build_research_synthesis_messages(chat_history)
         
         # Robustes Kwargs-Handling
-        active_service = provider_service or self.service
-        response = await active_service.generate_response(
+        response = await self._request_via_service_seam(
+            provider_transport=provider_transport,
+            provider_service=provider_service,
             api_key=api_key,
             model=model,
             messages=final_messages,
@@ -188,6 +260,7 @@ class OpenAIGateway(BaseProviderGateway):
         db = passthrough_kwargs.pop("db", None)
         # 💎 VIDEO-FORCE: Extract force_tool_name for first-round tool_choice override
         _force_tool_name = str(passthrough_kwargs.pop("force_tool_name", "") or "").strip() or None
+        provider_transport = passthrough_kwargs.pop("provider_transport", None)
 
         # 💎 MoA-Routing: Bestimme das optimale Modell für den Tool-Loop
         # HONOR OVERRIDE: If execution_engine already upgraded the model, use that
@@ -265,7 +338,9 @@ class OpenAIGateway(BaseProviderGateway):
 
             # 💎 VIDEO-FORCE: Only force tool_choice on first round
             _round_force = _force_tool_name if current_round == 1 else None
-            response = await self.service.generate_response(
+            response = await self._request_via_service_seam(
+                provider_transport=provider_transport,
+                provider_service=None,
                 api_key=api_key,
                 model=tool_execution_model,
                 messages=current_chat_history,
@@ -319,7 +394,8 @@ class OpenAIGateway(BaseProviderGateway):
                                     }
                                 ],
                             }
-                            current_chat_history = self.service.prepare_history_for_second_call(
+                            current_chat_history = self._prepare_history_via_service_seam(
+                                provider_transport=provider_transport,
                                 chat_history=current_chat_history,
                                 raw_assistant_response=raw_forced_assistant_response,
                                 tool_results=executor_results,
@@ -344,7 +420,9 @@ class OpenAIGateway(BaseProviderGateway):
                     else:
                         synthesis_messages = current_chat_history
 
-                    synthesis_response = await self.service.generate_response(
+                    synthesis_response = await self._request_via_service_seam(
+                        provider_transport=provider_transport,
+                        provider_service=None,
                         api_key=api_key,
                         model=tool_execution_model,
                         messages=synthesis_messages, # <--- Nutzt jetzt die Diamond-Regeln
@@ -433,7 +511,8 @@ class OpenAIGateway(BaseProviderGateway):
                         logger.info("--- END DEBUG: RAW WEBSEARCH SKILL RESPONSE DATA ---\n")
                     # --- END DEBUG INSERTION ---
 
-            current_chat_history = self.service.prepare_history_for_second_call(
+            current_chat_history = self._prepare_history_via_service_seam(
+                provider_transport=provider_transport,
                 chat_history=current_chat_history,
                 raw_assistant_response=response.get("raw_assistant_response"),
                 tool_results=executor_results
@@ -464,6 +543,7 @@ class OpenAIGateway(BaseProviderGateway):
         image_data = passthrough_kwargs.pop("image_data", None)
         db = passthrough_kwargs.pop("db", None)
         force_tool_name = str(passthrough_kwargs.pop("force_tool_name", "") or "").strip() or None
+        provider_transport = passthrough_kwargs.pop("provider_transport", None)
 
         context = ToolLoopContext(
             provider=str(provider or ""),
@@ -527,7 +607,8 @@ class OpenAIGateway(BaseProviderGateway):
                                 }
                             ],
                         }
-                        updated_history = self.service.prepare_history_for_second_call(
+                        updated_history = self._prepare_history_via_service_seam(
+                            provider_transport=provider_transport,
                             chat_history=loop_context.chat_history,
                             raw_assistant_response=raw_forced_assistant_response,
                             tool_results=executor_results,
@@ -547,7 +628,9 @@ class OpenAIGateway(BaseProviderGateway):
                 else:
                     synthesis_messages = loop_context.chat_history
 
-                synthesis_response = await self.service.generate_response(
+                synthesis_response = await self._request_via_service_seam(
+                    provider_transport=provider_transport,
+                    provider_service=None,
                     api_key=api_key,
                     model=loop_context.tool_execution_model,
                     messages=synthesis_messages,
@@ -622,11 +705,12 @@ class OpenAIGateway(BaseProviderGateway):
                     logger.warning("GATEWAY-COST-PERSIST: Failed to save cost", exc_info=True)
             return NonToolResponseAction(kind="return", response=response)
 
+        loop_service = self._service_seam_for_tool_loop_runner(provider_transport)
         return await ToolLoopRunner().run(
-            service=self.service,
+            service=loop_service,
             context=context,
             sanitize_generate_response_kwargs=self._sanitize_generate_response_kwargs,
-            prepare_history_for_second_call=self.service.prepare_history_for_second_call,
+            prepare_history_for_second_call=loop_service.prepare_history_for_second_call,
             handle_non_tool_response=handle_non_tool_response,
         )
 

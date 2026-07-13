@@ -1,25 +1,25 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
-As of `2026-07-13 14:10 +02:00`, TASK-M6B.4 and BACKLOG-128 are final-audit PASS and documentation-closeout ready. The resolver/registry seam remains non-consuming; the default-off local Ollama weather chain renders Open-Meteo output again.
+As of `2026-07-13 15:25 +02:00`, TASK-M6B.5 is final-audit PASS and documentation-closeout ready. The first enabled Phase-B path is direct OpenAI only; flag-off remains the legacy gateway dispatch.
 
-Current goal: checkpoint the completed M6B.4 + BACKLOG-128 delivery block, then route M6B.5 only after an explicit new scope decision.
+Current goal: validate the M6B.5 documentation closure, then create one Git checkpoint.
 
 Active phase: `janus-git-governance`, canonical state `PASS`.
 
-Last Codex work: completed the M6B.4/BACKLOG-128 documentation closeout, committed it as `bf48b9b25`, pushed the active feature branch to `backup`, and refreshed the ChatGPT snapshot on `origin/codex-sync`.
+Last Codex work: completed M6B.5 documentation closure, committed it as `6686c1863`, pushed the active feature branch to `backup`, and is refreshing the ChatGPT snapshot on `origin/codex-sync`.
 
-Changed files: `backend/llm_providers/runtime_llm.py`; `backend/services/llm_gateway.py`; `backend/tests/test_runtime_llm.py`; `backend/llm_providers/ollama/service.py`; `backend/tests/llm_providers/test_ollama_service.py`; `documentation/backlog/BACKLOG.md`; M6B.4/BACKLOG-128 task and audit artifacts; registry, project state, changelog, pipeline log, and learning memory.
+Changed files: `backend/services/llm_gateway.py`; `backend/llm_providers/openai/gateway.py`; `backend/tests/test_transport_layer_openai_gateway.py`; M6B.5 decision, breakdown, precheck, Cursor package/evidence, execution, audit, task closeout, registry, project state, changelog, pipeline log, learning memory, CURRENT_STATE, and skill-usage artifacts.
 
-Tests / validation performed: focused pytest PASS (`17 passed`); `py_compile` PASS; `git diff --check` PASS; final-audit validator PASS; Backlog validator PASS with pre-existing legacy warnings; documentation-update validator PASS; dashboard sync PASS (`total=88`, `active=10`, `done=78`); manual default-off Ollama weather smoke PASS at 23:01.
+Tests / validation performed: precheck and final-audit validators PASS; focused flag-off/flag-on OpenAI gateway, runner, and resolver suite PASS (`27 passed`); `py_compile` PASS; `git diff --check` PASS; marker-scoped documentation validator PASS; manual enabled OpenAI Berlin-weather smoke PASS at 14:48.
 
-Open risks: M6B.5 live gateway delegation and separate Cursor-wrapper tooling debt remain. `documentation/logs/` is intentionally local and untracked; it is excluded from the delivery commit.
+Open risks: the shared Cursor delegate still forwards unsupported `--cursor-pool` and the direct worker returned no completion artifact; Codex-owned review/validation remains authoritative. OpenRouter has resolver metadata but no direct gateway silo and remains excluded. `documentation/logs/` is intentionally local and untracked and excluded from the commit.
 
-Next recommended step for ChatGPT: use `origin/codex-sync` commit `e0dd03f7d` as the remote snapshot for this completed block.
+Next recommended step for ChatGPT: use the refreshed `origin/codex-sync` commit as the remote snapshot for M6B.5.
 
-Next recommended step for Codex: route `TASK-M6B.5` only after a new bounded task breakdown and preimplementation check on `5.6 Terra/high`.
+Next recommended step for Codex: route any later provider rollout as a new bounded task; direct OpenAI M6B.5 is complete.
 
-Last updated: `2026-07-13 14:10 +02:00`.
+Last updated: `2026-07-13 15:25 +02:00`.
 
 ## Current Snapshot Update
 As of `2026-07-12 16:49 +02:00`, BACKLOG-126 is selected `IN PROGRESS` with a bounded preimplementation handoff. Dashboard sync passed (`total=86`, `active=12`, `done=74`, `routing_missing=2`). No gateway code changed.

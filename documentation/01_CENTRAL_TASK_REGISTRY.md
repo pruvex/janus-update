@@ -4,6 +4,21 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-M6B.5 - Direct OpenAI flag-gated transport delegation
+
+- **Status**: DONE WITH NON-BLOCKING FOLLOW-UP
+- **Final Audit**: `documentation/tasks/TASK-M6B.5_FINAL_AUDIT.md` (PASS)
+- **Spec**: `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md` (Phase-B T-B6 direct OpenAI slice only; parent Spec remains in progress)
+- **Parent Task**: `documentation/tasks/TASK-M6_transport_phase_b.md`
+- **Decision Summary**: `documentation/tasks/TASK-M6B.5_decision_summary.md`
+- **Task Breakdown**: `documentation/tasks/TASK-M6B.5_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-M6B.5_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-M6B.5_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-M6B.5_AUDIT_PACKAGE.md`
+- **Validation**: focused flag-off/flag-on OpenAI gateway, runner, and resolver suite (`27 passed`), syntax, scoped diff, and enabled OpenAI Berlin-weather smoke PASS.
+- **Scope**: only direct `openai` is enabled when `TRANSPORT_LAYER_ENABLED=true`; flag-off remains legacy. OpenRouter, Gemini, Google, Ollama, and Codex remain unchanged.
+- **Follow-up**: shared Cursor delegate `--cursor-pool` tooling remains separately non-blocking; further provider rollout requires a new task.
+
 ### TASK-M6B.4 - Runtime LLM resolution and transport registry seam
 
 - **Status**: DONE

@@ -1,3 +1,37 @@
+# AUDIT_PACKAGE
+
+Generated: 2026-07-13 12:49:42 UTC
+
+## Goal
+
+Audit M6B.5 direct OpenAI flag-gated transport injection after manual enabled-path evidence.
+
+## Scope Rules
+
+- Audit the provided package and changed artifacts only.
+- Do not rely on development chat history.
+- Verify cost, caching, skill quality, safety scope, and validation evidence.
+- On re-audit, review the blocker delta first before widening scope.
+- If scoped paths were provided, treat them as the audit diff boundary.
+
+## Bound Audit Inputs
+
+- Spec: N/A WITH REASON: parent provider transport refactor remains in progress; this audit binds Phase-B T-B6 direct OpenAI slice only.
+- Task File: documentation/tasks/TASK-M6_transport_phase_b.md
+- Backlog Item: N/A WITH REASON
+- Pre-Implementation Check: documentation/tasks/TASK-M6B.5_preimplementation_check.md
+- Manual Janus Evidence: PRESENT: 2026-07-13 14:48 enabled TRANSPORT_LAYER_ENABLED=true OpenAI Berlin-weather smoke rendered Open-Meteo answer.
+- Pipeline Completion Status: Implementation complete: direct OpenAI Phase-B T-B6 slice only; OpenRouter and other provider paths remain out of scope.
+
+## Backlog Item
+
+```text
+N/A WITH REASON - No backlog source or marker provided.
+```
+
+## Task Acceptance Scope
+
+```text
 TASK-M6B
 - Source Spec: `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md`
 - Backlog Item: `N/A`
@@ -142,9 +176,131 @@ TASK-M6B
 - Model: 5.6 Terra
 - Reason:
   - Live delegation is explicitly later than the transport contracts and resolver and remains a separately auditable risk slice.
-- Closeout:
-  - Final Audit: `PASS` in `documentation/tasks/TASK-M6B.5_FINAL_AUDIT.md`.
-  - The first enabled path is deliberately restricted to the existing direct `openai` gateway. With `TRANSPORT_LAYER_ENABLED=false` or absent, legacy silo dispatch is unchanged; with the flag true, the gateway receives `OpenAICompatTransport` only at its existing service request and second-call-history seams.
-  - Gateway-owned policy, tool-loop control, synthesis, response shaping, cost persistence, and streaming remain untouched. OpenRouter, Gemini, Google, Ollama, Codex, and Phase-C work remain outside this delivery.
-  - Focused flag-off/flag-on gateway, runner, and resolver regressions (`27 passed`), syntax, scoped diff, and enabled OpenAI Berlin-weather smoke passed.
-  - Non-blocking follow-up: the shared Cursor delegate still forwards unsupported `--cursor-pool`; the direct worker did not return a completion artifact, so Codex-owned review and validation remain authoritative.
+```
+
+## Pre-Implementation Check
+
+```text
+PRE-CHECK RESULT
+PRE-CHECK PASSED
+
+legacy handoff start
+NEXT: janus-executioner
+Target Task: TASK-M6B.5
+Target Subtask: N/A
+Task: documentation/tasks/TASK-M6_transport_phase_b.md
+Spec: documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md
+Backlog Item: N/A
+Assigned Model: 5.6 Terra
+Mode: SINGLE_TASK_EXECUTION
+Pre-Check: PRE-CHECK PASSED
+Pre-Check Context:
+- Implement one reversible Phase-B flag-on path for the existing direct `openai` provider only. `TRANSPORT_LAYER_ENABLED` is false by default; absent/false continues the exact existing silo dispatch.
+- At the gateway router, resolve the provider and inject `OpenAICompatTransport` only when the flag is true, the provider is `openai`, and the selected OpenAI gateway exposes its existing service. The OpenAI gateway consumes the optional transport only for current service-level request and second-call-history seams.
+- The existing gateway keeps provider access policy, skill selection, MoA/tool-loop policy, synthesis, response shaping, cost persistence, and streaming ownership. OpenRouter has resolver metadata but no direct runtime gateway silo and stays excluded.
+Affected Files:
+- backend/services/llm_gateway.py
+- backend/llm_providers/openai/gateway.py
+- backend/tests/test_transport_layer_openai_gateway.py
+- backend/tests/test_runtime_llm.py (only if required to assert the new flag boundary)
+Evidence Focus:
+- python -m pytest backend/tests/test_transport_layer_openai_gateway.py backend/tests/test_openai_tool_loop_runner.py backend/tests/test_runtime_llm.py -q
+- python -m py_compile backend/services/llm_gateway.py backend/llm_providers/openai/gateway.py backend/tests/test_transport_layer_openai_gateway.py backend/tests/test_runtime_llm.py
+- git diff --check
+Scope-Regel:
+- Implement only the direct OpenAI flag-gated transport injection. No OpenRouter routing, Gemini/Google/Ollama/Codex enablement, transport-contract expansion, provider fallback, credential retrieval, streaming, Websearch, policy migration, legacy removal, or dashboard/documentation closure.
+Automated Evidence Gate:
+- python -m pytest backend/tests/test_transport_layer_openai_gateway.py backend/tests/test_openai_tool_loop_runner.py backend/tests/test_runtime_llm.py -q
+- python -m py_compile backend/services/llm_gateway.py backend/llm_providers/openai/gateway.py backend/tests/test_transport_layer_openai_gateway.py backend/tests/test_runtime_llm.py
+- git diff --check
+- npx playwright test <runner> --headed --workers=1 --reporter=list
+Artifact Identity Check:
+- Phase-B T-B6, TASK-M6B.5, user-locked first-provider decision, task-breakdown handoff, and current direct OpenAI gateway seam verified.
+Oracle-/TestPlan-Regel:
+- Do not manually patch generated TestPlan/TestResult artifacts. This task changes no TestSpec or oracle.
+Keep Context:
+- documentation/tasks/TASK-M6B.5_decision_summary.md
+- documentation/tasks/TASK-M6B.5_task_breakdown.md
+- backend/services/llm_gateway.py and backend/llm_providers/openai/gateway.py
+- focused flag-off/flag-on regression commands
+Drop Context:
+- completed M6B.1-M6B.4 audit history
+- Ollama BACKLOG-125 through BACKLOG-128 recovery details
+- later multi-provider rollout and Phase-C work
+Completion Rule:
+- End with PASS, BLOCKED, or HANDOFF and concrete evidence paths.
+Expected Output:
+- Cursor-first bounded implementation candidate, Codex-owned review/validation, then a manual default-off and enabled OpenAI smoke gate.
+legacy handoff end
+
+NEXT STEP
+Recommended Skill: janus-executioner
+Recommended Model: 5.6 Terra
+Recommended Intelligence: high
+Reason: This is the first live, flag-gated provider integration; the scope is restricted to one direct provider path and requires strict legacy-path preservation.
+User Action: Authorize only the bounded Cursor-first TASK-M6B.5 execution slice.
+```
+
+## Changed Files
+
+```text
+M backend/llm_providers/openai/gateway.py
+ M backend/services/llm_gateway.py
+?? backend/tests/test_transport_layer_openai_gateway.py
+```
+
+## Artifact Inventory
+
+```text
+FILE C:\KI\Janus-M6-Transport-Prep\documentation\tasks\TASK-M6B.5_execution_result.md (3853 bytes)
+FILE C:\KI\Janus-M6-Transport-Prep\documentation\tasks\TASK-M6B.5_decision_summary.md (2266 bytes)
+```
+
+## Diff Summary
+
+```text
+backend/llm_providers/openai/gateway.py | 106 ++++++++++++++++++++++++++++----
+ backend/services/llm_gateway.py         |  15 +++++
+ backend/tests/test_transport_layer_openai_gateway.py | new focused regression
+ 3 files changed in bound implementation scope
+```
+
+## Validation
+
+```text
+python -m pytest backend/tests/test_transport_layer_openai_gateway.py backend/tests/test_openai_tool_loop_runner.py backend/tests/test_runtime_llm.py -q: PASS (27 passed)
+python -m py_compile backend/services/llm_gateway.py backend/llm_providers/openai/gateway.py backend/tests/test_transport_layer_openai_gateway.py backend/tests/test_runtime_llm.py: PASS
+git diff --check: PASS
+Manual Janus evidence: PASS (2026-07-13 14:48, enabled direct OpenAI Berlin-weather smoke returned rendered Open-Meteo answer)
+```
+
+## Notes
+
+No additional notes provided.
+
+## Risks
+
+The shared Cursor delegate wrapper has a known unsupported `cursor-pool` argument. The direct worker did not return a completion artifact, so it is non-authoritative; Codex reviewed the complete allowlisted diff and owns all validation. M6B.5 does not enable OpenRouter, Gemini, Google, Ollama, or Codex.
+
+## Open Issues
+
+No open issue in direct OpenAI scope.
+
+## Re-Audit Delta
+
+No re-audit delta provided.
+
+## Final Audit Handoff
+
+```text
+NEW_CHAT_HANDOFF
+NEXT: final-skill-audit
+MODEL: 5.6 Sol/high if runtime-supported; otherwise 5.6 Terra/high
+PASS: C:\KI\Janus-M6-Transport-Prep\documentation\tasks\TASK-M6B.5_AUDIT_PACKAGE.md
+ASK: Lade nur dieses Paket im neuen Chat und starte dann den Final Audit.
+DROP: dev chat history
+```
+
+Use `5.6 Sol/high` when the current Codex run can start it; if Codex reports `gpt-5.6-sol` is unsupported for the active ChatGPT account, use `5.6 Terra/high` and record `SOL_UNAVAILABLE_FOR_CHATGPT_CODEX_ACCOUNT`.
+
+For bounded same-thread re-audits after a local blocker fix, `5.6 Terra/high` is acceptable when the package stays compact and the risk did not escalate.

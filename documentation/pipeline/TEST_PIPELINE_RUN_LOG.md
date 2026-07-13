@@ -1,5 +1,12 @@
 # Janus Test Pipeline Run Log
 
+## 2026-07-13 - TASK-M6B.5 direct OpenAI transport-gate validation
+
+- Marker: `TASK-M6B.5`.
+- Result: PASS - focused flag-off/flag-on gateway, runner, and resolver suite `27 passed`; syntax and diff checks PASS; enabled OpenAI Berlin-weather smoke PASS.
+- Final audit: `documentation/tasks/TASK-M6B.5_FINAL_AUDIT.md` (PASS).
+- Scope: direct `openai` only; OpenRouter/Gemini/Google/Ollama/Codex remain excluded.
+
 ## 2026-07-13 - TASK-M6B.4 and BACKLOG-128 final validation
 
 - Marker: `BACKLOG-128` with Phase-B `TASK-M6B.4`.

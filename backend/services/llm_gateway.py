@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 import threading
 from functools import lru_cache
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
@@ -15,6 +16,13 @@ if TYPE_CHECKING:
     from backend.services.tool_executor import ToolExecutor
 
 logger = logging.getLogger("janus_backend")
+
+TRANSPORT_LAYER_ENABLED = os.getenv("TRANSPORT_LAYER_ENABLED", "false").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+    "on",
+}
 
 
 def _guard_llm_provider_silo(provider: str, model_id: str) -> Optional[Dict[str, Any]]:
@@ -239,6 +247,13 @@ async def reason_and_respond(
 
     if provider_key == "gemini" and kwargs.get("_gemini_engine_owned_tool_loop"):
         silo_args["_gemini_engine_owned_tool_loop"] = True
+
+    if TRANSPORT_LAYER_ENABLED and provider_key == "openai":
+        gateway_service = getattr(selected_silo, "service", None)
+        if gateway_service is not None:
+            from backend.llm_providers.transports.openai_compat import OpenAICompatTransport
+
+            silo_args["provider_transport"] = OpenAICompatTransport(gateway_service)
 
     return await selected_silo.reason_and_respond(**silo_args)
 
