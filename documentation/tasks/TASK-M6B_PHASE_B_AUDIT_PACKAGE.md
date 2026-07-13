@@ -1,3 +1,37 @@
+# AUDIT_PACKAGE
+
+Generated: 2026-07-13 15:24:21 UTC
+
+## Goal
+
+Audit the completed Phase-B direct-provider foundation for OpenAI, Gemini, and Ollama without claiming later OpenRouter, Codex/OAuth, Phase-C cleanup, or original Exit-B branch-reduction metrics.
+
+## Scope Rules
+
+- Audit the provided package and changed artifacts only.
+- Do not rely on development chat history.
+- Verify cost, caching, skill quality, safety scope, and validation evidence.
+- On re-audit, review the blocker delta first before widening scope.
+- If scoped paths were provided, treat them as the audit diff boundary.
+
+## Bound Audit Inputs
+
+- Spec: N/A WITH REASON: bounded direct-provider foundation closeout only; parent transport Spec remains active for later epics and Phase C.
+- Task File: documentation\tasks\TASK-M6_transport_phase_b.md
+- Backlog Item: N/A WITH REASON - No backlog marker provided.
+- Pre-Implementation Check: documentation\tasks\TASK-M6B.7_preimplementation_check.md
+- Manual Janus Evidence: PRESENT
+- Pipeline Completion Status: direct-provider foundation complete yes; original full Exit-B cleanup not claimed
+
+## Backlog Item
+
+```text
+N/A WITH REASON - No backlog source or marker provided.
+```
+
+## Task Acceptance Scope
+
+```text
 TASK-M6B
 - Source Spec: `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md`
 - Backlog Item: `N/A`
@@ -153,58 +187,152 @@ TASK-M6B
 - Ziel:
   - Extend Phase-B `T-B6` with one provider-isolated Gemini normal-tool-loop transport path after the direct OpenAI slice.
 - Scope:
-  - With `TRANSPORT_LAYER_ENABLED=true`, inject `GeminiNativeTransport` into the existing direct `gemini` gateway only for `_run_simple_tool_loop` and its existing service request/history seams.
-  - Preserve the legacy route when the flag is absent/false. Gemini engine-owned and drill-down paths, plus Google/OpenRouter/Ollama/Codex, remain excluded.
-- Files:
-  - `backend/services/llm_gateway.py`
-  - `backend/llm_providers/gemini/gateway.py`
-  - focused Gemini flag-off/flag-on regression
-- Acceptance Criteria:
-  - The normal Gemini tool-loop uses the injected native transport only when the Phase-B flag is true.
-  - Flag-off dispatch and all excluded Gemini paths retain existing service seams.
-  - Gemini-native model policy, grounding, cost attribution, synthesis, response shaping, and streaming remain gateway-owned.
-- Tests:
-  - focused Gemini flag-off/flag-on gateway and runner regressions selected by precheck
-- Model: 5.6 Terra
-- Reason:
-  - User selected normal Gemini tool-loop only as the next bounded provider rollout after M6B.5.
-- Closeout:
-  - Final Audit: `PASS` in `documentation/tasks/TASK-M6B.6_FINAL_AUDIT.md`.
-  - With `TRANSPORT_LAYER_ENABLED=true`, only the existing direct `gemini` normal tool-loop receives `GeminiNativeTransport` at existing request, history, runner, and MoA-synthesis service seams. Flag-off retains legacy dispatch.
-  - Engine-owned and drill-down Gemini, direct Google routing, OpenRouter, Ollama, Codex, streaming, grounding, cost attribution, policy, and response shaping remain outside this slice.
-  - Focused Gemini runner/resolver suite (`31 passed`), combined Gemini/OpenAI transport suite (`40 passed`), syntax, diff, Playwright discovery, Cursor allowlist evidence, and enabled Gemini Berlin-weather smoke with `Quelle: Open-Meteo` passed.
-  - Non-blocking follow-up: the shared Cursor delegate still forwards unsupported `--cursor-pool`; the direct Cursor worker plus Codex-owned review is the documented fallback.
-  - Changelog updated: flag-on Gemini normal tool-loop is user-visible provider behavior.
+  - With `TRANSPORT_LAYER_ENABLED=true`, inject `GeminiNativeTransport` into the existing direct `gemini` gateway only for `_run_simple_tool_loop` and its existi
+```
 
-### TASK-M6B.7 Add the Ollama gateway request/synthesis seam to the Phase-B flag
-- Ziel:
-  - Extend Phase-B T-B6 with one provider-isolated Ollama gateway seam after the direct OpenAI and Gemini slices.
-- Scope:
-  - With `TRANSPORT_LAYER_ENABLED=true`, inject `OllamaLocalTransport` into the existing direct `ollama` gateway only for its existing provider request path, including its synthesis call.
-  - Preserve the legacy route when the flag is absent/false. Atomic/AgentRuntime may continue calling the same gateway through the thin transport, while Atomic/engine logic, tool execution ownership, and all other providers remain unchanged.
-- Files:
-  - `backend/services/llm_gateway.py`
-  - `backend/llm_providers/ollama/gateway.py`
-  - focused Ollama flag-off/flag-on regression
-- Acceptance Criteria:
-  - The initial tool-capable request and synthesis request use the injected local transport only when the Phase-B flag is true.
-  - Flag-off dispatch remains unchanged; Atomic/engine behavior retains its existing ownership and response contract.
-  - Ollama gateway tool filtering, forced-tool forwarding, budget guard, synthesis selection, and response behavior remain gateway-owned.
-- Tests:
-  - focused Ollama flag-off/flag-on gateway and existing Atomic regression selected by precheck
-- Model: 5.6 Terra
-- Reason:
-  - User selected all direct Ollama gateway calls after confirming that the gateway has no Atomic discriminator; the transport remains a thin service wrapper and does not move Atomic/engine logic.
-- Closeout:
-  - Final Audit: `PASS` in `documentation/tasks/TASK-M6B.7_FINAL_AUDIT.md`.
-  - Direct Ollama gateway requests, including synthesis and Atomic-originated calls, use `OllamaLocalTransport` only when `TRANSPORT_LAYER_ENABLED=true`; flag-off remains legacy.
-  - Atomic/AgentRuntime logic, tool execution ownership, tool filtering, forced-tool forwarding, budget guards, response behavior, other providers, streaming, and fallback remain unchanged.
-  - Focused Ollama gateway/resolver suite (`19 passed`), syntax, diff, Cursor-first evidence, and enabled Ollama Berlin-weather smoke with `Quelle: Open-Meteo` passed.
+## Pre-Implementation Check
 
-## Phase-B Direct-Provider Foundation Closeout
+```text
+# PREIMPLEMENTATION CHECK - TASK-M6B.7
 
-- Final Audit: `PASS WITH FIXES` in `documentation/tasks/TASK-M6B_PHASE_B_FINAL_AUDIT.md`; documentation fixes applied in closeout.
-- Existing direct OpenAI, Gemini, and Ollama silos have default-off, flag-gated transport delegation with provider-owned policy and response behavior preserved.
-- Combined transport contract, resolver, flag-routing, gateway, and runner regression matrix: `63 passed`.
-- Enabled manual Berlin-weather smokes passed for OpenAI, Gemini, and Ollama.
-- OpenRouter remains Epic 6; Codex/OAuth remains Epic 5. Legacy-path removal and provider-branch reduction are not claimed and remain Phase-C cleanup.
+PRE-CHECK RESULT
+PRE-CHECK PASSED
+
+## Bound Identity
+
+- Target Task: `TASK-M6B.7`
+- Target Subtask: `N/A`
+- Task: `documentation/tasks/TASK-M6_transport_phase_b.md`
+- Spec: `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md` (Phase-B T-B6)
+- Decision Summary: `documentation/tasks/TASK-M6B.7_decision_summary.md`
+- Backlog Item: `N/A WITH REASON` (approved Phase-B task continuation, not a Backlog item)
+- Assigned Model: `5.6 Terra`
+- Mode: `SINGLE_TASK_PRECHECK`
+
+## Gate Decision
+
+- Atomic scope: PASS. The task adds one direct `ollama` transport injection behind the existing default-off `TRANSPORT_LAYER_ENABLED` flag.
+- Scope boundary: PASS. All direct `OllamaGateway.reason_and_respond` service requests receive the injected seam; Atomic/AgentRuntime/engine logic and tool execution ownership remain unchanged.
+- Product decisions: PASS. The user explicitly selected all direct Ollama gateway calls after the Atomic discriminator was found absent.
+- Risk: MEDIUM. The change touches a live local-provider dispatch seam, but default-off behavior and explicit Atomic exclusion have hermetic regression coverage.
+- Test surface: PASS. Focused flag routing/injection tests plus existing gateway and Atomic weather regressions are available without a live local model.
+
+```text
+legacy handoff start
+NEXT: janus-executioner
+Target Task: TASK-M6B.7
+Target Subtask: N/A
+Task: documentation/tasks/TASK-M6_transport_phase_b.md
+Spec: documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md
+Backlog Item: N/A WITH REASON
+Assigned Model: 5.6 Terra
+Mode: SINGLE_TASK_EXECUTION
+Pre-Check: PRE-CHECK PASSED
+Pre-Check Context:
+- Inject OllamaLocalTransport only when TRANSPORT_LAYER_ENABLED is true and the existing direct ollama silo is selected.
+- Use the transport only at OllamaGateway's existing provider request seam for all direct calls.
+- Keep Atomic/AgentRuntime/engine logic, tool execution ownership, tool filtering, forced-tool forwarding, budget guard, response behavior, OpenAI, Gemini, Google, OpenRouter, Codex, streaming, and fallback unchanged.
+Affected Files:
+- backend/services/llm_gateway.py
+- backend/llm_providers/ollama/gateway.py
+- backend/tests/test_transport_layer_ollama_gateway.py
+Evidence Focus:
+- python -m pytest backend/tests/test_transport_layer_ollama_gateway.py backend/tests/llm_providers/test_ollama_gateway.py backend/tests/test_agent_factory_runtime.py backend/tests/test_runtime_llm.py -q
+- python -m py_compile backend/services/llm_gateway.py backend/llm_providers/ollama/gateway.py
+- npx playwright test <runner> --headed --workers=1 --reporter=list
+Scope-Regel:
+- Implement only the bound target task. No architecture drift, no provider fallback, no scope expansion.
+Automated Evidence Gate:
+- python -m pytest backend/tests/test_transport_layer_ollama_gateway.py backend/tests/llm_providers/test_ollama_gateway.py backend/tests/test_agent_factory_runtime.py backend/tests/test_runtime_llm.py -q
+- npx playwright test <runner> --headed --workers=1 --reporter=list
+Artifact Identity Check:
+- Task, Target Task, Backlog Item, Spec, and Handoff path verified.
+Oracle-/TestPlan-Regel:
+- Do not manually patch generated TestPlan/TestResult artifacts. Route TestSpec changes to janus-test-pipeline.
+Keep Context:
+- bound Phase-B T-B6 task and locked Ollama gateway-only decision
+- direct ollama silo, OllamaGateway request/synthesis seam, and Atomic exclusion
+- focused regression commands
+Drop Context:
+- old provider-rollout history
+- unrelated backlog and audit artifacts
+Completion Rule:
+- End with PASS/BLOCKED/HANDOFF and concrete evidence paths.
+Expected Output:
+- Implementation result, executed checks, changed files, and next-skill handoff.
+legacy handoff end
+```
+
+NEXT STEP
+Recommended Skill: janus-executioner
+Recommended Model: 5.6 Terra
+Recommended Intelligence: high
+User Action: Codex continues with the bounded Cursor-first execution slice; manual validation is requested only after automated evidence passes.
+```
+
+## Changed Files
+
+```text
+?? documentation/logs/
+?? documentation/tasks/TASK-M6B_PHASE_B_VALIDATION_SUMMARY.md
+?? documentation/tasks/TASK-M6B_phase_b_closeout_decision.md
+```
+
+## Artifact Inventory
+
+```text
+FILE C:\KI\Janus-M6-Transport-Prep\documentation\tasks\TASK-M6B.5_FINAL_AUDIT.md (3294 bytes)
+FILE C:\KI\Janus-M6-Transport-Prep\documentation\tasks\TASK-M6B.6_FINAL_AUDIT.md (3845 bytes)
+FILE C:\KI\Janus-M6-Transport-Prep\documentation\tasks\TASK-M6B.7_FINAL_AUDIT.md (1341 bytes)
+FILE C:\KI\Janus-M6-Transport-Prep\documentation\tasks\TASK-M6B_PHASE_B_VALIDATION_SUMMARY.md (735 bytes)
+```
+
+## Diff Summary
+
+```text
+No diff stat available.
+```
+
+## Validation
+
+```text
+# TASK-M6B DIRECT-PROVIDER FOUNDATION VALIDATION
+
+- Scope: Phase-B direct-provider foundation for existing OpenAI, Gemini, and Ollama silos.
+- Decision boundary: OpenRouter remains Epic 6; Codex/OAuth remains Epic 5; branch removal and old-path cleanup remain Phase C.
+- Automated evidence: combined transport contracts, resolver, flag routing, gateway seams, and runner regressions PASS (`63 passed`).
+- Manual evidence: enabled OpenAI, Gemini, and Ollama Berlin-weather smokes PASS with rendered `Quelle: Open-Meteo` responses.
+- Syntax/diff evidence: provider slices recorded `py_compile` and `git diff --check` PASS.
+- Pipeline completion: direct-provider foundation complete; full original Exit-B cleanup metrics are not claimed.
+```
+
+## Notes
+
+No additional notes provided.
+
+## Risks
+
+The original Spec Exit-B cleanup metrics are not satisfied or claimed; default-off legacy paths remain intentionally available. Shared Cursor wrapper still forwards unsupported --cursor-pool.
+
+## Open Issues
+
+OpenRouter is Epic 6; Codex/OAuth is Epic 5; branch removal and old-path cleanup are Phase C.
+
+## Re-Audit Delta
+
+No re-audit delta provided.
+
+## Final Audit Handoff
+
+```text
+NEW_CHAT_HANDOFF
+NEXT: final-skill-audit
+MODEL: 5.6 Sol/high if runtime-supported; otherwise 5.6 Terra/high
+PASS: C:\KI\Janus-M6-Transport-Prep\documentation\tasks\TASK-M6B_PHASE_B_AUDIT_PACKAGE.md
+ASK: Lade nur dieses Paket im neuen Chat und starte dann den Final Audit.
+DROP: dev chat history
+```
+
+Use `5.6 Sol/high` when the current Codex run can start it; if Codex reports `gpt-5.6-sol` is unsupported for the active ChatGPT account, use `5.6 Terra/high` and record `SOL_UNAVAILABLE_FOR_CHATGPT_CODEX_ACCOUNT`.
+
+For bounded same-thread re-audits after a local blocker fix, `5.6 Terra/high` is acceptable when the package stays compact and the risk did not escalate.

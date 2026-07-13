@@ -4,6 +4,23 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-M6B - Phase-B direct-provider foundation
+
+- **Status**: DONE WITH DOCUMENTED FOLLOW-UPS
+- **Final Audit**: `documentation/tasks/TASK-M6B_PHASE_B_FINAL_AUDIT.md` (PASS WITH FIXES; documentation fixes applied)
+- **Scope**: existing direct OpenAI, Gemini, and Ollama silos only; parent transport Spec remains active.
+- **Validation**: combined transport/gateway/runner matrix (`63 passed`) and enabled manual OpenAI/Gemini/Ollama Berlin-weather smokes PASS.
+- **Exclusions**: OpenRouter remains Epic 6; Codex/OAuth remains Epic 5; legacy removal and provider-branch reduction remain Phase C.
+
+### TASK-M6B.7 - Ollama flag-gated transport delegation
+
+- **Status**: DONE WITH NON-BLOCKING FOLLOW-UP
+- **Final Audit**: `documentation/tasks/TASK-M6B.7_FINAL_AUDIT.md` (PASS)
+- **Parent Task**: `documentation/tasks/TASK-M6_transport_phase_b.md`
+- **Execution Result**: `documentation/tasks/TASK-M6B.7_execution_result.md`
+- **Validation**: focused Ollama gateway/resolver suite (`19 passed`), syntax, diff, Cursor-first evidence, and enabled Ollama Berlin-weather smoke PASS.
+- **Scope**: all direct Ollama gateway calls use the thin transport only when enabled; Atomic/AgentRuntime logic and other providers remain unchanged.
+
 ### TASK-M6B.6 - Gemini normal tool-loop flag-gated transport delegation
 
 - **Status**: DONE WITH NON-BLOCKING FOLLOW-UP

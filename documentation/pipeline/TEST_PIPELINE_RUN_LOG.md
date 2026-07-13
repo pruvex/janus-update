@@ -1,5 +1,12 @@
 # Janus Test Pipeline Run Log
 
+## 2026-07-13 - TASK-M6B direct-provider foundation validation
+
+- Marker: `TASK-M6B` with final direct-provider slice `TASK-M6B.7`.
+- Result: PASS - combined transport/gateway/runner matrix `63 passed`; enabled OpenAI, Gemini, and Ollama Berlin-weather smokes PASS.
+- Final audit: `documentation/tasks/TASK-M6B_PHASE_B_FINAL_AUDIT.md` (PASS WITH FIXES; documentation fixes applied).
+- Scope: direct OpenAI/Gemini/Ollama foundation only; OpenRouter, Codex/OAuth, and Phase-C cleanup remain separate.
+
 ## 2026-07-13 - TASK-M6B.6 Gemini normal tool-loop transport-gate validation
 
 - Marker: `TASK-M6B.6`.
