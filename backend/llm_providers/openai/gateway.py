@@ -1,7 +1,7 @@
 import json
 import logging
 import re
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING
 
 from backend.llm_providers.ollama_adapter import build_compact_synthesis_messages
 from backend.llm_providers.shared.base_gateway import BaseProviderGateway
@@ -12,8 +12,12 @@ from backend.llm_providers.shared.utils import (
     _find_best_source_for_release_title,
     _normalize_match_key,
 )
+from backend.llm_providers.shared.response_postprocessors import ensure_openai_release_list_links
 
 from .service import OpenAIServiceProvider
+
+if TYPE_CHECKING:
+    from backend.llm_providers.transports.openai_compat import OpenAICompatTransport
 
 logger = logging.getLogger("janus_backend")
 
@@ -70,6 +74,72 @@ class OpenAIGateway(BaseProviderGateway):
             sanitized.pop(key, None)
         return sanitized
 
+    async def _request_via_service_seam(
+        self,
+        *,
+        provider_transport: Optional["OpenAICompatTransport"],
+        provider_service: Optional[OpenAIServiceProvider],
+        api_key: str,
+        model: str,
+        messages: List[Dict[str, Any]],
+        tools: Optional[List[Dict[str, Any]]] = None,
+        **kwargs: Any,
+    ) -> Dict[str, Any]:
+        if provider_transport is not None:
+            return await provider_transport.send(
+                api_key=api_key,
+                model=model,
+                messages=messages,
+                tools=tools,
+                **kwargs,
+            )
+        active_service = provider_service or self.service
+        return await active_service.generate_response(
+            api_key=api_key,
+            model=model,
+            messages=messages,
+            tools=tools,
+            **kwargs,
+        )
+
+    def _prepare_history_via_service_seam(
+        self,
+        *,
+        provider_transport: Optional["OpenAICompatTransport"],
+        chat_history: List[Dict[str, Any]],
+        raw_assistant_response: Dict[str, Any],
+        tool_results: List[Dict[str, Any]],
+    ) -> List[Dict[str, Any]]:
+        if provider_transport is not None:
+            return provider_transport.prepare_history_for_second_call(
+                chat_history=chat_history,
+                raw_assistant_response=raw_assistant_response,
+                tool_results=tool_results,
+            )
+        return self.service.prepare_history_for_second_call(
+            chat_history=chat_history,
+            raw_assistant_response=raw_assistant_response,
+            tool_results=tool_results,
+        )
+
+    def _service_seam_for_tool_loop_runner(
+        self,
+        provider_transport: Optional["OpenAICompatTransport"],
+    ) -> Any:
+        if provider_transport is None:
+            return self.service
+
+        transport = provider_transport
+
+        class _TransportServiceSeam:
+            async def generate_response(self, **kwargs: Any) -> Dict[str, Any]:
+                return await transport.send(**kwargs)
+
+            def prepare_history_for_second_call(self, **kwargs: Any) -> List[Dict[str, Any]]:
+                return transport.prepare_history_for_second_call(**kwargs)
+
+        return _TransportServiceSeam()
+
     async def reason_and_respond(
         self,
         provider: str,
@@ -92,6 +162,7 @@ class OpenAIGateway(BaseProviderGateway):
         tool_limit_reached: bool = False,
         allow_pdf_enrichment: bool = False,
         provider_service: Optional[OpenAIServiceProvider] = None,
+        provider_transport: Optional["OpenAICompatTransport"] = None,
         force_tool_name: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
@@ -113,6 +184,7 @@ class OpenAIGateway(BaseProviderGateway):
                 image_data=image_data,
                 db=db,
                 force_tool_name=force_tool_name,
+                provider_transport=provider_transport,
             )
 
         # 2. Wenn tool_results vorhanden -> Bestehende Synthese-Logik
@@ -120,8 +192,9 @@ class OpenAIGateway(BaseProviderGateway):
         final_messages = self.build_research_synthesis_messages(chat_history)
         
         # Robustes Kwargs-Handling
-        active_service = provider_service or self.service
-        response = await active_service.generate_response(
+        response = await self._request_via_service_seam(
+            provider_transport=provider_transport,
+            provider_service=provider_service,
             api_key=api_key,
             model=model,
             messages=final_messages,
@@ -136,11 +209,6 @@ class OpenAIGateway(BaseProviderGateway):
             chat_history,
             allow_pdf_enrichment=allow_pdf_enrichment,
         )
-        response = self.ensure_release_list_links_in_text_response(
-            response,
-            user_prompt=user_prompt,
-            tool_results=tool_results,
-        )
         response = self.ensure_combined_release_response_structure(
             response,
             user_prompt=user_prompt,
@@ -151,6 +219,14 @@ class OpenAIGateway(BaseProviderGateway):
         return response
 
     async def _run_full_tool_loop(self, **kwargs) -> Dict[str, Any]:
+        from backend.llm_providers.shared.tool_loop_runner import TRANSPORT_TOOL_LOOP_RUNNER_ENABLED
+
+        if TRANSPORT_TOOL_LOOP_RUNNER_ENABLED:
+            return await self._run_full_tool_loop_with_runner(**kwargs)
+
+        return await self._run_legacy_tool_loop(**kwargs)
+
+    async def _run_legacy_tool_loop(self, **kwargs) -> Dict[str, Any]:
         """
         Interne Implementierung des Tool-Loops für OpenAI.
 
@@ -180,6 +256,7 @@ class OpenAIGateway(BaseProviderGateway):
         db = passthrough_kwargs.pop("db", None)
         # 💎 VIDEO-FORCE: Extract force_tool_name for first-round tool_choice override
         _force_tool_name = str(passthrough_kwargs.pop("force_tool_name", "") or "").strip() or None
+        provider_transport = passthrough_kwargs.pop("provider_transport", None)
 
         # 💎 MoA-Routing: Bestimme das optimale Modell für den Tool-Loop
         # HONOR OVERRIDE: If execution_engine already upgraded the model, use that
@@ -257,7 +334,9 @@ class OpenAIGateway(BaseProviderGateway):
 
             # 💎 VIDEO-FORCE: Only force tool_choice on first round
             _round_force = _force_tool_name if current_round == 1 else None
-            response = await self.service.generate_response(
+            response = await self._request_via_service_seam(
+                provider_transport=provider_transport,
+                provider_service=None,
                 api_key=api_key,
                 model=tool_execution_model,
                 messages=current_chat_history,
@@ -311,7 +390,8 @@ class OpenAIGateway(BaseProviderGateway):
                                     }
                                 ],
                             }
-                            current_chat_history = self.service.prepare_history_for_second_call(
+                            current_chat_history = self._prepare_history_via_service_seam(
+                                provider_transport=provider_transport,
                                 chat_history=current_chat_history,
                                 raw_assistant_response=raw_forced_assistant_response,
                                 tool_results=executor_results,
@@ -336,7 +416,9 @@ class OpenAIGateway(BaseProviderGateway):
                     else:
                         synthesis_messages = current_chat_history
 
-                    synthesis_response = await self.service.generate_response(
+                    synthesis_response = await self._request_via_service_seam(
+                        provider_transport=provider_transport,
+                        provider_service=None,
                         api_key=api_key,
                         model=tool_execution_model,
                         messages=synthesis_messages, # <--- Nutzt jetzt die Diamond-Regeln
@@ -425,13 +507,208 @@ class OpenAIGateway(BaseProviderGateway):
                         logger.info("--- END DEBUG: RAW WEBSEARCH SKILL RESPONSE DATA ---\n")
                     # --- END DEBUG INSERTION ---
 
-            current_chat_history = self.service.prepare_history_for_second_call(
+            current_chat_history = self._prepare_history_via_service_seam(
+                provider_transport=provider_transport,
                 chat_history=current_chat_history,
                 raw_assistant_response=response.get("raw_assistant_response"),
                 tool_results=executor_results
             )
 
         return {"text": "Maximale Tool-Runden erreicht.", "tool_limit_reached": True, "_internal_tool_results": _all_tool_results}
+
+    async def _run_full_tool_loop_with_runner(self, **kwargs) -> Dict[str, Any]:
+        from backend.llm_providers.shared.tool_loop_runner import (
+            NonToolResponseAction,
+            ToolLoopContext,
+            ToolLoopRunner,
+        )
+        from backend.llm_providers.shared.utils import (
+            _apply_routing_quality_guards,
+            _prevalidate_tool_calls,
+        )
+
+        passthrough_kwargs = dict(kwargs or {})
+        provider = passthrough_kwargs.pop("provider", None)
+        model = passthrough_kwargs.pop("model", None)
+        api_key = passthrough_kwargs.pop("api_key", None)
+        chat_history = passthrough_kwargs.pop("chat_history", [])
+        user_prompt = passthrough_kwargs.pop("user_prompt", "")
+        allowed_skill_ids = passthrough_kwargs.pop("allowed_skill_ids", None)
+        tool_executor = passthrough_kwargs.pop("tool_executor", None)
+        max_tool_rounds = passthrough_kwargs.pop("max_tool_rounds", 5)
+        image_data = passthrough_kwargs.pop("image_data", None)
+        db = passthrough_kwargs.pop("db", None)
+        force_tool_name = str(passthrough_kwargs.pop("force_tool_name", "") or "").strip() or None
+        provider_transport = passthrough_kwargs.pop("provider_transport", None)
+
+        context = ToolLoopContext(
+            provider=str(provider or ""),
+            model=model,
+            api_key=api_key,
+            chat_history=list(chat_history),
+            user_prompt=user_prompt,
+            allowed_skill_ids=allowed_skill_ids,
+            tool_executor=tool_executor,
+            max_tool_rounds=max_tool_rounds,
+            image_data=image_data,
+            force_tool_name=force_tool_name,
+            passthrough_kwargs=passthrough_kwargs,
+        )
+
+        async def handle_non_tool_response(
+            response: Dict[str, Any],
+            loop_context: ToolLoopContext,
+            round_force: Optional[str],
+        ) -> NonToolResponseAction:
+            if round_force and loop_context.current_round == 1:
+                forced_tool_call = self.build_forced_fallback_tool_call(
+                    {
+                        "skill_id": round_force,
+                        "provider_tool_name": round_force,
+                    },
+                    user_prompt=user_prompt,
+                    chat_history=loop_context.chat_history,
+                    fallback_text=str(response.get("text") or ""),
+                )
+                if forced_tool_call:
+                    forced_preflight = _prevalidate_tool_calls(
+                        [forced_tool_call],
+                        user_prompt=user_prompt,
+                    )
+                    forced_validated_calls = forced_preflight["valid_calls"]
+                    if forced_validated_calls:
+                        logger.warning(
+                            "OPENAI-FORCED-TOOL-FALLBACK: Model returned text despite forced tool '%s'; executing deterministic fallback.",
+                            round_force,
+                        )
+                        executor_results = await tool_executor.execute_tool_calls(forced_validated_calls)
+                        for tool_result in executor_results or []:
+                            if isinstance(tool_result, dict):
+                                loop_context.all_tool_results.append(tool_result)
+                        raw_forced_assistant_response = {
+                            "role": "assistant",
+                            "content": None,
+                            "tool_calls": [
+                                {
+                                    "id": forced_tool_call.get("id"),
+                                    "type": "function",
+                                    "function": {
+                                        "name": str(
+                                            forced_tool_call.get("function", {}).get("name") or ""
+                                        ).replace(".", "_"),
+                                        "arguments": forced_tool_call.get("function", {}).get(
+                                            "arguments", "{}"
+                                        ),
+                                    },
+                                }
+                            ],
+                        }
+                        updated_history = self._prepare_history_via_service_seam(
+                            provider_transport=provider_transport,
+                            chat_history=loop_context.chat_history,
+                            raw_assistant_response=raw_forced_assistant_response,
+                            tool_results=executor_results,
+                        )
+                        return NonToolResponseAction(kind="continue", chat_history=updated_history)
+
+            if loop_context.moa_active:
+                logger.info(
+                    "SKILL-MOA RUECKSPRUNG: Tool-Loop abgeschlossen mit '%s'. "
+                    "Synthetisiere finale Antwort mit smartem Tool-Modell '%s'.",
+                    loop_context.tool_execution_model,
+                    loop_context.tool_execution_model,
+                )
+                logger.info("Using model: %s for synthesis", loop_context.tool_execution_model)
+                if allowed_skill_ids and "system.websearch" in allowed_skill_ids:
+                    synthesis_messages = self.build_research_synthesis_messages(loop_context.chat_history)
+                else:
+                    synthesis_messages = loop_context.chat_history
+
+                synthesis_response = await self._request_via_service_seam(
+                    provider_transport=provider_transport,
+                    provider_service=None,
+                    api_key=api_key,
+                    model=loop_context.tool_execution_model,
+                    messages=synthesis_messages,
+                    tools=None,
+                    image_data=None,
+                )
+                synthesis_response = _apply_routing_quality_guards(
+                    synthesis_response,
+                    loop_context.chat_history,
+                )
+                synthesis_response["moa_tool_model"] = loop_context.tool_execution_model
+                synthesis_response["moa_synthesis_model"] = loop_context.tool_execution_model
+                synthesis_response["_internal_tool_results"] = loop_context.all_tool_results
+                syn_cost = synthesis_response.get("cost") or {}
+                syn_usage = synthesis_response.get("usage") or {}
+                loop_context.loop_cost_eur += float(syn_cost.get("total_cost", 0.0))
+                loop_context.loop_input_tokens += int(syn_usage.get("input_tokens", 0))
+                loop_context.loop_output_tokens += int(syn_usage.get("output_tokens", 0))
+                synthesis_response["cost"] = {"total_cost": loop_context.loop_cost_eur}
+                synthesis_response["usage"] = {
+                    "input_tokens": loop_context.loop_input_tokens,
+                    "output_tokens": loop_context.loop_output_tokens,
+                }
+                if db is not None and loop_context.loop_cost_eur > 0:
+                    try:
+                        from backend.services.cost_service import create_cost_entry
+
+                        create_cost_entry(
+                            db=db,
+                            amount=loop_context.loop_cost_eur,
+                            model=loop_context.tool_execution_model,
+                            provider=str(provider or "openai"),
+                            source_type="conversation",
+                            input_tokens=loop_context.loop_input_tokens,
+                            output_tokens=loop_context.loop_output_tokens,
+                        )
+                        logger.info(
+                            "GATEWAY-COST-PERSIST: Saved %.6f€ for %s",
+                            loop_context.loop_cost_eur,
+                            loop_context.tool_execution_model,
+                        )
+                    except Exception:
+                        logger.warning("GATEWAY-COST-PERSIST: Failed to save cost", exc_info=True)
+                return NonToolResponseAction(kind="return", response=synthesis_response)
+
+            response = _apply_routing_quality_guards(response, loop_context.chat_history)
+            response["_internal_tool_results"] = loop_context.all_tool_results
+            response["cost"] = {"total_cost": loop_context.loop_cost_eur}
+            response["usage"] = {
+                "input_tokens": loop_context.loop_input_tokens,
+                "output_tokens": loop_context.loop_output_tokens,
+            }
+            if db is not None and loop_context.loop_cost_eur > 0:
+                try:
+                    from backend.services.cost_service import create_cost_entry
+
+                    create_cost_entry(
+                        db=db,
+                        amount=loop_context.loop_cost_eur,
+                        model=loop_context.tool_execution_model,
+                        provider=str(provider or "openai"),
+                        source_type="conversation",
+                        input_tokens=loop_context.loop_input_tokens,
+                        output_tokens=loop_context.loop_output_tokens,
+                    )
+                    logger.info(
+                        "GATEWAY-COST-PERSIST: Saved %.6f€ for %s",
+                        loop_context.loop_cost_eur,
+                        loop_context.tool_execution_model,
+                    )
+                except Exception:
+                    logger.warning("GATEWAY-COST-PERSIST: Failed to save cost", exc_info=True)
+            return NonToolResponseAction(kind="return", response=response)
+
+        loop_service = self._service_seam_for_tool_loop_runner(provider_transport)
+        return await ToolLoopRunner().run(
+            service=loop_service,
+            context=context,
+            sanitize_generate_response_kwargs=self._sanitize_generate_response_kwargs,
+            prepare_history_for_second_call=loop_service.prepare_history_for_second_call,
+            handle_non_tool_response=handle_non_tool_response,
+        )
 
     @staticmethod
     def collect_research_system_overrides(messages: List[Dict[str, Any]]) -> List[str]:

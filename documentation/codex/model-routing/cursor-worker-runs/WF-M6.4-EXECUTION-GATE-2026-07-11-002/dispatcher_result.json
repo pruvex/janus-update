@@ -1,0 +1,78 @@
+{
+  "backend": "cursor",
+  "lane_id": "execution_patch_candidate",
+  "workflow_id": "WF-M6.4-EXECUTION-GATE-2026-07-11-002",
+  "selected_model": "composer-2.5",
+  "session_id": null,
+  "validation_result": "BLOCKED",
+  "selected_path": "cursor_worker_blocked",
+  "final_outcome": "CURSOR_WORKER_INPUT_BLOCKED",
+  "package_validation": {
+    "validation_result": "FAIL",
+    "contract_status": "TASK_PACKAGE_INVALID",
+    "issues": [
+      "forbidden_actions missing required boundaries: architecture, auth, dependency, merge, migration, privacy, publish, release, secret, security, tag"
+    ],
+    "task_label": "M6.4 Gemini ToolLoopRunner",
+    "worker_profile": "cursor-agent",
+    "allowed_edit_paths": [
+      "backend/llm_providers/gemini/gateway.py",
+      "backend/llm_providers/shared/tool_loop_runner.py",
+      "backend/tests/test_gemini_tool_loop_runner.py"
+    ],
+    "required_result_artifacts": [
+      "RESULT.json",
+      "RESULT.md",
+      "DIFF.patch",
+      "FILES_CHANGED.txt",
+      "CHECKS.log",
+      "COST.json"
+    ]
+  },
+  "allowlist_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "allowlist": [
+      "backend/llm_providers/gemini/gateway.py",
+      "backend/llm_providers/shared/tool_loop_runner.py",
+      "backend/tests/test_gemini_tool_loop_runner.py"
+    ]
+  },
+  "allowlist_consistency_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "package_allowed_edit_paths": [
+      "backend/llm_providers/gemini/gateway.py",
+      "backend/llm_providers/shared/tool_loop_runner.py",
+      "backend/tests/test_gemini_tool_loop_runner.py"
+    ],
+    "allowlist": [
+      "backend/llm_providers/gemini/gateway.py",
+      "backend/llm_providers/shared/tool_loop_runner.py",
+      "backend/tests/test_gemini_tool_loop_runner.py"
+    ],
+    "declared_allowlist_file": null
+  },
+  "codex_review_required": true,
+  "operator_message": "Cursor worker input was blocked before invocation.",
+  "accepted_source_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "accepted_source_run_dir": null,
+    "recognized_artifacts": []
+  },
+  "planned_command": [
+    "C:\\Users\\pruve\\AppData\\Local\\cursor-agent\\agent.CMD",
+    "-p",
+    "--workspace",
+    "C:\\KI\\Janus-M6-Transport-Prep",
+    "--model",
+    "composer-2.5",
+    "--output-format",
+    "json",
+    "--force",
+    "--trust",
+    "--approve-mcps",
+    "Implement TASK-M6.4 only. Migrate Gemini _run_simple_tool_loop to ToolLoopRunner with gateway-owned callbacks/context. Preserve Flash/override policy, list rounds, grounding cost attribution, native history, synthesis, engine-owned and drill-down behavior in GeminiGateway. Edit only allowlisted paths. Do not commit.\n\nTask label: M6.4 Gemini ToolLoopRunner\n\nAcceptance criteria:\n- Keep Gemini model policy, grounding attribution, native history and synthesis in gateway.\n- Only migrate _run_simple_tool_loop through provider-neutral callbacks.\n- Only allowlisted paths change.\n\nAllowed edit paths:\n- backend/llm_providers/gemini/gateway.py\n- backend/llm_providers/shared/tool_loop_runner.py\n- backend/tests/test_gemini_tool_loop_runner.py\n\nReturn status, changed_files, command_results, summary, and blockers as concise JSON-compatible output."
+  ]
+}

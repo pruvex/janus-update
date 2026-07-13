@@ -1,0 +1,46 @@
+{
+  "task_id": "TASK-M6C.1",
+  "lane_id": "execution_patch_candidate",
+  "bound_skill_context": "janus-executioner",
+  "task_label": "TASK-M6C.1 decouple Websearch provider coercion from ToolExecutor",
+  "worker_profile": "cursor-agent",
+  "allowed_edit_paths": [
+    "backend/services/tool_executor.py",
+    "backend/services/websearch.py",
+    "backend/tests/test_backlog_007_tool_routing_performance.py",
+    "backend/tests/tools/test_websearch.py"
+  ],
+  "checks": [
+    "python -m pytest backend/tests/test_backlog_007_tool_routing_performance.py backend/tests/tools/test_websearch.py -q -k \"websearch or tool_executor\"",
+    "python -m py_compile backend/services/tool_executor.py backend/services/websearch.py",
+    "git diff --check"
+  ],
+  "forbidden_actions": [
+    "architecture",
+    "auth",
+    "commit",
+    "dependency",
+    "merge",
+    "migration",
+    "privacy",
+    "publish",
+    "push",
+    "release",
+    "secret",
+    "security",
+    "tag"
+  ],
+  "acceptance_criteria": [
+    "With TRANSPORT_WEBSEARCH_DECOUPLED absent or false, preserve the existing system.websearch executor behavior.",
+    "With the flag true, ToolExecutor no longer owns Websearch-specific provider/model coercion and the existing Websearch boundary receives the required request context.",
+    "Preserve provider/model compatibility and cross-provider safety without changing gateways, transports, schemas, streaming, ToolLoopRunner, or unrelated tools.",
+    "Add hermetic focused regressions only in the allowlisted test files and do not use network credentials."
+  ],
+  "local_validation_command": "python -m pytest backend/tests/test_backlog_007_tool_routing_performance.py backend/tests/tools/test_websearch.py -q -k \"websearch or tool_executor\"",
+  "estimated_codex_saved_tokens": 18000,
+  "estimated_delegation_overhead_tokens": 7000,
+  "recommended_backend": "cursor",
+  "recommended_model": "composer-2.5",
+  "task_prompt": "Implement only TASK-M6C.1 in the exact allowlisted files. Preserve exact legacy behavior when TRANSPORT_WEBSEARCH_DECOUPLED is absent or false. When true, relocate only the existing system.websearch provider/model coercion out of ToolExecutor to the existing Websearch boundary. Preserve provider/model compatibility and cross-provider safety. Do not change gateways, transports, schemas, streaming, ToolLoopRunner, unrelated tools, later Phase-C tasks, documentation, Git, credentials, or run broad tests. Return concise JSON-compatible status, changed files, checks, summary, and blockers.",
+  "cursor_prompt_contract": "Implement only TASK-M6C.1 in the exact allowlisted files. Preserve exact legacy behavior when TRANSPORT_WEBSEARCH_DECOUPLED is absent or false. When true, relocate only the existing system.websearch provider/model coercion out of ToolExecutor to the existing Websearch boundary. Preserve provider/model compatibility and cross-provider safety. Do not change gateways, transports, schemas, streaming, ToolLoopRunner, unrelated tools, later Phase-C tasks, documentation, Git, credentials, or run broad tests. Return concise JSON-compatible status, changed files, checks, summary, and blockers."
+}

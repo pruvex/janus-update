@@ -1,0 +1,116 @@
+{
+  "manifest_version": "2026-07-07",
+  "operator_gate_version": "4choice_cost_aware_2026-07-07",
+  "status": "OPERATOR_CHOICE_READY",
+  "lane_id": "execution_patch_candidate",
+  "task_id": "TASK-EX-001",
+  "skill": "janus-executioner",
+  "lane_class": "OR_PROPOSAL_FIRST",
+  "operator_gate_lines": [
+    "1 = Codex",
+    "2 = OpenRouter",
+    "3 = Cursor Composer",
+    "4 = Cursor API"
+  ],
+  "visible_backends": [
+    "codex",
+    "openrouter",
+    "cursor"
+  ],
+  "visible_choices": [
+    {
+      "choice_id": "1",
+      "label": "Codex",
+      "backend": "codex",
+      "pool": null,
+      "model": "5.4",
+      "cost_hint": "Codex-Tokens",
+      "cost_estimate_usd_static": null,
+      "recommended": true,
+      "operator_gate_line": "1 = Codex"
+    },
+    {
+      "choice_id": "2",
+      "label": "OpenRouter",
+      "backend": "openrouter",
+      "pool": null,
+      "model": "moonshotai/kimi-k2.5",
+      "cost_hint": null,
+      "cost_estimate_usd_static": null,
+      "recommended": false,
+      "operator_gate_line": "2 = OpenRouter"
+    },
+    {
+      "choice_id": "3",
+      "label": "Cursor Composer",
+      "backend": "cursor",
+      "pool": "auto_composer",
+      "model": "composer-2.5",
+      "cost_hint": "0.3-0.6 % Monatskontingent",
+      "cost_estimate_usd_static": 0.0104,
+      "recommended": false,
+      "operator_gate_line": "3 = Cursor Composer"
+    },
+    {
+      "choice_id": "4",
+      "label": "Cursor API",
+      "backend": "cursor",
+      "pool": "api",
+      "model": "kimi-k2.7-code",
+      "cost_hint": "~$0.019 +/-30%",
+      "cost_estimate_usd_static": 0.019379999999999998,
+      "recommended": false,
+      "operator_gate_line": "4 = Cursor API"
+    }
+  ],
+  "recommended_backend": "codex",
+  "recommended_choice": "1",
+  "models": {
+    "codex": "5.4",
+    "openrouter": "moonshotai/kimi-k2.5",
+    "cursor_composer": "composer-2.5",
+    "cursor_api": "kimi-k2.7-code"
+  },
+  "roi": {
+    "status": "NEGATIVE",
+    "estimated_codex_saved_tokens": 12000,
+    "estimated_delegation_overhead_tokens": 4000,
+    "minimum_net_codex_saved_tokens": 10000,
+    "net_codex_saved_tokens": 8000
+  },
+  "negative_roi_visibility_mode": "keep_visible_non_recommended",
+  "negative_roi_visibility_reason": "Bounded write-capable external options may stay visible as fallback capacity even when they are not the cost-optimized recommendation.",
+  "codex_final_owner": true,
+  "no_production_routing": true,
+  "backend": "cursor",
+  "selected_model": "composer-2.5",
+  "selected_choice": "3",
+  "codex_review_required": true,
+  "validation_result": "FAIL",
+  "selected_path": "cursor_worker_live_via_delegate_unreadable",
+  "final_outcome": "CURSOR_WORKER_OUTPUT_UNREADABLE",
+  "planned_command": [
+    "python",
+    "documentation\\codex\\model-routing\\scripts\\janus_cursor_worker_runner.py",
+    "--lane",
+    "execution_patch_candidate",
+    "--workflow-id",
+    "WF-M6B1-CURSOR-20260711",
+    "--model",
+    "composer-2.5",
+    "--cursor-pool",
+    "auto_composer",
+    "--execute-live",
+    "--require-allowlist",
+    "--input-package-json",
+    "documentation\\tasks\\TASK-M6B.1_cursor_input_package.json",
+    "--allowlist-file",
+    "documentation\\tasks\\TASK-M6B.1_cursor_worker_allowlist.txt"
+  ],
+  "cursor_pool": "auto_composer",
+  "cost_estimate_usd_static": 0.0104,
+  "live_execution_allowed": true,
+  "downstream_exit_code": 2,
+  "downstream_stderr": "usage: janus_cursor_worker_runner.py [-h] --lane LANE --workflow-id\n                                     WORKFLOW_ID\n                                     [--input-package-json INPUT_PACKAGE_JSON]\n                                     [--allowlist-file ALLOWLIST_FILE]\n                                     [--accepted-source-run-dir ACCEPTED_SOURCE_RUN_DIR]\n                                     [--model MODEL] [--manifest MANIFEST]\n                                     [--resume-session-id RESUME_SESSION_ID]\n                                     [--require-allowlist] [--execute-live]\n                                     [--dry-run]\njanus_cursor_worker_runner.py: error: unrecognized arguments: --cursor-pool auto_composer\n",
+  "operator_message": "Cursor worker output could not be parsed as JSON: Expecting value: line 1 column 1 (char 0)"
+}

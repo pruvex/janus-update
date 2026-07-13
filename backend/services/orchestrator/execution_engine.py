@@ -17,6 +17,7 @@ from backend.services.logging.logger_core import log_event
 from backend.llm_providers.gemini.service import GeminiServiceProvider
 from backend.llm_providers.ollama.service import OllamaServiceProvider
 from backend.llm_providers.openai.service import OpenAIServiceProvider
+from backend.llm_providers.shared.tool_loop_runner import TRANSPORT_TOOL_LOOP_RUNNER_ENABLED
 from backend.llm_providers.shared.utils import _build_tool_definitions_for_llm, _filter_tools_by_skill_ids
 from backend.services import llm_gateway
 from backend.services.tool_executor import ToolExecutor
@@ -1172,6 +1173,36 @@ async def _async_iter_llm_stream(
         yield StreamEvent(type="error", content=f"Unsupported provider: {provider}", metadata={})
 
 
+_STREAM_GATEWAY_HANDOFF_PROVIDERS = frozenset({"openai", "gemini", "google"})
+
+
+def _should_route_stream_tool_round_via_gateway(*, had_tool_round: bool, provider: str) -> bool:
+    """Phase-A T-A5: post-tool non-streaming rounds may use gateway/ToolLoopRunner when enabled."""
+    if not had_tool_round or not TRANSPORT_TOOL_LOOP_RUNNER_ENABLED:
+        return False
+    return str(provider or "").strip().lower() in _STREAM_GATEWAY_HANDOFF_PROVIDERS
+
+
+def _build_stream_gateway_handoff_kwargs(
+    gateway_kwargs: Dict[str, Any],
+    *,
+    current_call_provider: str,
+    current_call_model: str,
+    user_selected_model: str,
+    remaining_tool_rounds: int,
+) -> Dict[str, Any]:
+    """Build the bounded, non-streaming continuation without stream-only controls."""
+    call_kwargs = dict(gateway_kwargs)
+    call_kwargs["provider"] = current_call_provider
+    call_kwargs["model"] = current_call_model or user_selected_model
+    call_kwargs["max_tool_rounds"] = max(1, int(remaining_tool_rounds))
+    call_kwargs.pop("forced_tool", None)
+    call_kwargs.pop("forced_tool_args", None)
+    call_kwargs.pop("force_tool_name", None)
+    call_kwargs.pop("_prompt_cache_decision", None)
+    return call_kwargs
+
+
 # ---------------------------------------------------------------------------
 # IRON-GATE: Compiled patterns for price-response auditing
 # ---------------------------------------------------------------------------
@@ -1929,11 +1960,53 @@ class OrchestratorExecutionEngine:
                     )
 
                 logger.info("ATOMIC LOOP RUNDE %s: Executing %s", round_idx, skill_label)
+
+                pending_tool_calls = self._extract_pending_atomic_tool_calls(step_result)
+                step_result_text = step_text
+                if pending_tool_calls:
+                    atomic_trace_id = str(step_trace_id or uuid.uuid4())
+                    atomic_executor = ToolExecutor(
+                        db=self.db,
+                        api_key=api_key or "",
+                        provider=provider,
+                        model=planner_model,
+                        additional_context={
+                            "chat_id": chat_id,
+                            "trace_id": atomic_trace_id,
+                            "allowed_skill_ids": [current_skill],
+                            "original_user_text": user_text,
+                            "provider": provider,
+                            "model": planner_model,
+                        },
+                    )
+                    try:
+                        tool_results = await atomic_executor.execute_tool_calls(pending_tool_calls)
+                    except Exception as exc:
+                        fatal_failed_skills.add(current_skill)
+                        failed_steps.append(
+                            f"[{current_skill}] FAILED_FINAL code=TOOL_EXECUTION_ERROR message={exc}"
+                        )
+                        logger.warning(
+                            "ATOMIC LOOP RUNDE %s: Tool-Ausfuehrung fehlgeschlagen bei %s: %s",
+                            round_idx,
+                            skill_label,
+                            exc,
+                            exc_info=True,
+                        )
+                        logger.info("ATOMIC LOOP: [NEUER LOOP]")
+                        continue
+                    rendered_text = self._render_atomic_step_text(
+                        tool_results,
+                        fallback_text=step_text,
+                    )
+                    if rendered_text:
+                        step_result_text = rendered_text
+
                 logger.info("ATOMIC LOOP RUNDE %s: Task Complete %s", round_idx, skill_label)
 
                 completed_skills.append(current_skill)
-                if step_text:
-                    step_outputs.append(f"[{current_skill}] {step_text}")
+                if step_result_text:
+                    step_outputs.append(f"[{current_skill}] {step_result_text}")
 
                 if self._is_pdf_create_skill(current_skill) and self._is_pdf_creation_request(user_text):
                     planner_lockdown_after_pdf = True
@@ -3745,7 +3818,96 @@ class OrchestratorExecutionEngine:
                 except Exception:
                     pass
 
-            if _forced_tool_calls_stream is None:
+            _use_stream_gateway_handoff = (
+                _forced_tool_calls_stream is None
+                and _should_route_stream_tool_round_via_gateway(
+                    had_tool_round=had_tool_round,
+                    provider=provider_key,
+                )
+            )
+
+            if _use_stream_gateway_handoff:
+                call_kwargs = _build_stream_gateway_handoff_kwargs(
+                    gateway_kwargs,
+                    current_call_provider=current_call_provider or user_selected_provider,
+                    current_call_model=current_call_model or user_selected_model,
+                    user_selected_model=user_selected_model,
+                    remaining_tool_rounds=current_limit - current_iteration,
+                )
+                logger.info(
+                    "STREAM-GATEWAY-HANDOFF: delegating post-tool round via gateway/runner "
+                    "(provider=%s, model=%s)",
+                    call_kwargs.get("provider"),
+                    call_kwargs.get("model"),
+                )
+                try:
+                    handoff_response = await llm_gateway.reason_and_respond(**call_kwargs)
+                    if handoff_response and handoff_response.get("type") == "error":
+                        dynamic_fallback = _build_dynamic_fallback_summary(
+                            error_code=handoff_response.get("error_code"),
+                            error_message=handoff_response.get("message"),
+                            provider=provider,
+                            model=model,
+                        )
+                        handoff_response = {
+                            "type": "text",
+                            "text": dynamic_fallback,
+                            "tool_calls": [],
+                            "usage": {},
+                            "cost": {},
+                        }
+                except Exception as exc:
+                    logger.error(
+                        "run_tool_loop_stream: gateway handoff crashed",
+                        exc_info=True,
+                    )
+                    dynamic_fallback = _build_dynamic_fallback_summary(
+                        exception=exc,
+                        provider=provider,
+                        model=model,
+                    )
+                    handoff_response = {
+                        "type": "text",
+                        "text": dynamic_fallback,
+                        "tool_calls": [],
+                        "usage": {},
+                        "cost": {},
+                    }
+
+                if isinstance(handoff_response, dict):
+                    prompt_cache_decision = decision_from_gateway_kwargs(gateway_kwargs)
+                    if prompt_cache_decision is not None:
+                        handoff_response["usage"] = merge_decision_into_usage(
+                            handoff_response.get("usage") or {},
+                            prompt_cache_decision,
+                        )
+                    usage_data = handoff_response.get("usage") or {}
+                    cost_data = handoff_response.get("cost") or {}
+                    aggregated_tokens_input += int(
+                        usage_data.get("prompt_tokens") or usage_data.get("input_tokens") or 0
+                    )
+                    aggregated_tokens_output += int(
+                        usage_data.get("completion_tokens") or usage_data.get("output_tokens") or 0
+                    )
+                    aggregated_total_cost += float(cost_data.get("total_cost") or 0.0)
+                    _internal_results = handoff_response.get("_internal_tool_results")
+                    if isinstance(_internal_results, list):
+                        for _itr in _internal_results:
+                            if isinstance(_itr, dict):
+                                results_buffer.append(_itr)
+                                _skill_name = str(_itr.get("name") or "").strip()
+                                if _skill_name and _skill_name not in all_used_skills:
+                                    all_used_skills.append(_skill_name)
+                    if handoff_response.get("ui_command"):
+                        latest_ui_command = handoff_response["ui_command"]
+                    round_text = str(handoff_response.get("text") or "")
+                    if round_text.strip():
+                        yield StreamEvent(type="text_delta", content=round_text, metadata={})
+                    latest_tool_calls = handoff_response.get("tool_calls") or []
+                    response = handoff_response
+                break
+
+            elif _forced_tool_calls_stream is None:
                 try:
                     async for ev in _async_iter_llm_stream(gateway_kwargs, tools_llm, force_tool_name=_active_force_tool):
                         if ev.type == "text_delta":
@@ -4485,6 +4647,36 @@ class OrchestratorExecutionEngine:
             if isinstance(error_obj, dict) and error_obj:
                 return error_obj
         return None
+
+    @staticmethod
+    def _extract_pending_atomic_tool_calls(step_result: Dict[str, Any]) -> List[Dict[str, Any]]:
+        if not isinstance(step_result, dict):
+            return []
+        raw_response = step_result.get("raw_response")
+        if not isinstance(raw_response, dict):
+            return []
+        if raw_response.get("executed_tool_call") is True:
+            return []
+        tool_calls = raw_response.get("tool_calls")
+        if not isinstance(tool_calls, list):
+            return []
+        return [tool_call for tool_call in tool_calls if isinstance(tool_call, dict)]
+
+    def _render_atomic_step_text(
+        self,
+        tool_results: List[Dict[str, Any]],
+        *,
+        fallback_text: str = "",
+    ) -> str:
+        weather_text = render_weather_forecast_from_tools(tool_results)
+        if weather_text:
+            text_value = weather_text
+        else:
+            messages = self._success_messages_from_tool_results(tool_results)
+            text_value = "\n\n".join(messages) if messages else str(fallback_text or "").strip()
+        text_value = append_tool_attributions_from_tools(text_value, tool_results)
+        text_value = _normalize_inline_weather_source(text_value, tool_results)
+        return str(text_value or "").strip()
 
     @staticmethod
     def _step_has_tool_call(step_result: Dict[str, Any]) -> bool:

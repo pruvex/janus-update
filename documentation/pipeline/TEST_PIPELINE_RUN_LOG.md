@@ -1,5 +1,75 @@
 # Janus Test Pipeline Run Log
 
+## 2026-07-14 - TASK-M6.MERGE.1 M6-to-master integration closeout
+
+- Marker: `TASK-M6.MERGE.1`.
+- Result: PASS - resolved master merge preserves M6 and master contracts; focused M6 integration matrix `146 passed`, Gemini duplicate-guard regression `21 passed`, schemas compile, agent-factory test, conflict-marker scan, and both diff checks PASS.
+- Final audit: `documentation/tasks/TASK-M6.MERGE.1_FINAL_AUDIT.md` (PASS).
+- Runtime evidence: Gemini `gemini-3.1-pro-preview` Berlin-weather smoke with `TRANSPORT_LAYER_ENABLED=false` returned normal Open-Meteo output after BACKLOG-129.
+- Scope: integration only; C3 remains documented architecture debt and no release/root update is claimed.
+
+## 2026-07-13 - TASK-M6 aggregate transport-refactor closeout
+
+- Marker: `TASK-M6`.
+- Result: PASS - Phase-B `63 passed`, C1 `111 passed, 6 deselected`, C2 `24 passed`, and C4 `14 passed`; all bound scoped checks PASS.
+- Final audit: `documentation/tasks/TASK-M6_AGGREGATE_FINAL_AUDIT.md` (PASS).
+- External review: `documentation/tasks/CURSOR_M6_TOTAL_REVIEW_HANDOFF.md` (Cursor re-review PASS).
+- Scope: Phase A, Phase-B direct-provider foundation, C1, C2, and C4 closed. C3 remains documented architecture debt; no deletion is claimed.
+
+## 2026-07-13 - TASK-M6C.4 provider tool-ID parity validation
+
+- Marker: `TASK-M6C.4`.
+- Result: PASS - hermetic OpenAI/Gemini parity plus adapter regression suite `14 passed`; syntax and scoped diff PASS.
+- Final audit: `documentation/tasks/TASK-M6C.4_FINAL_AUDIT.md` (PASS).
+- Scope: `system.weather` and `system.websearch` only; no runtime provider behavior change.
+
+## 2026-07-13 - TASK-M6C.2 response postprocessor extraction validation
+
+- Marker: `TASK-M6C.2`.
+- Result: PASS - shared response-postprocessor and focused transport-gateway suite `24 passed`; syntax and scoped-diff checks PASS; enabled Gemini Berlin-weather smoke returned normal Open-Meteo output.
+- Final audit: `documentation/tasks/TASK-M6C.2_FINAL_AUDIT.md` (PASS).
+- Scope: central post-silo provider-family finishing only; OpenAI release-list links and Gemini preserved metadata rendering. T-C3/T-C4 remain separate.
+
+## 2026-07-13 - TASK-M6C.1 Websearch boundary decoupling validation
+
+- Marker: `TASK-M6C.1`.
+- Result: PASS - focused Websearch executor/provider selection `111 passed, 6 deselected`; syntax and scoped-diff checks PASS; enabled Gemini Berlin-weather smoke PASS.
+- Final audit: `documentation/tasks/TASK-M6C.1_FINAL_AUDIT.md` (PASS).
+- Scope: only Phase-C T-C1. Flag-off preserves executor policy; flag-on applies equivalent policy at `backend.tool_registry:websearch_wrapper`. T-C2 through T-C4 remain separate.
+
+## 2026-07-13 - TASK-M6B direct-provider foundation validation
+
+- Marker: `TASK-M6B` with final direct-provider slice `TASK-M6B.7`.
+- Result: PASS - combined transport/gateway/runner matrix `63 passed`; enabled OpenAI, Gemini, and Ollama Berlin-weather smokes PASS.
+- Final audit: `documentation/tasks/TASK-M6B_PHASE_B_FINAL_AUDIT.md` (PASS WITH FIXES; documentation fixes applied).
+- Scope: direct OpenAI/Gemini/Ollama foundation only; OpenRouter, Codex/OAuth, and Phase-C cleanup remain separate.
+
+## 2026-07-13 - TASK-M6B.6 Gemini normal tool-loop transport-gate validation
+
+- Marker: `TASK-M6B.6`.
+- Result: PASS - focused Gemini gateway/runner/resolver suite `31 passed`; combined Gemini/OpenAI transport regression suite `40 passed`; syntax, diff, and Playwright discovery checks PASS; enabled Gemini Berlin-weather smoke PASS.
+- Final audit: `documentation/tasks/TASK-M6B.6_FINAL_AUDIT.md` (PASS).
+- Scope: direct `gemini` normal tool-loop only; engine-owned/drill-down Gemini, Google, OpenRouter, Ollama, and Codex remain excluded.
+
+## 2026-07-13 - TASK-M6B.5 direct OpenAI transport-gate validation
+
+- Marker: `TASK-M6B.5`.
+- Result: PASS - focused flag-off/flag-on gateway, runner, and resolver suite `27 passed`; syntax and diff checks PASS; enabled OpenAI Berlin-weather smoke PASS.
+- Final audit: `documentation/tasks/TASK-M6B.5_FINAL_AUDIT.md` (PASS).
+- Scope: direct `openai` only; OpenRouter/Gemini/Google/Ollama/Codex remain excluded.
+
+## 2026-07-13 - TASK-M6B.4 and BACKLOG-128 final validation
+
+- Marker: `BACKLOG-128` with Phase-B `TASK-M6B.4`.
+- Result: PASS - focused resolver/Ollama suite `17 passed`, syntax and diff checks PASS, direct bounded Cursor-worker review PASS, and manual default-off Berlin weather smoke PASS.
+- Final audit: `documentation/tasks/TASK-M6B.4_FINAL_AUDIT.md` (PASS).
+
+## 2026-07-12 - BACKLOG-127 final validation handoff
+
+- Marker: `BACKLOG-127` (with M6B.3 and BACKLOG-125/126 follow-up evidence).
+- Result: PASS - focused Ollama suite `27 passed`, syntax and diff checks PASS, manual default-off Berlin weather smoke PASS.
+- Final audit: `documentation/tasks/BACKLOG-127_FINAL_AUDIT.md` (PASS).
+
 Zweck: Dieses Log sammelt kompakte, auswertbare Beobachtungen aus echten Janus Test-&-Optimierungs-Pipeline-Runs. Es ersetzt nicht `SESSION_LOG.md`, Backlog, TestSpec-Artefakte oder Dashboard-Telemetrie. Es dient dazu, nach mehreren vollstaendigen TestRuns wiederkehrende Fehler, Reibungspunkte und Optimierungspotential in TestSkill-Routen, Handoffs, Security-/Privacy-/Prompt-Injection-Gates und Dashboard-Feldern zu erkennen. Es laeuft parallel zum Feature-Pipeline-Log `documentation/pipeline/PIPELINE_RUN_LOG.md` und darf nicht mit diesem vermischt werden.
 
 ## Nutzungsregel
@@ -71,6 +141,27 @@ Zweck: Dieses Log sammelt kompakte, auswertbare Beobachtungen aus echten Janus T
 - **Abschluss**:
   - Diamond Confidence Score: 9.5/10
   - Production Confidence: 96%
+  - Gesamtergebnis: PASS
+
+### BACKLOG-129 - Gemini-Streaming Duplicate Tool Delta - Documentation Sync Note
+
+- **Datum**: 2026-07-14
+- **Quelle**: Final Audit / Documentation Update
+- **Artefakte**: `documentation/tasks/backlog_BACKLOG-129_execution_result.md`, `documentation/tasks/BACKLOG-129_AUDIT_PACKAGE.md`, `documentation/tasks/BACKLOG-129_FINAL_AUDIT.md`, `documentation/backlog/BACKLOG.md`, `janus-dashboard/data/backlog.snapshot.json`, `documentation/01_CENTRAL_TASK_REGISTRY.md`, `PROJECT_STATE.md`, `CHANGELOG.md`, `WHAT_I_LEARNED.md`.
+- **Getestete Faehigkeit**: Identische retransmittierte Gemini-Function-Call-Stream-Deltas werden pro Antwort nur einmal emittiert; unterschiedliche Argumente und der echte Hard-Loop-Schutz bleiben erhalten.
+- **Pipeline-Route**: debug -> backlog -> preimplementation -> execution -> manual Gemini smoke -> final audit -> documentation update -> backlog sync.
+- **Status**: PASS
+- **Summary**: Der manuelle Berlin-Wettersmoke mit Gemini besteht wieder; die vorherige Hard-Loop-Meldung durch doppelte identische Stream-Chunks tritt nicht mehr auf.
+- **Security Gate**: PASS - nur der gebundene Gemini-Emission-Seam, keine neue Provider- oder Routing-Autoritaet.
+- **Provider-/Model-Matrix**:
+  - Gemini `gemini-3.1-pro-preview`: manueller Berlin-Wettersmoke PASS mit `TRANSPORT_LAYER_ENABLED=false`.
+- **Findings**:
+  - Keine blockierenden Findings.
+- **Sofortfixes**:
+  - Abschlussmarker in Backlog, Registry, Project State, Changelog, WHAT_I_LEARNED, Pipeline-Log und Dashboard-Snapshot nachgezogen.
+- **Backlog-Follow-ups**:
+  - Keine; die separate M6-Master-Integration wird erneut final auditiert.
+- **Abschluss**:
   - Gesamtergebnis: PASS
 
 ### TASK-SPEC15 - Semi-automatisches Adressbuch mit Memory-Kopplung - Documentation Sync Note

@@ -45,6 +45,31 @@ def test_partition_duplicate_skips_calendar_retry_while_wikipedia_combo_pending(
     assert filtered == []
 
 
+def test_partition_duplicate_still_blocks_a_real_repeated_tool_call():
+    seen: set[str] = set()
+
+    def track(name, args):
+        key = f"{name}:{args['city'].lower()}"
+        if key in seen:
+            return True
+        seen.add(key)
+        return False
+
+    tool_calls = [
+        {"function": {"name": "system_weather", "arguments": '{"city": "Berlin"}'}},
+        {"function": {"name": "system_weather", "arguments": '{"city": "Berlin"}'}},
+    ]
+
+    filtered, blocked, blocked_name = _partition_duplicate_tool_calls(
+        tool_calls,
+        {"_track_tool_call_fn": track},
+    )
+
+    assert len(filtered) == 1
+    assert blocked is True
+    assert blocked_name == "system_weather"
+
+
 def test_build_wikipedia_turn_skill_ids_keeps_calendar_skills_for_mixed_turn():
     result = _build_wikipedia_turn_skill_ids(
         [

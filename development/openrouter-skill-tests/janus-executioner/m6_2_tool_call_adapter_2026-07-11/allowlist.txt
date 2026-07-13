@@ -1,0 +1,10 @@
+backend/llm_providers/shared/tool_call_adapter.py
+backend/services/tool_manager.py
+backend/llm_providers/openai/service.py
+backend/llm_providers/gemini/service.py
+backend/llm_providers/shared/utils.py
+backend/tests/test_tool_call_adapter.py
+backend/tests/test_tool_name_aliasing.py
+backend/tests/test_backlog_007_tool_routing_performance.py
+backend/tests/llm_providers/test_openai_service.py
+backend/tests/llm_providers/test_gemini_service.py

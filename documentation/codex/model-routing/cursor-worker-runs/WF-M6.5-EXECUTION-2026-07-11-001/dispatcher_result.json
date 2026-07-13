@@ -1,0 +1,78 @@
+{
+  "backend": "cursor",
+  "lane_id": "execution_patch_candidate",
+  "workflow_id": "WF-M6.5-EXECUTION-2026-07-11-001",
+  "selected_model": "composer-2.5",
+  "session_id": null,
+  "validation_result": "BLOCKED",
+  "selected_path": "cursor_worker_blocked",
+  "final_outcome": "CURSOR_AGENT_TIMEOUT",
+  "package_validation": {
+    "validation_result": "PASS",
+    "contract_status": "TASK_PACKAGE_VALID",
+    "issues": [],
+    "task_label": "M6.5 streaming handoff",
+    "worker_profile": "cursor-agent",
+    "allowed_edit_paths": [
+      "backend/services/orchestrator/execution_engine.py",
+      "backend/tests/test_streaming_tool_loop_runner.py"
+    ],
+    "required_result_artifacts": [
+      "RESULT.json",
+      "RESULT.md",
+      "DIFF.patch",
+      "FILES_CHANGED.txt",
+      "CHECKS.log",
+      "COST.json"
+    ]
+  },
+  "allowlist_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "allowlist": [
+      "backend/services/orchestrator/execution_engine.py",
+      "backend/tests/test_streaming_tool_loop_runner.py"
+    ]
+  },
+  "allowlist_consistency_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "package_allowed_edit_paths": [
+      "backend/services/orchestrator/execution_engine.py",
+      "backend/tests/test_streaming_tool_loop_runner.py"
+    ],
+    "allowlist": [
+      "backend/services/orchestrator/execution_engine.py",
+      "backend/tests/test_streaming_tool_loop_runner.py"
+    ],
+    "declared_allowlist_file": null
+  },
+  "codex_review_required": true,
+  "operator_message": "Cursor agent exceeded the bounded live timeout (180s) before producing a final result.",
+  "accepted_source_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "accepted_source_run_dir": null,
+    "recognized_artifacts": []
+  },
+  "planned_command": [
+    "C:\\Users\\pruve\\AppData\\Local\\cursor-agent\\agent.CMD",
+    "-p",
+    "--workspace",
+    "C:\\KI\\Janus-M6-Transport-Prep",
+    "--model",
+    "composer-2.5",
+    "--output-format",
+    "json",
+    "--force",
+    "--trust",
+    "--approve-mcps",
+    "Implement TASK-M6.5 only. Preserve StreamEvent protocol, auth isolation, forced-tool start, provider delta normalization and stream-final costs in execution_engine. When enabled, route only non-streaming tool-round handoff through the existing gateway/runner boundary. No protocol rewrite or commit.\n\nTask label: M6.5 streaming handoff\n\nAcceptance criteria:\n- Keep StreamEvent, auth, forced-tool, delta and stream-cost ownership in execution_engine.\n- Only flag-on non-streaming tool rounds use the gateway/runner boundary.\n- Only allowlisted paths change.\n\nAllowed edit paths:\n- backend/services/orchestrator/execution_engine.py\n- backend/tests/test_streaming_tool_loop_runner.py\n\nReturn status, changed_files, command_results, summary, and blockers as concise JSON-compatible output."
+  ],
+  "live_execution_allowed": true,
+  "mode": "proposal_first",
+  "workspace_root": "C:\\KI\\Janus-M6-Transport-Prep",
+  "timeout_seconds": 180,
+  "changed_files": [],
+  "changed_outside_allowlist": []
+}

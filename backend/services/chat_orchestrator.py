@@ -88,6 +88,7 @@ from backend.utils.config_loader import (
     save_config_data,
 )
 from backend.services.llm_silo_context import normalize_llm_silo_provider
+from backend.llm_providers.shared.moa import MOA_MODEL_HIERARCHY
 
 logger = logging.getLogger("janus_backend")
 
@@ -309,27 +310,6 @@ class ChatOrchestrator:
         """
         return identity_manager.extract_realtime_identity_name(user_text)
 
-    MODEL_HIERARCHY = {
-        "openai": {
-            "vision": "gpt-4o",
-            "logic": "gpt-5.4",
-            "speed": "gpt-5.4-nano",
-            "balanced": "gpt-5.4-mini",
-        },
-        "gemini": {
-            "vision": "gemini-3-flash-preview",
-            "logic": "gemini-3-pro-preview",
-            "speed": "gemini-3-flash-preview",
-            "balanced": "gemini-3-flash-preview",
-        },
-        "ollama": {
-            "vision": "llava",
-            "logic": "llama3.1:8b",
-            "speed": "llama3.1:8b",
-            "fast": "llama3.1:8b",
-            "balanced": "qwen2.5:14b",
-        },
-    }
     META_RESEARCH_PROMPT_MAX_TOKENS = 140
     META_PHASE2_FACTS_MAX_TOKENS = 280
     META_PHASE2_REQUEST_FALLBACK_MAX_TOKENS = 180
@@ -382,7 +362,7 @@ class ChatOrchestrator:
     def _coerce_model_to_session_provider(self, provider: Optional[str], model: Optional[str]) -> str:
         """BYOK: keep chat ``model`` aligned with session cloud provider (no gpt-* on gemini silo)."""
         pkey = self._hierarchy_provider_key(provider)
-        tiers = self.MODEL_HIERARCHY.get(pkey) or {}
+        tiers = MOA_MODEL_HIERARCHY.get(pkey) or {}
         default_model = str(
             tiers.get("speed") or tiers.get("balanced") or tiers.get("logic") or ""
         ).strip()
@@ -458,12 +438,12 @@ class ChatOrchestrator:
         self.capability_registry.load()
         self.help_skill = create_help_skill(self.capability_registry)
         self.skill_selector = SkillSelector(capability_registry=self.capability_registry)
-        self.agent_planner = AgentPlanner(model_hierarchy=self.MODEL_HIERARCHY)
+        self.agent_planner = AgentPlanner(model_hierarchy=MOA_MODEL_HIERARCHY)
         self.agent_runtime = AgentRuntime(db=db, context_manager=context_manager)
         self.execution_engine = OrchestratorExecutionEngine(
             db=db,
             context_manager=context_manager,
-            model_hierarchy=self.MODEL_HIERARCHY,
+            model_hierarchy=MOA_MODEL_HIERARCHY,
             agent_planner=self.agent_planner,
             agent_runtime=self.agent_runtime,
             skill_selector=self.skill_selector,
@@ -4592,7 +4572,7 @@ class ChatOrchestrator:
         crud.create_message(self.db, request.chat_id, 'user', (wf.vision_data.get('markdown', '') if wf.vision_data else '') + wf.user_text)
         _hkey = self._hierarchy_provider_key(request.provider)
         if not wf.user_selected_model:
-            wf.chosen_model = self.MODEL_HIERARCHY[_hkey]["speed"]
+            wf.chosen_model = MOA_MODEL_HIERARCHY[_hkey]["speed"]
         else:
             wf.chosen_model = self._coerce_model_to_session_provider(request.provider, wf.user_selected_model)
         logger.info(
@@ -4972,7 +4952,7 @@ class ChatOrchestrator:
             db=self.db,
             background_tasks=ctx.background_tasks,
             status_sync=self.status_sync,
-            model_hierarchy=self.MODEL_HIERARCHY,
+            model_hierarchy=MOA_MODEL_HIERARCHY,
             orchestrator_cls=ChatOrchestrator,
         )
 
@@ -5130,7 +5110,7 @@ class ChatOrchestrator:
                     yield StreamEvent(type="stream_complete", content={"text": wf.final_text})
                     await finalize_response_async(
                         ctx,
-                        model_hierarchy=self.MODEL_HIERARCHY,
+                        model_hierarchy=MOA_MODEL_HIERARCHY,
                         orchestrator_cls=ChatOrchestrator,
                     )
                     for ev in self._iter_modal_request_stream_events(ctx):
@@ -5251,7 +5231,7 @@ class ChatOrchestrator:
                     ctx.final_response = str(wf.final_text or "")
                     await finalize_response_async(
                         ctx,
-                        model_hierarchy=self.MODEL_HIERARCHY,
+                        model_hierarchy=MOA_MODEL_HIERARCHY,
                         orchestrator_cls=ChatOrchestrator,
                     )
                     for ev in self._iter_modal_request_stream_events(ctx):
@@ -5280,7 +5260,7 @@ class ChatOrchestrator:
                 ctx.final_response = str(wf.final_text or "")
                 await finalize_response_async(
                     ctx,
-                    model_hierarchy=self.MODEL_HIERARCHY,
+                    model_hierarchy=MOA_MODEL_HIERARCHY,
                     orchestrator_cls=ChatOrchestrator,
                 )
                 _api_text = str(getattr(getattr(wf, "execution_for_api", None), "text", "") or "").strip()
@@ -5337,5 +5317,5 @@ class ChatOrchestrator:
             model_id=model_id,
             learned_name=learned_name,
             skip_fact_extraction=skip_fact_extraction,
-            model_hierarchy=self.MODEL_HIERARCHY,
+            model_hierarchy=MOA_MODEL_HIERARCHY,
         )

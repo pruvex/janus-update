@@ -4,6 +4,224 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### BACKLOG-129 - Gemini streaming duplicate tool delta
+
+- **Status**: DONE.
+- **Final Audit**: `documentation/tasks/BACKLOG-129_FINAL_AUDIT.md` (PASS).
+- **Validation**: Gemini/duplicate-guard `21 passed`; bound M6 matrix PASS; manual Gemini Berlin-weather PASS with `TRANSPORT_LAYER_ENABLED=false`.
+- **Scope**: same-response identical Function-Call delta deduplication only; genuine loop protection retained.
+
+### TASK-M6 - Provider Transport Refactor aggregate closure
+
+- **Status**: DONE WITH DOCUMENTED ARCHITECTURE DEBT
+- **Final Audit**: `documentation/tasks/TASK-M6_AGGREGATE_FINAL_AUDIT.md` (PASS).
+- **External Gate**: `documentation/tasks/CURSOR_M6_TOTAL_REVIEW_HANDOFF.md` (Cursor re-review PASS, 2026-07-13).
+- **Validation**: Phase-B `63 passed`; C1 `111 passed, 6 deselected`; C2 `24 passed`; C4 `14 passed`; all bound scoped checks PASS.
+- **Scope**: implemented Phase A, Phase-B direct-provider foundation, C1, C2, and C4.
+- **Integration**: `TASK-M6.MERGE.1` final audit PASS after the bound master merge, BACKLOG-129 Gemini stream-delta repair, manual Gemini Berlin-weather smoke, and clean cached diff check.
+- **Follow-up**: C3 deletion remains architecture debt; any branch reduction requires a new redesign Spec. Explicit Git governance remains required for the checkpoint and root update.
+
+### TASK-M6.MERGE.1 - M6-to-master integration
+
+- **Status**: DONE WITH DOCUMENTED ARCHITECTURE DEBT.
+- **Final Audit**: `documentation/tasks/TASK-M6.MERGE.1_FINAL_AUDIT.md` (PASS).
+- **Audit Package**: `documentation/tasks/TASK-M6.MERGE.1_AUDIT_PACKAGE.md`.
+- **Validation**: M6 focused integration matrix `146 passed`; Gemini duplicate-guard regression `21 passed`; schemas compile; agent-factory test; Playwright discovery `4032` tests; manual Gemini Berlin-weather PASS; `git diff --cached --check` PASS.
+- **Scope**: merge only; master contracts and approved M6 outcomes are preserved. BACKLOG-129 deduplicates only same-response identical Gemini Function-Call deltas.
+- **Follow-up**: C3 deletion remains open debt. Git checkpoint/root update are separate governed actions.
+
+### TASK-M6C.4 - OpenAI/Gemini canonical tool-ID parity
+
+- **Status**: DONE WITH DOCUMENTED FOLLOW-UPS
+- **Final Audit**: `documentation/tasks/TASK-M6C.4_FINAL_AUDIT.md` (PASS)
+- **Spec**: `documentation/SPEC/M6C4_provider_tool_id_parity.md`
+- **Validation**: parity plus adapter regression suite (`14 passed`), syntax, and scoped diff PASS.
+- **Scope**: `system.weather` and `system.websearch` only; no runtime provider behavior change.
+- **Follow-up**: T-C3 cleanup remains open; whole-catalog parity is not claimed.
+
+### TASK-M6C.2 - Shared OpenAI and Gemini response postprocessor extraction
+
+- **Status**: DONE WITH DOCUMENTED FOLLOW-UPS
+- **Final Audit**: `documentation/tasks/TASK-M6C.2_FINAL_AUDIT.md` (PASS)
+- **Spec**: `documentation/SPEC/Spec Done/M6C2_response_postprocessor_extraction.md`
+- **Parent Task**: `documentation/tasks/TASK-M6_transport_phase_c.md`
+- **Task Breakdown / Precheck / Execution**: `documentation/tasks/TASK-M6C.2_task_breakdown.md`; `documentation/tasks/TASK-M6C.2_preimplementation_check.md`; `documentation/tasks/TASK-M6C.2_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-M6C.2_AUDIT_PACKAGE.md`
+- **Validation**: focused response-postprocessor and transport-gateway suite (`24 passed`), syntax, scoped diff, and enabled Gemini Berlin-weather smoke with Open-Meteo PASS.
+- **Scope**: `llm_gateway.reason_and_respond` centrally selects the provider-family finisher after silo return; OpenAI release-list repair and Gemini preserved-metadata rendering only. Gateway-owned quality, cost, and synthesis behavior remain in place.
+- **Follow-up**: T-C3 remains documented architecture debt; T-C4 is complete. This marker does not close the parent transport-refactor Spec.
+
+### TASK-M6C.1 - Websearch provider coercion boundary decoupling
+
+- **Status**: DONE WITH DOCUMENTED FOLLOW-UPS
+- **Final Audit**: `documentation/tasks/TASK-M6C.1_FINAL_AUDIT.md` (PASS)
+- **Spec**: `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md` (Phase-C T-C1 only; parent Spec remains active)
+- **Parent Task**: `documentation/tasks/TASK-M6_transport_phase_c.md`
+- **Task Breakdown / Precheck / Execution**: `documentation/tasks/TASK-M6C.1_task_breakdown.md`; `documentation/tasks/TASK-M6C.1_preimplementation_check.md`; `documentation/tasks/TASK-M6C.1_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-M6C.1_AUDIT_PACKAGE.md`
+- **Validation**: focused Websearch regression selection (`111 passed, 6 deselected`), syntax, scoped diff, and enabled Gemini `gemini-3.1-pro-preview` Berlin-weather smoke PASS.
+- **Scope**: flag-off retains the executor-owned provider/model policy. With `TRANSPORT_WEBSEARCH_DECOUPLED=true`, the executor forwards private context and the consumed `backend.tool_registry:websearch_wrapper` boundary owns equivalent policy. No gateway, transport, schema, or Websearch-service implementation change.
+- **Follow-up**: T-C3 remains documented architecture debt; T-C2 and T-C4 are complete. This marker does not close the parent Spec.
+
+### TASK-M6B - Phase-B direct-provider foundation
+
+- **Status**: DONE WITH DOCUMENTED FOLLOW-UPS
+- **Final Audit**: `documentation/tasks/TASK-M6B_PHASE_B_FINAL_AUDIT.md` (PASS WITH FIXES; documentation fixes applied)
+- **Scope**: existing direct OpenAI, Gemini, and Ollama silos only; parent transport Spec remains active.
+- **Validation**: combined transport/gateway/runner matrix (`63 passed`) and enabled manual OpenAI/Gemini/Ollama Berlin-weather smokes PASS.
+- **Exclusions**: OpenRouter remains Epic 6; Codex/OAuth remains Epic 5; legacy removal and provider-branch reduction remain Phase C.
+
+### TASK-M6B.7 - Ollama flag-gated transport delegation
+
+- **Status**: DONE WITH NON-BLOCKING FOLLOW-UP
+- **Final Audit**: `documentation/tasks/TASK-M6B.7_FINAL_AUDIT.md` (PASS)
+- **Parent Task**: `documentation/tasks/TASK-M6_transport_phase_b.md`
+- **Execution Result**: `documentation/tasks/TASK-M6B.7_execution_result.md`
+- **Validation**: focused Ollama gateway/resolver suite (`19 passed`), syntax, diff, Cursor-first evidence, and enabled Ollama Berlin-weather smoke PASS.
+- **Scope**: all direct Ollama gateway calls use the thin transport only when enabled; Atomic/AgentRuntime logic and other providers remain unchanged.
+
+### TASK-M6B.6 - Gemini normal tool-loop flag-gated transport delegation
+
+- **Status**: DONE WITH NON-BLOCKING FOLLOW-UP
+- **Final Audit**: `documentation/tasks/TASK-M6B.6_FINAL_AUDIT.md` (PASS)
+- **Spec**: `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md` (Phase-B T-B6 direct Gemini normal-loop slice only; parent Spec remains in progress)
+- **Parent Task**: `documentation/tasks/TASK-M6_transport_phase_b.md`
+- **Decision Summary**: `documentation/tasks/TASK-M6B.6_decision_summary.md`
+- **Task Breakdown**: `documentation/tasks/TASK-M6B.6_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-M6B.6_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-M6B.6_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-M6B.6_AUDIT_PACKAGE.md`
+- **Validation**: focused Gemini gateway/runner/resolver suite (`31 passed`), combined Gemini/OpenAI transport regression suite (`40 passed`), syntax, scoped diff, Playwright discovery, and enabled Gemini Berlin-weather smoke PASS.
+- **Scope**: only direct `gemini` normal tool-loop is enabled when `TRANSPORT_LAYER_ENABLED=true`; flag-off remains legacy. Engine-owned/drill-down Gemini, Google, OpenRouter, Ollama, Codex, and streaming remain unchanged.
+- **Follow-up**: shared Cursor delegate `--cursor-pool` tooling remains separately non-blocking; further provider rollout requires a new task.
+
+### TASK-M6B.5 - Direct OpenAI flag-gated transport delegation
+
+- **Status**: DONE WITH NON-BLOCKING FOLLOW-UP
+- **Final Audit**: `documentation/tasks/TASK-M6B.5_FINAL_AUDIT.md` (PASS)
+- **Spec**: `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md` (Phase-B T-B6 direct OpenAI slice only; parent Spec remains in progress)
+- **Parent Task**: `documentation/tasks/TASK-M6_transport_phase_b.md`
+- **Decision Summary**: `documentation/tasks/TASK-M6B.5_decision_summary.md`
+- **Task Breakdown**: `documentation/tasks/TASK-M6B.5_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-M6B.5_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-M6B.5_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-M6B.5_AUDIT_PACKAGE.md`
+- **Validation**: focused flag-off/flag-on OpenAI gateway, runner, and resolver suite (`27 passed`), syntax, scoped diff, and enabled OpenAI Berlin-weather smoke PASS.
+- **Scope**: only direct `openai` is enabled when `TRANSPORT_LAYER_ENABLED=true`; flag-off remains legacy. OpenRouter, Gemini, Google, Ollama, and Codex remain unchanged.
+- **Follow-up**: shared Cursor delegate `--cursor-pool` tooling remains separately non-blocking; further provider rollout requires a new task.
+
+### TASK-M6B.4 - Runtime LLM resolution and transport registry seam
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-M6B.4_FINAL_AUDIT.md` (PASS)
+- **Spec**: `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md` (Phase-B T-B5 only; parent Spec remains in progress)
+- **Parent Task**: `documentation/tasks/TASK-M6_transport_phase_b.md`
+- **Task Breakdown**: `documentation/tasks/TASK-M6B.4_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-M6B.4_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-M6B.4_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-M6B.4_AUDIT_PACKAGE.md`
+- **Validation**: focused resolver/Ollama regression suite (`17 passed`), syntax, scoped diff, direct bounded Cursor-worker review, and manual default-off Ollama Berlin-weather smoke PASS. Resolver and gateway helpers are deliberately non-consuming.
+- **Related Backlog**: `BACKLOG-128` is DONE; it canonicalizes the known Ollama weather alias before allowlist validation and does not alter M6B.4 routing scope.
+- **Follow-up**: `TASK-M6B.5` remains the separate flag-gated live gateway-delegation slice.
+
+### TASK-M6B.3 - Add the Ollama-local transport
+
+- **Status**: DONE WITH NON-BLOCKING FOLLOW-UP
+- **Final Audit**: `documentation/tasks/BACKLOG-127_FINAL_AUDIT.md` (PASS)
+- **Spec**: `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md` (Phase-B T-B4 only; parent Spec remains in progress)
+- **Parent Task**: `documentation/tasks/TASK-M6_transport_phase_b.md`
+- **Precheck**: `documentation/tasks/TASK-M6B.3_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-M6B.3_execution_result.md`
+- **Audit Package**: `documentation/tasks/BACKLOG-127_AUDIT_PACKAGE.md`
+- **Validation**: Combined Ollama transport/service/gateway/Atomic-Agent suite (`27 passed`), syntax, scoped diff, and manual default-off Ollama Berlin-weather smoke PASS. The thin transport remains unintegrated; BACKLOG-125/126/127 closed the pre-existing service, tool-forwarding, and Atomic execution defects found by that smoke.
+- **Follow-up**: The shared Cursor wrapper decoding/argument defect remains separate tooling work. `TASK-M6B.4` and `TASK-M6B.5` remain open.
+
+### TASK-M6B.1 - Establish the BaseTransport contract and OpenAI-compatible vertical slice
+
+- **Status**: DONE WITH NON-BLOCKING FOLLOW-UP
+- **Final Audit**: `documentation/tasks/TASK-M6B.1_final_audit.md` (PASS)
+- **Spec**: `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md` (Phase-B T-B1/T-B2 only; parent Spec remains in progress)
+- **Parent Task**: `documentation/tasks/TASK-M6_transport_phase_b.md`
+- **Task Breakdown**: `documentation/tasks/TASK-M6B.1_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-M6B.1_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-M6B.1_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-M6B.1_AUDIT_PACKAGE.md`
+- **Validation**: BaseTransport/OpenAICompatTransport focused tests (`6/6`), existing ToolCallAdapter regression (`12/12`), combined audit rerun (`18/18`), syntax, scoped diff, Cursor allowlist, and manual default-off OpenAI Berlin-weather smoke all passed. The slice is deliberately unintegrated; no existing runtime path or Phase-B flag consumer changed.
+- **Follow-up**: The shared Cursor delegate wrapper still forwards unsupported `--cursor-pool`; use the validated direct Cursor worker fallback until the separate wrapper-fix slice exists. `TASK-M6B.2` through `TASK-M6B.5` remain open.
+
+### TASK-M6B.2 - Add the Gemini-native transport as a 1:1 service wrapper
+
+- **Status**: DONE WITH NON-BLOCKING FOLLOW-UP
+- **Final Audit**: `documentation/tasks/TASK-M6B.2_final_audit.md` (PASS)
+- **Spec**: `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md` (Phase-B T-B3 only; parent Spec remains in progress)
+- **Parent Task**: `documentation/tasks/TASK-M6_transport_phase_b.md`
+- **Task Breakdown**: `documentation/tasks/TASK-M6B.2_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-M6B.2_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-M6B.2_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-M6B.2_AUDIT_PACKAGE.md`
+- **Validation**: GeminiNativeTransport focused tests (`4/4`), existing ToolCallAdapter plus Gemini-service checks (`14/14`), combined audit rerun (`18/18`), syntax, scoped diff, Cursor allowlist, and manual default-off Gemini Berlin-weather smoke all passed. The slice is deliberately unintegrated; no native Gemini policy, service, gateway, resolver, or Phase-B flag consumer changed.
+- **Follow-up**: The shared Cursor delegate wrapper still forwards unsupported `--cursor-pool`; use the validated direct Cursor worker fallback until the separate wrapper-fix slice exists. `TASK-M6B.3` through `TASK-M6B.5` remain open.
+
+### TASK-M6.5 - Route streaming through the gateway and ToolLoopRunner path
+
+- **Status**: DONE WITH NON-BLOCKING FOLLOW-UP
+- **Final Audit**: `documentation/tasks/TASK-M6.5_final_audit.md` (PASS WITH FIXES)
+- **Spec**: `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md` (Section 3.3.3 / Phase-A T-A5; Phase-A implementation tasks are complete)
+- **Parent Task**: `documentation/tasks/TASK-M6_transport_phase_a.md`
+- **Task Breakdown**: `documentation/tasks/TASK-M6.5_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-M6.5_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-M6.5_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-M6.5_AUDIT_PACKAGE.md`
+- **Validation**: Flag-off retains the native StreamEvent provider path. Flag-on routes only the post-tool non-streaming OpenAI/Gemini continuation through the gateway/runner and preserves the remaining stream-round budget. Syntax, scoped diff, precheck, execution-result, and final-audit validation passed.
+- **Follow-up**: Focused pytest is independently blocked by the local ChromaDB SQLite panic and missing `backend.data.schemas_intent`. Cursor Composer timed out after a valid live start; manual enabled-flag OpenAI/Gemini streaming smoke evidence is required before broad enablement.
+
+### TASK-M6.4 - Migrate the Gemini gateway to the shared ToolLoopRunner
+
+- **Status**: DONE WITH NON-BLOCKING FOLLOW-UP
+- **Final Audit**: `documentation/tasks/TASK-M6.4_final_audit.md` (PASS WITH FIXES)
+- **Spec**: `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md` (Section 3.3.2 / Phase-A T-A4 only; parent Spec remains in progress)
+- **Validation**: Gemini runner `6/6`, syntax, execution-result, and final-audit validation passed; gateway-owned policy, grounding, attribution, history, and synthesis remain intact.
+- **Follow-up**: Cursor Windows output decoding and the local ChromaDB SQLite panic remain separate infrastructure work. The later `T-A5` closeout completes the Phase-A implementation chain.
+
+### TASK-M6.3 - Extract the OpenAI ToolLoopRunner behind a default-off flag
+
+- **Status**: DONE WITH NON-BLOCKING FOLLOW-UP
+- **Final Audit**: `documentation/tasks/TASK-M6.3_final_audit.md` (PASS WITH FIXES)
+- **Spec**: `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md` (Section 3.3 / Phase-A T-A3 only; parent Spec remains in progress)
+- **Parent Task**: `documentation/tasks/TASK-M6_transport_phase_a.md`
+- **Task Breakdown**: `documentation/tasks/TASK-M6.3_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-M6.3_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-M6.3_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-M6.3_AUDIT_PACKAGE.md`
+- **Validation**: The default-off OpenAI runner extraction passed focused runner (`4/4`), syntax, scoped diff, execution-result, and final-audit validation. The legacy path remains default and the runner keeps gateway-only fallback, synthesis, guards, link repair, response shaping, and persistence out of the shared loop.
+- **Follow-up**: The broad OpenAI regression is independently blocked by the local ChromaDB SQLite panic. Cursor Composer timed out after a valid direct worker start and the shared delegate has an argument-contract defect; both are separate infrastructure work. The later `T-A4`/`T-A5` closeouts complete Phase-A implementation.
+
+### TASK-M6.2 - Introduce the transport-boundary ToolCallAdapter
+
+- **Status**: DONE WITH NON-BLOCKING FOLLOW-UP
+- **Final Audit**: `documentation/tasks/TASK-M6.2_final_audit.md` (PASS WITH FIXES)
+- **Spec**: `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md` (Section 2.4 / Phase-A T-A2 only; parent Spec remains in progress)
+- **Parent Task**: `documentation/tasks/TASK-M6_transport_phase_a.md`
+- **Task Breakdown**: `documentation/tasks/TASK-M6.2_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-M6.2_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-M6.2_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-M6.2_AUDIT_PACKAGE.md`
+- **Validation**: `ToolManager` now retains canonical dotted IDs and `ToolCallAdapter` centralizes provider naming/schema adaptation. Focused adapter (`12/12`), OpenAI (`2/2`), Gemini (`12/12`), syntax, scoped diff, and manual Gemini weather-tool evidence passed. Full collection remains independently blocked by the local ChromaDB SQLite panic before collection.
+- **Follow-up**: Cursor Composer proposal-first evidence reached a valid direct start but timed out without structured output; the shared delegate and outer-package wrapper seams also need a bounded Cursor-infrastructure debug slice. The later `T-A3` through `T-A5` closeouts complete Phase-A implementation.
+
+### TASK-M6.1 - Unify the model hierarchy as the single MoA source
+
+- **Status**: DONE WITH NON-BLOCKING FOLLOW-UP
+- **Final Audit**: `documentation/tasks/TASK-M6.1_final_audit.md` (PASS WITH FIXES)
+- **Spec**: `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md` (Section 3.4 / Phase-A T-A1 only; parent Spec remains in progress)
+- **Parent Task**: `documentation/tasks/TASK-M6_transport_phase_a.md`
+- **Task Breakdown**: `documentation/tasks/TASK-M6.1_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-M6.1_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-M6.1_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-M6.1_AUDIT_PACKAGE.md`
+- **Validation**: `TASK-M6.1` consolidates the active OpenAI, Gemini, and Ollama tier matrix into `MOA_MODEL_HIERARCHY`, removes the orchestrator duplicate, and moves the Gemini websearch override to the shared source. Isolated hierarchy (`3/3`) and MoA routing (`13/13`) regressions, syntax, scoped diff, and manual Gemini current-news evidence passed. Full pytest collection remains independently blocked by the local ChromaDB SQLite panic before collection.
+- **Follow-up**: Correct the obsolete Ollama-no-tier source comment before `TASK-M6.2`; the later `T-A2` through `T-A5` closeouts complete Phase-A implementation.
+
 ### TASK-MEM-M4.1 - Implement Memory Phase C Session-Search as one bounded FTS5 slice
 
 - **Status**: DONE

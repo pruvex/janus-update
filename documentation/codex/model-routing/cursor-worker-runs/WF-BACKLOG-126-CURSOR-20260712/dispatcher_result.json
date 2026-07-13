@@ -1,0 +1,91 @@
+{
+  "backend": "cursor",
+  "lane_id": "execution_patch_candidate",
+  "workflow_id": "WF-BACKLOG-126-CURSOR-20260712",
+  "selected_model": "composer-2.5",
+  "session_id": "7f331c6b-0d41-43be-8ec5-5a33405468c6",
+  "validation_result": "PASS",
+  "selected_path": "cursor_worker_live_mockable",
+  "final_outcome": "CURSOR_WORKER_READY_FOR_CODEX_REVIEW",
+  "package_validation": {
+    "validation_result": "PASS",
+    "contract_status": "TASK_PACKAGE_VALID",
+    "issues": [],
+    "task_label": "BACKLOG-126 Ollama atomic tool handoff",
+    "worker_profile": "cursor-agent",
+    "allowed_edit_paths": [
+      "backend/services/llm_gateway.py",
+      "backend/llm_providers/ollama/gateway.py",
+      "backend/tests/test_agent_factory_runtime.py",
+      "backend/tests/llm_providers/test_ollama_gateway.py"
+    ],
+    "required_result_artifacts": [
+      "RESULT.json",
+      "RESULT.md",
+      "DIFF.patch",
+      "FILES_CHANGED.txt",
+      "CHECKS.log",
+      "COST.json"
+    ]
+  },
+  "allowlist_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "allowlist": [
+      "backend/services/llm_gateway.py",
+      "backend/llm_providers/ollama/gateway.py",
+      "backend/tests/test_agent_factory_runtime.py",
+      "backend/tests/llm_providers/test_ollama_gateway.py"
+    ]
+  },
+  "allowlist_consistency_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "package_allowed_edit_paths": [
+      "backend/services/llm_gateway.py",
+      "backend/llm_providers/ollama/gateway.py",
+      "backend/tests/test_agent_factory_runtime.py",
+      "backend/tests/llm_providers/test_ollama_gateway.py"
+    ],
+    "allowlist": [
+      "backend/services/llm_gateway.py",
+      "backend/llm_providers/ollama/gateway.py",
+      "backend/tests/test_agent_factory_runtime.py",
+      "backend/tests/llm_providers/test_ollama_gateway.py"
+    ],
+    "declared_allowlist_file": null
+  },
+  "accepted_source_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "accepted_source_run_dir": null,
+    "recognized_artifacts": []
+  },
+  "accepted_source_run_dir": null,
+  "planned_command": [
+    "C:\\Users\\pruve\\AppData\\Local\\cursor-agent\\agent.CMD",
+    "-p",
+    "--workspace",
+    "C:\\KI\\Janus-M6-Transport-Prep",
+    "--model",
+    "composer-2.5",
+    "--output-format",
+    "json",
+    "--force",
+    "--trust",
+    "--approve-mcps",
+    "Implement only BACKLOG-126. Edit only allowlisted files. Forward bound tool definitions and forced tool from llm_gateway through OllamaGateway to the existing service. Add focused regressions. Do not run commands, change transport/resolver/policy, commit, or create docs.\n\nTask label: BACKLOG-126 Ollama atomic tool handoff\n\nAcceptance criteria:\n- Forward bound Ollama tool definitions and forced tool without changing unrelated provider policy.\n- Add focused regressions.\n\nAllowed edit paths:\n- backend/services/llm_gateway.py\n- backend/llm_providers/ollama/gateway.py\n- backend/tests/test_agent_factory_runtime.py\n- backend/tests/llm_providers/test_ollama_gateway.py\n\nReturn status, changed_files, command_results, summary, and blockers as concise JSON-compatible output."
+  ],
+  "mode": "proposal_first",
+  "workspace_root": "C:\\KI\\Janus-M6-Transport-Prep",
+  "live_execution_allowed": false,
+  "codex_review_required": true,
+  "changed_files": [
+    "backend/services/llm_gateway.py",
+    "backend/llm_providers/ollama/gateway.py",
+    "backend/tests/test_agent_factory_runtime.py",
+    "backend/tests/llm_providers/test_ollama_gateway.py"
+  ],
+  "changed_outside_allowlist": [],
+  "operator_message": "Cursor worker finished the bounded slice and returned artifacts for Codex review."
+}

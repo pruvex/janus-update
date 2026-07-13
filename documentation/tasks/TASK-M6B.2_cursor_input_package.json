@@ -1,0 +1,19 @@
+{
+  "task_id": "TASK-EX-001",
+  "lane_id": "execution_patch_candidate",
+  "bound_skill_context": "janus-executioner",
+  "task_label": "TASK-M6B.2 GeminiNativeTransport 1:1 service wrapper",
+  "worker_package_json": "documentation/tasks/TASK-M6B.2_cursor_worker_package.json",
+  "allowlist_file": "documentation/tasks/TASK-M6B.2_cursor_worker_allowlist.txt",
+  "acceptance_criteria": [
+    "Only the three prechecked files may change.",
+    "The wrapper remains a 1:1 existing-service adapter without runtime integration.",
+    "Focused hermetic tests and syntax compilation must pass before Codex review."
+  ],
+  "local_validation_command": "python -m pytest --noconftest backend/tests/test_gemini_native_transport.py -q",
+  "estimated_codex_saved_tokens": 10000,
+  "estimated_delegation_overhead_tokens": 4000,
+  "recommended_backend": "cursor",
+  "recommended_model": "composer-2.5",
+  "cursor_prompt_contract": "Use the bound precheck as the execution authority. Keep all edits within the exact allowlist, make no Git action, and return a concise structured result for Codex review."
+}

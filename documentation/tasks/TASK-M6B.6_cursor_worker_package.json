@@ -1,0 +1,58 @@
+{
+  "task_label": "TASK-M6B.6 direct Gemini normal tool-loop flag-gated transport delegation",
+  "worker_profile": "cursor-agent",
+  "allowed_edit_paths": [
+    "backend/services/llm_gateway.py",
+    "backend/llm_providers/gemini/gateway.py",
+    "backend/tests/test_transport_layer_gemini_gateway.py"
+  ],
+  "acceptance_criteria": [
+    "With TRANSPORT_LAYER_ENABLED absent or false, llm_gateway keeps the exact existing direct Gemini silo dispatch and injects no transport dependency.",
+    "With TRANSPORT_LAYER_ENABLED true, only the existing direct gemini provider path constructs GeminiNativeTransport from the selected GeminiGateway service and supplies it to the normal tool-loop path.",
+    "GeminiGateway uses the injected transport only for its existing normal-loop service request and second-call-history seams; gateway-owned model policy, grounding, cost attribution, synthesis, response shaping, engine-owned behavior, drill-down, and streaming remain unchanged.",
+    "Engine-owned and drill-down Gemini paths receive no transport. No direct google gateway route is introduced, and OpenAI, OpenRouter, Ollama, and Codex remain isolated.",
+    "Add hermetic focused regressions for flag-off, flag-on direct Gemini normal-loop injection, runner/legacy seam delegation, and excluded-path isolation."
+  ],
+  "checks": [
+    {
+      "label": "Codex-owned focused pytest",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "backend/tests/test_transport_layer_gemini_gateway.py",
+        "backend/tests/test_gemini_tool_loop_runner.py",
+        "backend/tests/test_runtime_llm.py",
+        "-q"
+      ]
+    }
+  ],
+  "forbidden_actions": [
+    "commit",
+    "push",
+    "tag",
+    "merge",
+    "release",
+    "publish",
+    "dependency",
+    "secret",
+    "auth",
+    "security",
+    "privacy",
+    "migration",
+    "architecture",
+    "google_direct_routing",
+    "openai",
+    "openrouter",
+    "ollama",
+    "codex",
+    "streaming",
+    "websearch",
+    "engine_owned",
+    "drill_down"
+  ],
+  "requested_actions": [
+    "edit"
+  ],
+  "task_prompt": "Implement only TASK-M6B.6 in the exact allowlisted files. Preserve exact legacy dispatch when TRANSPORT_LAYER_ENABLED is absent or false. When true, enable only the existing direct provider=gemini path: construct GeminiNativeTransport from the selected GeminiGateway.service in llm_gateway and pass it only to GeminiGateway's normal _run_simple_tool_loop. In that normal loop, use the injected transport only at existing service-level request/history seams, including the runner seam. Do not pass it into engine-owned or drill-down routes. Do not add google routing or touch OpenAI, OpenRouter, Ollama, Codex, streaming, Websearch, fallback, credentials, policy, grounding, synthesis, response shaping, cost ownership, docs, or Git behavior. Return status, changed_files, command_results, summary, and blockers as concise JSON-compatible output."
+}

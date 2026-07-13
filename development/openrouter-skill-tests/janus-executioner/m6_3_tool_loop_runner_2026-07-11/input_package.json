@@ -1,0 +1,31 @@
+{
+  "task_id": "TASK-M6.3",
+  "lane_id": "execution_patch_candidate",
+  "bound_skill_context": "janus-executioner",
+  "task_label": "Extract the bounded M6.3 OpenAI ToolLoopRunner behind a default-off flag",
+  "task_file": "documentation/tasks/TASK-M6_transport_phase_a.md",
+  "task_breakdown": "documentation/tasks/TASK-M6.3_task_breakdown.md",
+  "precheck": "documentation/tasks/TASK-M6.3_preimplementation_check.md",
+  "spec": "documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md",
+  "worker_package_json": "development/openrouter-skill-tests/janus-executioner/m6_3_tool_loop_runner_2026-07-11/worker_package.json",
+  "allowlist_file": "development/openrouter-skill-tests/janus-executioner/m6_3_tool_loop_runner_2026-07-11/allowlist.txt",
+  "problem_statement": "OpenAIGateway currently owns the complete tool loop. The approved M6.3 slice must introduce a reusable provider-neutral ToolLoopRunner while retaining the existing OpenAI path by default and preserving gateway-only synthesis, fallback, and persistence behavior.",
+  "acceptance_criteria": [
+    "Only allowlisted files may change.",
+    "Flag-off preserves the existing OpenAI loop.",
+    "Flag-on routes the declared provider-neutral responsibilities through ToolLoopRunner.",
+    "Gateway-only forced fallback, synthesis, routing guards, link repair, response shaping, and persistence stay outside the runner.",
+    "No Gemini, streaming, transport, resolver, OAuth, OpenRouter product, ToolCallAdapter, provider-policy, or Git work."
+  ],
+  "local_validation_commands": [
+    "python -m pytest --noconftest backend/tests/test_openai_tool_loop_runner.py -q",
+    "python -m pytest --noconftest backend/tests/test_backlog_007_tool_routing_performance.py -q",
+    "python -m py_compile backend/llm_providers/shared/tool_loop_runner.py backend/llm_providers/openai/gateway.py"
+  ],
+  "redaction_ready": true,
+  "estimated_codex_saved_tokens": 22000,
+  "estimated_delegation_overhead_tokens": 6000,
+  "recommended_backend": "cursor",
+  "recommended_model": "composer-2.5",
+  "cursor_prompt_contract": "Inspect and edit only allowlisted files. Implement the one bounded M6.3 ToolLoopRunner extraction, run only the listed checks, do not commit, and return concise JSON-compatible output."
+}

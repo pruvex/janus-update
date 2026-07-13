@@ -152,6 +152,7 @@ class OllamaServiceProvider(BaseLLMProvider):
         elif forced_format == "json" and is_tool_forced:
             logger.debug("OLLAMA-FORMAT-SKIP: format=json ignoriert weil tool_choice=%s erzwungen", tool_choice_val)
 
+        estimated_prompt_tokens = kwargs.pop("_estimated_prompt_tokens", None)
         request_payload.update(kwargs)
         request_payload.pop("provider", None)
         request_payload.pop("_force_tools_override", None)
@@ -200,7 +201,7 @@ class OllamaServiceProvider(BaseLLMProvider):
                 timeout_seconds=request_deadline_seconds,
                 context="synthesis",
                 model=model,
-                estimated_prompt_tokens=gateway_kwargs.get("_estimated_prompt_tokens"),
+                estimated_prompt_tokens=estimated_prompt_tokens,
             )
             elapsed_seconds = time.perf_counter() - started_at
             logger.info("Ollama - Antwort erhalten nach %.1f Sekunden.", elapsed_seconds)
@@ -220,7 +221,7 @@ class OllamaServiceProvider(BaseLLMProvider):
             timeout_seconds=request_deadline_seconds,
             context="chat",
             model=model,
-            estimated_prompt_tokens=gateway_kwargs.get("_estimated_prompt_tokens"),
+            estimated_prompt_tokens=estimated_prompt_tokens,
         )
         if detected_supports_tools is False:
             supports_tools = False
@@ -706,6 +707,9 @@ class OllamaServiceProvider(BaseLLMProvider):
             for tool_call in tool_calls:
                 function = tool_call.get("function") if isinstance(tool_call, dict) else None
                 tool_name = str((function or {}).get("name") or "").strip()
+                if tool_name == "system.weather.get_current_weather" and "system.weather" in tool_spec_by_name:
+                    function["name"] = "system.weather"
+                    tool_name = "system.weather"
                 if not tool_name or tool_name not in tool_spec_by_name:
                     continue
                 try:
@@ -756,6 +760,8 @@ class OllamaServiceProvider(BaseLLMProvider):
                 return None
         if not tool_name or not isinstance(arguments, dict):
             return None
+        if tool_name == "system.weather.get_current_weather" and "system.weather" in tool_spec_by_name:
+            tool_name = "system.weather"
         return self._build_normalized_tool_call(tool_name, arguments, tool_spec_by_name)
 
     def _build_normalized_tool_call(

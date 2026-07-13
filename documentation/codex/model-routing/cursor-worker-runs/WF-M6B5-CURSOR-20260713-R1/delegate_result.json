@@ -1,0 +1,6 @@
+{
+  "validation_result": "FAIL",
+  "final_outcome": "CURSOR_LIVE_EXECUTION_REQUIRES_CURSOR_CHOICE",
+  "operator_message": "Use --execute-live-cursor only together with operator choice 3=Cursor Composer or 4=Cursor API.",
+  "codex_review_required": true
+}

@@ -1,0 +1,76 @@
+{
+  "backend": "cursor",
+  "lane_id": "execution_patch_candidate",
+  "workflow_id": "WF-M6C1-CURSOR-20260713-R2",
+  "selected_model": "composer-2.5",
+  "session_id": null,
+  "validation_result": "BLOCKED",
+  "selected_path": "cursor_worker_blocked",
+  "final_outcome": "CURSOR_WORKER_INPUT_BLOCKED",
+  "package_validation": {
+    "validation_result": "FAIL",
+    "contract_status": "TASK_PACKAGE_INVALID",
+    "issues": [
+      "missing worker_profile",
+      "allowed_edit_paths must contain at least one path",
+      "checks must be a list",
+      "forbidden_actions missing required boundaries: architecture, auth, commit, dependency, merge, migration, privacy, publish, push, release, secret, security, tag",
+      "task_prompt or task_prompt_path is required"
+    ],
+    "task_label": "TASK-M6C.1 decouple Websearch provider coercion from ToolExecutor",
+    "worker_profile": "N_A",
+    "allowed_edit_paths": [],
+    "required_result_artifacts": [
+      "RESULT.json",
+      "RESULT.md",
+      "DIFF.patch",
+      "FILES_CHANGED.txt",
+      "CHECKS.log",
+      "COST.json"
+    ]
+  },
+  "allowlist_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "allowlist": [
+      "backend/services/tool_executor.py",
+      "backend/services/websearch.py",
+      "backend/tests/test_backlog_007_tool_routing_performance.py",
+      "backend/tests/tools/test_websearch.py"
+    ]
+  },
+  "allowlist_consistency_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "package_allowed_edit_paths": [],
+    "allowlist": [
+      "backend/services/tool_executor.py",
+      "backend/services/websearch.py",
+      "backend/tests/test_backlog_007_tool_routing_performance.py",
+      "backend/tests/tools/test_websearch.py"
+    ],
+    "declared_allowlist_file": null
+  },
+  "codex_review_required": true,
+  "operator_message": "Cursor worker input was blocked before invocation.",
+  "accepted_source_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "accepted_source_run_dir": null,
+    "recognized_artifacts": []
+  },
+  "planned_command": [
+    "C:\\Users\\pruve\\AppData\\Local\\cursor-agent\\agent.CMD",
+    "-p",
+    "--workspace",
+    "C:\\KI\\Janus-M6-Transport-Prep\\backend",
+    "--model",
+    "composer-2.5",
+    "--output-format",
+    "json",
+    "--force",
+    "--trust",
+    "--approve-mcps",
+    "Task label: TASK-M6C.1 decouple Websearch provider coercion from ToolExecutor\n\nImplement only TASK-M6C.1 in the exact allowlisted files. Preserve exact legacy behavior when TRANSPORT_WEBSEARCH_DECOUPLED is absent or false. When true, relocate only the existing system.websearch provider/model coercion out of ToolExecutor to the existing Websearch boundary. Preserve provider/model compatibility and cross-provider safety. Do not change gateways, transports, schemas, streaming, ToolLoopRunner, unrelated tools, later Phase-C tasks, documentation, Git, credentials, or run broad tests. Return concise JSON-compatible status, changed files, checks, summary, and blockers.\n\nAcceptance criteria:\n- With TRANSPORT_WEBSEARCH_DECOUPLED absent or false, preserve the existing system.websearch executor behavior.\n- With the flag true, ToolExecutor no longer owns Websearch-specific provider/model coercion and the existing Websearch boundary receives the required request context.\n- Preserve provider/model compatibility and cross-provider safety without changing gateways, transports, schemas, streaming, ToolLoopRunner, or unrelated tools.\n- Add hermetic focused regressions only in the allowlisted test files and do not use network credentials.\n\nAllowed edit paths:\n- backend/services/tool_executor.py\n- backend/services/websearch.py\n- backend/tests/test_backlog_007_tool_routing_performance.py\n- backend/tests/tools/test_websearch.py\n\nReturn status, changed_files, command_results, summary, and blockers as concise JSON-compatible output.\n\nWorkspace root: C:\\KI\\Janus-M6-Transport-Prep\\backend\nWorkspace-relative edit paths:\n- services/tool_executor.py\n- services/websearch.py\n- tests/test_backlog_007_tool_routing_performance.py\n- tests/tools/test_websearch.py"
+  ]
+}

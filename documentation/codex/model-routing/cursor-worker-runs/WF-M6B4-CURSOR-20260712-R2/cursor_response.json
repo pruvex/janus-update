@@ -1,0 +1,16 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 126778,
+  "duration_api_ms": 126778,
+  "result": "I'll load the TASK-M6B.4 artifacts and allowlist first, then implement only the deterministic `runtime_llm` resolver and non-consuming registry seam in those files.\nImplementing the three allowlisted files: resolver logic in `runtime_llm.py`, a thin registry re-export in `llm_gateway.py`, and focused tests.\n**PASS** â€” TASK-M6B.4 is implemented in the three allowlisted files only.\n\n### What was added\n\n**`backend/llm_providers/runtime_llm.py`**\n- `resolve(provider, model)` â†’ `ResolvedLLM` with deterministic provider-family mapping:\n  - `openai` / `openrouter` â†’ `openai_compat`\n  - `gemini` / `google` â†’ `gemini_native`\n  - `ollama` â†’ `ollama_local`\n- Credential metadata only (`credential_provider`, `base_url`, `auth_mode`) â€” no keyring/env retrieval\n- `openai-codex` fails explicitly with `RuntimeLLMResolutionError` (no `codex_responses` transport)\n- `TRANSPORT_REGISTRY` + `get_transport_registry()` / `get_transport_class_for_api_mode()`\n\n**`backend/services/llm_gateway.py`**\n- Bounded, non-consuming registry seam: `get_transport_registry()` and `get_transport_class_for_api_mode()` delegate to `runtime_llm`\n- Existing `reason_and_respond` / `call_llm` paths unchanged\n\n**`backend/tests/test_runtime_llm.py`**\n- 14 focused tests: mapping coverage, codex placeholder failure, invalid/unknown providers, registry seam delegation\n\n### Evidence\n\n| Check | Result |\n|---|---|\n| `python -m py_compile backend/llm_providers/runtime_llm.py backend/services/llm_gateway.py backend/tests/test_runtime_llm.py` | PASS |\n| `python -m pytest backend/tests/test_runtime_llm.py -q` | PASS (`14 passed in 0.17s`) |\n| `git diff --check` | PASS |\n\n### Scope preserved\n\nNo gateway delegation, feature flags, credential retrieval, provider fallback, service/gateway policy changes, or docs.\n\n**Next gate:** TASK-M6B.5 can wire `resolve()` + registry into gateway paths behind `TRANSPORT_LAYER_ENABLED=false`.**TASK-M6B.4 â€” PASS**\n\nDeterministic `runtime_llm.resolve()` and a non-consuming transport registry seam in `llm_gateway.py` are in place across the three allowlisted files. Mapping covers OpenAI/OpenRouter, Gemini/Google, and Ollama; `openai-codex` fails explicitly without a transport.\n\n**Validation:** `14 passed` in `backend/tests/test_runtime_llm.py`; `py_compile` and `git diff --check` both clean.\n\nWhen you want to continue, TASK-M6B.5 is the next slice (wire resolver + registry into gateway paths behind `TRANSPORT_LAYER_ENABLED=false`).",
+  "session_id": "15f47773-b21e-4861-a60b-ac531f49bc5f",
+  "request_id": "c3fa387c-c99b-4122-b9e0-c3c0bf67a643",
+  "usage": {
+    "inputTokens": 48105,
+    "outputTokens": 7922,
+    "cacheReadTokens": 754515,
+    "cacheWriteTokens": 0
+  }
+}

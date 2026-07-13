@@ -1,0 +1,2 @@
+backend/services/vector_service.py
+backend/data/schemas_intent.py

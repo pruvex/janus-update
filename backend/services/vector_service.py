@@ -424,7 +424,9 @@ class VectorService:
                 logger.warning("Vektor-Service: Starte ohne Embedding-Funktion. Semantische Suche/Indexierung ist eingeschränkt, Backend bleibt aber verfügbar.")
             self.collection = self._client.get_or_create_collection(**collection_kwargs)
             logger.info("Vektor-Service: Diamond-Initialisierung erfolgreich.")
-        except Exception as exc:
+        except BaseException as exc:
+            if isinstance(exc, (KeyboardInterrupt, SystemExit)):
+                raise
             logger.error(f"Vektor-Service: Kritischer Fehler beim Start: {exc}")
             self.collection = None
 

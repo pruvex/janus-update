@@ -291,3 +291,15 @@
 - **Epic:** TASK-MEM-M4.1
 - **Confidence:** High
 - **Tags:** memory,session-search,fts5,recall,secret-suppression
+
+
+## [PATTERN] #GeminiStreamDuplicateToolDeltaMustBeDedupedAtEmission "Gemini stream function-call retransmits must be deduplicated at emission"
+- **Kontext:** BACKLOG-129 / M6 master-integration Gemini Berlin-weather smoke (2026-07-13). (2026-07-13).
+- **Problem:** Gemini can emit the same first Function-Call chunk twice in one streaming response. History buffering may deduplicate persistence while the event loop still forwards both tool deltas, causing the cross-round hard-loop breaker to abort before tool execution.
+- **Loesung:** Track Function-Call fingerprints per Gemini provider streaming response and suppress only an identical retransmitted tool delta before it reaches the orchestrator. Keep distinct arguments and the existing hard-loop breaker unchanged.
+- **Haertung:** Focused Gemini stream and duplicate-guard regression passed (21 total); bound M6 matrix PASS; manual default-off Gemini Berlin-weather smoke PASS.
+- **Tripwire:** If a Gemini request logs a registered and blocked identical tool call before any executor line, inspect duplicate stream-delta emission before weakening the hard-loop breaker or diagnosing missing tool results.
+- **Location:** backend/llm_providers/gemini/service.py; backend/tests/llm_providers/test_gemini_service.py; backend/tests/test_execution_dispatcher_wikipedia_guard.py
+- **Epic:** BACKLOG-129
+- **Confidence:** High
+- **Tags:** Gemini,streaming,tool-calls,hard-loop-breaker,provider-runtime

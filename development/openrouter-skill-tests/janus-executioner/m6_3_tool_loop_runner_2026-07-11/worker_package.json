@@ -1,0 +1,54 @@
+{
+  "task_label": "Extract the bounded M6.3 OpenAI ToolLoopRunner behind a default-off flag",
+  "worker_profile": "cursor-agent",
+  "allowed_edit_paths": [
+    "backend/llm_providers/shared/tool_loop_runner.py",
+    "backend/llm_providers/openai/gateway.py",
+    "backend/tests/test_openai_tool_loop_runner.py",
+    "backend/tests/test_backlog_007_tool_routing_performance.py"
+  ],
+  "acceptance_criteria": [
+    "TRANSPORT_TOOL_LOOP_RUNNER_ENABLED defaults to false and preserves the existing OpenAI loop path.",
+    "When enabled, ToolLoopRunner owns only model resolution, tool preparation, prevalidation, bounded rounds, tool execution, history preparation, and max-round handling.",
+    "Forced-tool fallback construction, synthesis, routing guards, link repair, response shaping, and cost persistence remain in OpenAIGateway.",
+    "Flag-off and flag-on deterministic OpenAI tool-loop regressions pass.",
+    "ToolLoopRunner has no Gemini-specific imports or behavior.",
+    "Only allowlisted paths are modified."
+  ],
+  "checks": [
+    {
+      "label": "tool_loop_runner_tests",
+      "command": ["python", "-m", "pytest", "--noconftest", "backend/tests/test_openai_tool_loop_runner.py", "-q"]
+    },
+    {
+      "label": "existing_openai_tool_loop_regression",
+      "command": ["python", "-m", "pytest", "--noconftest", "backend/tests/test_backlog_007_tool_routing_performance.py", "-q"]
+    },
+    {
+      "label": "py_compile",
+      "command": ["python", "-m", "py_compile", "backend/llm_providers/shared/tool_loop_runner.py", "backend/llm_providers/openai/gateway.py"]
+    }
+  ],
+  "forbidden_actions": [
+    "commit",
+    "push",
+    "tag",
+    "merge",
+    "release",
+    "publish",
+    "dependency",
+    "secret",
+    "auth",
+    "architecture",
+    "security",
+    "privacy",
+    "migration",
+    "ui",
+    "oauth",
+    "openrouter_product",
+    "streaming",
+    "gemini"
+  ],
+  "requested_actions": ["edit", "run_checks"],
+  "task_prompt": "Implement TASK-M6.3 only. Extract the provider-neutral OpenAI tool-loop responsibilities into ToolLoopRunner behind TRANSPORT_TOOL_LOOP_RUNNER_ENABLED=false by default. Preserve the disabled path exactly. When enabled, the runner may resolve the MoA model, prepare tools, prevalidate calls, run bounded tool rounds, execute calls, and prepare second-call history. Keep forced-tool fallback construction, synthesis, routing guards, link repair, cost accumulation/persistence, and final response shaping in OpenAIGateway. Do not change Gemini, streaming, transport classes, runtime resolver, OAuth, OpenRouter product behavior, ToolCallAdapter, provider policy, MoA hierarchy, commits, or Git state. Return concise JSON-compatible output with status, changed_files, command_results, summary, and blockers."
+}

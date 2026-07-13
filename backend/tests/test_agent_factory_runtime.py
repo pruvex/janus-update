@@ -1,13 +1,14 @@
 import json
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
 from backend.data.models import SkillTelemetry
-from backend.data.schemas import PlannerContext, PlannerProviderProfile
+from backend.data.schemas import AgentSpec, PlannerContext, PlannerProviderProfile
 from backend.renderers.attribution import render_weather_forecast_from_tools
 from backend.services.agent_planner import AgentPlanner
 from backend.services.agent_runtime import AgentRuntime
+from backend.llm_providers.ollama.gateway import OllamaGateway
 from backend.services.orchestrator.execution_engine import (
     OrchestratorExecutionEngine,
     _build_calendar_weather_combo_response,
@@ -15,6 +16,7 @@ from backend.services.orchestrator.execution_engine import (
 )
 from backend.services.orchestrator.intent_engine import IntentDetectionResult
 from backend.services.skill_selector import SkillSelector
+from backend.services.tool_executor import ToolExecutor
 
 
 def _planner_profile(provider="openai", model="gpt-5.4-nano"):
@@ -790,6 +792,202 @@ async def test_agent_runtime_uses_phase_summary_when_final_synthesis_is_generic(
 
     assert result["phase_outputs"] == ["[system.country_info] Japan: Hauptstadt Tokio, Einwohner 124.5 Mio."]
     assert result["text"] == "[system.country_info] Japan: Hauptstadt Tokio, Einwohner 124.5 Mio."
+
+
+@pytest.mark.asyncio
+async def test_agent_runtime_ollama_weather_phase_forwards_tool_payload(db_session, monkeypatch):
+    from backend.tests.llm_providers.test_ollama_gateway import _install_weather_tool_registry
+
+    _install_weather_tool_registry(monkeypatch)
+    runtime = AgentRuntime(db_session, context_manager=None)
+    service_calls: list[dict] = []
+
+    gateway = OllamaGateway()
+
+    async def _fake_generate_response(**kwargs):
+        service_calls.append(kwargs)
+        return {
+            "type": "tool_code",
+            "tool_calls": [
+                {
+                    "id": "call_weather",
+                    "type": "function",
+                    "function": {
+                        "name": "system.weather",
+                        "arguments": '{"city":"Berlin"}',
+                    },
+                }
+            ],
+        }
+
+    gateway.service.generate_response = _fake_generate_response
+    monkeypatch.setattr(
+        "backend.services.llm_gateway._ensure_gateway_silos",
+        lambda: {"ollama": gateway},
+    )
+    monkeypatch.setattr(
+        "backend.services.llm_gateway.provider_access_decision",
+        lambda _provider: MagicMock(disabled=False),
+    )
+    monkeypatch.setattr(
+        "backend.services.agent_runtime.llm_gateway.provider_access_decision",
+        lambda _provider: MagicMock(disabled=False),
+    )
+
+    spec = type("Spec", (), {
+        "name": "Wetter-Agent",
+        "goal": "Wetter liefern",
+        "required_skills": ["system.weather"],
+        "instructions": "Nutze system.weather.",
+        "max_iterations": 1,
+        "model_dump": lambda self: {
+            "name": self.name,
+            "goal": self.goal,
+            "required_skills": self.required_skills,
+            "instructions": self.instructions,
+            "max_iterations": self.max_iterations,
+        },
+    })()
+
+    result = await runtime.run(
+        spec=spec,
+        user_prompt="Wie ist das Wetter in Berlin?",
+        provider="ollama",
+        model="qwen2.5-coder:14b",
+        api_key="ollama",
+        chat_id=91,
+        skip_final_synthesis=True,
+    )
+
+    assert service_calls
+    first_call = service_calls[0]
+    assert first_call.get("tools")
+    assert any(item.get("name") == "system.weather" for item in first_call["tools"])
+    assert result.get("raw_response", {}).get("type") == "tool_code"
+    assert result.get("raw_response", {}).get("tool_calls")
+
+
+@pytest.mark.asyncio
+async def test_agent_factory_atomic_loop_executes_pending_tool_calls_and_renders_weather(
+    db_session,
+    monkeypatch,
+    caplog,
+):
+    from backend.tests.llm_providers.test_ollama_gateway import _install_weather_tool_registry
+
+    _install_weather_tool_registry(monkeypatch)
+
+    async def _weather_handler(**_kwargs):
+        return {
+            "status": "ok",
+            "data": {
+                "forecast": "Berlin: heute sonnig, 22°C",
+                "source": "open-meteo",
+            },
+        }
+
+    monkeypatch.setattr(
+        "backend.services.tool_executor.skill_router.resolve_tool_name",
+        lambda name: str(name),
+    )
+    monkeypatch.setattr(
+        "backend.services.tool_executor.skill_router.get_tool_definition",
+        lambda name: type(
+            "Def",
+            (),
+            {"name": str(name), "func": _weather_handler, "args_schema": None},
+        )(),
+    )
+    monkeypatch.setattr(
+        "backend.services.tool_executor.PolicyEngine.evaluate",
+        lambda _tool_name, _db: "ALLOW",
+    )
+
+    execute_calls = {"count": 0}
+    original_execute = ToolExecutor.execute_tool_calls
+
+    async def _counting_execute(self, tool_calls, **kwargs):
+        execute_calls["count"] += 1
+        return await original_execute(self, tool_calls, **kwargs)
+
+    monkeypatch.setattr(ToolExecutor, "execute_tool_calls", _counting_execute)
+
+    agent_planner = MagicMock()
+    agent_runtime = MagicMock()
+    skill_selector = MagicMock()
+    skill_selector.filter_capability_groups.return_value = {"weather": ["system.weather"]}
+
+    planning_round = {"idx": 0}
+
+    async def _fake_plan(**_kwargs):
+        planning_round["idx"] += 1
+        if planning_round["idx"] == 1:
+            skills = ["system.weather"]
+        else:
+            skills = []
+        return AgentSpec(
+            name="Wetter-Agent",
+            goal="Wetter liefern",
+            required_skills=skills,
+            instructions="Nutze system.weather.",
+            max_iterations=1,
+        )
+
+    async def _fake_run(**_kwargs):
+        return {
+            "text": '{"name":"system.weather","arguments":{"city":"Berlin"}}',
+            "trace_id": "trace-weather",
+            "raw_response": {
+                "type": "tool_code",
+                "tool_calls": [
+                    {
+                        "id": "call_weather",
+                        "type": "function",
+                        "function": {
+                            "name": "system.weather",
+                            "arguments": '{"city":"Berlin"}',
+                        },
+                    }
+                ],
+            },
+        }
+
+    agent_planner.plan = AsyncMock(side_effect=_fake_plan)
+    agent_runtime.run = AsyncMock(side_effect=_fake_run)
+
+    engine = OrchestratorExecutionEngine(
+        db=db_session,
+        context_manager=None,
+        model_hierarchy={},
+        agent_planner=agent_planner,
+        agent_runtime=agent_runtime,
+        skill_selector=skill_selector,
+    )
+
+    monkeypatch.setattr(
+        "backend.services.orchestrator.execution_engine.llm_gateway.reason_and_respond",
+        AsyncMock(return_value={"type": "text", "text": "synthesis", "usage": {}, "cost": {}}),
+    )
+
+    caplog.set_level("INFO", logger="janus_backend")
+    result = await engine.run_agent_factory(
+        enabled=True,
+        chat_id=91,
+        user_text="Wie ist das Wetter in Berlin?",
+        relevant_skill_ids=["system.weather"],
+        provider="ollama",
+        model="qwen2.5-coder:14b",
+        api_key="dummy",
+        intent_result=IntentDetectionResult(),
+    )
+
+    assert execute_calls["count"] == 1
+    assert "Berlin: heute sonnig" in result.text
+    assert '{"name":"system.weather"' not in result.text
+    assert result.is_agent_flow is True
+    log_text = "\n".join(record.getMessage() for record in caplog.records)
+    assert "ATOMIC LOOP RUNDE 1: Executing system.weather" in log_text
+    assert "ATOMIC LOOP: [EXIT] Grund=NO_TOOLS_PLANNED_AFTER_STEP" in log_text
 
 
 # ---------------------------------------------------------------------------

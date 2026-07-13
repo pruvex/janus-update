@@ -1,0 +1,59 @@
+{
+  "task_label": "TASK-M6B.2 GeminiNativeTransport 1:1 service wrapper",
+  "worker_profile": "cursor-agent",
+  "allowed_edit_paths": [
+    "backend/llm_providers/transports/gemini_native.py",
+    "backend/llm_providers/transports/__init__.py",
+    "backend/tests/test_gemini_native_transport.py"
+  ],
+  "acceptance_criteria": [
+    "Only the three allowlisted files may change; do not edit the Gemini service, gateway, ToolLoopRunner, ToolCallAdapter, resolver, or flag files.",
+    "GeminiNativeTransport must implement the BaseTransport send, tool-normalization, and second-call-history seams by delegating to an injected existing Gemini service seam.",
+    "The wrapper must not transform native Gemini requests, responses, metadata, proto/schema/history behavior, policy, grounding/cost attribution, synthesis, or streaming behavior.",
+    "The focused test must use a fake or mocked service, make no network call, and require no credentials.",
+    "Do not enable or consume TRANSPORT_LAYER_ENABLED and do not integrate a caller."
+  ],
+  "checks": [
+    {
+      "label": "focused pytest",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "--noconftest",
+        "backend/tests/test_gemini_native_transport.py",
+        "-q"
+      ]
+    },
+    {
+      "label": "py_compile",
+      "command": [
+        "python",
+        "-m",
+        "py_compile",
+        "backend/llm_providers/transports/__init__.py",
+        "backend/llm_providers/transports/gemini_native.py"
+      ]
+    }
+  ],
+  "forbidden_actions": [
+    "commit",
+    "push",
+    "tag",
+    "merge",
+    "release",
+    "publish",
+    "dependency",
+    "secret",
+    "auth",
+    "security",
+    "privacy",
+    "migration",
+    "architecture"
+  ],
+  "requested_actions": [
+    "edit",
+    "run_checks"
+  ],
+  "task_prompt": "Implement only TASK-M6B.2 using the bound Spec, task, breakdown, and precheck. Edit only the three allowlisted files. Add the smallest injected-service GeminiNativeTransport adapter and export it from the transport package. Delegate send, tool conversion, and history preparation to the existing Gemini service seam without changing any native Gemini behavior. Do not edit existing Gemini service/gateway/adapter files, enable a feature flag, add a resolver or gateway integration, make a network request, commit, or create documentation. Run only the two listed checks. Return concise JSON-compatible status, changed_files, command_results, summary, and blockers."
+}

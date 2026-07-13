@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 import threading
 from functools import lru_cache
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
@@ -15,6 +16,13 @@ if TYPE_CHECKING:
     from backend.services.tool_executor import ToolExecutor
 
 logger = logging.getLogger("janus_backend")
+
+TRANSPORT_LAYER_ENABLED = os.getenv("TRANSPORT_LAYER_ENABLED", "false").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+    "on",
+}
 
 
 def _guard_llm_provider_silo(provider: str, model_id: str) -> Optional[Dict[str, Any]]:
@@ -230,7 +238,7 @@ async def reason_and_respond(
         silo_args["forced_tool"] = forced_tool
 
     force_tool_name = kwargs.get("force_tool_name")
-    if force_tool_name is not None and provider_key in {"openai", "gemini", "google"}:
+    if force_tool_name is not None and provider_key in {"openai", "gemini", "google", "ollama"}:
         silo_args["force_tool_name"] = force_tool_name
 
     all_tool_definitions = kwargs.get("all_tool_definitions")
@@ -240,7 +248,34 @@ async def reason_and_respond(
     if provider_key == "gemini" and kwargs.get("_gemini_engine_owned_tool_loop"):
         silo_args["_gemini_engine_owned_tool_loop"] = True
 
-    return await selected_silo.reason_and_respond(**silo_args)
+    if TRANSPORT_LAYER_ENABLED and provider_key == "openai":
+        gateway_service = getattr(selected_silo, "service", None)
+        if gateway_service is not None:
+            from backend.llm_providers.transports.openai_compat import OpenAICompatTransport
+
+            silo_args["provider_transport"] = OpenAICompatTransport(gateway_service)
+    elif TRANSPORT_LAYER_ENABLED and provider_key == "gemini":
+        gateway_service = getattr(selected_silo, "service", None)
+        if gateway_service is not None:
+            from backend.llm_providers.transports.gemini_native import GeminiNativeTransport
+
+            silo_args["provider_transport"] = GeminiNativeTransport(gateway_service)
+    elif TRANSPORT_LAYER_ENABLED and provider_key == "ollama":
+        gateway_service = getattr(selected_silo, "service", None)
+        if gateway_service is not None:
+            from backend.llm_providers.transports.ollama_local import OllamaLocalTransport
+
+            silo_args["provider_transport"] = OllamaLocalTransport(gateway_service)
+
+    response = await selected_silo.reason_and_respond(**silo_args)
+    from backend.llm_providers.shared.response_postprocessors import postprocess_provider_response
+
+    return postprocess_provider_response(
+        provider_key,
+        response,
+        user_prompt=user_prompt,
+        tool_results=tool_results,
+    )
 
 
 def get_provider(provider_name: str):
@@ -453,3 +488,21 @@ def get_first_available_text_model_with_provider() -> Tuple[str, str]:
             return provider, str(model_id)
     logger.warning("No text model found in model catalog")
     return "", ""
+
+
+def get_transport_registry() -> Dict[str, Any]:
+    """
+    Bounded Phase-B transport registry seam.
+
+    Non-consuming: existing gateway runtime paths do not call this helper yet.
+    """
+    from backend.llm_providers.runtime_llm import get_transport_registry as _get_transport_registry
+
+    return _get_transport_registry()
+
+
+def get_transport_class_for_api_mode(api_mode: str) -> Any:
+    """Return the transport class registered for an api_mode."""
+    from backend.llm_providers.runtime_llm import get_transport_class_for_api_mode as _get_transport_class
+
+    return _get_transport_class(api_mode)

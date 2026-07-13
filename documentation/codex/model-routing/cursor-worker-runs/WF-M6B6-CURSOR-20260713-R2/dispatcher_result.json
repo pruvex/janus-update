@@ -1,0 +1,86 @@
+{
+  "backend": "cursor",
+  "lane_id": "execution_patch_candidate",
+  "workflow_id": "WF-M6B6-CURSOR-20260713-R2",
+  "selected_model": "composer-2.5",
+  "session_id": "738067dd-75e6-44b8-bee4-4a90f932d1d0",
+  "validation_result": "PASS",
+  "selected_path": "cursor_worker_live_mockable",
+  "final_outcome": "CURSOR_WORKER_READY_FOR_CODEX_REVIEW",
+  "package_validation": {
+    "validation_result": "PASS",
+    "contract_status": "TASK_PACKAGE_VALID",
+    "issues": [],
+    "task_label": "TASK-M6B.6 direct Gemini normal tool-loop flag-gated transport delegation",
+    "worker_profile": "cursor-agent",
+    "allowed_edit_paths": [
+      "backend/services/llm_gateway.py",
+      "backend/llm_providers/gemini/gateway.py",
+      "backend/tests/test_transport_layer_gemini_gateway.py"
+    ],
+    "required_result_artifacts": [
+      "RESULT.json",
+      "RESULT.md",
+      "DIFF.patch",
+      "FILES_CHANGED.txt",
+      "CHECKS.log",
+      "COST.json"
+    ]
+  },
+  "allowlist_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "allowlist": [
+      "backend/services/llm_gateway.py",
+      "backend/llm_providers/gemini/gateway.py",
+      "backend/tests/test_transport_layer_gemini_gateway.py"
+    ]
+  },
+  "allowlist_consistency_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "package_allowed_edit_paths": [
+      "backend/services/llm_gateway.py",
+      "backend/llm_providers/gemini/gateway.py",
+      "backend/tests/test_transport_layer_gemini_gateway.py"
+    ],
+    "allowlist": [
+      "backend/services/llm_gateway.py",
+      "backend/llm_providers/gemini/gateway.py",
+      "backend/tests/test_transport_layer_gemini_gateway.py"
+    ],
+    "declared_allowlist_file": null
+  },
+  "accepted_source_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "accepted_source_run_dir": null,
+    "recognized_artifacts": []
+  },
+  "accepted_source_run_dir": null,
+  "planned_command": [
+    "C:\\Users\\pruve\\AppData\\Local\\cursor-agent\\agent.CMD",
+    "-p",
+    "--workspace",
+    "C:\\KI\\Janus-M6-Transport-Prep",
+    "--model",
+    "composer-2.5",
+    "--output-format",
+    "json",
+    "--force",
+    "--trust",
+    "--approve-mcps",
+    "Implement only TASK-M6B.6 in the exact allowlisted files. Preserve exact legacy dispatch when TRANSPORT_LAYER_ENABLED is absent or false. When true, enable only the existing direct provider=gemini path: construct GeminiNativeTransport from the selected GeminiGateway.service in llm_gateway and pass it only to GeminiGateway's normal _run_simple_tool_loop. In that normal loop, use the injected transport only at existing service-level request/history seams, including the runner seam. Do not pass it into engine-owned or drill-down routes. Do not add google routing or touch OpenAI, OpenRouter, Ollama, Codex, streaming, Websearch, fallback, credentials, policy, grounding, synthesis, response shaping, cost ownership, docs, or Git behavior. Return status, changed_files, command_results, summary, and blockers as concise JSON-compatible output.\n\nTask label: TASK-M6B.6 direct Gemini normal tool-loop flag-gated transport delegation\n\nAcceptance criteria:\n- With TRANSPORT_LAYER_ENABLED absent or false, llm_gateway keeps the exact existing direct Gemini silo dispatch and injects no transport dependency.\n- With TRANSPORT_LAYER_ENABLED true, only the existing direct gemini provider path constructs GeminiNativeTransport from the selected GeminiGateway service and supplies it to the normal tool-loop path.\n- GeminiGateway uses the injected transport only for its existing normal-loop service request and second-call-history seams; gateway-owned model policy, grounding, cost attribution, synthesis, response shaping, engine-owned behavior, drill-down, and streaming remain unchanged.\n- Engine-owned and drill-down Gemini paths receive no transport. No direct google gateway route is introduced, and OpenAI, OpenRouter, Ollama, and Codex remain isolated.\n- Add hermetic focused regressions for flag-off, flag-on direct Gemini normal-loop injection, runner/legacy seam delegation, and excluded-path isolation.\n\nAllowed edit paths:\n- backend/services/llm_gateway.py\n- backend/llm_providers/gemini/gateway.py\n- backend/tests/test_transport_layer_gemini_gateway.py\n\nReturn status, changed_files, command_results, summary, and blockers as concise JSON-compatible output."
+  ],
+  "mode": "proposal_first",
+  "workspace_root": "C:\\KI\\Janus-M6-Transport-Prep",
+  "live_execution_allowed": false,
+  "codex_review_required": true,
+  "changed_files": [
+    "backend/services/llm_gateway.py",
+    "backend/llm_providers/gemini/gateway.py",
+    "backend/tests/test_transport_layer_gemini_gateway.py"
+  ],
+  "changed_outside_allowlist": [],
+  "operator_message": "Cursor worker finished the bounded slice and returned artifacts for Codex review."
+}

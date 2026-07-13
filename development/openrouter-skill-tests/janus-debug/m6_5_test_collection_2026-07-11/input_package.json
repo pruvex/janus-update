@@ -1,0 +1,15 @@
+{
+  "task_id": "TASK-DBG-002",
+  "lane_id": "debug_repro_investigation",
+  "bound_skill_context": "janus-debug",
+  "task_label": "M6.5 focused test-collection prerequisite chain",
+  "worker_package_json": "development/openrouter-skill-tests/janus-debug/m6_5_test_collection_2026-07-11/worker_package.json",
+  "allowlist_file": "development/openrouter-skill-tests/janus-debug/m6_5_test_collection_2026-07-11/allowlist.txt",
+  "failure_code": "M6_5_TEST_COLLECTION_PREREQUISITE_CHAIN",
+  "acceptance_criteria": ["Only allowlisted files may change.", "Focused pytest must collect and execute before Codex review."],
+  "local_validation_command": "python -m pytest --noconftest backend/tests/test_streaming_tool_loop_runner.py -q",
+  "estimated_codex_saved_tokens": 25000,
+  "estimated_delegation_overhead_tokens": 10000,
+  "recommended_backend": "cursor",
+  "recommended_model": "composer-2.5"
+}

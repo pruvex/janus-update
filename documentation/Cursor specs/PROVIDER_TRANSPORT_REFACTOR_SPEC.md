@@ -1,12 +1,12 @@
 # Janus Provider Transport Refactor — Architektur-Spec & Umsetzungsplan
 
-**Version:** 1.0.0  
-**Datum:** 2026-07-07  
-**Zielgruppe:** Codex / Cursor / Janus Diamond Pipeline  
-**Status:** READY FOR IMPLEMENTATION (nach M4 oder explizitem Operator-Go)  
-**Epic-ID:** `EPIC-ARCH-TRANSPORT-001`  
+**Version:** 1.0.0
+**Datum:** 2026-07-07
+**Zielgruppe:** Codex / Cursor / Janus Diamond Pipeline
+**Status:** READY FOR IMPLEMENTATION (nach M4 oder explizitem Operator-Go)
+**Epic-ID:** `EPIC-ARCH-TRANSPORT-001`
 
-**Abgrenzung:** Infrastruktur-Epic — kein neues User-Feature. Legt die Basis für Epic 5 (OAuth) und Epic 6 (OpenRouter).  
+**Abgrenzung:** Infrastruktur-Epic — kein neues User-Feature. Legt die Basis für Epic 5 (OAuth) und Epic 6 (OpenRouter).
 **Nicht starten vor:** Abschluss `ROADMAP_EPIC_ORDER.md` Meilenstein M4 (Intent + Learn + Memory C) **oder** explizitem Operator-Go.
 
 **Vorgänger-Analyse:** Architektur-Review 2026-07-07 (Janus vs. Hermes Provider-Modell).
@@ -205,6 +205,13 @@ InternalToolCall = {
 
 `tool_manager.get_tool_definitions()` liefert künftig **kanonische** IDs; der Transport entscheidet über `llm_name`.
 
+### 2.4.1 T-A2 implementation status
+
+- `TASK-M6.2` final audit: `PASS WITH FIXES` (`documentation/tasks/TASK-M6.2_final_audit.md`).
+- Completed scope: `ToolManager` preserves canonical dotted skill IDs while `ToolCallAdapter` owns the OpenAI/Gemini outbound, inbound, history, and schema adaptation seams. Focused adapter/OpenAI/Gemini checks and manual Gemini weather-tool evidence passed.
+- Non-blocking follow-up: Cursor Composer execution remains proposal-first only. Its shared delegate/worker wrapper contract and structured-output timeout require a separate infrastructure debug slice before Cursor can be treated as autonomous/productive.
+- Spec status remains in progress: `T-A3` through `T-A5` remain separate, open Phase-A tasks.
+
 ---
 
 ## 3. Komponenten (neu / refactored)
@@ -284,6 +291,41 @@ class ToolLoopRunner:
 - Prompt-Compiler (bleibt Transport/Domain-Hook)
 - Provider-spezifische Synthesis (Post-Processor, siehe §3.5)
 
+### 3.3.1 T-A3 implementation status
+
+- `TASK-M6.3` final audit: `PASS WITH FIXES` (`documentation/tasks/TASK-M6.3_final_audit.md`).
+- Completed scope: the OpenAI path has a default-off `ToolLoopRunner` extraction for the declared provider-neutral responsibilities. The legacy path remains the default; forced-tool fallback, synthesis, routing guards, link repair, response shaping, and cost persistence remain in the OpenAI gateway.
+- Focused runner (`4/4`), syntax, execution-result, and final-audit evidence passed. The broader OpenAI regression remains independently blocked before collection by the local ChromaDB SQLite panic.
+- Non-blocking follow-up: Cursor Composer started through the valid direct worker package but timed out without structured output; the shared delegate/worker contract requires a separate infrastructure debug slice before Cursor can be treated as autonomous/productive.
+- Spec status remains in progress: `T-A4` and `T-A5` remain separate, open Phase-A tasks.
+
+### 3.3.2 Phase-A T-A4 Gemini runner-boundary decision
+
+**Decision (2026-07-11):** `ToolLoopRunner` remains provider-neutral. Gemini supplies gateway-owned callbacks/context for model selection, effective round limit, and per-response observability; it retains all Gemini-native policy and post-loop behavior.
+
+**Gemini gateway retains:**
+- visible model override and the `system.websearch` Flash-default policy;
+- list-query round-cap policy;
+- grounding metadata/query-cost accumulation and Gemini request-cost attribution;
+- native proto/schema/history bridging, routing guards, synthesis, preserved metadata, engine-owned handling, and drill-down paths.
+
+**Runner receives only:** resolved model/MoA state, the effective max-round value, and generic per-response facts needed to drive the bounded tool round. It must not embed Gemini policy, grounding, attribution, synthesis, or drill-down logic.
+
+**Consequences for T-A4:**
+- the default-off behavior remains unchanged until the bounded Gemini runner route is enabled;
+- `T-A4` migrates only `_run_simple_tool_loop`; engine-owned and drill-down paths stay outside this task;
+- focused regressions must prove native Gemini policy/metadata/history preservation alongside runner ownership.
+
+**T-A4 implementation status (2026-07-11):** `TASK-M6.4` final audit is `PASS WITH FIXES` (`documentation/tasks/TASK-M6.4_final_audit.md`). Focused Gemini runner evidence (`6/6`) preserves the gateway-owned policy, grounding, attribution, native history, and synthesis boundary. `T-A5` remains the only open Phase-A task.
+
+### 3.3.3 Phase-A T-A5 streaming-boundary decision
+
+**Decision (2026-07-11):** `execution_engine.py` retains StreamEvent protocol ownership, stream auth isolation, forced-tool start, provider delta normalization, and stream-final cost handling. When the Phase-A flag is enabled, only non-streaming tool rounds may delegate through the existing gateway/`ToolLoopRunner` boundary; streaming is not converted into the synchronous runner contract.
+
+**Consequences for T-A5:** preserve stream behavior by default, do not move OpenAI/Gemini stream parsing into the runner, and add focused flag-off/flag-on consistency coverage around the handoff boundary.
+
+**T-A5 implementation status (2026-07-11):** `TASK-M6.5` re-audit is `PASS` (`documentation/tasks/TASK-M6.5_final_audit.md`). The default-off native streaming path is unchanged. With the Phase-A flag enabled, only post-tool non-streaming continuations for OpenAI/Gemini reach the existing gateway/runner boundary, bounded by the remaining outer stream-round limit. Cursor-first debug unblocked test collection; focused streaming plus intent-contract coverage passes `28/28`. Phase A implementation tasks are complete; manual enabled-flag provider smoke evidence remains required before broad enablement.
+
 ### 3.4 Eine `MODEL_HIERARCHY`
 
 **Entscheidung:** `MOA_MODEL_HIERARCHY` in `shared/moa.py` wird **einzige Quelle**.
@@ -295,6 +337,29 @@ class ToolLoopRunner:
 | Erweitern | Keys für `openrouter` (Epic 6), Platzhalter für `anthropic` |
 
 Drift-Test in CI: `test_model_hierarchy_single_source.py`.
+
+### 3.4.1 Phase-A Migrationsentscheidung: aktive Hierarchie bleibt verhaltensgleich
+
+**Entscheidung (2026-07-11):** Die Phase-A-Konsolidierung bewahrt die aktuell aktive `ChatOrchestrator.MODEL_HIERARCHY` verhaltensgleich. Ihre Werte werden vollstaendig in `MOA_MODEL_HIERARCHY` migriert; danach ist MoA die einzige Laufzeitquelle.
+
+| Provider | Kanonische Tier-Werte nach T-A1 |
+|---|---|
+| `openai` | `vision=gpt-4o`, `logic=gpt-5.4`, `speed=gpt-5.4-nano`, `balanced=gpt-5.4-mini` |
+| `gemini` | `vision=gemini-3-flash-preview`, `logic=gemini-3-pro-preview`, `speed=gemini-3-flash-preview`, `balanced=gemini-3-flash-preview` |
+| `ollama` | `vision=llava`, `logic=llama3.1:8b`, `speed=llama3.1:8b`, `fast=llama3.1:8b`, `balanced=qwen2.5:14b` |
+
+**Konsequenzen fuer T-A1:**
+- `MOA_MODEL_HIERARCHY` wird vor der Entfernung der Orchestrator-Duplikation auf diese verhaltensgleichen Werte gebracht.
+- `_VALID_TIERS` nimmt `fast` auf, damit der aktive Ollama-Pfad nicht stillschweigend degradiert.
+- Der Drift-Test prueft die einmalige Quelle und die obige kanonische Mapping-Matrix fuer OpenAI, Gemini und Ollama.
+- Abweichende spaetere Modell- oder Providerpolitik ist ein eigener, expliziter Task und gehoert nicht in T-A1.
+
+### 3.4.2 T-A1 implementation status
+
+- `TASK-M6.1` final audit: `PASS WITH FIXES` (`documentation/tasks/TASK-M6.1_final_audit.md`).
+- Completed scope: the MoA hierarchy is the sole runtime source for the bound orchestrator and Gemini gateway consumers, with the approved OpenAI, Gemini, and Ollama mapping covered by focused regression and manual Gemini websearch evidence.
+- Non-blocking follow-up: remove or correct the obsolete Ollama-no-tier source comment before `TASK-M6.2`.
+- Spec status remains in progress: `T-A2` through `T-A5` remain separate, open Phase-A tasks.
 
 ### 3.5 Domain Post-Processor (statt Provider-Branches)
 
@@ -367,6 +432,10 @@ class ExecutionContext:
 | **T-B6** | Gateways → Transport-Delegation | alle Gateways |
 
 **Flag:** `TRANSPORT_LAYER_ENABLED=false` (default).
+
+**T-B1/T-B2 implementation status (2026-07-11):** `TASK-M6B.1` final audit is `PASS` (`documentation/tasks/TASK-M6B.1_final_audit.md`). The first Phase-B vertical slice adds the abstract `BaseTransport` contract and an injected-service `OpenAICompatTransport` adapter only. It preserves canonical tool IDs through the existing ToolCallAdapter boundary and does not alter any existing gateway, service, runner, resolver, feature-flag consumer, or production route. Focused transport (`6/6`), existing ToolCallAdapter (`12/12`), combined audit (`18/18`), syntax, diff, Cursor allowlist, and manual default-off OpenAI Berlin-weather evidence passed. `T-B3` through `T-B6` remain separate open Phase-B work.
+
+**T-B3 implementation status (2026-07-12):** `TASK-M6B.2` final audit is `PASS` (`documentation/tasks/TASK-M6B.2_final_audit.md`). The Gemini-native transport is a thin injected-service wrapper only; native Gemini proto/schema/history handling, policy, grounding/cost attribution, synthesis, drill-down, streaming, and all runtime routing remain owned by existing service/gateway seams. Focused transport plus existing ToolCallAdapter/Gemini-service evidence (`18/18`), syntax, diff, Cursor allowlist, and manual default-off Gemini Berlin-weather evidence passed. `T-B4` through `T-B6` remain separate open Phase-B work.
 
 **Exit B:**
 - `llm_gateway.reason_and_respond()` nutzt Transport + Runner
@@ -511,3 +580,16 @@ Constraints: OpenAICompatTransport zuerst; GeminiNativeTransport 1:1 Wrap besteh
 ---
 
 **END OF SPEC**
+
+## SPEC REVIEW METADATA
+
+- **Review Status:** APPROVED
+- **Complexity Score:** 76
+- **Risk:** HIGH
+- **Recommended Review Model:** 5.6 Terra
+- **Skill-1 Ready:** YES
+- **Split Required:** NO
+- **Reviewed At:** 2026-07-11
+- **Review Confidence:** HIGH
+- **Review Source:** janus-spec-review
+- **Approved Decision:** Preserve the active orchestrator mapping by migrating its OpenAI, Gemini, and Ollama values into `MOA_MODEL_HIERARCHY`, including the `fast` tier; keep `ToolLoopRunner` provider-neutral while Gemini supplies callback/context inputs and retains native policy, grounding, attribution, synthesis, and drill-down behavior.

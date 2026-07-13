@@ -1,0 +1,63 @@
+{
+  "task_label": "TASK-M6B.1 BaseTransport and OpenAICompatTransport vertical slice",
+  "worker_profile": "cursor-agent",
+  "allowed_edit_paths": [
+    "backend/llm_providers/shared/base_transport.py",
+    "backend/llm_providers/transports/__init__.py",
+    "backend/llm_providers/transports/openai_compat.py",
+    "backend/tests/test_base_transport.py",
+    "backend/tests/test_openai_compat_transport.py"
+  ],
+  "acceptance_criteria": [
+    "Only the five allowlisted files may change; do not edit existing OpenAI service, gateway, runner, resolver, or flag files.",
+    "BaseTransport must enforce the minimal non-streaming send, tool-normalization, and prepare-history contract named in the bound Spec and precheck.",
+    "OpenAICompatTransport must delegate request execution and history preparation to the existing OpenAI service seam without duplicating request compilation, cost accounting, streaming, or global tool-name rewrites.",
+    "The two focused tests must be hermetic and must not make network calls or require credentials.",
+    "Do not enable or consume TRANSPORT_LAYER_ENABLED and do not integrate a caller."
+  ],
+  "checks": [
+    {
+      "label": "focused pytest",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "--noconftest",
+        "backend/tests/test_base_transport.py",
+        "backend/tests/test_openai_compat_transport.py",
+        "-q"
+      ]
+    },
+    {
+      "label": "py_compile",
+      "command": [
+        "python",
+        "-m",
+        "py_compile",
+        "backend/llm_providers/shared/base_transport.py",
+        "backend/llm_providers/transports/__init__.py",
+        "backend/llm_providers/transports/openai_compat.py"
+      ]
+    }
+  ],
+  "forbidden_actions": [
+    "commit",
+    "push",
+    "tag",
+    "merge",
+    "release",
+    "publish",
+    "dependency",
+    "secret",
+    "auth",
+    "security",
+    "privacy",
+    "migration",
+    "architecture"
+  ],
+  "requested_actions": [
+    "edit",
+    "run_checks"
+  ],
+  "task_prompt": "Implement only TASK-M6B.1 using the bound Spec, task, breakdown, and precheck. Edit only the five allowlisted files. Add the smallest BaseTransport abstract contract and an injected-service OpenAICompatTransport adapter. Preserve canonical skill IDs until the existing OpenAI ToolCallAdapter boundary. Do not edit existing files, enable a feature flag, add a resolver or gateway integration, make a network request, commit, or create documentation. Run only the two listed checks. Return concise JSON-compatible status, changed_files, command_results, summary, and blockers."
+}

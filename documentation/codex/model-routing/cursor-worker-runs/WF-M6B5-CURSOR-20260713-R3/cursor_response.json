@@ -1,0 +1,16 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 172884,
+  "duration_api_ms": 172884,
+  "result": "Implementing TASK-M6B.5 per the bound artifacts. Gathering the task spec, allowlist, and current gateway/transport code.\nImplementing flag-gated transport injection in the allowlisted files.\nCreating the focused regression test file.\nThe synthesis test failed because `importlib.reload` broke module references. Switching tests to monkeypatch the flag directly.\n```json\n{\n  \"status\": \"PASS\",\n  \"changed_files\": [\n    \"backend/services/llm_gateway.py\",\n    \"backend/llm_providers/openai/gateway.py\",\n    \"backend/tests/test_transport_layer_openai_gateway.py\"\n  ],\n  \"command_results\": {\n    \"pytest\": \"27 passed in 0.22s (test_transport_layer_openai_gateway.py, test_openai_tool_loop_runner.py, test_runtime_llm.py)\",\n    \"py_compile\": \"exit 0\",\n    \"git_diff_check\": \"exit 0\"\n  },\n  \"summary\": \"Added default-off TRANSPORT_LAYER_ENABLED in llm_gateway.reason_and_respond(). When true and provider=openai, OpenAICompatTransport is built from the selected OpenAIGateway.service and passed as provider_transport. OpenAIGateway routes existing service-level generate_response and prepare_history_for_second_call seams through the injected transport (including a runner adapter); legacy dispatch is unchanged when the flag is absent or false. Gemini/Ollama receive no transport. Hermetic regressions cover flag-off, flag-on OpenAI injection, non-OpenAI isolation, synthesis seam, and legacy tool-loop seams.\",\n  \"blockers\": []\n}\n```",
+  "session_id": "90268e66-36e0-4da1-b1df-27e071a50626",
+  "request_id": "9c9ff50e-d8aa-4910-973d-8c2e6304b790",
+  "usage": {
+    "inputTokens": 63910,
+    "outputTokens": 11686,
+    "cacheReadTokens": 835055,
+    "cacheWriteTokens": 0
+  }
+}

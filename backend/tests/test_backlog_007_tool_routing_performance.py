@@ -61,8 +61,8 @@ def test_tool_manager_definition_cache_canonicalizes_aliases():
     alias_names = _function_names(alias_defs)
     canonical_names = _function_names(canonical_defs)
 
-    assert alias_names == ["filesystem_list_directory"]
-    assert canonical_names == ["filesystem_list_directory"]
+    assert alias_names == ["filesystem.list_directory"]
+    assert canonical_names == ["filesystem.list_directory"]
     assert len(alias_names) == len(set(alias_names))
 
 
@@ -481,3 +481,43 @@ async def test_tool_executor_honors_visible_gemini_override_for_websearch(monkey
     assert payload["status"] == "ok"
     assert captured["provider"] == "gemini"
     assert captured["model"] == "gemini-3.1-pro-preview"
+
+
+@pytest.mark.asyncio
+async def test_tool_executor_forwards_websearch_runtime_context_when_decoupled(monkeypatch):
+    from backend.services.tool_executor import ToolExecutor
+    from backend.services.tool_manager import tool_manager
+
+    monkeypatch.setenv("TRANSPORT_WEBSEARCH_DECOUPLED", "true")
+    register_all_tools()
+
+    captured = {}
+
+    async def _fake_websearch(**kwargs):
+        captured.update(kwargs)
+        return {"status": "ok", "data": {"query": kwargs["query"], "hits": [], "retrieved_at": "2026-06-03T00:00:00Z"}}
+
+    tool_def = tool_manager.get_tool("system.websearch")
+    assert tool_def is not None
+    monkeypatch.setattr(tool_def, "func", _fake_websearch)
+
+    executor = ToolExecutor(
+        db=MagicMock(),
+        api_key="dummy",
+        provider="gemini",
+        model="gemini-3.1-pro-preview",
+        additional_context={"chat_history": []},
+    )
+
+    result = await executor.execute_tool_call("system.websearch", {"query": "latest release notes"})
+    payload = json.loads(result["content"])
+
+    assert payload["status"] == "ok"
+    assert "provider" not in captured
+    assert "model" not in captured
+    assert captured["websearch_runtime_context"] == {
+        "provider": "gemini",
+        "model": "gemini-3.1-pro-preview",
+        "websearch_fallback_provider": "",
+        "chat_history": [],
+    }

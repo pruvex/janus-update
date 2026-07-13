@@ -1,0 +1,90 @@
+{
+  "backend": "cursor",
+  "lane_id": "execution_patch_candidate",
+  "workflow_id": "WF-M6B5-CURSOR-20260713-R3",
+  "selected_model": "composer-2.5",
+  "session_id": "90268e66-36e0-4da1-b1df-27e071a50626",
+  "validation_result": "PASS",
+  "selected_path": "cursor_worker_live_mockable",
+  "final_outcome": "CURSOR_WORKER_READY_FOR_CODEX_REVIEW",
+  "package_validation": {
+    "validation_result": "PASS",
+    "contract_status": "TASK_PACKAGE_VALID",
+    "issues": [],
+    "task_label": "TASK-M6B.5 direct OpenAI flag-gated transport delegation",
+    "worker_profile": "cursor-agent",
+    "allowed_edit_paths": [
+      "backend/services/llm_gateway.py",
+      "backend/llm_providers/openai/gateway.py",
+      "backend/tests/test_transport_layer_openai_gateway.py",
+      "backend/tests/test_runtime_llm.py"
+    ],
+    "required_result_artifacts": [
+      "RESULT.json",
+      "RESULT.md",
+      "DIFF.patch",
+      "FILES_CHANGED.txt",
+      "CHECKS.log",
+      "COST.json"
+    ]
+  },
+  "allowlist_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "allowlist": [
+      "backend/services/llm_gateway.py",
+      "backend/llm_providers/openai/gateway.py",
+      "backend/tests/test_transport_layer_openai_gateway.py",
+      "backend/tests/test_runtime_llm.py"
+    ]
+  },
+  "allowlist_consistency_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "package_allowed_edit_paths": [
+      "backend/services/llm_gateway.py",
+      "backend/llm_providers/openai/gateway.py",
+      "backend/tests/test_transport_layer_openai_gateway.py",
+      "backend/tests/test_runtime_llm.py"
+    ],
+    "allowlist": [
+      "backend/services/llm_gateway.py",
+      "backend/llm_providers/openai/gateway.py",
+      "backend/tests/test_transport_layer_openai_gateway.py",
+      "backend/tests/test_runtime_llm.py"
+    ],
+    "declared_allowlist_file": null
+  },
+  "accepted_source_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "accepted_source_run_dir": null,
+    "recognized_artifacts": []
+  },
+  "accepted_source_run_dir": null,
+  "planned_command": [
+    "C:\\Users\\pruve\\AppData\\Local\\cursor-agent\\agent.CMD",
+    "-p",
+    "--workspace",
+    "C:\\KI\\Janus-M6-Transport-Prep",
+    "--model",
+    "composer-2.5",
+    "--output-format",
+    "json",
+    "--force",
+    "--trust",
+    "--approve-mcps",
+    "Implement only TASK-M6B.5 in allowlisted files. Preserve exact legacy dispatch when TRANSPORT_LAYER_ENABLED is absent or false. When true, enable only the direct provider=openai path: construct OpenAICompatTransport from the selected OpenAIGateway.service in llm_gateway and pass it as an optional dependency into OpenAIGateway. In that gateway, use the injected transport only instead of direct service calls at the existing service-level request/history seams. Do not add OpenRouter routing or touch Gemini, Google, Ollama, Codex, streaming, Websearch, fallback, credential, policy, synthesis, response-shaping, cost, docs, or Git behavior. Return status, changed_files, command_results, summary, and blockers as concise JSON-compatible output.\n\nTask label: TASK-M6B.5 direct OpenAI flag-gated transport delegation\n\nAcceptance criteria:\n- With TRANSPORT_LAYER_ENABLED absent or false, llm_gateway uses the exact existing silo dispatch and passes no transport dependency.\n- With TRANSPORT_LAYER_ENABLED true, only the existing direct openai provider path constructs OpenAICompatTransport from the selected gateway service and injects it into the OpenAI gateway.\n- OpenAI gateway uses the injected transport only for its existing service-level request and second-call-history seams; gateway-owned policy, tool loop, synthesis, response shaping, cost persistence, and streaming remain unchanged.\n- Gemini, Google, Ollama, OpenRouter, unsupported providers, and the Codex placeholder do not receive or enable a transport path.\n- Add hermetic focused regressions for flag-off, flag-on OpenAI, and non-OpenAI isolation.\n\nAllowed edit paths:\n- backend/services/llm_gateway.py\n- backend/llm_providers/openai/gateway.py\n- backend/tests/test_transport_layer_openai_gateway.py\n- backend/tests/test_runtime_llm.py\n\nReturn status, changed_files, command_results, summary, and blockers as concise JSON-compatible output."
+  ],
+  "mode": "proposal_first",
+  "workspace_root": "C:\\KI\\Janus-M6-Transport-Prep",
+  "live_execution_allowed": false,
+  "codex_review_required": true,
+  "changed_files": [
+    "backend/services/llm_gateway.py",
+    "backend/llm_providers/openai/gateway.py",
+    "backend/tests/test_transport_layer_openai_gateway.py"
+  ],
+  "changed_outside_allowlist": [],
+  "operator_message": "Cursor worker finished the bounded slice and returned artifacts for Codex review."
+}

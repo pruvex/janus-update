@@ -1,9 +1,29 @@
 import json
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from pydantic import BaseModel
 from backend.llm_providers.gemini.service import GeminiServiceProvider
+
+
+async def _async_stream(*chunks):
+    for chunk in chunks:
+        yield chunk
+
+
+def _gemini_stream_chunk(*parts):
+    return SimpleNamespace(
+        candidates=[SimpleNamespace(content=SimpleNamespace(parts=list(parts)))],
+    )
+
+
+def _gemini_function_part(name: str, args: dict):
+    return SimpleNamespace(
+        function_call=SimpleNamespace(name=name, args=args),
+        text=None,
+        thought_signature=None,
+    )
 
 
 @pytest.mark.asyncio
@@ -250,10 +270,82 @@ async def test_provider_generate_response_with_tool_call(
 def test_gemini_name_mapping_resolves_provider_safe_names_to_canonical_skill():
     provider = GeminiServiceProvider()
 
-    with patch("backend.services.skill_router.skill_router.resolve_tool_name", return_value="calendar.create_event"), \
-         patch("backend.services.tool_manager.tool_manager.get_skill_id", return_value="calendar.create_event"):
-        assert provider._resolve_gemini_response_tool_name("calendar_create_event") == "calendar.create_event"
-        assert provider._gemini_api_function_name_for_history("calendar.create_event") == "calendar_create_event"
+    assert provider._resolve_gemini_response_tool_name("calendar_create_event") == "calendar.create_event"
+    assert provider._gemini_api_function_name_for_history("calendar.create_event") == "calendar_create_event"
+
+
+@pytest.mark.asyncio
+@patch("google.generativeai.GenerativeModel")
+@patch("google.generativeai.configure")
+async def test_provider_stream_suppresses_duplicate_function_call_deltas(
+    _mock_configure,
+    mock_gen_model,
+):
+    repeated_first_chunk = _gemini_function_part("system_weather", {"city": "Berlin"})
+    repeated_second_chunk = _gemini_function_part("system_weather", {"city": "Berlin"})
+    mock_model = MagicMock()
+    mock_model.generate_content_async = AsyncMock(
+        return_value=_async_stream(
+            _gemini_stream_chunk(repeated_first_chunk),
+            _gemini_stream_chunk(repeated_second_chunk),
+        )
+    )
+    mock_gen_model.return_value = mock_model
+
+    provider = GeminiServiceProvider()
+    events = [
+        event
+        async for event in provider.generate_response_stream(
+            api_key="test_key",
+            model="gemini-3-flash-preview",
+            messages=[{"role": "user", "content": "Wie ist das Wetter in Berlin?"}],
+            tools=None,
+        )
+    ]
+
+    tool_deltas = [event for event in events if event.type == "tool_delta"]
+    assert len(tool_deltas) == 1
+    assert tool_deltas[0].content == {
+        "name": "system.weather",
+        "arguments": {"city": "Berlin"},
+        "_gemini_provider_name": "system_weather",
+    }
+
+
+@pytest.mark.asyncio
+@patch("google.generativeai.GenerativeModel")
+@patch("google.generativeai.configure")
+async def test_provider_stream_keeps_same_name_function_calls_with_distinct_arguments(
+    _mock_configure,
+    mock_gen_model,
+):
+    berlin_chunk = _gemini_function_part("system_weather", {"city": "Berlin"})
+    hamburg_chunk = _gemini_function_part("system_weather", {"city": "Hamburg"})
+    mock_model = MagicMock()
+    mock_model.generate_content_async = AsyncMock(
+        return_value=_async_stream(
+            _gemini_stream_chunk(berlin_chunk),
+            _gemini_stream_chunk(hamburg_chunk),
+        )
+    )
+    mock_gen_model.return_value = mock_model
+
+    provider = GeminiServiceProvider()
+    events = [
+        event
+        async for event in provider.generate_response_stream(
+            api_key="test_key",
+            model="gemini-3-flash-preview",
+            messages=[{"role": "user", "content": "Vergleiche Berlin und Hamburg."}],
+            tools=None,
+        )
+    ]
+
+    tool_deltas = [event.content for event in events if event.type == "tool_delta"]
+    assert [delta["arguments"] for delta in tool_deltas] == [
+        {"city": "Berlin"},
+        {"city": "Hamburg"},
+    ]
 
 
 @patch("google.generativeai.GenerativeModel")

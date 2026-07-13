@@ -7,6 +7,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 from pydantic import BaseModel
 
 from backend.llm_providers.shared.base_provider import BaseLLMProvider
+from backend.llm_providers.shared.tool_call_adapter import get_tool_call_adapter
 from backend.llm_providers.capabilities.openai_image_generation import (
     OpenAIImageGeneration,
 )
@@ -89,53 +90,8 @@ async def iter_openai_chat_completion_stream_events(
     params = dict(api_call_params)
     params["stream"] = True
     params["stream_options"] = {"include_usage": True}
-    
-    # 💎 OPENAI_SHIM: Normalize tool names to match ^[a-zA-Z0-9_-]+$ pattern
-    # OpenAI doesn't accept dots in tool names, so we replace them with underscores
-    if "tools" in params:
-        for tool in params["tools"]:
-            if isinstance(tool, dict) and "function" in tool and "name" in tool["function"]:
-                original_name = tool["function"]["name"]
-                normalized_name = original_name.replace(".", "_")
-                if original_name != normalized_name:
-                    logger.debug(f"[OPENAI_SHIM] Normalizing tool name from '{original_name}' to '{normalized_name}'")
-                    tool["function"]["name"] = normalized_name
-    
-    # Also normalize tool_choice if it's a function
-    if "tool_choice" in params and isinstance(params["tool_choice"], dict) and "function" in params["tool_choice"]:
-        if "name" in params["tool_choice"]["function"]:
-            original_name = params["tool_choice"]["function"]["name"]
-            normalized_name = original_name.replace(".", "_")
-            if original_name != normalized_name:
-                logger.debug(f"[OPENAI_SHIM] Normalizing tool_choice from '{original_name}' to '{normalized_name}'")
-                params["tool_choice"]["function"]["name"] = normalized_name
-    
-    # 💎 OPENAI_SHIM: Re-injection Guard - Ensure forced tool is in tools list
-    if "tool_choice" in params and isinstance(params["tool_choice"], dict) and "function" in params["tool_choice"]:
-        if "name" in params["tool_choice"]["function"]:
-            forced_tool_name = params["tool_choice"]["function"]["name"]
-            # Check if forced tool exists in tools list
-            tool_names = [tool.get("function", {}).get("name") for tool in params.get("tools", []) if isinstance(tool, dict)]
-            if forced_tool_name not in tool_names:
-                # Re-inject missing forced tool
-                from backend.services.skill_router import skill_router
-                try:
-                    tool_def = skill_router.get_tool_definition(forced_tool_name)
-                    # Format tool definition for OpenAI API
-                    tool_obj = {
-                        "type": "function",
-                        "function": {
-                            "name": forced_tool_name,
-                            "description": tool_def.description or "",
-                            "parameters": tool_def.parameters.model_dump() if hasattr(tool_def, "parameters") else {}
-                        }
-                    }
-                    if "tools" not in params:
-                        params["tools"] = []
-                    params["tools"].append(tool_obj)
-                    logger.warning("[OPENAI_SHIM] Re-injecting missing forced tool definition: %s", forced_tool_name)
-                except Exception as e:
-                    logger.error("[OPENAI_SHIM] Failed to re-inject forced tool %s: %s", forced_tool_name, e)
+
+    get_tool_call_adapter("openai").adapt_openai_stream_params(params)
     try:
         stream = await client.chat.completions.create(**params)
     except TypeError:
@@ -185,10 +141,10 @@ async def iter_openai_chat_completion_stream_events(
 class OpenAIServiceProvider(BaseLLMProvider):
     def __init__(self):
         self.image_generator = OpenAIImageGeneration()
+        self._tool_adapter = get_tool_call_adapter("openai")
 
-    @staticmethod
-    def _to_openai_tool_name(name: str) -> str:
-        return str(name or "").replace(".", "_")
+    def _to_openai_tool_name(self, name: str) -> str:
+        return self._tool_adapter.outbound_name(name)
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
     async def generate_response(
@@ -544,113 +500,10 @@ class OpenAIServiceProvider(BaseLLMProvider):
         )
         
     def _sanitize_openai_tool_schema(self, schema: Any) -> Dict[str, Any]:
-        """Clamp Pydantic JSON schema to OpenAI function-calling safe subset."""
-        if not isinstance(schema, dict):
-            return {"type": "object", "properties": {}}
-
-        def _sanitize_node(node: Any) -> Any:
-            if isinstance(node, dict):
-                # Strip metadata fields that are irrelevant or problematic for provider parsing.
-                cleaned = {
-                    key: _sanitize_node(value)
-                    for key, value in node.items()
-                    if key not in {
-                        "title",
-                        "examples",
-                        "example",
-                        "default",
-                        "$defs",
-                        "definitions",
-                        "strict",
-                    }
-                }
-
-                # Normalize anyOf/oneOf into a simple, predictable shape.
-                if "anyOf" in cleaned or "oneOf" in cleaned:
-                    variants = cleaned.get("anyOf") or cleaned.get("oneOf") or []
-                    if isinstance(variants, list):
-                        non_null_variants = [
-                            v for v in variants
-                            if not (isinstance(v, dict) and v.get("type") == "null")
-                        ]
-                        if len(non_null_variants) == 1 and isinstance(non_null_variants[0], dict):
-                            merged = dict(non_null_variants[0])
-                            if "description" in cleaned and "description" not in merged:
-                                merged["description"] = cleaned["description"]
-                            cleaned = _sanitize_node(merged)
-                        else:
-                            # Fall back to permissive string for incompatible unions.
-                            cleaned = {"type": "string", "description": cleaned.get("description", "")}
-
-                # Ensure object schemas always have properties/required.
-                if cleaned.get("type") == "object":
-                    props = cleaned.get("properties")
-                    if not isinstance(props, dict):
-                        cleaned["properties"] = {}
-                    req = cleaned.get("required")
-                    if not isinstance(req, list):
-                        cleaned["required"] = []
-
-                return cleaned
-            if isinstance(node, list):
-                return [_sanitize_node(item) for item in node]
-            return node
-
-        sanitized = _sanitize_node(schema)
-        if not isinstance(sanitized, dict):
-            return {"type": "object", "properties": {}}
-        if sanitized.get("type") != "object":
-            sanitized = {"type": "object", "properties": dict(sanitized.get("properties") or {})}
-        sanitized.setdefault("properties", {})
-        if not isinstance(sanitized.get("properties"), dict):
-            sanitized["properties"] = {}
-        if "required" in sanitized and not isinstance(sanitized.get("required"), list):
-            sanitized["required"] = []
-        return sanitized
+        return self._tool_adapter.sanitize_tool_schema(schema)
 
     def _convert_tools_to_openai_format(self, tools: List[Any]) -> List[Dict]:
-        openai_tools = []
-        seen_names = set()
-        for tool in tools:
-            try:
-                name = getattr(tool, "name", tool.get("name") if isinstance(tool, dict) else "unknown")
-                desc = getattr(tool, "description", tool.get("description") if isinstance(tool, dict) else "")
-                args_schema_model = getattr(tool, "args_schema", None)
-                schema = {"type": "object", "properties": {}}
-                if isinstance(tool, dict) and isinstance(tool.get("parameters"), dict):
-                    schema = tool.get("parameters")
-
-                if args_schema_model:
-                    if hasattr(args_schema_model, "model_json_schema"):
-                        schema = args_schema_model.model_json_schema()
-                    elif hasattr(args_schema_model, "schema"):
-                        schema = args_schema_model.schema()
-
-                raw_name = str(name)
-                openai_safe_name = self._to_openai_tool_name(raw_name)
-                if openai_safe_name in seen_names:
-                    logger.debug("OpenAI: Skipping duplicate tool name '%s'", openai_safe_name)
-                    continue
-                seen_names.add(openai_safe_name)
-                safe_schema = self._sanitize_openai_tool_schema(schema)
-                openai_tools.append({
-                    "type": "function",
-                    "function": {
-                        "name": openai_safe_name,
-                        "description": desc,
-                        "parameters": safe_schema,
-                    }
-                })
-            except Exception as e:
-                logger.error(f"Überspringe Tool {getattr(tool, 'name', 'unknown')} wegen Konvertierungsfehler: {e}")
-                continue
-
-        # 💎 OPENAI_LIMIT: Max 128 tools (API hard limit)
-        if len(openai_tools) > 128:
-            logger.warning(f"[OPENAI_LIMIT] Truncating {len(openai_tools)} tools to 128 (OpenAI API limit)")
-            openai_tools = openai_tools[:128]
-
-        return openai_tools
+        return self._tool_adapter.convert_tools_to_openai_format(tools)
 
         
     def prepare_history_for_second_call(

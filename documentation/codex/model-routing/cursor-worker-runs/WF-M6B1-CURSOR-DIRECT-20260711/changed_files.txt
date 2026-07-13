@@ -1,0 +1,5 @@
+backend/llm_providers/shared/base_transport.py
+backend/llm_providers/transports/__init__.py
+backend/llm_providers/transports/openai_compat.py
+backend/tests/test_base_transport.py
+backend/tests/test_openai_compat_transport.py

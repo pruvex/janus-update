@@ -242,6 +242,73 @@ def _coerce_websearch_model_for_provider(provider: str, model: Optional[str]) ->
     return model_id
 
 
+def _transport_websearch_decoupled_enabled() -> bool:
+    return os.getenv("TRANSPORT_WEBSEARCH_DECOUPLED", "false").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _has_visible_gemini_model_override(chat_history: Any) -> bool:
+    if not isinstance(chat_history, list):
+        return False
+    return any(
+        isinstance(message, dict)
+        and str(message.get("role") or "") == "system"
+        and "MODEL_OVERRIDE:" in str(message.get("content") or "")
+        for message in chat_history
+    )
+
+
+def _apply_websearch_runtime_context(
+    payload: schemas.WebsearchArgsV2,
+    runtime_context: Optional[Dict[str, Any]],
+) -> schemas.WebsearchArgsV2:
+    """Apply the legacy executor Websearch policy at the live wrapper boundary."""
+    if not _transport_websearch_decoupled_enabled() or not isinstance(runtime_context, dict):
+        return payload
+
+    coerced = payload.model_dump()
+    request_provider = str(runtime_context.get("provider") or "").strip().lower()
+    request_model = str(runtime_context.get("model") or "").strip()
+    forced_provider = str(runtime_context.get("websearch_fallback_provider") or "").strip().lower()
+
+    # HARD POLICY: never honor a forced Websearch provider that differs from the
+    # chat session provider (cross-provider fallback is forbidden).
+    if forced_provider in {"openai", "gemini", "ollama"}:
+        if forced_provider != request_provider:
+            logger.warning(
+                "WEBSEARCH-WRAPPER: ignoring cross-provider forced provider '%s' "
+                "(chat session provider is '%s').",
+                forced_provider,
+                request_provider,
+            )
+        else:
+            coerced["provider"] = forced_provider
+            if forced_provider == "gemini":
+                coerced["model"] = "gemini-3-flash-preview"
+            elif request_model and not str(coerced.get("model") or "").strip():
+                coerced["model"] = request_model
+    elif request_provider == "openai":
+        coerced["provider"] = "openai"
+        coerced["model"] = "gpt-5.4-nano" if request_model.lower().startswith("gemini-") else request_model
+    elif request_provider:
+        coerced["provider"] = request_provider
+        if request_provider == "gemini" and not str(coerced.get("model") or "").strip():
+            if request_model.lower().startswith("gpt-"):
+                coerced["model"] = "gemini-3-flash-preview"
+            elif _has_visible_gemini_model_override(runtime_context.get("chat_history")):
+                coerced["model"] = request_model or "gemini-3-flash-preview"
+            else:
+                coerced["model"] = "gemini-3-flash-preview"
+        elif request_model and not str(coerced.get("model") or "").strip():
+            coerced["model"] = request_model
+
+    logger.info(
+        "WEBSEARCH-WRAPPER: forwarding request provider='%s' model='%s' to system.websearch",
+        coerced.get("provider") or request_provider or "<missing>",
+        coerced.get("model") or request_model or "<missing>",
+    )
+    return schemas.WebsearchArgsV2.model_validate(coerced)
+
+
 def _normalize_source_label_for_match(label: str) -> str:
     return normalize_label_for_match(label)
 
@@ -866,7 +933,11 @@ async def _resolve_missing_ranking_list_source(
     return additions + sources
 
 
-async def websearch_wrapper(websearch_args: schemas.WebsearchArgsV2) -> ToolResultV1:
+async def websearch_wrapper(
+    websearch_args: schemas.WebsearchArgsV2,
+    *,
+    websearch_runtime_context: Optional[Dict[str, Any]] = None,
+) -> ToolResultV1:
     """Websuche V2.0 (Diamond): Strukturierter Output + Smart Global Fallback + Seamless Price Integration."""
     import time as _time
     started_at = _time.perf_counter()
@@ -990,6 +1061,7 @@ async def websearch_wrapper(websearch_args: schemas.WebsearchArgsV2) -> ToolResu
 
     try:
         payload = schemas.WebsearchArgsV2.model_validate(websearch_args)
+        payload = _apply_websearch_runtime_context(payload, websearch_runtime_context)
         provider = str(payload.provider or "").strip().lower()
         normalized_query = _normalize_websearch_query(payload.query)
         provider_model = _coerce_websearch_model_for_provider(provider, payload.model)

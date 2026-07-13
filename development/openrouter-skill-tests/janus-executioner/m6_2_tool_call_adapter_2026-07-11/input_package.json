@@ -1,0 +1,31 @@
+{
+  "task_id": "TASK-M6.2",
+  "lane_id": "execution_patch_candidate",
+  "bound_skill_context": "janus-executioner",
+  "task_label": "Introduce the bounded M6.2 ToolCallAdapter",
+  "task_file": "documentation/tasks/TASK-M6_transport_phase_a.md",
+  "task_breakdown": "documentation/tasks/TASK-M6.2_task_breakdown.md",
+  "precheck": "documentation/tasks/TASK-M6.2_preimplementation_check.md",
+  "spec": "documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md",
+  "worker_package_json": "development/openrouter-skill-tests/janus-executioner/m6_2_tool_call_adapter_2026-07-11/worker_package.json",
+  "allowlist_file": "development/openrouter-skill-tests/janus-executioner/m6_2_tool_call_adapter_2026-07-11/allowlist.txt",
+  "problem_statement": "ToolManager currently applies a Gemini-safe global tool-name rewrite while OpenAI and Gemini services independently adapt names and schemas. The approved M6.2 slice must make canonical skill IDs internal and confine provider-specific adaptation to one shared boundary without changing provider behavior.",
+  "acceptance_criteria": [
+    "Only allowlisted files may change.",
+    "Canonical dotted skill IDs remain internal.",
+    "OpenAI and Gemini provider names normalize at the adapter boundary.",
+    "OpenAI forced tools, Gemini history, and executor alias fallback remain compatible.",
+    "Do not add loop extraction, transport classes, streaming, OAuth, OpenRouter product work, provider policy, or Git actions."
+  ],
+  "local_validation_commands": [
+    "python -m pytest --noconftest backend/tests/test_tool_call_adapter.py -q",
+    "python -m pytest --noconftest backend/tests/test_tool_name_aliasing.py -q",
+    "python -m py_compile backend/llm_providers/shared/tool_call_adapter.py backend/services/tool_manager.py backend/llm_providers/openai/service.py backend/llm_providers/gemini/service.py backend/llm_providers/shared/utils.py"
+  ],
+  "redaction_ready": true,
+  "estimated_codex_saved_tokens": 18000,
+  "estimated_delegation_overhead_tokens": 5000,
+  "recommended_backend": "cursor",
+  "recommended_model": "composer-2.5",
+  "cursor_prompt_contract": "Inspect and edit only allowlisted files. Implement the one bounded ToolCallAdapter slice, run only the listed checks, do not commit, and return concise JSON-compatible output."
+}

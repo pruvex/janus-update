@@ -1,7 +1,6 @@
 import datetime
 import json
 import logging
-import copy
 import re # <<< Hinzugefügt
 from typing import Any, AsyncIterator, Dict, List, Optional, Tuple
 
@@ -17,6 +16,7 @@ from google.api_core.exceptions import InvalidArgument, PermissionDenied, Client
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from backend.llm_providers.shared.base_provider import BaseLLMProvider
+from backend.llm_providers.shared.tool_call_adapter import get_tool_call_adapter
 from .capabilities.image_generation import GeminiImageGeneration
 from .capabilities.multimodal import GeminiMultiModal
 from .capabilities.text_generation import GeminiTextGeneration
@@ -59,145 +59,26 @@ class GeminiServiceProvider(BaseLLMProvider):
         self.web_search = GeminiWebSearch()
         self.multimodal_generator = GeminiMultiModal()
         self.text_generator = GeminiTextGeneration()
+        self._tool_adapter = get_tool_call_adapter("gemini")
 
     def _resolve_local_json_ref(self, schema_root: Dict[str, Any], ref: str) -> Dict[str, Any]:
-        if not isinstance(ref, str) or not ref.startswith("#/"):
-            raise ValueError(f"Unsupported JSON ref: {ref}")
-
-        current: Any = schema_root
-        for token in ref[2:].split("/"):
-            key = token.replace("~1", "/").replace("~0", "~")
-            if not isinstance(current, dict) or key not in current:
-                raise ValueError(f"Unresolvable JSON ref: {ref}")
-            current = current[key]
-
-        if not isinstance(current, dict):
-            raise ValueError(f"Resolved JSON ref is not an object: {ref}")
-        return copy.deepcopy(current)
+        return self._tool_adapter._resolve_local_json_ref(schema_root, ref)
 
     def _resolve_schema_refs(self, raw_schema: Dict[str, Any]) -> Dict[str, Any]:
-        schema_root = copy.deepcopy(raw_schema or {})
-
-        def _walk(node: Any, depth: int = 0, seen_refs: Optional[List[str]] = None) -> Any:
-            if depth > 30:
-                raise ValueError("Schema reference depth limit exceeded")
-            if seen_refs is None:
-                seen_refs = []
-
-            if isinstance(node, list):
-                return [_walk(item, depth + 1, seen_refs) for item in node]
-
-            if not isinstance(node, dict):
-                return node
-
-            if "$ref" in node:
-                ref = node.get("$ref")
-                if ref in seen_refs:
-                    raise ValueError(f"Circular JSON ref detected: {ref}")
-
-                resolved = self._resolve_local_json_ref(schema_root, ref)
-                sibling_overrides = {k: v for k, v in node.items() if k != "$ref"}
-                merged = {**resolved, **sibling_overrides}
-                return _walk(merged, depth + 1, seen_refs + [ref])
-
-            cleaned = {}
-            for key, value in node.items():
-                if key in {"$defs", "definitions"}:
-                    continue
-                cleaned[key] = _walk(value, depth + 1, seen_refs)
-            return cleaned
-
-        return _walk(schema_root)
+        return self._tool_adapter._resolve_schema_refs(raw_schema)
 
     def _clean_gemini_schema(self, obj: Any) -> Any:
-        if not isinstance(obj, dict):
-            if isinstance(obj, list):
-                return [self._clean_gemini_schema(i) for i in obj]
-            return obj
-
-        forbidden = [
-            "title",
-            "default",
-            "anyOf",
-            "allOf",
-            "oneOf",
-            "pattern",
-            "format",
-            "minLength",
-            "maxLength",
-            "minimum",
-            "maximum",
-            "exclusiveMinimum",
-            "exclusiveMaximum",
-            "multipleOf",
-            "minItems",
-            "maxItems",
-            "uniqueItems",
-            "minProperties",
-            "maxProperties",
-            "examples",
-            "description_internal",
-            "$defs",
-            "definitions",
-            "$ref",
-        ]
-        new_obj = {k: self._clean_gemini_schema(v) for k, v in obj.items() if k not in forbidden}
-
-        if "anyOf" in obj or "oneOf" in obj:
-            options = obj.get("anyOf") or obj.get("oneOf")
-            valid_types = [t for t in options if isinstance(t, dict) and t.get("type") != "null"]
-            if valid_types:
-                new_obj.update(self._clean_gemini_schema(valid_types[0]))
-        if "const" in obj:
-            new_obj["enum"] = [obj["const"]]
-            if "const" in new_obj:
-                del new_obj["const"]
-
-        if "properties" in new_obj and "required" in new_obj:
-            valid_properties = set(new_obj["properties"].keys())
-            synced_required = [req for req in new_obj["required"] if req in valid_properties]
-            if synced_required:
-                new_obj["required"] = synced_required
-            else:
-                del new_obj["required"]
-
-        return new_obj
+        return self._tool_adapter._clean_gemini_schema(obj)
 
     def _sanitize_tool_schema(self, raw_schema: Dict[str, Any]) -> Dict[str, Any]:
-        resolved_schema = self._resolve_schema_refs(raw_schema)
-        final_schema = self._clean_gemini_schema(resolved_schema)
-
-        if not isinstance(final_schema, dict):
-            raise ValueError("Sanitized schema is not an object")
-
-        if final_schema.get("type") != "object":
-            final_schema["type"] = "object"
-        if not isinstance(final_schema.get("properties"), dict):
-            final_schema["properties"] = {}
-
-        return final_schema
+        return self._tool_adapter.sanitize_tool_schema(raw_schema)
 
     def _recursive_remove_additional_properties(self, schema: Any) -> Any:
-        if isinstance(schema, dict):
-            return {
-                key: self._recursive_remove_additional_properties(value)
-                for key, value in schema.items()
-                if key != "additionalProperties"
-            }
-        if isinstance(schema, list):
-            return [self._recursive_remove_additional_properties(item) for item in schema]
-        return schema
+        return self._tool_adapter.remove_additional_properties(schema)
 
     @staticmethod
     def _sanitize_gemini_name(name: str) -> str:
-        """Sanitize a tool/function name for Gemini API compatibility.
-        Gemini requires: alphanumeric (a-z, A-Z, 0-9) or underscores (_) only."""
-        if not name or not isinstance(name, str) or name == "None":
-            return "unknown_tool"
-        safe = name.replace(".", "_").replace("-", "_")
-        # Strip any remaining non-alphanumeric/underscore chars
-        safe = re.sub(r'[^a-zA-Z0-9_]', '_', safe)
-        return safe or "unknown_tool"
+        return get_tool_call_adapter("gemini").outbound_name(name)
 
     @staticmethod
     def _gemini_function_call(part: Any) -> Any:
@@ -271,149 +152,13 @@ class GeminiServiceProvider(BaseLLMProvider):
         )
 
     def _resolve_gemini_response_tool_name(self, gemini_name: str) -> str:
-        """Map Gemini's provider-safe function name back to Janus' canonical skill id."""
-        requested = str(gemini_name or "").strip()
-        if not requested:
-            return requested
-
-        # Manual mapping for provider-safe names that skill_router cannot resolve
-        # Gemini replaces dots with underscores for API compliance
-        manual_mapping = {
-            "system_routing": "system.routing",
-            "system_local_business": "system.local_business",
-            "system_country_info": "system.country_info",
-            "system_websearch": "system.websearch",
-            "system_wikipedia_summary": "system.wikipedia_summary",
-            "system_price_comparison": "system.price_comparison",
-            "system_create_pdf": "system.create_pdf",
-            "system_generate_image": "system.generate_image",
-            "system_grant_permission": "system.grant_permission",
-            "system_revoke_permission": "system.revoke_permission",
-            "system_weather": "system.weather",
-            "system_scrape_website": "system.scrape_website",
-            "system_save_mp3": "system.save_mp3",
-            "system_rss_news": "system.rss_news",
-        }
-
-        if requested in manual_mapping:
-            mapped = manual_mapping[requested]
-            logger.info(
-                "GEMINI-NAME-MAP: manual override '%s' -> '%s'",
-                requested,
-                mapped,
-            )
-            return mapped
-
-        try:
-            from backend.services.skill_router import skill_router
-            from backend.services.tool_manager import tool_manager as _tm
-
-            resolved_name = skill_router.resolve_tool_name(requested)
-            canonical_name = _tm.get_skill_id(resolved_name)
-            if canonical_name and canonical_name != requested:
-                logger.info(
-                    "GEMINI-NAME-MAP: provider='%s' -> resolved='%s' -> canonical='%s'",
-                    requested,
-                    resolved_name,
-                    canonical_name,
-                )
-            return canonical_name or resolved_name or requested
-        except Exception as exc:
-            logger.warning(
-                "GEMINI-NAME-MAP: could not resolve provider name '%s'; using raw name. reason=%s",
-                requested,
-                exc,
-            )
-            return requested
+        return self._tool_adapter.inbound_name(gemini_name)
 
     def _gemini_api_function_name_for_history(self, tool_name: str) -> str:
-        """Return the exact provider-safe function name Gemini expects in history."""
-        requested = str(tool_name or "").strip()
-        try:
-            from backend.services.skill_router import skill_router
-            from backend.services.tool_manager import tool_manager as _tm
-
-            resolved_name = skill_router.resolve_tool_name(requested)
-            canonical_name = _tm.get_skill_id(resolved_name)
-            api_name = self._sanitize_gemini_name(canonical_name or resolved_name or requested)
-            logger.debug(
-                "GEMINI-NAME-MAP: history tool='%s' -> resolved='%s' -> api='%s'",
-                requested,
-                resolved_name,
-                api_name,
-            )
-            return api_name
-        except Exception:
-            return self._sanitize_gemini_name(requested or "unknown_function")
+        return self._tool_adapter.outbound_name_for_history(tool_name)
 
     def _convert_tools_to_gemini_format(self, tools: List[Any]) -> List[Any]:
-        gemini_tools = []
-        seen_names = set()  # Track seen function names to prevent duplicates
-        for tool in tools:
-            try:
-                # Unwrap OpenAI-format dicts: {"type": "function", "function": {"name": ..., ...}}
-                func_def = None
-                if isinstance(tool, dict) and "function" in tool and isinstance(tool["function"], dict):
-                    func_def = tool["function"]
-                
-                if func_def:
-                    name = func_def.get("name")
-                    desc = func_def.get("description", "")
-                    raw_schema = func_def.get("parameters", {"type": "object", "properties": {}})
-                else:
-                    name = getattr(tool, "name", tool.get("name") if isinstance(tool, dict) else "unknown")
-                    desc = getattr(tool, "description", tool.get("description") if isinstance(tool, dict) else "")
-                    raw_schema = {"type": "object", "properties": {}}
-                    if isinstance(tool, dict) and isinstance(tool.get("parameters"), dict):
-                        raw_schema = tool.get("parameters")
-                
-                args_schema_model = getattr(tool, "args_schema", None) if not func_def else None
-                if args_schema_model:
-                    if hasattr(args_schema_model, "model_json_schema"):
-                        try:
-                            raw_schema = args_schema_model.model_json_schema(mode="serialization")
-                        except TypeError:
-                            raw_schema = args_schema_model.model_json_schema()
-                    elif hasattr(args_schema_model, "schema"):
-                        raw_schema = args_schema_model.schema()
-
-                # Sanitize name for Gemini (dots/hyphens -> underscores)
-                safe_name = self._sanitize_gemini_name(name)
-                if name != safe_name:
-                    logger.info("[GEMINI-SANITIZE] Tool name '%s' -> '%s'", name, safe_name)
-                
-                # Sanitize description
-                if not desc or not isinstance(desc, str) or desc == "None":
-                    desc = f"Tool {safe_name}"
-                
-                # Skip duplicate tool names to prevent Gemini ValueError
-                if safe_name in seen_names:
-                    logger.debug("Gemini: Skipping duplicate tool name '%s'", safe_name)
-                    continue
-                seen_names.add(safe_name)
-
-                raw_schema_clean = self._recursive_remove_additional_properties(raw_schema)
-                try:
-                    final_schema = self._sanitize_tool_schema(raw_schema_clean)
-                except Exception as schema_exc:
-                    logger.warning(
-                        "Gemini schema sanitization failed for tool '%s': %s. Falling back to empty object schema.",
-                        safe_name,
-                        schema_exc,
-                    )
-                    final_schema = {"type": "object", "properties": {}}
-
-                gemini_tools.append({
-                    "function_declarations": [{
-                        "name": safe_name,
-                        "description": desc,
-                        "parameters": final_schema
-                    }]
-                })
-            except Exception as e:
-                logger.error(f"Gemini Konvertierungs-Fehler: {e}")
-                continue
-        return gemini_tools
+        return self._tool_adapter.convert_tools_to_gemini_format(tools)
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
     async def generate_response(
@@ -1009,6 +754,7 @@ class GeminiServiceProvider(BaseLLMProvider):
             )
             last_usage: Any = None
             stream_model_parts_buffer: List[Any] = []
+            emitted_function_call_fingerprints: set[Tuple[str, str]] = set()
             async for chunk in stream_iter:
                 if hasattr(chunk, "prompt_feedback") and chunk.prompt_feedback:
                     br = getattr(chunk.prompt_feedback, "block_reason", None)
@@ -1039,8 +785,16 @@ class GeminiServiceProvider(BaseLLMProvider):
                     for part in chunk_parts:
                         if hasattr(part, "text") and part.text:
                             yield StreamEvent(type="text_delta", content=part.text, metadata={})
-                        if self._gemini_function_call(part):
-                            fc = self._gemini_function_call(part)
+                        fc = self._gemini_function_call(part)
+                        if fc:
+                            fingerprint = self._gemini_part_fingerprint(part)
+                            if fingerprint in emitted_function_call_fingerprints:
+                                logger.debug(
+                                    "GEMINI-STREAM: Suppressing duplicate function-call delta: %s",
+                                    getattr(fc, "name", ""),
+                                )
+                                continue
+                            emitted_function_call_fingerprints.add(fingerprint)
                             tool_args = _proto_to_dict(fc.args) if fc.args else {}
                             stream_restored_name = self._resolve_gemini_response_tool_name(fc.name)
                             yield StreamEvent(

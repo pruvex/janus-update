@@ -1,0 +1,59 @@
+{
+  "task_label": "TASK-M6B.3 OllamaLocalTransport 1:1 service wrapper",
+  "worker_profile": "cursor-agent",
+  "allowed_edit_paths": [
+    "backend/llm_providers/transports/ollama_local.py",
+    "backend/llm_providers/transports/__init__.py",
+    "backend/tests/test_ollama_local_transport.py"
+  ],
+  "acceptance_criteria": [
+    "Only the three allowlisted files may change; do not edit the Ollama service, gateway, adapter, legacy import, ToolLoopRunner, ToolCallAdapter, resolver, or flag files.",
+    "OllamaLocalTransport must implement the BaseTransport send, tool-normalization, and second-call-history seams by delegating to an injected existing Ollama service seam.",
+    "The wrapper must not transform local endpoint/model-node routing, capability behavior, requests, responses, metadata, tool results, history, retry/deadline behavior, native-tool fallback, response normalization, or streaming behavior.",
+    "The focused test must use a fake or mocked service, make no network call, construct no OpenAI client, and require no credentials.",
+    "Do not enable or consume TRANSPORT_LAYER_ENABLED and do not integrate a caller."
+  ],
+  "checks": [
+    {
+      "label": "Codex-owned focused pytest after review",
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "--noconftest",
+        "backend/tests/test_ollama_local_transport.py",
+        "backend/tests/llm_providers/test_ollama_adapter.py",
+        "-q"
+      ]
+    },
+    {
+      "label": "Codex-owned py_compile after review",
+      "command": [
+        "python",
+        "-m",
+        "py_compile",
+        "backend/llm_providers/transports/__init__.py",
+        "backend/llm_providers/transports/ollama_local.py"
+      ]
+    }
+  ],
+  "forbidden_actions": [
+    "commit",
+    "push",
+    "tag",
+    "merge",
+    "release",
+    "publish",
+    "dependency",
+    "secret",
+    "auth",
+    "security",
+    "privacy",
+    "migration",
+    "architecture"
+  ],
+  "requested_actions": [
+    "edit"
+  ],
+  "task_prompt": "Implement only TASK-M6B.3 using the bound Spec, task, breakdown, and precheck. Edit only the three allowlisted files. Add the smallest injected-service OllamaLocalTransport adapter and export it from the transport package. Delegate send, tool conversion, and history preparation to the existing Ollama service seam without changing any existing Ollama service, gateway, adapter, capability, endpoint, fallback, or routing behavior. Add hermetic fake-service tests. Do not run commands or tests, make network requests, enable a feature flag, add resolver/gateway integration, commit, or create documentation. Return concise JSON-compatible status, changed_files, summary, and blockers for Codex review."
+}
