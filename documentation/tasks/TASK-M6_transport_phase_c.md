@@ -42,6 +42,11 @@ TASK-M6C
 - Validation: focused registry and transport-gateway suite `24 passed`, syntax, scoped diff, and enabled Gemini Berlin-weather smoke with `Quelle: Open-Meteo` PASS.
 - Scope: T-C2 only; Websearch policy, fallback, model policy, transport enablement, tool execution, streaming, persistence, UI, T-C3, and T-C4 remain unchanged.
 
+### TASK-M6C.4 Add provider tool-ID parity coverage
+
+- Completion: `DONE` after `documentation/tasks/TASK-M6C.4_FINAL_AUDIT.md` (`PASS`). Validation: focused parity plus adapter regression suite `14 passed`, syntax, and scoped diff PASS.
+- Scope: test-only OpenAI/Gemini canonical tool-ID roundtrip for `system.weather` and `system.websearch`; C3 remains open.
+
 ## Deferred Phase-C Work
 
-- `T-C3` provider-branch removal and `T-C4` provider parity tests remain separate later tasks. They are not released by this artifact.
+- `T-C3` provider-branch removal remains a documented architecture debt: extended inventory found active contracts only, so no safe deletion was released. T-C4 is complete.

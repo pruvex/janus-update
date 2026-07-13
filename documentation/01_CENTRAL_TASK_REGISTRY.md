@@ -4,6 +4,24 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-M6 - Provider Transport Refactor aggregate closure
+
+- **Status**: DONE WITH DOCUMENTED ARCHITECTURE DEBT
+- **Final Audit**: `documentation/tasks/TASK-M6_AGGREGATE_FINAL_AUDIT.md` (PASS).
+- **External Gate**: `documentation/tasks/CURSOR_M6_TOTAL_REVIEW_HANDOFF.md` (Cursor re-review PASS, 2026-07-13).
+- **Validation**: Phase-B `63 passed`; C1 `111 passed, 6 deselected`; C2 `24 passed`; C4 `14 passed`; all bound scoped checks PASS.
+- **Scope**: implemented Phase A, Phase-B direct-provider foundation, C1, C2, and C4.
+- **Follow-up**: C3 deletion remains architecture debt; any branch reduction requires a new redesign Spec. Normal Git checkpoint and separately approved merge remain.
+
+### TASK-M6C.4 - OpenAI/Gemini canonical tool-ID parity
+
+- **Status**: DONE WITH DOCUMENTED FOLLOW-UPS
+- **Final Audit**: `documentation/tasks/TASK-M6C.4_FINAL_AUDIT.md` (PASS)
+- **Spec**: `documentation/SPEC/M6C4_provider_tool_id_parity.md`
+- **Validation**: parity plus adapter regression suite (`14 passed`), syntax, and scoped diff PASS.
+- **Scope**: `system.weather` and `system.websearch` only; no runtime provider behavior change.
+- **Follow-up**: T-C3 cleanup remains open; whole-catalog parity is not claimed.
+
 ### TASK-M6C.2 - Shared OpenAI and Gemini response postprocessor extraction
 
 - **Status**: DONE WITH DOCUMENTED FOLLOW-UPS
@@ -14,7 +32,7 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 - **Audit Package**: `documentation/tasks/TASK-M6C.2_AUDIT_PACKAGE.md`
 - **Validation**: focused response-postprocessor and transport-gateway suite (`24 passed`), syntax, scoped diff, and enabled Gemini Berlin-weather smoke with Open-Meteo PASS.
 - **Scope**: `llm_gateway.reason_and_respond` centrally selects the provider-family finisher after silo return; OpenAI release-list repair and Gemini preserved-metadata rendering only. Gateway-owned quality, cost, and synthesis behavior remain in place.
-- **Follow-up**: T-C3 and T-C4 remain separate and open; this marker does not close Phase C or the parent transport-refactor Spec.
+- **Follow-up**: T-C3 remains documented architecture debt; T-C4 is complete. This marker does not close the parent transport-refactor Spec.
 
 ### TASK-M6C.1 - Websearch provider coercion boundary decoupling
 
@@ -26,7 +44,7 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 - **Audit Package**: `documentation/tasks/TASK-M6C.1_AUDIT_PACKAGE.md`
 - **Validation**: focused Websearch regression selection (`111 passed, 6 deselected`), syntax, scoped diff, and enabled Gemini `gemini-3.1-pro-preview` Berlin-weather smoke PASS.
 - **Scope**: flag-off retains the executor-owned provider/model policy. With `TRANSPORT_WEBSEARCH_DECOUPLED=true`, the executor forwards private context and the consumed `backend.tool_registry:websearch_wrapper` boundary owns equivalent policy. No gateway, transport, schema, or Websearch-service implementation change.
-- **Follow-up**: T-C2 through T-C4 remain separate and open; this marker does not close Phase C or the parent Spec.
+- **Follow-up**: T-C3 remains documented architecture debt; T-C2 and T-C4 are complete. This marker does not close the parent Spec.
 
 ### TASK-M6B - Phase-B direct-provider foundation
 

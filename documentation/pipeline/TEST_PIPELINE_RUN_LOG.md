@@ -1,5 +1,20 @@
 # Janus Test Pipeline Run Log
 
+## 2026-07-13 - TASK-M6 aggregate transport-refactor closeout
+
+- Marker: `TASK-M6`.
+- Result: PASS - Phase-B `63 passed`, C1 `111 passed, 6 deselected`, C2 `24 passed`, and C4 `14 passed`; all bound scoped checks PASS.
+- Final audit: `documentation/tasks/TASK-M6_AGGREGATE_FINAL_AUDIT.md` (PASS).
+- External review: `documentation/tasks/CURSOR_M6_TOTAL_REVIEW_HANDOFF.md` (Cursor re-review PASS).
+- Scope: Phase A, Phase-B direct-provider foundation, C1, C2, and C4 closed. C3 remains documented architecture debt; no deletion is claimed.
+
+## 2026-07-13 - TASK-M6C.4 provider tool-ID parity validation
+
+- Marker: `TASK-M6C.4`.
+- Result: PASS - hermetic OpenAI/Gemini parity plus adapter regression suite `14 passed`; syntax and scoped diff PASS.
+- Final audit: `documentation/tasks/TASK-M6C.4_FINAL_AUDIT.md` (PASS).
+- Scope: `system.weather` and `system.websearch` only; no runtime provider behavior change.
+
 ## 2026-07-13 - TASK-M6C.2 response postprocessor extraction validation
 
 - Marker: `TASK-M6C.2`.
