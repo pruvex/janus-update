@@ -303,3 +303,15 @@
 - **Epic:** BACKLOG-127
 - **Confidence:** High
 - **Tags:** AtomicAgent,Ollama,ToolExecutor,ToolCalls,Weather,Runtime,Regression
+
+
+## [PATTERN] #OllamaWeatherAliasMustCanonicalize "Ollama weather alias must canonicalize before allowlist"
+- **Kontext:** BACKLOG-128 local Ollama Atomic-Agent weather recovery, 2026-07-12 (2026-07-13).
+- **Problem:** Ollama emitted system.weather.get_current_weather while the phase allowlist exposes only system.weather, so self-heal rejected the call and chat displayed raw tool JSON.
+- **Loesung:** Normalize the known weather alias to the canonical system.weather skill in each non-native Ollama payload normalization path before allowlist validation.
+- **Haertung:** Focused Ollama/provider plus runtime resolver suite passed 17 tests; default-off Berlin weather smoke rendered Open-Meteo output at 23:01.
+- **Tripwire:** If an Ollama log reports a known weather alias as not allowed or chat shows function JSON, inspect canonicalization before changing prompts, gateway policy, or the Atomic executor.
+- **Location:** backend/llm_providers/ollama/service.py; backend/tests/llm_providers/test_ollama_service.py
+- **Epic:** BACKLOG-128
+- **Confidence:** High
+- **Tags:** ollama,weather,tool-call,canonicalization,allowlist,atomic-agent

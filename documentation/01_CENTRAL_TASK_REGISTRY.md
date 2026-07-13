@@ -4,6 +4,20 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-M6B.4 - Runtime LLM resolution and transport registry seam
+
+- **Status**: DONE
+- **Final Audit**: `documentation/tasks/TASK-M6B.4_FINAL_AUDIT.md` (PASS)
+- **Spec**: `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md` (Phase-B T-B5 only; parent Spec remains in progress)
+- **Parent Task**: `documentation/tasks/TASK-M6_transport_phase_b.md`
+- **Task Breakdown**: `documentation/tasks/TASK-M6B.4_task_breakdown.md`
+- **Precheck**: `documentation/tasks/TASK-M6B.4_preimplementation_check.md`
+- **Execution Result**: `documentation/tasks/TASK-M6B.4_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-M6B.4_AUDIT_PACKAGE.md`
+- **Validation**: focused resolver/Ollama regression suite (`17 passed`), syntax, scoped diff, direct bounded Cursor-worker review, and manual default-off Ollama Berlin-weather smoke PASS. Resolver and gateway helpers are deliberately non-consuming.
+- **Related Backlog**: `BACKLOG-128` is DONE; it canonicalizes the known Ollama weather alias before allowlist validation and does not alter M6B.4 routing scope.
+- **Follow-up**: `TASK-M6B.5` remains the separate flag-gated live gateway-delegation slice.
+
 ### TASK-M6B.3 - Add the Ollama-local transport
 
 - **Status**: DONE WITH NON-BLOCKING FOLLOW-UP

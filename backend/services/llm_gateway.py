@@ -453,3 +453,21 @@ def get_first_available_text_model_with_provider() -> Tuple[str, str]:
             return provider, str(model_id)
     logger.warning("No text model found in model catalog")
     return "", ""
+
+
+def get_transport_registry() -> Dict[str, Any]:
+    """
+    Bounded Phase-B transport registry seam.
+
+    Non-consuming: existing gateway runtime paths do not call this helper yet.
+    """
+    from backend.llm_providers.runtime_llm import get_transport_registry as _get_transport_registry
+
+    return _get_transport_registry()
+
+
+def get_transport_class_for_api_mode(api_mode: str) -> Any:
+    """Return the transport class registered for an api_mode."""
+    from backend.llm_providers.runtime_llm import get_transport_class_for_api_mode as _get_transport_class
+
+    return _get_transport_class(api_mode)

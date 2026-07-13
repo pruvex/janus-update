@@ -467,6 +467,32 @@ Dashboard-Regeln:
 
 ## DONE
 
+### BACKLOG-128 - Ollama-Wetteralias wird im Atomic-Agent nicht auf den kanonischen Skill normalisiert
+
+- **Typ:** BUG
+- **Status:** DONE
+- **Quelle:** Manual Test / Log
+- **Erstellt:** 2026-07-12
+- **Aktualisiert:** 2026-07-13
+- **Follow-up zu:** BACKLOG-127 – Atomic Agent fuehrt Ollama-Tool-Call aus, gibt aber Roh-JSON statt Ergebnis aus
+- **Kurzbeschreibung:** Ollama erzeugte `system.weather.get_current_weather`; der Self-Heal lehnte den Namen ab, obwohl nur `system.weather` erlaubt ist.
+- **Erwartetes Verhalten:** Der bekannte Wetteralias wird vor der Phase-Allowlist auf `system.weather` normalisiert und ausgefuehrt.
+- **Tatsaechliches Verhalten:** Der Log zeigte `OLLAMA-TOOL-SELF-HEAL ... Tool 'system.weather.get_current_weather' ist nicht erlaubt`; danach endete der Atomic Loop als `TEXT_ONLY_STEP` und zeigte Tool-JSON.
+- **Reproduktion / Kontext:** M6-Worktree, `TRANSPORT_LAYER_ENABLED=false`, Ollama `qwen2.5-coder:14b@localhost`, Prompt `Wie ist das Wetter in Berlin?`, 2026-07-12 20:15.
+- **Betroffener Bereich:** Backend / Ollama Tool-Call-Adapter / Atomic Agent
+- **Nachweise:** `documentation/logs/janus_backend.log` (lokal, untracked); manueller Test 2026-07-12 20:15 und Retest 23:01.
+- **Akzeptanzkriterien:**
+  - [x] `system.weather.get_current_weather` wird kanonisch zu `system.weather` normalisiert.
+  - [x] Die Phase-Allowlist akzeptiert den normalisierten Wetter-Call.
+  - [x] Eine fokussierte Regression deckt Alias und normale Wetter-Toolausfuehrung ab.
+- **Fehlende Informationen:**
+  - Keine
+- **Notizen:** Separater Folgefehler nach BACKLOG-127, ohne Erweiterung der M6B.4-Resolver-Grenze.
+- **Final audit:** PASS (`documentation/tasks/TASK-M6B.4_FINAL_AUDIT.md`)
+- **Validation evidence:** focused Ollama/provider plus runtime resolver suite `17 passed`; `py_compile`; `git diff --check`; manual default-off Berlin-weather smoke PASS (2026-07-12 23:01).
+- **Completed in version:** N/A (no release preparation)
+- **Completed by task:** `documentation/tasks/BACKLOG-128_execution_result.md`
+
 ### BACKLOG-127 - Atomic Agent fuehrt Ollama-Tool-Call aus, gibt aber Roh-JSON statt Ergebnis aus
 
 - **Typ:** BUG

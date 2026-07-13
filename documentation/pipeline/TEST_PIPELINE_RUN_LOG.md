@@ -1,5 +1,11 @@
 # Janus Test Pipeline Run Log
 
+## 2026-07-13 - TASK-M6B.4 and BACKLOG-128 final validation
+
+- Marker: `BACKLOG-128` with Phase-B `TASK-M6B.4`.
+- Result: PASS - focused resolver/Ollama suite `17 passed`, syntax and diff checks PASS, direct bounded Cursor-worker review PASS, and manual default-off Berlin weather smoke PASS.
+- Final audit: `documentation/tasks/TASK-M6B.4_FINAL_AUDIT.md` (PASS).
+
 ## 2026-07-12 - BACKLOG-127 final validation handoff
 
 - Marker: `BACKLOG-127` (with M6B.3 and BACKLOG-125/126 follow-up evidence).

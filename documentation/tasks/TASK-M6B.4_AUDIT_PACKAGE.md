@@ -1,3 +1,57 @@
+# AUDIT_PACKAGE
+
+Generated: 2026-07-13 12:04:23 UTC
+
+## Goal
+
+Audit TASK-M6B.4 deterministic runtime resolver/registry seam and the independent BACKLOG-128 Ollama weather-alias repair.
+
+## Scope Rules
+
+- Audit the provided package and changed artifacts only.
+- Do not rely on development chat history.
+- Verify cost, caching, skill quality, safety scope, and validation evidence.
+- On re-audit, review the blocker delta first before widening scope.
+- If scoped paths were provided, treat them as the audit diff boundary.
+
+## Bound Audit Inputs
+
+- Spec: N/A WITH REASON: parent provider transport refactor Spec remains in progress; this audit binds Phase-B T-B5 only.
+- Task File: documentation/tasks/TASK-M6_transport_phase_b.md
+- Backlog Item: BACKLOG-128
+- Pre-Implementation Check: documentation/tasks/TASK-M6B.4_preimplementation_check.md
+- Manual Janus Evidence: PRESENT: 2026-07-12 23:01 default-off Ollama Berlin-weather smoke rendered Open-Meteo answer; no raw tool JSON.
+- Pipeline Completion Status: Implementation complete: TASK-M6B.4 and BACKLOG-128 validation complete; remaining Phase-B task M6B.5 is explicitly out of scope.
+
+## Backlog Item
+
+```text
+### BACKLOG-128 - Ollama-Wetteralias wird im Atomic-Agent nicht auf den kanonischen Skill normalisiert
+
+- **Typ:** BUG
+- **Status:** READY
+- **Quelle:** Manual Test / Log
+- **Erstellt:** 2026-07-12
+- **Aktualisiert:** 2026-07-12
+- **Follow-up zu:** BACKLOG-127 – Atomic Agent fuehrt Ollama-Tool-Call aus, gibt aber Roh-JSON statt Ergebnis aus
+- **Kurzbeschreibung:** Ollama erzeugt `system.weather.get_current_weather`; der Self-Heal lehnt den Namen ab, obwohl nur `system.weather` erlaubt ist.
+- **Erwartetes Verhalten:** Der bekannte Wetteralias wird vor der Phase-Allowlist auf `system.weather` normalisiert und ausgefuehrt.
+- **Tatsaechliches Verhalten:** Der Log zeigt `OLLAMA-TOOL-SELF-HEAL ... Tool 'system.weather.get_current_weather' ist nicht erlaubt`; danach endet der Atomic Loop als `TEXT_ONLY_STEP` und zeigt Tool-JSON.
+- **Reproduktion / Kontext:** M6-Worktree, `TRANSPORT_LAYER_ENABLED=false`, Ollama `qwen2.5-coder:14b@localhost`, Prompt `Wie ist das Wetter in Berlin?`, 2026-07-12 20:15.
+- **Betroffener Bereich:** Backend / Ollama Tool-Call-Adapter / Atomic Agent
+- **Nachweise:** `documentation/logs/janus_backend.log` (lokal, untracked); manueller Test 2026-07-12 20:15.
+- **Akzeptanzkriterien:**
+  - [ ] `system.weather.get_current_weather` wird kanonisch zu `system.weather` normalisiert.
+  - [ ] Die Phase-Allowlist akzeptiert den normalisierten Wetter-Call.
+  - [ ] Eine fokussierte Regression deckt Alias und normale Wetter-Toolausfuehrung ab.
+- **Fehlende Informationen:**
+  - Keine
+- **Notizen:** Separater Folgefehler nach BACKLOG-127; M6B.4 bleibt vor Audit blockiert, bis der Default-off-Smoke wieder PASS ist.
+```
+
+## Task Acceptance Scope
+
+```text
 TASK-M6B
 - Source Spec: `documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md`
 - Backlog Item: `N/A`
@@ -142,3 +196,127 @@ TASK-M6B
 - Model: 5.6 Terra
 - Reason:
   - Live delegation is explicitly later than the transport contracts and resolver and remains a separately auditable risk slice.
+```
+
+## Pre-Implementation Check
+
+```text
+PRE-CHECK RESULT
+PRE-CHECK PASSED
+
+legacy handoff start
+NEXT: janus-executioner
+Target Task: TASK-M6B.4
+Target Subtask: N/A
+Task: documentation/tasks/TASK-M6_transport_phase_b.md
+Spec: documentation/Cursor specs/PROVIDER_TRANSPORT_REFACTOR_SPEC.md
+Backlog Item: N/A
+Assigned Model: 5.6 Terra
+Mode: SINGLE_TASK_EXECUTION
+Pre-Check: PRE-CHECK PASSED
+Pre-Check Context:
+- Add only a deterministic `runtime_llm.resolve()` module and a bounded, non-consuming transport registry seam in `llm_gateway.py`.
+- Map `openai`/`openrouter` to `openai_compat`, `gemini`/`google` to `gemini_native`, and `ollama` to `ollama_local`; the Epic-5 Codex placeholder must fail explicitly without introducing a transport.
+Affected Files:
+- backend/llm_providers/runtime_llm.py
+- backend/services/llm_gateway.py
+- backend/tests/test_runtime_llm.py
+Evidence Focus:
+- python -m pytest backend/tests/test_runtime_llm.py -q
+- python -m py_compile backend/llm_providers/runtime_llm.py backend/services/llm_gateway.py backend/tests/test_runtime_llm.py
+- git diff --check
+Scope-Regel:
+- Implement only TASK-M6B.4. No gateway delegation, feature-flag consumer, transport send path, provider fallback, service/gateway policy, resolver use-site, Websearch, streaming, or credential retrieval change.
+Automated Evidence Gate:
+- python -m pytest backend/tests/test_runtime_llm.py -q
+- python -m py_compile backend/llm_providers/runtime_llm.py backend/services/llm_gateway.py backend/tests/test_runtime_llm.py
+- npx playwright test <runner> --headed --workers=1 --reporter=list
+Artifact Identity Check:
+- Phase-B T-B5, TASK-M6B.4, task-breakdown handoff, and runtime_llm Spec mapping verified.
+Oracle-/TestPlan-Regel:
+- Do not manually patch generated TestPlan/TestResult artifacts. This task changes no TestSpec or oracle.
+Keep Context:
+- T-B5 mapping table and existing transport exports
+- TASK-M6B.4 breakdown
+Drop Context:
+- completed M6B.3 and BACKLOG-125/126/127 closeout
+- later T-B6 gateway delegation and Phase-C work
+Completion Rule:
+- End with PASS, BLOCKED, or HANDOFF and concrete evidence paths.
+Expected Output:
+- Cursor-first bounded resolver/registry implementation result, focused tests, then a manual non-routing verification gate.
+legacy handoff end
+
+NEXT STEP
+Recommended Skill: janus-executioner
+Recommended Model: 5.6 Terra
+Recommended Intelligence: high
+Reason: The resolver registry creates a provider-family boundary and needs high-reasoning scope discipline, while the live gateway path remains excluded.
+User Action: Authorize only the bounded Cursor-first TASK-M6B.4 execution slice.
+```
+
+## Changed Files
+
+```text
+M backend/llm_providers/ollama/service.py
+ M backend/services/llm_gateway.py
+ M backend/tests/llm_providers/test_ollama_service.py
+?? backend/llm_providers/runtime_llm.py
+?? backend/tests/test_runtime_llm.py
+```
+
+## Artifact Inventory
+
+```text
+FILE C:\KI\Janus-M6-Transport-Prep\documentation\tasks\TASK-M6B.4_execution_result.md (1966 bytes)
+FILE C:\KI\Janus-M6-Transport-Prep\documentation\tasks\BACKLOG-128_execution_result.md (1496 bytes)
+```
+
+## Diff Summary
+
+```text
+backend/llm_providers/ollama/service.py            |  5 +++++
+ backend/services/llm_gateway.py                    | 18 ++++++++++++++++++
+ backend/tests/llm_providers/test_ollama_service.py | 11 +++++++++++
+ 3 files changed, 34 insertions(+)
+```
+
+## Validation
+
+```text
+python -m pytest backend/tests/llm_providers/test_ollama_service.py backend/tests/test_runtime_llm.py -q: PASS (17 passed)
+python -m py_compile backend/llm_providers/ollama/service.py backend/llm_providers/runtime_llm.py backend/services/llm_gateway.py backend/tests/llm_providers/test_ollama_service.py backend/tests/test_runtime_llm.py: PASS
+git diff --check: PASS
+Manual default-off Ollama Berlin-weather smoke, 2026-07-12 23:01: PASS (rendered Open-Meteo answer; no raw tool JSON)
+```
+
+## Notes
+
+No additional notes provided.
+
+## Risks
+
+M6B.5 live gateway delegation remains unimplemented. Cursor shared-wrapper tooling debt is separate; direct worker evidence was reviewed locally.
+
+## Open Issues
+
+None in bound scope.
+
+## Re-Audit Delta
+
+No re-audit delta provided.
+
+## Final Audit Handoff
+
+```text
+NEW_CHAT_HANDOFF
+NEXT: final-skill-audit
+MODEL: 5.6 Sol/high if runtime-supported; otherwise 5.6 Terra/high
+PASS: C:\KI\Janus-M6-Transport-Prep\documentation\tasks\TASK-M6B.4_AUDIT_PACKAGE.md
+ASK: Lade nur dieses Paket im neuen Chat und starte dann den Final Audit.
+DROP: dev chat history
+```
+
+Use `5.6 Sol/high` when the current Codex run can start it; if Codex reports `gpt-5.6-sol` is unsupported for the active ChatGPT account, use `5.6 Terra/high` and record `SOL_UNAVAILABLE_FOR_CHATGPT_CODEX_ACCOUNT`.
+
+For bounded same-thread re-audits after a local blocker fix, `5.6 Terra/high` is acceptable when the package stays compact and the risk did not escalate.

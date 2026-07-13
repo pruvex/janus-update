@@ -25,6 +25,17 @@ def setup_function() -> None:
     clear_cached_capabilities()
 
 
+def test_normalize_non_native_tool_payload_maps_weather_alias_to_canonical_skill():
+    provider = OllamaServiceProvider()
+
+    calls = provider._normalize_non_native_tool_payload(
+        '{"name":"system.weather.get_current_weather","arguments":{"city":"Berlin"}}',
+        [{"name": "system.weather", "parameters": {"type": "object"}}],
+    )
+
+    assert calls[0]["function"]["name"] == "system.weather"
+
+
 @pytest.mark.asyncio
 @patch("backend.llm_providers.ollama.service.load_config_data")
 @patch("openai.AsyncOpenAI")

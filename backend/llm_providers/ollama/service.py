@@ -707,6 +707,9 @@ class OllamaServiceProvider(BaseLLMProvider):
             for tool_call in tool_calls:
                 function = tool_call.get("function") if isinstance(tool_call, dict) else None
                 tool_name = str((function or {}).get("name") or "").strip()
+                if tool_name == "system.weather.get_current_weather" and "system.weather" in tool_spec_by_name:
+                    function["name"] = "system.weather"
+                    tool_name = "system.weather"
                 if not tool_name or tool_name not in tool_spec_by_name:
                     continue
                 try:
@@ -757,6 +760,8 @@ class OllamaServiceProvider(BaseLLMProvider):
                 return None
         if not tool_name or not isinstance(arguments, dict):
             return None
+        if tool_name == "system.weather.get_current_weather" and "system.weather" in tool_spec_by_name:
+            tool_name = "system.weather"
         return self._build_normalized_tool_call(tool_name, arguments, tool_spec_by_name)
 
     def _build_normalized_tool_call(

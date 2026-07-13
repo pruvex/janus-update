@@ -1,0 +1,86 @@
+{
+  "backend": "cursor",
+  "lane_id": "execution_patch_candidate",
+  "workflow_id": "WF-M6B4-CURSOR-20260712-R2",
+  "selected_model": "composer-2.5",
+  "session_id": "15f47773-b21e-4861-a60b-ac531f49bc5f",
+  "validation_result": "PASS",
+  "selected_path": "cursor_worker_live_mockable",
+  "final_outcome": "CURSOR_WORKER_READY_FOR_CODEX_REVIEW",
+  "package_validation": {
+    "validation_result": "PASS",
+    "contract_status": "TASK_PACKAGE_VALID",
+    "issues": [],
+    "task_label": "TASK-M6B.4 runtime_llm resolver",
+    "worker_profile": "cursor-agent",
+    "allowed_edit_paths": [
+      "backend/llm_providers/runtime_llm.py",
+      "backend/services/llm_gateway.py",
+      "backend/tests/test_runtime_llm.py"
+    ],
+    "required_result_artifacts": [
+      "RESULT.json",
+      "RESULT.md",
+      "DIFF.patch",
+      "FILES_CHANGED.txt",
+      "CHECKS.log",
+      "COST.json"
+    ]
+  },
+  "allowlist_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "allowlist": [
+      "backend/llm_providers/runtime_llm.py",
+      "backend/services/llm_gateway.py",
+      "backend/tests/test_runtime_llm.py"
+    ]
+  },
+  "allowlist_consistency_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "package_allowed_edit_paths": [
+      "backend/llm_providers/runtime_llm.py",
+      "backend/services/llm_gateway.py",
+      "backend/tests/test_runtime_llm.py"
+    ],
+    "allowlist": [
+      "backend/llm_providers/runtime_llm.py",
+      "backend/services/llm_gateway.py",
+      "backend/tests/test_runtime_llm.py"
+    ],
+    "declared_allowlist_file": null
+  },
+  "accepted_source_validation": {
+    "validation_result": "PASS",
+    "issues": [],
+    "accepted_source_run_dir": null,
+    "recognized_artifacts": []
+  },
+  "accepted_source_run_dir": null,
+  "planned_command": [
+    "C:\\Users\\pruve\\AppData\\Local\\cursor-agent\\agent.CMD",
+    "-p",
+    "--workspace",
+    "C:\\KI\\Janus-M6-Transport-Prep",
+    "--model",
+    "composer-2.5",
+    "--output-format",
+    "json",
+    "--force",
+    "--trust",
+    "--approve-mcps",
+    "Implement only TASK-M6B.4 in allowlisted files. Add a deterministic runtime_llm resolver and non-consuming registry seam. No gateway delegation, feature flag use, provider fallback, credential retrieval, service/gateway policy changes, or docs.\n\nTask label: TASK-M6B.4 runtime_llm resolver\n\nAcceptance criteria:\n- Provide deterministic provider-family resolution without consuming it in runtime paths.\n- Expose only a bounded registry seam.\n- Add focused mapping and failure regressions.\n\nAllowed edit paths:\n- backend/llm_providers/runtime_llm.py\n- backend/services/llm_gateway.py\n- backend/tests/test_runtime_llm.py\n\nReturn status, changed_files, command_results, summary, and blockers as concise JSON-compatible output."
+  ],
+  "mode": "proposal_first",
+  "workspace_root": "C:\\KI\\Janus-M6-Transport-Prep",
+  "live_execution_allowed": false,
+  "codex_review_required": true,
+  "changed_files": [
+    "backend/llm_providers/runtime_llm.py",
+    "backend/services/llm_gateway.py",
+    "backend/tests/test_runtime_llm.py"
+  ],
+  "changed_outside_allowlist": [],
+  "operator_message": "Cursor worker finished the bounded slice and returned artifacts for Codex review."
+}

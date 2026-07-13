@@ -1,25 +1,25 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
-As of `2026-07-12 19:22 +02:00`, BACKLOG-127 has passed its manual local-Ollama weather smoke and the consolidated M6B.3 + BACKLOG-125/126/127 final audit has passed. The Atomic-Agent chain now executes `system.weather` and returns the rendered Open-Meteo answer rather than raw tool JSON.
+As of `2026-07-13 14:10 +02:00`, TASK-M6B.4 and BACKLOG-128 are final-audit PASS and documentation-closeout ready. The resolver/registry seam remains non-consuming; the default-off local Ollama weather chain renders Open-Meteo output again.
 
-Current goal: prepare one explicit Git checkpoint decision for the documented M6B.3 + BACKLOG-125/126/127 delivery block.
+Current goal: checkpoint the completed M6B.4 + BACKLOG-128 delivery block, then route M6B.5 only after an explicit new scope decision.
 
-Active phase: `janus-documentation-update`, canonical state `PASS`.
+Active phase: `janus-git-governance`, canonical state `PASS`.
 
-Last Codex work: refreshed the compact audit package, reran the focused M6/Ollama suite (`27 passed`), and recorded `FINAL AUDIT RESULT: PASS` for M6B.3 plus BACKLOG-125/126/127. The direct Cursor wrapper output-decoding error was independently contained by scoped diff review and Codex-owned validation.
+Last Codex work: completed the M6B.4/BACKLOG-128 documentation closeout, committed it as `bf48b9b25`, pushed the active feature branch to `backup`, and refreshed the ChatGPT snapshot on `origin/codex-sync`.
 
-Changed files: `backend/services/orchestrator/execution_engine.py`; `backend/tests/test_agent_factory_runtime.py`; `documentation/backlog/BACKLOG.md`; `documentation/tasks/BACKLOG-127_AUDIT_PACKAGE.md`; `documentation/tasks/BACKLOG-127_FINAL_AUDIT.md`; `documentation/tasks/backlog_BACKLOG-127_*`; `janus-dashboard/data/backlog.snapshot.json`; `documentation/ai/CURRENT_STATE.md`.
+Changed files: `backend/llm_providers/runtime_llm.py`; `backend/services/llm_gateway.py`; `backend/tests/test_runtime_llm.py`; `backend/llm_providers/ollama/service.py`; `backend/tests/llm_providers/test_ollama_service.py`; `documentation/backlog/BACKLOG.md`; M6B.4/BACKLOG-128 task and audit artifacts; registry, project state, changelog, pipeline log, and learning memory.
 
-Tests / validation performed: BACKLOG-127 precheck and final-audit validators PASS; backlog validator PASS with existing legacy warnings; dashboard sync PASS (`total=87`, `active=13`, `done=74`); focused pytest PASS (`27 passed`); `py_compile` PASS; `git diff --check` PASS; manual default-off Ollama weather smoke PASS at 18:06.
+Tests / validation performed: focused pytest PASS (`17 passed`); `py_compile` PASS; `git diff --check` PASS; final-audit validator PASS; Backlog validator PASS with pre-existing legacy warnings; documentation-update validator PASS; dashboard sync PASS (`total=88`, `active=10`, `done=78`); manual default-off Ollama weather smoke PASS at 23:01.
 
-Open risks: M6B.4/M6B.5 and separate Cursor-wrapper tooling debt remain; the completed M6B.3/Ollama recovery block is committed and backed up.
+Open risks: M6B.5 live gateway delegation and separate Cursor-wrapper tooling debt remain. `documentation/logs/` is intentionally local and untracked; it is excluded from the delivery commit.
 
-Next recommended step for ChatGPT: `origin/codex-sync` contains this rolling snapshot; M6B.4 is the next Phase-B task when selected.
+Next recommended step for ChatGPT: use `origin/codex-sync` commit `e0dd03f7d` as the remote snapshot for this completed block.
 
-Next recommended step for Codex: route M6B.4 through `janus-task-breakdown` on `5.6 Terra/high` when selected.
+Next recommended step for Codex: route `TASK-M6B.5` only after a new bounded task breakdown and preimplementation check on `5.6 Terra/high`.
 
-Last updated: `2026-07-12 19:22 +02:00`.
+Last updated: `2026-07-13 14:10 +02:00`.
 
 ## Current Snapshot Update
 As of `2026-07-12 16:49 +02:00`, BACKLOG-126 is selected `IN PROGRESS` with a bounded preimplementation handoff. Dashboard sync passed (`total=86`, `active=12`, `done=74`, `routing_missing=2`). No gateway code changed.
