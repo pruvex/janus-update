@@ -1,25 +1,25 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
-As of `2026-07-13 17:31 +02:00`, the M6 Phase-B direct-provider foundation is complete, documented, committed, backed up, and published to the ChatGPT sync branch with canonical state `PASS`. The combined final audit is `PASS WITH FIXES`; its documentation-only fixes have been applied. Existing direct OpenAI, Gemini, and Ollama gateway paths now have default-off, flag-gated thin transport delegation while provider-owned policy and response behavior remain in place.
+As of `2026-07-13 18:47 +02:00`, `TASK-M6C.1` is documentation-closed after final-audit `PASS`. Phase-C T-C1 alone is complete; T-C2 through T-C4, OpenRouter Epic 6, and Codex/OAuth Epic 5 remain separate and open.
 
-Current goal: select the next bounded transport-refactor epic without reopening the completed Phase-B direct-provider foundation.
+Current goal: create one bounded T-C1 Git checkpoint, then synchronize the updated `CURRENT_STATE` to `origin/codex-sync` only after explicit approval.
 
-Active phase: `janus-git-governance` complete; next gate `janus-skill-router`, canonical state `PASS`.
+Active phase: `janus-documentation-update` complete; next gate `janus-git-governance`, canonical state `PASS`.
 
-Last Codex work: closed TASK-M6B.7 as final-audit `PASS`; validated and documented the combined direct-provider foundation; committed the closeout as `626a1256b`; pushed `codex/m6-transport-prep` to `backup`; and verified publication of the committed CURRENT_STATE to `origin/codex-sync`. The bounded closeout deliberately does not claim the original full Exit-B legacy-removal or provider-branch-reduction metrics.
+Last Codex work: recorded the T-C1 completion in the task, central registry, project state, changelog, test-pipeline log, and long-term learning. The completion documents the default-off executor preservation, flag-on `websearch_wrapper` policy boundary, `111 passed, 6 deselected` focused selection, and successful enabled Gemini Open-Meteo smoke without claiming Phase-C completion.
 
-Changed files: `CHANGELOG.md`; `PROJECT_STATE.md`; `documentation/01_CENTRAL_TASK_REGISTRY.md`; `documentation/pipeline/TEST_PIPELINE_RUN_LOG.md`; `documentation/tasks/TASK-M6_transport_phase_b.md`; `documentation/tasks/TASK-M6B.7_DOCUMENTATION_UPDATE.md`; `documentation/tasks/TASK-M6B_phase_b_closeout_decision.md`; `documentation/tasks/TASK-M6B_PHASE_B_VALIDATION_SUMMARY.md`; `documentation/tasks/TASK-M6B_PHASE_B_AUDIT_PACKAGE.md`; `documentation/tasks/TASK-M6B_PHASE_B_FINAL_AUDIT.md`; `documentation/tasks/TASK-M6B_PHASE_B_DOCUMENTATION_UPDATE.md`; `documentation/codex/SKILL_USAGE_LOG.md`; `documentation/ai/CURRENT_STATE.md`.
+Changed files: `backend/services/tool_executor.py`; `backend/tool_registry.py`; `backend/tests/test_backlog_007_tool_routing_performance.py`; `backend/tests/tools/test_websearch.py`; `documentation/tasks/TASK-M6_transport_phase_c.md`; `documentation/tasks/TASK-M6C.1_task_breakdown.md`; `documentation/tasks/TASK-M6C.1_preimplementation_check.md`; `documentation/tasks/TASK-M6C.1_execution_result.md`; `documentation/tasks/TASK-M6C.1_AUDIT_PACKAGE.md`; `documentation/tasks/TASK-M6C.1_FINAL_AUDIT.md`; `documentation/tasks/TASK-M6C.1_DOCUMENTATION_UPDATE.md`; `documentation/01_CENTRAL_TASK_REGISTRY.md`; `PROJECT_STATE.md`; `CHANGELOG.md`; `WHAT_I_LEARNED.md`; `documentation/pipeline/TEST_PIPELINE_RUN_LOG.md`; `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md`; prior Cursor evidence under `documentation/codex/model-routing/cursor-worker-runs/WF-M6C1-CURSOR-20260713-R1/` through `R3/`; `documentation/codex/model-routing/cursor_delegation_log.jsonl`.
 
-Tests / validation performed: combined BaseTransport, concrete transport, resolver, OpenAI/Gemini/Ollama flag-routing, gateway, and runner matrix PASS (`63 passed`); manual enabled Berlin-weather smokes for OpenAI, Gemini, and Ollama PASS with rendered `Quelle: Open-Meteo`; M6B.5/M6B.6/M6B.7 final-audit validators PASS; Phase-B final-audit validator PASS; documentation validator PASS; staged diff check PASS; backup branch equality PASS; direct `origin/codex-sync` remote verification PASS.
+Tests / validation performed: precheck PASS; syntax compile PASS; exact policy/transport selection PASS (`6 passed`); broad focused Websearch selection PASS (`111 passed, 6 deselected`); manual enabled Gemini smoke PASS; execution-result, final-audit, and documentation-update validators PASS; `git diff --check` PASS. `5.6 Sol` is unavailable for this ChatGPT Codex account, so the final audit used documented `5.6 Terra/high` fallback.
 
-Open risks: OpenRouter transport work remains Epic 6; Codex/OAuth remains Epic 5; legacy service removal and provider-branch reduction remain Phase C. The shared Cursor delegate still forwards unsupported `--cursor-pool`; direct Cursor worker fallback remains the documented workaround. `documentation/logs/` remains local and untracked.
+Open risks: T-C1 does not authorize a production-wide flag flip or close the parent Phase-C Spec. Cursor shared delegation still forwards unsupported `--cursor-pool`; this is non-blocking worker tooling debt. `documentation/logs/` remains local and untracked. No commit, push, or CURRENT_STATE sync occurred; remote `origin/codex-sync` does not yet contain this snapshot.
 
-Next recommended step for ChatGPT: treat the Phase-B direct-provider foundation as closed and do not route OpenRouter, Codex/OAuth, or Phase-C cleanup back into TASK-M6B.
+Next recommended step for ChatGPT: treat only T-C1 as closed; retain T-C2 through T-C4 as future Phase-C work.
 
-Next recommended step for Codex: use `janus-skill-router` on `5.6 Terra`, medium intelligence, to choose one next target: Epic 6 OpenRouter transport, Epic 5 Codex/OAuth transport, or Phase-C legacy cleanup. Do not implement until the selected target has its own bound artifacts and precheck.
+Next recommended step for Codex: use `janus-git-governance` on `5.6 Terra`, high intelligence, for one explicit commit, push, and `codex-sync` approval.
 
-Last updated: `2026-07-13 17:31 +02:00`.
+Last updated: `2026-07-13 18:47 +02:00`.
 
 ## Current Snapshot Update
 As of `2026-07-12 16:49 +02:00`, BACKLOG-126 is selected `IN PROGRESS` with a bounded preimplementation handoff. Dashboard sync passed (`total=86`, `active=12`, `done=74`, `routing_missing=2`). No gateway code changed.
