@@ -18,7 +18,6 @@ if TYPE_CHECKING:
     from backend.llm_providers.transports.gemini_native import GeminiNativeTransport
 
 from .compiler import GeminiCompiler
-from .link_renderer import get_link_renderer
 from .constants import LIST_QUERY_TOKENS
 from ..shared.base_gateway import BaseProviderGateway
 from ..shared.moa import MOA_MODEL_HIERARCHY
@@ -45,7 +44,6 @@ class GeminiGateway(BaseProviderGateway):
     def __init__(self) -> None:
         self.service = GeminiServiceProvider()
         self.compiler = GeminiCompiler()
-        self._link_renderer = get_link_renderer()
 
     @staticmethod
     def _sanitize_generate_response_kwargs(

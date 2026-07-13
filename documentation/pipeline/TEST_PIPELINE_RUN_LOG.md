@@ -1,5 +1,12 @@
 # Janus Test Pipeline Run Log
 
+## 2026-07-13 - TASK-M6C.2 response postprocessor extraction validation
+
+- Marker: `TASK-M6C.2`.
+- Result: PASS - shared response-postprocessor and focused transport-gateway suite `24 passed`; syntax and scoped-diff checks PASS; enabled Gemini Berlin-weather smoke returned normal Open-Meteo output.
+- Final audit: `documentation/tasks/TASK-M6C.2_FINAL_AUDIT.md` (PASS).
+- Scope: central post-silo provider-family finishing only; OpenAI release-list links and Gemini preserved metadata rendering. T-C3/T-C4 remain separate.
+
 ## 2026-07-13 - TASK-M6C.1 Websearch boundary decoupling validation
 
 - Marker: `TASK-M6C.1`.

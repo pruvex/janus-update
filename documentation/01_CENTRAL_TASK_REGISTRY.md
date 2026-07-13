@@ -4,6 +4,18 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-M6C.2 - Shared OpenAI and Gemini response postprocessor extraction
+
+- **Status**: DONE WITH DOCUMENTED FOLLOW-UPS
+- **Final Audit**: `documentation/tasks/TASK-M6C.2_FINAL_AUDIT.md` (PASS)
+- **Spec**: `documentation/SPEC/Spec Done/M6C2_response_postprocessor_extraction.md`
+- **Parent Task**: `documentation/tasks/TASK-M6_transport_phase_c.md`
+- **Task Breakdown / Precheck / Execution**: `documentation/tasks/TASK-M6C.2_task_breakdown.md`; `documentation/tasks/TASK-M6C.2_preimplementation_check.md`; `documentation/tasks/TASK-M6C.2_execution_result.md`
+- **Audit Package**: `documentation/tasks/TASK-M6C.2_AUDIT_PACKAGE.md`
+- **Validation**: focused response-postprocessor and transport-gateway suite (`24 passed`), syntax, scoped diff, and enabled Gemini Berlin-weather smoke with Open-Meteo PASS.
+- **Scope**: `llm_gateway.reason_and_respond` centrally selects the provider-family finisher after silo return; OpenAI release-list repair and Gemini preserved-metadata rendering only. Gateway-owned quality, cost, and synthesis behavior remain in place.
+- **Follow-up**: T-C3 and T-C4 remain separate and open; this marker does not close Phase C or the parent transport-refactor Spec.
+
 ### TASK-M6C.1 - Websearch provider coercion boundary decoupling
 
 - **Status**: DONE WITH DOCUMENTED FOLLOW-UPS

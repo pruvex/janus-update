@@ -36,6 +36,12 @@ TASK-M6C
 - Reason:
   - `T-C1` is the first approved Phase-C table entry and directly establishes the Exit-C condition that Websearch must run without provider coercion inside the executor. The current seam is provider-sensitive and requires a bounded high-reasoning precheck before code changes.
 
+### TASK-M6C.2 Extract shared response post-processors
+
+- Completion: `DONE` after `documentation/tasks/TASK-M6C.2_FINAL_AUDIT.md` (`PASS`). The central `backend/services/llm_gateway.py:reason_and_respond` return seam now owns the registered OpenAI-compatible release-list link repair and Gemini-native preserved-metadata rendering.
+- Validation: focused registry and transport-gateway suite `24 passed`, syntax, scoped diff, and enabled Gemini Berlin-weather smoke with `Quelle: Open-Meteo` PASS.
+- Scope: T-C2 only; Websearch policy, fallback, model policy, transport enablement, tool execution, streaming, persistence, UI, T-C3, and T-C4 remain unchanged.
+
 ## Deferred Phase-C Work
 
-- `T-C2` response post-processor extraction, `T-C3` provider-branch removal, and `T-C4` provider parity tests remain separate later tasks. They are not released by this artifact.
+- `T-C3` provider-branch removal and `T-C4` provider parity tests remain separate later tasks. They are not released by this artifact.

@@ -1,0 +1,22 @@
+{
+  "workflow_id": "M6C2-EXECUTION-PATCH-CANDIDATE-001",
+  "bound_skill_context": "janus-executioner",
+  "target_task": "TASK-M6C.2",
+  "spec_path": "documentation/SPEC/Spec Done/M6C2_response_postprocessor_extraction.md",
+  "precheck_status": "PRE-CHECK PASSED",
+  "allowed_files": [
+    "backend/llm_providers/shared/response_postprocessors.py",
+    "backend/services/llm_gateway.py",
+    "backend/llm_providers/openai/gateway.py",
+    "backend/llm_providers/gemini/gateway.py",
+    "backend/tests/test_response_postprocessors.py"
+  ],
+  "max_touched_files": 5,
+  "mini_test_plan": [
+    "python -m pytest backend/tests/test_response_postprocessors.py backend/tests/test_transport_layer_openai_gateway.py backend/tests/test_transport_layer_gemini_gateway.py -q",
+    "python -m py_compile backend/services/llm_gateway.py backend/llm_providers/openai/gateway.py backend/llm_providers/gemini/gateway.py backend/llm_providers/shared/response_postprocessors.py",
+    "git diff --check"
+  ],
+  "manual_validation_gate": "Codex must request a Gemini weather-chat smoke after local checks pass; visible source-backed output with links/attribution must remain intact.",
+  "delegation_question": "Produce one bounded patch candidate only: centralize the already-existing OpenAI release-list link repair and Gemini grounding/link rendering after selected_silo.reason_and_respond returns in backend/services/llm_gateway.py. Preserve each provider response contract and gateway-owned quality/cost/synthesis logic. Do not modify Websearch policy, fallback, transports, tool execution, streaming, persistence, UI, T-C3, or T-C4. Add hermetic tests for OpenAI links, Gemini metadata/link rendering, missing metadata, and an unregistered provider."
+}

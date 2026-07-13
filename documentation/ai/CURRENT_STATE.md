@@ -1,25 +1,25 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
-As of `2026-07-13 19:02 +02:00`, `TASK-M6C.1` is documentation-closed after final-audit `PASS` and published as Git checkpoint `8d5f6f447` on `backup/codex/m6-transport-prep`. The ChatGPT snapshot is synchronized on `origin/codex-sync` through the approved current-state publication. Phase-C T-C1 alone is complete; T-C2 through T-C4, OpenRouter Epic 6, and Codex/OAuth Epic 5 remain separate and open.
+As of `2026-07-13 20:15 +02:00`, `TASK-M6C.2` is final-audited `PASS` and documentation-synchronized. The central `llm_gateway.reason_and_respond` return seam now selects the shared provider-family finisher: OpenAI-compatible release-list links and Gemini-native preserved-metadata rendering remain visible. T-C3 and T-C4 remain open; Phase C and the parent transport-refactor Spec are not complete.
 
-Current goal: select and route the next independent Phase-C slice; no T-C2 through T-C4 implementation is authorized by the T-C1 closeout.
+Current goal: prepare the explicit Git checkpoint for the completed C2 slice, then continue with the next Phase-C task.
 
-Active phase: `janus-git-governance` checkpoint and CURRENT_STATE sync complete, canonical state `PASS`.
+Active phase: `janus-documentation-update`, canonical state `PASS`.
 
-Last Codex work: recorded the T-C1 completion in the task, central registry, project state, changelog, test-pipeline log, and long-term learning. The completion documents the default-off executor preservation, flag-on `websearch_wrapper` policy boundary, `111 passed, 6 deselected` focused selection, and successful enabled Gemini Open-Meteo smoke without claiming Phase-C completion.
+Last Codex work: passed the enabled Gemini Berlin-weather smoke at 20:03 with normal Open-Meteo output, created the C2 audit package, passed the final audit, recorded C2 in the Phase-C task, central registry, project state, changelog, pipeline log, and moved the completed C2 delta Spec into `documentation/SPEC/Spec Done/`.
 
-Changed files: `backend/services/tool_executor.py`; `backend/tool_registry.py`; `backend/tests/test_backlog_007_tool_routing_performance.py`; `backend/tests/tools/test_websearch.py`; `documentation/tasks/TASK-M6_transport_phase_c.md`; `documentation/tasks/TASK-M6C.1_task_breakdown.md`; `documentation/tasks/TASK-M6C.1_preimplementation_check.md`; `documentation/tasks/TASK-M6C.1_execution_result.md`; `documentation/tasks/TASK-M6C.1_AUDIT_PACKAGE.md`; `documentation/tasks/TASK-M6C.1_FINAL_AUDIT.md`; `documentation/tasks/TASK-M6C.1_DOCUMENTATION_UPDATE.md`; `documentation/01_CENTRAL_TASK_REGISTRY.md`; `PROJECT_STATE.md`; `CHANGELOG.md`; `WHAT_I_LEARNED.md`; `documentation/pipeline/TEST_PIPELINE_RUN_LOG.md`; `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md`; prior Cursor evidence under `documentation/codex/model-routing/cursor-worker-runs/WF-M6C1-CURSOR-20260713-R1/` through `R3/`; `documentation/codex/model-routing/cursor_delegation_log.jsonl`.
+Changed files in this closeout: bounded C2 source/tests; C2 task, precheck, execution, audit, and final-audit artifacts; `documentation/tasks/TASK-M6_transport_phase_c.md`; `documentation/01_CENTRAL_TASK_REGISTRY.md`; `PROJECT_STATE.md`; `CHANGELOG.md`; `documentation/pipeline/TEST_PIPELINE_RUN_LOG.md`; `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md`. `WHAT_I_LEARNED.md` was intentionally unchanged because existing M6 transport boundary patterns already cover this behavior. Local-only health reports and `documentation/logs/` remain untracked and excluded.
 
-Tests / validation performed: precheck PASS; syntax compile PASS; exact policy/transport selection PASS (`6 passed`); broad focused Websearch selection PASS (`111 passed, 6 deselected`); manual enabled Gemini smoke PASS; execution-result, final-audit, and documentation-update validators PASS; `git diff --check` PASS. `5.6 Sol` is unavailable for this ChatGPT Codex account, so the final audit used documented `5.6 Terra/high` fallback.
+Tests / validation performed: C2 Spec/task/precheck/execution/final-audit validators PASS; focused response-postprocessor and transport-gateway suite `24 passed`; scoped `py_compile` PASS; `git diff --check` PASS; manual enabled Gemini Berlin-weather smoke PASS.
 
-Open risks: T-C1 does not authorize a production-wide flag flip or close the parent Phase-C Spec. Cursor shared delegation still forwards unsupported `--cursor-pool`; this is non-blocking worker tooling debt. `documentation/logs/` remains local and untracked by design.
+Open risks: C2 intentionally retains the old OpenAI helper definition as an inactive compatibility surface; active post-response invocation is central. The shared Cursor delegate still forwards unsupported `--cursor-pool auto_composer`; it is a separate non-authoritative tooling defect. No production-wide flag flip is authorized. `documentation/logs/` remains local and untracked by design.
 
-Next recommended step for ChatGPT: treat only T-C1 as closed; retain T-C2 through T-C4 as future Phase-C work. `origin/codex-sync` is the current remote snapshot truth after this update.
+Next recommended step for ChatGPT: approve the C2 Git checkpoint only after reviewing the local final-audit/doc-sync status.
 
-Next recommended step for Codex: use `janus-spec-to-task` or `janus-task-breakdown` on `5.6 Terra`, high intelligence, only after selecting the next Phase-C task.
+Next recommended step for Codex: use `janus-git-governance` on `5.6 Terra`, high intelligence, for a targeted C2 commit; then continue C3 routing.
 
-Last updated: `2026-07-13 19:02 +02:00`.
+Last updated: `2026-07-13 20:15 +02:00`. No commit, push, or CURRENT_STATE sync occurred for this block; remote state remains the prior T-C1-closeout snapshot.
 
 ## Current Snapshot Update
 As of `2026-07-12 16:49 +02:00`, BACKLOG-126 is selected `IN PROGRESS` with a bounded preimplementation handoff. Dashboard sync passed (`total=86`, `active=12`, `done=74`, `routing_missing=2`). No gateway code changed.

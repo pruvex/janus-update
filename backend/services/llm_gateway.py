@@ -267,7 +267,15 @@ async def reason_and_respond(
 
             silo_args["provider_transport"] = OllamaLocalTransport(gateway_service)
 
-    return await selected_silo.reason_and_respond(**silo_args)
+    response = await selected_silo.reason_and_respond(**silo_args)
+    from backend.llm_providers.shared.response_postprocessors import postprocess_provider_response
+
+    return postprocess_provider_response(
+        provider_key,
+        response,
+        user_prompt=user_prompt,
+        tool_results=tool_results,
+    )
 
 
 def get_provider(provider_name: str):

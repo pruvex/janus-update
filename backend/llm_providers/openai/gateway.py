@@ -12,6 +12,7 @@ from backend.llm_providers.shared.utils import (
     _find_best_source_for_release_title,
     _normalize_match_key,
 )
+from backend.llm_providers.shared.response_postprocessors import ensure_openai_release_list_links
 
 from .service import OpenAIServiceProvider
 
@@ -207,11 +208,6 @@ class OpenAIGateway(BaseProviderGateway):
             response,
             chat_history,
             allow_pdf_enrichment=allow_pdf_enrichment,
-        )
-        response = self.ensure_release_list_links_in_text_response(
-            response,
-            user_prompt=user_prompt,
-            tool_results=tool_results,
         )
         response = self.ensure_combined_release_response_structure(
             response,

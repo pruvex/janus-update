@@ -1,12 +1,13 @@
 ﻿# PROJECT_STATE.md (Diamond-OS V0.4.31-beta.82)
 **Zweck:** Schlanke Triage-Uebersicht fuer den aktuellen Projektzustand.
-**Aktualisiert:** 2026-07-13 (TASK-M6C.1 final auditiert und dokumentiert)
+**Aktualisiert:** 2026-07-13 (TASK-M6C.2 final auditiert und dokumentiert)
 
 ---
 
 ## CURRENT_SESSION_DELTA (Kompakt)
 
 | Epic / Task | Status | Kurzstand |
+| **TASK-M6C.2 Response Post-Processor Extraction** | DONE WITH DOCUMENTED FOLLOW-UPS | Der zentrale `llm_gateway.reason_and_respond`-Rueckgabeseam wendet jetzt eine gemeinsame Provider-Familien-Registry an: OpenAI-kompatible Release-Listen behalten ihre Links, Gemini-native Antworten rendern erhaltene Grounding-Metadaten. Gateway-owned Quality-, Kosten- und Syntheseverhalten bleibt unveraendert. Validation: fokussierte Registry-/Transport-Gateway-Suite `24 passed`, Syntax, Diff und aktivierter Gemini-Berlin-Wetter-Smoke mit Open-Meteo PASS. T-C3/T-C4 bleiben offen; Phase C ist nicht abgeschlossen. |
 | **TASK-M6C.1 Websearch Boundary Decoupling** | DONE WITH DOCUMENTED FOLLOW-UPS | Phase-C T-C1 ist final auditiert PASS. Bei `TRANSPORT_WEBSEARCH_DECOUPLED=false` bleibt die bestehende Executor-Policy erhalten; bei `true` reicht der Executor nur privaten Kontext weiter und `backend.tool_registry:websearch_wrapper` wendet die bestehende Provider-/Modell-Safety am konsumierten Websearch-Seam an. Validation: fokussierte Websearch-Suite `111 passed, 6 deselected`, Syntax, Diff und aktivierter Gemini-Berlin-Wetter-Smoke mit Open-Meteo PASS. T-C2 bis T-C4 bleiben offen; Phase C ist nicht abgeschlossen. |
 | **TASK-M6B Phase-B Direct-Provider Foundation** | DONE WITH DOCUMENTED FOLLOW-UPS | OpenAI, Gemini und Ollama besitzen default-off, flag-gesteuerte Transport-Delegation unter Beibehaltung ihrer Gateway-Policy und Response-Vertraege. Kombinierte Matrix `63 passed`; aktivierte Berlin-Wetter-Smokes fuer alle drei Provider PASS. OpenRouter bleibt Epic 6, Codex/OAuth Epic 5; Legacy-Entfernung und Branch-Reduktion bleiben Phase C. |
 | **TASK-M6B.7 Ollama Transport Delegation** | DONE WITH NON-BLOCKING FOLLOW-UP | Alle direkten Ollama-Gateway-Aufrufe verwenden bei aktiviertem Flag den duennen `OllamaLocalTransport`; Flag-off bleibt legacy. Atomic/AgentRuntime-Logik, Tool-Ausfuehrung, Filter, Budget und Response-Verhalten bleiben unveraendert. Validation: `19 passed`, Syntax, Diff und manueller Ollama-Wetter-Smoke PASS. |
