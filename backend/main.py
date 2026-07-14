@@ -386,6 +386,20 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.error(f"Failed to pre-initialize gateway silos: {e}")
 
+    # 2.7. Official Codex App Server lifecycle boundary (lazy; no live login in this slice)
+    codex_app_server = None
+    try:
+        from backend.llm_providers.codex_app_server import create_codex_app_server_lifecycle
+
+        codex_app_server = create_codex_app_server_lifecycle()
+        app.state.codex_app_server = codex_app_server
+        if codex_app_server.configured:
+            logger.info("Codex App Server lifecycle boundary initialized.")
+        else:
+            logger.info("Codex App Server lifecycle boundary is unavailable for this runtime.")
+    except Exception as e:
+        logger.error(f"Failed to initialize Codex App Server lifecycle boundary: {e}")
+
     # 3. Start FFmpeg download in background (NON-BLOCKING!)
     # We use a thread so the download doesn't block the server loop
     try:
@@ -629,6 +643,15 @@ async def lifespan(app: FastAPI):
 
     yield
     
+    # GRACEFUL SHUTDOWN: Close owned Codex App Server process
+    try:
+        from backend.llm_providers.codex_app_server import shutdown_codex_app_server
+
+        await shutdown_codex_app_server(getattr(app.state, "codex_app_server", None))
+        logger.info("Codex App Server lifecycle boundary shut down.")
+    except Exception as e:
+        logger.error(f"Error during Codex App Server shutdown: {e}")
+
     # GRACEFUL SHUTDOWN: Cancel memory cleanup task
     if cleanup_task:
         logger.info("Shutting down: Cancelling memory cleanup task...")

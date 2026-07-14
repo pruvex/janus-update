@@ -1,5 +1,11 @@
 # KNOWLEDGE BASE: WHAT I LEARNED
 
+## [SKIP] TASK-CHATGPT-CODEX.1 "Partial Codex runtime boundary does not yet establish a full provider pattern"
+- **Kontext:** Task-scoped final-audit documentation update for the isolated official Codex App Server lifecycle boundary (2026-07-14).
+- **Reason:** The validated rule is deliberately incomplete at feature level: settings UI, provider visibility, model entitlements, transport, privacy-send flow, and account UX remain separately gated Tasks `.2` through `.4`. Recording it as a general provider pattern now would overclaim unimplemented behavior.
+- **Tripwire:** When a later task connects the boundary to visible provider use, re-evaluate whether the combined managed-auth, entitlement, and no-fallback behavior has enough cross-slice evidence for a durable pattern.
+- **Epic:** TASK-CHATGPT-CODEX.1
+
 ## [PATTERN] #ExactChatContactFactsCanAutoApplyWhileMemoryWritesStayReviewable "Exact existing-contact chat facts can auto-apply safely when memory-origin writes stay on the proposal path"
 - **Kontext:** BACKLOG-108 / bestaetigtes Kontaktwissen aus Chat landet nicht im bestehenden Adressbuchkontakt (2026-06-07).
 - **Problem:** Bestätigte Kontaktfakten aus der Hintergrund-Faktenextraktion konnten bei bestehenden Kontakten unsichtbar im Memory-/Pending-Proposal-Seam hängen bleiben, obwohl der Nutzer im Chat bereits eine klare, direkte Bestätigung geliefert hatte.

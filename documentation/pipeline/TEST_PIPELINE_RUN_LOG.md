@@ -1,5 +1,12 @@
 # Janus Test Pipeline Run Log
 
+## 2026-07-14 - TASK-CHATGPT-CODEX.1 documentation marker
+
+- Marker: `TASK-CHATGPT-CODEX.1`.
+- Result: N/A WITH REASON - no standalone TestSpec/TestPlan/TestRun was generated for this bounded runtime-lifecycle task; the bound precheck, execution, debug, audit package, final audit, focused automated checks, headed Electron E2E, and manual Janus evidence are recorded in its task artifacts.
+- Final audit: `documentation/tasks/TASK-CHATGPT-CODEX.1_final_audit.md` (PASS).
+- Scope: task `.1` only. Settings UI, ChatGPT provider visibility, model entitlements, transport, and privacy-send flow remain separately parked in Tasks `.2` through `.4`.
+
 ## 2026-07-14 - TASK-M6.MERGE.1 M6-to-master integration closeout
 
 - Marker: `TASK-M6.MERGE.1`.

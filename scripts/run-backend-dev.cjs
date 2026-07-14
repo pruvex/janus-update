@@ -16,9 +16,31 @@ function resolvePython() {
   return { cmd: "python", args: [] };
 }
 
+function resolveCodexBackendEnvironment(projectRoot = process.cwd()) {
+  const runtimePath = path.join(
+    projectRoot,
+    "node_modules",
+    "@openai",
+    "codex-win32-x64",
+    "vendor",
+    "x86_64-pc-windows-msvc",
+    "bin",
+    "codex.exe"
+  );
+  const appDataRoot = process.env.APPDATA || path.join(require("os").homedir(), "AppData", "Roaming");
+  const codexHome = path.join(appDataRoot, "Janus Projekt", "codex-home");
+
+  return {
+    JANUS_CODEX_RUNTIME_PATH: runtimePath,
+    JANUS_CODEX_HOME: codexHome,
+    JANUS_CODEX_CREDENTIALS_STORE: "keyring",
+  };
+}
+
 function main() {
   const mode = process.argv[2] === "noreload" ? "noreload" : "reload";
   const python = resolvePython();
+  const codexEnv = resolveCodexBackendEnvironment();
   const uvicornArgs = [
     ...python.args,
     "-m",
@@ -38,8 +60,18 @@ function main() {
   runWithLogs(python.cmd, uvicornArgs, {
     label: "backend-start",
     logPrefix: "runtime_backend",
-    env: { PYTHONIOENCODING: "UTF-8", NODE_ENV: "development" },
+    env: {
+      PYTHONIOENCODING: "UTF-8",
+      NODE_ENV: "development",
+      ...codexEnv,
+    },
   });
 }
 
-main();
+module.exports = {
+  resolveCodexBackendEnvironment,
+};
+
+if (require.main === module) {
+  main();
+}

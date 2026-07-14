@@ -4,6 +4,15 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-CHATGPT-CODEX.1 - Official Codex access boundary
+
+- **Status**: DONE (task-scoped final audit PASS; parent feature remains active).
+- **Final Audit**: `documentation/tasks/TASK-CHATGPT-CODEX.1_final_audit.md` (PASS).
+- **Audit Package**: `documentation/tasks/TASK-CHATGPT-CODEX.1_AUDIT_PACKAGE.md`.
+- **Spec**: `documentation/SPEC/CHATGPT_OAUTH_PROVIDER_FEATURE_SPEC.md` (ACTIVE; Tasks `.2` through `.4` parked).
+- **Validation**: runtime/LLM/help `34 passed`; Electron boundary `7 passed`; headed capability E2E `2 passed`; build PASS; manual Janus PASS.
+- **Scope**: pinned official Windows Codex App Server runtime, Janus-only keyring-backed home, non-secret lifecycle boundary, redaction, packaging, and fail-closed behavior only. No ChatGPT settings UI, provider/model picker, transport, live login, or API-key fallback was delivered.
+
 ### BACKLOG-129 - Gemini streaming duplicate tool delta
 
 - **Status**: DONE.

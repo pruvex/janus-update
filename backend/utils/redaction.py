@@ -15,13 +15,24 @@ _SENSITIVE_KEY_RE = re.compile(
     r"refresh[-_]?token|id[-_]?token|secret|client[-_]?secret|password|passwd|webhook|"
     r"webhook[-_]?url|provider[-_]?key|prompt|user[-_]?prompt|system[-_]?prompt|"
     r"content|text|message|messages|file|file[-_]?payload|file[-_]?content|"
-    r"attachment|attachments|transcript|description)$",
+    r"attachment|attachments|transcript|description|auth[-_]?url|authorization[-_]?code|"
+    r"oauth[-_]?code|callback[-_]?code|oauth[-_]?state|callback[-_]?state|login[-_]?state|"
+    r"credential|credentials|"
+    r"credential[-_]?store|credential[-_]?container)$",
     re.IGNORECASE,
 )
 
 _TEXT_PATTERNS = (
     re.compile(r"\bBearer\s+[A-Za-z0-9._~+/=-]{8,}\b", re.IGNORECASE),
     re.compile(r"\b(?:Authorization|Cookie|Set-Cookie)\s*:\s*[^\r\n;]+", re.IGNORECASE),
+    re.compile(
+        r"(?:[?&])(?:code|state|authorization_code|oauth_token|access_token|refresh_token)=[^&\s\"']+",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r"https?://[^\s\"']*(?:/auth/|/oauth/|/callback)[^\s\"']*",
+        re.IGNORECASE,
+    ),
     re.compile(r"\bSECRET-[A-Za-z0-9._~+/=-]+\b", re.IGNORECASE),
     re.compile(r"\bsk-[A-Za-z0-9_\-]{12,}\b"),
     re.compile(r"\bAIza[0-9A-Za-z_\-]{20,}\b"),

@@ -5121,6 +5121,9 @@ class ChatOrchestrator:
                 ctx = await self._build_memory_context(ctx)
                 ctx = await self._try_routine_execution(ctx)
                 if ctx.workflow.skip_llm_generation:
+                    wf = ctx.workflow
+                    if not wf.final_text:
+                        wf.final_text = wf.final_text_to_generate
                     result = await self._finalize_response(ctx)
                     if isinstance(result, ExecutionResponse):
                         block_text = str(result.text or "")
@@ -5128,6 +5131,7 @@ class ChatOrchestrator:
                         block_text = str(result.get("text") or result.get("message") or "")
                     else:
                         block_text = str(result)
+                    block_text = block_text or str(wf.final_text or "") or str(wf.final_text_to_generate or "")
                     yield StreamEvent(type="stream_complete", content={"text": block_text})
                     for ev in self._iter_modal_request_stream_events(ctx):
                         yield ev

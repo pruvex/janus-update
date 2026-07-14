@@ -170,3 +170,62 @@ async def test_capability_overview_fast_path_fails_without_intent_logic(db_sessi
     response_text = response.get("text", "")
     assert "LLM response" in response_text, \
         "With Fast-Path disabled, response should be from LLM"
+
+
+def _build_help_orchestrator(db_session, tmp_path):
+    template_config = tmp_path / "template_config.json"
+    template_config.write_text(json.dumps({"active_personality": "ai_assistant"}), encoding="utf-8")
+    template_personalities = tmp_path / "template_personalities.json"
+    template_personalities.write_text(
+        json.dumps([{"id": "ai_assistant", "prompt": "Du bist Janus."}], ensure_ascii=False),
+        encoding="utf-8",
+    )
+    return ChatOrchestrator(
+        db=db_session,
+        context_manager=MagicMock(),
+        model_catalog={"gpt-5.4-nano": {}},
+        config_file_path=str(tmp_path / "config.json"),
+        template_config_file_path=str(template_config),
+        personalities_file_path=str(tmp_path / "personalities.json"),
+        template_personalities_file_path=str(template_personalities),
+    )
+
+
+@pytest.mark.asyncio
+async def test_capability_overview_stream_emits_non_empty_help_text(db_session, tmp_path, monkeypatch):
+    """Regression: help fast-path must emit non-empty stream_complete text for capability overview."""
+    from backend.data import crud
+
+    orchestrator = _build_help_orchestrator(db_session, tmp_path)
+
+    llm_gateway_mock = AsyncMock(
+        return_value={
+            "type": "text",
+            "text": "This should never be returned because Fast-Path skips LLM",
+            "raw_assistant_response": {"role": "assistant", "content": "should not be called"},
+        }
+    )
+    monkeypatch.setattr("backend.services.llm_gateway.reason_and_respond", llm_gateway_mock)
+    monkeypatch.setattr(orchestrator, "_trigger_fact_extraction", lambda *args, **kwargs: None)
+
+    chat = crud.create_chat(db_session, title="Help Stream Test")
+    request = schemas.ChatRequest(
+        prompt="Was kannst du?",
+        chat_id=chat.id,
+        provider="openai",
+        model="gpt-5.4-nano",
+        api_key="dummy",
+    )
+
+    stream_text = ""
+    async for event in orchestrator.handle_chat_request_stream(request):
+        if getattr(event, "type", None) == "stream_complete":
+            content = getattr(event, "content", None)
+            if isinstance(content, dict):
+                stream_text = str(content.get("text") or "")
+
+    assert llm_gateway_mock.call_count == 0, "Help fast-path must skip LLM generation in stream mode"
+    assert stream_text.startswith("## Das kann ich aktuell"), (
+        f"Expected capability help header in stream_complete, got: {stream_text[:120]!r}"
+    )
+    assert stream_text.strip(), "Capability overview stream_complete text must not be empty"

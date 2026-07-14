@@ -55,6 +55,18 @@ async function installInternalApiKeyRoute(page, internalKey) {
   await page.route('http://localhost:8001/api/**', handler);
 }
 
+/** Beta-Hinweis nur über sichtbare UI bestätigen, wenn das Modal nach localStorage.clear erscheint. */
+async function acknowledgeBetaPrivacyNoticeIfVisible(page) {
+  const betaPrivacyModal = page.locator('#beta-privacy-modal');
+  if (await betaPrivacyModal.isVisible()) {
+    await page.getByRole('checkbox', {
+      name: /Ich habe verstanden, welche Daten Janus in der Beta verarbeitet/i,
+    }).check();
+    await page.getByRole('button', { name: 'Akzeptieren' }).click();
+    await expect(betaPrivacyModal).toBeHidden();
+  }
+}
+
 /** Gleicher Sendepfad wie Form-Submit; dock-bar blockiert echte Klicks auf „Senden“. */
 async function sendChatMessageWindowA(page) {
   await page.evaluate(async () => {
@@ -63,9 +75,12 @@ async function sendChatMessageWindowA(page) {
   });
 }
 
+/** Headed Electron setup + capability fast-path stream exceeds Playwright's 30s default on this runtime. */
+const CAPABILITY_E2E_TEST_TIMEOUT_MS = 60_000;
+
 test.describe('Capability Overview E2E Tests (TASK-069)', () => {
   // Gemeinsame sqlite e2e DB + Backend: parallele Worker führen zu Timeouts bei sendMessage/stream
-  test.describe.configure({ mode: 'serial' });
+  test.describe.configure({ mode: 'serial', timeout: CAPABILITY_E2E_TEST_TIMEOUT_MS });
 
   test.beforeEach(async ({ page }) => {
     const { config } = loadJanusAppDataConfig();
@@ -93,9 +108,12 @@ test.describe('Capability Overview E2E Tests (TASK-069)', () => {
     // 2. Warte, bis die App stabil geladen ist (Neuer Chat Button sichtbar)
     await expect(page.getByRole('button', { name: 'Neuer Chat' })).toBeVisible({ timeout: 15000 });
 
+    // 2b. Beta-Datenschutzmodal bestätigen, falls nach localStorage.clear sichtbar
+    await acknowledgeBetaPrivacyNoticeIfVisible(page);
+
     // 3. Scoping auf Fenster A, um Eindeutigkeit im Split-View sicherzustellen
     const chatInput = page.getByRole('region', { name: 'Chat-Fenster A' })
-                      .getByPlaceholder(/Nachricht an Janus senden/);
+                      .getByPlaceholder(/Nachricht an Janus schreiben/);
     await expect(chatInput).toBeVisible({ timeout: 15000 });
 
     // 4. Fenster A aktivieren (createNewChat nutzt getActiveWindowId)
@@ -119,7 +137,7 @@ test.describe('Capability Overview E2E Tests (TASK-069)', () => {
   test('Capability Overview: Fast-Path für "Was kannst du?"', async ({ page }) => {
     // Scoping auf Fenster A, um Eindeutigkeit im Split-View sicherzustellen
     const chatInput = page.getByRole('region', { name: 'Chat-Fenster A' })
-                      .getByPlaceholder(/Nachricht an Janus senden/);
+                      .getByPlaceholder(/Nachricht an Janus schreiben/);
 
     // 1. Trigger-Phrase eingeben
     await chatInput.fill("Was kannst du?");
@@ -146,7 +164,7 @@ test.describe('Capability Overview E2E Tests (TASK-069)', () => {
   test('Capability Overview: Kalender-Kategorie sichtbar', async ({ page }) => {
     // Scoping auf Fenster A, um Eindeutigkeit im Split-View sicherzustellen
     const chatInput = page.getByRole('region', { name: 'Chat-Fenster A' })
-                      .getByPlaceholder(/Nachricht an Janus senden/);
+                      .getByPlaceholder(/Nachricht an Janus schreiben/);
 
     await chatInput.fill("Was kannst du?");
     await sendChatMessageWindowA(page);

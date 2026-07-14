@@ -6,6 +6,7 @@ Healthcheck-Findings aus `SYSTEM HEALTH Ã¢â‚¬â€œ HYGIENE CHECK` dÃƒ�
 
 ## Spec Closure Notes
 
+- `TASK-CHATGPT-CODEX.1`: N/A - task-scoped final-audit PASS for a feature-generated runtime boundary with no bound Backlog item. The parent ChatGPT-provider feature remains active because Tasks `.2` through `.4` are parked.
 - `TASK-SPEC15`: N/A - Spec-generated feature closure with no bound Backlog item; the final audit and documentation sync were completed directly on the Spec/task artifacts.
 - `TASK-SPEC16`: N/A - Spec-generated address-book polish closure with no bound Backlog item; the final audit and documentation sync were completed directly on the Spec/task artifacts.
 

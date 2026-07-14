@@ -1,3 +1,63 @@
+const path = require('path');
+const os = require('os');
+
+const CODEX_RUNTIME_VENDOR_RELATIVE = path.join(
+    'vendor',
+    'x86_64-pc-windows-msvc',
+    'bin',
+    'codex.exe'
+);
+const CODEX_PACKAGED_RESOURCE_DIR = 'codex-runtime';
+const JANUS_CODEX_HOME_SEGMENT = path.join('Janus Projekt', 'codex-home');
+
+function getJanusCodexHomePath(appDataRoot = process.env.APPDATA) {
+    const root = appDataRoot || path.join(os.homedir(), 'AppData', 'Roaming');
+    return path.join(root, JANUS_CODEX_HOME_SEGMENT);
+}
+
+function getDevelopmentCodexRuntimePath(projectRoot = __dirname) {
+    return path.join(
+        projectRoot,
+        'node_modules',
+        '@openai',
+        'codex-win32-x64',
+        CODEX_RUNTIME_VENDOR_RELATIVE
+    );
+}
+
+function getPackagedCodexRuntimePath(resourcesPath = process.resourcesPath) {
+    return path.join(resourcesPath, CODEX_PACKAGED_RESOURCE_DIR, CODEX_RUNTIME_VENDOR_RELATIVE);
+}
+
+function getCodexRuntimeExecutablePath(options = {}) {
+    const isDev = options.isDev ?? process.env.NODE_ENV === 'development';
+    const projectRoot = options.projectRoot ?? __dirname;
+    const resourcesPath = options.resourcesPath ?? process.resourcesPath;
+    return isDev
+        ? getDevelopmentCodexRuntimePath(projectRoot)
+        : getPackagedCodexRuntimePath(resourcesPath);
+}
+
+function buildCodexBackendEnvironment(options = {}) {
+    const isDev = options.isDev ?? process.env.NODE_ENV === 'development';
+    const projectRoot = options.projectRoot ?? __dirname;
+    const resourcesPath = options.resourcesPath ?? process.resourcesPath;
+    const appDataRoot = options.appDataRoot ?? process.env.APPDATA;
+    const runtimePath = getCodexRuntimeExecutablePath({ isDev, projectRoot, resourcesPath });
+    const codexHome = options.userDataPath
+        ? path.join(options.userDataPath, 'codex-home')
+        : getJanusCodexHomePath(appDataRoot);
+
+    return {
+        JANUS_CODEX_RUNTIME_PATH: runtimePath,
+        JANUS_CODEX_HOME: codexHome,
+        JANUS_CODEX_CREDENTIALS_STORE: 'keyring',
+    };
+}
+
+const CODEX_RUNTIME_HELPERS_ONLY = process.env.JANUS_CODEX_RUNTIME_HELPERS_ONLY === '1';
+
+if (!CODEX_RUNTIME_HELPERS_ONLY) {
 console.log('Main process: Script started (Root main.electron.js)'); // Unique identifier
 
 const { app, BrowserWindow, ipcMain, dialog, Menu, MenuItem, net, session, shell, protocol } = require('electron');
@@ -8,7 +68,6 @@ const { app, BrowserWindow, ipcMain, dialog, Menu, MenuItem, net, session, shell
 // startup instability without measurable benefit for YouTube embedding.
 // ============================================================
 app.commandLine.appendSwitch('disable-features', 'IsolateOrigins,site-per-process');
-const path = require('path');
 const fs = require('fs');
 const http = require('http'); // For health check
 const { spawn } = require('child_process');
@@ -169,10 +228,15 @@ async function startBackend(mainWindow) {
     
     // Add a small delay to allow the port to be released
     setTimeout(() => {
+        const codexEnv = buildCodexBackendEnvironment({ userDataPath: app.getPath('userData') });
         backendProcess = spawn(backendPath, [], {
             cwd: path.dirname(backendPath), // Set working directory
             stdio: ['ignore', 'pipe', 'pipe'],
-            windowsHide: true
+            windowsHide: true,
+            env: {
+                ...process.env,
+                ...codexEnv,
+            },
         });
 
         // Log stdout to electron-log
@@ -1275,3 +1339,14 @@ ipcMain.on('update:dismiss-normal', () => {
 });
 
 app.on('will-quit', stopBackend);
+}
+
+module.exports = {
+    CODEX_RUNTIME_VENDOR_RELATIVE,
+    CODEX_PACKAGED_RESOURCE_DIR,
+    getJanusCodexHomePath,
+    getDevelopmentCodexRuntimePath,
+    getPackagedCodexRuntimePath,
+    getCodexRuntimeExecutablePath,
+    buildCodexBackendEnvironment,
+};

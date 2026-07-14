@@ -76,6 +76,9 @@
     "electron-log": "^5.4.3",
     "electron-updater": "^6.7.3"
   },
+  "optionalDependencies": {
+    "@openai/codex": "0.144.4"
+  },
   "build": {
     "appId": "de.pruvex.janus",
     "productName": "Janus Projekt",
@@ -117,6 +120,14 @@
       {
         "from": "dist/janus_backend.exe",
         "to": "backend/janus_backend.exe"
+      },
+      {
+        "from": "node_modules/@openai/codex-win32-x64/vendor/x86_64-pc-windows-msvc/bin/codex.exe",
+        "to": "codex-runtime/vendor/x86_64-pc-windows-msvc/bin/codex.exe"
+      },
+      {
+        "from": "licenses/openai-codex/LICENSE.txt",
+        "to": "codex-runtime/LICENSE.txt"
       }
     ]
   }

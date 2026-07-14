@@ -1,6 +1,489 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-14 17:17:00 +02:00`, documentation synchronization for the final-audit-PASS `TASK-CHATGPT-CODEX.1` is complete. The parent ChatGPT-provider feature remains explicitly partial and active; Tasks `.2` through `.4` stay parked.
+
+Current goal: retain the documented audited runtime boundary until the user explicitly selects the next separately gated ChatGPT-provider task.
+
+Active phase: `janus-documentation-update`, canonical state `PASS` for Task `.1` and `HANDOFF` for the parent feature's remaining tasks.
+
+Last Codex work: recorded `.1` as task-scoped DONE/PASS in the parent task file, parent Spec implementation status, central task registry, and project-state delta. The final-audit, audit-package, execution/debug, validation, and manual Janus evidence paths are bound. The parent Spec was not moved to `Spec Done` and its Definition of Done was not altered because settings UI, visible provider/model selection, transport, privacy-send flow, and account UX remain future work.
+
+Changed files: `documentation/tasks/TASK-CHATGPT-CODEX-PROVIDER.md`; `documentation/SPEC/CHATGPT_OAUTH_PROVIDER_FEATURE_SPEC.md`; `documentation/01_CENTRAL_TASK_REGISTRY.md`; `PROJECT_STATE.md`; `CHANGELOG.md`; `WHAT_I_LEARNED.md`; `documentation/backlog/BACKLOG.md`; `documentation/pipeline/TEST_PIPELINE_RUN_LOG.md`; `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md`.
+
+Tests / validation performed: final-audit validator PASS; `validate_doc_update.py --marker TASK-CHATGPT-CODEX.1` PASS; scoped and overall `git diff --check` PASS. Earlier bound runtime/LLM/help `34 passed`, Electron `7 passed`, headed E2E `2 passed`, build PASS, and manual Janus PASS remain referenced rather than rerun.
+
+Open risks: only the isolated official runtime boundary is delivered. The product does not yet show a `Mit ChatGPT anmelden` button, a ChatGPT provider, or entitled models. Existing unrelated embedding-stack and `session_search` manifest warnings remain outside the task scope. No commit, push, release, or remote sync is authorized.
+
+Next recommended step for ChatGPT: treat `.1` as audited locally but not remotely synchronized. The next product step, if selected, is `TASK-CHATGPT-CODEX.2` through a fresh task-breakdown and preimplementation gate.
+
+Next recommended step for Codex: recommend `janus-git-governance` only if the user asks for a checkpoint commit; otherwise wait for the user to select `.2` or another task.
+
+Last updated: `2026-07-14 17:17:00 +02:00`. No commit, push, or `origin/codex-sync` publication occurred, so remote state may not contain this documentation synchronization.
+
+## Current Snapshot Update
+As of `2026-07-14 17:13:00 +02:00`, `TASK-CHATGPT-CODEX.1` passed final audit as the completed, isolated official Codex App Server runtime/lifecycle boundary. The parent ChatGPT-provider feature remains active: Tasks `.2` through `.4` are intentionally parked and are not implemented, audited, or release-ready.
+
+Current goal: synchronize documentation for the audited `.1` delivery while preserving the parent feature's partial completion state.
+
+Active phase: `janus-final-audit`, canonical state `HANDOFF` to `janus-documentation-update`.
+
+Last Codex work: accepted the operator's manual Janus PASS (new chat → `Was kannst du?` → complete capability overview visible), refreshed the execution result and compact audit package with the resolved debug evidence, and performed the bounded `.1` final audit. The official runtime remains pinned and fail-closed: Janus-only `CODEX_HOME`, keyring-only managed auth, explicit bundled Windows runtime, non-secret state boundary, API-key environment removal, redaction, and lifecycle tests. No live ChatGPT login, settings UI, model picker, provider transport, privacy-send flow, or account-switch UI was added.
+
+Changed files: `documentation/tasks/TASK-CHATGPT-CODEX.1_execution_result.md`; `documentation/tasks/TASK-CHATGPT-CODEX.1_validation_summary.md`; `documentation/tasks/TASK-CHATGPT-CODEX.1_AUDIT_PACKAGE.md`; `documentation/tasks/TASK-CHATGPT-CODEX.1_final_audit.md`; `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md`, alongside the previously audited `.1` implementation and debug files.
+
+Tests / validation performed: final combined runtime/LLM/help regression PASS (`34 passed`); Electron boundary PASS (`7 passed`); exact headed capability E2E PASS (`2 passed`); build PASS; debug-result validator PASS; final-audit validator PASS; manual Janus evidence PASS; scoped and overall diff checks PASS.
+
+Open risks: the user-facing ChatGPT provider is not yet exposed or usable because Tasks `.2` through `.4` are intentionally pending. Existing local embedding dependency warnings and the unrelated `session_search` manifest naming failure remain outside the `.1` audited scope. No commit, push, release, or remote synchronization is authorized.
+
+Next recommended step for ChatGPT: do not infer that GitHub or `origin/codex-sync` has this state. Review the final-audit artifact only as a partial feature delivery; the complete ChatGPT provider still requires separately gated Tasks `.2` through `.4`.
+
+Next recommended step for Codex: after user approval, use `janus-documentation-update` on `5.6 Terra/medium` in the same chat to record `.1` as audited without setting the parent Spec to DONE. Then recommend a separate task-breakdown/precheck gate only when the user chooses Task `.2`.
+
+Last updated: `2026-07-14 17:13:00 +02:00`. No commit, push, or `origin/codex-sync` publication occurred, so remote state may not contain this final audit or snapshot.
+
+## Current Snapshot Update
+As of `2026-07-14 17:05:30 +02:00`, all bounded debug slices for the mandatory headed capability-overview gate are resolved. `TASK-CHATGPT-CODEX.1` remains a validated implementation candidate, pending the required manual Janus check before audit; Tasks `.2` through `.4` remain parked.
+
+Current goal: obtain a concise manual Janus validation for the runtime boundary and the repaired visible capability response, then create an audit package and route only `.1` to final audit.
+
+Active phase: `janus-debug`, canonical state `HANDOFF` to the manual validation gate.
+
+Last Codex work: Cursor Composer was used first for two narrow, reviewed debug slices. The production fix ensures a skip-LLM response retains its previously generated help text before stream finalization, and a direct async regression test verifies the non-empty `stream_complete` payload. A separate one-file E2E change acknowledges the actual Beta privacy notice, uses the current message placeholder, and gives this serial Electron suite a local 60-second timeout without weakening any assertion. Codex independently reviewed every diff and reran the real headed Electron/backend path.
+
+Changed files: `backend/services/chat_orchestrator.py`; `backend/tests/integration/test_help_integration_real.py`; `tests/e2e/capability-overview.spec.js`; `documentation/tasks/TASK-CHATGPT-CODEX.1_debug_result.md`; bounded Cursor debug packages/evidence; `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md`.
+
+Tests / validation performed: direct capability-stream integration `3 passed`; combined Codex runtime/LLM/help tests `34 passed`; Electron runtime boundary `7 passed`; exact headed capability suite `2 passed`; `npm run build` PASS; scoped and overall `git diff --check` PASS; debug-result validator PASS. The focused broader Help selection suite has one unrelated pre-existing failure (`backend/skills/system/session_search.json` uses non-canonical `session_search`), while its other 20 tests pass. The environment still degrades vector embeddings due its existing `tokenizers`/`transformers` mismatch; neither condition is caused by this task.
+
+Open risks: a user-facing manual Janus check is still required before final audit. No live ChatGPT account sign-in, UI, provider/model picker, transport, or account-management behavior belongs to `.1`; those remain later separately gated tasks. No commit, push, release, or remote sync is authorized.
+
+Next recommended step for ChatGPT: do not treat this local state as remotely synchronized. If the manual check is accepted, route only the audit evidence for `.1`; do not advance Tasks `.2` through `.4`.
+
+Next recommended step for Codex: after the user confirms the manual Janus check PASS, use `codex-audit-package-builder` then `janus-final-audit` on `5.6 Terra/high` in the same chat. Before audit, preserve the current local evidence and do not broaden scope.
+
+Last updated: `2026-07-14 17:05:30 +02:00`. No commit, push, or `origin/codex-sync` publication occurred, so GitHub and ChatGPT remote state may not contain this fix, evidence, or snapshot.
+
+## Current Snapshot Update
+As of `2026-07-14 16:47:03 +02:00`, debug iteration 1 resolved the stale privacy-modal and input-placeholder harness assumptions in the mandatory capability-overview Playwright test, but the exact headed rerun exposed a distinct existing product failure: `CAPABILITY_FAST_PATH_EMPTY_SSE`.
+
+Current goal: debug the capability help fast path returning an empty SSE text event so the mandatory headed regression can reach and pass its existing capability assertions; do not widen into ChatGPT/Codex Tasks `.2` through `.4`.
+
+Active phase: `janus-debug`, canonical state `BLOCKED` pending approval of a fresh, separately bounded iteration for the new failure slice.
+
+Last Codex work: built a redacted one-file `debug_repro_investigation` package and ran the user-approved Cursor Composer path first. The current delegate gate initially rejected stale choice/package formatting without execution; after correction, package and allowlist validation passed. Cursor timed out after 240 seconds but wrote the exact allowlisted test candidate. Codex independently reviewed it, confirmed it exercises rather than bypasses the Beta privacy UI, and reran the exact headed command locally. The test now gets past the privacy notice and current input locator, creates a real chat, sends `Was kannst du?`, and reaches response validation.
+
+Changed files: `tests/e2e/capability-overview.spec.js`; `documentation/tasks/TASK-CHATGPT-CODEX.1_debug_result.md`; bounded Cursor debug input/worker/allowlist/delegation and worker evidence; `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md`.
+
+Tests / validation performed: targeted `WHAT_I_LEARNED` lookup completed; Cursor package and allowlist PASS; Cursor transport timed out without a trustworthy result artifact; independent diff review PASS; `node --check tests/e2e/capability-overview.spec.js` PASS; scoped `git diff --check` PASS. Exact headed rerun FAIL with 1 failed / 1 not run, but with changed evidence: `POST /api/chat/stream` returns HTTP 200, the backend logs show the capability help fast path and stream end `ok`, while the captured SSE response contains only an empty `text` event followed by `done`. Debug-result validator PASS.
+
+Open risks: the original harness issue is corrected but the final feature suite is still red. The empty fast-path payload is a new production-seam failure and must not be patched under the prior one-file test allowlist. Root cause inside capability rendering/stream emission is not yet established. No final audit, manual validation, later ChatGPT provider task, commit, or sync is allowed yet.
+
+Next recommended step for ChatGPT: use only failure code `CAPABILITY_FAST_PATH_EMPTY_SSE` plus `documentation/tasks/TASK-CHATGPT-CODEX.1_debug_result.md` for the next decision; treat the prior privacy/placeholder failure as resolved.
+
+Next recommended step for Codex: after explicit user approval, start debug iteration 2 on `5.6 Terra/high` in the same warm chat with a new narrow package covering the capability help renderer and stream-emission seam. Cursor may investigate first under a newly justified allowlist; Codex must reproduce, review, and rerun the exact headed suite.
+
+Last updated: `2026-07-14 16:47:03 +02:00`. No commit, push, or `origin/codex-sync` publication occurred, so remote state may not contain this debug correction, result, or snapshot.
+
+## Current Snapshot Update
+As of `2026-07-14 16:32:50 +02:00`, implementation of the isolated official Codex App Server boundary for `TASK-CHATGPT-CODEX.1` is code-, runtime-, build-, and package-green, but the mandatory headed E2E gate is not green because the bound existing test cannot pass its own current UI setup.
+
+Current goal: clear the stale headed regression gate without widening the validated Codex runtime implementation or touching Tasks `.2` through `.4`.
+
+Active phase: `janus-executioner`, canonical state `HANDOFF` to `janus-debug`; Auto-Verification is `FAIL` only because `tests/e2e/capability-overview.spec.js` reopens the mandatory Beta privacy modal after clearing `localStorage` and looks for the obsolete placeholder `Nachricht an Janus senden` instead of current `Nachricht an Janus schreiben...`.
+
+Last Codex work: ran the user-requested Cursor Composer execution attempt first. Cursor timed out after 300 seconds but left changes within the exact ten-file allowlist. Codex independently reviewed, rewrote, and hardened the candidate into a pinned `@openai/codex@0.144.4` Windows x64 runtime boundary with a single lazy App Server process, Janus-only `CODEX_HOME`, keyring-only managed ChatGPT auth, no API-key/PATH/file-store fallback, safe public account state, bounded protocol handling, lifecycle shutdown, OAuth diagnostic redaction, packaged runtime/license resources, and focused tests. No live ChatGPT login, UI, router, transport, model catalog, chat behavior, or existing API-key provider was changed.
+
+Changed files: `backend/llm_providers/codex_app_server.py`; `backend/main.py`; `main.electron.cjs`; `scripts/run-backend-dev.cjs`; `package.json`; `package-lock.json`; `backend/utils/redaction.py`; `licenses/openai-codex/LICENSE.txt`; `backend/tests/test_codex_app_server.py`; `tests/electron/codex-runtime-boundary.test.cjs`; `documentation/tasks/TASK-CHATGPT-CODEX.1_execution_result.md`; Cursor execution evidence; this snapshot and the skill-usage log.
+
+Tests / validation performed: Python boundary suite PASS (`17 passed`); Electron boundary suite PASS (`7 passed`); existing runtime LLM regression PASS (`14 passed`); Python/Node syntax PASS; exact npm pin/install PASS; real pinned development App Server disconnected/keyring-only smoke PASS; `npm run build` PASS; unpacked Electron packaging PASS; exact packaged resource existence, SHA-256 parity, license parity, and `codex-cli 0.144.4` PASS; real packaged App Server disconnected/keyring-only smoke PASS; backend lifespan initialization observed PASS. The exact required headed Playwright command FAILED before capability assertions for the captured privacy-modal/selector drift; screenshot, trace, and error context are under the referenced `test-results` directory. Execution-result validator PASS and scoped diff check PASS. Build-generated `CHANGELOG.md` and `release_notes.md` side effects were restored and no longer differ.
+
+Open risks: final audit is blocked until `janus-debug` repairs or formally rebinds the stale headed test and the corrected command passes. A concrete user-facing Janus validation remains required afterward. No live account/browser login belongs to this `.1` slice; later TestPipeline evidence must cover it without exposing credentials. The official protocol is version-pinned and intentionally fail-closed on drift.
+
+Next recommended step for ChatGPT: accept the runtime implementation as a validated candidate but do not mark `.1` complete or release `.2`; use `documentation/tasks/TASK-CHATGPT-CODEX.1_execution_result.md` and failure code `E2E_HARNESS_PRIVACY_PLACEHOLDER_DRIFT` as the only debug handoff.
+
+Next recommended step for Codex: after user approval, run `janus-debug` on `5.6 Terra/high` in the same warm chat, limited to the headed harness blocker and its evidence. If the corrected headed gate passes, request the required manual Janus check; only after that PASS build the compact audit package and route to `janus-final-audit`.
+
+Last updated: `2026-07-14 16:32:50 +02:00`. No commit, push, or `origin/codex-sync` publication occurred, so GitHub and ChatGPT remote state may not contain this implementation, execution result, or snapshot.
+
+## Current Snapshot Update
+As of `2026-07-14 15:54:59 +02:00`, the preimplementation check for `TASK-CHATGPT-CODEX.1` is validator-clean `PRE-CHECK PASSED`. Exactly the official Codex App Server lifecycle and isolated managed-account boundary is released to implementation; no product code has been changed yet.
+
+Current goal: implement the pinned, Janus-isolated official Codex runtime boundary without direct OAuth, secret ownership, file-store fallback, PATH fallback, API-key fallback, provider/model work, or UI work.
+
+Active phase: `janus-preimplementation-check`, canonical state `HANDOFF`.
+
+Last Codex work: ran the user-selected OpenRouter counter-review and retained local authority when it returned three missing-proof blockers. Current official App Server/configuration documentation, official Codex credential-storage source, Apache-2.0 license, npm metadata, Windows package manifest, and targeted Janus repository inspection resolve those blockers. The execution handoff pins `@openai/codex@0.144.4` / Windows x64, forces a Janus-only `CODEX_HOME` and keyring-only storage, binds exact dev/packaged runtime seams, and adds only two justified allowlist extensions: focused OAuth URL/query redaction plus the required bundled Apache-2.0 license copy.
+
+Changed files: `documentation/tasks/TASK-CHATGPT-CODEX.1_precheck.md`; `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md`. Redacted review input and evidence are under `.windsurf/tmp/chatgpt_codex_task1_precheck_input.json` and `documentation/codex/model-routing/precheck-review-runs/WF-CHATGPT-CODEX-TASK1-PRECHECK-2026-07-14/`.
+
+Tests / validation performed: OpenRouter bounded review capture/healthcheck PASS at `$0.00012196` versus `$0.00012` estimate; delegated recommendation `BLOCKED` reviewed and superseded by current official proof; official App Server/configuration/storage/license evidence review PASS; `npm view` distribution/version/license checks PASS; `npm pack @openai/codex@0.144.4-win32-x64 --dry-run --json` PASS and confirmed `vendor/x86_64-pc-windows-msvc/bin/codex.exe`; local `validate_precheck.py` PASS; scoped `git diff --check` PASS. Per the precheck boundary, no product tests, build, live login, or code execution was performed.
+
+Open risks: implementation must prove that the pinned resource is present in the unpacked Electron package, that the configured Janus-only home maps to its isolated keyring entry, that keyring failure remains fail-closed, that protocol/version drift is rejected, and that no OAuth URL/code can leak through diagnostics. The official runtime adds a large packaged resource and its Apache-2.0 license must ship with it. Any required UI, router, transport, model-catalog, non-x64, or broader license-system change requires a new gate.
+
+Next recommended step for ChatGPT: treat `documentation/tasks/TASK-CHATGPT-CODEX.1_precheck.md` as the only active execution contract and keep Tasks `.2` through `.4` plus all historical `TASK-CHATGPT-OAUTH*` artifacts parked.
+
+Next recommended step for Codex: after explicit user approval, run `janus-executioner` for exactly `TASK-CHATGPT-CODEX.1` on `5.6 Terra` with high reasoning. Use the documented `SOL_UNAVAILABLE_FOR_CHATGPT_CODEX_ACCOUNT` fallback, execute every bound automated evidence command, and stop on any isolation, storage, packaging, protocol, redaction, or license failure.
+
+Last updated: `2026-07-14 15:54:59 +02:00`. No commit, push, or `origin/codex-sync` publication occurred, so remote state may not contain this precheck or snapshot.
+
+## Current Snapshot Update
+As of `2026-07-14 15:45:08 +02:00`, `TASK-CHATGPT-CODEX.1` has a validator-clean single-task breakdown and is released only to preimplementation check. No implementation is authorized.
+
+Current goal: precheck the official Codex App Server runtime, managed-login, process lifecycle, credential isolation, packaging, and test boundaries before any code change.
+
+Active phase: `janus-task-breakdown`, canonical state `HANDOFF`.
+
+Last Codex work: refined only `TASK-CHATGPT-CODEX.1` into `documentation/tasks/TASK-CHATGPT-CODEX.1_task_breakdown.md`. The slice now binds the proposed App Server lifecycle module, FastAPI lifespan, Electron/backend runtime-path wiring, pinned package resources, and focused Python/Electron tests. Tasks `.2` through `.4`, all frontend/provider/model/send work, and every historical direct-OAuth artifact remain parked. The parent task's placeholder step is narrowed so `runtime_llm.py` stays unchanged until `.3`.
+
+Changed files: `documentation/tasks/TASK-CHATGPT-CODEX.1_task_breakdown.md`; `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md`. Redacted review input and evidence are under `.windsurf/tmp/chatgpt_codex_task1_breakdown_input.json` and `documentation/codex/model-routing/task-breakdown-runs/WF-CHATGPT-CODEX-TASK1-BREAKDOWN-2026-07-14/`.
+
+Tests / validation performed: OpenRouter bounded capture/healthcheck PASS but result validation FAIL on stale execution-model, model-recommendation, and source-of-truth labels; actual delegated cost was `$0.00023818` versus a `$0.00018` estimate. Local `validate_task_handoff.py` PASS and scoped `git diff --check` PASS. Per `janus-task-breakdown`, no product tests, live login, network call, build, or precheck were executed.
+
+Open risks: precheck must verify that the official Codex runtime may be bundled for the Windows package, that managed App Server login still owns secret refresh, and that keyring-only storage can be isolated from all other Codex/ChatGPT clients. If any proof fails, the correct result is `PRE_CHECK_BLOCKED`; no file-store, PATH, API-key, provider, model, or shared-session fallback is allowed.
+
+Next recommended step for ChatGPT: treat the breakdown artifact as the only released `.1` scope and do not infer implementation readiness from the task-design PASS.
+
+Next recommended step for Codex: run `janus-preimplementation-check` for `TASK-CHATGPT-CODEX.1` on `5.6 Sol` with high reasoning in a fresh, bounded security context. Load only the approved Spec, the `.1` breakdown, current official Codex contracts, and the explicitly listed repository files.
+
+Last updated: `2026-07-14 15:45:08 +02:00`. No commit, push, or `origin/codex-sync` publication occurred, so remote state may not contain this breakdown or snapshot.
+
+## Current Snapshot Update
+As of `2026-07-14 15:36:19 +02:00`, the approved ChatGPT OAuth Feature Spec has been compiled into a fresh, validator-clean task artifact. No implementation is authorized.
+
+Current goal: release and refine only `TASK-CHATGPT-CODEX.1`, the official Codex access boundary, before any settings, provider/model, or chat UI implementation.
+
+Active phase: `janus-spec-to-task`, canonical state `HANDOFF`.
+
+Last Codex work: used the user-selected OpenRouter lane for a bounded task-compilation draft, then retained local authority when its stale result contract rejected the otherwise bounded draft. The local artifact `documentation/tasks/TASK-CHATGPT-CODEX-PROVIDER.md` contains four fresh tasks: official access boundary, settings lifecycle, entitled model catalog/transport, and chat continuity/privacy/limit states. It explicitly supersedes none of the rejected direct-Janus OAuth work; historical `TASK-CHATGPT-OAUTH*` artifacts remain stale and must not execute.
+
+Changed files: `documentation/tasks/TASK-CHATGPT-CODEX-PROVIDER.md`; `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md`. Redacted input and bounded run evidence are under `.windsurf/tmp/chatgpt_codex_spec_to_task_input.json` and `documentation/codex/model-routing/spec-to-task-runs/WF-CHATGPT-OAUTH-SPEC-TO-TASK-REVISION-2026-07-14/`.
+
+Tests / validation performed: OpenRouter bounded draft capture/healthcheck PASS but draft result validation FAIL because its stale contract rejects the fresh feature/task/model identifiers; actual delegated cost was `$0.00140725` (estimate `$0.00072`). Local `validate_task_artifact.py` PASS; scoped `git diff --check` PASS. No product code or runtime tests were executed.
+
+Open risks: `TASK-CHATGPT-CODEX.1` must bind the exact official Codex App Server seam and Janus-isolated process/session lifecycle without regressing to direct Janus secret ownership. All later settings, model entitlement/transport, and chat UX tasks remain parked pending the dependency boundary.
+
+Next recommended step for ChatGPT: treat `TASK-CHATGPT-CODEX-PROVIDER.md` as the only current task source and keep legacy direct-OAuth task/precheck files parked.
+
+Next recommended step for Codex: run `janus-task-breakdown` for `TASK-CHATGPT-CODEX.1` on `5.6 Sol` with high reasoning, in a new security-focused chat if the model is available. Bind exact files, protocol seam, tests, rollback, and dependencies; do not implement.
+
+Last updated: `2026-07-14 15:36:19 +02:00`. No commit, push, or `origin/codex-sync` publication occurred, so remote state may not contain this task artifact or snapshot.
+
+## Current Snapshot Update
+As of `2026-07-14 15:31:38 +02:00`, the regenerated ChatGPT OAuth Feature Spec is `APPROVED` and ready for task compilation. No implementation is authorized.
+
+Current goal: compile the approved official-Codex provider Spec into fresh tasks; all prior direct-Janus OAuth tasks and prechecks remain stale.
+
+Active phase: `janus-spec-review`, canonical state `HANDOFF`.
+
+Last Codex work: completed an independent local review and wrote only the required Spec review metadata. The review confirmed the high-risk but coherent boundary: ChatGPT is an additional consciously selected provider over the official Codex account surface; only entitled picker-visible models appear; sessions are Janus-isolated and OS-protected; API-key fallback, general ChatGPT web access, automatic switching, and independent file/shell/code authority are excluded.
+
+Changed files: `documentation/SPEC/CHATGPT_OAUTH_PROVIDER_FEATURE_SPEC.md`; `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md`. Redacted OpenRouter review input and evidence exist under `.windsurf/tmp/chatgpt_oauth_spec_review_input.json` and `documentation/codex/model-routing/spec-review-runs/WF-CHATGPT-OAUTH-SPEC-REVIEW-2026-07-14/`; review telemetry was generated.
+
+Tests / validation performed: local `validate_feature_spec.py` PASS; `validate_spec_review.py` PASS; scoped `git diff --check` PASS. OpenRouter returned an in-content `APPROVED` recommendation at `$0.00019586`, but its bounded result validator failed because it rejects the current `5.6 Sol` model label; Codex retained final authority and made the local metadata decision. No product code or runtime tests were executed.
+
+Open risks: task compilation must bind a supported Codex integration seam without reverting to direct Janus secret ownership, must preserve isolation from other Codex sessions, and must keep UI, account, model, provider-continuity, privacy, and limit-state work separately testable. The old task file and `.1`/`.2` prechecks are not valid inputs for execution.
+
+Next recommended step for ChatGPT: use only the approved Spec for the next pipeline step; treat old task/precheck artifacts as historical evidence of the rejected design.
+
+Next recommended step for Codex: run `janus-spec-to-task` on `5.6 Terra` with high reasoning to generate fresh task artifacts, then release exactly one task through task breakdown and preimplementation. Do not implement.
+
+Last updated: `2026-07-14 15:31:38 +02:00`. No commit, push, or `origin/codex-sync` publication occurred, so remote state may not contain this approved Spec.
+
+## Current Snapshot Update
+As of `2026-07-14 15:22:45 +02:00`, the ChatGPT OAuth Feature Spec has been regenerated from the locked official-Codex provider boundary and is ready for independent Spec review. No implementation is authorized.
+
+Current goal: independently review the regenerated Spec before replacing stale tasks or reopening preimplementation.
+
+Active phase: `janus-spec-generator`, canonical state `HANDOFF`.
+
+Last Codex work: used the user-selected OpenRouter lane for a bounded draft, rejected its materially insufficient complexity/risk representation, and wrote the authoritative local Spec. The Spec now binds the visible `ChatGPT` provider to the official Codex account surface, integrated and Janus-isolated sign-in, one account, workspace visibility, picker-visible model entitlement, no independent file/shell/code authority, OS-protected secrets, no fallback, retry behavior, usage-limit behavior, privacy notice, and provider-independent Janus chat continuity.
+
+Changed files: `documentation/SPEC/CHATGPT_OAUTH_PROVIDER_FEATURE_SPEC.md`; `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md`. Redacted OpenRouter input and review evidence exist under `.windsurf/tmp/chatgpt_oauth_spec_revision_input.json` and `documentation/codex/model-routing/spec-generator-review-runs/WF-CHATGPT-OAUTH-SPEC-REVISION-2026-07-14/`; spec-generator telemetry was generated.
+
+Tests / validation performed: OpenRouter bounded draft validation PASS and healthcheck PASS at `$0.00044566`; local `validate_feature_spec.py` PASS; scoped `git diff --check` PASS. `validate_spec_review.py` correctly reports missing review metadata because independent review has not happened yet. No product code or runtime tests were executed.
+
+Open risks: stale task and precheck artifacts still describe direct Janus credential ownership and are invalid for execution. Independent review must confirm that the regenerated Spec preserves the official provider boundary, does not promise general ChatGPT web access, and does not reintroduce provider fallback or authorization expansion.
+
+Next recommended step for ChatGPT: use only the regenerated Spec as the product source and keep prior task artifacts parked.
+
+Next recommended step for Codex: run `janus-spec-review` on `5.6 Sol` with high reasoning in a fresh review context; approve only if the security, privacy, capability, provider, and scope boundaries remain internally consistent.
+
+Last updated: `2026-07-14 15:22:45 +02:00`. No commit, push, or `origin/codex-sync` publication occurred, so remote state may not contain this regenerated Spec.
+
+## Current Snapshot Update
+As of `2026-07-14 15:18:00 +02:00`, the blocked ChatGPT OAuth provider boundary has been product-locked around the officially supported Codex account surface. The revised feature design is complete and ready for Spec regeneration; no implementation is authorized.
+
+Current goal: revise the existing ChatGPT OAuth Feature Spec so `ChatGPT` is explicitly a Janus provider backed by an integrated, isolated Codex account session rather than direct or reverse-engineered OAuth.
+
+Active phase: `janus-feature-design`, canonical state `HANDOFF`.
+
+Last Codex work: asked one product question at a time and locked the user's answers. The provider remains labeled `ChatGPT`, with `über Codex` visible in settings/status; Janus supplies and manages the required official local access without a separate Codex installation; the login is isolated from other Codex/ChatGPT clients; the official login includes workspace selection; only actually usable picker-visible Codex models appear; the provider behaves like existing Janus providers and receives no independent file/shell/code authority.
+
+Changed files: `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md`. Redacted OpenRouter input and review evidence exist under `.windsurf/tmp/chatgpt_oauth_feature_design_revision_input.json` and `documentation/codex/model-routing/feature-design-runs/WF-CHATGPT-OAUTH-FEATURE-DESIGN-REVISION-2026-07-14/`; feature-design telemetry was generated.
+
+Tests / validation performed: all relevant product areas were resolved through explicit A/B decisions; OpenRouter bounded consolidation validation PASS and healthcheck PASS at `$0.0003906`; Codex compared the draft to all locked answers and retained the missing exact-one-account, limit-state, capability, and isolation details in the local final summary; scoped `git diff --check` PASS. No product code or runtime tests were executed.
+
+Open risks: the existing Spec and task artifacts still reflect the rejected direct-Janus credential ownership model and must not be implemented. Spec regeneration must preserve the official provider boundary, OS-protected storage without fallback, isolated Janus-only logout, account/workspace display, disabled-with-retry runtime failures, visible usage-limit state, no automatic fallback, and provider-independent Janus chat continuity.
+
+Next recommended step for ChatGPT: treat the revised `LATEST DECISION SUMMARY` as authoritative and do not reopen already locked behavior unless a contradiction is found.
+
+Next recommended step for Codex: run `janus-spec-generator` on `5.6 Terra` with high reasoning to revise `documentation/SPEC/CHATGPT_OAUTH_PROVIDER_FEATURE_SPEC.md`; then normalize and review it before regenerating tasks. Do not implement from the current stale tasks.
+
+Last updated: `2026-07-14 15:18:00 +02:00`. No commit, push, or `origin/codex-sync` publication occurred, so remote state may not contain this revised feature design.
+
+## Current Snapshot Update
+As of `2026-07-14 14:47:48 +02:00`, the preimplementation check for `TASK-CHATGPT-OAUTH.2` is `PRE-CHECK BLOCKED: PROVIDER_BOUNDARY_UNRESOLVED`. No implementation is authorized.
+
+Current goal: decide whether the user-facing Janus provider `ChatGPT` is implemented through the officially documented local Codex App Server managed-login boundary.
+
+Active phase: `janus-preimplementation-check`, canonical state `BLOCKED`.
+
+Last Codex work: ran the user-selected OpenRouter assist review and performed the mandatory local decision using current official OpenAI documentation plus targeted repository evidence. OpenAI documents managed ChatGPT browser/device login for applications through Codex App Server; App Server owns OAuth, credential persistence, refresh, logout state, and exposes `model/list`. Janus currently has only an `openai-codex` placeholder that requires a missing `codex_responses` transport, while target `.2` incorrectly assumes direct Janus token ownership in generic keyring files.
+
+Changed files: `documentation/tasks/TASK-CHATGPT-OAUTH.2_precheck.md`; `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md`. Redacted OpenRouter input and run evidence exist under `.windsurf/tmp/chatgpt_oauth_precheck_task2_input.json` and `documentation/codex/model-routing/precheck-review-runs/WF-CHATGPT-OAUTH-PRECHECK-2-2026-07-14/`; precheck telemetry was generated. The official `openaiDeveloperDocs` MCP server was registered globally for future Codex sessions; it requires a restart before its tools become available in-session.
+
+Tests / validation performed: official OpenAI authentication and Codex App Server documentation reviewed; targeted repository search confirmed the missing transport/client boundary; OpenRouter bounded result validation PASS and healthcheck PASS at `$0.00011332`; local artifact identity PASS; precheck artifact trailing-whitespace check PASS. `validate_precheck.py` FAILED because the current validator requires PASS-only literals even for a saved BLOCKED artifact; false PASS literals were not added. No product code or runtime tests were executed.
+
+Open risks: direct or reverse-engineered ChatGPT OAuth is not an approved implementation path. The current tasks do not bind App Server process ownership, JSON-RPC client lifecycle, managed credential-store configuration, transport integration, or the semantic limitation that this is the Codex execution/model surface rather than arbitrary ChatGPT web access.
+
+Next recommended step for ChatGPT: decide whether the approved feature may map `ChatGPT` to managed Codex App Server login, App Server-owned secrets/refresh, enforced OS keyring mode, and picker-visible models from `model/list`.
+
+Next recommended step for Codex: return to `janus-feature-design` on `5.6 Sol` with high reasoning, lock or reject that provider architecture, then regenerate affected Spec/tasks before another precheck. Do not implement.
+
+Last updated: `2026-07-14 14:47:48 +02:00`. No commit, push, or `origin/codex-sync` publication occurred, so remote state may not contain this provider-boundary blocker.
+
+## Current Snapshot Update
+As of `2026-07-14 14:39:07 +02:00`, the `.1`/`.2` scope conflict is resolved. `TASK-CHATGPT-OAUTH.2` is now the sole released OAuth slice and is ready for a fresh preimplementation check; `.1`, `.3`, and `.4` remain parked. No implementation is authorized.
+
+Current goal: precheck the backend-only protected ChatGPT OAuth credential lifecycle before any Settings-, Provider-, Model-, Sidebar-, or Chat integration begins.
+
+Active phase: `janus-task-breakdown`, canonical state `HANDOFF`.
+
+Last Codex work: used the user-selected OpenRouter assist lane to review a bounded task-boundary proposal, then made the required local decision. The task artifact now makes `.2` an independently testable OS-protected write/read/delete contract; `.1` explicitly depends on that validated contract and no longer owns persistence implementation.
+
+Changed files: `documentation/tasks/TASK-CHATGPT-OAUTH_PROVIDER.md`; `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md`. Redacted OpenRouter input and run evidence exist under `.windsurf/tmp/chatgpt_oauth_task_boundary_refine_input.json` and `documentation/codex/model-routing/task-breakdown-runs/WF-CHATGPT-OAUTH-TASK-BOUNDARY-REFINE-2026-07-14/`; task-breakdown telemetry was also generated.
+
+Tests / validation performed: OpenRouter bounded result validation PASS and healthcheck PASS at `$0.00014311`; local `validate_task_artifact.py` PASS; `validate_task_handoff.py --target TASK-CHATGPT-OAUTH.2` PASS; scoped `git diff --check` PASS. No product code or runtime tests were executed.
+
+Open risks: the precheck must confirm the exact OS-protected storage seam, deletion/error semantics, secret-redaction boundary, and API-key regression test surface. The delegated runner still emits the legacy `5.4` model label; Codex intentionally replaced that non-authoritative label with the current security-lane recommendation `5.6 Sol`.
+
+Next recommended step for ChatGPT: preserve the approved OAuth product decisions and carry only Spec, task artifact, and target `.2` into preimplementation.
+
+Next recommended step for Codex: run `janus-preimplementation-check` for exactly `TASK-CHATGPT-OAUTH.2` on `5.6 Sol` with high reasoning. Release execution only if the protected-storage contract, files, tests, failure behavior, and no-fallback boundary are verified.
+
+Last updated: `2026-07-14 14:39:07 +02:00`. No commit, push, or `origin/codex-sync` publication occurred, so remote state may not contain this task-boundary refinement.
+
+## Current Snapshot Update
+As of `2026-07-14 14:20:51 +02:00`, the preimplementation check for `TASK-CHATGPT-OAUTH.1` is `PRE-CHECK BLOCKED: SCOPE_MISMATCH`. No implementation is authorized.
+
+Current goal: refine the `.1`/`.2` boundary so exactly one OAuth task can satisfy its acceptance criteria without depending on or absorbing an unreleased task.
+
+Active phase: `janus-preimplementation-check`, canonical state `BLOCKED`.
+
+Last Codex work: ran the user-selected OpenRouter precheck review and then performed the mandatory local decision. OpenRouter returned a structurally valid PASS candidate at $0.00009748, but Codex rejected its LOW-risk conclusion: `.1` requires login completion, persistent connected state, logout, and account switch, while `.2` owns the protected credential storage and removal needed for those outcomes.
+
+Changed files: `documentation/tasks/TASK-CHATGPT-OAUTH.1_precheck.md`; `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md` via the standard usage recorder. Redacted OpenRouter input and run evidence exist under `.windsurf/tmp/` and `documentation/codex/model-routing/precheck-review-runs/WF-CHATGPT-OAUTH-PRECHECK-2026-07-14/`.
+
+Tests / validation performed: OpenRouter input/result/telemetry validation PASS; local artifact identity PASS; scoped `git diff --check` PASS. `validate_precheck.py` FAILED because the current validator requires PASS-only literals even for a saved BLOCKED artifact; those forbidden PASS literals were not added.
+
+Open risks: `.1` cannot securely complete its login lifecycle without `.2`; merging or reordering the slices requires task-boundary refinement, not product redesign. The PASS-only precheck validator cannot currently certify non-PASS artifacts.
+
+Next recommended step for ChatGPT: preserve all OAuth product decisions and treat the issue only as execution-slice ownership/dependency refinement.
+
+Next recommended step for Codex: return to `janus-task-breakdown` on `5.6 Sol` with high reasoning, refine the `.1`/`.2` boundary, release exactly one atomic target, and rerun precheck. Do not implement.
+
+Last updated: `2026-07-14 14:20:51 +02:00`. No commit, push, or `origin/codex-sync` publication occurred, so remote state may not contain this blocked precheck snapshot.
+
+## Current Snapshot Update
+As of `2026-07-14 14:16:52 +02:00`, `TASK-CHATGPT-OAUTH.1` has passed task-breakdown handoff validation and is the sole released OAuth slice for preimplementation. Tasks `.2` through `.4` remain parked.
+
+Current goal: run exactly one preimplementation check for `TASK-CHATGPT-OAUTH.1`; do not implement yet.
+
+Active phase: `janus-task-breakdown`, canonical state `HANDOFF`.
+
+Last Codex work: refined the first OAuth slice against the approved Spec and compiled task artifact. Its bounded surface is the existing settings login/status/account lifecycle plus the paired system API. The task keeps API-Key providers unchanged and releases no persistence-, model-resolution-, sidebar-, or privacy-surface work from later tasks.
+
+Changed files: `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md` via the standard usage recorder. The already-created task artifact is unchanged by this refinement run.
+
+Tests / validation performed: `validate_task_handoff.py --target TASK-CHATGPT-OAUTH.1` PASS; scoped `git diff --check` PASS. No code or test execution occurred.
+
+Open risks: the precheck must bind the exact OAuth callback and secure-storage seams before code work, validate that one-account lifecycle behavior remains compatible with the system API, and preserve the separation from API-Key providers.
+
+Next recommended step for ChatGPT: carry only the approved Spec, task artifact, and target `.1` into preimplementation; do not include parked tasks.
+
+Next recommended step for Codex: run `janus-preimplementation-check` on `5.6 Sol` with high reasoning for `TASK-CHATGPT-OAUTH.1`; release execution only if files, tests, security boundaries, and authority are verified.
+
+Last updated: `2026-07-14 14:16:52 +02:00`. No commit, push, or `origin/codex-sync` publication occurred, so remote state may not contain this task-refinement snapshot.
+
+## Current Snapshot Update
+As of `2026-07-14 14:03:16 +02:00`, the approved ChatGPT OAuth Spec is compiled into a validated four-slice task artifact. The user selected the OpenRouter draft lane; its live draft failed only the task-ID validator, so Codex applied the standard local fallback and produced the validated final artifact.
+
+Current goal: refine and release exactly `TASK-CHATGPT-OAUTH.1` for preimplementation; do not implement yet.
+
+Active phase: `janus-spec-to-task`, canonical state `HANDOFF`.
+
+Last Codex work: created `TASK-CHATGPT-OAUTH_PROVIDER.md` with four execution slices: OAuth settings/account lifecycle, protected persistence, provider/model resolution, and sidebar/chat/privacy behavior. OpenRouter's non-authoritative draft was rejected because all four IDs violated the task contract; no draft content was accepted without local correction.
+
+Changed files: `documentation/tasks/TASK-CHATGPT-OAUTH_PROVIDER.md`; `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md` via the standard usage recorder. Local OpenRouter package and run evidence are under `.windsurf/tmp/` and `documentation/codex/model-routing/spec-to-task-runs/WF-CHATGPT-OAUTH-SPEC-TO-TASK-2026-07-14/`.
+
+Tests / validation performed: OpenRouter draft capture completed but task-ID validation FAIL (expected fallback); final `validate_task_artifact.py` PASS; scoped `git diff --check` PASS.
+
+Open risks: exact implementation files and callback/secure-storage seams must be bound in `janus-task-breakdown` and verified by preimplementation. The live OpenRouter draft cost was $0.00261495, above its $0.0007 estimate; do not treat this lane as cost-stable yet.
+
+Next recommended step for ChatGPT: use the validated task artifact and keep `TASK-CHATGPT-OAUTH.2` through `.4` parked while exactly `.1` is refined.
+
+Next recommended step for Codex: run `janus-task-breakdown` on `5.6 Terra` with high reasoning for `TASK-CHATGPT-OAUTH.1`; no implementation before a valid preimplementation handoff.
+
+Last updated: `2026-07-14 14:03:16 +02:00`. No commit, push, or `origin/codex-sync` publication occurred, so remote state may not contain this task-compilation snapshot.
+
+## Current Snapshot Update
+As of `2026-07-14 01:20:29 +02:00`, the prior pipeline escalation is corrected. The ChatGPT OAuth Feature Spec is again `APPROVED` and ready for task compilation; the earlier requirement for exact repository paths at Spec stage was an over-strict interpretation.
+
+Current goal: compile the approved ChatGPT OAuth Spec into functional task slices, then bind exact repository files during `janus-task-breakdown` and preimplementation checks.
+
+Active phase: `janus-spec-review`, canonical state `HANDOFF`.
+
+Last Codex work: re-reviewed the Feature Spec as the sole product source and restored `APPROVED` plus `Skill-1 Ready: YES`. The deterministic task compiler may use the explicitly named settings, sidebar, provider, persistence, and test surfaces as functional task targets; it must not invent product behavior or architecture.
+
+Changed files: `documentation/SPEC/CHATGPT_OAUTH_PROVIDER_FEATURE_SPEC.md` (review metadata correction only); `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md` via the standard usage recorder.
+
+Tests / validation performed: official `validate_spec_review.py` PASS; scoped `git diff --check` PASS.
+
+Open risks: exact repository file binding, supported authorization behavior, entitlement discovery, and secure-storage validation remain for task refinement and preimplementation, not for product design.
+
+Next recommended step for ChatGPT: select the operator backend for the bounded task-compilation assist lane; Codex remains final task-artifact owner.
+
+Next recommended step for Codex: run `janus-spec-to-task` on `5.6 Terra` with high reasoning, generate functional task slices, and validate the task artifact before task refinement.
+
+Last updated: `2026-07-14 01:20:29 +02:00`. No commit, push, or `origin/codex-sync` publication occurred, so remote state may not contain this correction snapshot.
+
+## Current Snapshot Update
+As of `2026-07-14 01:14:36 +02:00`, the bounded ChatGPT OAuth Spec revision is structurally blocked by incompatible Janus skill contracts and has been escalated without changing the Feature Spec.
+
+Current goal: diagnose the pipeline-contract mismatch between `janus-spec-generator` and `janus-spec-to-task` before resuming OAuth task compilation.
+
+Active phase: `janus-spec-generator`, canonical state `ESCALATED`; generation decision `BLOCKED`.
+
+Last Codex work: checked the requested execution-target revision against the generator contract. `janus-spec-generator` expressly forbids concrete file structure and code-level architecture, while `janus-spec-to-task` requires concrete file or module targets and forbids inventing them. No product decision is missing, and the approved OAuth behavior remains unchanged.
+
+Changed files: `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md` via the standard usage recorder. The Feature Spec was not changed in this block, and no task artifact was created.
+
+Tests / validation performed: direct contract comparison completed; scoped `git diff --check` remains required after logging. No product or runtime tests were applicable.
+
+Open risks: sending the Spec back through generator, review, and compiler again would repeat the same blocker. Fixing or clarifying the skill contracts is Janus pipeline-infrastructure work and requires a bounded debug decision before any product implementation.
+
+Next recommended step for ChatGPT: do not reopen OAuth product decisions; recognize this as a pipeline-contract blocker.
+
+Next recommended step for Codex: run `janus-debug` on `5.6 Sol` with high reasoning, limited to diagnosing the generator-to-task target-binding contract and proposing the smallest safe repair. Do not alter product code.
+
+Last updated: `2026-07-14 01:14:36 +02:00`. No commit, push, or `origin/codex-sync` publication occurred, so remote state may not contain this escalation snapshot.
+
+## Current Snapshot Update
+As of `2026-07-14 01:06:52 +02:00`, the ChatGPT OAuth Spec Review is corrected to `NEEDS_REVISION` after the deterministic task compiler exposed a task-readiness gap.
+
+Current goal: revise the Spec only enough to provide an approved execution-surface binding that `janus-spec-to-task` can compile without inventing files, modules, architecture, or product scope.
+
+Active phase: `janus-spec-review`, canonical state `HANDOFF`; review decision `NEEDS_REVISION`.
+
+Last Codex work: re-reviewed the Feature Spec as the sole source of truth against the explicit decomposition-readiness gate. Product behavior remains complete and unchanged, but the review metadata now records that the Spec is not ready for task compilation because it names no concrete repository file or module targets.
+
+Changed files: `documentation/SPEC/CHATGPT_OAUTH_PROVIDER_FEATURE_SPEC.md` (review status and readiness metadata only); `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md` via the standard usage recorder.
+
+Tests / validation performed: official `validate_spec_review.py` PASS after metadata correction; scoped `git diff --check` PASS.
+
+Open risks: the next refinement must not smuggle code-level architecture into a product Spec or cycle back into task compilation without a verified execution-target source. If `janus-spec-generator` cannot add a compliant binding under its own contract, the pipeline-contract mismatch must be reported rather than bypassed.
+
+Next recommended step for ChatGPT: preserve all locked OAuth product decisions; the only revision need is deterministic execution-target binding.
+
+Next recommended step for Codex: run `janus-spec-generator` on `5.6 Sol` with high reasoning for the bounded revision; if its contract forbids the required binding, return an explicit structural blocker without changing product scope.
+
+Last updated: `2026-07-14 01:06:52 +02:00`. No commit, push, or `origin/codex-sync` publication occurred, so remote state may not contain this revision snapshot.
+
+## Current Snapshot Update
+As of `2026-07-14 01:04:27 +02:00`, ChatGPT OAuth task compilation is formally blocked before task creation. The approved Feature Spec deliberately contains no concrete repository file or module targets, and `janus-spec-to-task` must not invent execution seams.
+
+Current goal: return the approved Spec to `janus-spec-review` for a bounded decision on whether execution-target identification belongs in the Spec before compilation.
+
+Active phase: `janus-spec-to-task`, canonical state `BLOCKED`.
+
+Last Codex work: used the approved ChatGPT OAuth Spec as the sole compilation source and stopped without creating a task artifact. The Spec defines complete product behavior but no concrete files or modules; the compiler contract requires those targets for deterministic implementation tasks.
+
+Changed files: `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md` via the standard usage recorder. No task file was created.
+
+Tests / validation performed: source approval metadata confirmed as `APPROVED`; deterministic-task eligibility check failed because no concrete file or module target is named in the source Spec.
+
+Open risks: adding execution targets must not invent product scope, architecture, or implementation details. The next review must decide the minimal permitted refinement path before task compilation can resume.
+
+Next recommended step for ChatGPT: inspect the compiler blocker; no product decision is currently requested.
+
+Next recommended step for Codex: run `janus-spec-review` on `5.6 Sol` with high reasoning to resolve the execution-target completeness gate, then return to `janus-spec-to-task` only if the Spec can support deterministic tasks.
+
+Last updated: `2026-07-14 01:04:27 +02:00`. No commit, push, or `origin/codex-sync` publication occurred, so remote state may not contain this blocker snapshot.
+
+## Current Snapshot Update
+As of `2026-07-14 01:02:20 +02:00`, `CHATGPT_OAUTH_PROVIDER_FEATURE_SPEC.md` has passed independent Spec Review and is approved for deterministic task compilation.
+
+Current goal: compile the approved ChatGPT OAuth Feature Spec into Janus task artifacts.
+
+Active phase: `janus-spec-review`, canonical state `HANDOFF`.
+
+Last Codex work: reviewed the single ChatGPT OAuth Spec against its locked product contract and recorded `APPROVED`. The Feature remains one coherent delivery slice: additional ChatGPT provider, secure account persistence, privacy notice, explicit selection, dynamic model availability, and no silent fallback.
+
+Changed files: `documentation/SPEC/CHATGPT_OAUTH_PROVIDER_FEATURE_SPEC.md` (review metadata); `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md` via the standard usage recorder.
+
+Tests / validation performed: `validate_spec_review.py` PASS; `git diff --check` PASS for the scoped artifacts.
+
+Open risks: implementation must later prove only supported authorization and account-entitlement behavior, secure storage on supported platforms, and no cross-provider fallback. These are execution validation gates, not open product decisions.
+
+Next recommended step for ChatGPT: treat the Feature Spec as approved and preserve its locked boundaries during task compilation.
+
+Next recommended step for Codex: run `janus-spec-to-task` on `5.6 Terra` with high reasoning to compile deterministic task artifacts; do not implement yet.
+
+Last updated: `2026-07-14 01:02:20 +02:00`. No commit, push, or `origin/codex-sync` publication occurred, so remote state may not contain this snapshot.
+
+## Current Snapshot Update
+As of `2026-07-14 00:50:32 +02:00`, the decision-locked ChatGPT OAuth provider design is compiled into a parser-safe Feature Spec and handed to Spec Review.
+
+Current goal: review `CHATGPT_OAUTH_PROVIDER_FEATURE_SPEC.md` before any task compilation or implementation.
+
+Active phase: `janus-spec-generator`, canonical state `HANDOFF`.
+
+Last Codex work: generated the deterministic ChatGPT OAuth Feature Spec from the single locked decision summary. The Spec fixes ChatGPT as an additional provider, explicit provider/model selection, one active account, secure storage, privacy notice, account actions, and no silent fallback.
+
+Changed files: `documentation/SPEC/CHATGPT_OAUTH_PROVIDER_FEATURE_SPEC.md`; `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md` via the standard usage recorder.
+
+Tests / validation performed: Spec structural validation PASS (15 required headings, 10 observable Definition-of-Done items, routing fields present, complexity score consistent at 62); `git diff --check` PASS for the scoped artifacts.
+
+Open risks: Spec Review must confirm that the bounded product requirements remain internally consistent and that later preimplementation work validates supported provider authorization, account entitlements, and secure storage behavior without expanding the locked scope.
+
+Next recommended step for ChatGPT: review the generated Spec as the single proposed product contract and correct only a genuine product-decision error.
+
+Next recommended step for Codex: run `janus-spec-review` on `5.6 Terra` with high reasoning; do not compile tasks or implement before a PASS review.
+
+Last updated: `2026-07-14 00:50:32 +02:00`. No commit, push, or `origin/codex-sync` publication occurred, so remote state may not contain this snapshot.
+
+## Current Snapshot Update
+As of `2026-07-14 00:46:59 +02:00`, the ChatGPT OAuth product design is decision-locked and ready for specification. OAuth is an additional, independently selected Janus provider path; existing API-key providers remain unchanged and are neither fallback nor replacement.
+
+Current goal: convert the locked ChatGPT OAuth behavior into a deterministic Feature Spec.
+
+Active phase: `janus-feature-design`, canonical state `HANDOFF`.
+
+Last Codex work: locked the settings login surface, explicit provider selection, `ChatGPT` provider/model dropdown behavior, logout and account-switch semantics, secure token-storage boundary, privacy notice, provider-independent chat continuation, persistent sign-in expectations, account-status display, and failure behavior.
+
+Changed files: `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md` via the standard usage recorder.
+
+Tests / validation performed: decision-completeness review against the `janus-feature-design` areas; no product code or runtime validation was performed.
+
+Open risks: technical feasibility, supported authorization flow, account/model entitlement discovery, and platform-specific secure storage remain for Spec and preimplementation validation. Multiple simultaneously stored ChatGPT accounts are explicitly out of scope for the first version.
+
+Next recommended step for ChatGPT: review the locked decision summary without reopening settled behavior unless a product correction is required.
+
+Next recommended step for Codex: run `janus-spec-generator` using the locked ChatGPT OAuth decision summary; do not implement directly.
+
+Last updated: `2026-07-14 00:46:59 +02:00`. No commit, push, or `origin/codex-sync` publication occurred, so remote state may not contain this snapshot.
+
+## Current Snapshot Update
 As of `2026-07-14 01:18 +02:00`, `BACKLOG-129` is closed and documented, `TASK-M6.MERGE.1` final audit is PASS, and M6 is committed, backed up, root-integrated, and synced.
 
 Current goal: M6 is complete; begin the next bounded Janus task from the root `master` checkout.
