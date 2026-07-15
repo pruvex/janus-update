@@ -76,6 +76,7 @@ test('backend environment forwards isolated userData home and keyring-only polic
     JANUS_CODEX_HOME: path.join(userDataPath, 'codex-home'),
     JANUS_CODEX_CREDENTIALS_STORE: 'keyring',
   });
+  assert.ok(!Object.keys(env).some((key) => key.includes('EVIDENCE')));
 });
 
 test('APPDATA and dev runner resolve the same Janus-only home namespace', () => {
@@ -93,11 +94,21 @@ test('APPDATA and dev runner resolve the same Janus-only home namespace', () => 
     assert.strictEqual(devEnv.JANUS_CODEX_HOME, expectedHome);
     assert.strictEqual(devEnv.JANUS_CODEX_RUNTIME_PATH, getDevelopmentCodexRuntimePath(projectRoot));
     assert.strictEqual(devEnv.JANUS_CODEX_CREDENTIALS_STORE, 'keyring');
+    assert.ok(!Object.keys(devEnv).some((key) => key.includes('EVIDENCE')));
   } finally {
     if (previousAppData === undefined) delete process.env.APPDATA;
     else process.env.APPDATA = previousAppData;
   }
   assert.strictEqual(electronEnv.JANUS_CODEX_HOME, expectedHome);
+});
+
+test('reload-mode runner preserves the Windows default event loop for Codex subprocesses', () => {
+  const runnerPath = path.join(projectRoot, 'scripts', 'run-backend-dev.cjs');
+  const runnerSource = fs.readFileSync(runnerPath, 'utf8');
+  assert.match(
+    runnerSource,
+    /uvicornArgs\.push\("--loop", "none", "--reload", "--reload-dir", "backend"\)/
+  );
 });
 
 test('package pins official Codex and ships runtime plus Apache license', () => {
@@ -119,6 +130,18 @@ test('package pins official Codex and ships runtime plus Apache license', () => 
   assert.ok(runtimeEntry.from.includes('@openai/codex-win32-x64'));
   assert.ok(licenseEntry);
   assert.strictEqual(licenseEntry.from, 'licenses/openai-codex/LICENSE.txt');
+});
+
+test('Python lifecycle uses only official App Server device-code auth and keyring persistence', () => {
+  const lifecyclePath = path.join(projectRoot, 'backend', 'llm_providers', 'codex_app_server.py');
+  const source = fs.readFileSync(lifecyclePath, 'utf8');
+
+  assert.match(source, /MANAGED_LOGIN_TYPE = "chatgptDeviceCode"/);
+  assert.match(source, /OFFICIAL_DEVICE_VERIFICATION_URL = "https:\/\/auth\.openai\.com\/codex\/device"/);
+  assert.match(source, /cli_auth_credentials_store="keyring"/);
+  assert.doesNotMatch(source, /chatgptAuthTokens/);
+  assert.doesNotMatch(source, /\/oauth\/token/);
+  assert.doesNotMatch(source, /\/deviceauth\//);
 });
 
 test('local redistribution license is the Apache License 2.0 text', () => {

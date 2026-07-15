@@ -7,8 +7,14 @@ import pytest_asyncio
 
 from backend.llm_providers.codex_app_server import (
     ALLOWED_PUBLIC_STATE_KEYS,
+    ISOLATION_EVIDENCE_PENDING_REASON,
+    MANAGED_LOGIN_TYPE,
+    OFFICIAL_DEVICE_VERIFICATION_URL,
+    PRODUCTION_ISOLATION_EVIDENCE_REVISION,
+    REQUIRED_ISOLATION_EVIDENCE_REVISION,
     CodexAppServerConfigurationError,
     CodexAppServerLifecycle,
+    CodexAppServerProtocolError,
     CodexAppServerSettings,
     CodexAppServerTimeoutError,
     CodexAppServerUnavailableError,
@@ -119,15 +125,20 @@ class FakeCodexProcess:
             return
 
         if method == "account/login/start":
+            result = self.behavior.get(
+                "login_result",
+                {
+                    "type": "chatgptDeviceCode",
+                    "loginId": "login-1",
+                    "verificationUrl": OFFICIAL_DEVICE_VERIFICATION_URL,
+                    "userCode": "ABCD-EFGH",
+                },
+            )
             await self.stdout.push_line(
                 json.dumps(
                     {
                         "id": request_id,
-                        "result": {
-                            "type": "chatgpt",
-                            "loginId": "login-1",
-                            "authUrl": "https://chatgpt.com/auth?code=abc123&state=xyz",
-                        },
+                        "result": result,
                     }
                 )
             )
@@ -189,7 +200,14 @@ def make_lifecycle(codex_paths, *, behavior=None, timeout=2.0):
         request_timeout_seconds=timeout,
     )
     factory = FakeProcessFactory(behavior)
-    return CodexAppServerLifecycle(settings, process_factory=factory), factory
+    return (
+        CodexAppServerLifecycle(
+            settings,
+            process_factory=factory,
+            _isolation_evidence_verified=True,
+        ),
+        factory,
+    )
 
 
 @pytest_asyncio.fixture
@@ -232,7 +250,11 @@ async def test_direct_settings_cannot_bypass_keyring_requirement(codex_paths):
         credentials_store="auto",
         request_timeout_seconds=2.0,
     )
-    instance = CodexAppServerLifecycle(settings, process_factory=FakeProcessFactory())
+    instance = CodexAppServerLifecycle(
+        settings,
+        process_factory=FakeProcessFactory(),
+        _isolation_evidence_verified=True,
+    )
     with pytest.raises(CodexAppServerConfigurationError, match='exactly "keyring"'):
         await instance.ensure_ready()
 
@@ -260,12 +282,82 @@ async def test_unconfigured_lifecycle_exposes_fail_closed_state(monkeypatch):
 
 
 @pytest.mark.asyncio
+async def test_configured_production_lifecycle_stays_closed_without_controlled_evidence(
+    codex_paths,
+    monkeypatch,
+):
+    runtime, codex_home = codex_paths
+    monkeypatch.setenv("JANUS_CODEX_RUNTIME_PATH", str(runtime))
+    monkeypatch.setenv("JANUS_CODEX_HOME", str(codex_home))
+    monkeypatch.setenv("JANUS_CODEX_CREDENTIALS_STORE", "keyring")
+    monkeypatch.setenv(
+        "JANUS_CODEX_ISOLATION_EVIDENCE",
+        REQUIRED_ISOLATION_EVIDENCE_REVISION,
+    )
+    factory = FakeProcessFactory()
+
+    instance = create_codex_app_server_lifecycle(process_factory=factory)
+    state = instance.get_public_state()
+
+    assert PRODUCTION_ISOLATION_EVIDENCE_REVISION is None
+    assert instance.configured is True
+    assert state["connection_state"] == "unavailable"
+    assert state["retry_reason"] == ISOLATION_EVIDENCE_PENDING_REASON
+    assert state["capabilities"] == {
+        "managed_chatgpt_login": False,
+        "keyring_only": True,
+        "janus_isolated": False,
+    }
+    with pytest.raises(
+        CodexAppServerUnavailableError,
+        match=ISOLATION_EVIDENCE_PENDING_REASON,
+    ):
+        await instance.start_login()
+    with pytest.raises(CodexAppServerUnavailableError):
+        await instance.read_account()
+    with pytest.raises(CodexAppServerUnavailableError):
+        await instance.logout()
+    assert factory.processes == []
+
+
+@pytest.mark.asyncio
 async def test_lazy_start_reuses_single_process(lifecycle):
     instance, factory = lifecycle
     await instance.read_account()
     await instance.read_account()
     assert len(factory.processes) == 1
     assert instance._process is factory.processes[0]
+
+
+@pytest.mark.asyncio
+async def test_unsupported_subprocess_creation_fails_closed(codex_paths, monkeypatch):
+    runtime, codex_home = codex_paths
+    settings = CodexAppServerSettings(
+        runtime_path=runtime.resolve(),
+        codex_home=codex_home.resolve(),
+        credentials_store="keyring",
+        request_timeout_seconds=2.0,
+    )
+    instance = CodexAppServerLifecycle(
+        settings,
+        _isolation_evidence_verified=True,
+    )
+
+    async def unsupported_subprocess(*args, **kwargs):
+        raise NotImplementedError("selector event loop")
+
+    monkeypatch.setattr(
+        "backend.llm_providers.codex_app_server.asyncio.create_subprocess_exec",
+        unsupported_subprocess,
+    )
+
+    with pytest.raises(CodexAppServerUnavailableError, match="could not be started"):
+        await instance.read_account()
+
+    state = instance.get_public_state()
+    assert state["connection_state"] == "unavailable"
+    assert state["retry_reason"] == "Codex App Server subprocess support is unavailable in this runtime."
+    assert "NotImplementedError" not in json.dumps(state)
 
 
 @pytest.mark.asyncio
@@ -295,6 +387,21 @@ async def test_runtime_command_and_environment_are_fail_closed(lifecycle, monkey
 
 
 @pytest.mark.asyncio
+async def test_refresh_uses_only_the_owned_app_server_account(lifecycle):
+    instance, _ = lifecycle
+
+    await instance.read_account(refresh_token=True)
+
+    request = next(
+        request
+        for request in instance._process.requests
+        if request.get("method") == "account/read"
+    )
+    assert request["params"] == {"refreshToken": True}
+    assert "accessToken" not in json.dumps(request)
+
+
+@pytest.mark.asyncio
 async def test_account_read_exposes_allowlisted_non_secret_state(lifecycle):
     instance, _ = lifecycle
     state = await instance.read_account()
@@ -319,17 +426,80 @@ async def test_api_key_account_is_rejected_without_fallback(codex_paths):
 
 
 @pytest.mark.asyncio
-async def test_login_url_is_transient_and_cancel_restores_prior_state(lifecycle):
+async def test_device_code_is_transient_and_cancel_restores_prior_state(lifecycle):
     instance, _ = lifecycle
     before = await instance.read_account()
     login = await instance.start_login()
     assert login["login_id"] == "login-1"
-    assert login["auth_url"].startswith("https://chatgpt.com/")
-    assert "auth_url" not in login["state"]
-    assert "abc123" not in json.dumps(instance.get_public_state())
+    assert login["verification_url"] == OFFICIAL_DEVICE_VERIFICATION_URL
+    assert login["user_code"] == "ABCD-EFGH"
+    assert "verification_url" not in login["state"]
+    assert "user_code" not in login["state"]
+    assert "ABCD-EFGH" not in json.dumps(instance.get_public_state())
+    login_request = next(
+        request
+        for request in instance._process.requests
+        if request.get("method") == "account/login/start"
+    )
+    assert MANAGED_LOGIN_TYPE == "chatgptDeviceCode"
+    assert login_request["params"] == {"type": "chatgptDeviceCode"}
+    assert "authUrl" not in json.dumps(login)
     after_cancel = await instance.cancel_login()
     assert after_cancel["connection_state"] == before["connection_state"]
     assert after_cancel["account_identifier"] == before["account_identifier"]
+
+
+@pytest.mark.asyncio
+async def test_device_code_rejects_non_official_verification_url_without_leaking(codex_paths, caplog):
+    instance, _ = make_lifecycle(
+        codex_paths,
+        behavior={
+            "login_result": {
+                "type": "chatgptDeviceCode",
+                "loginId": "login-secret",
+                "verificationUrl": "https://evil.example/device?token=must-not-leak",
+                "userCode": "SECRET-CODE",
+            }
+        },
+    )
+    try:
+        with pytest.raises(CodexAppServerProtocolError) as exc_info:
+            await instance.start_login()
+        combined = f"{exc_info.value}\n{caplog.text}\n{json.dumps(instance.get_public_state())}"
+        assert "evil.example" not in combined
+        assert "must-not-leak" not in combined
+        assert "SECRET-CODE" not in combined
+        assert instance.get_public_state()["connection_state"] == "disconnected"
+    finally:
+        await instance.close()
+
+
+@pytest.mark.asyncio
+async def test_device_code_completion_error_redacts_transient_values(lifecycle):
+    instance, _ = lifecycle
+    login = await instance.start_login()
+
+    await instance._process.stdout.push_line(
+        json.dumps(
+            {
+                "method": "account/login/completed",
+                "params": {
+                    "success": False,
+                    "error": (
+                        f"Device code {login['user_code']} failed at "
+                        f"{login['verification_url']}?token=must-not-leak"
+                    ),
+                },
+            }
+        )
+    )
+    await asyncio.sleep(0.02)
+
+    public_json = json.dumps(instance.get_public_state())
+    assert login["user_code"] not in public_json
+    assert "must-not-leak" not in public_json
+    assert OFFICIAL_DEVICE_VERIFICATION_URL not in public_json
+    assert REDACTION_TEXT in public_json
 
 
 @pytest.mark.asyncio

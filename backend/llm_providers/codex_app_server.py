@@ -7,12 +7,14 @@ import inspect
 import json
 import logging
 import os
+import re
 from contextlib import suppress
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable
+from urllib.parse import urlsplit
 
-from backend.utils.redaction import redact_sensitive_text
+from backend.utils.redaction import REDACTION_TEXT, redact_sensitive_text
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +25,19 @@ EXPECTED_RUNTIME_TAIL = ("vendor", "x86_64-pc-windows-msvc", "bin", "codex.exe")
 EXPECTED_HOME_TAIL = ("janus projekt", "codex-home")
 PROCESS_LINE_LIMIT = 1024 * 1024
 CREATE_NO_WINDOW = 0x08000000
-MANAGED_LOGIN_TYPE = "chatgpt"
+MANAGED_AUTH_MODE = "chatgpt"
+MANAGED_LOGIN_TYPE = "chatgptDeviceCode"
+OFFICIAL_DEVICE_VERIFICATION_URL = "https://auth.openai.com/codex/device"
+DEVICE_USER_CODE_PATTERN = re.compile(r"[A-Za-z0-9-]{3,128}")
+PINNED_CODEX_AUTH_NAMESPACE_VERSION = "0.144.4"
+REQUIRED_ISOLATION_EVIDENCE_REVISION = (
+    "TASK-CHATGPT-DEVICE-CODE-PROVIDER.5/codex-0.144.4-device-code-keyring-v1"
+)
+# This remains unset until the controlled two-account evidence has actually passed.
+# It is deliberately source-bound: environment variables, API payloads and Settings
+# cannot turn the production isolation claim on.
+PRODUCTION_ISOLATION_EVIDENCE_REVISION: str | None = None
+ISOLATION_EVIDENCE_PENDING_REASON = "isolation_evidence_pending"
 
 _REMOVED_AUTH_ENV_KEYS = (
     "OPENAI_API_KEY",
@@ -178,11 +192,11 @@ class CodexAccountPublicState:
         return {key: value for key, value in payload.items() if key in ALLOWED_PUBLIC_STATE_KEYS}
 
 
-def _configured_capabilities() -> dict[str, bool]:
+def _configured_capabilities(*, isolation_verified: bool) -> dict[str, bool]:
     return {
-        "managed_chatgpt_login": True,
+        "managed_chatgpt_login": isolation_verified,
         "keyring_only": True,
-        "janus_isolated": True,
+        "janus_isolated": isolation_verified,
     }
 
 
@@ -192,6 +206,39 @@ def _unavailable_capabilities() -> dict[str, bool]:
         "keyring_only": False,
         "janus_isolated": False,
     }
+
+
+def _production_isolation_evidence_verified() -> bool:
+    """Bind production enablement to the reviewed pin and evidence revision."""
+
+    return (
+        PINNED_CODEX_AUTH_NAMESPACE_VERSION == "0.144.4"
+        and PRODUCTION_ISOLATION_EVIDENCE_REVISION == REQUIRED_ISOLATION_EVIDENCE_REVISION
+    )
+
+
+def _is_official_device_verification_url(value: Any) -> bool:
+    if not isinstance(value, str) or not value:
+        return False
+    try:
+        parsed = urlsplit(value)
+        port = parsed.port
+    except ValueError:
+        return False
+    return (
+        parsed.scheme == "https"
+        and parsed.hostname == "auth.openai.com"
+        and port in {None, 443}
+        and parsed.username is None
+        and parsed.password is None
+        and parsed.path == "/codex/device"
+        and not parsed.query
+        and not parsed.fragment
+    )
+
+
+def _is_valid_device_user_code(value: Any) -> bool:
+    return isinstance(value, str) and DEVICE_USER_CODE_PATTERN.fullmatch(value) is not None
 
 
 def _sanitize_public_account(
@@ -230,8 +277,10 @@ class CodexAppServerLifecycle:
         *,
         configuration_error: str | None = None,
         process_factory: Callable[..., Any] | None = None,
+        _isolation_evidence_verified: bool = False,
     ) -> None:
         self.settings = settings
+        self._isolation_evidence_verified = bool(_isolation_evidence_verified)
         self._configuration_error = redact_sensitive_text(configuration_error or "") or None
         self._process_factory = process_factory
         self._process: asyncio.subprocess.Process | Any | None = None
@@ -246,16 +295,23 @@ class CodexAppServerLifecycle:
         self._closing = False
         self._notification_handlers: list[Callable[[dict[str, Any]], None]] = []
         self._login_restore_snapshot: dict[str, Any] | None = None
+        self._transient_login_secrets: tuple[str, ...] = ()
         if settings is None:
             self._public_state = CodexAccountPublicState(
                 connection_state="unavailable",
                 retry_reason=self._configuration_error or "Codex App Server is not configured.",
                 capabilities=_unavailable_capabilities(),
             )
-        else:
+        elif self._isolation_evidence_verified:
             self._public_state = CodexAccountPublicState(
                 connection_state="disconnected",
-                capabilities=_configured_capabilities(),
+                capabilities=_configured_capabilities(isolation_verified=True),
+            )
+        else:
+            self._public_state = CodexAccountPublicState(
+                connection_state="unavailable",
+                retry_reason=ISOLATION_EVIDENCE_PENDING_REASON,
+                capabilities=_configured_capabilities(isolation_verified=False),
             )
 
     @property
@@ -280,7 +336,12 @@ class CodexAppServerLifecycle:
             retry_reason=snapshot.get("retry_reason"),
             login_pending=bool(snapshot.get("login_pending")),
             login_id=snapshot.get("login_id"),
-            capabilities=dict(snapshot.get("capabilities") or _configured_capabilities()),
+            capabilities=dict(
+                snapshot.get("capabilities")
+                or _configured_capabilities(
+                    isolation_verified=self._isolation_evidence_verified,
+                )
+            ),
         )
 
     def add_notification_handler(self, handler: Callable[[dict[str, Any]], None]) -> None:
@@ -291,6 +352,8 @@ class CodexAppServerLifecycle:
             raise CodexAppServerUnavailableError(
                 self._configuration_error or "Codex App Server is not configured."
             )
+        if not self._isolation_evidence_verified:
+            raise CodexAppServerUnavailableError(ISOLATION_EVIDENCE_PENDING_REASON)
         async with self._lifecycle_lock:
             if self._crashed:
                 raise CodexAppServerUnavailableError(
@@ -313,27 +376,43 @@ class CodexAppServerLifecycle:
         try:
             result = await self._request("account/login/start", {"type": MANAGED_LOGIN_TYPE})
             login_id = result.get("loginId")
-            auth_url = result.get("authUrl")
+            verification_url = result.get("verificationUrl")
+            user_code = result.get("userCode")
             if result.get("type") != MANAGED_LOGIN_TYPE:
-                raise CodexAppServerProtocolError("Managed ChatGPT login returned an unexpected type.")
+                raise CodexAppServerProtocolError(
+                    "Managed ChatGPT device-code login returned an unexpected type."
+                )
             if not isinstance(login_id, str) or not login_id:
-                raise CodexAppServerProtocolError("Managed ChatGPT login did not return a login id.")
-            if not isinstance(auth_url, str) or not auth_url.startswith("https://"):
-                raise CodexAppServerProtocolError("Managed ChatGPT login did not return a valid auth URL.")
+                raise CodexAppServerProtocolError(
+                    "Managed ChatGPT device-code login did not return a login id."
+                )
+            if not _is_official_device_verification_url(verification_url):
+                raise CodexAppServerProtocolError(
+                    "Managed ChatGPT device-code login returned an unsupported verification URL."
+                )
+            if not _is_valid_device_user_code(user_code):
+                raise CodexAppServerProtocolError(
+                    "Managed ChatGPT device-code login returned an invalid user code."
+                )
         except (CodexAppServerError, asyncio.CancelledError):
+            self._transient_login_secrets = ()
             if self._login_restore_snapshot is not None:
                 self._restore_public_state(self._login_restore_snapshot)
                 self._login_restore_snapshot = None
             raise
 
+        self._transient_login_secrets = (user_code, verification_url)
         self._public_state.login_id = login_id
         self._public_state.login_pending = True
         self._public_state.connection_state = "connecting"
         self._public_state.retry_reason = None
-        logger.info("Codex managed ChatGPT login started; auth URL omitted from logs.")
+        logger.info(
+            "Codex managed ChatGPT device-code login started; one-time values omitted from logs."
+        )
         return {
             "login_id": login_id,
-            "auth_url": auth_url,
+            "verification_url": verification_url,
+            "user_code": user_code,
             "state": self.get_public_state(),
         }
 
@@ -344,6 +423,7 @@ class CodexAppServerLifecycle:
             raise CodexAppServerProtocolError("No pending managed login to cancel.")
 
         await self._request("account/login/cancel", {"loginId": target_login_id})
+        self._transient_login_secrets = ()
         if self._login_restore_snapshot is not None:
             self._restore_public_state(self._login_restore_snapshot)
             self._login_restore_snapshot = None
@@ -355,9 +435,12 @@ class CodexAppServerLifecycle:
     async def logout(self) -> dict[str, Any]:
         await self.ensure_ready()
         await self._request("account/logout", None)
+        self._transient_login_secrets = ()
         self._public_state = CodexAccountPublicState(
             connection_state="disconnected",
-            capabilities=_configured_capabilities(),
+            capabilities=_configured_capabilities(
+                isolation_verified=self._isolation_evidence_verified,
+            ),
         )
         self._login_restore_snapshot = None
         return self.get_public_state()
@@ -367,12 +450,17 @@ class CodexAppServerLifecycle:
             raise CodexAppServerUnavailableError(
                 self._configuration_error or "Codex App Server is not configured."
             )
+        if not self._isolation_evidence_verified:
+            raise CodexAppServerUnavailableError(ISOLATION_EVIDENCE_PENDING_REASON)
         async with self._lifecycle_lock:
             await self._shutdown_locked()
             self._crashed = False
+            self._transient_login_secrets = ()
             self._public_state = CodexAccountPublicState(
                 connection_state="disconnected",
-                capabilities=_configured_capabilities(),
+                capabilities=_configured_capabilities(
+                    isolation_verified=self._isolation_evidence_verified,
+                ),
             )
 
     async def close(self) -> None:
@@ -429,11 +517,19 @@ class CodexAppServerLifecycle:
             }
             if os.name == "nt":
                 kwargs["creationflags"] = CREATE_NO_WINDOW
-            self._process = await asyncio.create_subprocess_exec(
-                str(runtime_path),
-                *command[1:],
-                **kwargs,
-            )
+            try:
+                self._process = await asyncio.create_subprocess_exec(
+                    str(runtime_path),
+                    *command[1:],
+                    **kwargs,
+                )
+            except (NotImplementedError, OSError) as exc:
+                await self._mark_process_crashed(
+                    "Codex App Server subprocess support is unavailable in this runtime."
+                )
+                raise CodexAppServerUnavailableError(
+                    "Codex App Server subprocess could not be started."
+                ) from exc
 
         if self._process is None or self._process.stdin is None or self._process.stdout is None:
             raise CodexAppServerUnavailableError("Codex App Server did not provide stdio pipes.")
@@ -555,7 +651,14 @@ class CodexAppServerLifecycle:
                 break
             text = line.decode("utf-8", errors="replace").strip()
             if text:
-                logger.warning("Codex App Server diagnostic: %s", redact_sensitive_text(text))
+                logger.warning("Codex App Server diagnostic: %s", self._redact_runtime_text(text))
+
+    def _redact_runtime_text(self, value: Any) -> str:
+        text = str(value)
+        for secret in sorted(self._transient_login_secrets, key=len, reverse=True):
+            if secret:
+                text = text.replace(secret, REDACTION_TEXT)
+        return redact_sensitive_text(text)
 
     async def _dispatch_message(self, message: dict[str, Any]) -> None:
         if "method" in message and "id" in message:
@@ -597,7 +700,7 @@ class CodexAppServerLifecycle:
         if method == "account/updated":
             auth_mode = params.get("authMode")
             plan_type = params.get("planType")
-            if auth_mode not in {None, MANAGED_LOGIN_TYPE}:
+            if auth_mode not in {None, MANAGED_AUTH_MODE}:
                 self._crashed = True
                 self._public_state.connection_state = "unavailable"
                 self._public_state.retry_reason = "Unsupported Codex authentication mode rejected."
@@ -626,16 +729,17 @@ class CodexAppServerLifecycle:
                     self._public_state.login_pending = False
                     self._public_state.login_id = None
                     self._public_state.connection_state = (
-                        "connected" if self._public_state.auth_mode == MANAGED_LOGIN_TYPE else "disconnected"
+                        "connected" if self._public_state.auth_mode == MANAGED_AUTH_MODE else "disconnected"
                     )
                 error = params.get("error")
                 if error:
-                    self._public_state.retry_reason = redact_sensitive_text(str(error))
+                    self._public_state.retry_reason = self._redact_runtime_text(error)
+            self._transient_login_secrets = ()
 
     def _apply_account_result(self, result: dict[str, Any]) -> None:
         account = result.get("account") if isinstance(result.get("account"), dict) else None
         identifier, workspace_id, workspace_display, auth_mode, plan_type = _sanitize_public_account(account)
-        if auth_mode not in {None, MANAGED_LOGIN_TYPE}:
+        if auth_mode not in {None, MANAGED_AUTH_MODE}:
             self._crashed = True
             self._public_state.connection_state = "unavailable"
             self._public_state.retry_reason = "Unsupported Codex authentication mode rejected."
@@ -687,6 +791,7 @@ class CodexAppServerLifecycle:
                 await self._process.wait()
         self._process = None
         self._initialized = False
+        self._transient_login_secrets = ()
         self._closing = False
 
 
@@ -704,7 +809,11 @@ def create_codex_app_server_lifecycle(
             configuration_error=reason,
             process_factory=process_factory,
         )
-    return CodexAppServerLifecycle(settings, process_factory=process_factory)
+    return CodexAppServerLifecycle(
+        settings,
+        process_factory=process_factory,
+        _isolation_evidence_verified=_production_isolation_evidence_verified(),
+    )
 
 
 async def shutdown_codex_app_server(lifecycle: CodexAppServerLifecycle | None) -> None:

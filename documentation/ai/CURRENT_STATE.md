@@ -1,6 +1,1228 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-15 15:40:41 +02:00`, `janus-git-governance` completed a read-only checkpoint assessment for `TASK-CHATGPT-DEVICE-CODE-PROVIDER.1`. The repository is on `master`; the bound product/test files plus Task `.1` evidence and documentation artifacts are present locally. No checkpoint commit is recommended yet because the execution result explicitly preserves pre-existing uncommitted changes in the three product files without ownership attribution. The repository does not expose the optional `git_guard.py` or `propose_changesets.py` helper for a narrower local changeset review.
+
+Current goal: retain the validated Task `.1` documentation checkpoint while resolving the operator-approved Git changeset boundary before any commit recommendation.
+
+Active phase: `janus-git-governance`, canonical state `BLOCKED` for commit recommendation only; no product or documentation validation is invalidated.
+
+Last Codex work:
+- read the Solo Git v2 contract
+- confirmed `master` and the configured `backup`/`origin` remotes
+- inspected only the bound Task `.1` paths and their scoped diff statistic
+- found scope/ownership uncertainty in pre-existing uncommitted product changes
+- performed no staging, commit, push, merge, sync, reset, or other Git mutation
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- branch and remote policy check: PASS
+- bound-path status and scoped diff-stat review: PASS
+- optional changeset-helper availability check: NOT AVAILABLE
+- no Git mutation: PASS
+
+Open risks:
+- the three product files have pre-existing uncommitted changes with no safe ownership boundary for a checkpoint commit
+- Task `.1` remains final-audited and documentation-synced, but its local state is not committed or remotely synchronized
+- production remains default-deny; Tasks `.2` through `.5` remain open
+- no `origin/codex-sync` update occurred, so ChatGPT remote state may be stale
+
+Next recommended step for ChatGPT: do not infer a commit-ready Task `.1` changeset from the local master worktree.
+
+Next recommended step for Codex: after the operator supplies an exact changeset boundary, rerun `janus-git-governance`; require `commit: YES`, and separately `push: YES` or `sync: YES` for any remote action.
+
+Last updated: `2026-07-15 15:40:41 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 15:38:05 +02:00`, the task-scoped documentation update for `TASK-CHATGPT-DEVICE-CODE-PROVIDER.1` is COMPLETE after its independent Final Audit PASS. The parent Task, active Spec metadata, Central Registry, PROJECT_STATE, CHANGELOG, and WHAT_I_LEARNED now consistently record the official device-code isolation foundation, its controlled two-account evidence, and continued production default-deny. The stale Spec header status was mechanically reconciled with the existing approved review metadata; the Spec remains active and was not moved because Tasks `.2` through `.5` are still open.
+
+Current goal: preserve the completed Task `.1` documentation checkpoint and assess a bounded Git checkpoint only if explicitly requested.
+
+Active phase: `janus-documentation-update`, canonical state `PASS` with next skill `janus-git-governance`.
+
+Last Codex work:
+- marked Task `.1` DONE in the parent compiled Task without closing the remaining tasks
+- added task-scoped partial-implementation metadata to the approved active Spec
+- synchronized Central Registry, PROJECT_STATE, and CHANGELOG
+- appended a validated reusable credential-isolation pattern after targeted duplicate search
+- created the marker-scoped documentation-update result
+- changed no product code, Backlog item, dashboard snapshot, version, account, or production activation state
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.md`
+- `documentation/SPEC/CHATGPT_OFFICIAL_DEVICE_CODE_PROVIDER_REDESIGN_FEATURE_SPEC.md`
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `CHANGELOG.md`
+- `WHAT_I_LEARNED.md`
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_documentation_update.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- Final-audit artifact validator: PASS
+- marker-scoped documentation validator: PASS
+- Spec-state consistency check: PASS
+- scoped documentation `git diff --check`: PASS
+- product tests not rerun because no product code changed
+
+Open risks:
+- Tasks `.2` through `.5` remain open and require their own Diamond gates
+- production remains default-deny until the later evidence-bound activation task passes
+- the pre-existing Vector/Skill-index import side effect remains outside this auth slice
+- no commit, push, or `origin/codex-sync` occurred, so remote state may not contain this documentation checkpoint
+
+Next recommended step for ChatGPT: treat Task `.1` as final-audited and documentation-synced while keeping the overall Feature Spec active and production disabled.
+
+Next recommended step for Codex: use `janus-git-governance` for a bounded checkpoint assessment; perform no Git mutation without explicit approval.
+
+Last updated: `2026-07-15 15:38:05 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 01:51:22 +02:00`, the independent `janus-final-audit` for `TASK-CHATGPT-DEVICE-CODE-PROVIDER.1` is PASS. The audit used only the compact audit package as its fachliche source, confirmed credential isolation, encrypted Janus-only persistence, redaction, the completed two-account non-interference sequence, and production default-deny, and found no open product issue in the Task `.1` boundary.
+
+Current goal: synchronize the task-level PASS through `janus-documentation-update` without marking the multi-task Feature Spec DONE or enabling production.
+
+Active phase: `janus-final-audit`, canonical state `HANDOFF` to `janus-documentation-update`.
+
+Last Codex work:
+- audited only `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_AUDIT_PACKAGE.md`
+- wrote and validated the independent task-level final-audit result
+- confirmed that Tasks `.2` through `.5` remain parked and production activation remains default-deny
+- performed no product edit, account action, commit, push, sync, or release
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_final_audit.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- audit-package completeness and identity checks: PASS
+- recorded automated and controlled two-account evidence review: PASS
+- corrected secret/email-shape scan of the audit package: PASS, zero hits
+- final-audit artifact validator: PASS
+
+Open risks:
+- the PASS is scoped only to Task `.1`; Tasks `.2` through `.5` remain open
+- production remains default-deny until the later evidence-bound activation task passes
+- the pre-existing Vector/Skill-index import side effect remains outside this auth slice
+- no `origin/codex-sync` update occurred, so remote state may not contain this audit result
+
+Next recommended step for ChatGPT: treat Task `.1` as final-audited PASS and keep the overall Feature Spec plus production activation open.
+
+Next recommended step for Codex: run `janus-documentation-update` for Task `.1` only using the final-audit artifact and compact package.
+
+Last updated: `2026-07-15 01:51:22 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 01:43:16 +02:00`, Codex created a fresh user-owned local project chat for the independent `janus-final-audit` of Task `.1` using 5.6 Sol / high. The new chat is instructed to load only `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_AUDIT_PACKAGE.md`, ignore development-chat history, make no product/account/Git/release changes, and verify credential isolation, redaction, two-account evidence, and production default-deny.
+
+Current goal: await the independent final-audit result for Task `.1`.
+
+Active phase: `janus-final-audit` in a fresh chat, canonical state `HANDOFF`.
+
+Last Codex work:
+- created the fresh local-project audit chat with the approved model and reasoning level
+- bound it to the compact audit package only
+- prohibited product edits, account actions, Git actions, sync, release, and development-history reuse in the audit prompt
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- fresh audit chat creation: PASS
+- model/reasoning: 5.6 Sol / high
+- target skill and package binding: PASS
+- no account action, product edit, commit, push, or sync occurred
+
+Open risks:
+- the independent audit verdict is not yet available in this chat
+- production remains default-deny and Tasks `.2` through `.5` remain parked
+- no `origin/codex-sync` update occurred, so remote state does not contain this handoff
+
+Next recommended step for ChatGPT: inspect the result in the newly created audit chat only.
+
+Next recommended step for Codex: wait for the `janus-final-audit` verdict; route PASS to documentation update and any blocker back to bounded debug/re-audit.
+
+Last updated: `2026-07-15 01:43:16 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 01:37:40 +02:00`, Task `.1` execution and the controlled live two-account gate are PASS. Codex created the compact independent-audit package, found and removed two stale pre-completion statements from the evidence current-gate section, and finalized the execution handoff to `janus-final-audit`. The package binds the approved Spec, task, breakdown, precheck, product/test diff, automated validation, completed live evidence, known out-of-scope import warning, and production-default-deny constraint.
+
+Current goal: run an independent final audit of Task `.1` from the compact package only, without development-chat history.
+
+Active phase: `codex-audit-package-builder`, canonical state `HANDOFF` to `janus-final-audit`.
+
+Last Codex work:
+- built `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_AUDIT_PACKAGE.md`
+- reviewed the generated package and detected stale intermediate evidence wording
+- corrected the evidence current-gate section to match the completed refresh/logout sequence
+- finalized the execution result package path and final-audit target
+- retained production default-deny and parked Tasks `.2` through `.5`
+
+Changed files:
+- `documentation/test-results/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_isolation_evidence.md`
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_execution_result.md`
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_AUDIT_PACKAGE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- complete live two-account gate: PASS
+- execution-result validator: PASS after final handoff fields
+- audit-package required-section and Janus final-audit handoff contract: PASS
+- secret and stale-marker scan: PASS
+- scoped diff check: PASS
+- no account action, commit, push, or sync occurred
+
+Open risks:
+- independent final audit remains required before Task `.1` documentation closeout
+- the pre-existing Vector/Skill-index import side effect remains outside this auth task
+- production remains default-deny and later Tasks `.2` through `.5` remain parked
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain the completed evidence/package
+
+Next recommended step for ChatGPT: in a fresh context, load only `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_AUDIT_PACKAGE.md` and run `janus-final-audit`.
+
+Next recommended step for Codex: emit the new-chat `janus-final-audit` gate for 5.6 Sol / high and make no further implementation or account changes in this development context.
+
+Last updated: `2026-07-15 01:37:40 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 01:35:54 +02:00`, the operator confirmed Account A remained fully healthy after the final Janus-only Account-B logout. The controlled two-account live evidence gate for Task `.1` is therefore PASS: fresh official device-code login, restart persistence without refresh, one owned refresh, final Janus-only logout, and every post-step Account-A observation passed. No credential or transient code was emitted. Janus Account B is logged out, Account A remains healthy, and production activation remains default-deny.
+
+Current goal: close Task `.1` execution evidence, build a compact audit package, and hand the task to an independent final audit without carrying development-chat history.
+
+Active phase: `codex-audit-package-builder`, canonical state `HANDOFF` after `janus-executioner` PASS.
+
+Last Codex work:
+- accepted the final post-logout Account-A healthy observation
+- marked the controlled live two-account gate PASS
+- updated the execution result Manual Janus Validation Gate to PASS
+- preserved the pre-existing Vector/Skill-index import-side-effect warning as an out-of-scope known risk
+- kept production activation unset and later Tasks `.2` through `.5` parked
+
+Changed files:
+- `documentation/test-results/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_isolation_evidence.md`
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- final post-logout Account-A observation: PASS
+- complete live evidence sequence: PASS
+- execution-result validator: pending after package handoff fields are finalized
+- no further account action, commit, push, or sync occurred
+
+Open risks:
+- independent final audit remains required before Task `.1` closeout
+- the pre-existing Vector/Skill-index import side effect remains outside this auth task
+- production remains default-deny and later Tasks `.2` through `.5` remain parked
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain the completed live evidence yet
+
+Next recommended step for ChatGPT: review only the compact audit package in a fresh final-audit context after it is generated.
+
+Next recommended step for Codex: use `codex-audit-package-builder`, validate the package and execution result, then hand off to `janus-final-audit` on 5.6 Sol / high in a new chat.
+
+Last updated: `2026-07-15 01:35:54 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 01:30:13 +02:00`, the operator confirmed Account A remained fully healthy after the Janus-owned Account-B refresh. Codex then executed exactly one final Janus-only `account/logout` against the isolated store. Redacted state is disconnected with no auth mode, pending login, or retry reason. The previously isolated Vector/Skill-index backend-import panic recurred only at Python shutdown and did not affect logout. Zero matching Janus App Server processes remain.
+
+Current goal: obtain the final Account-A observation after the successful Janus-only Account-B logout and close the live two-account evidence gate if Account A remains unchanged.
+
+Active phase: `janus-executioner`, canonical state `NEEDS_INFO` at the final post-logout Account-A observation gate for Task `.1`.
+
+Last Codex work:
+- accepted the post-refresh Account-A healthy observation
+- invoked exactly one isolated Janus-only `account/logout`
+- confirmed disconnected state with no auth mode, pending login, or retry reason
+- observed only the previously isolated backend-import panic at Python shutdown
+- verified zero matching Janus App Server processes remained
+
+Changed files:
+- `documentation/test-results/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_isolation_evidence.md`
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- post-refresh Account-A observation: PASS
+- final isolated `account/logout`: PASS
+- post-logout state: disconnected, no auth mode, no pending login, no retry reason
+- matching Janus App Server process count after logout: zero
+- no Account-A mutation, credential inspection, commit, push, or sync occurred
+
+Open risks:
+- the final Account-A post-logout observation is still required
+- after that observation, execution validation and compact audit-package preparation remain before final audit
+- the pre-existing Vector/Skill-index import side effect remains outside this auth task
+- production remains default-deny and later Tasks `.2` through `.5` remain parked
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this logout evidence
+
+Next recommended step for ChatGPT: request only the final Account-A post-logout observation; any mismatch routes to `janus-debug`.
+
+Next recommended step for Codex: after `Konto A nach finalem Janus-Logout unverändert: JA`, mark the manual live gate PASS, refresh the execution artifact, build the compact audit package, and route Task `.1` to `janus-final-audit` while production remains default-deny.
+
+Last updated: `2026-07-15 01:30:13 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 01:25:45 +02:00`, the operator confirmed Account A unchanged after the Janus restart/read gate. Codex then started one isolated lifecycle and executed exactly one owned `account/read(refreshToken=true)` for Account B. Redacted state remained connected with auth mode `chatgpt`, no pending login, and no retry reason. The already isolated Vector/Skill-index backend-import panic recurred only at Python shutdown and did not affect the refresh. Zero matching Janus App Server processes remain.
+
+Current goal: obtain the mandatory Account-A observation after the successful Janus-owned Account-B refresh, then perform the final Janus-only logout only if Account A is unchanged.
+
+Active phase: `janus-executioner`, canonical state `NEEDS_INFO` at the post-refresh Account-A observation gate for Task `.1`.
+
+Last Codex work:
+- accepted the operator response as the current post-restart Account-A unchanged observation
+- started a fresh isolated lifecycle against the persisted Janus home
+- invoked exactly one `account/read` with refresh enabled
+- confirmed redacted connected ChatGPT state with no pending login or retry reason
+- observed only the previously isolated backend-import panic at Python shutdown
+- verified zero matching Janus App Server processes remained
+
+Changed files:
+- `documentation/test-results/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_isolation_evidence.md`
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- post-restart Account-A observation: PASS
+- owned `account/read(refreshToken=true)`: PASS
+- post-refresh state: connected, auth mode `chatgpt`, no pending login, no retry reason
+- matching Janus App Server process count after refresh: zero
+- no login, logout, account switch, credential inspection, Account-A mutation, commit, push, or sync occurred
+
+Open risks:
+- Account A must now be checked after the owned refresh
+- final Janus-only logout and its post-logout Account-A observation remain untested
+- the pre-existing Vector/Skill-index import side effect remains outside this auth task
+- production remains default-deny and later Tasks `.2` through `.5` remain parked
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this refresh evidence
+
+Next recommended step for ChatGPT: request only the Account-A post-refresh observation; any mismatch routes to `janus-debug`.
+
+Next recommended step for Codex: after `Konto A nach Janus-Refresh unverändert: JA`, continue `janus-executioner` on 5.6 Sol / high and execute exactly one Janus-only `account/logout`, then stop for the final Account-A observation.
+
+Last updated: `2026-07-15 01:25:45 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 01:23:58 +02:00`, the operator confirmed Account A unchanged after the fresh Janus Account-B login. Codex then closed the original isolated lifecycle, verified process exit, and started a new lifecycle against the same Janus-only home. A non-refreshing account read returned connected ChatGPT auth, no pending login, and no retry reason, proving restart persistence. A SQLite panic observed at Python shutdown was reproduced by importing the Janus backend module without starting any App Server or account action; it is a pre-existing Vector/Skill-index import side effect rather than an auth or persistence failure. No matching Janus App Server process remains.
+
+Current goal: obtain the mandatory Account-A observation after the successful Janus restart-persistence read, then perform one owned refresh only if Account A is unchanged.
+
+Active phase: `janus-executioner` with a bounded `janus-debug` classification, canonical state `NEEDS_INFO` at the post-restart Account-A observation gate for Task `.1`.
+
+Last Codex work:
+- accepted the post-login Account-A unchanged observation
+- closed the original login lifecycle and verified its process exited
+- created a new lifecycle against the same isolated Janus home
+- read account state with refresh explicitly disabled and confirmed persisted connected ChatGPT auth
+- reproduced the SQLite panic in an import-only process with no App Server or account action
+- classified that panic with the accompanying Vector/Skill-index degrade messages as a pre-existing backend import side effect outside the bound auth slice
+- verified zero matching Janus App Server processes remained
+
+Changed files:
+- `documentation/test-results/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_isolation_evidence.md`
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- post-login Account-A observation: PASS
+- original lifecycle shutdown and process exit: PASS
+- new-lifecycle `account/read(refreshToken=false)`: PASS
+- restart persistence: connected, auth mode `chatgpt`, no pending login, no retry reason
+- import-only panic isolation probe: reproduced without App Server/account action
+- matching Janus App Server process count after read: zero
+- no owned refresh, logout, credential inspection, Account-A mutation, commit, push, or sync occurred
+
+Open risks:
+- Account A must now be checked after the restart/read step
+- owned refresh and final Janus-only logout remain untested
+- the pre-existing Vector/Skill-index import side effect remains outside this auth task and should not be mistaken for an App Server regression
+- production remains default-deny and later Tasks `.2` through `.5` remain parked
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this persistence evidence
+
+Next recommended step for ChatGPT: request only the Account-A post-restart observation; any mismatch routes to `janus-debug`.
+
+Next recommended step for Codex: after `Konto A nach Janus-Neustart unverändert: JA`, continue `janus-executioner` on 5.6 Sol / high and run exactly one owned `account/read(refreshToken=true)` against the isolated store, then stop for another Account-A observation.
+
+Last updated: `2026-07-15 01:23:58 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 01:15:58 +02:00`, the corrected in-app browser handoff succeeded and the operator authenticated Account B on the official OpenAI page. Codex then started exactly one fresh pinned App Server device-code attempt, kept the code memory-only, filled only the unique official one-time-code fields, and submitted it. The official page reported successful Codex login. Redacted Janus state is connected with auth mode `chatgpt`, no pending login, and no retry reason. The transient code was cleared and the browser success tab closed.
+
+Current goal: obtain the mandatory Account-A non-interference observation immediately after the fresh Janus Account-B login, before any restart, refresh, or logout.
+
+Active phase: `janus-executioner`, canonical state `NEEDS_INFO` at the post-login Account-A observation gate for Task `.1`.
+
+Last Codex work:
+- reclaimed the retained official OpenAI tab after operator-controlled Account-B sign-in
+- confirmed the page exposed exactly nine visible one-time-code fields and one disabled-until-complete Continue action
+- started one new pinned-runtime, Janus-only-home, keyring-only official device-code attempt
+- validated only non-sensitive code shape metadata and kept the actual value in memory
+- filled the nine official code fields and submitted the enabled Continue action
+- observed the official successful-login page and redacted Janus connected state
+- cleared the transient code and closed the success tab
+
+Changed files:
+- `documentation/test-results/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_isolation_evidence.md`
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_debug_result_device_auth_disabled.md`
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- official authenticated device-code page: PASS
+- unique visible one-time-code field count: nine
+- fresh App Server device-code start: PASS
+- code shape and non-emission boundary: PASS
+- official submission success page: PASS
+- redacted lifecycle status: connected, auth mode `chatgpt`, no pending login, no retry reason
+- transient-code cleanup: PASS
+- no restart, refresh, logout, credential inspection, Account-A action, commit, push, or sync occurred
+
+Open risks:
+- Account A must now be checked before any additional Janus lifecycle action
+- restart persistence, refresh ownership, and final Janus-only logout remain untested
+- production remains default-deny and later Tasks `.2` through `.5` remain parked
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this successful login evidence
+
+Next recommended step for ChatGPT: request only the Account-A post-login observation and route any mismatch immediately to `janus-debug`.
+
+Next recommended step for Codex: after `Konto A nach frischem Janus-Login unverändert: JA`, continue `janus-executioner` on 5.6 Sol / high, close the current lifecycle to simulate Janus shutdown, start a new lifecycle against the same isolated home, and verify persistence using only redacted state.
+
+Last updated: `2026-07-15 01:15:58 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 01:11:29 +02:00`, Codex identified why the operator saw no in-app browser window: the browser finalizer had been called with a tab object instead of its required `{ keep: [{ tab, status }] }` options shape, which omitted and closed the intended handoff tab. Codex reopened the generic official OpenAI device page, enabled in-app browser visibility, and finalized the tab with explicit `handoff` retention. No device-code attempt is active, so no code can expire or be submitted during Account-B sign-in.
+
+Current goal: confirm the corrected in-app OpenAI tab is visible and let the operator authenticate Account B there before starting a fresh time-limited device code.
+
+Active phase: `janus-executioner`, canonical state `NEEDS_INFO` at the visible-tab and Account-B sign-in gate for Task `.1`.
+
+Last Codex work:
+- reproduced the missing-tab symptom after the operator reported no new Codex window
+- inspected the installed browser client's exact finalizer contract
+- confirmed the prior call used the wrong options shape and therefore closed the tab
+- reopened only the generic official OpenAI device page
+- enabled in-app browser visibility and retained the tab explicitly with handoff status
+- kept the device-code lifecycle stopped and all prior transient codes discarded
+
+Changed files:
+- `documentation/test-results/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_isolation_evidence.md`
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- installed browser-client contract inspection: PASS
+- missing-tab root cause: confirmed local finalizer argument mismatch
+- corrected visible handoff invocation: PASS
+- active device-code attempt: none
+- no credential handling, device-code emission, Account-A mutation, commit, push, or sync occurred
+
+Open risks:
+- operator visibility of the corrected in-app tab still requires confirmation
+- Account B must be authenticated in that tab before starting a new code timer
+- login completion, Account-A observation, Janus restart persistence, refresh ownership, and final Janus-only logout remain untested
+- production remains default-deny and later Tasks `.2` through `.5` remain parked
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this correction
+
+Next recommended step for ChatGPT: ask the operator to authenticate Account B in the now-retained visible OpenAI tab, enter no device code, and report either success or that the tab is still not visible.
+
+Next recommended step for Codex: after `Konto B im sichtbaren Codex-OpenAI-Tab angemeldet: JA`, continue `janus-executioner` on 5.6 Sol / high and start one fresh official device-code attempt for immediate memory-only submission.
+
+Last updated: `2026-07-15 01:11:29 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 01:03:32 +02:00`, Codex confirmed the operator's Account-B session was in a normal browser while the separate Codex in-app OpenAI tab still showed sign-in. The pending device-code attempt expired before the correct browser session was authenticated. Codex removed that transient code, stopped the worker, verified it exited, and reopened the generic official OpenAI login page in the Codex in-app browser. No device-code attempt is currently active and no Account-A action occurred.
+
+Current goal: let the operator authenticate Account B specifically in the visible Codex in-app OpenAI tab before starting one final fresh time-limited device-code attempt.
+
+Active phase: `janus-executioner`, canonical state `NEEDS_INFO` at the correct-browser-session sign-in gate for Task `.1`.
+
+Last Codex work:
+- found that the previously handed-off tab was no longer open
+- reopened the official OpenAI device page and observed it redirect to sign-in in the Codex in-app browser
+- distinguished the operator's normal-browser Account-B session from the separate in-app-browser session
+- observed the active lifecycle had already changed to disconnected with no pending login and a retry reason
+- stopped the expired worker, removed its transient code, and verified the worker process exited
+- handed the generic official OpenAI sign-in page back to the operator without starting another code timer
+
+Changed files:
+- `documentation/test-results/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_isolation_evidence.md`
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_debug_result_device_auth_disabled.md`
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- in-app browser open-tab recovery: no previous handed-off tab remained
+- official page reopen: PASS; OpenAI sign-in visible in Codex in-app browser
+- redacted lifecycle status: disconnected, no pending login, retry present
+- expired-code cleanup: PASS
+- helper process exit: PASS
+- no credential handling, code submission, Account-A mutation, commit, push, or sync occurred
+
+Open risks:
+- the operator must authenticate Account B in the Codex in-app browser, not only in a normal browser
+- no new device-code timer should start until that browser session is ready
+- login completion, Account-A observation, Janus restart persistence, refresh ownership, and final Janus-only logout remain untested
+- production remains default-deny and later Tasks `.2` through `.5` remain parked
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this clarification step
+
+Next recommended step for ChatGPT: point the operator to the newly visible `Willkommen zurück – OpenAI` tab inside Codex and ask for confirmation only after Account-B sign-in there is complete.
+
+Next recommended step for Codex: after `Konto B im Codex-OpenAI-Tab angemeldet: JA`, continue `janus-executioner` on 5.6 Sol / high, start one fresh official attempt, and submit its memory-only code promptly in the already-authenticated official tab.
+
+Last updated: `2026-07-15 01:03:32 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 00:48:36 +02:00`, the operator confirmed Codex device-code authorization is enabled for Account B. Codex validated the bound precheck and started exactly one fresh official App Server attempt. The allowlisted OpenAI verification destination returned a new transient code that remains only in worker/browser memory. The handed-off official page redirected to OpenAI sign-in; Janus reports connecting, login pending, and no retry reason. No code was submitted and no Account-A action occurred.
+
+Current goal: let the operator complete only Account-B authentication on the handed-off official OpenAI page, then submit the fresh memory-only code and observe redacted login completion.
+
+Active phase: `janus-executioner`, canonical state `NEEDS_INFO` at the user-controlled Account-B sign-in gate for Task `.1`.
+
+Last Codex work:
+- ran the start-of-work reminder check; no healthcheck is due
+- revalidated the exact Task `.1` precheck: PASS
+- accepted the operator's Account-B device-authorization confirmation
+- recovered a local helper-launch quoting issue before any device code or account mutation occurred
+- started a fresh pinned-runtime, Janus-only-home, keyring-only official device-code attempt
+- verified only redacted state: connecting, no auth mode, login pending, no retry reason
+- handed the official OpenAI sign-in tab to the operator and stopped before credentials, MFA, CAPTCHA, or code submission
+
+Changed files:
+- `documentation/test-results/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_isolation_evidence.md`
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_debug_result_device_auth_disabled.md`
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- healthcheck reminder gate: CLEAR
+- Task `.1` precheck validator: PASS
+- fresh official `chatgptDeviceCode` start: PASS
+- allowlisted verification destination: PASS
+- redacted lifecycle status: connecting, login pending, no retry reason
+- transient-code non-emission boundary: PASS
+- no code submission, login completion, Account-A mutation, credential inspection, commit, push, or sync occurred
+
+Open risks:
+- Account B must be authenticated by the operator; Codex must not handle password, MFA, or CAPTCHA
+- the fresh attempt is time-limited and must not be replaced with the discarded prior code
+- post-login Account-A observation, Janus restart persistence, refresh ownership, and final Janus-only logout remain untested
+- production remains default-deny and later Tasks `.2` through `.5` remain parked
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this live-evidence step
+
+Next recommended step for ChatGPT: ask only for confirmation that Account-B sign-in is complete on the handed-off official page; the operator must not enter a device code manually.
+
+Next recommended step for Codex: after `OpenAI-Anmeldung Konto B abgeschlossen: JA`, continue `janus-executioner` on 5.6 Sol / high, reclaim the same official tab, submit the fresh in-memory code only to the unique code field, and query only redacted lifecycle status.
+
+Last updated: `2026-07-15 00:48:36 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 00:34:46 +02:00`, the official Account-B page rejected the fresh device-code attempt because Codex device-code authorization is disabled in that ChatGPT account's Security settings. This is a provider-owned account gate, not a Janus code failure. The page appeared inside Codex because Codex intentionally handed the official URL to the in-app browser; no Account-A switch was performed. The failed attempt was terminated, no matching Janus App Server process remained, and the transient code was removed without emission.
+
+Current goal: let the operator enable only the Codex device-code authorization setting for Account B, then start exactly one new official attempt with a fresh transient code.
+
+Active phase: `janus-debug`, canonical state `NEEDS_INFO` for Task `.1`, failure code `CHATGPT_ACCOUNT_B_DEVICE_CODE_AUTH_DISABLED`.
+
+Last Codex work:
+- accepted the exact official provider error as confirmation of the external Account-B security-setting gate
+- completed the mandatory targeted `WHAT_I_LEARNED.md` lookup; no matching device-auth pattern was found
+- terminated the failed helper/runtime attempt and verified zero matching Janus App Server processes remained
+- removed the transient device code from the browser-controller session without printing or recording it
+- documented the bounded debug result and preserved production default-deny
+
+Changed files:
+- `documentation/test-results/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_isolation_evidence.md`
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_debug_result_device_auth_disabled.md`
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- exact provider gate classification: PASS
+- targeted learning search: PASS; no relevant prior pattern
+- failed helper/runtime termination: PASS
+- matching Janus App Server process count after cleanup: zero
+- transient-code removal and non-emission boundary: PASS
+- no credential inspection, Account-A mutation, product-code change, commit, push, or sync occurred
+
+Open risks:
+- Account B cannot use device-code login until its operator-controlled ChatGPT security setting is enabled
+- the failed one-time code is invalid for continuation; a new attempt is mandatory
+- fresh login completion, Account-A observation, Janus restart persistence, refresh ownership, and final Janus-only logout remain untested
+- production remains default-deny and later Tasks `.2` through `.5` remain parked
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this debug evidence
+
+Next recommended step for ChatGPT: instruct the operator to enable Codex device-code authorization only while signed into Account B at `https://chatgpt.com/#settings/Security`, without changing Account A.
+
+Next recommended step for Codex: after `Gerätecode-Autorisierung für Konto B aktiviert: JA`, continue `janus-executioner` on 5.6 Sol / high and start one fresh official device-code attempt; never reuse the discarded code.
+
+Last updated: `2026-07-15 00:34:46 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 00:28:23 +02:00`, the operator confirmed Account A unchanged after the Janus-only logout. Codex then started exactly one fresh official App Server `chatgptDeviceCode` login. The returned verification destination matched the allowlisted official OpenAI page. The transient user code was transferred only in memory to the browser controller and was not emitted to chat, logs, state, or evidence. The visible official browser page is waiting for the operator to authenticate Account B; code submission and login completion have not occurred.
+
+Current goal: let the operator complete only Account-B authentication on the official OpenAI page, then submit the already-held transient device code to that page and observe login completion without exposing sensitive values.
+
+Active phase: `janus-executioner`, canonical state `NEEDS_INFO` at the user-controlled Account-B browser sign-in gate for Task `.1`.
+
+Last Codex work:
+- accepted the post-logout Account-A unchanged observation
+- started a fresh hidden controlled lifecycle with the pinned runtime, Janus-only home, keyring-only policy, and official device-code login
+- verified the App Server verification destination equals the allowlisted official OpenAI device page
+- kept the one-time code solely in worker/browser memory
+- opened the official flow in the in-app browser; it redirected to OpenAI sign-in because no browser account session was present
+- stopped before reading or entering email, password, MFA, CAPTCHA, or submitting the device code
+
+Changed files:
+- `documentation/test-results/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_isolation_evidence.md`
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- post-logout Account-A observation: PASS
+- fresh official `chatgptDeviceCode` start: PASS
+- exact official verification destination: PASS
+- transient-code non-emission boundary: PASS
+- browser reached official OpenAI sign-in: PASS
+- no code submission, login completion, refresh, restart check, credential inspection, cleanup, commit, push, or sync occurred
+
+Open risks:
+- Account B must be selected and authenticated by the operator; Codex must not handle credentials or MFA
+- the active device-code attempt expires after the provider timeout if the operator does not complete sign-in promptly
+- post-login Account-A non-interference, Janus restart persistence, refresh ownership, and final Janus-only logout remain untested
+- production remains default-deny and later Tasks `.2` through `.5` remain parked
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this evidence step
+
+Next recommended step for ChatGPT: instruct the operator to complete only Account-B sign-in in the handed-off official page and not enter any code manually.
+
+Next recommended step for Codex: after `OpenAI-Anmeldung Konto B abgeschlossen: JA`, continue `janus-executioner` on 5.6 Sol / high, inspect the same browser tab, submit the in-memory device code only to the unique official code field, and query only redacted lifecycle status; if CAPTCHA appears, ask separately before solving.
+
+Last updated: `2026-07-15 00:28:23 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 00:17:24 +02:00`, the operator confirmed Account A unchanged after the non-refreshing Janus baseline read. Codex then executed exactly one announced mutation: Janus-only `account/logout` against the isolated Janus home. The lifecycle returned disconnected, no auth mode, and no pending login. A redacted diagnostic indicated the old Janus token had already been invalidated; no token value or account identifier was emitted. Fresh device-code login has not started.
+
+Current goal: obtain the post-Janus-logout Account-A observation, then start one fresh official device-code Account-B login without exposing the one-time code in chat, logs, or evidence.
+
+Active phase: `janus-executioner`, canonical state `NEEDS_INFO` at the post-logout Account-A observation gate for Task `.1`.
+
+Last Codex work:
+- accepted the operator's Account-A unchanged observation after baseline read
+- invoked only Janus-owned App Server `account/logout` under the pinned runtime, isolated home, and forced keyring policy
+- confirmed Janus public state is disconnected with no auth mode or pending login
+- recorded only a redacted old-token-invalidated diagnostic, with no credential or identifier value
+- created the controlled redacted evidence artifact
+- stopped before device-code login, refresh, restart, or any further mutation
+
+Changed files:
+- `documentation/test-results/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_isolation_evidence.md`
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- Account-A observation after safe baseline read: PASS
+- Janus-only logout: PASS (`disconnected`, no auth mode, no pending login)
+- redaction boundary: PASS; no token value, account identifier, device code, verification value, or credential content emitted
+- fresh-login absence: PASS
+- unrelated pre-existing Vector/Skill-index warnings remained outside the auth result
+- no refresh, new login, restart check, credential inspection, cleanup, commit, push, or sync occurred
+
+Open risks:
+- Account A must now be checked before any fresh login begins
+- the redacted old-token-invalidated warning confirms the prior Janus session cannot count as fresh device-code evidence
+- fresh device-code login, restart persistence, refresh ownership, and final Janus-only logout remain untested
+- production remains default-deny and later Tasks `.2` through `.5` remain parked
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this evidence step
+
+Next recommended step for ChatGPT: accept only the post-logout Account-A observation; any mismatch routes to `janus-debug` and stops the sequence.
+
+Next recommended step for Codex: after `Konto A nach Janus-Logout unverändert: JA`, continue `janus-executioner` on 5.6 Sol / high and start exactly one fresh official device-code login through the browser-controlled flow without emitting the user code; then stop for login completion and Account-A observation.
+
+Last updated: `2026-07-15 00:17:24 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 00:07:59 +02:00`, the user explicitly authorized the controlled official-device-code two-account test. The first controlled step was a non-refreshing read of the Janus-only store. It returned only `connected`, auth mode `chatgpt`, and no pending login; no identifier or credential value was emitted and the lifecycle was closed. This proves an older Janus session is still present, so a genuinely fresh device-code test requires a separately announced Janus-only logout next. No mutation has occurred in this resumed evidence sequence.
+
+Current goal: obtain the operator's Account-A unchanged observation after the safe baseline read, then perform exactly one Janus-only logout before beginning fresh device-code login.
+
+Active phase: `janus-executioner`, canonical state `NEEDS_INFO` at the pre-mutation Account-A observation gate for Task `.1`.
+
+Last Codex work:
+- accepted exact live-test authority `Device-Code-Zwei-Konten-Test: YES`
+- started the controlled lifecycle with the pinned runtime, Janus-only home, forced keyring, and private evidence seam
+- read account state with `refresh_token=False`
+- emitted only connection state, auth mode, and pending-login boolean
+- closed the lifecycle without login, refresh, logout, revocation, cleanup, or keyring inspection
+- identified that an older Janus ChatGPT session is still connected and must be deliberately logged out before fresh evidence
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- controlled Janus baseline read, `refresh_token=False`: PASS (`connected`, `chatgpt`, no pending login)
+- output redaction boundary: PASS; no account identifier, token, device code, verification value, or credential content emitted
+- lifecycle close after read: PASS
+- unrelated pre-existing Vector/Skill-index startup warnings observed; account-state probe still completed successfully
+- no external account mutation, commit, push, or sync occurred
+
+Open risks:
+- the existing Janus session must not be silently reused as fresh device-code evidence
+- Janus-only logout is the next real mutation and requires the operator's Account-A observation first
+- fresh device-code login, restart persistence, refresh ownership, and logout non-interference remain untested
+- production remains default-deny and later Tasks `.2` through `.5` remain parked
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this baseline evidence
+
+Next recommended step for ChatGPT: accept only the operator observation that Account A still shows the same account, quota, settings, and connected state.
+
+Next recommended step for Codex: after `Konto A nach Janus-Statusabfrage unverändert: JA`, continue `janus-executioner` on 5.6 Sol / high and execute exactly one Janus-only `account/logout`; then stop for the post-logout Account-A observation.
+
+Last updated: `2026-07-15 00:07:59 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-14 23:57:57 +02:00`, the bounded implementation of `TASK-CHATGPT-DEVICE-CODE-PROVIDER.1` is complete through automated validation. The lifecycle now uses only official App Server `chatgptDeviceCode`, accepts only the pinned official verification page, keeps one-time values transient and redacted, separates login type from connected auth mode, retains keyring-only Janus `CODEX_HOME`, and keeps production evidence unset. Automated Python, Electron, compile, headed E2E, and diff gates all pass. No live account action occurred.
+
+Current goal: obtain a separate explicit authorization for the controlled live device-code two-account sequence, then prove Janus login, restart, refresh, and logout do not affect the parallel Codex Account A.
+
+Active phase: `janus-executioner`, canonical state `NEEDS_INFO` at the mandatory live validation authority gate for Task `.1`.
+
+Last Codex work:
+- implemented official `chatgptDeviceCode` start and response validation in the existing lifecycle
+- allowed only `https://auth.openai.com/codex/device` and bounded device user-code syntax
+- kept verification URL and user code out of public state and exact-value-redacted runtime diagnostics/completion failures
+- preserved `chatgpt` as the only supported connected-account auth mode
+- retained keyring-only, Janus-only home, strict login, API-key removal, private controlled seam, and default-deny production behavior
+- replaced the obsolete failed browser-evidence activation target with the later Task `.5` device-code evidence revision while leaving the production revision `None`
+- added focused device-code, refresh, redaction, official-boundary, and no-private-endpoint regressions
+
+Changed files:
+- `backend/llm_providers/codex_app_server.py`
+- `backend/tests/test_codex_app_server.py`
+- `tests/electron/codex-runtime-boundary.test.cjs`
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- precheck validator: PASS
+- targeted `WHAT_I_LEARNED` search: completed, no device-code-specific pattern found
+- focused Python lifecycle suite: PASS, `22 passed`
+- Electron runtime boundary: PASS, `9 passed`
+- Python compile: PASS
+- headed Settings regression: PASS, `4 passed`
+- scoped diff check: PASS
+- no live login, account read, refresh, logout, revocation, credential inspection, cleanup, commit, push, or sync occurred
+
+Open risks:
+- the prior browser-flow two-account failure remains authoritative for that old flow; only a fresh device-code non-interference test can establish the second required proof class
+- the actual Janus secure-store persistence, refresh ownership, and logout non-interference still require controlled live evidence
+- Task `.1` remains incomplete until that evidence passes or is documented failed
+- normal production remains default-deny and Tasks `.2` through `.5` remain parked
+- the pre-existing isolated Janus Account-B credential remains untouched; a fresh controlled login must not silently reuse or clean it without an explicit sequence
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this implementation or snapshot
+
+Next recommended step for ChatGPT: require the exact live-authority confirmation and keep all later Settings/model/chat/activation work parked.
+
+Next recommended step for Codex: after `Device-Code-Zwei-Konten-Test: YES`, continue `janus-executioner` on 5.6 Sol / high, verify Account-A baseline first, then perform one announced external mutation at a time with redacted evidence; on any mismatch route immediately to `janus-debug`.
+
+Last updated: `2026-07-14 23:57:57 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-14 23:44:41 +02:00`, the single-task preimplementation check for `TASK-CHATGPT-DEVICE-CODE-PROVIDER.1` passed. The bundled Codex `0.144.4` runtime exposes the official App Server `chatgptDeviceCode` flow, persists its result through the configured auth store, and derives the Windows encrypted-secrets keyring identity from canonical `CODEX_HOME`. This proves Task `.1` is implementable with a separately named Janus-only credential boundary. It does not supersede the earlier failed browser-flow evidence, activate production, or authorize any account action.
+
+Current goal: implement only the secure official device-code foundation for Task `.1`, then stop after green automated gates for a separate controlled two-account authorization decision.
+
+Active phase: `janus-preimplementation-check`, canonical state `PRE-CHECK PASSED` with `HANDOFF` to `janus-executioner` for Task `.1` only.
+
+Last Codex work:
+- created `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_precheck.md`
+- verified the bundled App Server schema exposes `chatgptDeviceCode`, `userCode`, and `verificationUrl`
+- verified pinned official source routes device-code completion through the configured Codex auth storage
+- verified direct keyring and the Windows-default encrypted-secrets backend derive credential/key identities from canonical `CODEX_HOME`
+- constrained execution to the existing lifecycle file, focused tests, and redacted evidence path
+- kept production default-deny and all live account actions behind later gates
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_precheck.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- bundled `codex-cli 0.144.4` App Server schema generation and device-code field inspection: PASS
+- pinned official `rust-v0.144.4` App Server device-code source inspection: PASS
+- pinned official `rust-v0.144.4` credential-storage and Windows backend-default source inspection: PASS
+- artifact identity, single-task scope, file boundary, model, risk, and evidence-gate review: PASS
+- no implementation tests, login, logout, refresh, revocation, credential inspection, cleanup, commit, push, or sync occurred
+
+Open risks:
+- source-level namespace separation is only the first proof class; the fresh official-device-code two-account non-interference test is still mandatory
+- prior browser-flow isolation evidence remains failed and production login stays disabled
+- any secure-store failure, unexpected shared session effect, private endpoint requirement, or file-boundary expansion must block execution
+- the isolated Janus Account-B credential remains untouched and outside this task
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this precheck
+
+Next recommended step for ChatGPT: treat only Task `.1` as execution-ready; do not infer approval for Settings, models, chat transport, production activation, or live account actions.
+
+Next recommended step for Codex: run `janus-executioner` on 5.6 Sol / high for Task `.1`; use 5.6 Terra / high only if Sol is unavailable and record `SOL_UNAVAILABLE_FOR_CHATGPT_CODEX_ACCOUNT`. Execute automated gates first, then stop for separate user authority before the live two-account sequence.
+
+Last updated: `2026-07-14 23:44:41 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-14 23:35:47 +02:00`, `TASK-CHATGPT-DEVICE-CODE-PROVIDER.1` is refined and released as the only target for preimplementation check. The handoff adds hard proof gates for bundled-runtime device-code support, a truly separate encrypted persistent Janus credential store, default-deny before credential effects, and no private OAuth/backend dependency. Tasks `.2` through `.5` remain parked. No implementation, test execution, or account action occurred.
+
+Current goal: run a single-task preimplementation check that either proves Task `.1` executable within its bound files and supported provider boundaries or blocks before code/account changes.
+
+Active phase: `janus-task-breakdown`, canonical state `TASK DESIGN COMPLETE` with `HANDOFF` to `janus-preimplementation-check` for Task `.1` only.
+
+Last Codex work:
+- created `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_task_breakdown.md`
+- bound exactly one target task and parked all later feature tasks
+- required proof that the actual bundled runtime supports official `chatgptDeviceCode`
+- required proof that the credential store is encrypted, persistent, Janus-specific, and not shared with Codex Desktop/CLI/IDE
+- added explicit block conditions for extra product modules, private provider endpoints, shared slots, unclear credential ownership, or unavailable secure persistence
+- reserved any live two-account action for execution after green automated gates and separate explicit user authority
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_task_breakdown.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `validate_task_handoff.py --task ... --target TASK-CHATGPT-DEVICE-CODE-PROVIDER.1`: PASS
+- scoped `git diff --check` for task and breakdown artifacts: PASS
+- no implementation, test execution, login, logout, refresh, revocation, credential inspection, cleanup, commit, push, or sync occurred
+
+Open risks:
+- technical compatibility between the pinned/bundled Codex runtime and a separately namespaced encrypted persistent store is not yet proven
+- if the current file boundary cannot satisfy the storage contract, precheck must block and return to task refinement rather than silently adding architecture
+- the earlier two-account failure remains authoritative and production login stays disabled
+- the controlled Janus Account-B test credential remains untouched and outside this handoff
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this handoff
+
+Next recommended step for ChatGPT: treat Task `.1` as the only released slice and expect precheck to block on any unsupported or shared credential path.
+
+Next recommended step for Codex: run `janus-preimplementation-check` on 5.6 Sol / high for Task `.1`; if Sol is unavailable, use 5.6 Terra / high with `SOL_UNAVAILABLE_FOR_CHATGPT_CODEX_ACCOUNT` recorded.
+
+Last updated: `2026-07-14 23:35:47 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-14 23:32:53 +02:00`, the approved ChatGPT device-code replacement Spec has been compiled into a valid five-task artifact. The sequence puts secure credential isolation and an initial two-account proof first, then Settings lifecycle, verified-model visibility, chat/privacy integration, and finally an evidence-bound production activation gate. No implementation or live authentication action occurred.
+
+Current goal: refine and release only `TASK-CHATGPT-DEVICE-CODE-PROVIDER.1` for preimplementation check; later Tasks `.2` through `.5` remain parked.
+
+Active phase: `janus-spec-to-task`, canonical state `HANDOFF` to `janus-task-breakdown` for Task `.1` only.
+
+Last Codex work:
+- created `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.md`
+- compiled five deterministic implementation tasks directly from the approved replacement Spec
+- bound Task `.1` to the existing Codex App Server lifecycle, focused Python tests, Electron boundary tests, and redacted isolation evidence
+- kept production activation exclusively in Task `.5` after full automated and real two-account evidence
+- corrected a validator-sensitive task identifier/title without changing scope
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `validate_task_artifact.py --task documentation\tasks\TASK-CHATGPT-DEVICE-CODE-PROVIDER.md`: PASS
+- scoped `git diff --check` for the task artifact: PASS
+- old temporary task filename absence and final task filename presence: PASS
+- no implementation, login, logout, token refresh, revocation, credential inspection, cleanup, commit, push, or sync occurred
+
+Open risks:
+- Task `.1` still requires task-breakdown and preimplementation proof of an actually separate encrypted persistent credential mechanism
+- the earlier two-account failure remains authoritative and production login stays disabled
+- Tasks `.2` through `.5` must not be released before Task `.1` passes its isolation gate
+- the controlled Janus Account-B test credential remains untouched and outside this task compilation
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this task artifact or snapshot
+
+Next recommended step for ChatGPT: treat only Task `.1` as the candidate next slice; do not infer approval for UI, models, chat transport, or activation.
+
+Next recommended step for Codex: run `janus-task-breakdown` on 5.6 Sol / high for `TASK-CHATGPT-DEVICE-CODE-PROVIDER.1`; if Sol is unavailable, use 5.6 Terra / high and record `SOL_UNAVAILABLE_FOR_CHATGPT_CODEX_ACCOUNT`.
+
+Last updated: `2026-07-14 23:32:53 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-14 23:26:56 +02:00`, the normalized replacement ChatGPT device-code Feature Spec passed independent Spec review with `APPROVED`. The reviewer found the feature complete, deterministic, testable, security-bounded, and ready for task compilation without splitting the Spec. Review metadata is written and both Spec validators pass. No implementation or live authentication action occurred.
+
+Current goal: compile the approved replacement Spec into deterministic execution tasks that put credential-isolation proof before any user-facing production activation.
+
+Active phase: `janus-spec-review`, canonical state `HANDOFF` to `janus-spec-to-task`.
+
+Last Codex work:
+- reviewed exactly `documentation/SPEC/CHATGPT_OFFICIAL_DEVICE_CODE_PROVIDER_REDESIGN_FEATURE_SPEC.md` as the sole source of truth
+- approved the goal, surfaces, state behavior, privacy boundary, failure cases, acceptance checks, and scope
+- confirmed complexity `76`, risk `HIGH`, recommended review model `5.6 Sol`, confidence `HIGH`, and `Split Required: NO`
+- wrote only the allowed `SPEC REVIEW METADATA` block
+- confirmed UTF-8 content is intact
+
+Changed files:
+- `documentation/SPEC/CHATGPT_OFFICIAL_DEVICE_CODE_PROVIDER_REDESIGN_FEATURE_SPEC.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `validate_spec_review.py --spec ...`: PASS
+- `validate_feature_spec.py ...`: PASS
+- scoped `git diff --check` for the reviewed Spec: PASS
+- UTF-8 content probe: PASS
+- no implementation, login, logout, token refresh, revocation, credential inspection, cleanup, commit, push, or sync occurred
+
+Open risks:
+- task compilation and task-level sequencing have not yet occurred
+- the secure separately namespaced persistent credential mechanism remains technically unproven
+- the earlier two-account failure remains authoritative and production login stays disabled
+- the controlled Janus Account-B test credential remains untouched and outside this review
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this approved Spec state
+
+Next recommended step for ChatGPT: treat the replacement Spec as approved but not implemented; preserve the release gate and rejected browser/shared-keyring assumptions.
+
+Next recommended step for Codex: run `janus-spec-to-task` on 5.6 Terra / high, then use `janus-task-breakdown` to release only the first isolation/storage proof task for preimplementation check.
+
+Last updated: `2026-07-14 23:26:56 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-14 23:16:45 +02:00`, the replacement ChatGPT device-code Feature Spec passed deterministic normalization validation without required edits. The Spec is parser-safe and retains every locked product decision; it is now handed to independent Spec review. No implementation or live authentication action occurred.
+
+Current goal: independently review the normalized security-critical replacement Spec before compiling any tasks or changing product code.
+
+Active phase: `janus-spec-normalizer`, canonical state `HANDOFF` to `janus-spec-review`.
+
+Last Codex work:
+- ran the deterministic Feature Spec validator against the replacement Spec
+- confirmed the required structure, routing contract, structured fields, DoD syntax, complexity consistency, and forbidden-content gate pass
+- made no Spec edit because no mechanical normalization defect was found
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- `python C:\Users\pruve\.codex\skills\janus-spec-normalizer\scripts\validate_feature_spec.py documentation\SPEC\CHATGPT_OFFICIAL_DEVICE_CODE_PROVIDER_REDESIGN_FEATURE_SPEC.md`: PASS
+- no implementation, login, logout, token refresh, revocation, credential inspection, cleanup, commit, push, or sync occurred
+
+Open risks:
+- the normalized Spec still requires independent security/privacy review
+- the secure separately namespaced persistent credential mechanism remains technically unproven
+- the earlier two-account failure remains authoritative and production login stays disabled
+- the controlled Janus Account-B test credential remains untouched and outside this normalization action
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this newest handoff
+
+Next recommended step for ChatGPT: treat the Spec as normalized, not approved; do not resume the blocked browser/keyring implementation path.
+
+Next recommended step for Codex: run `janus-spec-review` on 5.6 Sol / high in a fresh chat. If Sol is unavailable for the ChatGPT Codex account, use 5.6 Terra / high and record `SOL_UNAVAILABLE_FOR_CHATGPT_CODEX_ACCOUNT`.
+
+Last updated: `2026-07-14 23:16:45 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-14 23:03:55 +02:00`, the locked ChatGPT authentication redesign has been compiled into a new replacement Feature Spec. The Spec preserves the official-only device-code path, fail-closed secure persistence, atomic account switching, Janus-only logout, seamless mid-chat context transfer, one-time privacy acknowledgement, verified-model-only visibility, and the mandatory fresh two-account release gate. No product implementation or external account action occurred.
+
+Current goal: mechanically normalize the generated replacement Spec, then perform an independent security-focused Spec review before any task compilation or implementation.
+
+Active phase: `janus-spec-generator`, canonical state `HANDOFF` to `janus-spec-normalizer`.
+
+Last Codex work:
+- created `documentation/SPEC/CHATGPT_OFFICIAL_DEVICE_CODE_PROVIDER_REDESIGN_FEATURE_SPEC.md`
+- bound the approved 2026-07-14 Decision Summary as the sole product source
+- marked the old browser/shared-keyring assumptions as rejected rather than reusable release evidence
+- set complexity to `76`, review routing to `5.6 Sol/high`, new chat `yes`, confidence `HIGH`, and dashboard hint `CRITICAL`
+- preserved production fail-closed behavior until secure isolated persistence and fresh two-account evidence pass
+
+Changed files:
+- `documentation/SPEC/CHATGPT_OFFICIAL_DEVICE_CODE_PROVIDER_REDESIGN_FEATURE_SPEC.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- required Spec headings and order: PASS
+- exact routing block fields: PASS
+- complexity/routing consistency: PASS by direct inspection (`17 + 19 + 18 + 18 + 4 = 76`)
+- forbidden unresolved markers (`TBD`, `TODO`, `optional`, `maybe`): none found
+- scoped `git diff --check` for the generated Spec: PASS
+- no implementation, login, logout, refresh, revocation, credential inspection, cleanup, commit, push, or sync occurred
+
+Open risks:
+- mechanical parser-safe normalization has not yet run
+- independent Spec review has not yet approved the security and privacy contract
+- the secure separately namespaced persistent credential mechanism remains technically unproven
+- the earlier two-account failure remains authoritative and production login stays disabled
+- the controlled Janus Account-B test credential remains untouched and outside this Spec-generation action
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this Spec or snapshot
+
+Next recommended step for ChatGPT: treat the new Spec as generated but not yet approved; do not resume the blocked implementation path.
+
+Next recommended step for Codex: run `janus-spec-normalizer` on 5.6 Terra / medium, then route the normalized Spec to `janus-spec-review` on 5.6 Sol / high in a fresh chat. If Sol is unavailable for the ChatGPT Codex account, use 5.6 Terra / high with `SOL_UNAVAILABLE_FOR_CHATGPT_CODEX_ACCOUNT` recorded.
+
+Last updated: `2026-07-14 23:03:55 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-14 22:32:57 +02:00`, debug iteration 2 confirmed the controlled isolation failure is persistent enough to require Account-A reauthentication. After the fresh Janus Account-B login, Codex Account A lost quota/settings; on a plain Codex restart it required a new sign-in. After reauthentication, Account A returned to normal.
+
+Current goal: keep Janus ChatGPT production login disabled and return the feature to security/architecture design; do not run further live auth actions under the current approach.
+
+Active phase: `janus-debug` iteration 2, failure code `CODEX_ACCOUNT_A_REAUTH_REQUIRED_AFTER_JANUS_LOGIN`; canonical state `BLOCKED` with handoff to `janus-feature-design`.
+
+Last Codex work: recorded the operator's recovery observation, upgraded the redacted FAIL evidence, and created a second bounded debug result comparing iteration 2 with iteration 1. No Janus logout, revocation, token refresh, credential inspection, account comparison, or product-code change occurred.
+
+Changed files: `documentation/test-results/TASK-CHATGPT-CREDENTIAL-SESSION-ISOLATION.1_isolation_evidence.md`; `documentation/tasks/TASK-CHATGPT-CREDENTIAL-SESSION-ISOLATION.1_debug_result_account_a_reauth_required.md`; `documentation/tasks/TASK-CHATGPT-CREDENTIAL-SESSION-ISOLATION.1_execution_result.md`; `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md`.
+
+Tests / validation performed: recovery observation confirms Account A required fresh authentication after restart and was restored afterward. Existing automated default-deny gates remain green, but the final live feature criterion is FAIL. No further live test is safe or necessary for the release decision.
+
+Open risks: the exact internal invalidation mechanism is unproven. Janus Account B remains stored in the controlled Janus namespace because the sequence stopped before the second logout; production code cannot use it while evidence remains unset. Any cleanup or additional experiment requires a separately designed and authorized safety plan.
+
+Next recommended step for ChatGPT: treat the current Codex App Server auth approach as blocked, not almost complete. Ask the user whether to redesign the isolation architecture or park ChatGPT OAuth; do not suggest another login attempt.
+
+Next recommended step for Codex: on user approval, use `janus-feature-design` with 5.6 Sol/high to reassess provider boundaries and supported isolation options from the FAIL evidence. Do not set `PRODUCTION_ISOLATION_EVIDENCE_REVISION` or continue Tasks `.2` through `.4`.
+
+Last updated: `2026-07-14 22:32:57 +02:00`. This FAIL evidence and design handoff are local, uncommitted, and unsynced; `origin/codex-sync` does not contain them.
+
+## Current Snapshot Update
+As of `2026-07-14 22:27:43 +02:00`, the mandatory two-account non-interference evidence for `TASK-CHATGPT-CREDENTIAL-SESSION-ISOLATION.1` failed after the fresh Janus Account-B login. Codex still displayed Account A as signed in, but quota and settings were no longer visible.
+
+Current goal: preserve both session states without further mutation and determine through one plain Codex desktop restart whether Account-A metadata loss is persistent or a transient UI/account-data refresh failure.
+
+Active phase: `janus-debug` iteration 1, failure code `CODEX_ACCOUNT_A_METADATA_UNAVAILABLE_AFTER_JANUS_LOGIN`; canonical feature state `BLOCKED`.
+
+Last Codex work: stopped the controlled evidence sequence immediately, performed no second Janus logout or revocation, searched targeted learned patterns, and confirmed no Codex app terminal session is attached for redacted diagnostics. Created the required FAIL evidence and bounded debug result. No credential, token, cookie, URL, keyring content, email, or account identifier was inspected or recorded.
+
+Changed files: `documentation/test-results/TASK-CHATGPT-CREDENTIAL-SESSION-ISOLATION.1_isolation_evidence.md`; `documentation/tasks/TASK-CHATGPT-CREDENTIAL-SESSION-ISOLATION.1_debug_result_account_a_metadata_loss.md`; `documentation/tasks/TASK-CHATGPT-CREDENTIAL-SESSION-ISOLATION.1_execution_result.md`; `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md`.
+
+Tests / validation performed: controlled live sequence reached baseline PASS, Janus-only logout PASS, post-logout Account-A observation PASS, fresh Account-B login PASS, then post-login Account-A observation FAIL because quota/settings disappeared. Existing automated gates remain green but cannot override the failed live criterion.
+
+Open risks: root cause is unproven. The observation may be cross-client auth/session influence or transient Codex account-metadata loss. Either way, production isolation evidence remains unset and ordinary Janus ChatGPT login remains fail-closed. Janus Account B is still connected in the isolated store because further logout/revocation was stopped.
+
+Next recommended step for ChatGPT: ask the operator to fully close and reopen Codex without logout or account switch, then report only whether quota/settings return. Do not ask for emails, screenshots with identifiers, Janus actions, or token/keyring inspection.
+
+Next recommended step for Codex: use the restart observation as debug iteration 2 evidence. If metadata returns, classify a transient cross-client refresh effect but keep isolation FAIL; if it does not return or a revoked-token error appears, preserve the exact non-secret message and continue bounded recovery/debug. Do not enable production evidence.
+
+Last updated: `2026-07-14 22:27:43 +02:00`. This FAIL evidence and debug state are local, uncommitted, and unsynced; `origin/codex-sync` does not contain them.
+
+## Current Snapshot Update
+As of `2026-07-14 22:24:54 +02:00`, the operator confirmed Codex Account A unchanged after the Janus-only logout, and a fresh controlled browser login connected the isolated Janus store as Account B. The lifecycle reached connected/chatgpt without recording any account identifier or authorization URL.
+
+Current goal: obtain the operator's post-login confirmation that Codex still shows Account A unchanged, then perform the required second Janus-only logout and confirm non-interference again before the revocation phase.
+
+Active phase: `janus-executioner`, controlled evidence `IN_PROGRESS`; canonical state `NEEDS_INFO` at the post-login operator observation gate.
+
+Last Codex work: started the constructor-private managed login through official Codex `0.144.4`, opened the HTTPS authorization URL directly in the default browser without printing or logging it, and polled only redacted public state until connected/chatgpt. No identifier, token, cookie, credential, keyring content, or URL value was recorded.
+
+Changed files: `documentation/tasks/TASK-CHATGPT-CREDENTIAL-SESSION-ISOLATION.1_execution_result.md`; `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md`.
+
+Tests / validation performed: operator post-logout Account-A observation PASS; fresh controlled Janus Account-B login PASS; redacted connected/chatgpt state PASS. The second logout and revocation phases have not started.
+
+Open risks: login non-interference is not established until the operator confirms Account A unchanged. Production evidence remains unset and ordinary Janus login remains fail-closed.
+
+Next recommended step for ChatGPT: request only `Konto A nach Janus-Login unverändert: JA`; do not initiate logout or revocation until that observation is received.
+
+Next recommended step for Codex: after confirmation, announce and execute the second Janus-only logout, verify disconnected public state, and obtain another Account-A observation before starting the final re-login/revocation phase.
+
+Last updated: `2026-07-14 22:24:54 +02:00`. This controlled login evidence is local, uncommitted, and unsynced; `origin/codex-sync` does not contain it.
+
+## Current Snapshot Update
+As of `2026-07-14 22:19:50 +02:00`, the controlled Janus-only logout for `TASK-CHATGPT-CREDENTIAL-SESSION-ISOLATION.1` succeeded after the operator confirmed Codex Account A unchanged at baseline. The isolated Janus state is disconnected with no auth mode and no pending login.
+
+Current goal: obtain the operator's post-logout visual confirmation that Codex still shows Account A unchanged, then begin a fresh Janus browser login explicitly using the different Account B.
+
+Active phase: `janus-executioner`, controlled evidence `IN_PROGRESS`; canonical state `NEEDS_INFO` at the second operator observation gate.
+
+Last Codex work: invoked exactly `account/logout` through the constructor-private lifecycle using official Codex `0.144.4`, Janus-only `CODEX_HOME`, and keyring storage. The command returned only redacted public state: disconnected, auth mode absent, login not pending. It did not inspect or address the separate Codex desktop session.
+
+Changed files: `documentation/tasks/TASK-CHATGPT-CREDENTIAL-SESSION-ISOLATION.1_execution_result.md`; `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md`.
+
+Tests / validation performed: pre-logout Account-A operator observation PASS; controlled Janus-only logout PASS; returned public state disconnected/no auth/no pending login. No fresh login, browser URL capture, token refresh, revocation, identifier output, or credential inspection occurred.
+
+Open risks: post-logout non-interference is not established until the operator confirms Account A unchanged. Production evidence remains unset and ordinary Janus login remains fail-closed.
+
+Next recommended step for ChatGPT: request only `Konto A nach Janus-Logout unverändert: JA`; do not initiate login until that exact observation is received.
+
+Next recommended step for Codex: after confirmation, start the constructor-private Janus Account-B login, open the returned HTTPS authorization URL without displaying or logging it, and wait for the user to complete browser authentication with Account B.
+
+Last updated: `2026-07-14 22:19:50 +02:00`. This controlled logout evidence is local, uncommitted, and unsynced; `origin/codex-sync` does not contain it.
+
+## Current Snapshot Update
+As of `2026-07-14 22:10:01 +02:00`, the user explicitly authorized the controlled two-account isolation test for `TASK-CHATGPT-CREDENTIAL-SESSION-ISOLATION.1`. A redacted baseline read against the exact pinned runtime, Janus-only `CODEX_HOME`, and keyring store found the Janus-owned ChatGPT session already connected.
+
+Current goal: obtain the operator's visual confirmation that the separate Codex desktop still shows the intended Account A, then perform the first announced Janus-only logout before starting a fresh Account-B login.
+
+Active phase: `janus-executioner`, controlled evidence `IN_PROGRESS`; canonical state remains `NEEDS_INFO` at the operator observation gate.
+
+Last Codex work: ran a constructor-private controlled lifecycle probe with `refresh_token=False`. Output was deliberately limited to connection state, auth mode, isolation-test capability, and pending flag. It returned connected/chatgpt. No account identifier, token, credential, auth URL, cookie, or keyring content was emitted; no login, logout, revocation, token refresh, or Account-A inspection occurred. Existing unrelated embedding/torchvision warnings appeared during Python package startup but did not affect the Codex probe.
+
+Changed files: `documentation/tasks/TASK-CHATGPT-CREDENTIAL-SESSION-ISOLATION.1_execution_result.md`; `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md`.
+
+Tests / validation performed: controlled baseline account read PASS for the Janus-owned store; exact public result `connected` with `chatgpt` auth mode. The previous automated gates remain PASS. No evidence file has been created because the three required non-interference actions are not complete.
+
+Open risks: the existing Janus session must not be treated as fresh two-account evidence. Before Janus logs it out, the operator must visually confirm the currently open Codex desktop remains on Account A. Production evidence remains unset and ordinary Janus login remains fail-closed.
+
+Next recommended step for ChatGPT: request only the explicit observation `Konto A unverändert: JA`; do not ask the user to switch or log out either account.
+
+Next recommended step for Codex: after confirmation, announce and execute Janus-only logout through the controlled lifecycle, verify Janus disconnected, then request a second Account-A observation before initiating the fresh Account-B login.
+
+Last updated: `2026-07-14 22:10:01 +02:00`. This live-test intermediate state is local, uncommitted, and unsynced; `origin/codex-sync` does not contain it.
+
+## Current Snapshot Update
+As of `2026-07-14 21:51:06 +02:00`, implementation and automated validation of `TASK-CHATGPT-CREDENTIAL-SESSION-ISOLATION.1` are complete. The canonical state is `NEEDS_INFO`: production ChatGPT login remains deliberately disabled until the separately authorized controlled two-account evidence passes.
+
+Current goal: obtain explicit authority and user participation for the real Account-A/Account-B non-interference test, then either bind the production evidence revision on PASS or keep the boundary disabled and route the mismatch to debug.
+
+Active phase: `janus-executioner`, automated evidence `PASS`; controlled external-account gate `PENDING_USER_TEST`.
+
+Last Codex work: replaced the premature unconditional `janus_isolated: true` claim with a source-bound, default-false evidence revision. Normal lifecycle account read, login, cancel, logout, and retry now fail closed before process start when evidence is absent. A private constructor-only evidence seam exists for the controlled test and cannot be enabled through environment variables, API payloads, Settings, Electron startup, or the dev runner. The existing pinned runtime, Janus-only `CODEX_HOME`, keyring-only store, strict ChatGPT login, API-key environment stripping, allowlisting, and redaction remain enforced.
+
+Changed files: `backend/llm_providers/codex_app_server.py`; `backend/tests/test_codex_app_server.py`; `backend/tests/test_codex_connection_settings_api.py`; `tests/electron/codex-runtime-boundary.test.cjs`; `documentation/tasks/TASK-CHATGPT-CREDENTIAL-SESSION-ISOLATION.1_execution_result.md`; `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md`.
+
+Tests / validation performed: focused Python contracts PASS (`28 passed`); Electron runtime boundary PASS (`8 passed`); dev-runner syntax PASS; headed Settings suite produced three direct passes plus one reload flake whose snapshot already showed the expected connected state; the isolated unchanged retest PASS (`1 passed`); scoped `git diff --check` PASS. No live login, logout, session revocation, keyring inspection, credential comparison, or auth-URL capture occurred.
+
+Open risks: the real controlled proof is still absent. It must show that Janus Account-B login, Janus Account-B logout, and Account-B Janus-session revocation leave the separate Codex desktop Account A connected and unchanged. Until all three observations pass for the same Codex `0.144.4`, keyring store, and Janus-only home, `PRODUCTION_ISOLATION_EVIDENCE_REVISION` remains unset and Janus ChatGPT stays unavailable. Tasks `.2` through `.4` and `TASK-CHATGPT-CODEX.2.1` remain parked.
+
+Next recommended step for ChatGPT: do not ask the user to retry ordinary Janus OAuth. Request explicit authority for the controlled two-account evidence sequence and use only user-chosen labels Account A and Account B in evidence.
+
+Next recommended step for Codex: after explicit approval, resume `janus-executioner` on 5.6 Sol / high, announce each external account action before it occurs, create the isolation evidence file only from actual observations, and keep production disabled on any mismatch. On PASS, rerun all automated gates before audit handoff.
+
+Last updated: `2026-07-14 21:51:06 +02:00`. This implementation, execution result, and snapshot are local, uncommitted, and unsynced; `origin/codex-sync` does not contain the latest state.
+
+## Current Snapshot Update
+As of `2026-07-14 21:30:31 +02:00`, `TASK-CHATGPT-CREDENTIAL-SESSION-ISOLATION.1` passed its single-task preimplementation gate. Implementation is released only for the fail-closed isolation-evidence boundary; no product code, tests, or account action occurred in this gate.
+
+Current goal: implement the default-deny evidence state and private controlled-test seam, validate automated gates, then stop for separate user authority before any live two-account action.
+
+Active phase: `janus-preimplementation-check`, canonical state `PRE-CHECK PASSED` / `HANDOFF` to `janus-executioner` for Task `.1` only.
+
+Last Codex work: bound a constructor-level controlled-evidence seam outside environment variables, backend API, Settings, normal startup, and user configuration. The normal factory must remain fail-closed until an immutable evidence revision matches Codex `0.144.4` and the real controlled evidence passes. The existing router schema can carry the redacted unavailable state; `backend/api/routers/system.py` remains outside edit scope unless implementation proves otherwise, which would block rather than widen.
+
+Changed files: `documentation/tasks/TASK-CHATGPT-CREDENTIAL-SESSION-ISOLATION.1_precheck.md`; `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md`.
+
+Tests / validation performed: target identity, scope, file cluster, evidence commands, model, and safety gates verified; precheck validator PASS; scoped `git diff --check` PASS. No product tests, code changes, login, logout, retry, account switch, credential inspection, credential mutation, or live two-account test was performed.
+
+Open risks: the real two-account proof remains absent and involves external account state. Execution must first implement and validate the default-deny boundary, then request explicit user authority before login/logout/revocation. Failure or missing authority leaves normal login disabled and ends NEEDS_INFO or BLOCKED. Tasks `.2` through `.4` and `TASK-CHATGPT-CODEX.2.1` remain parked.
+
+Next recommended step for ChatGPT: do not attempt Janus login. Approve implementation of Task `.1` only; expect a later separate prompt before any live account action.
+
+Next recommended step for Codex: use `janus-executioner` with 5.6 Sol / high on the canonical precheck artifact, implement only the bound default-deny boundary and automated tests, then stop at the controlled external-evidence authority gate.
+
+Last updated: `2026-07-14 21:30:31 +02:00`. All `.2`, `.2.1`, Windows runtime-fix, isolation Spec, task, and precheck work remains local, uncommitted, and unsynced; `origin/codex-sync` does not contain this precheck.
+
+## Current Snapshot Update
+As of `2026-07-14 17:58:07 +02:00`, debug iteration 2 established the real manual-test failure: the backend health endpoint is reachable, but the App Server subprocess cannot start under the active Windows selector event loop. `TASK-CHATGPT-CODEX.2` is blocked pending a separate runtime compatibility fix.
+
+Current goal: restore official Codex App Server subprocess support under the live Windows backend loop, then retest the already-built settings card.
+
+Active phase: `janus-debug`, canonical state `BLOCKED` with failure code `WINDOWS_SELECTOR_EVENT_LOOP_SUBPROCESS_UNSUPPORTED`.
+
+Last Codex work: reproduced the live status endpoint directly, captured HTTP 500 traces for status and retry, and isolated `asyncio.create_subprocess_exec()` raising `NotImplementedError` from the backend's active Windows event loop. A standalone lifecycle probe with the same explicit packaged runtime/keyring configuration succeeded and returned disconnected public state. The error is therefore event-loop compatibility, not OAuth, account metadata, token storage, or frontend CORS.
+
+Changed files: `documentation/tasks/TASK-CHATGPT-CODEX.2_debug_result_backend_startup_readiness.md`; `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md`.
+
+Tests / validation performed: direct `/api/health` PASS; direct live `/api/codex-connection` and retry endpoint FAIL with captured subprocess `NotImplementedError`; standalone official lifecycle account-read probe PASS; earlier focused API/lifecycle `25 passed` and headed UI `4 passed` remain valid but do not cover the live selector-loop condition.
+
+Open risks: the existing route currently allows an unexpected runtime exception to become HTTP 500. A valid fix must force/use a Windows Proactor-capable loop for App Server process ownership and fail closed to non-secret unavailable status if process creation still fails. This crosses the audited `.1` lifecycle boundary and cannot be patched under the settings-only `.2` task.
+
+Next recommended step for ChatGPT: approve one fresh task-breakdown/precheck for `WINDOWS_SELECTOR_EVENT_LOOP_SUBPROCESS_UNSUPPORTED`; do not retry sign-in until that runtime fix has passed validation.
+
+Next recommended step for Codex: create the bounded runtime-compatibility handoff, then use `janus-preimplementation-check` on `5.6 Terra` / high before changing lifecycle code or backend startup configuration.
+
+Last updated: `2026-07-14 17:58:07 +02:00`. The `.2` implementation and debug evidence remain local, uncommitted, and unsynced; `origin/codex-sync` does not yet contain them.
+
+## Current Snapshot Update
+As of `2026-07-14 17:58:07 +02:00`, the required manual `.2` check reported `Failed to fetch (127.0.0.1:8001)` before the ChatGPT connection API could run. Debug iteration 1 classifies this as `NEEDS RETEST`: an existing Electron backend-startup readiness race, not an OAuth, keyring, or new-route failure.
+
+Current goal: retry the completed connection-card flow only after the local backend is ready, without widening `.2` into Electron startup behavior.
+
+Active phase: `janus-debug`, canonical state `HANDOFF` to the manual Janus validation gate.
+
+Last Codex work: confirmed the current `/api/health` endpoint returns HTTP 200 with ready status after the failure, while the Electron startup path may display the window after its bounded readiness wait expires. The new card's fetch failure therefore occurred before the API route could emit its own connection state. No product source was modified in this debug iteration.
+
+Changed files: `documentation/tasks/TASK-CHATGPT-CODEX.2_debug_result_backend_startup_readiness.md`; `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md`.
+
+Tests / validation performed: targeted WHAT_I_LEARNED search; local listener/process inspection; direct health probe PASS; prior `.2` focused API/lifecycle `25 passed` and headed settings UI `4 passed` remain current. No live login was completed.
+
+Open risks: if a retry after full backend readiness still cannot fetch `127.0.0.1:8001`, the exact runtime-startup failure needs a separately bounded debug/implementation slice. Provider/model/transport work remains parked.
+
+Next recommended step for ChatGPT: wait until Janus is fully loaded, then click `Erneut versuchen` once. If necessary, fully restart Janus, wait roughly 30 seconds, and retry once; report the exact message.
+
+Next recommended step for Codex: on retry PASS, return to the `.2` manual validation gate and prepare audit evidence. On the same fetch failure after a fully ready restart, run a new runtime-startup debug iteration rather than alter OAuth/UI behavior.
+
+Last updated: `2026-07-14 17:58:07 +02:00`. The `.2` implementation and this debug evidence remain local, uncommitted, and unsynced; `origin/codex-sync` does not yet contain them.
+
+## Current Snapshot Update
+As of `2026-07-14 17:50:05 +02:00`, `TASK-CHATGPT-CODEX.2` has completed its bounded implementation and automated validation. The canonical state is `NEEDS_INFO` only because the required manual Janus connection-card test remains pending.
+
+Current goal: obtain manual Janus evidence for the settings login/cancel lifecycle before creating an audit package or beginning final audit.
+
+Active phase: `janus-executioner`, automated evidence `PASS`; manual product-validation gate `PENDING_USER_TEST`.
+
+Last Codex work: reviewed the Cursor-first candidate after its 300-second timeout, retained the in-scope settings/API implementation only after local verification, and corrected two narrow headed-test harness assumptions (unique card-heading locator and visible Beta privacy acknowledgement). The delivered slice adds a separate `ChatGPT über Codex` card, non-secret `system.py` lifecycle routes, strict renderer HTTPS handoff, and fake/intercepted contract tests. It does not add ChatGPT provider visibility, models, transport, API-key fallback, multi-account support, or chat-flow behavior.
+
+Changed files: `frontend/index.html`; `frontend/js/settings.js`; `backend/api/routers/system.py`; `backend/tests/test_codex_connection_settings_api.py`; `tests/e2e/codex-connection-settings.spec.js`; Cursor workflow evidence; `documentation/tasks/TASK-CHATGPT-CODEX.2_execution_result.md`; `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md`.
+
+Tests / validation performed: Python compile PASS; focused API/lifecycle `25 passed`; both Node syntax checks PASS; headed connection-settings UI contract `4 passed`; scoped diff check PASS. The known unrelated embedding/torchvision environment warnings appeared during headed startup but did not prevent the bound suite.
+
+Open risks: no real ChatGPT browser handoff has been manually checked yet. The authorization URL must never be logged; the manual check must prove it opens only the official sign-in page and cancellation restores the disconnected card. The feature remains intentionally partial: provider/models/transport are `.3`, chat/privacy/usage behavior is `.4`.
+
+Next recommended step for ChatGPT: run the exact manual login/cancel check from `TASK-CHATGPT-CODEX.2_execution_result.md`, then report PASS or the visible mismatch. Do not treat the feature as audit-ready before that result.
+
+Next recommended step for Codex: on manual PASS, use `codex-audit-package-builder` then `janus-final-audit` for `.2` on `5.6 Terra` / high. On manual failure, use `janus-debug` for the reproduced mismatch only.
+
+Last updated: `2026-07-14 17:50:05 +02:00`. The earlier `.1` checkpoint was committed as `d562e205c`, pushed to `backup/master`, and synchronized to `origin/codex-sync` (`694147f50`); the `.2` breakdown, precheck, implementation, and this snapshot are local, uncommitted, and unsynced.
+
+## Current Snapshot Update
+As of `2026-07-14 17:29:14 +02:00`, `TASK-CHATGPT-CODEX.2` passed its single-target preimplementation gate. It is ready for one bounded settings/API implementation run; no product code has been changed in this gate.
+
+Current goal: implement the distinct ChatGPT connection card and its non-secret settings contract without exposing the provider, models, transport, or an API-key fallback.
+
+Active phase: `janus-preimplementation-check`, canonical state `PASS` with handoff to `janus-executioner` for `TASK-CHATGPT-CODEX.2` only.
+
+Last Codex work: proved that the existing `system.py` route can use the single `.1` lifecycle via `app.state`, that the public state is allowlisted and redacted, that managed login returns only HTTPS authorization URLs, and that faked API/UI seams can validate the feature without a real account. The precheck binds a renderer HTTPS check before the existing external-link bridge and requires a GET refresh through `read_account(refresh_token=False)`.
+
+Changed files: `documentation/tasks/TASK-CHATGPT-CODEX.2_precheck.md`; `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md`.
+
+Tests / validation performed: targeted source/contract inspection and precheck-validator pending. No product tests, browser login, keyring inspection, provider/model selection, implementation, or live connection action was run.
+
+Open risks: implementation must avoid console logging returned login URL/state, ensure unavailable errors return only stable public state, and keep account change as Janus-only logout followed by deliberate fresh login. The provider dropdown and models remain intentionally absent until `.3`.
+
+Next recommended step for ChatGPT: review the canonical precheck only as authorization for `TASK-CHATGPT-CODEX.2` implementation; do not infer `.3`/`.4` approval.
+
+Next recommended step for Codex: after explicit approval, run `janus-executioner` for `.2` on `5.6 Terra` / high, then execute the bound focused API and headed UI evidence.
+
+Last updated: `2026-07-14 17:29:14 +02:00`. The earlier `.1` checkpoint was committed as `d562e205c`, pushed to `backup/master`, and synchronized to `origin/codex-sync` (`694147f50`); `.2` task breakdown and this precheck remain local, uncommitted, and unsynced.
+
+## Current Snapshot Update
+As of `2026-07-14 17:29:14 +02:00`, `TASK-CHATGPT-CODEX.2` has a single-target task-breakdown handoff. The `.1` runtime boundary remains task-scoped audited and committed; `.2` is only released to preimplementation check, not implemented.
+
+Current goal: verify the separate ChatGPT connection-card/API contract before any settings code changes.
+
+Active phase: `janus-task-breakdown`, canonical state `HANDOFF` to `janus-preimplementation-check` for `TASK-CHATGPT-CODEX.2` only.
+
+Last Codex work: bound the existing `system.py` settings route as the non-secret connection seam, the API-key settings area as the sole visible surface, and the official `.1` lifecycle as the only login/logout/retry owner. The task keeps ChatGPT provider visibility, entitled models, transport, chat send flow, multi-account support, and all API-key behavior out of scope.
+
+Changed files: `documentation/tasks/TASK-CHATGPT-CODEX.2_task_breakdown.md`; `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md`.
+
+Tests / validation performed: task-breakdown handoff validator pending; targeted source/route/lifecycle inspection completed. No product tests, precheck, browser login, implementation, or live connection action was run.
+
+Open risks: precheck must prove the renderer can safely hand off only an HTTPS authorization URL, that lifecycle notifications/state can refresh the card without a second process, and that unavailable/keyring errors have a deterministic non-secret retry contract. The feature still has no visible ChatGPT connection card, provider entry, or model list.
+
+Next recommended step for ChatGPT: do not infer this new breakdown from the remote snapshot until a later explicit sync. Approve the bound preimplementation check only if the scope remains settings lifecycle/API contract only.
+
+Next recommended step for Codex: run `janus-preimplementation-check` for `TASK-CHATGPT-CODEX.2` on `5.6 Terra` / high after user approval; do not implement from this breakdown.
+
+Last updated: `2026-07-14 17:29:14 +02:00`. The earlier `.1` checkpoint was committed as `d562e205c`, pushed to `backup/master`, and synchronized to `origin/codex-sync` (`694147f50`); this new `.2` breakdown has not been committed, pushed, or synced, so remote state may not contain it.
+
+## Current Snapshot Update
 As of `2026-07-14 17:17:00 +02:00`, documentation synchronization for the final-audit-PASS `TASK-CHATGPT-CODEX.1` is complete. The parent ChatGPT-provider feature remains explicitly partial and active; Tasks `.2` through `.4` stay parked.
 
 Current goal: retain the documented audited runtime boundary until the user explicitly selects the next separately gated ChatGPT-provider task.
@@ -2455,6 +3677,8 @@ Last Codex work:
 
 Changed files:
 - `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
 - `documentation/codex/SKILL_USAGE_LOG.md`
 
 Checks / validation performed:
@@ -27702,3 +28926,234 @@ Next recommended step for ChatGPT: summarize that `TASK-MEM-M4.1` is now final-a
 Next recommended step for Codex: run `janus-documentation-update` for the bounded M4 closeout and tracking sync.
 
 Last updated: `2026-07-11 00:20:00 +02:00`.
+## Current Snapshot Update
+As of `2026-07-14 22:41:35 +02:00`, the approved ChatGPT-auth redesign has completed its first provider-boundary research step. Official Hermes Agent documentation confirms that Hermes deliberately owns a separate Codex OAuth session and token store rather than sharing Codex CLI credentials. Official OpenAI documentation now exposes a safer supported candidate for Janus: Codex App Server `chatgptDeviceCode`, explicitly intended when the client owns the sign-in ceremony or browser callbacks are brittle. Hermes' direct OAuth client/token-endpoint pattern is therefore research evidence only and is not approved for copying into Janus.
+
+Current goal: decide whether Janus should continue with an official-only device-code redesign under a fresh non-interference and secure-storage gate, or park ChatGPT OAuth until a stronger separately namespaced credential mechanism exists.
+
+Active phase: `janus-feature-design`, canonical state `NEEDS_INFO` for one product decision.
+
+Last Codex work:
+- reviewed the official Hermes provider documentation and auth source boundary
+- confirmed Hermes keeps its own `~/.hermes/auth.json` session and warns against shared refresh-token rotation
+- reviewed the official OpenAI Codex authentication and App Server documentation
+- confirmed `chatgptDeviceCode` is a documented App Server login mode for custom clients and brittle browser callbacks
+- rejected copying Hermes' private-looking direct OAuth client/backend integration as the Janus redesign basis without explicit OpenAI support
+- kept the existing Janus production isolation gate disabled; no login, logout, refresh, revocation, token inspection, or credential cleanup occurred
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- official Hermes provider/auth documentation review: PASS for separate-session design evidence
+- official OpenAI Codex authentication documentation review: PASS for documented ChatGPT login, credential-store, and caching boundaries
+- official OpenAI Codex App Server documentation review: PASS for `chatgptDeviceCode` support and custom-client use
+- provider-boundary review: Hermes-style direct token ownership remains unsupported as a Janus production basis; official App Server device auth remains only a redesign candidate, not yet validated isolation
+
+Open risks:
+- the previous two-account failure remains authoritative; no new device-code or storage experiment has run
+- the prior keyring-backed Janus session interfered with Codex Account A, so the new design must not reuse the same unnamespaced credential slot
+- official file storage is isolated by `CODEX_HOME` but contains access tokens; secure encrypted-at-rest persistence remains a design gate
+- the controlled Janus Account-B test credential remains untouched in the isolated Janus store because cleanup was stopped after the failure
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this newest snapshot
+
+Next recommended step for ChatGPT: ask the operator to choose between an official-only App Server device-code redesign with new isolation/storage proof, or parking ChatGPT OAuth until stronger officially documented credential isolation exists.
+
+Next recommended step for Codex: after the single decision, continue `janus-feature-design`; if the official-only path is selected, lock the product behavior and security gates before generating a replacement Spec. Do not implement or run live authentication yet.
+
+Last updated: `2026-07-14 22:41:35 +02:00`.
+## Current Snapshot Update
+As of `2026-07-14 22:43:24 +02:00`, the operator locked the official-only redesign direction for Janus ChatGPT authentication. Janus will use the documented Codex App Server device-code flow as a separate provider option, will not import or share existing Codex credentials, and will not copy Hermes' direct token/client integration. Production remains disabled until secure persistence and two-account non-interference are proven.
+
+Current goal: finish the remaining product-level security and failure-behavior decisions before producing a replacement decision summary.
+
+Active phase: `janus-feature-design`, canonical state `NEEDS_INFO` for the secure-storage failure behavior.
+
+Last Codex work:
+- locked the operator's choice of the official App Server device-code redesign
+- retained the existing product decision that a successful Janus login persists across Janus restarts until the user explicitly logs out
+- prepared the next single decision: whether unsupported secure-storage environments fail closed or permit a session-only fallback
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- decision consistency review against the prior two-account failure and earlier persistence requirement: PASS
+- no implementation, live authentication, logout, token refresh, revocation, credential inspection, or cleanup occurred
+
+Open risks:
+- a technically secure, separately namespaced persistent credential store is not yet proven
+- the previous two-account failure remains authoritative and production login remains disabled
+- the controlled Janus Account-B test credential remains untouched in the isolated Janus store
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this newest snapshot
+
+Next recommended step for ChatGPT: lock the fail-closed behavior when secure isolated persistence cannot be guaranteed.
+
+Next recommended step for Codex: continue `janus-feature-design` only; do not implement or run authentication until all product decisions are locked and a replacement Spec is generated and reviewed.
+
+Last updated: `2026-07-14 22:43:24 +02:00`.
+## Current Snapshot Update
+As of `2026-07-14 22:46:12 +02:00`, the operator locked the secure-storage failure boundary for the ChatGPT auth redesign. Janus must fail closed: if a separately namespaced, encrypted, persistent credential store cannot be guaranteed, the ChatGPT login remains visibly unavailable with a reason. Plaintext persistence and session-only fallback are both excluded.
+
+Current goal: finish the remaining product behavior decisions for the official device-code redesign, starting with atomic account switching.
+
+Active phase: `janus-feature-design`, canonical state `NEEDS_INFO` for account-switch behavior.
+
+Last Codex work:
+- locked fail-closed behavior for unsupported secure credential storage
+- retained persistent login until explicit Janus logout as the only successful-session behavior
+- prepared the next single decision for switching the one currently supported Janus ChatGPT account
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- security-boundary consistency review: PASS
+- no implementation or external account/token action occurred
+
+Open risks:
+- secure separately namespaced persistence remains technically unproven
+- account-switch failure/cancel semantics are not yet locked
+- production login remains disabled and the earlier two-account failure remains authoritative
+- the controlled Janus Account-B test credential remains untouched in the isolated Janus store
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this newest snapshot
+
+Next recommended step for ChatGPT: lock whether account switching is atomic or logs out the current Janus account before the replacement login succeeds.
+
+Next recommended step for Codex: continue `janus-feature-design`; do not implement or run live authentication.
+
+Last updated: `2026-07-14 22:46:12 +02:00`.
+## Current Snapshot Update
+As of `2026-07-14 22:49:20 +02:00`, the operator locked atomic account switching for the ChatGPT auth redesign. While Janus supports one ChatGPT account at a time, the existing Janus account remains connected until the replacement login succeeds. Cancellation or failure leaves the existing account and provider availability unchanged.
+
+Current goal: finish the remaining product behavior decisions, now focusing on what conversation context crosses the provider boundary when the user switches to ChatGPT mid-chat.
+
+Active phase: `janus-feature-design`, canonical state `NEEDS_INFO` for the mid-chat privacy boundary.
+
+Last Codex work:
+- locked atomic one-account replacement semantics
+- retained the later multi-account feature as out of scope
+- prepared the next single decision for existing conversation context when switching providers mid-chat
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- account-switch consistency review against the persistent-login and explicit-logout requirements: PASS
+- no implementation or external account/token action occurred
+
+Open risks:
+- the amount of prior conversation context sent to ChatGPT after a mid-chat provider switch is not yet locked
+- secure separately namespaced persistence remains technically unproven
+- production login remains disabled and the earlier two-account failure remains authoritative
+- the controlled Janus Account-B test credential remains untouched in the isolated Janus store
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this newest snapshot
+
+Next recommended step for ChatGPT: lock whether provider switching carries the necessary existing chat context across the external-provider boundary or starts ChatGPT without prior context.
+
+Next recommended step for Codex: continue `janus-feature-design`; do not implement or run live authentication.
+
+Last updated: `2026-07-14 22:49:20 +02:00`.
+## Current Snapshot Update
+As of `2026-07-14 22:51:50 +02:00`, the operator locked seamless mid-chat provider switching for the ChatGPT redesign. When ChatGPT is selected in an existing conversation, Janus sends the prior conversation context required to continue the work, and the active provider remains visible. Starting a contextless ChatGPT segment on every switch is excluded.
+
+Current goal: finish the remaining privacy and failure-behavior decisions before producing the replacement decision summary.
+
+Active phase: `janus-feature-design`, canonical state `NEEDS_INFO` for user acknowledgement of provider-boundary data sharing.
+
+Last Codex work:
+- locked transfer of the necessary prior conversation context when switching to ChatGPT mid-chat
+- retained visible active-provider feedback
+- prepared the next single decision for one-time versus repeated privacy acknowledgement
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- behavior consistency review against the operator's seamless provider-switch requirement: PASS
+- no implementation or external account/token action occurred
+
+Open risks:
+- the user acknowledgement cadence for sending content to ChatGPT is not yet locked
+- secure separately namespaced persistence remains technically unproven
+- production login remains disabled and the earlier two-account failure remains authoritative
+- the controlled Janus Account-B test credential remains untouched in the isolated Janus store
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this newest snapshot
+
+Next recommended step for ChatGPT: lock whether the data-sharing notice is acknowledged once before first ChatGPT use or repeated on every provider switch.
+
+Next recommended step for Codex: continue `janus-feature-design`; do not implement or run live authentication.
+
+Last updated: `2026-07-14 22:51:50 +02:00`.
+## Current Snapshot Update
+As of `2026-07-14 22:56:15 +02:00`, the operator locked a one-time privacy acknowledgement for ChatGPT use. Janus must obtain acknowledgement before the first ChatGPT-bound content is sent, repeat it only after a material privacy-information change, and keep the notice accessible in Settings. Per-switch confirmation is excluded so normal provider switching remains seamless.
+
+Current goal: lock the last critical product failure boundary for model availability, then consolidate the redesign into a replacement decision summary.
+
+Active phase: `janus-feature-design`, canonical state `NEEDS_INFO` for unverifiable model availability.
+
+Last Codex work:
+- locked one-time privacy acknowledgement before first ChatGPT content transfer
+- retained persistent visibility of the privacy notice in Settings
+- prepared the next single decision for temporarily unverifiable usable-model discovery
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- privacy-choice consistency review against seamless mid-chat provider switching: PASS
+- no implementation or external account/token action occurred
+
+Open risks:
+- behavior when currently usable ChatGPT models cannot be verified is not yet locked
+- secure separately namespaced persistence remains technically unproven
+- production login remains disabled and the earlier two-account failure remains authoritative
+- the controlled Janus Account-B test credential remains untouched in the isolated Janus store
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this newest snapshot
+
+Next recommended step for ChatGPT: lock whether ChatGPT is hidden/unavailable when model eligibility cannot be verified or whether stale cached models remain selectable.
+
+Next recommended step for Codex: continue `janus-feature-design`; after the final decision, produce the locked full-feature handoff without implementation.
+
+Last updated: `2026-07-14 22:56:15 +02:00`.
+## Current Snapshot Update
+As of `2026-07-14 22:58:59 +02:00`, the ChatGPT authentication redesign is decision-locked and spec-ready. The final model-availability boundary is fail-closed: when Janus cannot verify currently usable ChatGPT models, the account remains connected but ChatGPT is not selectable, no stale models are shown, and Settings offers a non-destructive retry.
+
+Current goal: generate a replacement Feature Spec from the approved official-only ChatGPT device-code redesign; do not resume implementation against the blocked browser/keyring approach.
+
+Active phase: `janus-feature-design`, canonical state `HANDOFF` to `janus-spec-generator`.
+
+Last Codex work:
+- locked official Codex App Server device-code authentication as the only allowed ChatGPT login path
+- locked a Janus-specific, encrypted, persistent credential boundary with fail-closed unavailability when it cannot be guaranteed
+- locked persistent login until explicit Janus-only logout, atomic one-account switching, and later multi-account support as out of scope
+- locked seamless mid-chat provider switching with the necessary prior conversation context and visible active provider
+- locked a one-time privacy acknowledgement before first ChatGPT-bound content, repeated only after material notice changes
+- locked visibility of only currently verified usable ChatGPT models and fail-closed model-discovery behavior
+- excluded API keys as fallback, existing Codex credential import/sharing, Hermes-style direct token endpoints, and stale model lists
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- feature-design coverage review across behavior, surfaces, actions, persistence, security/privacy, failures, edge cases, and scope: PASS
+- consistency review against the earlier two-account isolation failure and the user's provider-switch requirements: PASS
+- scoped `git diff --check` for the rolling snapshot and skill log: PASS before this final snapshot append; rerun pending below
+- no implementation or external account/token action occurred
+
+Open risks:
+- the secure separately namespaced persistent credential mechanism remains technically unproven and must be specified and validated before production activation
+- the earlier two-account failure remains authoritative; production login stays disabled until fresh non-interference evidence passes
+- the controlled Janus Account-B test credential remains untouched in the isolated Janus store and requires a separately authorized cleanup plan
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this newest handoff
+
+Next recommended step for ChatGPT: treat the locked decision summary as the sole redesign seed and do not revive the blocked browser/keyring implementation assumptions.
+
+Next recommended step for Codex: run `janus-spec-generator` on 5.6 Terra / high using the locked decision summary, then normalize and review the replacement Spec before any task or implementation work.
+
+Last updated: `2026-07-14 22:58:59 +02:00`.

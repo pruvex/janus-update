@@ -309,3 +309,15 @@
 - **Epic:** BACKLOG-129
 - **Confidence:** High
 - **Tags:** Gemini,streaming,tool-calls,hard-loop-breaker,provider-runtime
+
+
+## [PATTERN] #CodexAppServerCredentialIsolationNeedsHomeDerivedStoreAndLiveNonInterference "Codex App Server credential isolation needs a home-derived store plus live non-interference evidence"
+- **Kontext:** TASK-CHATGPT-DEVICE-CODE-PROVIDER.1 official device-code isolation foundation (2026-07-15). (2026-07-15).
+- **Problem:** A nominally separate auth flow can still affect Codex Desktop, CLI, or IDE sessions when credential identity is shared, storage falls back, or logout and refresh are not proven against a dedicated namespace.
+- **Loesung:** Use only the official App Server device-code contract with an absolute Janus-only CODEX_HOME, force keyring-backed persistence, strip API-key and shared-session fallbacks, keep transient codes redacted, and retain production default-deny until the complete feature evidence task passes.
+- **Haertung:** Backend lifecycle 22 passed, Electron runtime-boundary 9 passed, headed Settings regression 4 passed, compile and scoped diff checks passed, and a controlled Account-B login/restart/refresh/logout sequence left Account A unchanged after every step; independent Final Audit PASS.
+- **Tripwire:** If Janus imports an existing Codex credential, allows file/auto/ephemeral fallback, exposes a transient code, changes another Codex client during login/refresh/logout, or sets production activation before the later release-evidence task, the credential-isolation boundary has drifted.
+- **Location:** backend/llm_providers/codex_app_server.py; backend/tests/test_codex_app_server.py; tests/electron/codex-runtime-boundary.test.cjs; documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_final_audit.md
+- **Epic:** TASK-CHATGPT-DEVICE-CODE-PROVIDER.1
+- **Confidence:** High
+- **Tags:** codex-app-server device-code credential-isolation keyring CODEX_HOME redaction two-account default-deny

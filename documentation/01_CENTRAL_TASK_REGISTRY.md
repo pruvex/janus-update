@@ -4,6 +4,16 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-CHATGPT-DEVICE-CODE-PROVIDER.1 - Secure device-code credential isolation
+
+- **Status**: DONE (task-scoped Final Audit PASS; parent Feature Spec remains active).
+- **Final Audit**: `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_final_audit.md` (PASS).
+- **Audit Package**: `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_AUDIT_PACKAGE.md`.
+- **Spec**: `documentation/SPEC/CHATGPT_OFFICIAL_DEVICE_CODE_PROVIDER_REDESIGN_FEATURE_SPEC.md` (APPROVED - PARTIAL IMPLEMENTATION; Tasks `.2` through `.5` remain open).
+- **Validation**: backend lifecycle `22 passed`; Electron runtime-boundary `9 passed`; headed Settings regression `4 passed`; Python compile and scoped diff check PASS; controlled two-account login/restart/refresh/logout evidence PASS.
+- **Scope**: official App Server device-code lifecycle, Janus-only encrypted keyring persistence, redaction, restart persistence, Janus-only logout, and Account-A non-interference only.
+- **Production State**: DEFAULT-DENY; no provider/model/UI/chat activation or release authority is granted by this task.
+
 ### TASK-CHATGPT-CODEX.1 - Official Codex access boundary
 
 - **Status**: DONE (task-scoped final audit PASS; parent feature remains active).
