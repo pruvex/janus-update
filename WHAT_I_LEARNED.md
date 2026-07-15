@@ -321,3 +321,15 @@
 - **Epic:** TASK-CHATGPT-DEVICE-CODE-PROVIDER.1
 - **Confidence:** High
 - **Tags:** codex-app-server device-code credential-isolation keyring CODEX_HOME redaction two-account default-deny
+
+
+## [PATTERN] #SettingsButtonMustKeepSingleStatefulNavigationPath "Settings button navigation must keep one stateful binding"
+- **Kontext:** BACKLOG-131 delayed Settings-handler replacement closeout (2026-07-15) (2026-07-15).
+- **Problem:** A delayed legacy handler clone replaced the visible Settings button listener, bypassed appState synchronization and show-settings dispatch, and could reinitialize the app back to chat.
+- **Loesung:** Bind the visible Settings button once after DOM readiness with a dataset guard; update appState.currentView, switch views, and dispatch show-settings. Keep the modal fallback separate and never rebind the sidebar button later.
+- **Haertung:** Independent Final Audit PASS; app.js and runner syntax PASS; Settings API 11 passed; headed E2E 8 passed through real Einstellungen to API Keys controls; committed diff and worktree checks PASS.
+- **Tripwire:** If any delayed code clones or replaces #settings-btn, calls forceOpenSettings for sidebar navigation, or re-runs initializeApp after Settings open, treat it as a state-navigation regression and retest the full headed Settings suite.
+- **Location:** frontend/js/app.js; tests/e2e/codex-connection-settings.spec.js; documentation/tasks/BACKLOG-131_final_audit.md
+- **Epic:** BACKLOG-131
+- **Confidence:** High
+- **Tags:** settings,navigation,appstate,e2e,regression

@@ -84,40 +84,6 @@ Dashboard-Regeln:
 
 ## IN PROGRESS
 
-### BACKLOG-131 - Verzögerter Settings-Handler überschreibt die zustandsbehaftete Navigation
-
-- **Typ:** BUG
-- **Status:** IN PROGRESS
-- **Quelle:** Audit / Mocked E2E 2026-07-15
-- **Erstellt:** 2026-07-15
-- **Aktualisiert:** 2026-07-15
-- **Kurzbeschreibung:** Ein verzögerter Legacy-Block in `frontend/js/app.js` klont `#settings-btn` nach dem Start und ersetzt dessen zustandsbehafteten Handler. Die Ersatzfunktion öffnet Settings ohne `appState.currentView` zu synchronisieren oder `show-settings` auszulösen und startet anschließend `initializeApp()` erneut.
-- **Erwartetes Verhalten:** Der sichtbare Settings-Button verwendet dauerhaft einen konsistenten Navigationspfad, setzt den View-State korrekt und zeigt den vorgesehenen Settings-Abschnitt ohne unerwartete Reinitialisierung an.
-- **Tatsaechliches Verhalten:** Nach der verzögerten Handler-Ersetzung kann der reale Settings-Button zur Chat-Ansicht zurückführen; der erwartete API-Key-Abschnitt fehlt im headed E2E. Das blockiert die vollständige Task-`.2`-Validierung.
-- **Reproduktion / Kontext:** Janus starten, mindestens 500 ms warten, den Sidebar-Button `Einstellungen` betätigen. Im aktuellen mocked headed Lauf `tests/e2e/codex-connection-settings.spec.js` ist `#api-key-section` anschließend nicht auffindbar. Die ursprüngliche und die verzögerte Handler-Definition stehen beide in `frontend/js/app.js`.
-- **Betroffener Bereich:** Frontend / Settings-Navigation / E2E
-- **Nachweise:** `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.2_debug_result.md`; `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.2_execution_result.md`; `test-results/tests-e2e-codex-connection-aed8d-thout-mutating-API-key-form-janus-chromium/error-context.md`; `frontend/js/app.js`
-- **Akzeptanzkriterien:**
-  - [ ] Der reale Settings-Button behält genau einen zustandskonsistenten Navigationspfad.
-  - [ ] Öffnen der Settings synchronisiert View-State und Zielabschnitt ohne Reinitialisierungs-Race.
-  - [ ] Der vollständige headed Task-`.2`-E2E-Lauf erreicht den API-Key-Abschnitt und besteht ohne DOM-/Timing-Workaround.
-  - [ ] Die Korrektur verändert weder die Task-`.1`-Credential-Isolation noch Device-Code-, Provider-, Modell-, Chat- oder Produktionsverhalten.
-- **Fehlende Informationen:** Keine
-- **Notizen:** Separater Produktfehler außerhalb der gebundenen Task-`.2`-Dateiliste. Task `.2` bleibt bis zur validierten Korrektur blockiert; kein Live-Konto-Test ist für diesen Defekt erforderlich.
-- **Wichtigkeit:** HIGH
-- **Umsetzungsrisiko:** MEDIUM
-- **Aufwand:** S
-- **Umsetzungsreife:** READY
-- **Empfehlung:** DO NOW
-- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
-- **Routing reason:** Ein klarer, einzelner Frontend-Navigationsfehler mit mittelbarem Einfluss auf die allgemeine Settings-Ansicht; die genaue kleinste Korrektur und Testoberfläche müssen vor Implementierung separat geprüft werden.
-- **Routing confidence:** HIGH
-- **Routing decided by:** BACKLOG SKILL 3
-- **Routing decided at:** 2026-07-15
-- **Handoff:** documentation/tasks/backlog_BACKLOG-131_settings_handler_navigation.md
-- **Recommended next skill:** SKILL 3
-- **Handoff created:** 2026-07-15
-
 ### BACKLOG-120 - Neue Kontakt-Hobbyfakten fuer bestehenden Kontakt werden als unverifizierbare Wissensfrage abgewehrt
 
 - **Typ:** BUG
@@ -625,6 +591,34 @@ Dashboard-Regeln:
 - **Notizen:** False Positives aus TEST-RUN-2026-05-19-007 - TestPlan-Expectations muessen verfeinert werden
 
 ## DONE
+
+### BACKLOG-131 - Verzoegerter Settings-Handler ueberschreibt die zustandsbehaftete Navigation
+
+- **Typ:** BUG
+- **Status:** DONE
+- **Quelle:** Audit / Mocked E2E 2026-07-15
+- **Erstellt:** 2026-07-15
+- **Aktualisiert:** 2026-07-15
+- **Abgeschlossen:** 2026-07-15
+- **Completed Version:** 0.4.31-beta.82
+- **Kurzbeschreibung:** Ein verzoegerter Legacy-Block in `frontend/js/app.js` ersetzte nach dem Start den zustandsbehafteten Settings-Handler.
+- **Erwartetes Verhalten:** Der sichtbare Settings-Button verwendet dauerhaft einen konsistenten Navigationspfad und zeigt den vorgesehenen Settings-Abschnitt ohne Reinitialisierungs-Race.
+- **Tatsaechliches Verhalten:** Behoben. Der sichtbare Settings-Button bindet genau einen state-konsistenten Pfad; der getrennte Modal-Fallback bleibt unveraendert.
+- **Betroffener Bereich:** Frontend / Settings-Navigation / E2E
+- **Nachweise:** `documentation/tasks/BACKLOG-131_final_audit.md`; `documentation/tasks/BACKLOG-131_AUDIT_PACKAGE.md`; `documentation/tasks/TASK-BACKLOG-131-SETTINGS-NAVIGATION_execution_result.md`; `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.2.2_execution_result.md`
+- **Akzeptanzkriterien:**
+  - [x] Der reale Settings-Button behaelt genau einen zustandskonsistenten Navigationspfad.
+  - [x] Oeffnen der Settings synchronisiert View-State und Zielabschnitt ohne Reinitialisierungs-Race.
+  - [x] Der vollstaendige headed Task-`.2`-E2E-Lauf erreicht den API-Key-Abschnitt und besteht ohne DOM-/Timing-Workaround.
+  - [x] Die Korrektur veraendert weder die Task-`.1`-Credential-Isolation noch Device-Code-, Provider-, Modell-, Chat- oder Produktionsverhalten.
+- **Wichtigkeit:** HIGH
+- **Umsetzungsrisiko:** MEDIUM
+- **Aufwand:** S
+- **Final Audit:** PASS
+- **Validation:** JavaScript syntax PASS; Settings API `11 passed`; headed E2E `8 passed`; scoped committed diff and worktree checks PASS; account-free Settings observation PASS.
+- **Production State:** DEFAULT-DENY; keine Provider-/Modell-, Chat- oder Produktionsfreigabe.
+- **Notizen:** Die separate Task `.2.2` korrigierte nur die Test-Runner-Sequenz des Replacement-State und ist nicht Teil der BACKLOG-131-Produktkorrektur.
+- **Handoff:** documentation/tasks/backlog_BACKLOG-131_settings_handler_navigation.md
 
 ### BACKLOG-129 - Gemini-Streaming doppelt identische Tool-Deltas loesen vor Ausfuehrung den Hard-Loop-Breaker aus
 

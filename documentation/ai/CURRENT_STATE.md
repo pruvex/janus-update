@@ -1,6 +1,115 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-15 20:39:27 +02:00`, `janus-documentation-update` closed `BACKLOG-131` after its independent Final Audit PASS. The backlog item moved from IN PROGRESS to DONE; dashboard, registry, project state, changelog, and reusable learning now record the bounded Settings-navigation correction. Task `.2.2` remains explicitly runner-only, Tasks `.3` through `.5` remain open, and production remains default-deny.
+
+Current goal: retain the completed BACKLOG-131 documentation checkpoint and select any next feature work independently.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- recorded BACKLOG-131 Final Audit PASS in its canonical backlog and project markers
+- preserved separation from Task `.2.2` and from the unfinished Device-Code Feature Spec
+- made no product, account, credential, production, Git, remote, release, or sync action
+
+Changed files:
+- `documentation/backlog/BACKLOG.md`
+- `janus-dashboard/data/backlog.snapshot.json`
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `CHANGELOG.md`
+- `WHAT_I_LEARNED.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- BACKLOG-131 Final Audit: PASS
+- dashboard backlog sync: PASS
+- BACKLOG-131 documentation marker validation: PASS
+- scoped diff check: PASS
+- global backlog validator: FAIL only on documented pre-existing legacy errors for BACKLOG-127, BACKLOG-126, BACKLOG-125, and older entries; BACKLOG-131 is structurally correct under DONE
+
+Open risks:
+- Tasks `.3` through `.5` remain unimplemented; provider/model selection and production remain default-deny
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this documentation checkpoint
+
+Next recommended step for ChatGPT: select the next bounded Feature task deliberately; do not infer full feature or production readiness.
+
+Next recommended step for Codex: recommend `janus-git-governance` for a scoped checkpoint only after explicit user approval.
+
+Last updated: `2026-07-15 20:39:27 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 18:31:25 +02:00`, the independent package-only `janus-final-audit` for `BACKLOG-131` passed. The audit confirms one durable, state-consistent sidebar Settings path, strict separation from the runner-only Task `.2.2` sequencing correction, complete headed E2E evidence, and unchanged credential, API-key, provider/model, chat-transport, and production default-deny boundaries.
+
+Current goal: synchronize the BACKLOG-131 PASS result through `janus-documentation-update` without closing the broader Device-Code Feature Spec or attributing Task `.2.2` work to the navigation correction.
+
+Active phase: `janus-final-audit`, canonical state `PASS` with handoff to `janus-documentation-update`.
+
+Last Codex work:
+- audited only `BACKLOG-131_AUDIT_PACKAGE.md` as the fachliches audit package and followed only its bound artifacts/evidence; no development-chat history was used
+- independently reran syntax, focused API, scoped diff, and complete headed E2E validation
+- wrote and validated the BACKLOG-131 final-audit artifact
+- made no product, account, credential, commit, push, sync, release, or production action
+
+Changed files:
+- `documentation/tasks/BACKLOG-131_final_audit.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- package completeness, precheck, current source, and blocker-delta review: PASS
+- JavaScript syntax checks: PASS
+- focused Settings API suite: PASS, `11 passed`
+- complete headed mocked E2E suite: PASS, `8 passed (1.5m)`
+- scoped commit diff/whitespace and worktree cleanliness: PASS
+- final-audit artifact validator: PASS
+
+Open risks:
+- BACKLOG-131 is not DONE until `janus-documentation-update` synchronizes Backlog, dashboard, registry, and related documentation
+- Tasks `.3` through `.5` remain unimplemented; provider/model selection and production remain default-deny
+- no commit, push, or `origin/codex-sync` update occurred, so a remote such as GitHub may not contain this latest audit handoff or CURRENT_STATE snapshot
+
+Next recommended step for ChatGPT: treat BACKLOG-131 as Final Audit PASS while preserving Task `.2.2` and broader Feature Spec separation.
+
+Next recommended step for Codex: run `janus-documentation-update` with `5.6 Terra/low` for BACKLOG-131 only.
+
+Last updated: `2026-07-15 18:31:25 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 18:21:26 +02:00`, `codex-audit-package-builder` created and contract-checked the compact re-audit package for `BACKLOG-131`. The package binds the original navigation correction, its precheck and debug delta, the runner-only Task `.2.2` sequencing result, the green shared E2E/API evidence, and the Task `.2` final audit while preserving BACKLOG-131 as a separate closeout.
+
+Current goal: perform an independent final audit of BACKLOG-131 before marking the backlog item DONE.
+
+Active phase: `codex-audit-package-builder`, canonical state `HANDOFF`.
+
+Last Codex work:
+- built and contract-checked `BACKLOG-131_AUDIT_PACKAGE.md`
+- bound the historic replacement-state blocker as resolved by Task `.2.2` runner sequencing, without attributing that runner change to the navigation correction
+- made no product, account, credential, production, Git, remote, release, or live provider action
+
+Changed files:
+- `documentation/tasks/BACKLOG-131_AUDIT_PACKAGE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- audit-package section contract: PASS
+- bound BACKLOG-131 marker: PASS
+- scoped diff check: PASS
+
+Open risks:
+- BACKLOG-131 still requires an independent final audit and documentation closeout before it can move to DONE
+- Tasks `.3` through `.5` remain unimplemented; provider/model selection and production remain default-deny
+- no commit, push, or `origin/codex-sync` update occurred for this package, so remote state does not contain this new handoff
+
+Next recommended step for ChatGPT: open a fresh independent final-audit task and provide only `BACKLOG-131_AUDIT_PACKAGE.md`.
+
+Next recommended step for Codex: run `janus-final-audit` with `5.6 Sol/high` if runtime-supported; otherwise `5.6 Terra/high`, with no development-chat history.
+
+Last updated: `2026-07-15 18:21:26 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-15 17:51:34 +02:00`, `janus-documentation-update` synchronized the Task `.2` Final Audit PASS into the task completion metadata, central registry, project state, and changelog. The broader Feature Spec remains partial with Tasks `.3` through `.5` open; `BACKLOG-131` remains separately governed. Production remains default-deny.
 
 Current goal: retain the completed Task `.2` documentation checkpoint and route any future work only to a separately selected remaining task or the separate BACKLOG-131 closeout.

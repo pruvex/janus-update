@@ -23,7 +23,16 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 - **Validation**: Settings API `11 passed`; headed mocked Settings E2E `8 passed`; Python/JavaScript syntax and scoped diff checks PASS; passive account-free Settings observation PASS.
 - **Scope**: non-sensitive Settings lifecycle, Janus-only logout, atomic replacement, redacted transient device-code UI, unavailable secure-storage state without fallback, and API-key non-interference only.
 - **Production State**: DEFAULT-DENY; no selectable provider/model, chat transport, or release authority is granted by this task.
-- **Separate Prerequisite**: `BACKLOG-131` remains separately governed and is not closed here.
+- **Separate Prerequisite**: `BACKLOG-131` was closed separately with Final Audit PASS; it does not expand this task's scope.
+
+### BACKLOG-131 - State-consistent Settings navigation
+
+- **Status**: DONE (Final Audit PASS).
+- **Final Audit**: `documentation/tasks/BACKLOG-131_final_audit.md` (PASS).
+- **Audit Package**: `documentation/tasks/BACKLOG-131_AUDIT_PACKAGE.md`.
+- **Validation**: Settings API `11 passed`; headed Settings E2E `8 passed`; JavaScript syntax, scoped committed diff, and worktree checks PASS; account-free Settings observation PASS.
+- **Scope**: one state-consistent visible Settings-button navigation path only. The Task `.2.2` mocked replacement-state sequence remains a separate runner-only correction.
+- **Production State**: DEFAULT-DENY; no credential, provider/model, chat, or production activation change.
 
 ### TASK-CHATGPT-CODEX.1 - Official Codex access boundary
 
