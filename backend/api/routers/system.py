@@ -9,7 +9,8 @@ from backend.data import crud
 from backend.services.telemetry_service import submit_feedback_async
 from backend.utils.config_loader import initialize_file_from_template, load_model_catalog
 from backend.utils.paths import get_app_data_dir, resource_path
-from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
+from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks, Request
+from backend.llm_providers.codex_app_server import ALLOWED_PUBLIC_STATE_KEYS, CodexAppServerError
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from backend.data.database import get_db
@@ -51,6 +52,51 @@ def save_config(config):
 class ApiKey(BaseModel):
     provider: str
     api_key: str
+
+
+class CodexLoginCancelRequest(BaseModel):
+    login_id: Optional[str] = None
+
+
+def _get_codex_lifecycle(request: Request):
+    return getattr(request.app.state, "codex_app_server", None)
+
+
+def _public_codex_connection_state(state: Dict[str, Any]) -> Dict[str, Any]:
+    return {key: state[key] for key in ALLOWED_PUBLIC_STATE_KEYS if key in state}
+
+
+def _default_unavailable_codex_state() -> Dict[str, Any]:
+    return {
+        "connection_state": "unavailable",
+        "account_identifier": None,
+        "workspace_id": None,
+        "workspace_display": None,
+        "auth_mode": None,
+        "plan_type": None,
+        "retry_reason": "codex_connection_unavailable",
+        "login_pending": False,
+        "login_id": None,
+        "capabilities": {
+            "managed_chatgpt_login": False,
+            "keyring_only": False,
+            "janus_isolated": False,
+        },
+    }
+
+
+def _codex_unavailable_http_exception(lifecycle) -> HTTPException:
+    if lifecycle is None or not getattr(lifecycle, "configured", False):
+        state = _default_unavailable_codex_state()
+    else:
+        state = _public_codex_connection_state(lifecycle.get_public_state())
+    return HTTPException(
+        status_code=503,
+        detail={
+            "code": "codex_connection_unavailable",
+            "codex_connection": state,
+        },
+    )
 
 
 class ModelSelection(BaseModel):
@@ -108,6 +154,97 @@ async def add_api_key(key: ApiKey):
     except Exception as e:
         logger.error(f"Failed to save API key: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to save API key.")
+
+
+@router.get("/codex-connection")
+async def get_codex_connection(request: Request):
+    lifecycle = _get_codex_lifecycle(request)
+    if lifecycle is None or not lifecycle.configured:
+        return {
+            "codex_connection": _default_unavailable_codex_state(),
+            "available": False,
+        }
+
+    try:
+        state = await lifecycle.read_account(refresh_token=False)
+        return {"codex_connection": _public_codex_connection_state(state), "available": True}
+    except CodexAppServerError:
+        logger.warning("Codex connection status refresh failed.")
+        return {
+            "codex_connection": _public_codex_connection_state(lifecycle.get_public_state()),
+            "available": False,
+            "status": "unavailable",
+        }
+
+
+@router.post("/codex-connection/login")
+async def start_codex_connection_login(request: Request):
+    lifecycle = _get_codex_lifecycle(request)
+    if lifecycle is None or not lifecycle.configured:
+        raise _codex_unavailable_http_exception(lifecycle)
+
+    try:
+        result = await lifecycle.start_login()
+        return {
+            "login_id": result["login_id"],
+            # These values are deliberately returned only by this active-login
+            # response. They are never added to the reusable public state.
+            "verification_url": result["verification_url"],
+            "user_code": result["user_code"],
+            "codex_connection": _public_codex_connection_state(result["state"]),
+        }
+    except CodexAppServerError:
+        logger.warning("Codex managed login start failed.")
+        raise _codex_unavailable_http_exception(lifecycle)
+
+
+@router.post("/codex-connection/login/cancel")
+async def cancel_codex_connection_login(
+    request: Request,
+    body: CodexLoginCancelRequest = CodexLoginCancelRequest(),
+):
+    lifecycle = _get_codex_lifecycle(request)
+    if lifecycle is None or not lifecycle.configured:
+        raise _codex_unavailable_http_exception(lifecycle)
+
+    try:
+        state = await lifecycle.cancel_login(body.login_id)
+        return {"codex_connection": _public_codex_connection_state(state)}
+    except CodexAppServerError:
+        logger.warning("Codex managed login cancel failed.")
+        raise _codex_unavailable_http_exception(lifecycle)
+
+
+@router.post("/codex-connection/logout")
+async def logout_codex_connection(request: Request):
+    lifecycle = _get_codex_lifecycle(request)
+    if lifecycle is None or not lifecycle.configured:
+        raise _codex_unavailable_http_exception(lifecycle)
+
+    try:
+        state = await lifecycle.logout()
+        return {"codex_connection": _public_codex_connection_state(state)}
+    except CodexAppServerError:
+        logger.warning("Codex managed logout failed.")
+        raise _codex_unavailable_http_exception(lifecycle)
+
+
+@router.post("/codex-connection/retry")
+async def retry_codex_connection(request: Request):
+    lifecycle = _get_codex_lifecycle(request)
+    if lifecycle is None or not lifecycle.configured:
+        raise _codex_unavailable_http_exception(lifecycle)
+
+    try:
+        await lifecycle.retry_after_failure()
+        try:
+            state = await lifecycle.read_account(refresh_token=False)
+        except CodexAppServerError:
+            state = lifecycle.get_public_state()
+        return {"codex_connection": _public_codex_connection_state(state)}
+    except CodexAppServerError:
+        logger.warning("Codex connection retry failed.")
+        raise _codex_unavailable_http_exception(lifecycle)
 
 
 @router.get("/costs/summary-by-model")

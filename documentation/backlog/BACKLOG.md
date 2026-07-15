@@ -84,6 +84,40 @@ Dashboard-Regeln:
 
 ## IN PROGRESS
 
+### BACKLOG-131 - Verzögerter Settings-Handler überschreibt die zustandsbehaftete Navigation
+
+- **Typ:** BUG
+- **Status:** IN PROGRESS
+- **Quelle:** Audit / Mocked E2E 2026-07-15
+- **Erstellt:** 2026-07-15
+- **Aktualisiert:** 2026-07-15
+- **Kurzbeschreibung:** Ein verzögerter Legacy-Block in `frontend/js/app.js` klont `#settings-btn` nach dem Start und ersetzt dessen zustandsbehafteten Handler. Die Ersatzfunktion öffnet Settings ohne `appState.currentView` zu synchronisieren oder `show-settings` auszulösen und startet anschließend `initializeApp()` erneut.
+- **Erwartetes Verhalten:** Der sichtbare Settings-Button verwendet dauerhaft einen konsistenten Navigationspfad, setzt den View-State korrekt und zeigt den vorgesehenen Settings-Abschnitt ohne unerwartete Reinitialisierung an.
+- **Tatsaechliches Verhalten:** Nach der verzögerten Handler-Ersetzung kann der reale Settings-Button zur Chat-Ansicht zurückführen; der erwartete API-Key-Abschnitt fehlt im headed E2E. Das blockiert die vollständige Task-`.2`-Validierung.
+- **Reproduktion / Kontext:** Janus starten, mindestens 500 ms warten, den Sidebar-Button `Einstellungen` betätigen. Im aktuellen mocked headed Lauf `tests/e2e/codex-connection-settings.spec.js` ist `#api-key-section` anschließend nicht auffindbar. Die ursprüngliche und die verzögerte Handler-Definition stehen beide in `frontend/js/app.js`.
+- **Betroffener Bereich:** Frontend / Settings-Navigation / E2E
+- **Nachweise:** `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.2_debug_result.md`; `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.2_execution_result.md`; `test-results/tests-e2e-codex-connection-aed8d-thout-mutating-API-key-form-janus-chromium/error-context.md`; `frontend/js/app.js`
+- **Akzeptanzkriterien:**
+  - [ ] Der reale Settings-Button behält genau einen zustandskonsistenten Navigationspfad.
+  - [ ] Öffnen der Settings synchronisiert View-State und Zielabschnitt ohne Reinitialisierungs-Race.
+  - [ ] Der vollständige headed Task-`.2`-E2E-Lauf erreicht den API-Key-Abschnitt und besteht ohne DOM-/Timing-Workaround.
+  - [ ] Die Korrektur verändert weder die Task-`.1`-Credential-Isolation noch Device-Code-, Provider-, Modell-, Chat- oder Produktionsverhalten.
+- **Fehlende Informationen:** Keine
+- **Notizen:** Separater Produktfehler außerhalb der gebundenen Task-`.2`-Dateiliste. Task `.2` bleibt bis zur validierten Korrektur blockiert; kein Live-Konto-Test ist für diesen Defekt erforderlich.
+- **Wichtigkeit:** HIGH
+- **Umsetzungsrisiko:** MEDIUM
+- **Aufwand:** S
+- **Umsetzungsreife:** READY
+- **Empfehlung:** DO NOW
+- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
+- **Routing reason:** Ein klarer, einzelner Frontend-Navigationsfehler mit mittelbarem Einfluss auf die allgemeine Settings-Ansicht; die genaue kleinste Korrektur und Testoberfläche müssen vor Implementierung separat geprüft werden.
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-07-15
+- **Handoff:** documentation/tasks/backlog_BACKLOG-131_settings_handler_navigation.md
+- **Recommended next skill:** SKILL 3
+- **Handoff created:** 2026-07-15
+
 ### BACKLOG-120 - Neue Kontakt-Hobbyfakten fuer bestehenden Kontakt werden als unverifizierbare Wissensfrage abgewehrt
 
 - **Typ:** BUG
@@ -358,6 +392,42 @@ Dashboard-Regeln:
 - **Validation evidence:** `python -m py_compile backend/data/crud.py backend/tests/test_contact_card_normalization.py`; `python -m pytest backend/tests/test_contact_card_normalization.py -q`; live Janus retest with `Oliver Schwab wohnt in Köln-Stammheim`, `und er hat einen Hund`, `oli hat auch eine katze` PASS
 - **Completed in version:** N/A
 - **Completed by task:** N/A
+
+### BACKLOG-130 - Windows-Backend kann den offiziellen Codex App Server unter Selector-Eventloop nicht starten
+
+- **Typ:** BUG
+- **Status:** IN PROGRESS
+- **Quelle:** Manual Test / Log
+- **Erstellt:** 2026-07-14
+- **Aktualisiert:** 2026-07-14
+- **Follow-up zu:** `TASK-CHATGPT-CODEX.1` - Official Codex access boundary (task-scoped final-audit PASS)
+- **Kurzbeschreibung:** Der neue ChatGPT-Verbindungsstatus erreicht den laufenden Backend-Service, kann aber den offiziell gebuendelten Codex App Server unter dem aktiven Windows-Selector-Eventloop nicht als Subprozess starten. Der Fehler wird aktuell als HTTP 500 sichtbar statt als nicht-sensibler nicht-verfuegbar-Status.
+- **Erwartetes Verhalten:** Die Janus-Laufzeit besitzt fuer den offiziellen App Server einen Windows-kompatiblen Subprozesspfad. Kann der Prozess trotzdem nicht starten, bleibt ChatGPT fail-closed und der Settings-Status zeigt einen retryfaehigen, nicht-sensiblen Fehler statt HTTP 500.
+- **Tatsaechliches Verhalten:** Die manuelle ChatGPT-Karte zeigt `Failed to fetch (127.0.0.1:8001)`. Direkte Live-Aufrufe von Status und Retry liefern HTTP 500; der Trace zeigt `asyncio.create_subprocess_exec()` -> `NotImplementedError` im aktiven Windows-Selector-Eventloop.
+- **Reproduktion / Kontext:** Janus starten, Einstellungen > API Key Verwaltung > `ChatGPT ueber Codex` oeffnen oder `Erneut versuchen`. `/api/health` ist bereit, doch `/api/codex-connection` scheitert beim ersten App-Server-Subprozessstart.
+- **Betroffener Bereich:** Backend / Windows-Runtime / offizieller Codex App Server / Settings-Status
+- **Nachweise:** `documentation/tasks/TASK-CHATGPT-CODEX.2_debug_result_backend_startup_readiness.md`; manueller Test vom 2026-07-14; direkte Health-PASS- und Status/Retry-HTTP-500-Probes. Eine isolierte Lifecycle-Probe mit derselben gepinnten Runtime und Keyring-Konfiguration liefert dagegen sicheren disconnected-Status.
+- **Akzeptanzkriterien:**
+  - [ ] Der offizielle Codex App Server kann im realen Windows-Janus-Backend aus dem gebundenen, isolierten Runtime-Kontext gestartet werden.
+  - [ ] Status, Login-Start und Retry geben bei nicht startbarem Prozess nur einen nicht-sensiblen fail-closed Zustand zurueck, niemals HTTP 500 oder einen Trace.
+  - [ ] Bestehende Janus-API-Key-Provider, Providerwahl, Modellwahl, Chatverlauf und isolierte Logout-Grenze bleiben unveraendert.
+  - [ ] Eine echte Windows-Backend-Eventloop-Evidenz deckt den Subprozesspfad ab; der `.2` Settings-UI-Vertrag bleibt gruen.
+- **Fehlende Informationen:**
+  - Keine
+- **Notizen:** Keine OAuth-Secrets, Token-Ablage, Provider- oder Modelllogik aendern. Die Ursachenanalyse ist abgeschlossen; die konkrete Runtime-Korrektur braucht eine eigene Task-Bindung und einen Precheck.
+- **Wichtigkeit:** HIGH
+- **Umsetzungsrisiko:** MEDIUM
+- **Aufwand:** M
+- **Umsetzungsreife:** READY
+- **Empfehlung:** DO NOW
+- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
+- **Routing reason:** Blockiert den bereits gebauten ChatGPT-Verbindungsstatus im realen Windows-Backend. Die Ursache ist eingegrenzt; der Precheck muss eine prozesslokale Windows-kompatible Subprozessstrategie gegen die Risiken einer globalen Loop-Policy abwaegen.
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-07-14
+- **Handoff:** documentation/tasks/backlog_BACKLOG-130_windows_codex_app_server_eventloop.md
+- **Recommended next skill:** SKILL 3
+- **Handoff created:** 2026-07-14
 
 ## READY
 

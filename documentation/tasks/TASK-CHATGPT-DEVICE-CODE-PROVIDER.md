@@ -146,4 +146,15 @@ TASK-CHATGPT-DEVICE-CODE-PROVIDER
 - **Security Boundary:** Janus-only absolute `CODEX_HOME`, keyring-backed encrypted persistence, no credential import or fallback, redacted transient values, and no observed impact on the parallel Codex account.
 - **Production State:** DEFAULT-DENY; activation remains reserved for Task `.5`.
 - **Evidence:** `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_final_audit.md`; `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_AUDIT_PACKAGE.md`; `documentation/test-results/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_isolation_evidence.md`
-- **Remaining Tasks:** `.2`, `.3`, `.4`, and `.5` remain open.
+- **Remaining Tasks:** `.3`, `.4`, and `.5` remain open.
+
+### TASK-CHATGPT-DEVICE-CODE-PROVIDER.2
+
+- **Status:** DONE
+- **Final Audit:** PASS
+- **Completed At:** 2026-07-15
+- **Validation:** API Settings contract `11 passed`; headed mocked Settings E2E `8 passed`; Python/JavaScript syntax and scoped diff checks PASS; passive account-free Settings observation PASS.
+- **Security Boundary:** Device-code values remain transient and redacted; unavailable isolated persistence is visibly disabled with no fallback; replacement is atomic; API-key providers remain unaffected.
+- **Production State:** DEFAULT-DENY; provider/model availability, chat transport, and production activation remain reserved for Tasks `.3` through `.5`.
+- **Evidence:** `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.2_final_audit.md`; `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.2_AUDIT_PACKAGE.md`; `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.2_execution_result.md`
+- **Separate Prerequisite:** `BACKLOG-131` Settings navigation remains independently governed and is not closed by this task.

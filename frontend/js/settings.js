@@ -360,6 +360,22 @@ const apiKeyForm = document.getElementById("api-key-form");
 const providerInput = document.getElementById("provider-input");
 const apiKeyInput = document.getElementById("api-key-input");
 const apiKeyList = document.getElementById("api-key-list");
+const codexConnectionCard = document.getElementById("codex-connection-card");
+const codexConnectionStatus = document.getElementById("codex-connection-status");
+const codexConnectionDetails = document.getElementById("codex-connection-details");
+const codexConnectionActions = document.getElementById("codex-connection-actions");
+const codexConnectionError = document.getElementById("codex-connection-error");
+const codexConnectionAccountChangeNote = document.getElementById(
+  "codex-connection-account-change-note"
+);
+const codexDeviceCodeInstructions = document.getElementById(
+  "codex-device-code-instructions"
+);
+const codexDeviceVerificationLink = document.getElementById(
+  "codex-device-verification-link"
+);
+const codexDeviceUserCode = document.getElementById("codex-device-user-code");
+let activeCodexLoginInstructions = null;
 const modelManagementButtons = document.getElementById("model-management-buttons");
 const modelSelectionForm = document.getElementById("model-selection-form");
 const modelList = document.getElementById("model-list");
@@ -443,6 +459,286 @@ async function loadApiKeys() {
   }
 }
 
+function isOfficialCodexDeviceVerificationUrl(url) {
+  try {
+    const parsed = new URL(url);
+    return (
+      parsed.protocol === "https:" &&
+      parsed.hostname === "auth.openai.com" &&
+      (parsed.port === "" || parsed.port === "443") &&
+      parsed.pathname === "/codex/device" &&
+      parsed.search === "" &&
+      parsed.hash === "" &&
+      parsed.username === "" &&
+      parsed.password === ""
+    );
+  } catch {
+    return false;
+  }
+}
+
+function isValidCodexDeviceUserCode(userCode) {
+  return typeof userCode === "string" && /^[A-Za-z0-9-]{3,128}$/.test(userCode);
+}
+
+async function openCodexDeviceVerificationUrl(url) {
+  if (!isOfficialCodexDeviceVerificationUrl(url)) {
+    throw new Error("Ungültige Anmelde-URL");
+  }
+  if (window.electron && typeof window.electron.openExternalLink === "function") {
+    await window.electron.openExternalLink(url);
+    return;
+  }
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
+function clearCodexConnectionError() {
+  if (!codexConnectionError) return;
+  codexConnectionError.textContent = "";
+  codexConnectionError.hidden = true;
+}
+
+function showCodexConnectionError(message) {
+  if (!codexConnectionError) return;
+  codexConnectionError.textContent = message;
+  codexConnectionError.hidden = false;
+}
+
+function createCodexConnectionButton(label, action) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.textContent = label;
+  button.dataset.codexAction = action;
+  return button;
+}
+
+function describeCodexConnectionState(state = {}) {
+  switch (state.connection_state) {
+    case "connected":
+      return "Mit ChatGPT verbunden";
+    case "connecting":
+      return "Anmeldung läuft";
+    case "unavailable":
+      return "ChatGPT ist derzeit nicht verfügbar";
+    case "disconnected":
+    default:
+      return "Nicht mit ChatGPT verbunden";
+  }
+}
+
+function renderCodexConnectionDetails(state = {}) {
+  if (!codexConnectionDetails) return;
+  const parts = [];
+  if (state.account_identifier) {
+    parts.push(`Konto: ${state.account_identifier}`);
+  }
+  if (state.workspace_display || state.workspace_id) {
+    parts.push(`Workspace: ${state.workspace_display || state.workspace_id}`);
+  }
+  if (state.auth_mode) {
+    parts.push(`über Codex (${state.auth_mode})`);
+  } else if (state.connection_state === "connected") {
+    parts.push("über Codex");
+  }
+  if (
+    state.connection_state === "unavailable" &&
+    (!state.capabilities?.managed_chatgpt_login ||
+      !state.capabilities?.keyring_only ||
+      !state.capabilities?.janus_isolated)
+  ) {
+    parts.push("Sichere Anmeldung ist deaktiviert; Janus verwendet keine alternative Speicherung");
+  }
+  codexConnectionDetails.textContent = parts.join(" · ");
+}
+
+function renderCodexDeviceCodeInstructions(state = {}) {
+  if (!codexDeviceCodeInstructions || !codexDeviceVerificationLink || !codexDeviceUserCode) return;
+
+  const instructions = activeCodexLoginInstructions;
+  const isCurrentLogin =
+    instructions &&
+    state.connection_state === "connecting" &&
+    state.login_pending &&
+    state.login_id === instructions.loginId;
+
+  if (!isCurrentLogin) {
+    activeCodexLoginInstructions = null;
+    codexDeviceVerificationLink.removeAttribute("href");
+    codexDeviceVerificationLink.textContent = "";
+    codexDeviceUserCode.textContent = "";
+    codexDeviceCodeInstructions.hidden = true;
+    return;
+  }
+
+  codexDeviceVerificationLink.href = instructions.verificationUrl;
+  codexDeviceVerificationLink.textContent = "auth.openai.com/codex/device";
+  codexDeviceUserCode.textContent = instructions.userCode;
+  codexDeviceCodeInstructions.hidden = false;
+}
+
+function renderCodexConnectionActions(state = {}) {
+  if (!codexConnectionActions) return;
+  codexConnectionActions.innerHTML = "";
+
+  const connectionState = state.connection_state || "disconnected";
+  const loginPending = Boolean(state.login_pending);
+
+  if (connectionState === "unavailable") {
+    const securePersistenceUnavailable =
+      !state.capabilities?.managed_chatgpt_login ||
+      !state.capabilities?.keyring_only ||
+      !state.capabilities?.janus_isolated;
+    if (securePersistenceUnavailable) {
+      const button = createCodexConnectionButton("Anmeldung nicht verfügbar", "disabled");
+      button.disabled = true;
+      codexConnectionActions.appendChild(button);
+      return;
+    }
+    codexConnectionActions.appendChild(
+      createCodexConnectionButton("Erneut versuchen", "retry")
+    );
+    return;
+  }
+
+  if (loginPending || connectionState === "connecting") {
+    codexConnectionActions.appendChild(
+      createCodexConnectionButton("Anmeldung abbrechen", "cancel")
+    );
+    return;
+  }
+
+  if (connectionState === "connected") {
+    codexConnectionActions.appendChild(
+      createCodexConnectionButton("Abmelden", "logout")
+    );
+    codexConnectionActions.appendChild(
+      createCodexConnectionButton("Konto wechseln", "account-change")
+    );
+    return;
+  }
+
+  codexConnectionActions.appendChild(
+    createCodexConnectionButton("Mit ChatGPT anmelden", "login")
+  );
+}
+
+function renderCodexConnectionCard(payload = {}) {
+  if (!codexConnectionCard) return;
+
+  const state = payload.codex_connection || {};
+  clearCodexConnectionError();
+
+  if (codexConnectionStatus) {
+    codexConnectionStatus.textContent = describeCodexConnectionState(state);
+  }
+
+  renderCodexConnectionDetails(state);
+  renderCodexDeviceCodeInstructions(state);
+  renderCodexConnectionActions(state);
+
+  if (codexConnectionAccountChangeNote) {
+    const showNote = state.connection_state === "connected";
+    codexConnectionAccountChangeNote.hidden = !showNote;
+  }
+}
+
+async function fetchCodexConnectionPayload() {
+  const response = await fetch(`${API_BASE_URL}/api/codex-connection`);
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error("ChatGPT-Verbindungsstatus konnte nicht geladen werden.");
+  }
+  return payload;
+}
+
+async function loadCodexConnectionCard() {
+  if (!codexConnectionCard) return;
+  try {
+    const payload = await fetchCodexConnectionPayload();
+    renderCodexConnectionCard(payload);
+  } catch (error) {
+    renderCodexConnectionCard({
+      codex_connection: { connection_state: "unavailable" },
+    });
+    showCodexConnectionError("ChatGPT-Verbindungsstatus konnte nicht geladen werden.");
+  }
+}
+
+async function postCodexConnectionAction(path, body = undefined) {
+  const options = { method: "POST" };
+  if (body !== undefined) {
+    options.headers = { "Content-Type": "application/json" };
+    options.body = JSON.stringify(body);
+  }
+  const response = await fetch(`${API_BASE_URL}${path}`, options);
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const detail = payload?.detail;
+    const code =
+      typeof detail === "object" && detail?.code
+        ? detail.code
+        : "codex_connection_unavailable";
+    if (typeof detail === "object" && detail?.codex_connection) {
+      renderCodexConnectionCard({ codex_connection: detail.codex_connection });
+    }
+    throw new Error(
+      code === "codex_connection_unavailable"
+        ? "ChatGPT ist derzeit nicht verfügbar."
+        : "Die ChatGPT-Verbindungsaktion ist fehlgeschlagen."
+    );
+  }
+  return payload;
+}
+
+async function handleCodexConnectionAction(action, state = {}) {
+  clearCodexConnectionError();
+
+  if (action === "login" || action === "account-change") {
+    const payload = await postCodexConnectionAction("/api/codex-connection/login");
+    if (
+      !isOfficialCodexDeviceVerificationUrl(payload.verification_url) ||
+      !isValidCodexDeviceUserCode(payload.user_code)
+    ) {
+      throw new Error("Ungültige Anmelde-URL");
+    }
+    activeCodexLoginInstructions = {
+      loginId: payload.login_id,
+      verificationUrl: payload.verification_url,
+      userCode: payload.user_code,
+    };
+    renderCodexConnectionCard({
+      codex_connection: payload.codex_connection || {},
+    });
+    await openCodexDeviceVerificationUrl(payload.verification_url);
+    return;
+  }
+
+  if (action === "cancel") {
+    const payload = await postCodexConnectionAction("/api/codex-connection/login/cancel", {
+      login_id: state.login_id || null,
+    });
+    renderCodexConnectionCard(payload);
+    return;
+  }
+
+  if (action === "logout") {
+    const payload = await postCodexConnectionAction("/api/codex-connection/logout");
+    renderCodexConnectionCard(payload);
+    return;
+  }
+
+  if (action === "retry") {
+    const payload = await postCodexConnectionAction("/api/codex-connection/retry");
+    renderCodexConnectionCard(payload);
+  }
+}
+
+async function refreshCodexConnectionCard() {
+  const payload = await fetchCodexConnectionPayload();
+  renderCodexConnectionCard(payload);
+  return payload;
+}
+
 // Flag für renderSettingsView um parallele Ausführung zu verhindern
 let isSettingsViewRendering = false;
 
@@ -457,6 +753,7 @@ async function renderSettingsView(targetSection = "api-key-section") {
   try {
     setActiveSettingsSection(targetSection);
     await loadApiKeys();
+    await loadCodexConnectionCard();
 
     // Sicherstellen, dass Buttons komplett neu aufgebaut werden
     modelManagementButtons.innerHTML = "";
@@ -1355,7 +1652,10 @@ document.addEventListener("DOMContentLoaded", () => {
     e.preventDefault();
     const targetId = link.dataset.target;
     setActiveSettingsSection(targetId);
-    if (targetId === "workspaces-section") {
+    if (targetId === "api-key-section") {
+      loadApiKeys();
+      loadCodexConnectionCard();
+    } else if (targetId === "workspaces-section") {
       renderWorkspacesView();
     } else if (targetId === "memory-section") {
       // NEU
@@ -1405,6 +1705,36 @@ document.addEventListener("DOMContentLoaded", () => {
         submitBtn.disabled = false;
     }
   });
+
+  if (codexConnectionActions) {
+    codexConnectionActions.addEventListener("click", async (event) => {
+      const button = event.target.closest("button[data-codex-action]");
+      if (!button || button.disabled) return;
+
+      const action = button.dataset.codexAction;
+      const originalText = button.textContent;
+      button.disabled = true;
+      button.textContent = "Bitte warten...";
+
+      try {
+        const currentPayload = await fetchCodexConnectionPayload().catch(() => ({
+          codex_connection: {},
+        }));
+        await handleCodexConnectionAction(
+          action,
+          currentPayload.codex_connection || {}
+        );
+        await refreshCodexConnectionCard();
+      } catch (error) {
+        showCodexConnectionError(
+          error?.message || "Die ChatGPT-Verbindungsaktion ist fehlgeschlagen."
+        );
+      } finally {
+        button.disabled = false;
+        button.textContent = originalText;
+      }
+    });
+  }
 
   // Model Management - Flag um parallele Ausführung zu verhindern
   let isModelViewLoading = false;

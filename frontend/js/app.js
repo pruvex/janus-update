@@ -1036,6 +1036,20 @@ async function initializeApp() {
       await new Promise(r => document.addEventListener('DOMContentLoaded', r));
   }
 
+  const settingsBtn = document.getElementById("settings-btn");
+  if (settingsBtn && !settingsBtn.dataset.settingsNavigationBound) {
+    settingsBtn.dataset.settingsNavigationBound = "true";
+    settingsBtn.addEventListener("click", () => {
+      console.log("Settings button clicked!");
+      appState.currentView = "settings";
+      const chatViewEl = document.getElementById("chat-view");
+      const settingsViewEl = document.getElementById("settings-view");
+      if (chatViewEl) chatViewEl.style.display = "none";
+      if (settingsViewEl) settingsViewEl.style.display = "flex";
+      document.dispatchEvent(new CustomEvent("show-settings"));
+    });
+  }
+
   let isAuthenticated = false;
   
   // --- RETRY LOGIK FÜR DEN START ---
@@ -1310,19 +1324,6 @@ function setupEventListeners() {
   
   // Settings button — nur Ansicht wechseln, kein render(): sonst wird #model-select
   // neu aufgebaut und kann das Chat-Modell überschreiben (siehe DOM-Sync in render()).
-  const settingsBtn = document.getElementById("settings-btn");
-  if (settingsBtn) {
-    settingsBtn.addEventListener("click", () => {
-      console.log("Settings button clicked!");
-      appState.currentView = "settings";
-      const chatViewEl = document.getElementById("chat-view");
-      const settingsViewEl = document.getElementById("settings-view");
-      if (chatViewEl) chatViewEl.style.display = "none";
-      if (settingsViewEl) settingsViewEl.style.display = "flex";
-      document.dispatchEvent(new CustomEvent("show-settings"));
-    });
-  }
-
   // Back to chat button
   const backToChatBtn = document.getElementById("back-to-chat-btn");
   if (backToChatBtn) {
@@ -2178,19 +2179,6 @@ setTimeout(() => {
         console.log("Fix für Modal-Button angewendet.");
     }
 
-    // Button 2: Der in der Sidebar ("Einstellungen")
-    const sidebarBtn = document.getElementById('settings-btn');
-    if (sidebarBtn) {
-        // Auch hier: Klonen um alte Listener zu löschen
-        const newSidebarBtn = sidebarBtn.cloneNode(true);
-        sidebarBtn.parentNode.replaceChild(newSidebarBtn, sidebarBtn);
-        
-        newSidebarBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            forceOpenSettings();
-        });
-        console.log("Fix für Sidebar-Button angewendet.");
-    }
 }, 500); // 500ms warten nach App-Start
 // ============================================================
 

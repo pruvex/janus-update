@@ -857,6 +857,28 @@
               </form>
               <h4>Gespeicherte API Keys</h4>
               <ul id="api-key-list"></ul>
+
+              <section
+                id="codex-connection-card"
+                aria-labelledby="codex-connection-heading"
+              >
+                <h4 id="codex-connection-heading">
+                  ChatGPT <span class="settings-lead">über Codex</span>
+                </h4>
+                <p id="codex-connection-status" class="settings-lead" aria-live="polite"></p>
+                <p id="codex-connection-details" class="settings-inline-status"></p>
+                <p id="codex-device-code-instructions" class="settings-lead" hidden>
+                  Öffne <a id="codex-device-verification-link" target="_blank" rel="noopener noreferrer"></a>
+                  und gib diesen einmaligen Code ein: <code id="codex-device-user-code"></code>
+                </p>
+                <p id="codex-connection-account-change-note" class="settings-lead" hidden>
+                  Ein Kontowechsel behält die bisherige Janus-Verbindung bei, bis die neue Anmeldung
+                  erfolgreich abgeschlossen ist. Andere lokale Codex- oder ChatGPT-Clients, Chats und
+                  API-Key-Anbieter bleiben unverändert.
+                </p>
+                <div id="codex-connection-actions" class="settings-action-row"></div>
+                <p id="codex-connection-error" class="settings-inline-status" hidden></p>
+              </section>
             </div>
 
             <div id="display-options-section" class="settings-section" style="display: none">

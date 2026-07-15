@@ -14,6 +14,17 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 - **Scope**: official App Server device-code lifecycle, Janus-only encrypted keyring persistence, redaction, restart persistence, Janus-only logout, and Account-A non-interference only.
 - **Production State**: DEFAULT-DENY; no provider/model/UI/chat activation or release authority is granted by this task.
 
+### TASK-CHATGPT-DEVICE-CODE-PROVIDER.2 - Settings lifecycle and atomic account switch
+
+- **Status**: DONE (task-scoped Final Audit PASS; parent Feature Spec remains active).
+- **Final Audit**: `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.2_final_audit.md` (PASS).
+- **Audit Package**: `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.2_AUDIT_PACKAGE.md`.
+- **Spec**: `documentation/SPEC/CHATGPT_OFFICIAL_DEVICE_CODE_PROVIDER_REDESIGN_FEATURE_SPEC.md` (APPROVED - PARTIAL IMPLEMENTATION; Tasks `.3` through `.5` remain open).
+- **Validation**: Settings API `11 passed`; headed mocked Settings E2E `8 passed`; Python/JavaScript syntax and scoped diff checks PASS; passive account-free Settings observation PASS.
+- **Scope**: non-sensitive Settings lifecycle, Janus-only logout, atomic replacement, redacted transient device-code UI, unavailable secure-storage state without fallback, and API-key non-interference only.
+- **Production State**: DEFAULT-DENY; no selectable provider/model, chat transport, or release authority is granted by this task.
+- **Separate Prerequisite**: `BACKLOG-131` remains separately governed and is not closed here.
+
 ### TASK-CHATGPT-CODEX.1 - Official Codex access boundary
 
 - **Status**: DONE (task-scoped final audit PASS; parent feature remains active).
