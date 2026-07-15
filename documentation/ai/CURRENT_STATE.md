@@ -1,6 +1,41 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-15 15:44:12 +02:00`, the confirmed `TASK-CHATGPT-DEVICE-CODE-PROVIDER.1` delivery changeset was committed on `master` as `a8a4510a5` (`feat(chatgpt-device-code): isolate Janus credentials`) after a cached-diff whitespace check. It was pushed to `backup/master`, and the CURRENT_STATE sync commit `9f1857037` was pushed to `origin/codex-sync`. No production release, tag, origin/master push, or account action occurred.
+
+Current goal: Task `.1` delivery checkpoint is complete; retain the active Feature Spec boundary for Tasks `.2` through `.5`.
+
+Active phase: `janus-git-governance`, canonical state `PASS`.
+
+Last Codex work:
+- staged only the operator-confirmed Task `.1` product, evidence, audit, and documentation paths
+- validated the cached diff
+- committed the one bounded delivery block on `master`
+- pushed it only to private `backup/master`
+- synchronized `documentation/ai/CURRENT_STATE.md` to `origin/codex-sync`
+- restored the pre-existing parked worktree changes after the sync script's temporary stash
+
+Changed files:
+- no additional product files after commit; this snapshot records the completed Git governance action
+
+Checks / validation performed:
+- cached `git diff --check`: PASS
+- delivery commit: PASS (`a8a4510a5`)
+- `git push backup master`: PASS
+- `origin/codex-sync` CURRENT_STATE sync: PASS (`9f1857037`)
+
+Open risks:
+- Tasks `.2` through `.5` remain open and production remains default-deny
+- pre-existing parked worktree changes outside the committed Task `.1` scope remain local and untouched
+- `origin/master` intentionally did not receive this normal development checkpoint
+
+Next recommended step for ChatGPT: use `origin/codex-sync` as the current remote truth for this Task `.1` checkpoint.
+
+Next recommended step for Codex: begin no further product work without routing it through the appropriate Janus pipeline skill.
+
+Last updated: `2026-07-15 15:44:12 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-15 15:40:41 +02:00`, `janus-git-governance` completed a read-only checkpoint assessment for `TASK-CHATGPT-DEVICE-CODE-PROVIDER.1`. The repository is on `master`; the bound product/test files plus Task `.1` evidence and documentation artifacts are present locally. No checkpoint commit is recommended yet because the execution result explicitly preserves pre-existing uncommitted changes in the three product files without ownership attribution. The repository does not expose the optional `git_guard.py` or `propose_changesets.py` helper for a narrower local changeset review.
 
 Current goal: retain the validated Task `.1` documentation checkpoint while resolving the operator-approved Git changeset boundary before any commit recommendation.
