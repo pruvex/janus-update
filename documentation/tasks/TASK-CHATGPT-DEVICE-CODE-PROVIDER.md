@@ -61,7 +61,7 @@ TASK-CHATGPT-DEVICE-CODE-PROVIDER
 ### TASK-CHATGPT-DEVICE-CODE-PROVIDER.3 Verifizierte ChatGPT-Modelle und fail-closed Providerwahl integrieren
 - Ziel: ChatGPT nur bei gültiger Janus-Verbindung und mindestens einem aktuell verifiziert nutzbaren Modell im bestehenden Provider-/Modell-Dropdown anzeigen.
 - Scope: Modellermittlung, nicht-stale Verfügbarkeitszustände, Dropdown-Sichtbarkeit, Wiederholung und Verlust der Modellnutzbarkeit; kein Chat-Transport und keine Datenschutzübermittlung.
-- Files: `backend/llm_providers/codex_app_server.py`, `backend/api/routers/system.py`, `backend/services/model_catalog.py`, `frontend/index.html`, `frontend/js/chat.js`, `frontend/js/settings.js`, `backend/tests/test_codex_connection_settings_api.py`, `backend/tests/test_model_hierarchy_single_source.py`, `tests/e2e/codex-connection-settings.spec.js`
+- Files: `backend/llm_providers/codex_app_server.py`, `backend/api/routers/system.py`, `backend/services/model_catalog.py`, `frontend/index.html`, `frontend/js/app.js`, `frontend/js/chat.js`, `frontend/js/settings.js`, `backend/tests/test_codex_connection_settings_api.py`, `backend/tests/test_model_hierarchy_single_source.py`, `tests/e2e/codex-connection-settings.spec.js`
 - Steps:
   1. Die aktuell nutzbaren Modelle ausschließlich aus der aktiven Janus-ChatGPT-Sitzung verifizieren und als nicht-sensitive Verfügbarkeit bereitstellen.
   2. ChatGPT nur bei verbundener Sitzung und mindestens einem verifiziert nutzbaren Modell als auswählbaren Provider anzeigen.
@@ -146,7 +146,7 @@ TASK-CHATGPT-DEVICE-CODE-PROVIDER
 - **Security Boundary:** Janus-only absolute `CODEX_HOME`, keyring-backed encrypted persistence, no credential import or fallback, redacted transient values, and no observed impact on the parallel Codex account.
 - **Production State:** DEFAULT-DENY; activation remains reserved for Task `.5`.
 - **Evidence:** `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_final_audit.md`; `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_AUDIT_PACKAGE.md`; `documentation/test-results/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_isolation_evidence.md`
-- **Remaining Tasks:** `.3`, `.4`, and `.5` remain open.
+- **Remaining Tasks:** `.4` and `.5` remain open; Task `.3` is completed separately.
 
 ### TASK-CHATGPT-DEVICE-CODE-PROVIDER.2
 
@@ -155,6 +155,18 @@ TASK-CHATGPT-DEVICE-CODE-PROVIDER
 - **Completed At:** 2026-07-15
 - **Validation:** API Settings contract `11 passed`; headed mocked Settings E2E `8 passed`; Python/JavaScript syntax and scoped diff checks PASS; passive account-free Settings observation PASS.
 - **Security Boundary:** Device-code values remain transient and redacted; unavailable isolated persistence is visibly disabled with no fallback; replacement is atomic; API-key providers remain unaffected.
-- **Production State:** DEFAULT-DENY; provider/model availability, chat transport, and production activation remain reserved for Tasks `.3` through `.5`.
+- **Production State:** DEFAULT-DENY; chat transport and production activation remain reserved for Tasks `.4` and `.5`.
 - **Evidence:** `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.2_final_audit.md`; `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.2_AUDIT_PACKAGE.md`; `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.2_execution_result.md`
 - **Separate Prerequisite:** `BACKLOG-131` Settings navigation remains independently governed and is not closed by this task.
+
+### TASK-CHATGPT-DEVICE-CODE-PROVIDER.3
+
+- **Status:** DONE
+- **Final Audit:** PASS
+- **Completed At:** 2026-07-16
+- **Validation:** Backend/hierarchy `17 passed`; focused headed stale-start and verified/unavailable scenarios `1 passed` each; full headed Settings E2E `10 passed`; Python compile, JavaScript syntax, and scoped diff checks PASS; production ChatGPT transport/service-provider default-deny probe PASS.
+- **Security Boundary:** Provider/model eligibility derives only from the active Janus-owned current `model/list` verification; empty, failed, expired, absent, or stale verification remains fail-closed; status and UI errors stay non-sensitive.
+- **Provider Safety:** Existing API-key providers, models, Settings lifecycle, and hierarchy remain unaffected; the E2E runner isolates `GET`/`PUT /api/last-used-model`; stale persisted ChatGPT selection self-heals to an existing provider/model.
+- **Production State:** DEFAULT-DENY; Task `.4` owns ChatGPT transport/context/privacy and Task `.5` owns evidence-bound production activation.
+- **Evidence:** `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.3_final_audit.md`; `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.3_AUDIT_PACKAGE.md`; `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.3_execution_result.md`
+- **Remaining Tasks:** `.4` and `.5` remain open. The parent Feature Spec is not DONE.

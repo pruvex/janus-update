@@ -370,6 +370,41 @@ class CodexAppServerLifecycle:
         self._apply_account_result(result)
         return self.get_public_state()
 
+    async def list_models(self) -> list[dict[str, str]]:
+        """Return only current, public model metadata for this Janus-owned session."""
+
+        await self.read_account(refresh_token=False)
+        if (
+            self._public_state.connection_state != "connected"
+            or self._public_state.auth_mode != MANAGED_AUTH_MODE
+        ):
+            return []
+
+        result = await self._request("model/list", {"includeHidden": False})
+        models = result.get("models")
+        if not isinstance(models, list):
+            raise CodexAppServerProtocolError("Codex App Server model list is unsupported.")
+
+        public_models: list[dict[str, str]] = []
+        for model in models:
+            if not isinstance(model, dict) or model.get("hidden") is True:
+                continue
+            model_id = model.get("id")
+            if not isinstance(model_id, str) or not model_id.strip():
+                continue
+            display_name = model.get("displayName")
+            public_models.append(
+                {
+                    "id": model_id.strip(),
+                    "name": display_name.strip()
+                    if isinstance(display_name, str) and display_name.strip()
+                    else model_id.strip(),
+                    "provider": "chatgpt",
+                    "type": "text",
+                }
+            )
+        return public_models
+
     async def start_login(self) -> dict[str, Any]:
         await self.ensure_ready()
         self._login_restore_snapshot = self.get_public_state()

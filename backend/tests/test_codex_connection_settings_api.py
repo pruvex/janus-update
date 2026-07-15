@@ -20,6 +20,8 @@ class FakeCodexLifecycle:
         login_verification_url=None,
         login_user_code="ABCD-EFGH",
         login_error=None,
+        models=None,
+        model_error=None,
     ):
         self.configured = configured
         self._public_state = public_state or {
@@ -43,6 +45,8 @@ class FakeCodexLifecycle:
         )
         self.login_user_code = login_user_code
         self.login_error = login_error
+        self.models = models if models is not None else []
+        self.model_error = model_error
         self.read_account_calls = []
         self.cancel_login_calls = []
         self._login_restore_snapshot = None
@@ -103,6 +107,11 @@ class FakeCodexLifecycle:
             "retry_reason": None,
         }
 
+    async def list_models(self):
+        if self.model_error is not None:
+            raise self.model_error
+        return list(self.models)
+
 
 @pytest.fixture
 def fake_lifecycle():
@@ -141,6 +150,51 @@ def test_get_codex_connection_refreshes_without_token(fake_lifecycle, test_clien
     assert body["codex_connection"]["connection_state"] == "connected"
     assert fake_lifecycle.read_account_calls == [False]
     _assert_no_secret_shapes(body)
+
+
+def test_connected_codex_connection_exposes_only_current_public_model_availability(
+    fake_lifecycle, test_client
+):
+    fake_lifecycle._public_state.update(
+        {"connection_state": "connected", "auth_mode": "chatgpt"}
+    )
+    fake_lifecycle.models = [
+        {"id": "gpt-current", "name": "Current model", "provider": "chatgpt", "type": "text"}
+    ]
+
+    response = test_client.get("/api/codex-connection")
+
+    assert response.status_code == 200
+    assert response.json()["model_availability"] == {
+        "state": "available",
+        "models": fake_lifecycle.models,
+    }
+    _assert_no_secret_shapes(response.json())
+
+
+def test_model_availability_failure_keeps_connected_account_and_fails_closed(
+    fake_lifecycle, test_client
+):
+    fake_lifecycle._public_state.update(
+        {"connection_state": "connected", "auth_mode": "chatgpt"}
+    )
+    fake_lifecycle.model_error = CodexAppServerUnavailableError("private model failure")
+
+    response = test_client.get("/api/codex-connection")
+
+    assert response.status_code == 200
+    assert response.json()["codex_connection"]["connection_state"] == "connected"
+    assert response.json()["model_availability"] == {"state": "unavailable", "models": []}
+    assert "private model failure" not in json.dumps(response.json())
+
+
+def test_codex_model_endpoint_returns_no_static_fallback(fake_lifecycle, test_client):
+    fake_lifecycle.models = []
+
+    response = test_client.get("/api/codex-connection/models")
+
+    assert response.status_code == 200
+    assert response.json() == {"available": True, "models": []}
 
 
 def test_get_codex_connection_unconfigured_returns_stable_unavailable(test_client):

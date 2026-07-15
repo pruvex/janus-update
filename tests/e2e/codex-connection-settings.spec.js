@@ -76,11 +76,14 @@ const connectedState = {
 };
 
 let codexState = { ...disconnectedState };
+let verifiedChatgptModels = [];
+let modelVerificationFailed = false;
 let openedVerificationUrls = [];
 let loginFailure = false;
 let nextStatusState = null;
 let replacementCompletionState = null;
 let logoutRequests = 0;
+let lastUsedModelState = { provider: 'openai', model: 'gpt-3.5-turbo' };
 
 async function installCodexConnectionMocks(page) {
   await page.route('**/api/codex-connection**', async (route) => {
@@ -96,7 +99,16 @@ async function installCodexConnectionMocks(page) {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ codex_connection: codexState, available: true }),
+        body: JSON.stringify({
+          codex_connection: codexState,
+          available: true,
+          model_availability: codexState.connection_state === 'connected'
+            ? {
+                state: modelVerificationFailed ? 'unavailable' : 'available',
+                models: modelVerificationFailed ? [] : verifiedChatgptModels,
+              }
+            : undefined,
+        }),
       });
       return;
     }
@@ -173,6 +185,48 @@ async function installCodexConnectionMocks(page) {
 
     await route.continue();
   });
+
+  await page.route('http://127.0.0.1:8001/api/models/catalog', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(modelVerificationFailed ? [] : verifiedChatgptModels),
+    });
+  });
+
+  await page.route('http://127.0.0.1:8001/api/local-llm/models', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ models: [] }),
+    });
+  });
+
+  await page.route('http://127.0.0.1:8001/api/last-used-model', async (route) => {
+    const request = route.request();
+
+    if (request.method() === 'GET') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(lastUsedModelState),
+      });
+      return;
+    }
+
+    if (request.method() === 'PUT') {
+      const payload = request.postDataJSON();
+      lastUsedModelState = { provider: payload.provider, model: payload.model };
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({}),
+      });
+      return;
+    }
+
+    await route.continue();
+  });
 }
 
 async function openSettingsApiKeySection(page) {
@@ -196,11 +250,14 @@ test.describe('Codex connection settings card (TASK-CHATGPT-DEVICE-CODE-PROVIDER
 
   test.beforeEach(async ({ page }) => {
     codexState = { ...disconnectedState };
+    verifiedChatgptModels = [];
+    modelVerificationFailed = false;
     openedVerificationUrls = [];
     loginFailure = false;
     nextStatusState = null;
     replacementCompletionState = null;
     logoutRequests = 0;
+    lastUsedModelState = { provider: 'openai', model: 'gpt-3.5-turbo' };
 
     await page.addInitScript(() => {
       window.__openedCodexVerificationUrls = [];
@@ -223,7 +280,12 @@ test.describe('Codex connection settings card (TASK-CHATGPT-DEVICE-CODE-PROVIDER
     const token = createE2eJwt();
     await page.evaluate(() => localStorage.clear());
     await page.evaluate((jwt) => localStorage.setItem('auth_token', jwt), token);
+    const appReady = page.waitForEvent('console', {
+      predicate: (message) => message.text().includes('Initialization complete. Janus is ready.'),
+      timeout: 30_000,
+    });
     await page.reload();
+    await appReady;
     await acknowledgeBetaPrivacyNoticeIfVisible(page);
 
   });
@@ -360,5 +422,47 @@ test.describe('Codex connection settings card (TASK-CHATGPT-DEVICE-CODE-PROVIDER
 
     await expect(page.getByRole('button', { name: 'Anmeldung nicht verfügbar' })).toBeDisabled();
     await expect(page.getByText('Janus verwendet keine alternative Speicherung')).toBeVisible();
+  });
+
+  test('shows only currently verified ChatGPT models and fails closed on verification loss', async ({ page }) => {
+    codexState = { ...connectedState };
+    // Wait for the real app initialization and its models-updated listener.
+    await openSettingsApiKeySection(page);
+    verifiedChatgptModels = [
+      { id: 'gpt-verified', name: 'Verified model', provider: 'chatgpt', type: 'text' },
+    ];
+    await page.evaluate(() => window.dispatchEvent(new Event('models-updated')));
+    // The app refreshes the catalog and selections asynchronously before it
+    // re-renders provider/model choices.
+    await page.waitForTimeout(100);
+
+    const providerSelect = page.locator('#provider-select');
+    await expect(providerSelect.locator('option[value="chatgpt"]')).toHaveCount(1);
+    await providerSelect.selectOption('chatgpt');
+    await expect(page.locator('#model-select option[value="gpt-verified"]')).toHaveCount(1);
+
+    modelVerificationFailed = true;
+    await openSettingsApiKeySection(page);
+    await expect(page.locator('#codex-connection-error')).toContainText('Modelle derzeit nicht verfügbar');
+    await page.evaluate(() => window.dispatchEvent(new Event('models-updated')));
+    await expect(providerSelect.locator('option[value="chatgpt"]')).toHaveCount(0);
+  });
+
+  test('self-heals a stale persisted ChatGPT selection when verification is unavailable', async ({ page }) => {
+    lastUsedModelState = { provider: 'chatgpt', model: 'gpt-stale' };
+    verifiedChatgptModels = [];
+    modelVerificationFailed = true;
+
+    const appReady = page.waitForEvent('console', {
+      predicate: (message) => message.text().includes('Initialization complete. Janus is ready.'),
+      timeout: 30_000,
+    });
+    await page.reload();
+    await appReady;
+
+    const providerSelect = page.locator('#provider-select');
+    await expect(providerSelect).not.toHaveValue('');
+    await expect(providerSelect).not.toHaveValue('chatgpt');
+    await expect(providerSelect.locator('option[value="chatgpt"]')).toHaveCount(0);
   });
 });

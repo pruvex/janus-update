@@ -1879,6 +1879,28 @@ async function loadModelCatalog() {
     });
     appState.model_catalog = catalogByProvider;
 
+    const chatgptModels = Array.isArray(catalogByProvider.chatgpt)
+      ? catalogByProvider.chatgpt
+      : [];
+    const providerSelect = document.getElementById("provider-select");
+    const chatgptOption = providerSelect?.querySelector('option[value="chatgpt"]');
+    if (chatgptModels.length > 0) {
+      if (!chatgptOption && providerSelect) {
+        const option = document.createElement("option");
+        option.value = "chatgpt";
+        option.textContent = "ChatGPT über Codex";
+        providerSelect.appendChild(option);
+      }
+      appState.user_selections.chatgpt = chatgptModels.map((model) => model.id);
+    } else {
+      chatgptOption?.remove();
+      delete appState.user_selections.chatgpt;
+      if (appState.last_active.provider === "chatgpt") {
+        appState.last_active.provider = providerSelect?.value || "openai";
+        appState.last_active.model = null;
+      }
+    }
+
     // Auto-select all local Ollama models so they appear in the dropdown
     if (localModels.length > 0) {
       const ollamaModelIds = localModels.map((m) => m.id);
@@ -1924,6 +1946,32 @@ async function loadLastUsedModel() {
 
     // Nur aktualisieren, wenn gültige Daten zurückkommen
     if (data && data.provider && data.model) {
+        const providerSelect = document.getElementById("provider-select");
+        const chatgptModels = Array.isArray(appState.model_catalog.chatgpt)
+          ? appState.model_catalog.chatgpt
+          : [];
+        const chatgptProviderAvailable = Array.from(providerSelect?.options || [])
+          .some((option) => option.value === "chatgpt");
+        const chatgptModelAvailable = chatgptModels
+          .some((model) => model.id === data.model);
+
+        // A persisted ChatGPT selection must never restore a provider/model that
+        // the current Codex session could not verify.
+        if (data.provider === "chatgpt" && (!chatgptProviderAvailable || !chatgptModelAvailable)) {
+          const selectedFallback = providerSelect?.value && providerSelect.value !== "chatgpt"
+            ? providerSelect.value
+            : null;
+          const firstFallback = Array.from(providerSelect?.options || [])
+            .find((option) => option.value && option.value !== "chatgpt")?.value;
+          const fallbackProvider = selectedFallback || firstFallback || "openai";
+          const fallbackModel = findFirstAvailableModel(fallbackProvider);
+
+          appState.last_active.provider = fallbackProvider;
+          appState.last_active.model = fallbackModel?.id || null;
+          console.warn("Ignoring stale unavailable ChatGPT last-used selection.");
+          return;
+        }
+
         appState.last_active.provider = data.provider;
         appState.last_active.model = data.model;
         console.log("Successfully loaded last used model:", appState.last_active);
@@ -1952,7 +2000,9 @@ async function loadUserSelections() {
       // Populate with empty selections to prevent errors
       const availableProviders = Object.keys(appState.model_catalog);
       for (const provider of availableProviders) {
-          appState.user_selections[provider] = [];
+        appState.user_selections[provider] = provider === "chatgpt"
+          ? (appState.model_catalog[provider] || []).map((model) => model.id)
+          : [];
       }
       return;
     }
@@ -1961,6 +2011,16 @@ async function loadUserSelections() {
     const availableProviders = Object.keys(appState.model_catalog);
     
     const selectionPromises = availableProviders.map(async (provider) => {
+      // ChatGPT models are exclusively supplied by the verified Codex catalog.
+      // Never depend on the generic provider-selection API or retain a stale
+      // selection if that catalog is unavailable.
+      if (provider === "chatgpt") {
+        appState.user_selections[provider] = (appState.model_catalog[provider] || []).map(
+          (model) => model.id,
+        );
+        return;
+      }
+
       try {
         const response = await fetch(`${API_BASE_URL}/api/models/selection/${provider}`, {
           headers: {

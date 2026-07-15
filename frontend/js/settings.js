@@ -576,7 +576,7 @@ function renderCodexDeviceCodeInstructions(state = {}) {
   codexDeviceCodeInstructions.hidden = false;
 }
 
-function renderCodexConnectionActions(state = {}) {
+function renderCodexConnectionActions(state = {}, modelAvailability = {}) {
   if (!codexConnectionActions) return;
   codexConnectionActions.innerHTML = "";
 
@@ -608,6 +608,11 @@ function renderCodexConnectionActions(state = {}) {
   }
 
   if (connectionState === "connected") {
+    if (modelAvailability.state === "unavailable" || modelAvailability.models?.length === 0) {
+      codexConnectionActions.appendChild(
+        createCodexConnectionButton("Modelle erneut prüfen", "retry")
+      );
+    }
     codexConnectionActions.appendChild(
       createCodexConnectionButton("Abmelden", "logout")
     );
@@ -634,7 +639,14 @@ function renderCodexConnectionCard(payload = {}) {
 
   renderCodexConnectionDetails(state);
   renderCodexDeviceCodeInstructions(state);
-  renderCodexConnectionActions(state);
+  const modelAvailability = payload.model_availability || {};
+  renderCodexConnectionActions(state, modelAvailability);
+  if (
+    state.connection_state === "connected" &&
+    (modelAvailability.state === "unavailable" || modelAvailability.models?.length === 0)
+  ) {
+    showCodexConnectionError("Modelle derzeit nicht verfügbar");
+  }
 
   if (codexConnectionAccountChangeNote) {
     const showNote = state.connection_state === "connected";

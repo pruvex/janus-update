@@ -167,7 +167,17 @@ async def get_codex_connection(request: Request):
 
     try:
         state = await lifecycle.read_account(refresh_token=False)
-        return {"codex_connection": _public_codex_connection_state(state), "available": True}
+        payload = {"codex_connection": _public_codex_connection_state(state), "available": True}
+        if state.get("connection_state") == "connected" and state.get("auth_mode") == "chatgpt":
+            try:
+                payload["model_availability"] = {
+                    "state": "available",
+                    "models": await lifecycle.list_models(),
+                }
+            except CodexAppServerError:
+                logger.warning("Codex model availability refresh failed.")
+                payload["model_availability"] = {"state": "unavailable", "models": []}
+        return payload
     except CodexAppServerError:
         logger.warning("Codex connection status refresh failed.")
         return {
@@ -292,8 +302,28 @@ async def get_orchestrator_kpis_dashboard(db: Session = Depends(get_db)):
 
 
 @router.get("/models/catalog")
-async def get_model_catalog():
-    return list(load_model_catalog().values())
+async def get_model_catalog(request: Request):
+    catalog = list(load_model_catalog().values())
+    lifecycle = _get_codex_lifecycle(request)
+    if lifecycle is None or not lifecycle.configured:
+        return catalog
+    try:
+        catalog.extend(await lifecycle.list_models())
+    except CodexAppServerError:
+        logger.warning("ChatGPT models omitted because current verification failed.")
+    return catalog
+
+
+@router.get("/codex-connection/models")
+async def get_codex_connection_models(request: Request):
+    lifecycle = _get_codex_lifecycle(request)
+    if lifecycle is None or not lifecycle.configured:
+        return {"available": False, "models": []}
+    try:
+        return {"available": True, "models": await lifecycle.list_models()}
+    except CodexAppServerError:
+        logger.warning("Codex model availability refresh failed.")
+        return {"available": False, "models": []}
 
 
 @router.get("/models/selection/{provider}")

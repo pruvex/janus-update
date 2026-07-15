@@ -333,3 +333,15 @@
 - **Epic:** BACKLOG-131
 - **Confidence:** High
 - **Tags:** settings,navigation,appstate,e2e,regression
+
+
+## [PATTERN] #ChatgptStaleSelectionMustValidatePersistedStateAfterCatalog "Stale ChatGPT selection must validate persisted state after catalog refresh"
+- **Kontext:** TASK-CHATGPT-DEVICE-CODE-PROVIDER.3 current-session model verification and provider-picker integration. (2026-07-16).
+- **Problem:** An E2E runner wrote mocked last-used-model state into the operator configuration; startup removed unavailable ChatGPT from the catalog and then restored the stale persisted provider/model, leaving the native provider select without a matching option.
+- **Loesung:** Isolate E2E GET and PUT last-used-model state in memory. On startup, restore a persisted ChatGPT selection only when it remains present in the current verified catalog; otherwise choose an existing non-ChatGPT provider/model.
+- **Haertung:** Focused headed stale-start scenario, verified/unavailable scenario, full headed Settings E2E 10 passed, backend/hierarchy 17 passed, passive real-shell restart PASS, and Final Audit PASS.
+- **Tripwire:** If the provider select has a persisted ChatGPT value without a matching option, or an E2E route can touch operator last-used-model storage, stop and add isolation plus a startup-order regression.
+- **Location:** frontend/js/app.js; tests/e2e/codex-connection-settings.spec.js
+- **Epic:** TASK-CHATGPT-DEVICE-CODE-PROVIDER.3
+- **Confidence:** High
+- **Tags:** chatgpt,provider-selection,e2e-isolation,stale-state,fail-closed

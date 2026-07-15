@@ -1,6 +1,424 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-16 00:58:30 +02:00`, bounded documentation synchronization for exactly Task `.3` is complete after Final Audit PASS. The canonical task, partial Feature Spec metadata, Central Task Registry, PROJECT_STATE, current beta changelog, audit package, and execution result now record verified current-session model eligibility, fail-closed stale-selection handling, E2E configuration isolation, redaction, API-key non-interference, and production default-deny. The Spec remains partial: Tasks `.4` and `.5` are still open.
+
+Current goal: retain the Task `.3` documentation checkpoint and decide separately whether to open Task `.4` or create a Git checkpoint.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- recorded Task `.3` Final Audit PASS in task/spec/registry/project/changelog markers
+- reconciled the previously missing Task `.2` partial-Spec metadata while keeping the Feature Spec open
+- appended the validated stale persisted-selection/E2E-isolation learning pattern
+- made no product-code, account, credential, Git mutation, sync, release, message-submission, or production action
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.md`
+- `documentation/SPEC/CHATGPT_OFFICIAL_DEVICE_CODE_PROVIDER_REDESIGN_FEATURE_SPEC.md`
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `CHANGELOG.md`
+- `WHAT_I_LEARNED.md`
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.3_AUDIT_PACKAGE.md`
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.3_execution_result.md`
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.3_documentation_update.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- final-audit gate review: PASS
+- execution-result validator and final-audit validator: PASS
+- marker-scoped documentation review: PASS
+- append-only WHAT_I_LEARNED duplicate search and append: PASS
+- documentation-update validator and scoped diff check: PASS (existing CRLF-to-LF warning for `CHANGELOG.md` only)
+
+Open risks:
+- Task `.4` chat transport/context/privacy and Task `.5` release evidence/production activation remain open
+- production remains deliberately default-deny
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this newest documentation snapshot
+
+Next recommended step for ChatGPT: treat Task `.3` as documented PASS only; do not infer Feature Spec completion or authorization for Task `.4`/`.5`.
+
+Next recommended step for Codex: run `janus-git-governance` only if the user explicitly approves a narrow documentation checkpoint; otherwise route a future Task `.4` start through its normal task pipeline.
+
+Last updated: `2026-07-16 00:58:30 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-16 00:44:45 +02:00`, the validation-only blocker delta and same-chat independent re-audit for exactly Task `.3` are complete. The prior `AUDIT_EVIDENCE_INCOMPLETE` blocker is resolved, and `FINAL AUDIT RESULT: PASS` now covers current-session model origin, fail-closed provider/model eligibility, stale-selection self-healing, E2E configuration isolation, redaction, API-key non-interference, and continued production default-deny. No product code changed in this delta.
+
+Current goal: documentation-sync the bounded Task `.3` PASS without closing the wider Feature Spec.
+
+Active phase: `janus-final-audit`, canonical state `PASS`, handoff to `janus-documentation-update`.
+
+Last Codex work:
+- ran the missing Python compile, JavaScript syntax, scoped diff, and production default-deny checks
+- updated the existing execution result and compact audit package with only the blocker delta
+- performed and validated the blocker-focused same-chat Final Audit PASS
+- made no product-code, account, credential, Git mutation, sync, release, message-submission, or production action
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.3_AUDIT_PACKAGE.md`
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.3_execution_result.md`
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.3_final_audit.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- Task `.3` precheck handoff literals: PASS
+- targeted `WHAT_I_LEARNED` search: completed; no audit evidence imported from it
+- bound Python compile check: PASS
+- JavaScript syntax checks for `app.js`, `chat.js`, and `settings.js`: PASS
+- scoped ten-file diff check: PASS
+- isolated ChatGPT production transport/service-provider default-deny probe: PASS, exit code 0
+- existing backend/hierarchy evidence: PASS (`17 passed`)
+- existing focused headed E2E evidence: PASS (`1 passed` each)
+- existing full headed E2E evidence: PASS (`10 passed`)
+- execution-result validator: PASS
+- final-audit validator: PASS
+
+Open risks:
+- Tasks `.4` chat transport/context/privacy and `.5` release evidence/production activation remain open
+- the Feature Spec must remain open and must not move to `Spec Done` after this task-only audit
+- the default-deny probe emitted unrelated optional vector/skill-index startup warnings while both explicit reject assertions passed
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this newest PASS snapshot
+
+Next recommended step for ChatGPT: treat only Task `.3` as Final Audit PASS; do not infer completion of the wider Feature Spec or authorization for Tasks `.4`/`.5`.
+
+Next recommended step for Codex: run bounded `janus-documentation-update` with `5.6 Terra/low`, preserving the open Feature Spec and production default-deny boundary.
+
+Last updated: `2026-07-16 00:44:45 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-16 00:32:24 +02:00`, the package-only independent final audit for exactly Task `.3` is `BLOCKED` on incomplete bound validation evidence. The package coherently supports current-session model origin, fail-closed selection, stale-selection self-healing, E2E configuration isolation, redaction, and API-key non-interference, but it omits executed results for required compile/syntax/diff checks and direct proof of continued transport/production default-deny.
+
+Current goal: complete the minimum validation-only package delta and re-audit Task `.3`.
+
+Active phase: `janus-final-audit`, canonical state `BLOCKED`, handoff to `janus-executioner` validation-only.
+
+Last Codex work:
+- audited only `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.3_AUDIT_PACKAGE.md`
+- wrote the blocker-focused final-audit result
+- made no product-code, account, Git, sync, or release action
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.3_final_audit.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- audit-package completeness and acceptance/evidence review: BLOCKED on missing precheck command results and direct default-deny proof
+- behavior evidence for model origin, fail-closed selection, stale self-healing, E2E isolation, redaction, and API-key non-interference: PASS within the package
+- final-audit artifact validator: PASS after correcting two formatting-only issues
+
+Open risks:
+- Task `.3` cannot pass final audit until the existing package records the missing command-level evidence
+- Tasks `.4` and `.5` remain open; production remains intended to be default-deny but needs direct evidence in the package
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this newest audit snapshot
+
+Next recommended step for ChatGPT: treat Task `.3` as audit-blocked only on evidence completeness; do not infer a product defect or authorization for Tasks `.4`/`.5`.
+
+Next recommended step for Codex: run `janus-executioner` validation-only with `5.6 Terra/high`, update only the existing package delta, then perform a same-chat blocker-focused `janus-final-audit` re-audit.
+
+Last updated: `2026-07-16 00:32:24 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-16 00:15:42 +02:00`, the compact independent final-audit package for exactly Task `.3` is built and validated. It binds the approved Task/Spec/precheck, the corrected stale-selection and E2E-isolation delta, backend/hierarchy `17/17`, focused headed scenarios, full headed E2E `10/10`, and the operator's passive real-shell restart PASS. No development-chat history is required. Tasks `.4` and `.5` remain open, and production remains default-deny.
+
+Current goal: run a fresh package-only independent final audit for Task `.3`.
+
+Active phase: `codex-audit-package-builder`, canonical state `HANDOFF` to `janus-final-audit`.
+
+Last Codex work:
+- built `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.3_AUDIT_PACKAGE.md`
+- removed stale pending-package/manual-gate wording from the embedded execution/debug evidence
+- validated package sections, gate freshness, secret-shaped values, Debug Result, Execution Result, and scoped diff formatting
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.3_AUDIT_PACKAGE.md`
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.3_execution_result.md`
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.3_debug_result_model_catalog_mock.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- audit-package section contract: PASS
+- stale gate-marker scan: PASS
+- secret-shaped value scan: PASS
+- Debug Result validator: PASS
+- Execution Result validator: PASS
+- scoped diff check: PASS
+
+Open risks:
+- independent Task `.3` final audit remains
+- Task `.4` chat transport/context/privacy and Task `.5` two-account release evidence/production activation remain open
+- production remains deliberately default-deny
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this newest package/snapshot
+
+Next recommended step for ChatGPT: audit only the compact Task `.3` package and do not reuse development-chat history.
+
+Next recommended step for Codex: start a fresh `janus-final-audit` with `5.6 Sol/high` if supported, otherwise `5.6 Terra/high` with the documented fallback reason.
+
+Last updated: `2026-07-16 00:15:42 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-16 00:10:21 +02:00`, the operator confirmed the corrected Task `.3` behavior after a full Janus restart. Providers are visible at startup, saved OpenAI/Gemini keys remain masked, ChatGPT remains safely unavailable, no alternative credential storage is used, and sign-in remains unavailable. The manual gate is PASS without any account action; Task `.3` is ready for compact audit-package creation and independent final audit. Production remains default-deny.
+
+Current goal: build and independently audit the compact Task `.3` evidence package.
+
+Active phase: `janus-executioner`, canonical state `HANDOFF` to `codex-audit-package-builder`.
+
+Last Codex work:
+- accepted the operator's real-shell restart evidence for the corrected provider selection
+- confirmed API-key non-interference and safe ChatGPT default-deny presentation
+- updated the Task `.3` execution handoff from manual-pending to audit-package-ready
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.3_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- operator passive restart/provider/Settings check: PASS
+- no login, logout, account switch, credential, transport, Git, remote, or release action occurred
+- execution-result validator: PASS
+- scoped diff check: PASS
+
+Open risks:
+- Task `.3` still requires compact package creation and independent final audit
+- Task `.4` chat transport/context/privacy and Task `.5` release evidence/production activation remain open
+- production remains deliberately default-deny
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this newest snapshot
+
+Next recommended step for ChatGPT: distinguish the proven device-code login foundation from the still-open transport and release-activation tasks; do not treat the current disabled button as an unknown OAuth defect.
+
+Next recommended step for Codex: run `codex-audit-package-builder` for exactly Task `.3`, then an independent `janus-final-audit` before starting Task `.4`.
+
+Last updated: `2026-07-16 00:10:21 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-16 00:00:07 +02:00`, the passive Task `.3` check's empty provider symptom has been root-caused and corrected. The E2E runner no longer reads or writes the operator's local last-used-model configuration, and Janus startup now rejects a stale unavailable ChatGPT selection in favor of an existing provider. All automated correction evidence is green; one fresh passive restart check remains before audit packaging. Production remains default-deny, and no account, credential, transport, Git, remote, or release action occurred.
+
+Current goal: confirm the corrected provider selection in the real Janus shell after a full restart.
+
+Active phase: `janus-executioner`, canonical state `NEEDS_INFO`.
+
+Last Codex work:
+- diagnosed E2E `last-used-model` leakage into local configuration and the later stale ChatGPT startup restore
+- isolated E2E `GET`/`PUT /api/last-used-model` with in-memory state
+- added fail-closed stale ChatGPT startup self-healing to an existing provider/model
+- added and passed a dedicated headed regression scenario
+- reran focused, backend/hierarchy, and complete headed UI validation
+
+Changed files:
+- `frontend/js/app.js`
+- `tests/e2e/codex-connection-settings.spec.js`
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.3_debug_result_model_catalog_mock.md`
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.3_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- JavaScript syntax checks: PASS
+- focused stale-start Playwright scenario: PASS (`1 passed`)
+- focused verified/unavailable Playwright scenario: PASS (`1 passed`)
+- backend/hierarchy pytest: PASS (`17 passed`)
+- complete headed Codex Settings E2E spec: PASS (`10 passed`, 3.5m)
+- debug-result validator: PASS
+- execution-result validator: PASS
+- scoped diff check: PASS
+
+Open risks:
+- the real Janus shell still requires one passive restart confirmation for the previously observed empty provider selection
+- no live account or credential actions are authorized or required
+- production activation remains excluded and default-deny
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this newest snapshot
+
+Next recommended step for ChatGPT: accept only the passive restart result; do not infer authorization for account actions, Task `.4`/`.5`, Git, or production.
+
+Next recommended step for Codex: if the restart check passes, build the compact Task `.3` audit package; if it fails, return to `janus-debug` with the exact visible provider value.
+
+Last updated: `2026-07-16 00:00:07 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 23:25:00 +02:00`, Task `.3` automated execution and the escalated runner-debug chain are green. Current-session model verification, exact verified model visibility, verification-loss removal, redaction, and existing-provider non-interference passed focused and full validation. The required passive manual Janus Settings check remains pending before audit packaging. Production remains default-deny; no live account, credential, transport, privacy, Git, remote, or release action occurred.
+
+Current goal: complete the passive manual Task `.3` fail-closed UI check.
+
+Active phase: `janus-executioner`, canonical state `NEEDS_INFO`.
+
+Last Codex work:
+- implemented public current-session model enumeration and redacted unavailable state
+- made ChatGPT model eligibility derive only from the verified catalog and block stale model submission before transport
+- fixed the runner's API-route ownership, local-model Promise dependency, app-readiness seam, and unavailable-catalog oracle
+- completed focused, backend/hierarchy, and full headed E2E validation
+
+Changed files:
+- `backend/llm_providers/codex_app_server.py`
+- `backend/api/routers/system.py`
+- `frontend/js/app.js`
+- `frontend/js/chat.js`
+- `frontend/js/settings.js`
+- `backend/tests/test_codex_connection_settings_api.py`
+- `tests/e2e/codex-connection-settings.spec.js`
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.3_debug_result_model_catalog_mock.md`
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.3_execution_result.md`
+- Task `.3` breakdown/precheck and this snapshot
+
+Checks / validation performed:
+- focused API and hierarchy pytest: `17 passed`
+- Python and JavaScript syntax checks: PASS
+- focused Task `.3` Playwright scenario: PASS (`1 passed`)
+- complete headed Codex Settings E2E spec: PASS (`9 passed`, 3.8m)
+- debug-result validator: PASS
+- execution-result validator: PASS
+
+Open risks:
+- passive manual Janus fail-closed UI evidence is pending; automated evidence is complete
+- transport, privacy, account actions, API-key fallback, and production activation remain excluded; production remains default-deny
+
+Next recommended step for ChatGPT: review only the passive manual check result; do not infer authorization for account actions, Task `.4`/`.5`, Git, or production.
+
+Next recommended step for Codex: after the user confirms the passive UI check, build the compact Task `.3` audit package; if the check fails, route to `janus-debug`.
+
+Last updated: `2026-07-15 23:25:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 21:50:00 +02:00`, the corrected `janus-preimplementation-check` for exactly `TASK-CHATGPT-DEVICE-CODE-PROVIDER.3` passed. The bound slice is now execution-ready only for current-session `model/list` verification, fail-closed ChatGPT provider/model eligibility, non-destructive retry, stale-selection blocking before any transport, redaction, and API-key non-interference. Chat transport, privacy, production activation, and all live account actions remain excluded; production remains default-deny.
+
+Current goal: implement Task `.3` through one bounded `janus-executioner` run.
+
+Active phase: `janus-preimplementation-check`, canonical state `PASS`.
+
+Last Codex work:
+- reran the single-target precheck after the approved `frontend/js/app.js` scope correction
+- confirmed the public official App Server `model/list` source, explicit affected file cluster, binary acceptance criteria, evidence gates, and no-transport/no-production boundary
+- made no product-code, test-execution, account, credential, production, Git, remote, release, or live-provider action
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.3_precheck.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- artifact identity, single-target scope, model source, files, risks, exclusions, and automated evidence review: PASS
+- precheck validator: PASS
+- scoped diff check: PASS
+
+Open risks:
+- execution must stop if documented current-session `model/list` cannot safely supply the required verification state, if a Task `.1`/`.2` boundary must change, or if API-key non-interference cannot be evidenced
+- Chat transport, privacy, production activation, real account actions, and API-key fallback remain out of scope; production remains default-deny
+
+Next recommended step for ChatGPT: approve only the Task `.3` execution handoff; do not authorize Tasks `.4` or `.5`.
+
+Next recommended step for Codex: run `janus-executioner` for Task `.3` with `5.6 Terra/high`.
+
+Last updated: `2026-07-15 21:50:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 21:43:00 +02:00`, `janus-task-breakdown` applied the user-approved, source-of-truth scope correction for exactly `TASK-CHATGPT-DEVICE-CODE-PROVIDER.3`: `frontend/js/app.js` is now explicit as the existing provider/model-dropdown owner. This resolves the prior precheck file-cluster mismatch without adding any requirement or expanding beyond current-session model verification, fail-closed eligibility, and existing-provider non-interference.
+
+Current goal: rerun the unchanged Task `.3` preimplementation check before any implementation.
+
+Active phase: `janus-task-breakdown`, canonical state `TASK DESIGN COMPLETE`.
+
+Last Codex work:
+- amended only the canonical compiled Task `.3` and its breakdown to name the already-existing dropdown owner
+- retained the official `model/list` public-boundary requirement, redaction, current-session-only eligibility, no stale/static fallback, no transport, no privacy gate, and production default-deny exclusions
+- made no product-code, test-execution, account, credential, production, Git, remote, release, or live-provider action
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.md`
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.3_task_breakdown.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- user-approved source-of-truth scope correction limited to `frontend/js/app.js`: PASS
+- compiled task to breakdown file-cluster alignment: PASS
+- task-handoff validator: PASS
+- scoped diff check: PASS
+
+Open risks:
+- Task `.3` still needs a fresh preimplementation check; its previous blocked artifact remains historical evidence and does not authorize implementation
+- transport, privacy, production activation, real account actions, and API-key fallback remain excluded; production remains default-deny
+
+Next recommended step for ChatGPT: treat only the source file-scope mismatch as resolved; do not infer Task `.3` implementation approval.
+
+Next recommended step for Codex: rerun `janus-preimplementation-check` for Task `.3` with `5.6 Terra/high`.
+
+Last updated: `2026-07-15 21:43:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 21:37:00 +02:00`, `janus-preimplementation-check` blocked exactly `TASK-CHATGPT-DEVICE-CODE-PROVIDER.3` with `SCOPE_MISMATCH`. Official Codex App Server documentation confirms the stable `model/list` protocol surface, but the bound Task `.3` omits `frontend/js/app.js`, the actual owner of the active provider/model dropdown and catalogue selection flow. No product-code or account action is authorized until that source-of-truth scope is reconciled.
+
+Current goal: reconcile the Task `.3` file cluster before implementation precheck can pass.
+
+Active phase: `janus-preimplementation-check`, canonical state `BLOCKED`.
+
+Last Codex work:
+- validated exact Task `.3` identity against the approved Feature Spec and its task-breakdown handoff
+- inspected the minimum backend/API/model-catalog and provider/model-dropdown ownership surface
+- verified from official App Server documentation that `model/list` is public, while rejecting any undocumented/private endpoint assumption
+- documented the missing `frontend/js/app.js` file boundary; made no product-code, test-execution, account, credential, production, Git, remote, release, or live-provider action
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.3_precheck.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- task/spec/breakdown identity and single-target scope review: PASS
+- current code ownership review for model catalogue and provider/model dropdown: FAIL - `frontend/js/app.js` is unbound
+- official App Server protocol review for `model/list`: PASS
+- block-artifact required fields (`NEXT STEP`, target identity, reason, required resolution): PASS
+- scoped diff check: PASS
+- `validate_precheck.py`: intentionally PASS-template-only; it reports missing PASS literals for this BLOCKED artifact and is not a valid blocker-artifact validator
+
+Open risks:
+- implementation must not widen the file cluster implicitly; the canonical Task `.3` and breakdown need the explicit `frontend/js/app.js` scope correction first
+- transport, privacy, production activation, real account actions, and API-key fallback remain excluded; production remains default-deny
+
+Next recommended step for ChatGPT: approve only the bounded Task `.3` source-of-truth file-scope correction, then rerun this same precheck.
+
+Next recommended step for Codex: run `janus-task-breakdown` on Task `.3` after the scope correction; do not implement.
+
+Last updated: `2026-07-15 21:37:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 21:26:00 +02:00`, `janus-task-breakdown` released exactly `TASK-CHATGPT-DEVICE-CODE-PROVIDER.3` for preimplementation check. The target is confined to current-session model verification and fail-closed provider/model eligibility; it authorizes neither ChatGPT transport nor any account, credential, production, Git, remote, release, or live-provider action.
+
+Current goal: precheck Task `.3` before any model-catalog, system-contract, or provider-dropdown implementation.
+
+Active phase: `janus-task-breakdown`, canonical state `TASK DESIGN COMPLETE`.
+
+Last Codex work:
+- bound Task `.3` to the approved Device-Code Feature Spec and completed Tasks `.1`/`.2` plus separately closed BACKLOG-131
+- defined current-verification-only model eligibility, non-destructive retry, stale-selection blocking, redaction, API-key non-interference, and transport/production exclusions
+- made no product-code, test-execution, account, credential, production, Git, remote, release, or live-provider action
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.3_task_breakdown.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- approved Feature Spec to compiled task identity/scope comparison: PASS
+- Task `.3` scope, files, binary acceptance criteria, tests, exclusions, and fail-closed risks: PASS
+- task-handoff validator: PASS
+- scoped diff check: PASS
+
+Open risks:
+- Task `.3` must block if current-model verification needs an undocumented/private source, static fallback, a Task `.1`/`.2` boundary change, or untestable provider non-interference
+- Chat transport, privacy acknowledgement, production activation, and real account actions remain reserved for later tasks; production remains default-deny
+
+Next recommended step for ChatGPT: treat Task `.3` as the sole selected target; do not infer authorization for Tasks `.4` or `.5`.
+
+Next recommended step for Codex: run `janus-preimplementation-check` for Task `.3` with `5.6 Terra/high`.
+
+Last updated: `2026-07-15 21:26:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-15 20:39:27 +02:00`, `janus-documentation-update` closed `BACKLOG-131` after its independent Final Audit PASS. The backlog item moved from IN PROGRESS to DONE; dashboard, registry, project state, changelog, and reusable learning now record the bounded Settings-navigation correction. Task `.2.2` remains explicitly runner-only, Tasks `.3` through `.5` remain open, and production remains default-deny.
 
 Current goal: retain the completed BACKLOG-131 documentation checkpoint and select any next feature work independently.

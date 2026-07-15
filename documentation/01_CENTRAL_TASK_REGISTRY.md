@@ -9,7 +9,7 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 - **Status**: DONE (task-scoped Final Audit PASS; parent Feature Spec remains active).
 - **Final Audit**: `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_final_audit.md` (PASS).
 - **Audit Package**: `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.1_AUDIT_PACKAGE.md`.
-- **Spec**: `documentation/SPEC/CHATGPT_OFFICIAL_DEVICE_CODE_PROVIDER_REDESIGN_FEATURE_SPEC.md` (APPROVED - PARTIAL IMPLEMENTATION; Tasks `.2` through `.5` remain open).
+- **Spec**: `documentation/SPEC/CHATGPT_OFFICIAL_DEVICE_CODE_PROVIDER_REDESIGN_FEATURE_SPEC.md` (APPROVED - PARTIAL IMPLEMENTATION; Tasks `.4` and `.5` remain open).
 - **Validation**: backend lifecycle `22 passed`; Electron runtime-boundary `9 passed`; headed Settings regression `4 passed`; Python compile and scoped diff check PASS; controlled two-account login/restart/refresh/logout evidence PASS.
 - **Scope**: official App Server device-code lifecycle, Janus-only encrypted keyring persistence, redaction, restart persistence, Janus-only logout, and Account-A non-interference only.
 - **Production State**: DEFAULT-DENY; no provider/model/UI/chat activation or release authority is granted by this task.
@@ -19,11 +19,21 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 - **Status**: DONE (task-scoped Final Audit PASS; parent Feature Spec remains active).
 - **Final Audit**: `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.2_final_audit.md` (PASS).
 - **Audit Package**: `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.2_AUDIT_PACKAGE.md`.
-- **Spec**: `documentation/SPEC/CHATGPT_OFFICIAL_DEVICE_CODE_PROVIDER_REDESIGN_FEATURE_SPEC.md` (APPROVED - PARTIAL IMPLEMENTATION; Tasks `.3` through `.5` remain open).
+- **Spec**: `documentation/SPEC/CHATGPT_OFFICIAL_DEVICE_CODE_PROVIDER_REDESIGN_FEATURE_SPEC.md` (APPROVED - PARTIAL IMPLEMENTATION; Tasks `.4` and `.5` remain open).
 - **Validation**: Settings API `11 passed`; headed mocked Settings E2E `8 passed`; Python/JavaScript syntax and scoped diff checks PASS; passive account-free Settings observation PASS.
 - **Scope**: non-sensitive Settings lifecycle, Janus-only logout, atomic replacement, redacted transient device-code UI, unavailable secure-storage state without fallback, and API-key non-interference only.
 - **Production State**: DEFAULT-DENY; no selectable provider/model, chat transport, or release authority is granted by this task.
 - **Separate Prerequisite**: `BACKLOG-131` was closed separately with Final Audit PASS; it does not expand this task's scope.
+
+### TASK-CHATGPT-DEVICE-CODE-PROVIDER.3 - Verified ChatGPT models and fail-closed provider selection
+
+- **Status**: DONE (task-scoped Final Audit PASS; parent Feature Spec remains active).
+- **Final Audit**: `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.3_final_audit.md` (PASS).
+- **Audit Package**: `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.3_AUDIT_PACKAGE.md`.
+- **Spec**: `documentation/SPEC/CHATGPT_OFFICIAL_DEVICE_CODE_PROVIDER_REDESIGN_FEATURE_SPEC.md` (APPROVED - PARTIAL IMPLEMENTATION; Tasks `.4` and `.5` remain open).
+- **Validation**: backend/hierarchy `17 passed`; focused headed scenarios `1 passed` each; full headed Settings E2E `10 passed`; Python compile, JavaScript syntax, scoped diff, and production default-deny probe PASS; passive real-shell restart evidence PASS.
+- **Scope**: active Janus-owned verified model availability, fail-closed provider/model eligibility, stale persisted-selection self-healing, redaction, and API-key-provider non-interference only.
+- **Production State**: DEFAULT-DENY; no ChatGPT transport, context transfer, privacy activation, or production release authority is granted by this task.
 
 ### BACKLOG-131 - State-consistent Settings navigation
 

@@ -90,6 +90,21 @@ function firstModelForProviderFromSelect(selectEl, provider) {
   return hit?.value || null;
 }
 
+async function hasCurrentChatgptModel(model) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/codex-connection/models`);
+    const payload = await response.json();
+    return Boolean(
+      response.ok &&
+      payload?.available &&
+      Array.isArray(payload.models) &&
+      payload.models.some((candidate) => candidate?.id === model),
+    );
+  } catch {
+    return false;
+  }
+}
+
 function _readVideoModalCache() {
   try {
     const raw = localStorage.getItem(VIDEO_MODAL_CACHE_KEY);
@@ -785,6 +800,15 @@ export async function sendMessage(fromWindowId) {
   lastVideoListMetadata = null;
 
   const { provider, model } = effectiveProviderModelForWindow(windowId);
+  if (provider === "chatgpt") {
+    const verified = await hasCurrentChatgptModel(model);
+    if (!verified) {
+      chatInputEl.setCustomValidity("Modelle derzeit nicht verfügbar. Bitte wähle ein gültiges Modell.");
+      chatInputEl.reportValidity();
+      chatInputEl.setCustomValidity("");
+      return;
+    }
+  }
   let chat_id = getActiveChatIdForWindow(windowId);
   if (chat_id == null) {
     try {
