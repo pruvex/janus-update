@@ -1,6 +1,850 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-15 17:51:34 +02:00`, `janus-documentation-update` synchronized the Task `.2` Final Audit PASS into the task completion metadata, central registry, project state, and changelog. The broader Feature Spec remains partial with Tasks `.3` through `.5` open; `BACKLOG-131` remains separately governed. Production remains default-deny.
+
+Current goal: retain the completed Task `.2` documentation checkpoint and route any future work only to a separately selected remaining task or the separate BACKLOG-131 closeout.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- recorded the Task `.2` audit outcome and validation evidence in the required documentation markers
+- preserved partial-feature and separate-Backlog boundaries
+- made no product, account, credential, production, Git, remote, release, or sync action
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.md`
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `CHANGELOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- Task `.2` final-audit evidence: PASS
+- documentation marker validation: PASS
+- scoped diff check: PASS
+
+Open risks:
+- Tasks `.3` through `.5` remain unimplemented; provider/model selection and production remain default-deny
+- `BACKLOG-131` remains separately governed and unclosed
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this documentation checkpoint
+
+Next recommended step for ChatGPT: choose a separate bounded target only; do not infer Feature completion or production readiness from Task `.2`.
+
+Next recommended step for Codex: recommend `janus-git-governance` for a scoped checkpoint only after explicit user approval.
+
+Last updated: `2026-07-15 17:51:34 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 17:45:08 +02:00`, the independent package-only `janus-final-audit` for `TASK-CHATGPT-DEVICE-CODE-PROVIDER.2` passed. The audit confirms transient/redacted device-code presentation, isolated secure persistence without fallback, atomic replacement behavior, API-key non-interference, separate BACKLOG-131 navigation governance, and continued provider/model plus production default-deny.
+
+Current goal: synchronize the Task `.2` PASS result through `janus-documentation-update` without closing the broader Feature Spec or BACKLOG-131 prematurely.
+
+Active phase: `janus-final-audit`, canonical state `PASS` with handoff to `janus-documentation-update`.
+
+Last Codex work:
+- audited only `TASK-CHATGPT-DEVICE-CODE-PROVIDER.2_AUDIT_PACKAGE.md`; no development-chat history or additional fachliches audit input was used
+- wrote and validated the Task `.2` final-audit artifact
+- made no product, account, credential, Git, remote, sync, release, or production action
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.2_final_audit.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- audit-package completeness and current blocker-delta review: PASS
+- focused API evidence: PASS, `11 passed`
+- headed mocked E2E evidence: PASS, `8 passed`
+- passive account-free Settings evidence: PASS
+- final-audit artifact validator: PASS
+
+Open risks:
+- the broader Feature Spec is not closed by this Task `.2` audit
+- `BACKLOG-131` remains separately governed and requires its own closeout
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this latest audit handoff
+
+Next recommended step for ChatGPT: treat Task `.2` as final-audit PASS, while keeping broader Spec completion and BACKLOG-131 closure separate.
+
+Next recommended step for Codex: run `janus-documentation-update` with `5.6 Terra/low` for the Task `.2` PASS result only.
+
+Last updated: `2026-07-15 17:45:08 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 17:38:24 +02:00`, `codex-audit-package-builder` created and contract-checked the compact Task `.2` audit package. The package binds the approved Feature Spec, Task `.2` breakdown, passed precheck, parent and runner-only execution evidence, the account-free manual observation, and the related separate navigation-correction evidence. It does not bind `BACKLOG-131` as the source task because Task `.2` is compiled from the Feature Spec; the Backlog item remains a separately governed prerequisite.
+
+Current goal: perform an independent final audit of Task `.2` from the compact package only.
+
+Active phase: `codex-audit-package-builder`, canonical state `HANDOFF`.
+
+Last Codex work:
+- generated `TASK-CHATGPT-DEVICE-CODE-PROVIDER.2_AUDIT_PACKAGE.md` using the package-builder script
+- verified all required package sections, correct `N/A WITH REASON` backlog binding, and scoped diff cleanliness
+- made no product, account, credential, production, Git, remote, release, or live provider action
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.2_AUDIT_PACKAGE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- audit-package section contract: PASS
+- Task `.2` execution-result validator: PASS
+- scoped `git diff --check`: PASS
+
+Open risks:
+- Task `.2` still requires an independent package-only final audit before documentation closeout or release routing
+- Task `.1` credential isolation, redaction, two-account non-interference, API-key separation, provider/model non-selection, and production default-deny remain binding
+- `BACKLOG-131` remains separately governed and is not closed by this Task `.2` audit package
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this handoff
+
+Next recommended step for ChatGPT: open a fresh independent final-audit task and provide only the audit package.
+
+Next recommended step for Codex: run `janus-final-audit` with `5.6 Sol/high` if runtime-supported; otherwise `5.6 Terra/high`, with no development-chat history.
+
+Last updated: `2026-07-15 17:38:24 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 17:34:21 +02:00`, the bounded manual Settings gate for `TASK-CHATGPT-DEVICE-CODE-PROVIDER.2` passed. The user observed masked existing `openai` and `gemini` keys, a separate unavailable `ChatGPT über Codex` card, an explicit no-fallback secure-storage explanation, and an unavailable sign-in action. No login, device code, account, credential, production, Git, push, or sync action occurred.
+
+Current goal: build the compact artifact-only Task `.2` audit package before independent final audit.
+
+Active phase: `janus-executioner`, canonical state `HANDOFF`.
+
+Last Codex work:
+- recorded the user-performed passive Settings observation as the passed manual validation gate
+- retained the green automated evidence: API `11 passed`; headed mocked E2E `8 passed (53.2s)`
+- made no product, account, credential, production, Git, remote, or release action
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.2_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- manual account-free Settings observation: PASS
+- execution-result validator: pending rerun after manual-gate handoff update
+
+Open risks:
+- independent final audit remains mandatory and must receive a fresh compact audit package only
+- Task `.1` credential isolation, redaction, two-account non-interference, API-key separation, provider/model non-selection, and production default-deny remain binding
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this handoff
+
+Next recommended step for ChatGPT: approve `codex-audit-package-builder` only; it prepares evidence and does not perform product, account, or Git actions.
+
+Next recommended step for Codex: run `codex-audit-package-builder` with `5.6 Terra/high`, then recommend a fresh independent `janus-final-audit` chat.
+
+Last updated: `2026-07-15 17:34:21 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 17:28:40 +02:00`, `janus-executioner` completed the runner-only `TASK-CHATGPT-DEVICE-CODE-PROVIDER.2.2`. The replacement fixture is staged after the mocked login POST, so the existing post-action public refresh consumes the connected replacement state. The complete headed mocked E2E gate now passes. Parent Task `.2` moves from an automated E2E blocker to a bounded, passive manual Settings presentation check.
+
+Current goal: complete the Task `.2` account-free manual Settings check before building an audit package.
+
+Active phase: `janus-executioner`, canonical state `NEEDS_INFO`.
+
+Last Codex work:
+- changed only the mocked E2E runner sequencing and its Settings navigation helper path
+- reran the full focused validation suite and documented the green automated retest delta
+- made no live account, credential, device-code, production, Git, push, or `origin/codex-sync` action
+
+Changed files:
+- `tests/e2e/codex-connection-settings.spec.js`
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.2.2_execution_result.md`
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.2_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- Task `.2.2` precheck validator: PASS
+- `node --check tests/e2e/codex-connection-settings.spec.js`: PASS
+- focused API suite: PASS, `11 passed`
+- headed mocked Settings E2E suite: PASS, `8 passed (53.2s)`
+- scoped diff check: PASS
+
+Open risks:
+- Task `.2` requires the bounded passive manual Settings presentation check; do not start login or use an account for it
+- Task `.1` credential isolation, redaction, two-account non-interference, API-key separation, provider/model non-selection, and production default-deny remain binding
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this result
+
+Next recommended step for ChatGPT: perform `Einstellungen` -> `API Keys`, without clicking login, and report `Manual Settings Check: PASS` or the visible symptom.
+
+Next recommended step for Codex: after a PASS report, run `codex-audit-package-builder` with `5.6 Terra/high` for Task `.2`; do not request final audit before the package exists.
+
+Last updated: `2026-07-15 17:28:40 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 17:18:36 +02:00`, `janus-preimplementation-check` passed `TASK-CHATGPT-DEVICE-CODE-PROVIDER.2.2`. The executable scope is the single mocked E2E runner: stage the simulated connected replacement account only after the login POST so the existing post-action public refresh observes it. The runner must preserve the full pending/cancel/failure/redaction/atomic-switch/logout evidence; no product or account behavior is authorized.
+
+Current goal: apply the single runner sequencing correction and rerun the full headed E2E gate.
+
+Active phase: `janus-preimplementation-check`, canonical state `PRE-CHECK PASSED` with handoff to `janus-executioner`.
+
+Last Codex work:
+- verified target/source/Spec identity, mock ordering, one-file scope, and unchanged renderer seam
+- validated runner syntax without editing product or test code
+- created the bound execution handoff; made no account, credential, production, or Git action
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.2.2_precheck.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- target/source/Spec/mock-order identity: PASS
+- `node --check tests/e2e/codex-connection-settings.spec.js`: PASS
+- precheck validator and scoped diff check: PASS
+
+Open risks:
+- Task `.2` remains blocked from final audit until the full headed E2E suite passes
+- the runner correction must not bypass public refresh or weaken Task `.1` isolation/redaction/two-account, API-key, provider/model, or production-default-deny regression boundaries
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this precheck
+
+Next recommended step for ChatGPT: approve only the one-file E2E mock sequencing correction.
+
+Next recommended step for Codex: run `janus-executioner` with `5.6 Terra/high` for `TASK-CHATGPT-DEVICE-CODE-PROVIDER.2.2`.
+
+Last updated: `2026-07-15 17:18:36 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 17:18:36 +02:00`, `janus-task-breakdown` released `TASK-CHATGPT-DEVICE-CODE-PROVIDER.2.2`, one runner-only E2E sequencing correction. The task queues the replacement connected fixture only after the mocked login POST, so the existing post-action public refresh can consume it. No renderer, lifecycle, credential, provider, account, production, or Git behavior is in scope.
+
+Current goal: precheck the single E2E mock sequencing target before any runner edit.
+
+Active phase: `janus-task-breakdown`, canonical state `TASK DESIGN COMPLETE` with handoff to `janus-preimplementation-check`.
+
+Last Codex work:
+- refined the blocked `.2.1` premise into one deterministic runner-only target
+- retained the existing action-handler ordering and all security regression assertions as source of truth
+- made no code, account, credential, production, or Git change
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.2.2_task_breakdown.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- blocked `.2.1` evidence to `.2.2` runner-only scope, binary acceptance, and test alignment: PASS
+- task-handoff validator and scoped diff check: PASS
+- code/test execution: N/A; task breakdown made no product change
+
+Open risks:
+- Task `.2` remains blocked from final audit until `.2.2` full headed E2E evidence passes
+- the runner must prove the actual public-state order, not mask a product defect; Task `.1` credential isolation, redaction, two-account evidence, API-key behavior, provider/model non-selection, and production default-deny remain binding
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this follow-up
+
+Next recommended step for ChatGPT: use the `.2.2` runner-only handoff; do not revisit the blocked `.2.1` renderer target.
+
+Next recommended step for Codex: run `janus-preimplementation-check` with `5.6 Terra/high` for `TASK-CHATGPT-DEVICE-CODE-PROVIDER.2.2`.
+
+Last updated: `2026-07-15 17:18:36 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 17:18:36 +02:00`, the precheck for `TASK-CHATGPT-DEVICE-CODE-PROVIDER.2.1` is `PRE-CHECK BLOCKED: SCOPE_MISMATCH`. Current `settings.js` already performs the required public-state refresh after an action. The E2E mock consumes the queued second-account state during the action handler's pre-action GET, then the login POST resets it to pending before the existing post-action refresh. The honest correction is runner-only scheduling, so `.2.1` must be refined before any code edit.
+
+Current goal: release one runner-only replacement-state sequencing target; do not modify renderer or lifecycle code.
+
+Active phase: `janus-preimplementation-check`, canonical state `PRE-CHECK BLOCKED` with handoff to `janus-task-breakdown`.
+
+Last Codex work:
+- inspected the existing action listener, public refresh function, and E2E GET/POST mock ordering
+- established that the planned renderer target contradicts current source behavior
+- created the blocked precheck; made no product, account, credential, provider, production, or Git change
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.2.1_precheck.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- Task `.2.1` identity and source/evidence correlation: PASS
+- `node --check frontend/js/settings.js`: PASS
+- `node --check tests/e2e/codex-connection-settings.spec.js`: PASS
+- precheck decision: BLOCKED by contradicted renderer-refresh premise; no execution authorized
+
+Open risks:
+- Task `.2` remains blocked from final audit until the runner-only sequencing correction and full headed E2E suite pass
+- no renderer refresh, Device-Code, credential, provider, account, production, or Git change is authorized from this blocked precheck
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this blocker
+
+Next recommended step for ChatGPT: do not approve the invalid renderer change; retain the current refresh behavior.
+
+Next recommended step for Codex: run `janus-task-breakdown` with `5.6 Terra/high` to refine exactly one runner-only state-sequencing correction.
+
+Last updated: `2026-07-15 17:18:36 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 17:04:26 +02:00`, `janus-task-breakdown` released `TASK-CHATGPT-DEVICE-CODE-PROVIDER.2.1`, the exact renderer-refresh follow-up for `E2E_REPLACEMENT_LIFECYCLE_PENDING_STUCK`. It is limited to public-state refresh behavior in `frontend/js/settings.js` and the existing mocked E2E regression runner. No Device-Code protocol, credential, provider, API, account, production, or Git behavior is included.
+
+Current goal: precheck the single public-status refresh target before any renderer edit.
+
+Active phase: `janus-task-breakdown`, canonical state `TASK DESIGN COMPLETE` with handoff to `janus-preimplementation-check`.
+
+Last Codex work:
+- validated the Task `.2` acceptance and E2E requirement against the exact debug failure
+- released one atomic public-state renderer-refresh follow-up with explicit stale-refresh and redaction gates
+- made no code, account, credential, production, or Git change
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.2.1_task_breakdown.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- Task `.2` source, Spec, debug failure, scope, binary acceptance, and test alignment: PASS
+- task-handoff validator and scoped diff check: PASS
+- code/test execution: N/A; task breakdown made no product change
+
+Open risks:
+- Task `.2` remains blocked from final audit until Task `.2.1` passes the full headed E2E suite
+- the refresh must be bounded and public-state-only to preserve Task `.1` credential isolation, redaction, two-account evidence, API-key behavior, provider/model non-selection, and production default-deny
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this follow-up
+
+Next recommended step for ChatGPT: use the generated `.2.1` handoff only; do not expand it to private lifecycle or production behavior.
+
+Next recommended step for Codex: run `janus-preimplementation-check` with `5.6 Terra/high` for `TASK-CHATGPT-DEVICE-CODE-PROVIDER.2.1`.
+
+Last updated: `2026-07-15 17:04:26 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 17:04:26 +02:00`, `janus-debug` classified `E2E_REPLACEMENT_LIFECYCLE_PENDING_STUCK` as a Task `.2` renderer-lifecycle gap. The E2E mock queues the connected second-account state for the next public `GET`, while `frontend/js/settings.js` only renders the `POST /login` connecting response and does not refresh public state. The BACKLOG-131 navigation correction is therefore not extended into `settings.js`; a fresh bounded Task `.2` follow-up is required.
+
+Current goal: release one exact Task `.2` follow-up for a cancellable public-state refresh after managed replacement login.
+
+Active phase: `janus-debug`, canonical state `OUT OF SCOPE` with handoff to `janus-task-breakdown`.
+
+Last Codex work:
+- ran a targeted `WHAT_I_LEARNED` lookup and retained the Task `.1` security tripwire
+- correlated the E2E queued GET transition with the renderer's POST-only login flow
+- made no product, account, credential, provider, production, staging, commit, push, or sync change
+
+Changed files:
+- `documentation/tasks/TASK-BACKLOG-131-SETTINGS-NAVIGATION_debug_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- targeted learning lookup: PASS
+- replacement-mock to renderer refresh-path correlation: PASS
+- code/test execution: N/A; debug made no code change
+
+Open risks:
+- Task `.2` remains blocked from final audit until the renderer refresh follow-up and full headed E2E suite pass
+- the follow-up must remain public-state-only and preserve Task `.1` credential isolation, redaction, two-account evidence, API-key behavior, provider/model non-selection, and production default-deny
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this debug handoff
+
+Next recommended step for ChatGPT: retain BACKLOG-131 navigation evidence and create a distinct Task `.2` renderer-refresh target; do not mix the two fixes.
+
+Next recommended step for Codex: run `janus-task-breakdown` with `5.6 Terra/high` for exactly one Task `.2` renderer-refresh follow-up.
+
+Last updated: `2026-07-15 17:04:26 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 17:04:26 +02:00`, `janus-executioner` implemented `TASK-BACKLOG-131-SETTINGS-NAVIGATION`: the delayed sidebar-handler replacement was removed and the intended Settings navigation now binds once immediately after DOM readiness. Syntax, focused API regression (11 passed), and scoped diff checks pass. The headed mocked E2E now advances through four scenarios and visibly reaches Settings, but its replacement-account scenario remains pending (`Anmeldung läuft`) after rendering the simulated second account; `Abmelden` never appears. The distinct failure is `E2E_REPLACEMENT_LIFECYCLE_PENDING_STUCK`, so execution stops after its two focused fixes.
+
+Current goal: diagnose the single mocked replacement-lifecycle state transition before any further Task `.2` validation or audit.
+
+Active phase: `janus-executioner`, canonical state `BLOCKED` with handoff to `janus-debug`.
+
+Last Codex work:
+- removed the delayed Settings-button legacy rebind and bound the stateful handler once immediately after DOM readiness
+- reran the complete bound syntax, API, diff, and headed mocked E2E evidence set
+- made no live account, credential, provider, production, staging, commit, push, or sync action
+
+Changed files:
+- `frontend/js/app.js`
+- `documentation/tasks/TASK-BACKLOG-131-SETTINGS-NAVIGATION_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- precheck validator: PASS
+- `node --check frontend/js/app.js`: PASS
+- `node --check tests/e2e/codex-connection-settings.spec.js`: PASS
+- focused API regression: PASS, 11 passed
+- scoped diff check: PASS
+- headed mocked E2E: BLOCKED, 4 passed; replacement scenario has second account but remains login-pending and lacks `Abmelden`
+
+Open risks:
+- Task `.2` remains blocked from final audit until the complete headed E2E suite passes
+- the new failure is a mocked replacement-lifecycle transition, not the corrected Settings navigation defect
+- Task `.1` credential isolation, redaction, two-account evidence, API-key behavior, provider/model non-selection, and production default-deny remain binding and unchanged
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this execution result
+
+Next recommended step for ChatGPT: preserve the corrected navigation change and treat the remaining pending replacement card as a separate, evidence-bound failure.
+
+Next recommended step for Codex: run `janus-debug` with `5.6 Terra/high` for `E2E_REPLACEMENT_LIFECYCLE_PENDING_STUCK` only.
+
+Last updated: `2026-07-15 17:04:26 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 16:41:03 +02:00`, `janus-preimplementation-check` passed the single target `TASK-BACKLOG-131-SETTINGS-NAVIGATION`. The executable scope is exactly `frontend/js/app.js` plus the existing mocked Task `.2` E2E runner; it permits a state-consistent Settings-button correction and prohibits Device-Code, credential, provider, API, chat, production, account, or Git changes.
+
+Current goal: execute the bounded Settings-navigation correction and rerun the full mocked E2E evidence gate.
+
+Active phase: `janus-preimplementation-check`, canonical state `PRE-CHECK PASSED` with handoff to `janus-executioner`.
+
+Last Codex work:
+- verified target/backlog/handoff identity, exact two-file scope, and no-Spec rationale
+- verified syntax of the affected application and E2E files without changing product code
+- created a validator-bound execution handoff; made no account, credential, production, or Git action
+
+Changed files:
+- `documentation/tasks/TASK-BACKLOG-131-SETTINGS-NAVIGATION_precheck.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- target, Backlog, and Handoff identity: PASS
+- `node --check frontend/js/app.js`: PASS
+- `node --check tests/e2e/codex-connection-settings.spec.js`: PASS
+- precheck validator and scoped diff check: PASS
+
+Open risks:
+- Task `.2` remains blocked from final audit until this separate correction and its full headed E2E suite pass
+- the correction must preserve Task `.1` credential isolation, redaction, two-account evidence, API-key behavior, provider/model non-selection, and production default-deny
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this precheck
+
+Next recommended step for ChatGPT: approve only the bound two-file execution; do not add a live account or Task `.2` scope.
+
+Next recommended step for Codex: run `janus-executioner` with `5.6 Terra/high` for `TASK-BACKLOG-131-SETTINGS-NAVIGATION`.
+
+Last updated: `2026-07-15 16:41:03 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 16:41:03 +02:00`, `janus-backlog-handoff` selected `BACKLOG-131` and created `TASK-BACKLOG-131-SETTINGS-NAVIGATION` for preimplementation verification. The Backlog item is now `IN PROGRESS` under `PRE_IMPLEMENTATION_VERIFICATION`. The handoff permits only a bounded diagnosis of the duplicate Settings-button binding and its focused validation; Task `.2` remains blocked and no product or account action occurred.
+
+Current goal: run the single-target preimplementation check for `TASK-BACKLOG-131-SETTINGS-NAVIGATION`.
+
+Active phase: `janus-backlog-handoff`, canonical state `HANDOFF` to `janus-preimplementation-check`.
+
+Last Codex work:
+- created the selected-item handoff and routed BACKLOG-131 through its canonical status transition
+- preserved explicit Task `.1` security and Task `.2` validation boundaries
+- made no implementation, account, credential, production, or Git action
+
+Changed files:
+- `documentation/backlog/BACKLOG.md`
+- `documentation/tasks/backlog_BACKLOG-131_settings_handler_navigation.md`
+- `janus-dashboard/data/backlog.snapshot.json` (after dashboard sync)
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- selected-handoff identity and entry-point mapping: PASS
+- BACKLOG-131 targeted structure/ID check and dashboard snapshot sync: PASS
+- global Backlog validator: legacy-failed on unrelated duplicate IDs and obsolete routing values; BACKLOG-131 has no validator finding
+- code/test execution: N/A; handoff made no product change
+
+Open risks:
+- Task `.2` remains blocked from final audit until this distinct navigation task is corrected and its full headed E2E evidence passes
+- this handoff is not precheck approval or implementation authorization
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this handoff
+
+Next recommended step for ChatGPT: retain only the created handoff and direct evidence; drop unrelated backlog history.
+
+Next recommended step for Codex: run `janus-preimplementation-check` with `5.6 Terra/high` for `TASK-BACKLOG-131-SETTINGS-NAVIGATION`.
+
+Last updated: `2026-07-15 16:41:03 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 16:41:03 +02:00`, `janus-backlog-prioritization` completed a DELTA review for `BACKLOG-131` only. The confirmed Settings-navigation BUG is `HIGH` importance, `MEDIUM` implementation risk, `S` effort, `READY`, and `DO NOW`: it directly blocks completion of the already-bound Task `.2` E2E evidence but requires a separate bounded correction because `frontend/js/app.js` is outside the Task `.2` allowlist.
+
+Current goal: create the normal selected-item handoff for BACKLOG-131; do not modify product code or retry Task `.2` yet.
+
+Active phase: `janus-backlog-prioritization`, canonical state `READY` with recommendation `DO NOW`.
+
+Last Codex work:
+- counted open canonical Backlog status sections in DELTA mode
+- deep-reviewed only the newly captured BACKLOG-131 against its direct Task `.2` validation block
+- persisted its evaluation cache; made no implementation, account, credential, production, or Git action
+
+Changed files:
+- `documentation/backlog/BACKLOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- DELTA status count: PASS (READY 8; NEEDS INFO 0; BLOCKED 0)
+- BACKLOG-131 evidence, scope, acceptance, and evaluation-cache consistency: PASS
+- code/test execution: N/A; prioritization made no product change
+
+Open risks:
+- Task `.2` remains blocked from final audit until BACKLOG-131 is corrected and the full headed E2E suite passes
+- the correction is a general Settings-navigation change and must preserve Task `.1` credential isolation, redaction, two-account evidence, and production default-deny
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this prioritization
+
+Next recommended step for ChatGPT: select BACKLOG-131 only; do not treat prioritization as implementation approval.
+
+Next recommended step for Codex: run `janus-backlog-handoff` with `5.6 Terra/high`, `Mode: SELECTED_HANDOFF`, and `Backlog Item: BACKLOG-131`.
+
+Last updated: `2026-07-15 16:41:03 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 16:41:03 +02:00`, `janus-backlog-intake` captured `BACKLOG-131` as `BUG / READY`: the delayed legacy replacement of the Settings-button handler in `frontend/js/app.js` conflicts with the stateful navigation path and blocks the Task `.2` headed E2E gate. The item is intentionally separate from Task `.2`; no code, account, credential, production, staging, commit, push, or sync action occurred.
+
+Current goal: prioritize the newly captured bounded Settings-navigation defect before any implementation or Task `.2` retest.
+
+Active phase: `janus-backlog-intake`, canonical state `READY` with handoff to `janus-backlog-prioritization`.
+
+Last Codex work:
+- verified the next free Backlog ID and canonical READY section
+- added one evidence-backed navigation BUG with explicit scope and acceptance boundaries
+- made no implementation, account, credential, production, or Git action
+
+Changed files:
+- `documentation/backlog/BACKLOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- Backlog ID uniqueness: PASS (`BACKLOG-131` is the next free ID)
+- required intake fields and READY sufficiency: PASS
+- code/test execution: N/A; backlog intake made no product change
+
+Open risks:
+- Task `.2` remains blocked from final audit until BACKLOG-131 is separately corrected and the full headed E2E suite passes
+- Task `.1` credential isolation, redaction, two-account evidence, and production default-deny remain binding and unchanged
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this intake
+
+Next recommended step for ChatGPT: retain Task `.2` as blocked; do not treat BACKLOG-131 intake as a fix.
+
+Next recommended step for Codex: run `janus-backlog-prioritization` with `5.6 Terra/high` for BACKLOG-131 only.
+
+Last updated: `2026-07-15 16:41:03 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 16:41:03 +02:00`, `janus-debug` iteration 3 classified `E2E_SETTINGS_HANDLER_REPLACEMENT_CONFLICT`. The Task `.2` E2E helper correctly invoked the real Settings button, but a delayed legacy handler in `frontend/js/app.js` clones that button and replaces its stateful listener with `forceOpenSettings()`. The replacement does not synchronize `appState.currentView` or dispatch `show-settings`, then reinitializes the app. This general navigation defect lies outside Task `.2` and must not be masked by a test-only workaround.
+
+Current goal: capture and scope the out-of-scope Settings-navigation defect before returning to Task `.2` E2E validation.
+
+Active phase: `janus-debug`, canonical state `OUT OF SCOPE` with handoff to `janus-backlog-intake`.
+
+Last Codex work:
+- compared the Task `.2` execution failure with the prior stateful-button diagnosis
+- correlated the headed error-context with the original listener and delayed legacy handler replacement in read-only `frontend/js/app.js`
+- made no product, account, credential, production, staging, commit, push, or sync change
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.2_debug_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- debug package identity and iteration-delta check: PASS
+- headed error-context to delayed Settings-handler replacement correlation: PASS
+- code/test execution: N/A; debug made no code change
+
+Open risks:
+- Task `.2` remains blocked from final audit and documentation closeout until valid full headed E2E evidence exists
+- any navigation correction affects a product file outside Task `.2` and requires a separate bounded task
+- Task `.1` credential isolation, redaction, two-account evidence, and production default-deny remain binding and unchanged
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this handoff
+
+Next recommended step for ChatGPT: preserve the Task `.2` security evidence; treat the blocker as a separate Settings-navigation defect.
+
+Next recommended step for Codex: run `janus-backlog-intake` with `5.6 Terra/high` to capture one bounded `E2E_SETTINGS_HANDLER_REPLACEMENT_CONFLICT` item, then route it through normal task validation before retrying Task `.2`.
+
+Last updated: `2026-07-15 16:41:03 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 16:37:35 +02:00`, the exactly authorized Task `.2` E2E helper correction clicked the real `#settings-btn`, then the headed mock suite failed in its first scenario because `#api-key-section` was absent. Read-only source correlation found a delayed legacy handler replacement in `frontend/js/app.js`: it routes the same button to `forceOpenSettings()`, which does not update `appState.currentView` or dispatch `show-settings` and then starts `initializeApp()`. This contradicts the prior debug assumption that the Settings button is a stable stateful seam. No product code, account, credential, staging, commit, push, or sync action occurred.
+
+Current goal: classify the Settings-button handler replacement conflict and produce a bounded retest plan for Task `.2`.
+
+Active phase: `janus-executioner`, canonical state `BLOCKED` with reroute to `janus-debug`.
+
+Last Codex work:
+- applied only the authorized test-helper change from direct CSS/event manipulation to a real Settings-button click
+- reran E2E syntax, focused API tests, scoped diff validation, and the full headed mocked E2E suite
+- inspected the exact read-only application handler replacement after the failure; made no product-code correction
+
+Changed files:
+- `tests/e2e/codex-connection-settings.spec.js`
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.2_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- Task `.2` precheck: PASS
+- `node --check tests/e2e/codex-connection-settings.spec.js`: PASS
+- `python -m pytest backend/tests/test_codex_connection_settings_api.py -q`: PASS, 11 passed
+- scoped bound-path `git diff --check`: PASS
+- headed mocked Playwright Task `.2` E2E: BLOCKED; first scenario cannot locate `#api-key-section` after real Settings-button click; seven scenarios not run
+
+Open risks:
+- Task `.2` is not delivery-ready; final audit and documentation closeout remain unauthorized
+- the delayed legacy Settings-button handler conflicts with the previous stable-seam assumption and needs diagnosis before any further test or product change
+- Task `.1` credential isolation, redaction, two-account evidence, and production default-deny remain binding and unchanged
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this handoff
+
+Next recommended step for ChatGPT: treat this as a deterministic navigation-handler conflict, not as evidence against secure credential isolation or redaction.
+
+Next recommended step for Codex: run `janus-debug` with `5.6 Terra/high` on `E2E_SETTINGS_HANDLER_REPLACEMENT_CONFLICT`; do not apply another test workaround or product change before the diagnosis.
+
+Last updated: `2026-07-15 16:37:35 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 16:31:18 +02:00`, `janus-debug` iteration 2 conclusively replaced the broad late-overwrite suspicion with `E2E_HELPER_BYPASSES_VIEW_STATE`. The E2E helper manually changes CSS and dispatches `show-settings`, but does not update Janus's private `appState.currentView`; a later normal `initializeApp()` render therefore restores chat as designed. The existing `#settings-btn` handler already performs the correct stateful transition. No code changed in debug; a one-helper E2E correction is rerouted to execution.
+
+Current goal: apply the single stateful-navigation test-helper correction and rerun the complete Task `.2` automated evidence gate.
+
+Active phase: `janus-debug`, canonical state `OUT OF SCOPE` for code correction with handoff to `janus-executioner`.
+
+Last Codex work:
+- compared the new late-overwrite failure with the prior reload-race evidence
+- inspected only the bound E2E helper and the read-only application view-state/navigation seam
+- established that the helper bypasses `currentView`, while the real Settings button sets it correctly
+- performed no code/test edit, live account action, staging, commit, push, or sync
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.2_debug_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- debug-package iteration identity and evidence-delta check: PASS
+- E2E helper to `appState.currentView` / `render()` / `#settings-btn` seam correlation: PASS
+- code/test execution: N/A; debug made no code changes
+
+Open risks:
+- Task `.2` remains blocked until the stateful E2E navigation helper correction and complete headed suite pass
+- Task `.1` credential isolation, redaction, two-account evidence, and production default-deny remain binding and unchanged
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this handoff
+
+Next recommended step for ChatGPT: treat the current failure as a deterministic E2E helper defect, not a product or credential regression.
+
+Next recommended step for Codex: run `janus-executioner` with `5.6 Terra/high` for the one `#settings-btn`-based helper correction; no live account or scope expansion.
+
+Last updated: `2026-07-15 16:31:18 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 16:29:12 +02:00`, the debug-rerouted Task `.2` E2E runner correction was applied and rerun, but the full mocked headed E2E gate remains `BLOCKED` as `E2E_SETTINGS_RENDER_LATE_OVERWRITE`. Four scenarios now pass, including first-login cancel. In the isolated connected-account scenario, the replacement account renders as expected, then the Settings surface is still replaced before the Janus-only logout assertion—even though all mock-state-driven full-page reloads were removed. This is new evidence beyond the earlier reload-race diagnosis; no third local correction is safe.
+
+Current goal: classify the late Settings view overwrite as a single bounded E2E/application-initialization failure before any further change.
+
+Active phase: `janus-executioner`, canonical state `BLOCKED` with reroute to `janus-debug`.
+
+Last Codex work:
+- applied the debug-rerouted in-page runner refresh and split stateful E2E coverage into independent mocked scenarios
+- retained official verification URL stubbing, redaction checks, atomic-switch assertions, and no-live-account discipline
+- reran syntax, focused API, and the full headed E2E runner
+- made no live account, credential, production, staging, commit, push, or sync action
+
+Changed files:
+- `tests/e2e/codex-connection-settings.spec.js`
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.2_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- Task `.2` precheck validator: PASS
+- `node --check tests/e2e/codex-connection-settings.spec.js`: PASS
+- `python -m pytest backend/tests/test_codex_connection_settings_api.py -q`: PASS, 11 passed
+- headed mocked Playwright Task `.2` E2E: BLOCKED; 4 passed, connected-switch scenario late-overwrites Settings after replacement rendering
+
+Open risks:
+- Task `.2` is not delivery-ready; final audit and documentation closeout are not authorized
+- the failure now persists without `page.reload()`, so it must be diagnosed rather than masked by further timing edits
+- Task `.1` credential isolation, redaction, two-account evidence, and production default-deny remain binding and unchanged
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this current blocker
+
+Next recommended step for ChatGPT: treat the failure as an unresolved E2E/application-view race, not as a product credential failure.
+
+Next recommended step for Codex: run `janus-debug` iteration 2 with `5.6 Terra/high` against `E2E_SETTINGS_RENDER_LATE_OVERWRITE`; no live account or scope expansion.
+
+Last updated: `2026-07-15 16:29:12 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 16:20:38 +02:00`, `janus-debug` classified the single Task `.2` failure `E2E_SETTINGS_RELOAD_RACE` as a mocked Playwright harness defect, not a Device-Code lifecycle or Settings/API contract failure. The test reloads the full application merely to re-fetch mock state; normal async app initialization later replaces the manually selected Settings view with chat. No code was changed in debug. The corrective test refactor is rerouted to `janus-executioner`.
+
+Current goal: apply one bounded E2E runner correction and rerun the complete Task `.2` automated evidence gate.
+
+Active phase: `janus-debug`, canonical state `OUT OF SCOPE` for a code correction, rerouted to `janus-executioner`.
+
+Last Codex work:
+- searched targeted reusable learning patterns and applied the existing Task `.1` security tripwire
+- inspected only the Task `.2` execution result, E2E failure evidence, E2E runner, and Settings view event seam
+- established that `page.reload()` races normal app initialization after mocked state transitions
+- made no product/test change, live account action, staging, commit, push, or sync
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.2_debug_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- targeted `WHAT_I_LEARNED` lookup: PASS
+- debug-package identity and single-failure-slice check: PASS
+- Playwright error-context, screenshot, and runner-to-view-event correlation: PASS
+- code/test execution: N/A; debug made no code changes
+
+Open risks:
+- Task `.2` remains blocked until the complete mocked headed E2E suite passes after the runner-only correction
+- Task `.1` credential isolation, redaction, two-account evidence, and production default-deny remain binding and unchanged
+- Tasks `.3` through `.5` remain open; production remains default-deny
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this reroute handoff
+
+Next recommended step for ChatGPT: treat the root cause as a test-harness reroute, not a completed Task `.2` delivery.
+
+Next recommended step for Codex: run `janus-executioner` with `5.6 Terra/high` for the one test-runner correction described in the Task `.2` debug result; no new precheck is required because it remains within the same bound test path.
+
+Last updated: `2026-07-15 16:20:38 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 16:17:25 +02:00`, `janus-executioner` implemented the bounded Task `.2` Settings/API device-code presentation path but ends `BLOCKED` on the mocked headed Playwright E2E gate. Python API contracts, syntax checks, and scoped whitespace validation pass. The Settings E2E successfully rendered the simulated replacement account, but a pre-existing asynchronous full-page reload path later displaced the Settings view before the Janus-only logout assertion. Two focused harness corrections were exhausted; no third speculative fix was made.
+
+Current goal: diagnose only the Task `.2` mocked Settings E2E reload race, then rerun the bound automated gates.
+
+Active phase: `janus-executioner`, canonical state `BLOCKED` with handoff to `janus-debug`.
+
+Last Codex work:
+- updated the stale Settings/API callback contract to the Task `.1` official device-code start contract
+- kept verification values renderer-memory-only and restricted browser opening to the fixed official verification URL
+- changed account switch from logout-first to the existing atomic lifecycle start/cancel path
+- added focused API and mocked E2E coverage for redaction, disabled persistence, atomic replacement, and API-key non-interference
+- performed no live account, credential, production, staging, commit, push, or sync action
+
+Changed files:
+- `backend/api/routers/system.py`
+- `frontend/index.html`
+- `frontend/js/settings.js`
+- `backend/tests/test_codex_connection_settings_api.py`
+- `tests/e2e/codex-connection-settings.spec.js`
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.2_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- Task `.2` precheck validator: PASS
+- `python -m py_compile backend/api/routers/system.py`: PASS
+- `node --check frontend/js/settings.js`: PASS
+- `python -m pytest backend/tests/test_codex_connection_settings_api.py -q`: PASS, 11 passed
+- scoped tracked-path `git diff --check`: PASS
+- headed mocked Playwright Task `.2` E2E: BLOCKED by `E2E_SETTINGS_RELOAD_RACE`; no live account action
+
+Open risks:
+- the complete Task `.2` E2E gate is not green; final audit and documentation closeout are not authorized
+- Task `.1` credential isolation, redaction, two-account evidence, and production default-deny remain binding and unchanged
+- Tasks `.3` through `.5` remain open; production remains default-deny
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this execution blocker
+
+Next recommended step for ChatGPT: treat Task `.2` as blocked pending E2E harness diagnosis, not as delivered.
+
+Next recommended step for Codex: run `janus-debug` on `E2E_SETTINGS_RELOAD_RACE` with `5.6 Terra/high`; remain within the six bound Task `.2` paths and do not use a live account.
+
+Last updated: `2026-07-15 16:17:25 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 15:59:24 +02:00`, the preimplementation check for `TASK-CHATGPT-DEVICE-CODE-PROVIDER.2` is PASS after the operator confirmed that the three modified Settings/API files and two new test files belong exclusively to this task. The canonical handoff binds exactly those files plus `frontend/css/settings.css`, retains all Task `.1` credential-isolation boundaries, and explicitly excludes provider/model selection, chat transport, credential-store changes, production activation, and live account actions.
+
+Current goal: implement exactly Task `.2` through `janus-executioner` with the bound automated evidence gates.
+
+Active phase: `janus-preimplementation-check`, canonical state `HANDOFF` to `janus-executioner`.
+
+Last Codex work:
+- accepted the operator-confirmed Task `.2` ownership boundary after read-only Git governance review
+- replaced the blocked precheck result with the canonical single-target PASS handoff
+- bound Settings/API, redaction, atomic-switch, persistence-disabled, and API-key-regression evidence gates
+- performed no product edit, test execution, account action, staging, commit, push, or sync
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.2_precheck.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- target artifact identity and uniqueness: PASS
+- bound-path existence: PASS
+- targeted changeset ownership: PASS by operator confirmation
+- precheck handoff validator: PASS
+- product tests not run by precheck
+
+Open risks:
+- execution must keep device-code values transient and preserve the old Janus connection through a failed/cancelled switch
+- any required Task `.1` lifecycle/persistence change blocks execution instead of widening scope
+- Tasks `.3` through `.5` remain open; production remains default-deny
+- no new commit, push, or `origin/codex-sync` update occurred, so remote state may not contain this PASS handoff
+
+Next recommended step for ChatGPT: treat Task `.2` as execution-ready but not implemented.
+
+Next recommended step for Codex: run `janus-executioner` for Task `.2` with `5.6 Terra/high` and the bound six-file scope.
+
+Last updated: `2026-07-15 15:59:24 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 15:56:22 +02:00`, the preimplementation check for `TASK-CHATGPT-DEVICE-CODE-PROVIDER.2` is BLOCKED with `SCOPE_MISMATCH`. The parent Task, active Spec, Task `.2` breakdown, and Task `.1` security foundation are consistent, but five of the six bound implementation/test files already have local modifications or are untracked. Their exclusive ownership by Task `.2` is not documented, so no atomic precheck pass or implementation authorization is safe.
+
+Current goal: establish the operator-confirmed Task `.2` changeset boundary, then rerun the same single-target precheck.
+
+Active phase: `janus-preimplementation-check`, canonical state `BLOCKED`.
+
+Last Codex work:
+- verified Task `.2` artifact identity and the binding Task `.1` final-audit boundary
+- confirmed all six named target paths exist
+- inspected only the six bound paths' Git status and identified five pre-existing changes
+- wrote the blocked canonical precheck result
+- performed no product edit, test execution, account action, staging, commit, push, or sync
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.2_precheck.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- source identity and target uniqueness: PASS
+- bound-path existence: PASS
+- targeted bound-path Git status: BLOCKED for ownership ambiguity
+- product tests not run by precheck
+
+Open risks:
+- overwriting or amending the five pre-existing target-surface changes would risk mixing another work item into Task `.2`
+- Task `.2` cannot proceed until the exact ownership boundary is confirmed
+- Tasks `.3` through `.5` remain open; production remains default-deny
+- no new commit, push, or `origin/codex-sync` update occurred, so remote state may not contain this blocked precheck
+
+Next recommended step for ChatGPT: confirm whether the five existing target-surface changes belong exclusively to Task `.2`.
+
+Next recommended step for Codex: use `janus-git-governance` for a targeted ownership-boundary assessment, then rerun this precheck.
+
+Last updated: `2026-07-15 15:56:22 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-15 15:51:11 +02:00`, `janus-task-breakdown` released exactly `TASK-CHATGPT-DEVICE-CODE-PROVIDER.2` for preimplementation check. The bounded slice covers Settings/API lifecycle presentation, transient verification-value handling, Janus-only logout, atomic one-account switch, disabled secure persistence, and API-key non-interference. It explicitly excludes provider/model selection, chat transport, privacy acknowledgement, production activation, and live account actions.
+
+Current goal: complete the preimplementation check for Task `.2` before any Settings/API implementation.
+
+Active phase: `janus-task-breakdown`, canonical state `HANDOFF` to `janus-preimplementation-check`.
+
+Last Codex work:
+- bound Task `.2` to the active approved Feature Spec and Task `.1` security foundation
+- created the single-target Task `.2` breakdown with binary acceptance criteria and focused API/E2E tests
+- preserved production default-deny and all Task `.1` credential-isolation boundaries
+- performed no product implementation, test execution, account action, Git action, push, or sync
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.2_task_breakdown.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- source identity and prior final-audit boundary review: PASS
+- task-breakdown handoff validator: PASS
+
+Open risks:
+- Task `.2` must preserve transient code/URL redaction and atomic switch semantics in both API and UI
+- any need to change the Task `.1` lifecycle or persistence boundary blocks precheck rather than widening scope
+- Tasks `.3` through `.5` remain open; production remains default-deny
+- no new commit, push, or `origin/codex-sync` update occurred, so remote state may not contain this handoff
+
+Next recommended step for ChatGPT: treat Task `.2` as breakdown-complete and wait for its precheck verdict.
+
+Next recommended step for Codex: run `janus-preimplementation-check` for Task `.2` with `5.6 Terra/high`.
+
+Last updated: `2026-07-15 15:51:11 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-15 15:44:12 +02:00`, the confirmed `TASK-CHATGPT-DEVICE-CODE-PROVIDER.1` delivery changeset was committed on `master` as `a8a4510a5` (`feat(chatgpt-device-code): isolate Janus credentials`) after a cached-diff whitespace check. It was pushed to `backup/master`, and the CURRENT_STATE sync commit `9f1857037` was pushed to `origin/codex-sync`. No production release, tag, origin/master push, or account action occurred.
 
 Current goal: Task `.1` delivery checkpoint is complete; retain the active Feature Spec boundary for Tasks `.2` through `.5`.
