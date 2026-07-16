@@ -39,3 +39,19 @@ Recommended Next Skill: `janus-spec-generator`
 Decision Status: LOCKED
 
 Locked Choice: A - auf offiziellen Upstream-Support warten und Task `.4` sicher `BLOCKED` lassen.
+
+## Decision Reaffirmation - Cursor Hermes Feasibility
+
+- Reaffirmed At: 2026-07-16
+- Operator Decision: `LOCKED`
+- Option A - Official upstream wait: `ACCEPTED AND REAFFIRMED`
+- Option B - Hermes-artige private ChatGPT backend integration: `REJECTED`
+- Option D - OAuth/App-Server mode with Codex-native tools: `REJECTED`
+- Cursor Feasibility Result: `NOT_VIABLE` under the seven non-negotiable Janus boundaries
+- Hermes Classification: ChatGPT device-code OAuth followed by direct use of the private `chatgpt.com/backend-api/codex` route; it avoids the App Server rather than repairing its native-tool boundary
+- Rejection Reason B: undocumented/private backend dependency, possible credential import/session coupling, and conflict with the Spec's forbidden-integration and official-interface boundary
+- Rejection Reason D: would weaken Janus-only tool authority and permit Codex-native action surfaces, including the unresolved `update_plan` exposure
+- Continuing State: Task `.4` remains `BLOCKED: UPSTREAM_DYNAMIC_TOOLS_ONLY_MODE_ABSENT`; Task `.5` remains unstarted; ChatGPT production remains default-deny
+- Preserved Foundation: Completed Tasks `.1`-`.3` remain valid and are not reverted
+- Reopen Rule: Do not reopen B or D unless the operator explicitly changes this decision; A may re-enter only through exact official-runtime evidence and a fresh green precheck
+- Evidence: `documentation/tasks/CODEX_HANDOFF_CHATGPT_PROVIDER_STAY_UPSTREAM_WAIT_REJECT_B_D_2026-07-16.md`

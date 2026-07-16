@@ -1,6 +1,81 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-16 17:34:20 +02:00`, Cursor completed the Hermes feasibility review with recommendation `NOT_VIABLE`. The operator then locked product direction: **Stay on Option A (upstream-wait)**; **reject B** (Hermes-artige `chatgpt.com/backend-api/codex`); **reject D** (OAuth App-Server chat that allows Codex-native tools). Codex recorded and locally checkpointed this reaffirmation without changing product scope or implementation authority.
+
+Current goal: reaffirm Task `.4` blocked upstream-wait; preserve Tasks `.1`-`.3` foundation; keep ChatGPT production default-deny; no Hermes and no Janus-only-boundary weakening.
+
+Active phase: `janus-documentation-update` decision lock complete; canonical state `BLOCKED` at the unchanged upstream capability gate.
+
+Last Cursor work:
+- classified Hermes as ChatGPT device-code OAuth + direct private Codex backend HTTP (not App Server)
+- confirmed Hermes avoids `update_plan` only by bypassing App Server; fails Spec Forbidden Integration / boundary 6
+- operator accepted recommendation Stay A; rejected B and D
+
+Last Codex work:
+- recorded Cursor feasibility result `NOT_VIABLE` in the existing Task `.4` upstream-wait decision summary
+- locked A as reaffirmed and B/D as rejected without opening a new feature, weakening the Spec, or changing Task `.4` execution authority
+- created local documentation checkpoint `f387803a5`; no product-code, account, credential, runtime, backup push, build, release, or production change occurred
+
+Changed files:
+- `documentation/tasks/CODEX_HANDOFF_CHATGPT_PROVIDER_STAY_UPSTREAM_WAIT_REJECT_B_D_2026-07-16.md`
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.4_upstream_wait_decision_summary.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- read-only Hermes transport/auth classification against Spec + Task `.4` blocker: PASS (`NOT_VIABLE`)
+- operator decision A / reject B / reject D captured in Codex handoff: PASS
+- Task `.4` decision reaffirmation: PASS
+- no product code, account, credential, Git, build, or production action: PASS
+- scoped documentation diff check: PASS
+- targeted Git checkpoint: PASS (`f387803a5` before final metadata amend)
+
+Open risks:
+- upstream Dynamic-Tools-only mode may never arrive; Abo-chat may remain unavailable indefinitely under Option A
+- `backup/master` and `origin/master` remain untouched; only the approved `origin/codex-sync` snapshot will be updated
+
+Next recommended step for ChatGPT: treat A as the binding provider direction and B/D as explicitly rejected; do not propose Hermes or Codex-native-tools mode again unless the operator reopens them.
+
+Next recommended step for Codex: no product implementation is authorized; retain the upstream capability gate and wait for an exact official-runtime change.
+
+Last updated: `2026-07-16 17:34:20 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-16 17:06:32 +02:00`, the user explicitly reopened the product direction because waiting for upstream App-Server support does not meet the goal of a working ChatGPT provider. A bounded read-only Cursor feasibility handoff now asks whether an identified Hermes-artige route can satisfy the existing Janus-only tool, privacy, credential-isolation, API-key-noninterference, and production-default-deny boundaries without relying on the blocked App-Server tool plane.
+
+Current goal: obtain independent evidence about the exact Hermes transport/authentication boundary before changing the locked upstream-wait decision or any implementation scope.
+
+Active phase: `janus-feature-design`, canonical state `HANDOFF` to an external read-only feasibility review.
+
+Last Codex work:
+- created a compact Cursor handoff that states the verified `update_plan`/Dynamic-Tools-only App-Server blocker and the user's working-provider goal
+- bounded the review to discovery and seven-point boundary comparison; no code, account, browser, credential, Git, sync, build, release, or production action is authorized
+- did not change the active Spec, Task `.4` blocked status, or production default-deny
+
+Changed files:
+- `documentation/tasks/CURSOR_HANDOFF_CHATGPT_DEVICE_CODE_PROVIDER_HERMES_FEASIBILITY_2026-07-16.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- exact existing App-Server blocker bound: PASS
+- existing completed Task `.1`-`.3` safety boundaries bound: PASS
+- Cursor scope excludes implementation and live/provider actions: PASS
+- formal handoff scope/diff check: PASS
+
+Open risks:
+- Hermes identity and its actual transport/authentication mechanism are not yet established
+- no approval exists to weaken Janus-only tool authority, use undocumented endpoints, share credentials, automate a browser, or activate production
+- `origin/codex-sync` currently contains the prior blocked-state checkpoint, not this new feasibility handoff
+
+Next recommended step for ChatGPT: submit the bounded handoff to Cursor and return only its evidence-backed feasibility result.
+
+Next recommended step for Codex: do not alter the active provider design until the Cursor result identifies and validates a compliant boundary.
+
+Last updated: `2026-07-16 17:06:32 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-16 16:55:15 +02:00`, the existing Task `.4` artifact is reconciled with the independently approved upstream-wait Spec amendment. Task `.4` now starts with `BLOCKED: UPSTREAM_DYNAMIC_TOOLS_ONLY_MODE_ABSENT`, requires official Dynamic-Tools-only/Core-Allowlist support, exact-runtime account-free executable evidence, and a fresh green precheck before any implementation step. A patched/forked runtime, `update_plan` exception, weakened boundary, degraded mode, and provider fallback remain explicitly forbidden.
 
 Current goal: hold Task `.4` safely blocked until new official upstream capability exists; preserve completed Tasks `.1`-`.3`, pending Task `.5`, and production default-deny.
