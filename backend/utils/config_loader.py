@@ -23,6 +23,8 @@ DEFAULT_CONFIG: Dict[str, Any] = {
 DATA_DIR = get_app_data_dir()
 MODEL_CATALOG_FILE = os.path.join(DATA_DIR, "model_catalog.json")
 TEMPLATE_MODEL_CATALOG_FILE = resource_path("backend/config/model_catalog.json")
+_OPENROUTER_PROVIDER = "openrouter"
+_OPENROUTER_REGISTRY_SCHEMA_VERSION = 1
 
 # NEU: Pfad zur Hauptkonfigurationsdatei
 CONFIG_FILE = os.path.join(DATA_DIR, "config.json")
@@ -49,6 +51,155 @@ def _model_list_to_by_id(models_list: Any) -> Dict[str, Any]:
         if isinstance(model, dict) and model.get("id"):
             out[str(model["id"])] = dict(model)
     return out
+
+
+def _is_latest_alias(model_id: str) -> bool:
+    normalized = str(model_id or "").strip().lower()
+    if not normalized:
+        return False
+    separators = "/@:._-"
+    token = ""
+    parts: List[str] = []
+    for char in normalized:
+        if char in separators:
+            if token:
+                parts.append(token)
+                token = ""
+            continue
+        token += char
+    if token:
+        parts.append(token)
+    return "latest" in parts
+
+
+def _load_openrouter_certification_records() -> Dict[str, Dict[str, Any]]:
+    """Load the checked-update registry and fail closed on any invalid content."""
+    registry_path = resource_path("backend/config/openrouter_certified_models.json")
+    try:
+        with open(registry_path, "r", encoding="utf-8") as handle:
+            registry = json.load(handle)
+    except FileNotFoundError:
+        logger.warning("OpenRouter certification registry is missing; no models are eligible.")
+        return {}
+    except (OSError, json.JSONDecodeError):
+        logger.error("OpenRouter certification registry is unreadable; no models are eligible.")
+        return {}
+
+    if not isinstance(registry, dict):
+        logger.error("OpenRouter certification registry root is invalid; no models are eligible.")
+        return {}
+    if registry.get("schema_version") != _OPENROUTER_REGISTRY_SCHEMA_VERSION:
+        logger.error("OpenRouter certification registry schema is unsupported; no models are eligible.")
+        return {}
+
+    models = registry.get("models")
+    battery_version = registry.get("battery_version")
+    if not isinstance(models, list):
+        logger.error("OpenRouter certification registry models are invalid; no models are eligible.")
+        return {}
+    if not models:
+        return {}
+    if not isinstance(battery_version, str) or not battery_version.strip():
+        logger.error("OpenRouter certification battery version is missing; no models are eligible.")
+        return {}
+    battery_version = battery_version.strip()
+
+    records: Dict[str, Dict[str, Any]] = {}
+    for raw_record in models:
+        if not isinstance(raw_record, dict):
+            logger.error("OpenRouter certification record is invalid; no models are eligible.")
+            return {}
+
+        model_id = str(raw_record.get("model_id") or "").strip()
+        model_version = str(raw_record.get("model_version") or "").strip()
+        record_battery = str(raw_record.get("battery_version") or "").strip()
+        status = str(raw_record.get("status") or "").strip().lower()
+        test_status = str(raw_record.get("mandatory_test_evidence") or "").strip().lower()
+        audit_status = str(raw_record.get("audit_evidence") or "").strip().lower()
+
+        valid = all(
+            (
+                model_id,
+                model_version,
+                record_battery == battery_version,
+                status == "passed",
+                test_status == "passed",
+                audit_status == "passed",
+            )
+        )
+        if (
+            not valid
+            or _is_latest_alias(model_id)
+            or _is_latest_alias(model_version)
+            or model_id in records
+        ):
+            logger.error("OpenRouter certification registry contains an invalid binding; no models are eligible.")
+            return {}
+
+        records[model_id] = {
+            "model_id": model_id,
+            "model_version": model_version,
+            "battery_version": record_battery,
+        }
+
+    return records
+
+
+def _merge_catalogs_without_openrouter_authority(
+    template_by_id: Dict[str, Any],
+    user_by_id: Dict[str, Any],
+) -> Dict[str, Any]:
+    """Merge normal providers as before while keeping OpenRouter release-owned."""
+    merged: Dict[str, Any] = {}
+    for model_id in set(template_by_id) | set(user_by_id):
+        template_model = template_by_id.get(model_id)
+        user_model = user_by_id.get(model_id)
+        template_provider = str((template_model or {}).get("provider") or "").strip().lower()
+        user_provider = str((user_model or {}).get("provider") or "").strip().lower()
+
+        if template_provider == _OPENROUTER_PROVIDER:
+            merged[model_id] = dict(template_model)
+            continue
+        if user_provider == _OPENROUTER_PROVIDER:
+            if template_model is not None:
+                merged[model_id] = dict(template_model)
+            continue
+        if template_model is not None and user_model is not None:
+            merged[model_id] = {**template_model, **user_model}
+        elif template_model is not None:
+            merged[model_id] = dict(template_model)
+        elif user_model is not None:
+            merged[model_id] = dict(user_model)
+    return merged
+
+
+def _filter_openrouter_catalog(
+    merged: Dict[str, Any],
+    template_by_id: Dict[str, Any],
+) -> Dict[str, Any]:
+    certification_records = _load_openrouter_certification_records()
+    filtered: Dict[str, Any] = {}
+    for model_id, model in merged.items():
+        provider = str(model.get("provider") or "").strip().lower()
+        if provider != _OPENROUTER_PROVIDER:
+            filtered[model_id] = model
+            continue
+
+        release_model = template_by_id.get(model_id)
+        record = certification_records.get(model_id)
+        if not isinstance(release_model, dict) or record is None:
+            continue
+        release_provider = str(release_model.get("provider") or "").strip().lower()
+        release_version = str(release_model.get("model_version") or "").strip()
+        if (
+            release_provider == _OPENROUTER_PROVIDER
+            and release_version
+            and release_version == record["model_version"]
+            and not _is_latest_alias(model_id)
+            and not _is_latest_alias(release_version)
+        ):
+            filtered[model_id] = dict(release_model)
+    return filtered
 
 
 def load_model_catalog() -> Dict[str, Any]:
@@ -82,14 +233,8 @@ def load_model_catalog() -> Dict[str, Any]:
         except Exception as e:
             logger.error("Failed to load catalog from AppData: %s", e)
 
-    merged: Dict[str, Any] = {}
-    for mid in set(template_by_id) | set(user_by_id):
-        if mid in template_by_id and mid in user_by_id:
-            merged[mid] = {**template_by_id[mid], **user_by_id[mid]}
-        elif mid in template_by_id:
-            merged[mid] = dict(template_by_id[mid])
-        else:
-            merged[mid] = dict(user_by_id[mid])
+    merged = _merge_catalogs_without_openrouter_authority(template_by_id, user_by_id)
+    merged = _filter_openrouter_catalog(merged, template_by_id)
 
     if not merged:
         logger.error("No model catalog found after template/AppData merge.")

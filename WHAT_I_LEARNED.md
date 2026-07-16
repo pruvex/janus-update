@@ -345,3 +345,15 @@
 - **Epic:** TASK-CHATGPT-DEVICE-CODE-PROVIDER.3
 - **Confidence:** High
 - **Tags:** chatgpt,provider-selection,e2e-isolation,stale-state,fail-closed
+
+
+## [PATTERN] #CertificationAliasesMustBeRejectedInEveryBindingField "Certification aliases must be rejected in every exact-version binding field"
+- **Kontext:** TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1 final-audit blocker and same-scope repair (2026-07-16).
+- **Problem:** The certification gate rejected latest only in model_id. A release catalog and certification record that both used model_version=latest therefore matched and became visible despite the concrete-version contract.
+- **Loesung:** Apply the alias predicate independently to model_id, registry model_version, and release-catalog model_version before eligibility. Keep equality checks, but never treat equality between two ambiguous aliases as concrete identity.
+- **Haertung:** Integrated regression with matching release and registry model_version=latest stays invisible; original executable reproducer returns an empty result; focused suite 18 passed; headed existing-provider E2E 10 passed; Final Audit PASS.
+- **Tripwire:** Any exact-version or certification gate validates aliases in an identifier but does not apply the same fail-closed rule to every separately bound version field.
+- **Location:** backend/utils/config_loader.py; backend/tests/test_openrouter_certification_registry.py
+- **Epic:** TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1
+- **Confidence:** High
+- **Tags:** openrouter,certification,fail-closed,model-version,alias,final-audit

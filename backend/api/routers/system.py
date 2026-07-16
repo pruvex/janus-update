@@ -308,7 +308,12 @@ async def get_model_catalog(request: Request):
     if lifecycle is None or not lifecycle.configured:
         return catalog
     try:
-        catalog.extend(await lifecycle.list_models())
+        lifecycle_models = await lifecycle.list_models()
+        catalog.extend(
+            model
+            for model in lifecycle_models
+            if str((model or {}).get("provider") or "").strip().lower() != "openrouter"
+        )
     except CodexAppServerError:
         logger.warning("ChatGPT models omitted because current verification failed.")
     return catalog
