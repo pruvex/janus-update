@@ -1,7 +1,7 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
-As of `2026-07-16 16:25:45 +02:00`, the existing Task `.4` artifact is reconciled with the independently approved upstream-wait Spec amendment. Task `.4` now starts with `BLOCKED: UPSTREAM_DYNAMIC_TOOLS_ONLY_MODE_ABSENT`, requires official Dynamic-Tools-only/Core-Allowlist support, exact-runtime account-free executable evidence, and a fresh green precheck before any implementation step. A patched/forked runtime, `update_plan` exception, weakened boundary, degraded mode, and provider fallback remain explicitly forbidden.
+As of `2026-07-16 16:55:15 +02:00`, the existing Task `.4` artifact is reconciled with the independently approved upstream-wait Spec amendment. Task `.4` now starts with `BLOCKED: UPSTREAM_DYNAMIC_TOOLS_ONLY_MODE_ABSENT`, requires official Dynamic-Tools-only/Core-Allowlist support, exact-runtime account-free executable evidence, and a fresh green precheck before any implementation step. A patched/forked runtime, `update_plan` exception, weakened boundary, degraded mode, and provider fallback remain explicitly forbidden.
 
 Current goal: hold Task `.4` safely blocked until new official upstream capability exists; preserve completed Tasks `.1`-`.3`, pending Task `.5`, and production default-deny.
 
@@ -12,7 +12,8 @@ Last Codex work:
 - inserted the official upstream capability check and exact-runtime evidence as gates before fresh precheck and implementation
 - preserved the deferred transport/privacy/tool-parity scope for use only after the re-entry chain passes
 - left Tasks `.1`-`.3` and `.5` content unchanged
-- made no product-code, dependency, product-test, account, credential, message, tool-execution, Git, sync, build, release, or production change
+- created local documentation checkpoint `44627a5de` and published the CURRENT_STATE snapshot to `origin/codex-sync` as `31c1213b1`
+- made no product-code, dependency, product-test, account, credential, message, tool-execution, backup push, build, release, or production change
 
 Changed files:
 - `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.md`
@@ -32,13 +33,13 @@ Open risks:
 - official upstream capability is absent, so Task `.4` is not eligible for task breakdown, precheck rerun, or implementation
 - the existing older Task `.4` breakdown and precheck remain historical blocker evidence and must not be used as current execution authority
 - Task `.5` cannot activate production while Task `.4` remains blocked
-- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this reconciliation
+- `backup/master` and `origin/master` were not pushed; only `origin/codex-sync` received the CURRENT_STATE snapshot
 
 Next recommended step for ChatGPT: retain the blocked status and do not interpret the validated task structure as implementation readiness.
 
 Next recommended step for Codex: wait for an official Runtime capability change. Only then verify the exact official runtime account-free and route Task `.4` through fresh `janus-task-breakdown` and `janus-preimplementation-check`; do not proceed now.
 
-Last updated: `2026-07-16 16:25:45 +02:00`.
+Last updated: `2026-07-16 16:55:15 +02:00`.
 
 ## Current Snapshot Update
 As of `2026-07-16 16:23:14 +02:00`, the fresh independent `janus-spec-review` task approved the Task `.4` upstream-wait amendment. Complexity remains `78`, risk `HIGH`, split is not required, and the metadata validator passes. The approval confirms that official Dynamic-Tools-only/Core-Allowlist support, exact-runtime account-free executable evidence, and a fresh green precheck are the complete re-entry chain; no patched runtime, `update_plan` exception, weakened requirement, degraded path, or provider fallback is allowed.
