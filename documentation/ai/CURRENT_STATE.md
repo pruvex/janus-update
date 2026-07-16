@@ -1,6 +1,407 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-16 20:20:25 +02:00`, documentation synchronization for final-audit-PASS `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1` is complete. Task `.1` is recorded as DONE across the task container, partial Feature Spec metadata, Central Task Registry, PROJECT_STATE, and CHANGELOG. The parent OpenRouter feature remains `PARTIAL IMPLEMENTATION (1/6)` and production remains disabled with an empty certification registry.
+
+Current goal: prepare a targeted Solo Git v2 checkpoint proposal for the completed OpenRouter Task `.1` delivery block without staging generated reports or unrelated parked worktree changes.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`, handoff to `janus-git-governance`.
+
+Last Codex work:
+- classified the documentation block as `DOC-SKILL-011` and completed it locally at the required medium reasoning level
+- marked Task `.1` DONE while keeping Tasks `.2` through `.6` OPEN
+- added `PARTIAL IMPLEMENTATION (1/6)` metadata to the approved parent Spec without moving it to `Spec Done`
+- synchronized Central Task Registry, PROJECT_STATE, and CHANGELOG with task-scoped evidence and explicit disabled production state
+- appended the validated `CertificationAliasesMustBeRejectedInEveryBindingField` learning pattern after duplicate search
+- created the canonical documentation-update result and recorded its route in the execution result and audit package
+- made no Backlog/dashboard, version, release, product-code, Git, push, sync, provider-call, credential, or production change in this documentation block
+
+Changed files:
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.md`
+- `documentation/SPEC/OPENROUTER_JANUS_CHAT_PROVIDER_FEATURE_SPEC.md`
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `CHANGELOG.md`
+- `WHAT_I_LEARNED.md`
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1_execution_result.md`
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1_AUDIT_PACKAGE.md`
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1_documentation_update.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- final-audit validator: PASS
+- execution-result validator: PASS
+- documentation completion validator: PASS across task, Spec, registry, project state, changelog, and final audit
+- required marker scans: PASS
+- WHAT_I_LEARNED duplicate search and append helper: PASS
+- version consistency: PASS (`0.4.17-beta.50`, unchanged)
+- scoped `git diff --check`: PASS
+
+Open risks:
+- OpenRouter is not yet a usable Janus chat provider; Tasks `.2` through `.6` remain open
+- Task `.3` and Task `.6` retain high-risk `5.6 Sol/high` architecture/security/certification gates
+- production catalog and certification registry intentionally expose zero OpenRouter models
+- unrelated parked dirt and generated Playwright/test report artifacts remain outside the intended checkpoint scope
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this documentation-complete snapshot
+
+Next recommended step for ChatGPT: describe OpenRouter as `1/6` task-complete foundation, not as a usable provider; preserve the remaining task sequence and disabled production state.
+
+Next recommended step for Codex: run `janus-git-governance`, review an explicit Task `.1` path list, and request `commit: YES` before targeted staging/commit; recommend `sync: YES` separately after the checkpoint.
+
+Last updated: `2026-07-16 20:20:25 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-16 20:05:04 +02:00`, the blocker-delta-first independent re-audit for exactly `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1` is complete with `FINAL AUDIT RESULT: PASS`. The prior `LATEST_MODEL_VERSION_NOT_FAIL_CLOSED` gap is closed at both registry and release-catalog boundaries, the integrated regression and original reproducer are green, and no further Task `.1` finding remains.
+
+Current goal: synchronize bounded Task `.1` documentation and tracking state without closing the partial parent OpenRouter Feature Spec or starting Tasks `.2` through `.6`.
+
+Active phase: `janus-final-audit`, canonical state `HANDOFF` to `janus-documentation-update`.
+
+Last Codex work:
+- reviewed the prior blocker delta before widening to the bound Task `.1` nonregression scope
+- independently reran the exact latest-version regression and original executable reproducer
+- confirmed zero OpenRouter entries in the production model catalog and an empty production certification registry
+- accepted the inherited/manual evidence plus final-code headed live regression for the narrowed alias-only fix
+- replaced the prior blocked audit result with a validated PASS result while preserving the prior blocker history and its resolution
+- explicitly kept the parent Feature Spec partial because Tasks `.2` through `.6` remain excluded
+
+Changed files:
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1_final_audit.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- audit package completeness/inventory: PASS
+- blocker-delta code/test review: PASS
+- independent regression rerun: PASS (`1 passed in 0.16s`)
+- original audit reproducer: PASS (`{}`)
+- production catalog OpenRouter count: PASS (`0`)
+- production registry empty: PASS
+- inherited final-code focused Pytest: PASS (`18 passed`)
+- inherited final-code compile/JSON/diff checks: PASS
+- inherited final-code headed Playwright: PASS (`10 passed`)
+- final-audit validator: PASS
+- scoped whitespace/error check: PASS
+
+Open risks:
+- documentation/tracking synchronization for Task `.1` remains pending
+- parent OpenRouter Feature Spec is intentionally partial; Tasks `.2` through `.6` remain unimplemented and unreleased
+- known Vector/Torchvision/embedding degrade warnings remain non-blocking and outside the audited boundary
+- generated Playwright/test report artifacts remain outside the Task `.1` commit scope
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this PASS result
+
+Next recommended step for ChatGPT: treat Task `.1` as final-audit PASS but keep the overall OpenRouter feature partial and production-disabled.
+
+Next recommended step for Codex: run `janus-documentation-update` for Task `.1` only; synchronize task/spec-partial/registry/changelog or project-state markers required by the pipeline, then return to `janus-git-governance` for a targeted commit proposal.
+
+Last updated: `2026-07-16 20:05:04 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-16 20:02:53 +02:00`, the bounded `LATEST_MODEL_VERSION_NOT_FAIL_CLOSED` repair for `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1` is complete and fully revalidated. Registry and release-catalog `model_version` values containing a `latest` alias now fail closed, the missing integrated regression is present, and the compact audit package has been refreshed for same-scope re-audit.
+
+Current goal: perform the blocker-delta-first independent re-audit for exactly Task `.1` without widening into Tasks `.2` through `.6`.
+
+Active phase: `janus-executioner` blocker repair complete, canonical state `HANDOFF` to same-scope `janus-final-audit`.
+
+Last Codex work:
+- validated the existing single-task precheck and kept the fix local because delegation overhead exceeded the two-file delta
+- rejected `latest` aliases at both the certification-record model-version boundary and the release-catalog model-version boundary
+- added an integrated regression with matching release/registry `model_version: "latest"`
+- proved the original audit reproducer now returns an empty catalog result
+- reran the complete focused, syntax/JSON, diff, and headed existing-provider evidence on final code
+- updated the execution result and rebuilt the existing compact audit package with only the blocker delta
+
+Changed files:
+- `backend/utils/config_loader.py`
+- `backend/tests/test_openrouter_certification_registry.py`
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1_execution_result.md`
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1_AUDIT_PACKAGE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- precheck handoff literals: PASS
+- new latest-model-version regression: PASS
+- original audit reproducer: PASS (`{}`)
+- focused Pytest: PASS (`18 passed in 0.56s`)
+- Python compilation and packaged JSON parsing: PASS
+- scoped `git diff --check`: PASS
+- final headed Playwright existing-provider regression: PASS (`10 passed in 8.2m`)
+- execution-result validator: PASS
+- audit-package required-field scan: PASS
+
+Open risks:
+- same-scope independent re-audit remains pending until the next skill completes
+- production registry remains intentionally empty; Tasks `.2` through `.6` remain excluded and unreleased
+- known Vector/Torchvision/embedding degrade warnings remain non-blocking but visible in headed startup logs
+- generated Playwright/test report paths are validation artifacts and remain outside the Task `.1` commit scope
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this repaired snapshot
+
+Next recommended step for ChatGPT: treat the original final-audit blocker as repaired with final-code evidence, pending the bounded re-audit decision.
+
+Next recommended step for Codex: run `janus-final-audit` blocker-delta-first against `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1_AUDIT_PACKAGE.md`; if PASS, route to `janus-documentation-update` before Git preparation.
+
+Last updated: `2026-07-16 20:02:53 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-16 19:46:53 +02:00`, the independent final audit for exactly `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1` is `BLOCKED` by one executable fail-closed gap: `model_version: "latest"` is accepted when the release catalog and certification record match, even though the bound Task and approved Spec require a concrete version and hide `latest`-based bindings.
+
+Current goal: repair only `LATEST_MODEL_VERSION_NOT_FAIL_CLOSED`, add the missing regression, rerun the bound final-code evidence, and update the existing audit package for same-scope re-audit.
+
+Active phase: `janus-final-audit`, canonical state `BLOCKED`, handoff to `janus-executioner` for one blocker-focused delta.
+
+Last Codex work:
+- audited only the compact Task `.1` package and its named changed artifacts
+- verified package completeness, scope, precheck compliance, production-empty registry, loader/API authority sharing, and existing evidence
+- reran focused Pytest, Python/JSON checks, and scoped diff validation
+- reproduced that `_filter_openrouter_catalog()` returns an OpenRouter model when both release and registry use `model_version: "latest"`
+- searched `WHAT_I_LEARNED.md` for matching fail-closed/version-binding tripwires
+- wrote and validated a blocker-focused final-audit artifact; no product or test fix was applied
+
+Changed files:
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1_final_audit.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- audit-package completeness: PASS
+- focused Pytest: PASS (`17 passed in 0.51s`), but missing the failing model-version alias case
+- Python compilation and JSON parsing: PASS
+- scoped `git diff --check`: PASS
+- inherited headed Playwright evidence: PASS (`10 passed`)
+- inherited manual Janus evidence: PASS
+- executable `model_version: "latest"` tripwire: FAIL (entry remains visible)
+- targeted WHAT_I_LEARNED search: PASS; no more specific validated registry pattern superseded the bound acceptance criteria
+
+Open risks:
+- Task `.1` cannot pass final audit or be committed as completed until the exact-version gap is fixed and evidenced
+- the fix must not select a real model, populate the production registry, or enter Tasks `.2` through `.6`
+- unrelated parked worktree changes remain outside scope
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this audit result
+
+Next recommended step for ChatGPT: treat Task `.1` as locally implemented but final-audit blocked by `LATEST_MODEL_VERSION_NOT_FAIL_CLOSED`.
+
+Next recommended step for Codex: run a bounded `janus-executioner` blocker fix in `backend/utils/config_loader.py` and `backend/tests/test_openrouter_certification_registry.py`, update the existing audit package with the delta and final-code evidence, then re-run same-scope `janus-final-audit`.
+
+Last updated: `2026-07-16 19:46:53 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-16 19:40:41 +02:00`, the interrupted OpenRouter Task `.1` Git attempt has been recovered read-only. No commit was created, `master` remains at `c1fab7406`, the real index has zero staged paths, and no `.git/index.lock` remains. The OpenRouter implementation and bound evidence artifacts are still present locally.
+
+Current goal: complete the pending independent final audit for exactly `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1` before preparing a targeted Solo Git v2 commit.
+
+Active phase: `janus-git-governance` recovery complete, canonical state `HANDOFF` back to `janus-final-audit`.
+
+Last Codex work:
+- confirmed that the interrupted attempt produced no commit and left no staged paths or persistent index lock
+- confirmed that the configured pre-commit hook and repository `git_guard.py` exist
+- confirmed that no Task `.1` final-audit result exists yet; the compact audit package still says independent final audit pending
+- preserved all product code, tests, task artifacts, unrelated parked dirt, remotes, and branches without staging, commit, push, merge, sync, reset, or cleanup
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- start-of-work healthcheck reminder: CLEAR
+- branch / HEAD / reflog recovery check: PASS (`master`, `c1fab7406`)
+- real index staged-path check: PASS (`0`)
+- persistent `.git/index.lock` check: PASS (absent)
+- OpenRouter Task `.1` audit-artifact scan: PASS (package present, final audit still pending)
+- pre-commit hook and repo guard presence check: PASS
+
+Open risks:
+- the exact terminal error from the closed Codex session is unavailable, so its message cannot be recovered verbatim
+- the dirty worktree contains unrelated parked changes; any later commit must use explicit Task `.1` pathspecs and pass the staged Git guard
+- final audit remains pending, so commit preparation is not yet the recommended gate
+- no push or `origin/codex-sync` update occurred; remote state does not contain this recovery snapshot
+
+Next recommended step for ChatGPT: treat the local implementation as preserved but unaudited; do not infer a successful commit from the interrupted attempt.
+
+Next recommended step for Codex: run `janus-final-audit` against only `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1_AUDIT_PACKAGE.md`; after PASS, return to `janus-git-governance` for an explicit-path commit proposal and request `commit: YES`.
+
+Last updated: `2026-07-16 19:40:41 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-16 19:24:25 +02:00`, the operator confirmed that the Task `.1` Janus runtime behavior appears to work as intended. Manual Janus Validation is now `PASS`, the execution result is `HANDOFF`, and a compact scoped audit package has been built and verified for independent final audit.
+
+Current goal: independently audit exactly `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1` from the compact package without loading development chat history or parent-feature Tasks `.2` through `.6`.
+
+Active phase: `codex-audit-package-builder` complete, canonical state `HANDOFF` to `janus-final-audit`.
+
+Last Codex work:
+- recorded the operator's manual Janus validation as `PASS`
+- changed the execution result from `NEEDS_INFO` to `HANDOFF`
+- built `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1_AUDIT_PACKAGE.md` with only the bound Spec, Task `.1`, precheck, execution evidence, changed implementation/test paths, risks, and final-audit handoff
+- excluded unrelated dirty-worktree paths and development conversation history from the audit boundary
+- verified execution-result validity, audit artifact inventory, required package fields, and scoped diff cleanliness
+- made no product-code delta, Git, sync, release, provider, account, credential, or production action in this closure block
+
+Changed files:
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1_execution_result.md`
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1_AUDIT_PACKAGE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- Manual Janus Validation Gate: PASS (operator reports expected behavior)
+- execution-result validator: PASS
+- audit package required-field scan: PASS
+- audit artifact inventory: PASS
+- scoped `git diff --check`: PASS
+- inherited automated evidence remains PASS: focused Pytest `17 passed`, headed Playwright `10 passed`, Python/JSON checks PASS
+
+Open risks:
+- independent final audit remains pending and must use only the compact audit package
+- production OpenRouter registry remains intentionally empty until Task `.6`; no model is certified or enabled by Task `.1`
+- known Vector/Torchvision/embedding degrade warnings were non-blocking during the green headed run
+- parent-feature Tasks `.2` through `.6` remain out of scope and unreleased
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this package or latest snapshot
+
+Next recommended step for ChatGPT: start a new isolated audit chat with `5.6 Sol/high`, or `5.6 Terra/high` with `SOL_UNAVAILABLE_FOR_CHATGPT_CODEX_ACCOUNT` if Sol cannot be started, and load only `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1_AUDIT_PACKAGE.md`.
+
+Next recommended step for Codex: run `janus-final-audit` against the compact package only; do not implement fixes unless the independent audit returns `PASS WITH FIXES` and a separate authorized fix slice is opened.
+
+Last updated: `2026-07-16 19:24:25 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-16 19:13:04 +02:00`, exactly `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1` is implemented and automatically verified. The packaged release registry is now the sole fail-closed OpenRouter certification authority across both catalog loaders and `/api/models/catalog`; the production registry remains empty, so no real OpenRouter model is certified or visible. The mandatory manual Janus runtime check is still pending.
+
+Current goal: obtain the operator's manual confirmation that Janus starts normally, existing providers remain unchanged, and no OpenRouter model is visible before Task `.6`.
+
+Active phase: `janus-executioner`, canonical state `NEEDS_INFO`, Manual Janus Validation Gate `PENDING_USER_TEST`.
+
+Last Codex work:
+- added a packaged empty OpenRouter certification registry under `backend/config`
+- made certification depend only on an exact release-owned model/version/battery/passed-evidence binding and fail closed for missing, malformed, duplicate, incomplete, failed, alias-based, or mismatched data
+- prevented AppData overrides, user-injected models, and lifecycle-appended runtime models from granting OpenRouter visibility
+- unified the service catalog with the filtered config-loader result and preserved normal non-OpenRouter merge behavior
+- added isolated registry, loader-parity, API-parity, lifecycle-injection, and MOA-noninterference tests
+- ran the complete bound automated gate, including headed Playwright on the final code
+- created the canonical execution-result artifact; no Git, sync, release, provider, account, credential, or production action occurred
+
+Changed files:
+- `backend/config/openrouter_certified_models.json`
+- `backend/utils/config_loader.py`
+- `backend/services/model_catalog.py`
+- `backend/api/routers/system.py`
+- `backend/tests/test_openrouter_certification_registry.py`
+- `backend/tests/test_model_hierarchy_single_source.py`
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/codex/model-routing/cursor_delegation_log.jsonl`
+
+Checks / validation performed:
+- focused Pytest: PASS (`17 passed in 0.52s`)
+- Python syntax compilation: PASS
+- packaged catalog and registry JSON parsing: PASS
+- scoped `git diff --check`: PASS
+- headed Playwright existing-provider regression: PASS (`10 passed (5.6m)`)
+- final scope review: PASS; production registry empty, no real candidate, no later-task implementation
+
+Open risks:
+- Manual Janus Validation Gate remains `PENDING_USER_TEST`; the operator must confirm normal startup, unchanged existing provider/model choices, and zero visible/selectable OpenRouter models
+- known Vector/Torchvision/embedding degrade warnings appeared during the green Playwright run but did not block backend startup or any test
+- Tasks `.2` through `.6` remain unreleased; real candidate selection and certification evidence remain exclusively Task `.6`
+- unrelated pre-existing worktree changes remain untouched and outside this execution scope
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this implementation or newest snapshot
+
+Next recommended step for ChatGPT: preserve Task `.1` as automatically green but not audit-ready until the operator confirms the manual Janus runtime result.
+
+Next recommended step for Codex: after operator `PASS`, use `codex-audit-package-builder`, then route the compact package to independent `janus-final-audit`; on any mismatch, use `janus-debug`.
+
+Last updated: `2026-07-16 19:13:04 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-16 18:43:20 +02:00`, the preimplementation check for exactly `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1` passed. A validated execution handoff now binds seven files, one release-owned certification authority, parity across both catalog loaders and `/api/models/catalog`, an empty/non-certified production registry, and strict stop gates against AppData authority, real candidate selection, or later-task scope.
+
+Current goal: implement exactly `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1` from the passed precheck and produce automated evidence without touching real model candidates or later tasks.
+
+Active phase: `janus-preimplementation-check` passed, canonical state `HANDOFF` to `janus-executioner`.
+
+Last Codex work:
+- verified the approved Spec, refined Task `.1`, target identity, assigned model, atomic scope, binary acceptance criteria, tests, exclusions, and risk gates
+- confirmed one shared filtered catalog decision is implementable by keeping release certification in packaged `backend/config` and having the second service loader consume the filtered config-loader result
+- confirmed `janus_backend.spec` already bundles `backend/config`, so no new packaging architecture or mutable AppData authority is required
+- confirmed relevant product/config/test files are clean despite unrelated existing worktree changes, which remain out of scope
+- bound focused Pytest, Python/JSON syntax, scoped diff, and headed existing-provider regression commands as mandatory execution evidence
+- wrote and validated the canonical precheck artifact with all required Skill-4 handoff literals
+- selected local Codex operator choice 1; no OpenRouter or Cursor delegation occurred
+- made no product-code, test-code, configuration, implementation, test execution, Git, sync, release, provider call, account, credential, or production changes
+
+Changed files:
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1_precheck.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- artifact identity and exactly one target: PASS
+- relevant worktree-scope check: PASS (bound product/config/test files clean)
+- shared catalog authority implementability: PASS
+- AppData/remote/cache/no-real-candidate stop gates: PASS
+- concrete unit/syntax/JSON/Playwright/diff evidence plan: PASS
+- native precheck validator: PASS
+- scoped whitespace/error check: PASS
+
+Open risks:
+- execution must stop if one shared filtered authority cannot cover both loader paths and the API without architecture drift
+- execution must prove AppData, cached last-known data, aliases, malformed/duplicate registry content, and version changes remain fail-closed
+- Task `.1` must leave the production registry empty or non-certified and must not select real model IDs or define the Task `.6` battery
+- Tasks `.2` through `.6` remain unreleased; Task `.3` still requires `5.6 Sol` when separately reached
+- the Spec, Decision Summary, compiled task, breakdown, and precheck are currently untracked in the local Git worktree; no Git action was authorized
+- no commit, push, or `origin/codex-sync` update occurred, so remote state may not contain this passed precheck
+
+Next recommended step for ChatGPT: preserve the passed single-target handoff and do not add model candidates, battery content, or later-task requirements during execution.
+
+Next recommended step for Codex: run `janus-executioner` with `5.6 Terra/high` from `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1_precheck.md`, implement exactly Task `.1`, and execute every bound evidence command.
+
+Last updated: `2026-07-16 18:43:20 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-16 18:21:47 +02:00`, the bounded `janus-spec-generator` revision is complete after the operator selected Option A. Invalid OpenRouter key/model state now preserves the visible provider/model selection in a disabled state, and the four independent review findings are deterministically bound in the Decision Summary and canonical Spec.
+
+Current goal: independently re-review the revised OpenRouter Janus chat-provider Feature Spec before any task compilation.
+
+Active phase: `janus-spec-generator` revision complete, canonical state `HANDOFF` to fresh `janus-spec-review`.
+
+Last Codex work:
+- recorded operator choice A: invalid key/model state preserves the visible selection disabled, with no automatic clearing or replacement
+- defined key eligibility as `VALID` only after content-free authenticated validation; auth rejection becomes `INVALID`, incomplete validation becomes `UNVERIFIED`, and only `VALID` unlocks chat
+- defined the shipped exact-model/version/battery certification record plus fully passed mandatory test/audit evidence as the sole runtime certification authority and bound invalidation rules
+- mapped current official OpenRouter chat-completion response fields to DeepDive: model identity, prompt/completion/total/cache/cache-write/reasoning tokens, charged credits, and upstream inference cost; missing fields remain individually unavailable with no derivation or conversion
+- increased the internally consistent complexity score to `80` and retained `5.6 Sol/high` for independent re-review
+- made no tasks, implementation, architecture code, Git, sync, release, provider call, account, credential, or production changes
+
+Changed files:
+- `documentation/tasks/OPENROUTER_JANUS_CHAT_PROVIDER_decision_summary.md`
+- `documentation/SPEC/OPENROUTER_JANUS_CHAT_PROVIDER_FEATURE_SPEC.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- operator Option A capture: PASS
+- official OpenRouter key-status endpoint and chat-completion usage schema check: PASS
+- four review-finding contracts present: PASS
+- native Feature Spec validator: PASS
+- native Spec review metadata validator: PASS
+- routing/complexity consistency: PASS (`80`, `5.6 Sol/high`, `HIGH`, `CRITICAL`)
+- scoped whitespace/error check: PASS
+
+Open risks:
+- the existing `NEEDS_REVISION` review metadata intentionally remains historical until a fresh independent re-review approves or blocks the revised Spec
+- exact launch model IDs remain time-sensitive checked-update content and are not selected by this Spec revision
+- implementation must not silently enable OpenRouter's optional cross-model fallback behavior or derive missing telemetry values
+- no commit, push, or `origin/codex-sync` update occurred, so remote state may not contain this revision
+
+Next recommended step for ChatGPT: preserve Option A and treat the revised Spec as pending fresh independent review, not task-ready yet.
+
+Next recommended step for Codex: run fresh independent `janus-spec-review` with `5.6 Sol/high` against only `documentation/SPEC/OPENROUTER_JANUS_CHAT_PROVIDER_FEATURE_SPEC.md`.
+
+Last updated: `2026-07-16 18:21:47 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-16 17:34:20 +02:00`, Cursor completed the Hermes feasibility review with recommendation `NOT_VIABLE`. The operator then locked product direction: **Stay on Option A (upstream-wait)**; **reject B** (Hermes-artige `chatgpt.com/backend-api/codex`); **reject D** (OAuth App-Server chat that allows Codex-native tools). Codex recorded and locally checkpointed this reaffirmation without changing product scope or implementation authority.
 
 Current goal: reaffirm Task `.4` blocked upstream-wait; preserve Tasks `.1`-`.3` foundation; keep ChatGPT production default-deny; no Hermes and no Janus-only-boundary weakening.

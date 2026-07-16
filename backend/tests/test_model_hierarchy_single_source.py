@@ -27,6 +27,7 @@ def test_shared_hierarchy_matches_approved_phase_a_mapping():
         },
     }
     assert "fast" in _VALID_TIERS
+    assert "openrouter" not in MOA_MODEL_HIERARCHY
 
 
 def test_chat_orchestrator_has_no_runtime_model_hierarchy_definition():
