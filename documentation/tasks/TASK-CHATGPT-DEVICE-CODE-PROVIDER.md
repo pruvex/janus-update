@@ -2,7 +2,7 @@ TASK-CHATGPT-DEVICE-CODE-PROVIDER
 - Source Spec: `documentation/SPEC/CHATGPT_OFFICIAL_DEVICE_CODE_PROVIDER_REDESIGN_FEATURE_SPEC.md`
 - Backlog Item: N/A
 - Feature: ChatGPT über offiziellen Codex-Device-Code als separate Janus-Provideroption
-- Generated At: 2026-07-14 23:30:26 +02:00
+- Generated At: 2026-07-16 16:25:45 +02:00
 
 ## Generated Tasks
 
@@ -82,32 +82,50 @@ TASK-CHATGPT-DEVICE-CODE-PROVIDER
 - Model: 5.6 Terra
 - Reason: Provider- und Modellintegration mit klarer fail-closed Produktlogik auf vorhandenen Katalog- und Dropdown-Flächen.
 
-### TASK-CHATGPT-DEVICE-CODE-PROVIDER.4 Chat-Transport, Kontextfortsetzung und Datenschutz-Gate anbinden
-- Ziel: ChatGPT als echten Janus-Chatprovider nutzbar machen und den Wechsel mitten im Chat mit erforderlichem Kontext sowie einmaliger Datenschutzbestätigung absichern.
-- Scope: Provider-Transport, bestehender Chatkontext, sichtbarer aktiver Provider, bestätigungsgebundene erste Übermittlung und unveränderte API-Key-Provider; keine Produktionsaktivierung ohne finalen Evidenz-Task.
-- Files: `backend/llm_providers/runtime_llm.py`, `backend/services/chat_orchestrator.py`, `frontend/js/chat.js`, `frontend/js/beta-privacy-notice.js`, `backend/tests/test_context_privacy_externalization_boundary.py`, `backend/tests/test_provider_parity.py`, `backend/tests/test_provider_auth_fallback.py`, `tests/e2e/codex-connection-settings.spec.js`
+### TASK-CHATGPT-DEVICE-CODE-PROVIDER.4 Sicheren App-Server-Chattransport mit Janus-Tools und Datenschutz-Gate anbinden
+- Compilation Status: BLOCKED - `UPSTREAM_DYNAMIC_TOOLS_ONLY_MODE_ABSENT`
+- Ziel: Die Janus-only Toolgrenze unverändert erhalten und den pro Turn temporären App-Server-Chattransport erst dann implementieren, wenn ein offizieller Runtime-Stand ausschließlich Janus-Client-Tools vor dem Modelldispatch zulässt.
+- Scope: Vorgelagertes offizielles Dynamic-Tools-only- oder vollständiges Core-Tool-Allowlist-Gate; nach erfolgreichem Re-entry weiterhin experimenteller Client-Tool-Vertrag mit exakter Laufzeitkompatibilitätsprüfung, App-Server-Thread/Turn/Interrupt-Lifecycle, eigener ChatGPT-Transport und Gateway-Silo, Janus-Toolausführung, redigierter Janus-Kontext, Text-Streaming, Datenschutz-Gate, Abbruch und Fehlerisolation. Kein Codex-eigenes Tool einschließlich `update_plan`, keine Janus-gepatchte oder geforkte Runtime, keine dauerhafte Codex-Historie, kein degradierter Textmodus, kein API-Key-Fallback und keine Produktionsaktivierung vor Task `.5`.
+- Files: `backend/llm_providers/codex_app_server.py`, `backend/llm_providers/transports/codex_app_server.py` (neu), `backend/llm_providers/chatgpt/gateway.py` (neu), `backend/llm_providers/runtime_llm.py`, `backend/services/llm_gateway.py`, `backend/services/chat_orchestrator.py`, `backend/data/schemas.py`, `frontend/index.html`, `frontend/js/chat.js`, `frontend/js/beta-privacy-notice.js`, `documentation/beta/BETA_PRIVACY_NOTICE.md`, `backend/tests/test_codex_app_server.py`, `backend/tests/test_context_privacy_externalization_boundary.py`, `backend/tests/test_provider_parity.py`, `backend/tests/test_provider_auth_fallback.py`, `tests/e2e/codex-connection-settings.spec.js`
 - Steps:
-  1. Den ChatGPT-Provider in den bestehenden Runtime- und Orchestrator-Pfad einbinden, ohne API-Key-Provider als Fallback oder Ersatz zu verwenden.
-  2. Beim Providerwechsel den für die Fortsetzung benötigten bestehenden Janus-Gesprächskontext an ChatGPT übergeben.
-  3. Den aktiven Provider während und nach dem Wechsel sichtbar halten.
-  4. Vor der ersten ChatGPT-Inhaltsübertragung die bestätigte Datenschutzinformations-Version prüfen und ohne gültige Bestätigung fail-closed blockieren.
-  5. Eine Bestätigung bei unveränderter Datenschutzinformation wiederverwenden und nach wesentlicher Versionsänderung erneut verlangen.
-  6. Authentifizierungs-, Modell- und Transportfehler ausschließlich auf ChatGPT begrenzen; andere Provider bleiben nutzbar.
+  1. Task `.4` blockiert lassen, solange kein offizieller Runtime-Stand einen nachweisbaren Dynamic-Tools-only-Modus oder eine vollständige Core-Tool-Allowlist bereitstellt. Ein Versionsupdate, experimentelles Feld, Promptverbot, Read-only-Sandbox, Approval-Ablehnung oder Eventfilterung genügt nicht.
+  2. Für einen künftigen exakten offiziellen Runtime-Stand account-frei und ausführbar belegen, dass vor dem Modelldispatch ausschließlich Janus-Client-Tools angeboten werden und weder `update_plan` noch eine andere Codex-native Aktionsoberfläche verbleibt.
+  3. Erst nach dieser Evidenz einen frischen `janus-preimplementation-check` ausführen. Nur dessen grünes Ergebnis darf die nachfolgenden Implementierungsschritte freigeben; bis dahin endet der Task an diesem Gate.
+  4. Nach grüner Re-entry-Freigabe die App-Server-Laufzeit zusätzlich gegen den erwarteten Thread-/Turn-, Client-Tool-Call-, Client-Tool-Response- und Interrupt-Vertrag prüfen; fehlende, veränderte oder nicht prüfbare Unterstützung macht ChatGPT vollständig nicht verfügbar.
+  5. Den App-Server-Client um einen pro Janus-Turn neu erzeugten temporären Gesprächskontext, Text-Streaming, Turn-Abbruch und bereinigte Protokollfehler erweitern; keine Codex-Thread-ID oder zweite Historie persistieren.
+  6. Einen ChatGPT-Transportadapter und ein eigenes Gateway-Silo in die bestehende Runtime-/Gateway-Auflösung einbinden. Die produktive Auflösung bleibt bis Task `.5` default-deny; Task `.4` darf den Pfad nur über explizit injizierte Testevidenz aktivieren.
+  7. Ausschließlich die bereits von Janus ausgewählten und erlaubten Tooldefinitionen als Client-Tools anbieten. Client-Tool-Aufrufe nur über den bestehenden `ToolExecutor` und dessen Berechtigungs-/Bestätigungsregeln ausführen, unbekannte oder nicht erlaubte Tools fail-closed ablehnen und nur redigierte Ergebnisse zurückgeben.
+  8. Nur Agent-Text und Janus-kontrollierte Toolstatus in das vorhandene Janus-Streaming übersetzen. Jede Codex-native Aktionsanforderung unterbricht den aktuellen Turn mit nicht-sensitiver Meldung und darf weder ausgeführt noch als Erfolg behandelt werden.
+  9. Für jeden Turn ausschließlich den benötigten, von Janus zusammengestellten und redigierten Verlauf übertragen. Vor der ersten Externalisierung die aktuelle bestätigte Datenschutzinformations-Version auch am Backend-Vertrag prüfen; ohne gültigen Nachweis wird kein Thread/Turn gestartet und nichts übertragen.
+  10. Die Datenschutzinformation und ihre Version so aktualisieren, dass aktuelle Nachricht, benötigter Verlauf, Janus-/Skill-Anweisungen sowie erforderliche Tool-Eingaben und -Ergebnisse ausdrücklich genannt werden. Ablehnung oder Schließen erhält Entwurf und Auswahl ohne Versand.
+  11. Nutzerabbruch in einen App-Server-Turn-Abbruch übersetzen und Transport-, Vertrags-, Tool-, Authentifizierungs- und Modellfehler auf den aktuellen ChatGPT-Turn begrenzen. Keine automatische Wiederholung, doppelte Übertragung, Providerumschaltung oder Veränderung einer anderen Verbindung.
 - Acceptance Criteria:
-  - Ein Nutzer kann mitten im bestehenden Chat zu ChatGPT wechseln und mit dem benötigten bisherigen Kontext weiterarbeiten.
-  - Vor der ersten ChatGPT-Inhaltsübertragung erfolgt ohne gültige Datenschutzbestätigung kein externer Versand.
-  - Bei unveränderter bestätigter Datenschutzinformation unterbrechen spätere Providerwechsel den Chat nicht erneut.
-  - Nach einer wesentlichen Datenschutzinformationsänderung wird vor der nächsten ChatGPT-Übertragung erneut bestätigt.
-  - Der aktive Provider bleibt eindeutig sichtbar.
-  - ChatGPT-Fehler lösen keinen API-Key-Fallback aus und verändern keine andere Providerverbindung.
+  - Solange der exakte offizielle Runtime-Stand keinen nachweisbaren Dynamic-Tools-only-Modus oder keine vollständige Core-Tool-Allowlist bietet, bleibt Task `.4` blockiert und es beginnt keine Produktimplementierung.
+  - Ein künftiger Re-entry ist nur zulässig, wenn account-freie ausführbare Evidenz für den exakten offiziellen Runtime-Stand belegt, dass ausschließlich Janus-Client-Tools vor dem Modelldispatch angeboten werden und kein `update_plan` oder anderes Codex-natives Aktionstool verbleibt.
+  - Auch bei vorhandener Upstream-Evidenz beginnt keine Implementierung, bevor ein frischer `janus-preimplementation-check` PASS meldet.
+  - Eine Janus-gepatchte oder geforkte Codex-Runtime, die Zulassung von `update_plan`, eine abgeschwächte Janus-only Grenze oder ein degradierter Ersatzpfad erfüllen das Re-entry-Gate nicht.
+  - ChatGPT löst nur bei gültiger Janus-Verbindung, aktuell verifiziertem Modell, gültiger Datenschutzbestätigung, exakt kompatiblem Client-Tool-Vertrag und nachgewiesener harter Native-Aktionssperre in den testgebundenen Transport auf.
+  - Fehlende, veränderte oder nicht prüfbare experimentelle Client-Tool-Unterstützung hält ChatGPT vollständig nicht nutzbar; es gibt keinen reduzierten textbasierten Ersatzmodus.
+  - Jeder ChatGPT-Turn verwendet einen neuen temporären App-Server-Gesprächskontext und hinterlässt keine persistierte Codex-Thread-ID oder parallele Codex-Historie.
+  - Der übertragene Kontext entspricht ausschließlich dem für denselben Turn benötigten, redigierten Janus-Kontext; der aktive Provider bleibt sichtbar.
+  - ChatGPT erhält nur von Janus erlaubte Tooldefinitionen. Tool-Aufrufe laufen durch denselben `ToolExecutor` und dieselben Berechtigungs-/Bestätigungsregeln wie bei API-Key-Providern.
+  - Codex-eigene Shell-, Datei-, Approval-, MCP-, App-, Web-, Subagenten- oder sonstige Agentenaktionen werden nicht ausgeführt. Eine Anforderung beendet nur den aktuellen Turn fail-closed und wird nicht als Erfolg behandelt.
+  - Ohne gültige aktuelle Datenschutzbestätigung startet kein App-Server-Thread oder -Turn und es wird kein Chat-, Kontext-, Skill- oder Toolinhalt extern übertragen.
+  - Die Datenschutzinformation nennt aktuelle Nachricht, benötigten Verlauf, Janus-/Skill-Anweisungen sowie erforderliche Tool-Eingaben und -Ergebnisse; unveränderte Versionen werden wiederverwendet und wesentliche Änderungen verlangen erneut Zustimmung.
+  - Ablehnung, Schließen, Nutzerabbruch oder Transportfehler erhalten Janus-Verlauf, Entwurf, Providerwahl und Anmeldung; es gibt keine automatische Wiederholung, doppelte Übertragung oder API-Key-Provider-Fallback.
+  - Der ChatGPT-Pfad bleibt nach Task `.4` produktiv default-deny. Nur explizit injizierte Testevidenz darf ihn in gebundenen Tests aktivieren; Task `.5` bleibt das einzige Produktions-Aktivierungsgate.
+  - Bestehende API-Key-Provider, ihre Modelle, Zugangsdaten, Toolregeln und Providerwechsel verhalten sich unverändert.
 - Tests:
-  - Orchestrator- und Provider-Paritätstests für ChatGPT-Auswahl, Kontextfortsetzung und Fehlerisolation.
-  - Privacy-Externalization-Tests für Erstbestätigung, Wiederverwendung, Versionsänderung und blockierten Versand.
-  - E2E-Wechsel zwischen vorhandenem Provider und ChatGPT innerhalb desselben Chats.
-  - Regression für bestehende API-Key-Provider und deren Authentifizierungsverhalten.
-  - Scoped `git diff --check` und Syntaxprüfungen.
-- Model: 5.6 Terra
-- Reason: Komplexe, aber deterministisch spezifizierte Provider-/Orchestrator-Integration mit Privacy-Gate.
+  - Upstream-Re-entry-Evidenz für den exakt gebundenen offiziellen Runtime-Stand: account-freier ausführbarer Nachweis, dass ausschließlich Janus-Client-Tools angeboten werden und `update_plan` sowie alle anderen Codex-nativen Aktionsoberflächen fehlen; ohne PASS keine weiteren Task-Tests und keine Implementierung.
+  - App-Server-Vertragstests für kompatiblen und fehlenden/veränderten Client-Tool-Vertrag, temporären Thread, Textdelta, Client-Tool-Call/Response, unerwartete Codex-Aktion, Turn-Abbruch, Protokollfehler, Redaktion und produktiven Default-Deny in `backend/tests/test_codex_app_server.py`.
+  - Privacy-Externalization-Tests für Backend-vor-Thread-Gate, Erstbestätigung, Wiederverwendung, Versionsänderung, Ablehnung/Schließen und expliziten Offenlegungstext in `backend/tests/test_context_privacy_externalization_boundary.py`.
+  - Provider-Paritäts- und Tooltests für Janus-Tooldefinitionen, bestehende `ToolExecutor`-Berechtigungen, redigierte Ergebnisse, unbekannte Tools, Text-Streaming und Native-Aktionssperre in `backend/tests/test_provider_parity.py`.
+  - Auth-/Fallback-Regression für keine API-Key-Abhängigkeit, keine automatische Umschaltung und unveränderte OpenAI-/Gemini-/Ollama-Zugangsdaten in `backend/tests/test_provider_auth_fallback.py`.
+  - Headed E2E für Providerwechsel im bestehenden Chat, Kontextfortsetzung, Privacy-Ablehnung/-Bestätigung/-Versionswechsel, sichtbaren Provider, Janus-Toolstatus, Abbruch, Transportfehler und erhaltenen Entwurf in `tests/e2e/codex-connection-settings.spec.js`.
+  - Precheck-Evidenz für die offiziell unterstützte harte Abschaltung sämtlicher Codex-nativer Aktionsflächen; bei fehlendem ausführbarem Nachweis bleibt der Task blockiert.
+  - Python-/JavaScript-Syntaxprüfungen, fokussierte Tests und scoped `git diff --check`; keine Konto-, Nachrichten- oder Produktionsaktion in automatisierten Gates.
+- Model: 5.6 Sol
+- Reason: Sicherheitskritische experimentelle App-Server-Integration bleibt wegen `UPSTREAM_DYNAMIC_TOOLS_ONLY_MODE_ABSENT` blockiert. 5.6 Sol/high ist für einen künftigen Re-entry vorgesehen; 5.6 Terra/high nur als dokumentierter Fallback, falls Sol nicht verfügbar ist.
 
 ### TASK-CHATGPT-DEVICE-CODE-PROVIDER.5 Evidenzgebundenes Produktions-Aktivierungsgate implementieren
 - Ziel: Die vollständige ChatGPT-Funktion erst nach reproduzierbarer automatisierter Evidenz und bestandenem realem Zwei-Konten-Test aus dem Default-Deny-Zustand freigeben.
@@ -168,5 +186,15 @@ TASK-CHATGPT-DEVICE-CODE-PROVIDER
 - **Security Boundary:** Provider/model eligibility derives only from the active Janus-owned current `model/list` verification; empty, failed, expired, absent, or stale verification remains fail-closed; status and UI errors stay non-sensitive.
 - **Provider Safety:** Existing API-key providers, models, Settings lifecycle, and hierarchy remain unaffected; the E2E runner isolates `GET`/`PUT /api/last-used-model`; stale persisted ChatGPT selection self-heals to an existing provider/model.
 - **Production State:** DEFAULT-DENY; Task `.4` owns ChatGPT transport/context/privacy and Task `.5` owns evidence-bound production activation.
+
+### TASK-CHATGPT-DEVICE-CODE-PROVIDER.4
+
+- **Status:** BLOCKED
+- **Failure Code:** `UPSTREAM_DYNAMIC_TOOLS_ONLY_MODE_ABSENT`
+- **Decision At:** 2026-07-16
+- **Locked Choice:** Auf offiziellen Dynamic-Tools-only- oder vollständigen Core-Tool-Allowlist-Support warten.
+- **Rejected Alternatives:** Keine Janus-gepatchte oder geforkte Runtime, keine Zulassung von `update_plan`, keine Abschwächung der Janus-only Grenze und kein degradierter Text-, Tool- oder Provider-Fallback.
+- **Re-entry Gate:** Account-freie ausführbare Evidenz gegen den exakten offiziellen Runtime-Stand und danach ein frischer grüner `janus-preimplementation-check`.
+- **Production State:** DEFAULT-DENY; Task `.5` bleibt der einzige spätere Produktions-Aktivierungsschritt.
 - **Evidence:** `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.3_final_audit.md`; `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.3_AUDIT_PACKAGE.md`; `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.3_execution_result.md`
 - **Remaining Tasks:** `.4` and `.5` remain open. The parent Feature Spec is not DONE.

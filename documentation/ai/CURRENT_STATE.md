@@ -1,6 +1,664 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-16 16:55:15 +02:00`, the existing Task `.4` artifact is reconciled with the independently approved upstream-wait Spec amendment. Task `.4` now starts with `BLOCKED: UPSTREAM_DYNAMIC_TOOLS_ONLY_MODE_ABSENT`, requires official Dynamic-Tools-only/Core-Allowlist support, exact-runtime account-free executable evidence, and a fresh green precheck before any implementation step. A patched/forked runtime, `update_plan` exception, weakened boundary, degraded mode, and provider fallback remain explicitly forbidden.
+
+Current goal: hold Task `.4` safely blocked until new official upstream capability exists; preserve completed Tasks `.1`-`.3`, pending Task `.5`, and production default-deny.
+
+Active phase: `janus-spec-to-task` reconciliation complete; canonical state `BLOCKED` at the upstream capability gate.
+
+Last Codex work:
+- updated only the parent task timestamp, Task `.4` compilation block, and Task `.4` completion metadata
+- inserted the official upstream capability check and exact-runtime evidence as gates before fresh precheck and implementation
+- preserved the deferred transport/privacy/tool-parity scope for use only after the re-entry chain passes
+- left Tasks `.1`-`.3` and `.5` content unchanged
+- created local documentation checkpoint `44627a5de` and published the CURRENT_STATE snapshot to `origin/codex-sync` as `31c1213b1`
+- made no product-code, dependency, product-test, account, credential, message, tool-execution, backup push, build, release, or production change
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- approved Spec metadata: PASS
+- Task artifact validator: PASS
+- Task `.4` upstream-only re-entry gate: PASS
+- no patched runtime / no `update_plan` exception / no weakened or degraded path: PASS
+- Tasks `.1`-`.3` and `.5` content preservation: PASS by scoped patch
+- production default-deny preservation: PASS
+- final scoped documentation diff check: PASS
+
+Open risks:
+- official upstream capability is absent, so Task `.4` is not eligible for task breakdown, precheck rerun, or implementation
+- the existing older Task `.4` breakdown and precheck remain historical blocker evidence and must not be used as current execution authority
+- Task `.5` cannot activate production while Task `.4` remains blocked
+- `backup/master` and `origin/master` were not pushed; only `origin/codex-sync` received the CURRENT_STATE snapshot
+
+Next recommended step for ChatGPT: retain the blocked status and do not interpret the validated task structure as implementation readiness.
+
+Next recommended step for Codex: wait for an official Runtime capability change. Only then verify the exact official runtime account-free and route Task `.4` through fresh `janus-task-breakdown` and `janus-preimplementation-check`; do not proceed now.
+
+Last updated: `2026-07-16 16:55:15 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-16 16:23:14 +02:00`, the fresh independent `janus-spec-review` task approved the Task `.4` upstream-wait amendment. Complexity remains `78`, risk `HIGH`, split is not required, and the metadata validator passes. The approval confirms that official Dynamic-Tools-only/Core-Allowlist support, exact-runtime account-free executable evidence, and a fresh green precheck are the complete re-entry chain; no patched runtime, `update_plan` exception, weakened requirement, degraded path, or provider fallback is allowed.
+
+Current goal: compile the approved upstream-wait amendment into the existing Task `.4` artifact without creating implementation authority while the official capability is absent.
+
+Active phase: independent `janus-spec-review` complete; canonical state `PASS`, handoff to `janus-spec-to-task`.
+
+Last Codex work:
+- consumed the completed independent review result from task `019f6b48-aaa2-7681-b45f-e7f78dba162e`
+- confirmed the independent task changed only the active Spec's `SPEC REVIEW METADATA` block
+- reran the binding metadata validator and a scoped whitespace/error check successfully
+- made no product-code, dependency, test, account, credential, message, tool-execution, Git, sync, build, release, or production change
+
+Changed files:
+- `documentation/SPEC/CHATGPT_OFFICIAL_DEVICE_CODE_PROVIDER_REDESIGN_FEATURE_SPEC.md` (independent task: review metadata only)
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- independent review decision: `APPROVED`
+- complexity/risk/split: `78` / `HIGH` / `NO`
+- Spec review metadata validator: PASS
+- scoped Spec diff check: PASS
+- Task `.4` implementation state: remains BLOCKED pending official upstream capability
+- production activation: default-deny unchanged
+- final scoped documentation diff check: PASS
+
+Open risks:
+- the existing compiled Task `.4` predates the approved upstream-wait amendment and must not be treated as executable until it is reconciled
+- Task `.4` and the parent feature remain incomplete until official upstream capability exists and passes the re-entry chain
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain the review result
+
+Next recommended step for ChatGPT: treat the independent Spec review as passed while preserving the blocked runtime state.
+
+Next recommended step for Codex: run `janus-spec-to-task` only to reconcile the existing Task `.4` artifact with the approved upstream-wait gate; do not create implementation authority or proceed to execution/precheck while capability is absent.
+
+Last updated: `2026-07-16 16:23:14 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-16 16:16:20 +02:00`, a fresh independent Codex task was created for the Task `.4` upstream-wait Spec amendment: thread `019f6b48-aaa2-7681-b45f-e7f78dba162e`, titled `Janus Task .4 – unabhängiger Spec Review`, running `gpt-5.6-sol` with high reasoning in the existing local project checkout. Its review contract binds exactly the active Feature Spec as the sole source of truth and permits only the `SPEC REVIEW METADATA` block to change.
+
+Current goal: obtain an independent `janus-spec-review` decision for the upstream-wait amendment before any further pipeline step.
+
+Active phase: formal handoff to fresh `janus-spec-review` task; canonical state `HANDOFF`.
+
+Last Codex work:
+- loaded the binding `janus-spec-review` contract
+- created and titled a fresh independent review task with the approved `5.6 Sol/high` setup
+- constrained the review to exactly one Spec, no development chat history, metadata-only writes, and no task/product/account/Git/sync/build/release/production actions
+- made no product-code, dependency, test, account, credential, message, tool-execution, Git, sync, build, release, or production change
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- fresh task creation: PASS (`019f6b48-aaa2-7681-b45f-e7f78dba162e`)
+- requested model/reasoning: PASS (`gpt-5.6-sol`, `high`)
+- project environment: PASS (existing local checkout; no worktree or branch action)
+- review source isolation: PASS (exactly one active Spec)
+- write boundary: PASS (Spec review metadata only)
+- scoped diff check: pending
+
+Open risks:
+- the independent review result is not yet available in this task
+- Task `.4` remains blocked and production remains default-deny regardless of task creation
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this handoff
+
+Next recommended step for ChatGPT: work in the newly created independent review task and return its canonical review decision before continuing the pipeline.
+
+Next recommended step for Codex: do not review the Spec again in this development task; consume the independent task result only after it completes.
+
+Last updated: `2026-07-16 16:16:20 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-16 16:12:41 +02:00`, the active ChatGPT Device-Code Feature Spec contains the locked upstream-wait amendment for Task `.4`. It now explicitly binds the current official-runtime blocker, official upstream support as the only re-entry path, account-free executable evidence plus a fresh green precheck, and rejection of a Janus-patched runtime or any `update_plan` exception. The amendment is pending independent Spec review; Task `.4` remains blocked and production remains default-deny.
+
+Current goal: independently review the upstream-wait amendment without reopening the locked product decision or implementing Task `.4`.
+
+Active phase: `janus-spec-generator`, canonical state `HANDOFF` to `janus-spec-review`.
+
+Last Codex work:
+- amended the active Feature Spec from the single locked upstream-wait Decision Summary
+- bound official upstream capability, exact-runtime executable evidence, and a fresh green precheck as mandatory Task `.4` re-entry gates
+- explicitly excluded a Janus-patched/forked runtime, acceptance of `update_plan`, requirement weakening, degraded mode, and provider fallback
+- reset Spec review metadata to `NEEDS_REVISION` / `Skill-1 Ready: NO` pending independent review
+- made no product-code, dependency, test, account, credential, message, tool, Git, sync, build, release, or production change
+
+Changed files:
+- `documentation/SPEC/CHATGPT_OFFICIAL_DEVICE_CODE_PROVIDER_REDESIGN_FEATURE_SPEC.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- single locked decision source: PASS
+- required Spec heading order: PASS
+- routing reason length: PASS (`158/180`)
+- Definition of Done observable checkbox format: PASS (`30` items)
+- routing/complexity consistency: PASS (`78`, `5.6 Sol/high`, `HIGH`, `CRITICAL`)
+- Task `.4` blocked/default-deny preservation: PASS
+- scoped diff check: PASS
+
+Open risks:
+- Task `.4` and the parent feature remain incomplete until official upstream capability exists and passes the defined re-entry gate
+- the amendment is not implementation-ready until `janus-spec-review` approves it
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this amendment
+
+Next recommended step for ChatGPT: preserve the locked upstream-wait decision and treat the amended Spec as pending independent review.
+
+Next recommended step for Codex: run `janus-spec-review` with `5.6 Sol/high` in a fresh independent task/context; do not implement or rerun precheck before approval and upstream capability evidence.
+
+Last updated: `2026-07-16 16:12:41 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-16 16:07:50 +02:00`, the Task `.4` architecture decision is locked as option A: Janus will wait for official upstream support for a provable Dynamic-Tools-only or complete core-tool allowlist boundary. The Janus-only security requirement is not weakened, the unavoidable native `update_plan` tool is not accepted, and a Janus-maintained patched Codex runtime will not be pursued.
+
+Current goal: bind the upstream-wait decision into the active ChatGPT Device-Code Feature Spec while preserving the existing blocked implementation and production default-deny state.
+
+Active phase: `janus-feature-design`, canonical state `HANDOFF` to `janus-spec-generator`.
+
+Last Codex work:
+- locked the user's explicit option-A decision to wait for official upstream capability
+- created a spec-ready Decision Summary that preserves Janus-only tool authority, no degraded mode, no fallback, and account-free executable re-entry evidence
+- made no product-code, dependency, test, account, credential, message, tool, Git, sync, build, release, or production change
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.4_upstream_wait_decision_summary.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- explicit user choice A captured: PASS
+- conflict with prior Janus-tools-only decision: NONE - boundary preserved
+- patched-runtime route: REJECTED BY DECISION
+- weakened `update_plan` allowance: REJECTED BY DECISION
+- Task `.4` implementation readiness: BLOCKED pending official upstream capability and fresh precheck
+- production activation: default-deny unchanged
+- scoped artifact/diff checks: PASS
+
+Open risks:
+- Task `.4` and the parent feature remain incomplete until upstream provides the required capability
+- any future runtime version must be re-verified account-free; version presence alone is insufficient
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this decision
+
+Next recommended step for ChatGPT: preserve option A as locked and do not reopen patched-runtime or weakened-tool alternatives unless the user explicitly changes the decision.
+
+Next recommended step for Codex: run `janus-spec-generator` to amend the active Feature Spec with the upstream-wait state, then route the amendment through normalization/review as required; do not implement Task `.4`.
+
+Last updated: `2026-07-16 16:07:50 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-16 15:58:32 +02:00`, the Task `.4` native-action blocker has a confirmed root cause in official `openai/codex` tag `rust-v0.144.4`: the tool router adds client `dynamicTools` to the existing Codex tool plan rather than replacing it, and `add_core_utility_tools` registers `PlanHandler`/`update_plan` unconditionally. Environment/feature/config controls can remove shell, patch, image, web, apps/plugins, MCP, collaboration, and other optional surfaces, but `ToolMode` has no `None`/`DynamicOnly` variant and no global core-tool allowlist exists. Thus the unmodified official pinned runtime cannot satisfy the locked Janus-tools-only invariant.
+
+Current goal: obtain a product/architecture decision for Task `.4`: wait for upstream support, authorize a Janus-patched Codex runtime, or explicitly permit the unavoidable native planning tool.
+
+Active phase: `janus-debug`, canonical state `BLOCKED`, route to `janus-feature-design`.
+
+Last Codex work:
+- performed bounded read-only analysis of the exact bundled `codex-cli 0.144.4`, its generated stable/experimental schemas, and official `rust-v0.144.4` source paths
+- proved the additive tool-plan root cause and the unconditional native `update_plan` registration
+- confirmed app-level tool allow/deny lists do not filter the Codex core-tool registry
+- made no fix because all available resolutions require a new product/architecture decision; no product code, dependency, test, account, credential, message, tool, Git, sync, release, or production action occurred
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.4_debug_result_native_action_disable.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- exact bundled runtime identity (`0.144.4`): PASS
+- stable/experimental schema generation and client-tool contract: PASS
+- official tagged source identity and relevant tool/config paths: PASS
+- optional/environment-bound native surface reduction analysis: PASS
+- global core-tool allowlist or `ToolMode::None/DynamicOnly`: ABSENT
+- unconditional `PlanHandler`/`update_plan`: CONFIRMED
+- product implementation/final suite: N/A WITH REASON - runtime capability absent
+- debug-result validator and scoped diff check: PASS
+
+Open risks:
+- weakening the requirement would expose a Codex-native tool contrary to the locked user decision
+- a Janus-patched runtime would create a new maintained fork and supply-chain/release boundary
+- waiting for upstream support leaves Task `.4` and the parent feature incomplete but safely default-deny
+- Task `.5` remains the sole production activation/evidence gate
+- no commit, push, or `origin/codex-sync` update occurred after this result, so remote state does not contain it
+
+Next recommended step for ChatGPT: ask exactly one product decision question with at most two options; recommend waiting for official upstream support over silently weakening the boundary. If a patched runtime is considered, treat it as a separate high-risk architecture feature.
+
+Next recommended step for Codex: do not implement Task `.4`; run `janus-feature-design` with `5.6 Sol/high`, then amend/re-review the Spec only after an explicit decision.
+
+Last updated: `2026-07-16 15:58:32 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-16 15:48:00 +02:00`, the preimplementation check for exactly Task `.4` is `BLOCKED: HARD_NATIVE_ACTION_DISABLEMENT_UNPROVEN`. The exact bundled `@openai/codex` runtime is present and reports `0.144.4`; account-free schemas generated by that binary confirm experimental `dynamicTools` registration and client `item/tool/call`, but also retain native command, file-change/approval, web, and other agent-action surfaces. No documented or schema-bound `dynamicTools-only` mode or complete built-in-tool allowlist proves that all Codex-native actions are absent before dispatch. Read-only sandbox, approval rejection, prompts, hidden events, or post-request rejection are insufficient under the approved Spec.
+
+Current goal: determine from the pinned official `rust-v0.144.4` source whether an officially supported hard pre-dispatch native-action disablement exists while retaining client dynamic tools.
+
+Active phase: `janus-preimplementation-check`, canonical state `BLOCKED`, route to read-only `janus-debug`.
+
+Last Codex work:
+- verified exactly one Task `.4`, approved Spec, high-risk Sol assignment, bound files/tests, and binary acceptance criteria
+- verified the actual bundled Windows runtime identity as `codex-cli 0.144.4`, generated stable/experimental schemas from that binary, and reviewed its feature/config surface account-free
+- confirmed all non-blocking ownership, privacy-version, current-model, redaction, cancellation, test-isolation, and production-default-deny gates are explicitly bound
+- documented the missing hard native-action invariant; made no implementation, product-code, product test, TestRun, login, credential, message, tool, Git, sync, release, or production action
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.4_precheck.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- task/spec/breakdown identity and single-target scope: PASS
+- pinned package/binary identity (`0.144.4`): PASS
+- account-free stable/experimental schema generation and comparison: PASS
+- experimental client-tool contract presence: PASS
+- hard pre-dispatch disablement of every Codex-native action: BLOCKED - no official complete mechanism/evidence found
+- privacy/default-deny/model/redaction/cancellation/file/test ownership review: PASS as bound implementation gates
+- blocker-structure and scoped precheck diff check: PASS
+- native `validate_precheck.py`: N/A WITH REASON - PASS-template-only validator correctly rejects a blocked artifact
+- product tests/TestRuns: not run by design
+
+Open risks:
+- implementing with only feature toggles, read-only sandbox, approval rejection, prompts, or event filtering could allow a native action to be dispatched and would violate the approved invariant
+- the experimental client-tool contract remains permitted only if the native-action boundary is proven
+- Task `.5` remains the sole production activation/evidence gate
+- no commit, push, or `origin/codex-sync` update occurred after this blocker, so remote state does not contain it
+
+Next recommended step for ChatGPT: perform a bounded read-only source analysis of official `openai/codex` tag `rust-v0.144.4`; do not weaken option A or authorize implementation.
+
+Next recommended step for Codex: run `janus-debug` with `5.6 Sol/high` against the pinned source/config/tool-construction paths. If no hard mode exists, route to `janus-feature-design`; otherwise bind executable evidence and rerun precheck.
+
+Last updated: `2026-07-16 15:48:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-16 15:32:35 +02:00`, exactly Task `.4` is refined and released to single-task preimplementation check. The handoff binds the approved experimental client-tool contract, App-Server/transport/gateway/orchestrator ownership, backend-before-thread privacy ordering, Janus-only tool authority, cancellation, redaction, verified-model eligibility, test-only activation, and continuing production default-deny. Its decisive stop gate requires an account-free executable proof that every relevant Codex-native action surface is disabled before execution; otherwise precheck must block and implementation must not begin.
+
+Current goal: run the preimplementation check for exactly Task `.4` and decide whether the installed App-Server runtime provides a provable hard native-action non-execution profile.
+
+Active phase: `janus-task-breakdown`, canonical state `HANDOFF` to `janus-preimplementation-check`.
+
+Last Codex work:
+- replaced the stale Task `.4` breakdown with the approved option-A scope and concrete bound file cluster
+- defined fourteen binary acceptance criteria, focused test ownership, explicit exclusions, and twelve mandatory precheck stop gates
+- released only Task `.4`; made no implementation, test execution, precheck execution, product-code, account, credential, Git, sync, release, external message, or production action
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.4_task_breakdown.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- source Spec/task identity and single-target scope review: PASS
+- native `validate_task_handoff.py`: PASS
+- required transport/gateway/privacy/native-action/default-deny boundary scan: PASS
+- scoped breakdown diff check: PASS
+- tests and precheck execution: not run by design in task-breakdown phase
+
+Open risks:
+- precheck may block if the installed official App-Server runtime has no hard, pre-execution disablement profile for all Codex-native action surfaces
+- read-only sandbox, approval rejection, prompt instructions, hidden events, or post-execution filtering are explicitly insufficient evidence
+- new adapter and gateway files remain planned outputs only; no implementation exists yet
+- Task `.5` remains the sole production activation/evidence gate
+- no commit, push, or `origin/codex-sync` update occurred after this handoff, so remote state does not contain it
+
+Next recommended step for ChatGPT: validate exactly Task `.4` against the bound artifacts and account-free local official schema/config behavior; do not implement or send content.
+
+Next recommended step for Codex: run `janus-preimplementation-check` with `5.6 Sol/high`; issue an execution handoff only if every mandatory stop gate passes.
+
+Last updated: `2026-07-16 15:32:35 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-16 15:28:53 +02:00`, exactly Task `.4` has been recompiled from the approved option-A Spec amendment and is ready for task breakdown. The task now binds the App-Server lifecycle, a new adapter in the existing transport layer, a new ChatGPT gateway silo, runtime/gateway/orchestrator ownership, backend-before-thread privacy enforcement, frontend notice/version ownership, and focused contract/parity/fallback/E2E tests. It includes mandatory precheck stops for exact experimental client-tool compatibility and an executable hard native-action non-execution mechanism. Tasks `.1`-`.3` and `.5` were not changed; production remains default-deny.
+
+Current goal: refine and release exactly the recompiled Task `.4` to preimplementation check without implementing it.
+
+Active phase: `janus-spec-to-task`, canonical state `HANDOFF` to `janus-task-breakdown`.
+
+Last Codex work:
+- recompiled only Task `.4` in the existing task artifact from the approved Spec
+- bound concrete existing/new file ownership for protocol, transport, gateway, orchestration, request/privacy, UI, notice, and tests
+- required complete unavailability on contract drift, no degraded text path, no API-key fallback, test-only activation, and Task `.5` as the sole production gate
+- made no product-code, implementation, test-execution, account, credential, Git, sync, release, external message, or production action
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.md` (generated timestamp and Task `.4` only)
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- approved Spec and Task `.4` single-target identity: PASS
+- native `validate_task_artifact.py`: PASS
+- required Task `.4` transport/gateway/privacy/native-action/default-deny boundaries: PASS
+- diff-scope inspection: PASS - generated timestamp and Task `.4` only; Tasks `.1`-`.3`/`.5` unchanged
+- scoped task diff check: PASS
+
+Open risks:
+- task breakdown/precheck must prove an officially supported hard native-action non-execution profile; without executable evidence the task remains blocked
+- the new transport adapter and gateway silo are planned task outputs, not implemented files
+- Task `.5` must later be separately refined against the updated Spec before any production activation
+- no commit, push, or `origin/codex-sync` update occurred after this compilation, so remote state does not contain it
+
+Next recommended step for ChatGPT: refine exactly Task `.4`, preserving all stop gates and excluding implementation or Task `.5` activation.
+
+Next recommended step for Codex: run `janus-task-breakdown` with `5.6 Sol/high`, then `janus-preimplementation-check`; implementation only after a PASS.
+
+Last updated: `2026-07-16 15:28:53 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-16 15:19:49 +02:00`, the option-A amendment to the ChatGPT Device-Code Feature Spec is `APPROVED`. The single-Spec review confirms that the experimental client-tool dependency is explicitly bounded, contract drift causes complete ChatGPT unavailability, no degraded text-only path exists, and Task `.5` must independently prove client-tool compatibility plus hard non-execution of Codex-native actions before production activation. Completed Tasks `.1`-`.3` remain unchanged.
+
+Current goal: recompile exactly Task `.4` from the approved Spec with concrete App-Server, gateway, runtime-contract, native-action guard, privacy, and test ownership.
+
+Active phase: `janus-spec-review`, canonical state `PASS`, handoff to `janus-spec-to-task`.
+
+Last Codex work:
+- reviewed exactly one Feature Spec in `REVIEW_ONLY` mode
+- confirmed completeness, determinism, binary failure behavior, security/privacy boundaries, testability, and decomposition readiness for the option-A amendment
+- updated only the Spec review metadata to `APPROVED` and `Skill-1 Ready: YES`
+- made no product-code, task-compilation, account, credential, Git, sync, release, external message, or production action
+
+Changed files:
+- `documentation/SPEC/CHATGPT_OFFICIAL_DEVICE_CODE_PROVIDER_REDESIGN_FEATURE_SPEC.md` (review metadata only in this block)
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- option-A completeness, determinism, scope, failure policy, security/privacy, binary acceptance, testability, and decomposition readiness: PASS
+- native `validate_spec_review.py`: PASS
+- option-A review-gate presence and scoped Spec diff check: PASS
+
+Open risks:
+- task compilation must bind exact official App-Server/gateway ownership and concrete runtime compatibility checks without inventing wider scope
+- precheck must verify a hard native-action non-execution mechanism before implementation
+- Task `.5` remains the only production activation/evidence gate
+- no commit, push, or `origin/codex-sync` update occurred after this review, so remote state does not contain it
+
+Next recommended step for ChatGPT: compile exactly Task `.4` from this approved Spec; preserve completed Tasks `.1`-`.3` and keep Task `.5` separate.
+
+Next recommended step for Codex: run `janus-spec-to-task` with `5.6 Sol/high` for the security-critical transport ownership, then task breakdown and precheck.
+
+Last updated: `2026-07-16 15:19:49 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-16 15:18:40 +02:00`, the Feature Spec contains the locked option-A amendment for Task `.4`. It explicitly permits the experimental App-Server client-tool contract only with confirmed runtime compatibility, requires complete ChatGPT unavailability on missing or drifted support, forbids a reduced text-only fallback, and keeps production default-deny until Task `.5` proves both client-tool compatibility and hard non-execution of Codex-native actions. The amendment is marked for re-review; completed Tasks `.1`-`.3` remain unchanged.
+
+Current goal: review only the option-A Spec amendment, then recompile exactly Task `.4` if approved.
+
+Active phase: `janus-spec-generator`, canonical state `HANDOFF` to `janus-spec-review`.
+
+Last Codex work:
+- amended only the approved Feature Spec from the locked Task `.4` option-A decision
+- added binary behavior for missing/drifted experimental support, no degraded fallback, and Task `.5` contract/native-action evidence
+- changed the Spec review metadata to `NEEDS_REVISION` / `Skill-1 Ready: NO` pending independent re-review
+- made no product-code, task-compilation, test-execution, account, credential, Git, sync, release, external message, or production action
+
+Changed files:
+- `documentation/SPEC/CHATGPT_OFFICIAL_DEVICE_CODE_PROVIDER_REDESIGN_FEATURE_SPEC.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- required Spec heading order and routing block: PASS
+- complexity routing/internal sum consistency: PASS (`78`)
+- Definition of Done observable checkbox format: PASS (`27` items)
+- locked option-A delta presence: PASS
+- routing reason length and scoped Spec diff check: PASS
+
+Open risks:
+- re-review must verify the experimental dependency is bounded without weakening Janus-only tool authority or default-deny
+- task compilation/precheck must still bind exact runtime-contract checks and a hard native-action non-execution mechanism
+- Task `.5` remains the only production activation/evidence gate
+- no commit, push, or `origin/codex-sync` update occurred after this amendment, so remote state does not contain it
+
+Next recommended step for ChatGPT: review only the option-A Spec delta; preserve completed Tasks `.1`-`.3` and the separate Task `.5` activation gate.
+
+Next recommended step for Codex: run `janus-spec-review` with `5.6 Sol/high`, then rerun `janus-spec-to-task` for exactly Task `.4` if approved.
+
+Last updated: `2026-07-16 15:18:40 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-16 15:16:32 +02:00`, the missing Task `.4` product decision is locked as option A: the experimental App-Server client-tool contract is permitted so ChatGPT can retain Janus skill/tool parity, but only with exact runtime-contract verification, fail-closed unavailability on missing/drifted support, and no reduced text-only fallback. Task `.5` must prove both the expected client-tool contract and hard non-execution of Codex-native actions before production activation.
+
+Current goal: amend and re-review the Feature Spec with the accepted experimental-contract boundary, then recompile exactly Task `.4`.
+
+Active phase: `janus-feature-design`, canonical state `HANDOFF` to `janus-spec-generator`.
+
+Last Codex work:
+- recorded the user's explicit option-A decision in the Task `.4` LATEST DECISION SUMMARY
+- resolved the prior spec-compilation blocker without changing the existing compiled task or product code
+- retained Janus-only tool authority, no text-only fallback, schema-drift default-deny, and Task `.5` as the sole production gate
+- made no product-code, account, credential, Git, sync, release, external message, or production action
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.4_decision_summary.md`
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.4_spec_compilation_blocker.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- decision-summary required fields and option-A delta: PASS
+- scoped Markdown diff check: PASS
+
+Open risks:
+- the Spec must state that the experimental client-tool dependency is explicitly accepted but never sufficient by itself for production activation
+- task compilation/precheck must identify exact runtime-contract checks and a hard native-action non-execution mechanism
+- no commit, push, or `origin/codex-sync` update occurred after this decision, so remote state does not contain it
+
+Next recommended step for ChatGPT: amend only the experimental-contract/default-deny delta in the approved Feature Spec and route it through re-review.
+
+Next recommended step for Codex: run `janus-spec-generator` with `5.6 Sol/high`, then `janus-spec-review`, `janus-spec-to-task`, breakdown, and precheck for exactly Task `.4`.
+
+Last updated: `2026-07-16 15:16:32 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-16 15:15:36 +02:00`, compilation of exactly Task `.4` is `BLOCKED: MISSING_PRODUCT_DECISION`. Official local App-Server schema generation proves that client-owned dynamic tool calls exist, but registration through `dynamicTools` is exposed only in the experimental schema, not stable `ThreadStartParams`. The approved Spec requires Janus-tool parity and hard rejection of Codex-native actions but does not authorize an experimental production dependency or identify a proven hard native-tool disable mechanism. The existing Task `.4` was not rewritten.
+
+Current goal: decide whether Task `.4` may use experimental `dynamicTools` behind pinned-schema and Task `.5` default-deny evidence, or must defer Janus tools until a stable contract exists.
+
+Active phase: `janus-spec-to-task`, canonical state `BLOCKED`, route to one narrow `janus-feature-design` decision.
+
+Last Codex work:
+- verified the approved Spec and existing Task `.4` output target
+- mapped existing repository ownership for App-Server lifecycle, provider gateway, orchestrator, frontend privacy gate, and tests without changing them
+- generated stable and experimental official App-Server schemas locally without login or message submission and compared client-tool registration
+- documented the missing experimental-dependency/native-tool-disable decision; made no product-code, account, credential, Git, sync, release, external message, or production action
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.4_spec_compilation_blocker.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- approved Spec identity and metadata: PASS
+- existing task/repository ownership mapping: PASS
+- official stable vs experimental App-Server schema comparison: BLOCKED - `dynamicTools` registration is experimental-only and hard native-tool disablement is not yet proven
+- blocker structure and scoped diff check: PASS
+
+Open risks:
+- choosing experimental `dynamicTools` without explicit authorization would create an unreviewed compatibility/release dependency
+- prompt-only suppression or hidden events must never be treated as proof that Codex-native actions cannot execute
+- Task `.5` remains the only production activation/evidence gate
+- no commit, push, or `origin/codex-sync` update occurred after this blocker, so remote state does not contain it
+
+Next recommended step for ChatGPT: ask exactly one decision question: authorize experimental `dynamicTools` with pinned-schema/default-deny evidence, or defer Janus tools until the contract is stable.
+
+Next recommended step for Codex: after the locked decision, amend/re-review the Spec and rerun `janus-spec-to-task` for exactly Task `.4`; do not implement before a new breakdown and precheck pass.
+
+Last updated: `2026-07-16 15:15:36 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-16 15:08:30 +02:00`, the Task `.4` amendment to the ChatGPT Device-Code Feature Spec is `APPROVED`. The review found the product behavior complete, deterministic, testable, and ready for task compilation: Janus remains the sole history/tool/permission boundary, App-Server conversation state is per-turn ephemeral, Codex-native actions fail the affected turn closed, privacy disclosure is explicit, and retry/provider fallback remain forbidden. Completed Tasks `.1`-`.3` and Task `.5` production default-deny remain unchanged.
+
+Current goal: recompile the approved Task `.4` amendment into an exact implementation task with documented App-Server/gateway ownership, then rerun task breakdown and precheck.
+
+Active phase: `janus-spec-review`, canonical state `PASS`, handoff to `janus-spec-to-task`.
+
+Last Codex work:
+- reviewed exactly one Feature Spec in `REVIEW_ONLY` mode without reopening product decisions or implementation
+- updated only the Spec review metadata to `APPROVED`, score `78`, risk `HIGH`, `Skill-1 Ready: YES`, split not required
+- made no product-code, test-execution, account, credential, Git, sync, release, message-submission, or production action
+
+Changed files:
+- `documentation/SPEC/CHATGPT_OFFICIAL_DEVICE_CODE_PROVIDER_REDESIGN_FEATURE_SPEC.md` (review metadata only in this block)
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- completeness, determinism, scope, privacy/security, failure policy, acceptance criteria, and decomposition readiness review: PASS
+- native `validate_spec_review.py`: PASS
+- scoped Spec diff check: PASS
+
+Open risks:
+- task compilation must bind exact official App-Server transport and gateway/file ownership without inventing Codex-native tool authority
+- precheck must prove the selected transport can enforce Janus-only tools and fail closed on Codex-native agent actions
+- Task `.5` remains the only production activation/evidence gate
+- no commit, push, or `origin/codex-sync` update occurred after this review, so remote state does not contain it
+
+Next recommended step for ChatGPT: compile only the approved Task `.4` amendment; preserve completed Tasks `.1`-`.3` and keep Task `.5` separate.
+
+Next recommended step for Codex: run `janus-spec-to-task` with `5.6 Terra/high`, then `janus-task-breakdown` and `janus-preimplementation-check` for exactly Task `.4`.
+
+Last updated: `2026-07-16 15:08:30 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-16 15:07:06 +02:00`, the existing ChatGPT Device-Code Feature Spec has a generated Task `.4` amendment from the locked decision summary. It now binds ChatGPT to text-based Janus-provider parity, ephemeral App-Server conversation state, Janus-only skill/tool authority, explicit privacy disclosure, fail-closed Codex-native agent actions, scoped cancel/failure behavior, no retry/fallback, and continued Task `.5` production default-deny. The Spec is intentionally `DRAFT AMENDMENT - PARTIAL IMPLEMENTATION` and requires re-review; completed Tasks `.1`-`.3` remain recorded.
+
+Current goal: independently review the generated Task `.4` Spec amendment before recompiling its task and transport ownership.
+
+Active phase: `janus-spec-generator`, canonical state `HANDOFF` to `janus-spec-review`.
+
+Last Codex work:
+- amended only the existing approved Feature Spec from `TASK-CHATGPT-DEVICE-CODE-PROVIDER.4_decision_summary.md`
+- preserved prior partial-implementation evidence while changing the Spec review state to amendment review required
+- made no product-code, test-execution, account, credential, Git, sync, release, message-submission, or production action
+
+Changed files:
+- `documentation/SPEC/CHATGPT_OFFICIAL_DEVICE_CODE_PROVIDER_REDESIGN_FEATURE_SPEC.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- required Spec heading order and routing block: PASS
+- complexity routing/internal sum consistency: PASS (`78`)
+- Definition of Done observable checkbox format: PASS (`23` items)
+- routing reason length: PASS (`138` characters)
+- scoped Spec diff check: PASS
+
+Open risks:
+- independent Spec review must verify that Janus-only tool authority is enforceable without silently accepting Codex-native actions
+- exact documented App-Server transport and gateway/file ownership must be bound during task recompilation before precheck
+- Task `.5` remains the only production activation/evidence gate
+- no commit, push, or `origin/codex-sync` update occurred after this amendment, so remote state does not contain it
+
+Next recommended step for ChatGPT: review only the amended Spec and locked Task `.4` decision summary; do not reopen completed Tasks `.1`-`.3` or production activation.
+
+Next recommended step for Codex: run `janus-spec-review` with `5.6 Sol/high` in a fresh audit-style context, then recompile/refine exactly Task `.4` if approved.
+
+Last updated: `2026-07-16 15:07:06 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-16 15:00:07 +02:00`, the Task `.4` product boundary is decision-locked: ChatGPT must behave as a text-based Janus provider, use only Janus-controlled skills/tools and existing Janus permissions, receive the same necessary redacted Janus context as API-key providers, and use no persistent Codex thread. Any Codex-native tool, command, file, approval, or agent action fails only that turn closed. No automatic retry or provider fallback is permitted.
+
+Current goal: amend the approved Feature Spec from the locked Task `.4` decision summary, then review and recompile the exact transport ownership before rerunning precheck.
+
+Active phase: `janus-feature-design`, canonical state `HANDOFF` to `janus-spec-generator`.
+
+Last Codex work:
+- verified the current official Codex App Server documentation establishes the thread/turn lifecycle and streamed agent-event surface
+- locked text-only provider parity, Janus-owned context/history/tools/permissions, explicit privacy disclosure, scoped failure/cancel behavior, and continued production default-deny
+- created the Task `.4` LATEST DECISION SUMMARY; made no product-code, account, credential, Git, sync, release, message-submission, or production action
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.4_decision_summary.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- required decision-summary field and single-target review: PASS
+- official App Server documentation lookup for thread/turn and agent-event behavior: PASS
+- scoped Markdown diff check: PASS
+
+Open risks:
+- the Spec amendment must bind an official transport that can enforce Janus-only tools and reject Codex-native actions without silently accepting them
+- exact gateway/App-Server ownership remains a Spec/task-compilation decision before implementation
+- Task `.5` remains the only production activation/evidence gate
+- no commit, push, or `origin/codex-sync` update occurred after this handoff, so remote state does not contain it
+
+Next recommended step for ChatGPT: use only the locked decision summary to amend the existing approved Feature Spec; retain all completed Tasks `.1`-`.3` and default-deny metadata.
+
+Next recommended step for Codex: run `janus-spec-generator` with `5.6 Sol/high`, followed by `janus-spec-normalizer`, `janus-spec-review`, Task `.4` recompilation/breakdown, and precheck.
+
+Last updated: `2026-07-16 15:00:07 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-16 02:01:30 +02:00`, the preimplementation check for exactly Task `.4` is `BLOCKED: SCOPE_MISMATCH`. The approved privacy acknowledgement/version seam is identifiable, but the bound Task `.4` files cannot add a real official ChatGPT content transport safely: the current runtime explicitly lacks a `codex_responses` transport, the active provider gateway is out of scope, and no documented App-Server content-turn/stream contract is bound. No product code, test execution, account action, or production activation occurred.
+
+Current goal: decision-lock the official ChatGPT content-turn transport contract and exact file ownership before re-breaking down Task `.4`.
+
+Active phase: `janus-preimplementation-check`, canonical state `BLOCKED`, route to `janus-feature-design` for a narrow transport-contract amendment.
+
+Last Codex work:
+- verified Task `.4` identity, approved privacy/version seam, current verified-model prerequisite, runtime transport registry, App-Server public surface, and active provider gateway ownership
+- documented the missing official transport contract/file-cluster boundary
+- made no product-code, test-execution, account, credential, Git, sync, release, message-submission, or production action
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.4_precheck.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- task/spec/breakdown identity and single-target scope review: PASS
+- privacy acknowledgement version seam review: PASS
+- runtime/App-Server/gateway transport-boundary review: BLOCKED - documented official content-turn protocol and bound ownership absent
+- blocker-structure check and scoped diff check: PASS; `validate_precheck.py` N/A WITH REASON because it is PASS-template-only
+
+Open risks:
+- Task `.4` must not add a private/undocumented endpoint, a guessed `codex_responses` transport, a gateway bypass, API-key fallback, or production activation
+- Task `.5` remains the only production-activation/evidence gate
+- no commit, push, or `origin/codex-sync` update occurred after this blocker, so remote state does not contain it
+
+Next recommended step for ChatGPT: resolve only the official App-Server transport contract and exact bounded file ownership; retain the approved privacy/version and default-deny requirements.
+
+Next recommended step for Codex: after a decision-locked Spec/Task amendment, rerun `janus-task-breakdown` and then this single-task precheck with `5.6 Sol/high` for the transport-boundary review.
+
+Last updated: `2026-07-16 02:01:30 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-16 01:51:52 +02:00`, exactly Task `.4` has been refined for preimplementation check. Its scope is limited to ChatGPT transport/context continuation, visible provider identity, versioned privacy acknowledgement before first externalization, and ChatGPT-only failure isolation. The handoff preserves Task `.3` verified-model eligibility and production default-deny; Tasks `.1` through `.3` remain completed and Task `.5` remains the sole activation gate.
+
+Current goal: run the single-task preimplementation check for Task `.4` before any provider-transport or privacy-gate implementation.
+
+Active phase: `janus-task-breakdown`, canonical state `TASK DESIGN COMPLETE`, handoff to `janus-preimplementation-check`.
+
+Last Codex work:
+- validated Task `.4` against the approved Feature Spec and released one bounded precheck handoff
+- bound explicit precheck stops for privacy-version source, pre-send externalization ordering, no API-key fallback, current verified model eligibility, context/redaction, and production default-deny
+- made no product-code, test-execution, account, credential, Git, sync, release, message-submission, or production action
+
+Changed files:
+- `documentation/tasks/TASK-CHATGPT-DEVICE-CODE-PROVIDER.4_task_breakdown.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- source task/spec identity, one-target scope, files, binary acceptance criteria, tests, exclusions, risks, and execution model review: PASS
+- task-handoff validator and scoped diff check: PASS
+
+Open risks:
+- Task `.4` must block if the current privacy notice/version source, pre-send gate ordering, no-fallback isolation, context boundary, or continuing production default-deny cannot be evidenced
+- Task `.5` release evidence/production activation remains open
+- no commit, push, or `origin/codex-sync` update occurred after this new handoff, so remote state does not contain it
+
+Next recommended step for ChatGPT: treat Task `.4` as precheck-ready only; do not infer implementation approval or production activation.
+
+Next recommended step for Codex: run `janus-preimplementation-check` for exactly Task `.4` with `5.6 Terra/high`; escalate to `5.6 Sol/high` if a privacy/provider/production-boundary ambiguity appears.
+
+Last updated: `2026-07-16 01:51:52 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-16 00:58:30 +02:00`, bounded documentation synchronization for exactly Task `.3` is complete after Final Audit PASS. The canonical task, partial Feature Spec metadata, Central Task Registry, PROJECT_STATE, current beta changelog, audit package, and execution result now record verified current-session model eligibility, fail-closed stale-selection handling, E2E configuration isolation, redaction, API-key non-interference, and production default-deny. The Spec remains partial: Tasks `.4` and `.5` are still open.
 
 Current goal: retain the Task `.3` documentation checkpoint and decide separately whether to open Task `.4` or create a Git checkpoint.
