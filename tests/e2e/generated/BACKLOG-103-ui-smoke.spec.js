@@ -262,8 +262,8 @@ test('BACKLOG-103 deep dive opens in a compact two-stage flow and reveals detail
   await page.evaluate(() => document.getElementById('cost-summary-widget')?.click());
 
   await expect(page.getByText('Kosten verstehen, Einsparungen sehen, Hinweise klar lesen')).toBeVisible();
-  await expect(page.getByText('Kostenquellen zuerst, Requests nur bei Bedarf')).toBeVisible();
-  await expect(page.getByText('Starte mit einer Kostenquelle, um einzelne Requests und Kostenbestandteile zu sehen.')).toBeVisible();
+  await expect(page.getByText('Kostenquellen zuerst, Anfragen nur bei Bedarf')).toBeVisible();
+  await expect(page.getByText('Starte mit einer Kostenquelle, um einzelne Anfragen und Kostenbestandteile zu sehen.')).toBeVisible();
   await expect(page.getByText('Waehle zuerst eine Kostenquelle.')).toBeVisible();
   await expect(page.getByText('Waehle einen Request, um Modelle, Kostenbestandteile und Ersparnis zu sehen.')).toBeVisible();
   await expect(page.getByText('Kosten verstehen und Optimierungspotenziale erkennen.')).toBeVisible();
@@ -285,7 +285,7 @@ test('BACKLOG-103 deep dive opens in a compact two-stage flow and reveals detail
   await expect(page.getByRole('heading', { name: 'Kostenbestandteile' })).toHaveCount(0);
 
   await page.getByRole('button', { name: /Session chat-88/i }).click();
-  await expect(page.getByText('Quelle gewaehlt. Jetzt kannst du darunter einzelne Requests oeffnen.')).toBeVisible();
+  await expect(page.getByText('Quelle gewaehlt. Jetzt kannst du darunter einzelne Anfragen oeffnen.')).toBeVisible();
   await expect(page.getByRole('button', { name: /req-100/i })).toBeVisible();
   await expect(page.getByText('Ablauf simple_tool_loop')).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'Kostenbestandteile' })).toHaveCount(0);

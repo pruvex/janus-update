@@ -1201,12 +1201,17 @@ def _build_stream_gateway_handoff_kwargs(
     current_call_model: str,
     user_selected_model: str,
     remaining_tool_rounds: int,
+    round_offset: int = 0,
 ) -> Dict[str, Any]:
     """Build the bounded, non-streaming continuation without stream-only controls."""
     call_kwargs = dict(gateway_kwargs)
     call_kwargs["provider"] = current_call_provider
     call_kwargs["model"] = current_call_model or user_selected_model
     call_kwargs["max_tool_rounds"] = max(1, int(remaining_tool_rounds))
+    if str(current_call_provider or "").strip().lower() == "openrouter":
+        # ``current_round`` is an existing, router-forwarded seam. Here it means
+        # completed streamed rounds before the dedicated OpenRouter continuation.
+        call_kwargs["current_round"] = max(0, int(round_offset))
     call_kwargs.pop("forced_tool", None)
     call_kwargs.pop("forced_tool_args", None)
     call_kwargs.pop("force_tool_name", None)
@@ -2735,6 +2740,32 @@ class OrchestratorExecutionEngine:
                     except Exception:
                         logger.warning("COST-PERSIST: Failed to save iteration cost", exc_info=True)
 
+                if (
+                    str(current_call_provider or provider or "").strip().lower()
+                    == "openrouter"
+                    and self.db is not None
+                ):
+                    telemetry_records = response.get("_openrouter_telemetry_records")
+                    if isinstance(telemetry_records, list):
+                        from backend.services.cost_service import (
+                            create_openrouter_telemetry_entry,
+                        )
+
+                        turn_id = str(
+                            response.get("_openrouter_turn_id")
+                            or gateway_kwargs.get("openrouter_turn_id")
+                            or ""
+                        )
+                        for record in telemetry_records:
+                            if isinstance(record, dict):
+                                create_openrouter_telemetry_entry(
+                                    self.db,
+                                    telemetry=record,
+                                    turn_id=turn_id,
+                                    chat_id=chat_id,
+                                    round_number=record.get("round"),
+                                )
+
             if isinstance(response, dict) and response.get("ui_command"):
                 latest_ui_command = response["ui_command"]
             # 💎 OpenAI-Silo: Interner Tool-Loop gibt _internal_tool_results zurück
@@ -3667,6 +3698,7 @@ class OrchestratorExecutionEngine:
         aggregated_tokens_input = 0
         aggregated_tokens_output = 0
         aggregated_total_cost = 0.0
+        pending_openrouter_telemetry: Optional[Dict[str, Any]] = None
         country_not_found_detected = False
         _last_tool_error = None  # (tool_name, error_code, error_message) - 💎 BACKLOG-024
 
@@ -3859,6 +3891,7 @@ class OrchestratorExecutionEngine:
                     current_call_model=current_call_model or user_selected_model,
                     user_selected_model=user_selected_model,
                     remaining_tool_rounds=current_limit - current_iteration,
+                    round_offset=current_iteration,
                 )
                 logger.info(
                     "STREAM-GATEWAY-HANDOFF: delegating post-tool round via gateway/runner "
@@ -3926,6 +3959,32 @@ class OrchestratorExecutionEngine:
                                     all_used_skills.append(_skill_name)
                     if handoff_response.get("ui_command"):
                         latest_ui_command = handoff_response["ui_command"]
+                    if (
+                        provider_key == "openrouter"
+                        and self.db is not None
+                    ):
+                        telemetry_records = handoff_response.get(
+                            "_openrouter_telemetry_records"
+                        )
+                        if isinstance(telemetry_records, list):
+                            from backend.services.cost_service import (
+                                create_openrouter_telemetry_entry,
+                            )
+
+                            turn_id = str(
+                                handoff_response.get("_openrouter_turn_id")
+                                or gateway_kwargs.get("openrouter_turn_id")
+                                or ""
+                            )
+                            for record in telemetry_records:
+                                if isinstance(record, dict):
+                                    create_openrouter_telemetry_entry(
+                                        self.db,
+                                        telemetry=record,
+                                        turn_id=turn_id,
+                                        chat_id=chat_id,
+                                        round_number=record.get("round"),
+                                    )
                     round_text = str(handoff_response.get("text") or "")
                     if round_text.strip():
                         yield StreamEvent(type="text_delta", content=round_text, metadata={})
@@ -3961,6 +4020,11 @@ class OrchestratorExecutionEngine:
                             u_blob = ev.content if isinstance(ev.content, dict) else {}
                             u = u_blob.get("usage") or {}
                             cst = u_blob.get("cost") or {}
+                            if provider_key == "openrouter":
+                                candidate = u_blob.get("openrouter_telemetry")
+                                pending_openrouter_telemetry = (
+                                    dict(candidate) if isinstance(candidate, dict) else None
+                                )
                             aggregated_tokens_input += int(u.get("input_tokens") or u.get("prompt_tokens") or 0)
                             aggregated_tokens_output += int(u.get("output_tokens") or u.get("completion_tokens") or 0)
                             aggregated_total_cost += float(cst.get("total_cost") or 0.0)
@@ -4012,6 +4076,26 @@ class OrchestratorExecutionEngine:
                             stream_fatal = True
                             break
                         elif ev.type in ("finish", "done"):
+                            if (
+                                ev.type == "done"
+                                and provider_key == "openrouter"
+                                and pending_openrouter_telemetry is not None
+                                and self.db is not None
+                            ):
+                                from backend.services.cost_service import (
+                                    create_openrouter_telemetry_entry,
+                                )
+
+                                create_openrouter_telemetry_entry(
+                                    self.db,
+                                    telemetry=pending_openrouter_telemetry,
+                                    turn_id=str(
+                                        gateway_kwargs.get("openrouter_turn_id") or ""
+                                    ),
+                                    chat_id=chat_id,
+                                    round_number=current_iteration + 1,
+                                )
+                                pending_openrouter_telemetry = None
                             if ev.type == "done":
                                 pass
                     if stream_fatal:

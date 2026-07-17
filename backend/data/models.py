@@ -240,6 +240,14 @@ class Cost(Base):
     attribution_component = Column(String, nullable=True)
     attribution_manual_override = Column(Boolean, default=False, nullable=False)
     attribution_metadata = Column(JSON, nullable=True)
+    openrouter_prompt_tokens = Column(Integer, nullable=True)
+    openrouter_completion_tokens = Column(Integer, nullable=True)
+    openrouter_total_tokens = Column(Integer, nullable=True)
+    openrouter_cached_tokens = Column(Integer, nullable=True)
+    openrouter_cache_write_tokens = Column(Integer, nullable=True)
+    openrouter_reasoning_tokens = Column(Integer, nullable=True)
+    openrouter_credits_cost = Column(Float, nullable=True)
+    openrouter_upstream_inference_cost = Column(Float, nullable=True)
 
 
 class SkillTelemetry(Base):

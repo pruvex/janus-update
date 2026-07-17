@@ -252,8 +252,20 @@ async def test_exact_model_stays_pinned_across_tool_and_synthesis_rounds():
                 "type": "tool_code",
                 "tool_calls": raw_tool_message["tool_calls"],
                 "raw_assistant_response": raw_tool_message,
+                "openrouter_telemetry": {
+                    "response_model": MODEL,
+                    "prompt_tokens": 11,
+                },
             },
-            {"type": "text", "text": "done", "response_model": MODEL},
+            {
+                "type": "text",
+                "text": "done",
+                "response_model": MODEL,
+                "openrouter_telemetry": {
+                    "response_model": MODEL,
+                    "prompt_tokens": 7,
+                },
+            },
         ]
     )
     executor = SimpleNamespace(
@@ -287,11 +299,18 @@ async def test_exact_model_stays_pinned_across_tool_and_synthesis_rounds():
         tool_executor=executor,
         allowed_skill_ids=["system.weather"],
         max_tool_rounds=2,
+        openrouter_turn_id="turn-telemetry-1",
+        current_round=1,
     )
 
     assert result["text"] == "done"
     assert [call["model"] for call in service.calls] == [MODEL, MODEL]
     assert [call["api_key"] for call in service.calls] == [SENTINEL, SENTINEL]
+    assert result["_openrouter_turn_id"] == "turn-telemetry-1"
+    assert result["_openrouter_telemetry_records"] == [
+        {"response_model": MODEL, "prompt_tokens": 11, "round": 2},
+        {"response_model": MODEL, "prompt_tokens": 7, "round": 3},
+    ]
     executor.execute_tool_calls.assert_awaited_once()
 
 
@@ -308,19 +327,23 @@ class FakeCompletionClient:
         return self._outcome
 
 
-def response(model=MODEL, text="ok"):
+def usage(payload):
+    return SimpleNamespace(model_dump=lambda: dict(payload))
+
+
+def response(model=MODEL, text="ok", usage_payload=None):
     message = SimpleNamespace(content=text, tool_calls=None)
     return SimpleNamespace(
         model=model,
         choices=[SimpleNamespace(message=message, finish_reason="stop")],
-        usage=None,
+        usage=usage(usage_payload) if usage_payload is not None else None,
     )
 
 
-def stream_chunk(*, model=MODEL, text=None, finish_reason=None):
+def stream_chunk(*, model=MODEL, text=None, finish_reason=None, usage_payload=None):
     return SimpleNamespace(
         model=model,
-        usage=None,
+        usage=usage(usage_payload) if usage_payload is not None else None,
         choices=[
             SimpleNamespace(
                 delta=SimpleNamespace(content=text, tool_calls=None),
@@ -360,6 +383,36 @@ async def test_service_sets_openrouter_base_url_zero_retries_and_checks_response
     ]
     assert len(requests) == 1
     assert requests[0]["model"] == MODEL
+
+
+@pytest.mark.asyncio
+async def test_service_propagates_authoritative_nonstream_telemetry():
+    service = OpenRouterServiceProvider(
+        client_factory=lambda **_kwargs: FakeCompletionClient(
+            response(
+                usage_payload={
+                    "prompt_tokens": 3,
+                    "completion_tokens": 0,
+                    "total_tokens": 3,
+                    "prompt_tokens_details": {"cached_tokens": 0},
+                    "cost": 0.0,
+                }
+            ),
+            [],
+        )
+    )
+
+    result = await service.generate_response(
+        api_key=SENTINEL,
+        model=MODEL,
+        messages=[],
+    )
+
+    assert result["openrouter_telemetry"]["response_model"] == MODEL
+    assert result["openrouter_telemetry"]["completion_tokens"] == 0
+    assert result["openrouter_telemetry"]["cached_tokens"] == 0
+    assert result["openrouter_telemetry"]["credits_cost"] == 0.0
+    assert result["openrouter_telemetry"]["reasoning_tokens"] is None
 
 
 @pytest.mark.asyncio
@@ -456,6 +509,39 @@ async def test_service_stream_requires_exact_identity_and_completed_upstream_str
         complete.generate_response_stream(api_key=SENTINEL, model=MODEL, messages=[])
     )
     assert [event.type for event in events] == ["text_delta", "finish", "done"]
+
+
+@pytest.mark.asyncio
+async def test_service_stream_emits_authoritative_telemetry_before_completion_proof():
+    complete = OpenRouterServiceProvider(
+        client_factory=lambda **_kwargs: FakeCompletionClient(
+            FakeAsyncStream(
+                [
+                    stream_chunk(
+                        usage_payload={
+                            "prompt_tokens": 5,
+                            "completion_tokens": 0,
+                            "total_tokens": 5,
+                            "cost": 0.0,
+                        }
+                    ),
+                    stream_chunk(finish_reason="stop"),
+                ]
+            ),
+            [],
+        )
+    )
+
+    events = await collect_stream(
+        complete.generate_response_stream(api_key=SENTINEL, model=MODEL, messages=[])
+    )
+
+    assert [event.type for event in events] == ["usage", "finish", "done"]
+    telemetry = events[0].content["openrouter_telemetry"]
+    assert telemetry["response_model"] == MODEL
+    assert telemetry["completion_tokens"] == 0
+    assert telemetry["credits_cost"] == 0.0
+    assert telemetry["cached_tokens"] is None
 
 
 @pytest.mark.asyncio

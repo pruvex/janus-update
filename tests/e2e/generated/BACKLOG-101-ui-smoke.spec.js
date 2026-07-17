@@ -316,6 +316,14 @@ test('BACKLOG-101 deep dive prioritizes user-facing cost understanding and optim
   });
 
   await page.goto('/');
+  const betaPrivacyModal = page.locator('#beta-privacy-modal');
+  if (await betaPrivacyModal.isVisible()) {
+    await page.getByRole('checkbox', {
+      name: /Ich habe verstanden, welche Daten Janus in der Beta verarbeitet/i,
+    }).check();
+    await page.getByRole('button', { name: 'Akzeptieren' }).click();
+    await expect(betaPrivacyModal).toBeHidden();
+  }
   await page.waitForSelector('#cost-summary-widget', { timeout: 20000 });
   await page.evaluate(() => document.getElementById('cost-summary-widget')?.click());
 
@@ -327,8 +335,10 @@ test('BACKLOG-101 deep dive prioritizes user-facing cost understanding and optim
   await expect(deepDive).toContainText('GPT / OpenAI');
   await expect(deepDive).toContainText('gpt-5.4-nano');
   await expect(deepDive).toContainText('Kostenwahrheit');
+  await page.getByRole('button', { name: /Session chat-88/i }).click();
+  await page.getByRole('button', { name: /req-100/i }).click();
   await expect(deepDive).toContainText('Recherche-Anteil');
-  await expect(deepDive).toContainText('Savings');
+  await expect(deepDive).toContainText('Ersparnis');
   await expect(deepDive).not.toContainText('Gemini Forensik');
   await expect(deepDive).not.toContainText('Attributionsluecke');
 });

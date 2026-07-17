@@ -1830,6 +1830,7 @@ def get_costs_deep_dive_summary(db: Session, year: int, month: int) -> Dict[str,
     gemini_avoidable_pro_total = 0.0
     historical_mode = year == 2026 and month == 5
     cross_provider_totals = _new_cost_totals()
+    openrouter_telemetry: List[Dict[str, Any]] = []
 
     for cost in costs:
         provider = str(cost.provider or "unknown")
@@ -1837,6 +1838,31 @@ def get_costs_deep_dive_summary(db: Session, year: int, month: int) -> Dict[str,
         metadata = dict(cost.attribution_metadata or {}) if isinstance(cost.attribution_metadata, dict) else {}
         total_cost = float(cost.total_cost or 0.0)
         component_name = _cost_component_name(cost)
+
+        if provider.casefold() == "openrouter":
+            openrouter_telemetry.append(
+                {
+                    "turn_id": getattr(cost, "attribution_request_id", None),
+                    "session_id": getattr(cost, "attribution_session_id", None),
+                    "component": getattr(cost, "attribution_component", None),
+                    "timestamp": cost.timestamp.isoformat() if getattr(cost, "timestamp", None) else None,
+                    "provider": "openrouter",
+                    "model": model,
+                    "prompt_tokens": getattr(cost, "openrouter_prompt_tokens", None),
+                    "completion_tokens": getattr(cost, "openrouter_completion_tokens", None),
+                    "total_tokens": getattr(cost, "openrouter_total_tokens", None),
+                    "cached_tokens": getattr(cost, "openrouter_cached_tokens", None),
+                    "cache_write_tokens": getattr(cost, "openrouter_cache_write_tokens", None),
+                    "reasoning_tokens": getattr(cost, "openrouter_reasoning_tokens", None),
+                    "credits_cost": getattr(cost, "openrouter_credits_cost", None),
+                    "upstream_inference_cost": getattr(
+                        cost,
+                        "openrouter_upstream_inference_cost",
+                        None,
+                    ),
+                }
+            )
+            continue
 
         _accumulate_cost_totals(cross_provider_totals, cost, total_cost)
 
@@ -2107,6 +2133,7 @@ def get_costs_deep_dive_summary(db: Session, year: int, month: int) -> Dict[str,
 
     return {
         "provider_scope": "cross_provider",
+        "openrouter_telemetry": openrouter_telemetry,
         "period": f"{year:04d}-{month:02d}",
         "ui_contract": {
             "primary_surface": "user_cost_overview",

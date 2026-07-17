@@ -301,6 +301,20 @@ def test_costs_sqlite_schema_migration_adds_attribution_columns(monkeypatch):
                 """
             )
         )
+        conn.execute(
+            text(
+                """
+                INSERT INTO costs (
+                    id, timestamp, provider, model, input_tokens, output_tokens,
+                    cached_tokens, total_tokens, total_cost, context,
+                    tokens_saved, cost_saved
+                ) VALUES (
+                    1, CURRENT_TIMESTAMP, 'openai', 'historical-model',
+                    1, 2, 0, 3, 0.01, 'historical', 0, 0.0
+                )
+                """
+            )
+        )
 
     monkeypatch.setattr(database_module, "engine", engine)
     database_module._ensure_sqlite_schema_migrations()
@@ -314,6 +328,34 @@ def test_costs_sqlite_schema_migration_adds_attribution_columns(monkeypatch):
     assert "attribution_component" in columns
     assert "attribution_manual_override" in columns
     assert "attribution_metadata" in columns
+    for name in (
+        "openrouter_prompt_tokens",
+        "openrouter_completion_tokens",
+        "openrouter_total_tokens",
+        "openrouter_cached_tokens",
+        "openrouter_cache_write_tokens",
+        "openrouter_reasoning_tokens",
+        "openrouter_credits_cost",
+        "openrouter_upstream_inference_cost",
+    ):
+        assert name in columns
+        column = next(
+            item for item in inspect(engine).get_columns("costs") if item["name"] == name
+        )
+        assert column["nullable"] is True
+    with engine.connect() as conn:
+        historical = conn.execute(
+            text(
+                """
+                SELECT openrouter_prompt_tokens, openrouter_completion_tokens,
+                       openrouter_total_tokens, openrouter_cached_tokens,
+                       openrouter_cache_write_tokens, openrouter_reasoning_tokens,
+                       openrouter_credits_cost, openrouter_upstream_inference_cost
+                FROM costs WHERE id = 1
+                """
+            )
+        ).one()
+    assert all(value is None for value in historical)
 
 
 def test_cross_provider_deep_dive_summary_restores_provider_model_and_savings_visibility():

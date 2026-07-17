@@ -6,18 +6,19 @@ TASK-OPENROUTER-JANUS-CHAT-PROVIDER
 
 ## Implementation Status
 
-- Overall Feature: `PARTIAL IMPLEMENTATION` (`4/6` tasks final-audit PASS)
+- Overall Feature: `PARTIAL IMPLEMENTATION` (`5/6` tasks final-audit PASS)
 - `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1`: `DONE` - Final Audit PASS on 2026-07-16
 - `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2`: `DONE` - Final Audit PASS on 2026-07-17
 - `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.3`: `DONE` - Final Audit PASS on 2026-07-17
 - `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.4`: `DONE` - Final Audit PASS on 2026-07-17
-- `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.5`: `OPEN`
+- `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.5`: `DONE` - Final Audit PASS WITH FIXES on 2026-07-17
 - `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6`: `OPEN`
 - Production State: `DISABLED` - the certification registry is intentionally empty and no OpenRouter model is visible or selectable.
 - Task `.1` Evidence: `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1_final_audit.md`, `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1_AUDIT_PACKAGE.md`
 - Task `.2` Evidence: `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2_final_audit.md`, `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2_AUDIT_PACKAGE.md`
 - Task `.3` Evidence: `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.3_FINAL_AUDIT.md`, `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.3_AUDIT_PACKAGE.md`
 - Task `.4` Evidence: `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.4_FINAL_AUDIT.md`, `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.4_AUDIT_PACKAGE.md`
+- Task `.5` Evidence: `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.5_FINAL_AUDIT.md`, `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.5_AUDIT_PACKAGE.md`
 
 ## Generated Tasks
 

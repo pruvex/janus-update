@@ -252,6 +252,23 @@ def _ensure_sqlite_schema_migrations() -> None:
                 with engine.begin() as conn:
                     conn.execute(text("ALTER TABLE costs ADD COLUMN attribution_metadata JSON"))
                 logger.info("Migration: costs.attribution_metadata added.")
+            openrouter_nullable_columns = {
+                "openrouter_prompt_tokens": "INTEGER",
+                "openrouter_completion_tokens": "INTEGER",
+                "openrouter_total_tokens": "INTEGER",
+                "openrouter_cached_tokens": "INTEGER",
+                "openrouter_cache_write_tokens": "INTEGER",
+                "openrouter_reasoning_tokens": "INTEGER",
+                "openrouter_credits_cost": "REAL",
+                "openrouter_upstream_inference_cost": "REAL",
+            }
+            for column_name, column_type in openrouter_nullable_columns.items():
+                if column_name not in cost_cols:
+                    with engine.begin() as conn:
+                        conn.execute(
+                            text(f"ALTER TABLE costs ADD COLUMN {column_name} {column_type}")
+                        )
+                    logger.info("Migration: costs.%s added (nullable).", column_name)
 
         # Path Sentinel: Create path_permissions table if it doesn't exist
         if not insp.has_table("path_permissions"):

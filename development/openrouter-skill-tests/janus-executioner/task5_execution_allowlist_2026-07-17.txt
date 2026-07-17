@@ -1,0 +1,16 @@
+backend/llm_providers/openrouter/service.py
+backend/llm_providers/openrouter/gateway.py
+backend/llm_providers/shared/response_postprocessors.py
+backend/services/chat_orchestrator.py
+backend/services/orchestrator/chat_request_workflow_state.py
+backend/services/orchestrator/execution_engine.py
+backend/services/cost_service.py
+backend/data/models.py
+backend/data/database.py
+backend/data/crud.py
+frontend/js/cost-visualizer.js
+backend/tests/test_cost_token_tracking_completeness.py
+backend/tests/test_openrouter_provider.py
+backend/tests/test_openrouter_telemetry.py
+tests/functional/chat-core.spec.js
+tests/e2e/openrouter-deep-dive.spec.js

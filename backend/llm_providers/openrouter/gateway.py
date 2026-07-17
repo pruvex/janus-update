@@ -178,6 +178,8 @@ class OpenRouterGateway:
         image_data: Optional[str] = None,
         tool_results: Optional[List[Dict[str, Any]]] = None,
         force_tool_name: Optional[str] = None,
+        openrouter_turn_id: Optional[str] = None,
+        current_round: int = 0,
         **_: Any,
     ) -> Dict[str, Any]:
         del api_key, context_manager, db, chat_id
@@ -188,13 +190,24 @@ class OpenRouterGateway:
             )
 
         if tool_results is not None:
-            return await self._send_authorized_round(
+            response = await self._send_authorized_round(
                 model=model,
                 messages=list(chat_history),
                 tools=None,
             )
+            telemetry = response.get("openrouter_telemetry")
+            if isinstance(telemetry, dict):
+                response["_openrouter_telemetry_records"] = [
+                    {
+                        **telemetry,
+                        "round": max(0, int(current_round)) + 1,
+                    }
+                ]
+                response["_openrouter_turn_id"] = str(openrouter_turn_id or "")
+            return response
 
         gateway = self
+        telemetry_records: List[Dict[str, Any]] = []
 
         class _AuthorizedRoundService:
             async def generate_response(self, **kwargs: Any) -> Dict[str, Any]:
@@ -212,7 +225,26 @@ class OpenRouterGateway:
             response.setdefault("provider", "openrouter")
             response.setdefault("model", context.model)
             response["_internal_tool_results"] = list(context.all_tool_results)
+            response["_openrouter_telemetry_records"] = list(telemetry_records)
+            response["_openrouter_turn_id"] = str(openrouter_turn_id or "")
             return NonToolResponseAction(kind="return", response=response)
+
+        def _capture_round_telemetry(
+            response: Dict[str, Any],
+            round_context: ToolLoopContext,
+        ) -> None:
+            telemetry = response.get("openrouter_telemetry")
+            if not isinstance(telemetry, dict):
+                return
+            telemetry_records.append(
+                {
+                    **telemetry,
+                    "round": (
+                        max(0, int(current_round))
+                        + int(round_context.current_round)
+                    ),
+                }
+            )
 
         context = ToolLoopContext(
             provider="openrouter",
@@ -247,6 +279,7 @@ class OpenRouterGateway:
             filter_tools_by_skill_ids=filter_tools,
             build_tool_definitions_for_llm=build_tools,
             resolve_execution_model=lambda current: (current.model, False),
+            on_round_response=_capture_round_telemetry,
         )
 
     async def stream(

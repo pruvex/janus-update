@@ -2,8 +2,11 @@ from pathlib import Path
 
 import json
 import pytest
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 from unittest.mock import AsyncMock, MagicMock
 
+from backend.data.models import Base, Cost
 from backend.services.orchestrator import execution_engine as ee_module
 from backend.services.orchestrator.schemas import OrchestratorContext
 from backend.services.orchestrator.stream_protocol import StreamEvent
@@ -196,6 +199,94 @@ async def test_stream_post_tool_round_uses_gateway_handoff_when_flag_on(monkeypa
     assert gateway_handoff_mock.await_args.kwargs["max_tool_rounds"] == 2
     stream_mock.assert_not_called()
     assert any(ev.type == "text_delta" and ev.content == "final from gateway" for ev in events)
+
+
+@pytest.mark.asyncio
+async def test_openrouter_stream_handoff_persists_attached_telemetry_with_global_round(monkeypatch):
+    monkeypatch.setattr(ee_module, "TRANSPORT_TOOL_LOOP_RUNNER_ENABLED", True)
+    db_engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
+    Base.metadata.create_all(bind=db_engine)
+    db = sessionmaker(bind=db_engine)()
+
+    silo_handoff_mock = AsyncMock(
+        return_value={
+            "text": "final from openrouter gateway",
+            "tool_calls": [],
+            "usage": {"input_tokens": 3, "output_tokens": 4},
+            "cost": {"total_cost": 0.0},
+            "_openrouter_turn_id": "turn-stream-tool-1",
+            "_openrouter_telemetry_records": [
+                {
+                    "response_model": "vendor/exact-model",
+                    "prompt_tokens": 3,
+                    "completion_tokens": 4,
+                    "total_tokens": 7,
+                    "credits_cost": 0.01,
+                    "round": 2,
+                }
+            ],
+        }
+    )
+    fake_silo = MagicMock()
+    fake_silo.reason_and_respond = silo_handoff_mock
+    monkeypatch.setattr(
+        ee_module.llm_gateway,
+        "_ensure_gateway_silos",
+        lambda: {"openrouter": fake_silo},
+    )
+
+    tool_executor = MagicMock()
+    tool_executor.execute_tool_calls = AsyncMock(
+        return_value=[
+            {
+                "role": "tool",
+                "name": "system.websearch",
+                "content": json.dumps({"status": "ok", "data": {"summary": "done"}}),
+            }
+        ]
+    )
+
+    engine = ee_module.OrchestratorExecutionEngine(
+        db=db,
+        context_manager=MagicMock(),
+        model_hierarchy={},
+        agent_planner=MagicMock(),
+        agent_runtime=MagicMock(),
+        skill_selector=MagicMock(),
+    )
+
+    async for _ in engine.run_tool_loop_stream(
+        orchestrator_context=OrchestratorContext(history=[{"role": "user", "content": "search news"}]),
+        tool_executor=tool_executor,
+        gateway_kwargs={
+            "provider": "openrouter",
+            "model": "vendor/exact-model",
+            "api_key": "",
+            "chat_history": [{"role": "user", "content": "search news"}],
+            "context_manager": MagicMock(),
+            "db": db,
+            "user_prompt": "search news",
+            "chat_id": 1,
+            "tool_executor": tool_executor,
+            "allowed_skill_ids": ["system.websearch"],
+            "force_tool_name": "system.websearch",
+            "forced_tool_args": {"query": "news"},
+            "openrouter_turn_id": "turn-stream-tool-1",
+        },
+        fallback_summary="fallback",
+        current_limit=3,
+        bypass_policy_this_turn=False,
+        set_policy_pending=MagicMock(),
+        chat_id=1,
+        user_text="search news",
+    ):
+        pass
+
+    assert silo_handoff_mock.await_args.kwargs["current_round"] == 1
+    rows = db.query(Cost).filter(Cost.provider == "openrouter").all()
+    assert len(rows) == 1
+    assert rows[0].attribution_component == "openrouter_round_2"
+    assert rows[0].openrouter_credits_cost == 0.01
 
 
 @pytest.mark.asyncio

@@ -134,6 +134,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         ${renderLiveSnapshot(deepDiveState.liveMeta)}
         ${renderCrossProviderOverview(crossProviderSummary, userSummary)}
+        ${renderOpenRouterTelemetry(data.openrouter_telemetry)}
         ${renderTruthfulnessHints(truthfulnessHints, summary)}
         ${renderSummaryCards(summary, data.historical_reconciliation || {})}
         ${renderAnomalyOverview(anomalies)}
@@ -444,6 +445,50 @@ document.addEventListener("DOMContentLoaded", () => {
               : '<div class="deep-dive-empty-state">Keine Modellsicht fuer diesen Zeitraum verfuegbar.</div>'
           }
         </section>
+      </section>
+    `;
+  }
+
+  function renderOpenRouterTelemetry(records) {
+    const items = Array.isArray(records) ? records : [];
+    if (!items.length) return "";
+    const value = (raw, suffix = "") =>
+      raw === null || raw === undefined
+        ? "nicht verfügbar"
+        : `${Number(raw).toLocaleString("de-DE", { maximumFractionDigits: 8 })}${suffix}`;
+    return `
+      <section class="deep-dive-provider-section" data-openrouter-telemetry>
+        <div class="deep-dive-anomaly-header">
+          <div>
+            <div class="deep-dive-kicker">OpenRouter</div>
+            <h4>Autoritative Turn-Telemetrie</h4>
+          </div>
+          <div class="deep-dive-provider-summary-note">Keine Schätzung oder Währungsumrechnung</div>
+        </div>
+        <div class="deep-dive-model-list">
+          ${items
+            .map(
+              (item) => `
+                <article class="deep-dive-model-row">
+                  <div class="deep-dive-model-main">
+                    <strong>${escapeHtml(item.model || "Unbekanntes Modell")}</strong>
+                    <span>Turn ${escapeHtml(item.turn_id || "nicht verfügbar")}</span>
+                  </div>
+                  <div class="deep-dive-provider-meta">
+                    <span>Eingabe: ${value(item.prompt_tokens)}</span>
+                    <span>Ausgabe: ${value(item.completion_tokens)}</span>
+                    <span>Gesamt: ${value(item.total_tokens)}</span>
+                    <span>Cache gelesen: ${value(item.cached_tokens)}</span>
+                    <span>Cache geschrieben: ${value(item.cache_write_tokens)}</span>
+                    <span>Reasoning: ${value(item.reasoning_tokens)}</span>
+                    <span>Belastete OpenRouter-Credits: ${value(item.credits_cost)}</span>
+                    <span>Upstream-Inferenzkosten: ${value(item.upstream_inference_cost)}</span>
+                  </div>
+                </article>
+              `,
+            )
+            .join("")}
+        </div>
       </section>
     `;
   }

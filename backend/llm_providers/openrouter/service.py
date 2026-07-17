@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from typing import Any, AsyncIterator, Callable, Dict, List, Optional
 
 import openai
@@ -23,6 +24,44 @@ class OpenRouterModelIdentityError(RuntimeError):
 
 class OpenRouterMalformedResponseError(RuntimeError):
     """Raised when an otherwise successful response lacks required structure."""
+
+
+def _finite_number(value: Any) -> Optional[float | int]:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    return value if math.isfinite(float(value)) else None
+
+
+def _finite_integer(value: Any) -> Optional[int]:
+    if isinstance(value, bool) or not isinstance(value, int):
+        return None
+    return value
+
+
+def normalize_openrouter_telemetry(
+    usage: Dict[str, Any],
+    *,
+    response_model: str,
+) -> Dict[str, Any]:
+    """Copy authoritative fields without converting missing values into zeros."""
+    usage = dict(usage or {})
+    prompt_details = usage.get("prompt_tokens_details")
+    completion_details = usage.get("completion_tokens_details")
+    cost_details = usage.get("cost_details")
+    prompt_details = prompt_details if isinstance(prompt_details, dict) else {}
+    completion_details = completion_details if isinstance(completion_details, dict) else {}
+    cost_details = cost_details if isinstance(cost_details, dict) else {}
+    return {
+        "response_model": str(response_model),
+        "prompt_tokens": _finite_integer(usage.get("prompt_tokens")),
+        "completion_tokens": _finite_integer(usage.get("completion_tokens")),
+        "total_tokens": _finite_integer(usage.get("total_tokens")),
+        "cached_tokens": _finite_integer(prompt_details.get("cached_tokens")),
+        "cache_write_tokens": _finite_integer(prompt_details.get("cache_write_tokens")),
+        "reasoning_tokens": _finite_integer(completion_details.get("reasoning_tokens")),
+        "credits_cost": _finite_number(usage.get("cost")),
+        "upstream_inference_cost": _finite_number(cost_details.get("upstream_inference_cost")),
+    }
 
 
 class OpenRouterServiceProvider(BaseLLMProvider):
@@ -122,6 +161,7 @@ class OpenRouterServiceProvider(BaseLLMProvider):
             if usage_obj is not None and hasattr(usage_obj, "model_dump")
             else dict(usage_obj or {})
         )
+        telemetry = normalize_openrouter_telemetry(usage, response_model=model)
         tool_calls = getattr(message, "tool_calls", None) or []
         if tool_calls:
             dumped_calls = [
@@ -141,6 +181,7 @@ class OpenRouterServiceProvider(BaseLLMProvider):
                 "provider": "openrouter",
                 "model": model,
                 "response_model": model,
+                "openrouter_telemetry": telemetry,
             }
 
         return {
@@ -152,6 +193,7 @@ class OpenRouterServiceProvider(BaseLLMProvider):
             "provider": "openrouter",
             "model": model,
             "response_model": model,
+            "openrouter_telemetry": telemetry,
         }
 
     async def generate_response_stream(
@@ -201,9 +243,16 @@ class OpenRouterServiceProvider(BaseLLMProvider):
                         if hasattr(usage_obj, "model_dump")
                         else dict(usage_obj or {})
                     )
+                    telemetry = normalize_openrouter_telemetry(
+                        usage,
+                        response_model=model,
+                    )
                     yield StreamEvent(
                         type="usage",
-                        content={"usage": usage},
+                        content={
+                            "usage": usage,
+                            "openrouter_telemetry": telemetry,
+                        },
                         metadata={"provider": "openrouter", "model": model},
                     )
                 choices = getattr(chunk, "choices", None) or []

@@ -1,5 +1,6 @@
 import json
 import logging
+import math
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -303,6 +304,92 @@ def create_cost_entry(
     except Exception as e:
         logger.error(f"Fehler beim Speichern der Kosten: {e}")
         return None
+
+
+def create_openrouter_telemetry_entry(
+    db: Session,
+    *,
+    telemetry: Dict[str, Any],
+    turn_id: str,
+    chat_id: Optional[int] = None,
+    round_number: Optional[int] = None,
+):
+    """Persist unit-isolated authoritative OpenRouter telemetry."""
+    if not isinstance(telemetry, dict):
+        return None
+    model = _coerce_optional_str(telemetry.get("response_model"))
+    request_id = _coerce_optional_str(turn_id)
+    if not model or not request_id:
+        return None
+
+    def optional_int(key: str) -> Optional[int]:
+        value = telemetry.get(key)
+        if isinstance(value, bool) or not isinstance(value, int):
+            return None
+        return value
+
+    def optional_float(key: str) -> Optional[float]:
+        value = telemetry.get(key)
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            return None
+        result = float(value)
+        return result if math.isfinite(result) else None
+
+    try:
+        component = (
+            f"openrouter_round_{int(round_number)}"
+            if round_number is not None
+            else "openrouter_response"
+        )
+        existing = (
+            db.query(models.Cost)
+            .filter(
+                models.Cost.provider == "openrouter",
+                models.Cost.model == model,
+                models.Cost.attribution_request_id == request_id,
+                models.Cost.attribution_component == component,
+            )
+            .first()
+        )
+        if existing is not None:
+            return existing
+
+        entry = models.Cost(
+            timestamp=datetime.utcnow(),
+            provider="openrouter",
+            model=model,
+            input_tokens=0,
+            output_tokens=0,
+            cached_tokens=0,
+            total_tokens=0,
+            total_cost=0.0,
+            context="conversation (openrouter_authoritative_telemetry)",
+            tokens_saved=0,
+            cost_saved=0.0,
+            attribution_request_id=request_id,
+            attribution_session_id=_coerce_optional_str(chat_id),
+            attribution_status=ATTRIBUTION_STATUS_INTERNAL,
+            attribution_component=component,
+            attribution_metadata={"unit_isolated": True},
+            openrouter_prompt_tokens=optional_int("prompt_tokens"),
+            openrouter_completion_tokens=optional_int("completion_tokens"),
+            openrouter_total_tokens=optional_int("total_tokens"),
+            openrouter_cached_tokens=optional_int("cached_tokens"),
+            openrouter_cache_write_tokens=optional_int("cache_write_tokens"),
+            openrouter_reasoning_tokens=optional_int("reasoning_tokens"),
+            openrouter_credits_cost=optional_float("credits_cost"),
+            openrouter_upstream_inference_cost=optional_float(
+                "upstream_inference_cost"
+            ),
+        )
+        db.add(entry)
+        db.commit()
+        db.refresh(entry)
+        return entry
+    except Exception:
+        logger.error("Failed to persist OpenRouter telemetry", exc_info=True)
+        return None
+
 
 def get_total_costs(db: Session):
     result = db.query(models.Cost).all()

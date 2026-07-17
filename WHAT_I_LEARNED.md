@@ -381,3 +381,15 @@
 - **Epic:** BACKLOG-132
 - **Confidence:** High
 - **Tags:** playwright,e2e,readiness,flaky-test,console-event
+
+
+## [PATTERN] #OpenRouterStreamHandoffMustPreserveGlobalRoundIdentity "OpenRouter stream-to-gateway handoffs must preserve global telemetry round identity"
+- **Kontext:** TASK-OPENROUTER-JANUS-CHAT-PROVIDER.5 final-audit blocker and repaired stream tool continuation (2026-07-17). (2026-07-17).
+- **Problem:** A streamed OpenRouter tool round persisted as round 1, while the dedicated gateway continuation restarted at round 1 after a router boundary dropped its task-specific offset. The idempotency key then silently treated the continuation as the prior row.
+- **Loesung:** Use the existing router-forwarded current_round seam only for OpenRouter handoffs as the completed-stream-round offset; persist attached continuation telemetry with the offset global round.
+- **Haertung:** A red-before/green-after regression invokes the real central router, asserts current_round reaches the OpenRouter silo, and proves the continuation persists as openrouter_round_2; the bound Python matrix passes 44 tests.
+- **Tripwire:** Any new stream-to-nonstream handoff that attaches records with local round counters must prove its offset across every routing boundary before relying on idempotency.
+- **Location:** backend/services/orchestrator/execution_engine.py; backend/llm_providers/openrouter/gateway.py; backend/tests/test_streaming_tool_loop_runner.py
+- **Epic:** TASK-OPENROUTER-JANUS-CHAT-PROVIDER.5
+- **Confidence:** High
+- **Tags:** openrouter,streaming,telemetry,tool-loop,idempotency,router-boundary

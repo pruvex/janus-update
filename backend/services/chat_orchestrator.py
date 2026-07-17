@@ -1047,6 +1047,7 @@ class ChatOrchestrator:
             role_mapper=self._prompt_role_from_db_role,
             limit=8,
         )
+        wf.request_trace_id = str(uuid.uuid4())
         wf.request_started_at = time.perf_counter()
         wf.kpi_phase1_started_at = None
         wf.kpi_phase2_started_at = None
@@ -5225,6 +5226,7 @@ class ChatOrchestrator:
                     wf.gateway_kwargs["tool_executor"] = wf.executor
                     wf.gateway_kwargs["chat_history"] = wf.messages
                     wf.gateway_kwargs["_workflow"] = wf
+                    wf.gateway_kwargs["openrouter_turn_id"] = wf.request_trace_id
 
                 if wf.skip_llm_generation:
                     wf.final_text = wf.final_text or wf.final_text_to_generate
