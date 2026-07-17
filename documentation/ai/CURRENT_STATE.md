@@ -1,11 +1,11 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
-As of `2026-07-17 17:44:55 +02:00`, `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.4` has task-scoped Final Audit `PASS` with no findings and its documentation closeout is complete. The parent OpenRouter Feature Spec is now `PARTIAL IMPLEMENTATION (4/6)`. Production remains disabled because the packaged certification registry is intentionally empty.
+As of `2026-07-17 17:52:25 +02:00`, `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.4` has task-scoped Final Audit `PASS`, is committed as `eee1c46e3`, and is confirmed on `backup/master`. The current handoff snapshot is published to `origin/codex-sync`. The parent OpenRouter Feature Spec remains `PARTIAL IMPLEMENTATION (4/6)`, and production remains disabled because the packaged certification registry is intentionally empty.
 
-Current goal: create a scoped Git checkpoint for the validated Task `.4` delivery block after explicit operator approval.
+Current goal: route Task `.5` OpenRouter DeepDive telemetry through task breakdown and preimplementation check.
 
-Active phase: `janus-documentation-update`, canonical state `PASS`; next gate `janus-git-governance`.
+Active phase: `janus-git-governance`, canonical state `PASS`; delivery commit, private backup push, and ChatGPT CURRENT_STATE sync complete.
 
 Last Codex work:
 - incorporated the operator's two safe manual observations as Task `.4` Manual Janus Validation `PASS`
@@ -18,7 +18,11 @@ Last Codex work:
 - preserved production default-deny because the certification registry remains empty
 - skipped Backlog/dashboard/TestPipeline updates because this compiled Feature-Spec task has no Backlog or TestRun marker
 - skipped a new `WHAT_I_LEARNED` entry because the existing `#PlaywrightReadinessMustBeObservableState` pattern already covers the validated runner-readiness lesson
-- performed no commit, push, merge, `origin/codex-sync`, release, registry population, live OpenRouter request, or real credential action
+- created scoped delivery commit `eee1c46e3` (`feat(openrouter): add fail-closed chat selection`)
+- confirmed `backup/master` exactly matches delivery commit `eee1c46e3`
+- published the current handoff snapshot to `origin/codex-sync`
+- performed no merge because the validated block was already on `master`
+- performed no release, production registry population, live OpenRouter request, or real credential action
 
 Changed files in this closeout block:
 - `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.4_FINAL_AUDIT.md`
@@ -38,18 +42,20 @@ Checks / validation performed:
 - `WHAT_I_LEARNED` duplicate search: PASS; existing readiness pattern found
 - scoped documentation `git diff --check`: PASS
 - inherited product evidence remains: backend `41 passed`, headed OpenRouter selection suite `4 passed`, Chat-Core `1 passed`, syntax/compile/diff/leak checks PASS, manual privacy/non-activation observation PASS
+- targeted staged diff check: PASS; 27 exact Task `.4` delivery files and no unrelated operator files committed
+- `backup/master` verification: PASS at `eee1c46e3`
 
 Open risks:
 - positive OpenRouter selection remains fixture-only because the production registry is intentionally empty
 - Tasks `.5` and `.6`, DeepDive telemetry, versioned conformance, real candidate certification, release, and production activation remain open
-- no commit, push, or `origin/codex-sync` has occurred for Task `.4`; GitHub and ChatGPT remote state do not yet contain this latest CURRENT_STATE
+- `origin/codex-sync` now carries this current snapshot; it does not replace the private full-code backup on `backup/master`
 - unrelated dirty and untracked operator files remain intentionally untouched
 
-Next recommended step for ChatGPT: treat Task `.4` as final-audit-passed and documented, the parent OpenRouter feature as `4/6` partial, and production as disabled; do not infer the local state from GitHub until `origin/codex-sync` is published.
+Next recommended step for ChatGPT: treat Task `.4` as final-audit-passed, documented, committed, and privately backed up; keep the parent OpenRouter feature at `4/6` partial and production disabled.
 
-Next recommended step for Codex: use `janus-git-governance` after fresh explicit `Commit: YES`, `Push: YES`, and `Sync: YES`; scope the checkpoint to the Task `.4` delivery and documentation files only.
+Next recommended step for Codex: start Task `.5` through `janus-task-breakdown`, then run `janus-preimplementation-check` before any DeepDive telemetry implementation.
 
-Last updated: `2026-07-17 17:44:55 +02:00`.
+Last updated: `2026-07-17 17:52:25 +02:00`.
 
 ## Current Snapshot Update
 As of `2026-07-17 17:21:34 +02:00`, `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.4` is implemented and automatically validated. The new chat eligibility, deliberate selection, retained-disabled selection, send blocking, recovery, window override, privacy copy, and existing-provider regressions pass. The only remaining Task `.4` gate is one safe manual Janus observation; no real credential or live OpenRouter request is required.
