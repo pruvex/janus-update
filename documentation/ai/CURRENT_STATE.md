@@ -1,6 +1,41 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-17 19:05:00 +02:00`, `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.5` has task-scoped Final Audit `PASS WITH FIXES`. The parent OpenRouter Feature Spec is now `PARTIAL IMPLEMENTATION (5/6)`; Task `.6` remains open. Production remains disabled because the packaged certification registry is intentionally empty.
+
+Current goal: document and checkpoint the completed Task `.5` telemetry/DeepDive delivery; after the checkpoint, route Task `.6` through feature-risk review before any implementation.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`.
+
+Last Codex work:
+- implemented authoritative OpenRouter response telemetry normalization, nullable storage, turn/model/round attribution, and isolated DeepDive rendering
+- found and fixed two audit defects in the combined stream-tool/gateway-continuation path: missing persistence ownership and router-lost global round identity
+- added a real-router regression proving the continuation record persists as round 2 after the streamed tool round
+- completed Final Audit `PASS WITH FIXES` and refreshed the audit package
+- performed no live OpenRouter request, real credential action, certification, release, or production activation
+
+Changed files: Task `.5` provider, persistence, orchestration, renderer, focused test, UI-oracle, execution/debug/audit, Spec, task, registry, project state, changelog, WHAT_I_LEARNED, skill-usage, and CURRENT_STATE artifacts.
+
+Checks / validation performed:
+- Python telemetry/provider/cost/stream-handoff matrix: `44 passed`
+- Chat-Core Playwright: `1 passed`
+- headed OpenRouter DeepDive plus BACKLOG-101/BACKLOG-103 UI suite: `3 passed`
+- Python compile, JavaScript syntax, scoped diff check, and scoped credential scan: PASS
+- debug-result and final-audit validators: PASS
+
+Open risks:
+- Task `.6` conformance battery and real candidate evidence are unstarted
+- production certification registry remains intentionally empty; no OpenRouter model is production-selectable
+- optional vector/vision startup warnings remain unrelated to Task `.5` evidence
+- no new Git checkpoint, backup push, or `origin/codex-sync` update has occurred; remote state may not contain this Task `.5` block or this CURRENT_STATE update
+
+Next recommended step for ChatGPT: treat Task `.5` as final-audit-passed but keep the parent feature at `5/6` partial and production disabled.
+
+Next recommended step for Codex: use `janus-git-governance` for a scoped Task `.5` checkpoint only after fresh explicit Commit/Push/Sync approval; then route Task `.6` through `janus-feature-design` or the bound task pipeline as appropriate.
+
+Last updated: `2026-07-17 19:05:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-17 17:52:25 +02:00`, `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.4` has task-scoped Final Audit `PASS`, is committed as `eee1c46e3`, and is confirmed on `backup/master`. The current handoff snapshot is published to `origin/codex-sync`. The parent OpenRouter Feature Spec remains `PARTIAL IMPLEMENTATION (4/6)`, and production remains disabled because the packaged certification registry is intentionally empty.
 
 Current goal: route Task `.5` OpenRouter DeepDive telemetry through task breakdown and preimplementation check.
