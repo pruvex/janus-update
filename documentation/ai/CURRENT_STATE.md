@@ -1,6 +1,452 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-17 14:09:18 +02:00`, `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2` is fully documented after Final Audit `PASS`. The isolated OpenRouter key lifecycle is task-scoped `DONE`, while the parent Feature Spec remains `PARTIAL IMPLEMENTATION (2/6)` with Tasks `.3` through `.6` open and all OpenRouter chat/model/production activation still disabled.
+
+Current goal: create an intentional Git checkpoint for the validated Task `.2` delivery block before selecting Task `.3`.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`, handoff to `janus-git-governance`.
+
+Last Codex work:
+- recorded Task `.2` completion metadata and its Final Audit PASS evidence
+- updated the parent OpenRouter Feature Spec from `1/6` to `2/6` without moving it to `Spec Done`
+- added the task-scoped closure to the central registry
+- updated `PROJECT_STATE.md` and the Unreleased changelog with the isolated credential-management behavior
+- kept Backlog and dashboard unchanged because the compiled Feature Spec task has no Backlog item
+- skipped `WHAT_I_LEARNED.md` because existing pattern `#Spec15ManualEvidenceRunner` already covers the bounded E2E-evidence blocker and tripwire
+- performed no version bump, release, Git, sync, real credential, or live provider action
+
+Changed files:
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2_task_breakdown.md`
+- `documentation/SPEC/OPENROUTER_JANUS_CHAT_PROVIDER_FEATURE_SPEC.md`
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `CHANGELOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- Final Audit result and validator: PASS
+- documentation completion validator for marker `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2`: PASS across task, Spec, central registry, project state, and changelog
+- parent progress and open-task consistency: PASS (`2/6`, `.3` through `.6` open)
+- Backlog marker and dashboard sync: N/A WITH REASON - no Backlog item is bound
+- `WHAT_I_LEARNED` duplicate search: existing matching tripwire found; no duplicate appended
+- final scoped whitespace, marker, evidence-path, and credential-shape checks: PASS
+
+Open risks:
+- Tasks `.3` through `.6` remain incomplete; OpenRouter cannot yet be used for Janus chat or model selection
+- no real OpenRouter credential or live validation call has been used
+- the worktree contains unrelated pre-existing changes that must remain outside the Task `.2` checkpoint scope
+- no commit, push, backup merge, or `origin/codex-sync` update occurred; remote state does not yet contain this documentation closeout or latest CURRENT_STATE
+
+Next recommended step for ChatGPT: treat Task `.2` as DONE and the parent feature as partial `2/6`; do not assume remote state is current until `origin/codex-sync` succeeds.
+
+Next recommended step for Codex: run `janus-git-governance` with `5.6 Terra/medium`, verify the exact Task `.2` file set against unrelated dirty changes, and request explicit Commit/Push/Sync authorization before any Git mutation.
+
+Last updated: `2026-07-17 14:09:18 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-17 14:03:31 +02:00`, the blocker-focused re-audit of exactly `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2` is `PASS`. The prior failure `FINAL_AUDIT_E2E_EVIDENCE_MISMATCH` is resolved by one bounded mocked Headed-E2E case that establishes `SENTINEL_A` as `VALID`, resubmits that same exact key under a simulated temporary technical validation failure, and confirms the rendered state remains `VALID`.
+
+Current goal: synchronize Task `.2` documentation and partial parent-feature state after Final Audit PASS without marking the parent feature complete.
+
+Active phase: `janus-final-audit`, canonical state `PASS`, handoff to `janus-documentation-update`.
+
+Last Codex work:
+- reloaded the Task `.2` audit package and reviewed `## Re-Audit Delta` first against `FINAL_AUDIT_E2E_EVIDENCE_MISMATCH`
+- verified only the changed `tests/e2e/openrouter-settings.spec.js` mock and same-exact-key technical-failure case
+- confirmed the new case preserves `VALID` for the same exact previously confirmed key and reasserts secret-free DOM/console output, ChatGPT-card presence, and absent OpenRouter model-management activation
+- independently reran only E2E syntax and the scoped Headed Playwright suite
+- found no delta spillover, so previously passed production/backend/architecture/provider areas were not reopened
+- updated the canonical final-audit artifact from `BLOCKED` to `PASS`
+- left the parent Feature Spec partial because Tasks `.3` through `.6` remain incomplete
+
+Changed files:
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2_final_audit.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- re-audit delta identity and single-file scope: PASS
+- changed E2E mock and same-exact-key transient-failure assertions: PASS
+- `node --check tests/e2e/openrouter-settings.spec.js`: PASS
+- `npx playwright test tests/e2e/openrouter-settings.spec.js --headed --workers=1 --reporter=list`: PASS, `3 passed`
+- production/backend retest: NOT RUN by blocker-delta rule; no spillover indicated
+- final-audit artifact validator: PASS
+- no real credential or live OpenRouter provider call occurred
+
+Open risks:
+- parent feature remains partial; Tasks `.3` through `.6` remain out of scope and incomplete
+- Task `.2` is Final Audit PASS but documentation/registry/dashboard synchronization is still pending
+- no Git, commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this re-audit PASS or latest CURRENT_STATE
+
+Next recommended step for ChatGPT: treat exactly Task `.2` as Final Audit PASS while keeping the parent OpenRouter feature partial.
+
+Next recommended step for Codex: run `janus-documentation-update` with `5.6 Terra/medium` for exactly Task `.2`; synchronize canonical documentation without moving the partial parent Spec to `Spec Done`, then stop at the Git-governance gate.
+
+Last updated: `2026-07-17 14:03:31 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-17 13:58:25 +02:00`, the sole blocker from the independent `5.6 Sol` final audit of `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2` is repaired. The mocked headed Settings E2E now explicitly proves that the same exact previously `VALID` key remains `VALID` after a simulated temporary technical revalidation failure; the scoped run passes all three tests. The existing audit package has been refreshed with a blocker-only re-audit delta.
+
+Current goal: run a blocker-focused re-audit against `FINAL_AUDIT_E2E_EVIDENCE_MISMATCH` without reopening the already-passed production-code review.
+
+Active phase: `janus-executioner`, canonical state `HANDOFF` to blocker-focused `janus-final-audit` re-audit.
+
+Last Codex work:
+- changed only `tests/e2e/openrouter-settings.spec.js` within the prior audit's minimum repair boundary
+- added explicit mock state for the currently stored key and a temporary technical validation failure
+- added a named E2E case that saves one exact key as `VALID`, resubmits that same key under technical failure, and asserts the rendered state remains `VALID`
+- reasserted secret-free DOM/console, separate ChatGPT-card visibility, and no OpenRouter model-management activation in that case
+- ran JavaScript syntax and the full headed task-scoped E2E suite; all three cases passed
+- updated the execution result and existing audit package with a concise re-audit delta
+- changed no production code, backend behavior, architecture, task scope, manual evidence, provider state, Git, release, or production setting
+
+Changed files:
+- `tests/e2e/openrouter-settings.spec.js`
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2_execution_result.md`
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2_AUDIT_PACKAGE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- precheck validator: PASS
+- final-audit blocker identity and WHAT_I_LEARNED tripwire search: PASS
+- `node --check tests/e2e/openrouter-settings.spec.js`: PASS
+- explicit same-key transient-failure marker scan: PASS
+- headed OpenRouter Settings E2E: PASS, `3 passed`
+- execution-result validator: PASS
+- audit-package refresh with blocker and delta fields: PASS
+
+Open risks:
+- the blocker-focused independent re-audit has not yet issued its new decision
+- the prior final-audit artifact remains a truthful historical `BLOCKED` result until re-audit supersedes it
+- canonical parent completion remains `1/6`; Task `.2` is not DONE until final audit PASS and documentation synchronization
+- no real key or live OpenRouter provider call was performed or authorized
+- no commit, push, or new `origin/codex-sync` update occurred, so remote state does not contain this blocker fix or latest CURRENT_STATE
+
+Next recommended step for ChatGPT: review only the re-audit result; do not reopen already-passed implementation areas unless the delta reveals spillover.
+
+Next recommended step for Codex: send the refreshed package back to the existing independent `5.6 Sol/high` audit task for blocker-focused re-audit; on PASS route to `janus-documentation-update`, otherwise follow the exact new blocker.
+
+Last updated: `2026-07-17 13:58:25 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-17 13:53:22 +02:00`, the independent final audit of exactly `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2` is `BLOCKED`. The scoped production implementation and backend evidence reviewed cleanly, but the audit package overstates a required Headed-E2E branch: the bound Playwright test does not prove that the same exact previously `VALID` key remains `VALID` after a temporary technical revalidation failure.
+
+Current goal: add only the missing bounded Headed-E2E assertion and truthfully refresh the existing audit-package delta before same-scope re-audit.
+
+Active phase: `janus-final-audit`, canonical state `BLOCKED`, blocker-only handoff to `janus-executioner`.
+
+Last Codex work:
+- audited only the compact Task `.2` audit package and directly bound seven-file implementation/test boundary
+- independently verified credential isolation, exact-key binding, stale-`VALID` prevention, state classification, fixed-host/no-retry validation, masked responses, OpenRouter-only deletion, and absent model-management activation
+- reran all scoped backend and syntax checks plus the fully mocked Headed-E2E suite; no real credential or live OpenRouter call occurred
+- reproduced the package-documented aggregate abuse-limiter `429` on the final unchanged ChatGPT test and confirmed that test passes in isolation after the limiter window
+- identified that the E2E test renders `VALID`, `INVALID`, and `UNVERIFIED` but does not execute the explicitly required same-exact-previously-`VALID` transient-failure preservation sequence
+- saved the canonical blocked final-audit artifact with a minimum blocker-only re-audit delta
+
+Changed files:
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2_final_audit.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- start-of-work healthcheck reminder: CLEAR, none due
+- audit-package completeness and single-task identity: PASS
+- targeted seven-file code/test review: PASS except for the required E2E evidence mismatch
+- aggregate OpenRouter plus ChatGPT API regression: 32 passed, final unchanged ChatGPT test hit documented global limiter `429`
+- focused ChatGPT isolation rerun after limiter window: PASS, `1 passed`
+- Python and JavaScript syntax: PASS
+- fully mocked headed OpenRouter Settings E2E: PASS, `2 passed`, but required same-key transient-failure branch absent
+- OpenRouter credential-shape scan: PASS, no `sk-or-v1-*` match
+- targeted `WHAT_I_LEARNED` tripwire search: `#Spec15ManualEvidenceRunner` matched the blocker pattern
+- final-audit artifact validator: PASS
+
+Open risks:
+- Task `.2` cannot pass final audit until the explicit same-key transient-failure E2E branch exists and the audit package describes it accurately
+- no production-code defect was established in the scoped review; the repair must remain test/evidence-only unless the new E2E assertion exposes a real mismatch
+- parent feature remains partial; Tasks `.3` through `.6` remain out of scope
+- no real key/live OpenRouter call is authorized or required
+- no commit, push, or `origin/codex-sync` update occurred, so remote state does not contain this final-audit result or latest CURRENT_STATE
+
+Next recommended step for ChatGPT: treat Task `.2` as final-audit blocked, not DONE, and approve only the narrow E2E/audit-package delta if desired.
+
+Next recommended step for Codex: run `janus-executioner` with `5.6 Terra/high` to add the bounded mocked same-exact-key transient-failure E2E assertion, rerun the scoped headed test, update only the existing audit package's Validation/Re-Audit Delta, then return to same-scope `janus-final-audit`.
+
+Last updated: `2026-07-17 13:53:22 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-17 13:21:12 +02:00`, the operator's live Janus Settings evidence satisfies the manual validation gate for exactly `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2`. The execution result now records manual `PASS`, and a compact scoped audit package is ready for an independent final audit in a fresh chat.
+
+Current goal: perform an independent final quality/release gate for Task `.2` using only the compact audit package and bound repository artifacts.
+
+Active phase: `janus-executioner`, canonical state `HANDOFF` to `janus-final-audit`; audit package prepared by `codex-audit-package-builder`.
+
+Last Codex work:
+- accepted the operator-reported live view as manual PASS: OpenRouter credential field visible, existing providers masked, missing OpenRouter state `UNVERIFIED`, and separate ChatGPT Codex card visible
+- recorded that no real OpenRouter key was entered or saved
+- changed the canonical execution result from `NEEDS_INFO` to `HANDOFF`
+- built the compact dirty-worktree-scoped audit package with explicit Spec, Task, precheck, automated validation, manual evidence, risks, changed files, and final-audit boundary
+- ran no product code change, product test, credential access, provider call, Git, release, or production action in this handoff block
+
+Changed files:
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2_execution_result.md`
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2_AUDIT_PACKAGE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- start-of-work healthcheck reminder: CLEAR, none due
+- manual Janus Settings evidence against the bound expected result: PASS
+- execution-result validator after manual update: PASS
+- audit-package generation restricted to the Task `.2` file boundary: PASS
+- audit-package bound inputs and artifact inventory: PASS
+
+Open risks:
+- final audit has not yet independently reviewed the credential-state authority, failure ordering, redaction, deletion isolation, and absence of chat/model activation
+- canonical parent completion remains `1/6`; Task `.2` is not DONE until final audit and documentation synchronization pass
+- no real key/live OpenRouter validation was performed by design
+- no commit, push, or new `origin/codex-sync` update occurred, so remote state does not contain Task `.2` implementation, manual PASS, or audit package
+
+Next recommended step for ChatGPT: start a fresh independent audit context and load only `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2_AUDIT_PACKAGE.md` plus directly referenced bound files.
+
+Next recommended step for Codex: run `janus-final-audit` with `5.6 Sol/high` if runtime-supported; otherwise use `5.6 Terra/high` and record `SOL_UNAVAILABLE_FOR_CHATGPT_CODEX_ACCOUNT`. Do not carry development chat history into the audit.
+
+Last updated: `2026-07-17 13:21:12 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-16 21:58:44 +02:00`, implementation and automated validation for exactly `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2` are complete. The isolated OpenRouter credential lifecycle is implemented in the approved seven-file boundary, all mocked backend and headed Settings evidence passes, and the task is waiting only for the required manual Janus UI check before final audit.
+
+Current goal: obtain operator confirmation that the OpenRouter credential-only Settings surface renders correctly in live Janus without entering or saving a real key.
+
+Active phase: `janus-executioner`, canonical state `NEEDS_INFO`, manual Janus validation gate pending.
+
+Last Codex work:
+- added raw-key storage only at `Janus-Projekt/openrouter` and versioned non-secret exact-key-bound validation metadata at `Janus-Projekt/openrouter-validation-state`
+- added content-free validation against fixed `GET https://openrouter.ai/api/v1/key` with bounded timeout, redirects disabled, environment proxy authority disabled, and no retry
+- implemented `VALID`, `INVALID`, and `UNVERIFIED` with the approved same-exact-key transient-failure preservation rule and replacement non-inheritance
+- added OpenRouter-only deletion and masked public responses
+- added in-place Settings state rendering while excluding OpenRouter from model management/chat activation and preserving the ChatGPT card
+- added 19 mocked backend cases and 2 headed intercepted Settings E2E cases
+- selected local Codex execution after the Cursor proposal lane failed the positive-ROI threshold; no delegated execution or new provider cost occurred
+- made no real credential access, live OpenRouter call, chat/model/telemetry/certification activation, Git, release, or production change
+
+Changed files:
+- `backend/api/routers/system.py`
+- `backend/data/schemas.py`
+- `frontend/index.html`
+- `frontend/js/settings.js`
+- `frontend/css/settings.css`
+- `backend/tests/test_openrouter_key_settings_api.py`
+- `tests/e2e/openrouter-settings.spec.js`
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- precheck validator: PASS
+- initial OpenRouter plus ChatGPT API regression: PASS, `31 passed`
+- post-hardening OpenRouter cases: PASS, `19 passed`; one aggregate existing ChatGPT case hit global `429 retry_after=9`, then focused rerun PASS, `1 passed`
+- Python and JavaScript syntax: PASS
+- headed OpenRouter Settings E2E: PASS, `2 passed`
+- scoped diff/whitespace and OpenRouter credential-shape scans: PASS
+- Auto-Verification: PASS
+
+Open risks:
+- manual live Janus Settings rendering is not yet operator-confirmed
+- no real key or live OpenRouter validation is authorized for the manual gate; it must remain a missing-state UI inspection
+- canonical parent completion remains `1/6`; Task `.2` is implemented but not DONE until manual validation, final audit, and documentation synchronization pass; Tasks `.3` through `.6` remain out of scope
+- OpenRouter remains absent from model management/chat eligibility and the Task `.1` production certification registry remains empty
+- no commit, push, or new `origin/codex-sync` update occurred, so remote state does not contain Task `.2` implementation or latest CURRENT_STATE
+
+Next recommended step for ChatGPT: wait for the operator's manual Settings result; do not mark Task `.2` done or production-enabled.
+
+Next recommended step for Codex: if the operator reports PASS, build the compact task-scoped audit package and route to `janus-final-audit` with `5.6 Sol/high` if available, otherwise documented `5.6 Terra/high`; if the operator reports a mismatch, route to `janus-debug`.
+
+Last updated: `2026-07-16 21:58:44 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-16 21:38:51 +02:00`, the fresh preimplementation check for exactly `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2` passes against the corrected credential-state contract. The canonical PASS artifact contains a strict seven-file execution handoff to `janus-executioner`; implementation has not started and still requires operator approval.
+
+Current goal: execute exactly OpenRouter Task `.2` after explicit approval, with mocked keyring/HTTP evidence and no live credential/provider access.
+
+Active phase: `janus-preimplementation-check`, canonical state `PASS`, handoff to `janus-executioner`.
+
+Last Codex work:
+- verified exactly one target task, one approved Spec, the corrected Task `.2` artifact, and `N/A` Backlog identity
+- confirmed atomic seven-file scope, explicit exclusions, measurable acceptance criteria, and HIGH risk
+- confirmed a feasible Janus-owned non-secret validation-metadata entry bound to the exact stored-key fingerprint, with fail-closed mismatch behavior and no user-editable authority
+- confirmed the deterministic state branches: new/different/unconfirmed plus incomplete validation => `UNVERIFIED`; same exact confirmed key plus temporary technical failure preserves `VALID`; explicit `401` => `INVALID`; replacement never inherits old `VALID`
+- bound backend, syntax, diff, headed Playwright, redaction, isolation, deletion, and ChatGPT-card regression evidence into the canonical execution handoff
+- reused the prior OpenRouter advisory evidence without another delegated call or cost; final precheck authority remained local
+- ran no product tests, implementation, credential access, live provider call, Git, release, or production action
+
+Changed files:
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2_precheck.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- artifact identity and unique target: PASS
+- corrected Spec/task state consistency: PASS
+- scope/files/exclusions/acceptance/tests/risk/model gates: PASS
+- concrete implementation seam and exact-key-binding feasibility: PASS
+- required PASS literals and forbidden-content validator: PASS
+- product tests: NOT RUN by precheck rule
+- product-code changes: NONE
+
+Open risks:
+- execution is HIGH risk because credential storage, remote authentication classification, redaction, and later eligibility authority are involved
+- implementation must remain within the seven files and stop if a shared service, database migration, chat eligibility integration, or architecture widening becomes necessary
+- all HTTP/keyring evidence must be mocked and secret-free; no real OpenRouter key or live provider call is authorized
+- parent feature remains `1/6` completed; Tasks `.3` through `.6` stay out of scope
+- no commit, push, or new `origin/codex-sync` update occurred, so remote state does not contain the Task `.2` planning/precheck artifacts
+
+Next recommended step for ChatGPT: recognize Task `.2` as precheck-passed but not implemented or production-enabled.
+
+Next recommended step for Codex: after operator approval, run `janus-executioner` with `5.6 Terra/high` in the same chat against `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2_precheck.md`; do not include Git actions.
+
+Last updated: `2026-07-16 21:38:51 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-16 21:35:38 +02:00`, the Task `.2` artifact contradiction is resolved by a minimal `janus-task-breakdown` correction. `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2` again has `TASK DESIGN COMPLETE` and is released to a fresh single-task preimplementation check; no product implementation is authorized by this refinement.
+
+Current goal: rerun preimplementation check against the corrected deterministic credential-state contract before any OpenRouter key-lifecycle code changes.
+
+Active phase: `janus-task-breakdown`, canonical state `HANDOFF` to `janus-preimplementation-check`.
+
+Last Codex work:
+- corrected only `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2_task_breakdown.md`
+- specified that incomplete technical validation of a new, replaced, or unconfirmed key produces `UNVERIFIED`
+- specified that temporary technical revalidation failure preserves `VALID` only for the same exact key with matching confirmed validation binding
+- specified that explicit authenticated `401` produces `INVALID`, including for the same previously valid key
+- preserved the rule that replacement never inherits prior `VALID` and added explicit backend/E2E oracle coverage for all branches
+- added no new public state, file, architecture, provider eligibility, implementation, credential access, provider call, Git, release, or production action
+
+Changed files:
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2_task_breakdown.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- approved Spec / compiled Task / target identity: PASS
+- new-or-different-key versus same-exact-key state distinction: PASS
+- explicit `401` and replacement non-inheritance rules: PASS
+- binary backend and E2E evidence requirements: PASS
+- seven-file scope and exclusions unchanged: PASS
+- canonical task-handoff validator: PASS
+- product tests: NOT RUN by rule for task breakdown
+- product-code changes: NONE
+
+Open risks:
+- a fresh precheck must still confirm the concrete implementation seam, exact-key fingerprint binding, failure ordering, redaction, and official endpoint contract
+- no real key or live OpenRouter validation is authorized
+- parent feature remains `1/6` completed; Tasks `.3` through `.6` remain out of scope
+- no commit, push, or new `origin/codex-sync` update occurred, so remote state does not contain the corrected Task `.2` artifact
+
+Next recommended step for ChatGPT: treat the prior precheck block as resolved at task-design level, but do not treat Task `.2` as implementation-ready until the fresh precheck passes.
+
+Next recommended step for Codex: run `janus-preimplementation-check` with `5.6 Terra/high` in the same chat against the corrected Task `.2` breakdown; no repeat delegated review is necessary unless the operator explicitly requests one.
+
+Last updated: `2026-07-16 21:35:38 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-16 21:31:03 +02:00`, the preimplementation check for exactly `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2` is blocked by a binding artifact contradiction. The approved Spec preserves the confirmed state of the same exact previously `VALID` key through temporary provider/network/model failure, while the Task breakdown broadly requires technical revalidation failure to expose `UNVERIFIED`. Product implementation is not authorized until the Task breakdown distinguishes these cases.
+
+Current goal: correct only the Task `.2` validation-state rules so implementation has one deterministic contract for a new/replaced key, the same unchanged previously valid key, explicit authentication rejection, and replacement ordering.
+
+Active phase: `janus-preimplementation-check`, canonical state `BLOCKED`, handoff to `janus-task-breakdown`.
+
+Last Codex work:
+- bound the approved OpenRouter Spec, compiled Task `.2`, and Task breakdown to one precheck target
+- verified the current backend/Settings/keyring seams, seven-file boundary, OpenRouter-only deletion feasibility, exact-key fingerprint binding, and stale-`VALID` fail-closed replacement ordering
+- verified the official content-free authenticated `GET https://openrouter.ai/api/v1/key` endpoint contract
+- ran the operator-selected bounded OpenRouter precheck review; schema and telemetry validation passed at an actual cost of `$0.00011725`
+- rejected the delegated `PRECHECK_PASS_CANDIDATE` and `LOW` risk classification because it missed the binding same-key-versus-new-key contradiction
+- issued `PRE-CHECK BLOCKED: ARTIFACT_CONTRADICTION`; no implementation, credential access, live provider call, Git, release, or production action occurred
+
+Changed files:
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2_precheck.md`
+- `development/openrouter-skill-tests/janus-preimplementation-check/precheck_input_package_openrouter_task2_2026-07-16.json`
+- `documentation/codex/model-routing/precheck-review-runs/WF-OPENROUTER-TASK2-PRECHECK-2026-07-16/`
+- `documentation/codex/model-routing/or_healthcheck_telemetry_precheck_review_2026-07-16_WF-OPENROUTER-TASK2-PRECHECK-2026-07-16.jsonl`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- target identity, scope, files, exclusions, and test boundary: PASS
+- official OpenRouter endpoint/authentication contract: PASS
+- secure restart-safe exact-key state-binding feasibility: PASS
+- replacement stale-`VALID` prevention feasibility: PASS
+- OpenRouter review schema, redaction, telemetry, and healthcheck: PASS
+- Spec-to-task validation-state consistency: BLOCKED
+- product-code diff: NONE
+
+Open risks:
+- Task breakdown must explicitly say new/different key plus incomplete technical validation => `UNVERIFIED`
+- Task breakdown must explicitly say same exact previously `VALID` key plus temporary technical failure preserves `VALID`
+- explicit authenticated `401` rejection must set `INVALID`, and replacement must never inherit prior `VALID`
+- no new public degraded state or user-editable authority may be invented during correction
+- parent feature remains `1/6` completed; Tasks `.3` through `.6` stay out of scope
+- no commit, push, or new `origin/codex-sync` update occurred, so remote state does not contain the Task `.2` planning/precheck artifacts
+
+Next recommended step for ChatGPT: treat Task `.2` as blocked before implementation and preserve the approved Spec distinction between incomplete first/replacement validation and transient failure of the same confirmed key.
+
+Next recommended step for Codex: after operator approval, run a minimal `janus-task-breakdown` correction with `5.6 Terra/high` in the same chat, revalidate the handoff, update CURRENT_STATE, and return to `janus-preimplementation-check`.
+
+Last updated: `2026-07-16 21:31:03 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-16 21:11:47 +02:00`, exactly `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2` has been refined and released to single-task preimplementation check. The task now binds the existing API-key Settings surface, OpenRouter-only keyring isolation, the current official content-free `GET /api/v1/key` validation path, truthful `VALID` / `INVALID` / `UNVERIFIED` semantics, exact-key state binding, OpenRouter-only deletion, redaction, and strict exclusion of chat/model/telemetry/production work.
+
+Current goal: precheck exactly OpenRouter Task `.2` and prove the secure restart-safe status authority, save/replace atomicity, official endpoint contract, response allowlist, and seven-file execution boundary before any implementation.
+
+Active phase: `janus-task-breakdown`, canonical state `HANDOFF` to `janus-preimplementation-check`.
+
+Last Codex work:
+- bound only the approved OpenRouter Spec and compiled Task `.2`
+- verified the existing `/api/keys` backend and Settings seams, including blind save, fixed provider listing, absent delete endpoint, masked UI, and separate ChatGPT card
+- verified from current official OpenRouter documentation that `GET https://openrouter.ai/api/v1/key` is the authenticated current-key endpoint and that `401` is invalid authentication
+- ran the bounded OpenRouter assist-only review selected by the operator; actual cost was `$0.00021586`
+- rejected the delegated draft after validator failure on legacy model values and invalid source-of-truth wording, then completed the authoritative refinement locally
+- added hard precheck gates for exact-key status binding, stale-VALID prevention, fail-closed atomicity, zero retry/redirect leakage, and no architecture widening
+- ran no implementation, product tests, live key validation, credential access, provider call, Git, release, or production action
+
+Changed files:
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2_task_breakdown.md`
+- `development/openrouter-skill-tests/janus-task-breakdown/openrouter_task2_input_package_2026-07-16.json`
+- `documentation/codex/model-routing/task-breakdown-runs/WF-OPENROUTER-TASK2-BREAKDOWN-2026-07-16/`
+- `documentation/codex/model-routing/or_healthcheck_telemetry_task_breakdown_2026-06-26_WF-OPENROUTER-TASK2-BREAKDOWN-2026-07-16.jsonl`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- single approved Spec / single target identity: PASS
+- existing API-key backend/Settings/ChatGPT seam inspection: PASS
+- official OpenRouter current-key endpoint verification: PASS
+- OR file-first capture and healthcheck: PASS
+- delegated task-breakdown validation: FAIL as expected/rejected (`execution_model`, `model_recommendation`, `source_of_truth`)
+- local canonical task-handoff validator: PASS
+- input/evidence JSON parsing: PASS
+- scoped `git diff --check`: PASS
+
+Open risks:
+- precheck must identify a Janus-owned, restart-safe, exact-key-bound validation-state persistence seam; user-editable or stale status authority is forbidden
+- precheck must prove save/replace ordering cannot leave a new key with an old key's `VALID` state
+- current generic `/api/keys` has no delete endpoint and logs exceptions with `exc_info`; implementation must add OpenRouter-only deletion and secret-safe failure handling without widening other providers
+- current Settings key save forces a hard reload; Task `.2` requires truthful in-place OpenRouter status while preserving existing providers and the ChatGPT card
+- no real key or live OpenRouter validation is authorized; all execution evidence must be mocked/sentinel-based and secret-free
+- parent feature remains `1/6` completed; Tasks `.3` through `.6` stay out of scope
+- no commit, push, or new `origin/codex-sync` update occurred after this handoff, so remote state does not contain Task `.2` planning artifacts
+
+Next recommended step for ChatGPT: preserve Task `.2` as design-complete but not implementation-ready until the secure state/atomicity/endpoint precheck passes.
+
+Next recommended step for Codex: run `janus-preimplementation-check` with `5.6 Terra/high` against `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2_task_breakdown.md`; block rather than invent a new credential architecture if the seven-file scope cannot satisfy the gates.
+
+Last updated: `2026-07-16 21:11:47 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-16 20:20:25 +02:00`, documentation synchronization for final-audit-PASS `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1` is complete. Task `.1` is recorded as DONE across the task container, partial Feature Spec metadata, Central Task Registry, PROJECT_STATE, and CHANGELOG. The parent OpenRouter feature remains `PARTIAL IMPLEMENTATION (1/6)` and production remains disabled with an empty certification registry.
 
 Current goal: prepare a targeted Solo Git v2 checkpoint proposal for the completed OpenRouter Task `.1` delivery block without staging generated reports or unrelated parked worktree changes.
