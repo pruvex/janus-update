@@ -1,0 +1,12 @@
+{
+  "workflow_id": "WF-OPENROUTER-TASK2-PRECHECK-2026-07-16",
+  "task_label": "Review OpenRouter Task .2 preimplementation package",
+  "input_validation_pass": true,
+  "result_validation_pass": true,
+  "telemetry_validation_pass": true,
+  "input_issues": [],
+  "result_issues": [],
+  "telemetry_issues": [],
+  "redaction_ready": true,
+  "accepted_for_local_codex_validation": true
+}

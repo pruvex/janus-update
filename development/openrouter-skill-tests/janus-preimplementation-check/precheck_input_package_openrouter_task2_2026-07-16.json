@@ -1,0 +1,33 @@
+{
+  "workflow_id": "WF-OPENROUTER-TASK2-PRECHECK-2026-07-16",
+  "bound_skill_context": "janus-preimplementation-check",
+  "target_task": "TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2",
+  "task_path": "documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2_task_breakdown.md",
+  "spec_path": "documentation/SPEC/OPENROUTER_JANUS_CHAT_PROVIDER_FEATURE_SPEC.md",
+  "backlog_item": "N/A",
+  "assigned_model": "5.6 Terra",
+  "scope_summary": "Atomic precheck for the isolated OpenRouter key lifecycle on the existing API-key Settings surface. Verify exact-key validation-state authority, save/replace atomicity, official content-free key validation contract, OpenRouter-only deletion, secret-safe public responses and logs, and no chat/model/telemetry/production activation. No credential access or live provider call.",
+  "acceptance_focus": [
+    "target task identity is unique and consistent with the approved parent Spec",
+    "raw key storage and deletion are restricted to Janus-Projekt/openrouter while all other credentials and the ChatGPT card remain unchanged",
+    "Janus-owned restart-safe validation state is bound to the exact stored key and cannot inherit stale VALID state",
+    "401 maps to INVALID while technical or incomplete validation maps to UNVERIFIED without retry; public and evidence surfaces remain secret-free",
+    "the implementation remains within the seven bound files and does not activate chat, models, telemetry, or production"
+  ],
+  "affected_files": [
+    "backend/api/routers/system.py",
+    "backend/data/schemas.py",
+    "frontend/index.html",
+    "frontend/js/settings.js",
+    "frontend/css/settings.css",
+    "backend/tests/test_openrouter_key_settings_api.py",
+    "tests/e2e/openrouter-settings.spec.js"
+  ],
+  "evidence_focus": [
+    "mocked backend contracts for save replace delete success 401 timeout network 429 5xx malformed response no retry exact-key state binding and provider isolation",
+    "sentinel-secret leak checks across response logs exceptions persisted metadata and browser-visible output",
+    "headed mocked Settings E2E for masked presence and VALID INVALID UNVERIFIED states plus ChatGPT-card non-interference",
+    "Python and JavaScript syntax plus scoped diff checks; no live OpenRouter call or real key"
+  ],
+  "redaction_ready": true
+}

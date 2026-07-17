@@ -1,0 +1,12 @@
+{
+  "workflow_id": "WF-OPENROUTER-TASK2-BREAKDOWN-2026-07-16",
+  "task_label": "Review OpenRouter Task .2 key lifecycle",
+  "validation_issues": [
+    "execution_model invalid",
+    "model_recommendation invalid",
+    "source_of_truth invalid"
+  ],
+  "finish_reason": "stop",
+  "actual_or_cost": 0.00021586,
+  "validator_returncode": null
+}

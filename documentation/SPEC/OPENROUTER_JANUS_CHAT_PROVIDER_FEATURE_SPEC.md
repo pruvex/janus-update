@@ -24,14 +24,14 @@ reason: Externe Providerintegration mit isoliertem Credential, Zertifizierungsga
 
 ## SPEC IMPLEMENTATION METADATA
 
-- **Implementation Status:** PARTIAL IMPLEMENTATION (`1/6` tasks complete)
-- **Completed Task:** `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1`
-- **Task Final Audit:** PASS (`2026-07-16`)
-- **Validation Evidence:** focused certification/catalog tests `18 passed`; Python compilation and JSON parsing PASS; scoped diff check PASS; headed existing-provider regression `10 passed`; manual Janus validation PASS; exact-version `latest` blocker regression PASS
-- **Evidence Paths:** `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1_final_audit.md`, `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1_AUDIT_PACKAGE.md`
-- **Open Tasks:** `.2` isolated key lifecycle; `.3` fail-closed chat/tool path; `.4` selection and privacy UI; `.5` DeepDive telemetry; `.6` versioned conformance battery and real candidate evidence
+- **Implementation Status:** PARTIAL IMPLEMENTATION (`2/6` tasks complete)
+- **Completed Tasks:** `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1`, `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2`
+- **Latest Task Final Audit:** Task `.2` PASS (`2026-07-17`)
+- **Validation Evidence:** Task `.1` certification/catalog tests `18 passed`, headed existing-provider regression `10 passed`, manual validation and exact-version `latest` tripwire PASS; Task `.2` OpenRouter API lifecycle `19 passed`, isolated ChatGPT non-interference `1 passed`, Python/JavaScript syntax PASS, scoped mocked Headed Playwright `3 passed`, manual Settings missing-state evidence PASS, and Final-Audit-Validator PASS
+- **Evidence Paths:** `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1_final_audit.md`, `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1_AUDIT_PACKAGE.md`, `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2_final_audit.md`, `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2_AUDIT_PACKAGE.md`
+- **Open Tasks:** `.3` fail-closed chat/tool path; `.4` selection and privacy UI; `.5` DeepDive telemetry; `.6` versioned conformance battery and real candidate evidence
 - **Production State:** DISABLED; packaged certification registry remains empty, with zero visible/selectable OpenRouter models
-- **Spec Done Move:** NOT APPLICABLE - the parent feature remains active until Tasks `.2` through `.6` pass their own gates
+- **Spec Done Move:** NOT APPLICABLE - the parent feature remains active until Tasks `.3` through `.6` pass their own gates
 
 ## FEATURE IDENTITY
 - Feature Name: OpenRouter als Janus-Chatprovider mit zertifizierten Modellen

@@ -851,10 +851,12 @@
                 <select id="provider-input">
                   <option value="openai">OpenAI</option>
                   <option value="gemini">Gemini</option>
+                  <option value="openrouter">OpenRouter</option>
                 </select>
                 <input type="password" id="api-key-input" placeholder="API-Schlüssel" />
                 <button type="submit">Speichern</button>
               </form>
+              <p id="openrouter-key-feedback" class="settings-inline-status" hidden></p>
               <h4>Gespeicherte API Keys</h4>
               <ul id="api-key-list"></ul>
 

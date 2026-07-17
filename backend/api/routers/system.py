@@ -1,3 +1,5 @@
+import hashlib
+import hmac
 import json
 import logging
 import os
@@ -5,7 +7,9 @@ from datetime import datetime, timedelta
 from typing import Optional, List, Dict, Any
 
 import keyring
+import httpx
 from backend.data import crud
+from backend.data.schemas import ApiKey, OpenRouterKeyPublicState, OpenRouterKeyValidationState
 from backend.services.telemetry_service import submit_feedback_async
 from backend.utils.config_loader import initialize_file_from_template, load_model_catalog
 from backend.utils.paths import get_app_data_dir, resource_path
@@ -46,12 +50,6 @@ def load_config():
 def save_config(config):
     with open(CONFIG_FILE, "w") as f:
         json.dump(config, f, indent=2)
-
-
-# --- Models ---
-class ApiKey(BaseModel):
-    provider: str
-    api_key: str
 
 
 class CodexLoginCancelRequest(BaseModel):
@@ -129,6 +127,133 @@ class FeedbackRequest(BaseModel):
 
 # --- Endpoints ---
 
+_KEYRING_SERVICE = "Janus-Projekt"
+_OPENROUTER_PROVIDER = "openrouter"
+_OPENROUTER_VALIDATION_ACCOUNT = "openrouter-validation-state"
+_OPENROUTER_VALIDATION_VERSION = 1
+_OPENROUTER_KEY_INFO_URL = "https://openrouter.ai/api/v1/key"
+_OPENROUTER_TIMEOUT = httpx.Timeout(8.0, connect=5.0)
+
+
+def _openrouter_key_fingerprint(api_key: str) -> str:
+    return hashlib.sha256(api_key.encode("utf-8")).hexdigest()
+
+
+def _read_openrouter_validation_state(api_key: str) -> OpenRouterKeyValidationState:
+    raw_metadata = keyring.get_password(_KEYRING_SERVICE, _OPENROUTER_VALIDATION_ACCOUNT)
+    if not raw_metadata:
+        return OpenRouterKeyValidationState.UNVERIFIED
+    try:
+        metadata = json.loads(raw_metadata)
+        if metadata.get("version") != _OPENROUTER_VALIDATION_VERSION:
+            return OpenRouterKeyValidationState.UNVERIFIED
+        if not hmac.compare_digest(
+            str(metadata.get("key_fingerprint") or ""),
+            _openrouter_key_fingerprint(api_key),
+        ):
+            return OpenRouterKeyValidationState.UNVERIFIED
+        return OpenRouterKeyValidationState(str(metadata.get("state") or ""))
+    except (TypeError, ValueError, json.JSONDecodeError):
+        return OpenRouterKeyValidationState.UNVERIFIED
+
+
+def _write_openrouter_validation_state(
+    api_key: str,
+    state: OpenRouterKeyValidationState,
+) -> None:
+    metadata = {
+        "version": _OPENROUTER_VALIDATION_VERSION,
+        "key_fingerprint": _openrouter_key_fingerprint(api_key),
+        "state": state.value,
+    }
+    keyring.set_password(
+        _KEYRING_SERVICE,
+        _OPENROUTER_VALIDATION_ACCOUNT,
+        json.dumps(metadata, separators=(",", ":"), sort_keys=True),
+    )
+
+
+def _delete_keyring_entry(account: str) -> None:
+    try:
+        keyring.delete_password(_KEYRING_SERVICE, account)
+    except keyring.errors.PasswordDeleteError:
+        return
+
+
+def _openrouter_public_state() -> OpenRouterKeyPublicState:
+    api_key = keyring.get_password(_KEYRING_SERVICE, _OPENROUTER_PROVIDER)
+    if not api_key:
+        return OpenRouterKeyPublicState(present=False)
+    return OpenRouterKeyPublicState(
+        present=True,
+        masked="********",
+        state=_read_openrouter_validation_state(api_key),
+    )
+
+
+async def _validate_openrouter_key(api_key: str) -> OpenRouterKeyValidationState:
+    try:
+        async with httpx.AsyncClient(
+            timeout=_OPENROUTER_TIMEOUT,
+            follow_redirects=False,
+            trust_env=False,
+        ) as client:
+            response = await client.get(
+                _OPENROUTER_KEY_INFO_URL,
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Accept": "application/json",
+                },
+            )
+        if response.status_code == 401:
+            return OpenRouterKeyValidationState.INVALID
+        if response.status_code != 200:
+            return OpenRouterKeyValidationState.UNVERIFIED
+        payload = response.json()
+        if not isinstance(payload, dict) or not isinstance(payload.get("data"), dict):
+            return OpenRouterKeyValidationState.UNVERIFIED
+        return OpenRouterKeyValidationState.VALID
+    except Exception:
+        logger.warning("OpenRouter key validation could not be completed.")
+        return OpenRouterKeyValidationState.UNVERIFIED
+
+
+async def _save_openrouter_key(api_key: str) -> OpenRouterKeyPublicState:
+    if not api_key or not api_key.strip():
+        raise HTTPException(status_code=422, detail="OpenRouter API key is required.")
+
+    current_key = keyring.get_password(_KEYRING_SERVICE, _OPENROUTER_PROVIDER)
+    same_key = bool(current_key) and hmac.compare_digest(current_key, api_key)
+    prior_state = (
+        _read_openrouter_validation_state(current_key)
+        if same_key and current_key
+        else OpenRouterKeyValidationState.UNVERIFIED
+    )
+    prior_valid_same_key = same_key and prior_state == OpenRouterKeyValidationState.VALID
+
+    try:
+        if not same_key:
+            _delete_keyring_entry(_OPENROUTER_VALIDATION_ACCOUNT)
+            keyring.set_password(_KEYRING_SERVICE, _OPENROUTER_PROVIDER, api_key)
+            _write_openrouter_validation_state(api_key, OpenRouterKeyValidationState.UNVERIFIED)
+
+        validation_state = await _validate_openrouter_key(api_key)
+        if validation_state == OpenRouterKeyValidationState.UNVERIFIED and prior_valid_same_key:
+            final_state = OpenRouterKeyValidationState.VALID
+        else:
+            final_state = validation_state
+
+        if final_state == OpenRouterKeyValidationState.INVALID:
+            _delete_keyring_entry(_OPENROUTER_VALIDATION_ACCOUNT)
+        _write_openrouter_validation_state(api_key, final_state)
+    except HTTPException:
+        raise
+    except Exception:
+        logger.error("Failed to save OpenRouter API key state.")
+        raise HTTPException(status_code=500, detail="Failed to save OpenRouter API key.")
+
+    return OpenRouterKeyPublicState(present=True, masked="********", state=final_state)
+
 
 @router.get("/system/ops/kill-switches", dependencies=[Depends(api_key_auth)])
 async def get_ops_kill_switches():
@@ -141,19 +266,46 @@ async def get_api_keys():
     providers = ["openai", "gemini", "anthropic", "cohere"]
     retrieved_keys = {}
     for p in providers:
-        if keyring.get_password("Janus-Projekt", p):
+        if keyring.get_password(_KEYRING_SERVICE, p):
             retrieved_keys[p] = "********"
+    retrieved_keys[_OPENROUTER_PROVIDER] = _openrouter_public_state().model_dump(mode="json")
     return {"api_keys": retrieved_keys}
 
 
 @router.post("/keys")
 async def add_api_key(key: ApiKey):
+    provider = key.provider.strip().lower()
+    if provider == _OPENROUTER_PROVIDER:
+        state = await _save_openrouter_key(key.api_key)
+        return {
+            "message": "OpenRouter API key saved.",
+            "provider": _OPENROUTER_PROVIDER,
+            "key": state.model_dump(mode="json"),
+        }
     try:
-        keyring.set_password("Janus-Projekt", key.provider.lower(), key.api_key)
+        keyring.set_password(_KEYRING_SERVICE, provider, key.api_key)
         return {"message": "API Key saved successfully"}
-    except Exception as e:
-        logger.error(f"Failed to save API key: {e}", exc_info=True)
+    except Exception:
+        logger.error("Failed to save API key.")
         raise HTTPException(status_code=500, detail="Failed to save API key.")
+
+
+@router.delete("/keys/openrouter")
+async def delete_openrouter_api_key():
+    delete_failed = False
+    for account in (_OPENROUTER_PROVIDER, _OPENROUTER_VALIDATION_ACCOUNT):
+        try:
+            _delete_keyring_entry(account)
+        except Exception:
+            delete_failed = True
+    if delete_failed:
+        logger.error("Failed to delete OpenRouter API key state.")
+        raise HTTPException(status_code=500, detail="Failed to delete OpenRouter API key.")
+    return {
+        "message": "OpenRouter API key deleted.",
+        "provider": _OPENROUTER_PROVIDER,
+        "key": OpenRouterKeyPublicState(present=False).model_dump(mode="json"),
+    }
 
 
 @router.get("/codex-connection")

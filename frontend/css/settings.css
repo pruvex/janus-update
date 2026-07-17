@@ -819,6 +819,38 @@
   margin-bottom: 20px;
 }
 
+.openrouter-key-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 8px 0;
+}
+
+.openrouter-key-state {
+  font-weight: 600;
+}
+
+.openrouter-key-state-valid {
+  color: #76d39b;
+}
+
+.openrouter-key-state-invalid {
+  color: #ff8b8b;
+}
+
+.openrouter-key-state-unverified {
+  color: #e7c66a;
+}
+
+.openrouter-key-delete {
+  background-color: #8f2f36;
+}
+
+.settings-inline-status-error {
+  color: #ff8b8b;
+}
+
 #back-to-chat-btn {
   margin-top: auto; /* Schiebt den Button ganz nach unten */
 }

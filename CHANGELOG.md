@@ -7,6 +7,9 @@ und dieses Projekt folgt der [Semantic Versioning](https://semver.org/spec/v2.0.
 
 ## [Unreleased]
 
+### Added
+- **TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2 / isolierte OpenRouter-Schluesselverwaltung auditiert:** In den API-Key-Einstellungen kann ein eigener OpenRouter-Key jetzt getrennt gespeichert, maskiert angezeigt, ersetzt, inhaltsfrei validiert und wieder geloescht werden. Der Rohschluessel bleibt im provider-spezifischen Windows-Keyring; nicht-sensitive Zustandsdaten sind an den exakten Key gebunden und unterscheiden fail-closed zwischen `VALID`, `INVALID` und `UNVERIFIED`. Bestehende Provider und die separate ChatGPT-Karte bleiben isoliert. Validation: OpenRouter API `19 passed`, isolierte ChatGPT-Nichtbeeinflussung `1 passed`, Python-/JavaScript-Syntax PASS, scoped mocked Headed Playwright `3 passed`, manueller Settings-Check und Final Audit PASS. OpenRouter-Chat, Modelle, Auswahl, Live-Credential-Test und Produktion bleiben deaktiviert; der Parent steht bei `2/6`.
+
 ## [0.4.17-beta.50] - 2026-07-15
 
 ### Documentation

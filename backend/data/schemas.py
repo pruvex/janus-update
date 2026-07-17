@@ -14,6 +14,23 @@ from pydantic import (
 )
 
 
+class ApiKey(BaseModel):
+    provider: str
+    api_key: str
+
+
+class OpenRouterKeyValidationState(str, Enum):
+    VALID = "VALID"
+    INVALID = "INVALID"
+    UNVERIFIED = "UNVERIFIED"
+
+
+class OpenRouterKeyPublicState(BaseModel):
+    present: bool
+    masked: Optional[Literal["********"]] = None
+    state: OpenRouterKeyValidationState = OpenRouterKeyValidationState.UNVERIFIED
+
+
 # --- Tool Schemas ---
 class GenerateImageToolArgs(BaseModel):
     prompt: str = Field(

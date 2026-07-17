@@ -360,6 +360,7 @@ const apiKeyForm = document.getElementById("api-key-form");
 const providerInput = document.getElementById("provider-input");
 const apiKeyInput = document.getElementById("api-key-input");
 const apiKeyList = document.getElementById("api-key-list");
+const openrouterKeyFeedback = document.getElementById("openrouter-key-feedback");
 const codexConnectionCard = document.getElementById("codex-connection-card");
 const codexConnectionStatus = document.getElementById("codex-connection-status");
 const codexConnectionDetails = document.getElementById("codex-connection-details");
@@ -448,15 +449,46 @@ async function loadApiKeys() {
   apiKeyList.innerHTML = "";
   try {
     const response = await fetch(`${API_BASE_URL}/api/keys`);
+    if (!response.ok) throw new Error("API key status request failed");
     const data = await response.json();
-    for (const provider in data.api_keys) {
+    for (const provider in (data.api_keys || {})) {
       const listItem = document.createElement("li");
-      listItem.textContent = `Provider: ${provider}, Key: ****`;
+      if (provider === "openrouter") {
+        const publicState = data.api_keys[provider] || {};
+        const state = ["VALID", "INVALID", "UNVERIFIED"].includes(publicState.state)
+          ? publicState.state
+          : "UNVERIFIED";
+        listItem.id = "openrouter-key-status";
+        listItem.className = "openrouter-key-row";
+
+        const status = document.createElement("span");
+        status.className = `openrouter-key-state openrouter-key-state-${state.toLowerCase()}`;
+        status.textContent = `OpenRouter: ${publicState.present ? "gespeichert" : "nicht gespeichert"} · ${state}`;
+        listItem.appendChild(status);
+
+        if (publicState.present) {
+          const deleteButton = document.createElement("button");
+          deleteButton.type = "button";
+          deleteButton.className = "openrouter-key-delete";
+          deleteButton.dataset.openrouterKeyAction = "delete";
+          deleteButton.textContent = "OpenRouter-Key löschen";
+          listItem.appendChild(deleteButton);
+        }
+      } else {
+        listItem.textContent = `Provider: ${provider}, Key: ****`;
+      }
       apiKeyList.appendChild(listItem);
     }
   } catch (error) {
     console.error("Error loading API keys:", error);
   }
+}
+
+function showOpenRouterKeyFeedback(message, isError = false) {
+  if (!openrouterKeyFeedback) return;
+  openrouterKeyFeedback.textContent = message;
+  openrouterKeyFeedback.classList.toggle("settings-inline-status-error", isError);
+  openrouterKeyFeedback.hidden = !message;
 }
 
 function isOfficialCodexDeviceVerificationUrl(url) {
@@ -779,6 +811,7 @@ async function renderSettingsView(targetSection = "api-key-section") {
       // Tracken welche Provider bereits hinzugefügt wurden (Schutz gegen Duplikate)
       const addedProviders = new Set();
       for (const provider in data.api_keys) {
+        if (provider === "openrouter") continue;
         if (addedProviders.has(provider)) continue;
         addedProviders.add(provider);
         const manageModelsBtn = document.createElement("button");
@@ -1693,16 +1726,26 @@ document.addEventListener("DOMContentLoaded", () => {
     const originalText = submitBtn.textContent;
     submitBtn.textContent = "Speichere...";
     submitBtn.disabled = true;
+    if (provider === "openrouter") {
+      showOpenRouterKeyFeedback("OpenRouter-Key wird inhaltsfrei geprüft...");
+    }
 
     try {
-        await fetch(`${API_BASE_URL}/api/keys`, {
+        const response = await fetch(`${API_BASE_URL}/api/keys`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ provider, api_key }),
         });
-        
+        if (!response.ok) throw new Error("API key save failed");
+
         apiKeyInput.value = "";
-        
+
+        if (provider === "openrouter") {
+          await loadApiKeys();
+          showOpenRouterKeyFeedback("OpenRouter-Key-Status wurde aktualisiert.");
+          return;
+        }
+
         // --- FIX: HARTER NEUSTART ---
         // Zwingt die App, neu zu laden. Dadurch werden 'initializeApp' 
         // und 'loadChats' erneut ausgeführt, diesmal MIT gültigem Token.
@@ -1712,9 +1755,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
     } catch (error) {
         console.error("Fehler beim Speichern des Keys:", error);
-        alert("Fehler beim Speichern: " + error.message);
+        if (provider === "openrouter") {
+          showOpenRouterKeyFeedback("OpenRouter-Key konnte nicht gespeichert werden.", true);
+        } else {
+          alert("Fehler beim Speichern des API-Keys.");
+        }
+    } finally {
         submitBtn.textContent = originalText;
         submitBtn.disabled = false;
+    }
+  });
+
+  apiKeyList.addEventListener("click", async (event) => {
+    const button = event.target.closest('button[data-openrouter-key-action="delete"]');
+    if (!button || button.disabled) return;
+
+    button.disabled = true;
+    showOpenRouterKeyFeedback("OpenRouter-Key wird gelöscht...");
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/keys/openrouter`, { method: "DELETE" });
+      if (!response.ok) throw new Error("OpenRouter key delete failed");
+      await loadApiKeys();
+      showOpenRouterKeyFeedback("OpenRouter-Key wurde gelöscht.");
+    } catch (error) {
+      console.error("Fehler beim Löschen des OpenRouter-Keys:", error);
+      showOpenRouterKeyFeedback("OpenRouter-Key konnte nicht gelöscht werden.", true);
+      button.disabled = false;
     }
   });
 

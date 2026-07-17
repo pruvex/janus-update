@@ -4,12 +4,22 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2 - Isolated OpenRouter key lifecycle
+
+- **Status**: DONE (task-scoped Final Audit PASS; parent Feature Spec remains active).
+- **Final Audit**: `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2_final_audit.md` (PASS).
+- **Audit Package**: `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2_AUDIT_PACKAGE.md`.
+- **Spec**: `documentation/SPEC/OPENROUTER_JANUS_CHAT_PROVIDER_FEATURE_SPEC.md` (APPROVED - PARTIAL IMPLEMENTATION `2/6`; Tasks `.3` through `.6` remain open).
+- **Validation**: OpenRouter API lifecycle `19 passed`; isolated ChatGPT non-interference `1 passed`; Python/JavaScript syntax PASS; scoped mocked Headed Playwright `3 passed`; manual Settings missing-state evidence PASS; Final-Audit-Validator PASS.
+- **Scope**: provider-specific keyring storage, exact-key-bound non-secret validation metadata, content-free key validation, fail-closed `VALID` / `INVALID` / `UNVERIFIED` handling, masked Settings state, and OpenRouter-only deletion.
+- **Production State**: DISABLED; OpenRouter remains credential-management-only with no chat provider, model, selection, transport, live credential call, or production activation.
+
 ### TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1 - Release-owned certification registry and catalog gate
 
 - **Status**: DONE (task-scoped Final Audit PASS; parent Feature Spec remains active).
 - **Final Audit**: `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1_final_audit.md` (PASS).
 - **Audit Package**: `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1_AUDIT_PACKAGE.md`.
-- **Spec**: `documentation/SPEC/OPENROUTER_JANUS_CHAT_PROVIDER_FEATURE_SPEC.md` (APPROVED - PARTIAL IMPLEMENTATION; Tasks `.2` through `.6` remain open).
+- **Spec**: `documentation/SPEC/OPENROUTER_JANUS_CHAT_PROVIDER_FEATURE_SPEC.md` (APPROVED - PARTIAL IMPLEMENTATION `2/6`; Tasks `.3` through `.6` remain open).
 - **Validation**: certification/catalog Pytest `18 passed`; Python compile and packaged JSON parsing PASS; scoped diff PASS; headed existing-provider E2E `10 passed`; manual Janus validation PASS; exact-version `latest` re-audit tripwire PASS.
 - **Scope**: one packaged release-owned certification authority, fail-closed exact model/version/battery/evidence binding, catalog-loader/API parity, AppData/runtime non-authority, and zero production candidate activation only.
 - **Production State**: DISABLED; the packaged registry is empty and no OpenRouter model is visible or selectable.
