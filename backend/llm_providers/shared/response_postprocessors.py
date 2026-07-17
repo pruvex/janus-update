@@ -81,7 +81,12 @@ _POSTPROCESSORS: Dict[str, ResponsePostprocessor] = {
     "openai_compat": ensure_openai_release_list_links,
     "gemini_native": ensure_gemini_grounding_links,
 }
-_PROVIDER_FAMILIES = {"openai": "openai_compat", "gemini": "gemini_native", "google": "gemini_native"}
+_PROVIDER_FAMILIES = {
+    "openai": "openai_compat",
+    "openrouter": "openai_compat",
+    "gemini": "gemini_native",
+    "google": "gemini_native",
+}
 
 
 def postprocess_provider_response(provider: str, response: Dict[str, Any], **context: Any) -> Dict[str, Any]:

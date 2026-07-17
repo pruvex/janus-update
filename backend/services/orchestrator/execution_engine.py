@@ -1142,6 +1142,17 @@ async def _async_iter_llm_stream(
             **extra,
         ):
             yield ev
+    elif provider == "openrouter":
+        from backend.llm_providers.openrouter.gateway import OpenRouterGateway
+
+        async for ev in OpenRouterGateway().stream(
+            model=model,
+            messages=messages,
+            tools=tools_llm,
+            force_tool_name=force_tool_name,
+            max_completion_tokens=max_tok,
+        ):
+            yield ev
     elif provider in ("gemini", "google"):
         svc = GeminiServiceProvider()
         stream_wf = gateway_kwargs.get("_workflow")
@@ -1173,7 +1184,7 @@ async def _async_iter_llm_stream(
         yield StreamEvent(type="error", content=f"Unsupported provider: {provider}", metadata={})
 
 
-_STREAM_GATEWAY_HANDOFF_PROVIDERS = frozenset({"openai", "gemini", "google"})
+_STREAM_GATEWAY_HANDOFF_PROVIDERS = frozenset({"openai", "openrouter", "gemini", "google"})
 
 
 def _should_route_stream_tool_round_via_gateway(*, had_tool_round: bool, provider: str) -> bool:
@@ -2139,6 +2150,8 @@ class OrchestratorExecutionEngine:
             return requested_model or ""
 
         provider_key = str(provider or "").strip().lower()
+        if provider_key == "openrouter":
+            return str(requested_model or "").strip()
         provider_map = self.model_hierarchy.get(provider_key) or {}
         if not isinstance(provider_map, dict) or not provider_map:
             return requested_model or ""
@@ -2246,6 +2259,9 @@ class OrchestratorExecutionEngine:
         prov = str(provider or "").strip().lower()
         mdl = str(model or "").strip()
         fallback = str(fallback_model or "").strip()
+
+        if prov == "openrouter":
+            return prov, mdl
 
         if not prov:
             prov = self._find_provider_for_model(mdl) or self._find_provider_for_model(fallback)
@@ -2477,7 +2493,12 @@ class OrchestratorExecutionEngine:
         _pre_skill_ids = gateway_kwargs.get("allowed_skill_ids") or []
         _pre_provider = current_call_provider or gateway_kwargs.get("provider") or ""
         _pre_base_model = current_call_model or gateway_kwargs.get("model") or ""
-        if _allow_moa_hard_lock and _pre_skill_ids and _pre_provider:
+        if (
+            _allow_moa_hard_lock
+            and _pre_skill_ids
+            and _pre_provider
+            and str(_pre_provider).strip().lower() != "openrouter"
+        ):
             for _sid in _pre_skill_ids:
                 _resolved = self._resolve_model_for_skill(_sid, _pre_provider, _pre_base_model)
                 if _resolved and _resolved != _pre_base_model:
@@ -3679,7 +3700,12 @@ class OrchestratorExecutionEngine:
         _pre_skill_ids = gateway_kwargs.get("allowed_skill_ids") or []
         _pre_provider = current_call_provider or gateway_kwargs.get("provider") or ""
         _pre_base_model = current_call_model or gateway_kwargs.get("model") or ""
-        if _allow_moa_hard_lock and _pre_skill_ids and _pre_provider:
+        if (
+            _allow_moa_hard_lock
+            and _pre_skill_ids
+            and _pre_provider
+            and str(_pre_provider).strip().lower() != "openrouter"
+        ):
             for _sid in _pre_skill_ids:
                 _resolved = self._resolve_model_for_skill(_sid, _pre_provider, _pre_base_model)
                 if _resolved and _resolved != _pre_base_model:

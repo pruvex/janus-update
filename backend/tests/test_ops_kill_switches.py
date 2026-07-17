@@ -19,6 +19,7 @@ def test_provider_kill_switch_blocks_cloud_and_allows_local(monkeypatch):
     monkeypatch.setenv("JANUS_DISABLE_CLOUD_PROVIDERS", "1")
 
     assert provider_access_decision("openai").disabled is True
+    assert provider_access_decision("openrouter").code == "OPS_PROVIDER_DISABLED"
     assert provider_access_decision("gemini").code == "OPS_PROVIDER_DISABLED"
     assert provider_access_decision("ollama").disabled is False
 
@@ -102,6 +103,10 @@ def test_dry_run_inventory_is_non_secret_and_classifies_required_domains(monkeyp
     assert inventory["switches"]["providerAccess"] is True
     assert inventory["switches"]["telemetryMode"] == "minimal"
     assert inventory["switches"]["telemetryRemoteUploadAllowed"] is False
+    assert any(
+        probe["id"] == "provider:openrouter" and probe["disabled"]
+        for probe in inventory["probes"]
+    )
     assert "api_key" not in serialized
     assert "secret" not in serialized
     assert any(probe["id"] == "tool:memory.write" and probe["disabled"] for probe in inventory["probes"])

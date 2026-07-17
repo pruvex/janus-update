@@ -1,5 +1,13 @@
 # Janus Test Pipeline Run Log
 
+## 2026-07-17 - BACKLOG-132 OpenRouter Settings E2E readiness closeout
+
+- Marker: `BACKLOG-132`.
+- Result: PASS - the source runner now waits for observable rendered UI readiness instead of relying only on a one-shot console event.
+- Validation: `node --check` PASS; scoped diff PASS; exact headed OpenRouter Settings runner passed twice consecutively with `3 passed`.
+- Final audit: accepted in `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.3_FINAL_AUDIT.md` (PASS).
+- Scope: runner readiness only; no TestSpec/TestPlan/TestResult generation and no product behavior or assertion weakening.
+
 ## 2026-07-14 - TASK-CHATGPT-CODEX.1 documentation marker
 
 - Marker: `TASK-CHATGPT-CODEX.1`.

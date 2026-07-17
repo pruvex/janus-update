@@ -357,3 +357,27 @@
 - **Epic:** TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1
 - **Confidence:** High
 - **Tags:** openrouter,certification,fail-closed,model-version,alias,final-audit
+
+
+## [PATTERN] #OpenRouterStreamCompletionMustProveIdentityAndFinish "Provider streams must prove exact identity and completion before terminal success"
+- **Kontext:** TASK-OPENROUTER-JANUS-CHAT-PROVIDER.3 final-audit blocker and repaired dedicated stream path (2026-07-17).
+- **Problem:** An empty or incomplete upstream stream could reach a terminal done event without any exact response-model identity or upstream finish marker, and direct auth/model/interruption evidence was absent.
+- **Loesung:** Track exact-model upstream chunks, retain the finish marker until iteration completes, and raise typed non-secret identity or malformed errors before finish/done when either proof is missing.
+- **Haertung:** Direct complete, empty, incomplete, model-mismatch, authenticated-rejection, and technical-interruption regressions plus 116 bound Python tests and final audit PASS.
+- **Tripwire:** Any provider stream emits finish or done without first observing the exact selected response model and a completed upstream iteration with a finish marker.
+- **Location:** backend/llm_providers/openrouter/service.py; backend/llm_providers/openrouter/gateway.py; backend/tests/test_openrouter_provider.py
+- **Epic:** TASK-OPENROUTER-JANUS-CHAT-PROVIDER.3
+- **Confidence:** High
+- **Tags:** openrouter,streaming,model-identity,fail-closed,no-replay
+
+
+## [PATTERN] #PlaywrightReadinessMustBeObservableState "Playwright readiness must use repeatable UI state instead of one-shot console events"
+- **Kontext:** BACKLOG-132 blocked the Task .3 re-audit after two setup timeouts despite fully rendered UI snapshots (2026-07-17).
+- **Problem:** A runner waited only for a one-shot console readiness message and timed out before assertions even though Janus was already visibly ready.
+- **Loesung:** After reload, wait for a stable user-visible readiness locator that can be observed repeatedly; keep console capture for diagnostics and leak assertions, not as sole readiness authority.
+- **Haertung:** The exact headed OpenRouter Settings runner passed twice consecutively with all three assertions unchanged.
+- **Tripwire:** An E2E beforeEach uses page.waitForEvent console as its only app-ready gate or fails while the error snapshot shows the target UI already rendered.
+- **Location:** tests/e2e/openrouter-settings.spec.js
+- **Epic:** BACKLOG-132
+- **Confidence:** High
+- **Tags:** playwright,e2e,readiness,flaky-test,console-event

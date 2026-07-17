@@ -42,7 +42,7 @@ class ToolCallAdapter:
         canonical = str(canonical_skill_id or "").strip()
         if not canonical:
             return canonical
-        if self.provider in {"openai", "ollama"}:
+        if self.provider in {"openai", "openrouter", "ollama"}:
             return canonical.replace(".", "_")
         if self.provider == "gemini":
             return self._sanitize_gemini_outbound_name(canonical)
@@ -134,7 +134,7 @@ class ToolCallAdapter:
     def sanitize_tool_schema(self, schema: Any) -> Dict[str, Any]:
         if self.provider == "gemini":
             return self._sanitize_gemini_tool_schema(schema)
-        if self.provider in {"openai", "ollama"}:
+        if self.provider in {"openai", "openrouter", "ollama"}:
             return self._sanitize_openai_tool_schema(schema)
         if isinstance(schema, dict):
             return schema

@@ -1,6 +1,15 @@
 import json
 
+import pytest
+
+from backend.llm_providers.openrouter.gateway import OpenRouterGateway
+from backend.services import llm_gateway
+from backend.services.llm_silo_context import (
+    push_active_llm_silo,
+    reset_active_llm_silo,
+)
 from backend.services.orchestrator.execution_engine import (
+    OrchestratorExecutionEngine,
     _build_dynamic_fallback_summary,
     _build_memory_read_fallback_response,
     _build_memory_read_fallback_response_v2,
@@ -257,3 +266,58 @@ def test_memory_write_force_fallback_for_already_known_contact_fact():
             }
         ]
     )
+
+
+def test_openrouter_model_resolution_never_switches_model_or_provider():
+    engine = object.__new__(OrchestratorExecutionEngine)
+    engine.model_hierarchy = {
+        "openrouter": {
+            "speed": "other/model",
+            "logic": "other/logic-model",
+        }
+    }
+
+    assert engine._resolve_model_for_skill(
+        "system.websearch",
+        "openrouter",
+        "vendor/exact-model",
+    ) == "vendor/exact-model"
+    assert engine._normalize_provider_model_pair(
+        provider="openrouter",
+        model="vendor/exact-model",
+        fallback_model="openai/fallback",
+    ) == ("openrouter", "vendor/exact-model")
+
+
+@pytest.mark.asyncio
+async def test_openrouter_call_llm_uses_dedicated_gateway_once_without_key_refresh(monkeypatch):
+    calls = []
+
+    async def fake_generate_once(self, **kwargs):
+        calls.append(kwargs)
+        return {"type": "text", "text": "ok"}
+
+    monkeypatch.setattr(OpenRouterGateway, "generate_once", fake_generate_once)
+    result = await llm_gateway.call_llm(
+        provider="openrouter",
+        model="vendor/exact-model",
+        api_key="CALLER_KEY_MUST_BE_IGNORED",
+        messages=[{"role": "user", "content": "hello"}],
+    )
+
+    assert result["text"] == "ok"
+    assert len(calls) == 1
+    assert "api_key" not in calls[0]
+
+
+def test_openrouter_is_an_independent_cloud_silo():
+    token = push_active_llm_silo("openrouter")
+    try:
+        blocked = llm_gateway._guard_llm_provider_silo("openai", "gpt-5.4")
+        assert blocked is not None
+        assert blocked["error_code"] == "PROVIDER_SILO_VIOLATION"
+        assert llm_gateway._guard_llm_provider_silo(
+            "openrouter", "vendor/exact-model"
+        ) is None
+    finally:
+        reset_active_llm_silo(token)

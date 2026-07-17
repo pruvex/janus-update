@@ -10,7 +10,7 @@ from fastapi import HTTPException, status
 TRUTHY_VALUES = {"1", "true", "yes", "on", "enabled", "disable", "disabled"}
 FALSEY_VALUES = {"0", "false", "no", "off", "disabled", ""}
 
-CLOUD_PROVIDERS = {"openai", "gemini", "google", "anthropic", "cohere"}
+CLOUD_PROVIDERS = {"openai", "openrouter", "gemini", "google", "anthropic", "cohere"}
 
 EXTERNAL_TOOL_IDS = {
     "system.websearch",
@@ -233,7 +233,7 @@ def require_local_user_unlocked(path: Optional[str] = None) -> None:
 
 def dry_run_inventory() -> Dict[str, Any]:
     probes: List[Dict[str, Any]] = []
-    for provider in ("openai", "gemini", "ollama"):
+    for provider in ("openai", "openrouter", "gemini", "ollama"):
         decision = provider_access_decision(provider)
         probes.append({"id": f"provider:{provider}", "disabled": decision.disabled, "code": decision.code})
     for tool in ("system.websearch", "system.weather", "memory.write", "knowledge.query", "filesystem.create_file", "calendar.update_event"):

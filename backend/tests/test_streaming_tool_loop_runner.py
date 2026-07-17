@@ -7,6 +7,7 @@ from unittest.mock import AsyncMock, MagicMock
 from backend.services.orchestrator import execution_engine as ee_module
 from backend.services.orchestrator.schemas import OrchestratorContext
 from backend.services.orchestrator.stream_protocol import StreamEvent
+from backend.llm_providers.openrouter.gateway import OpenRouterGateway
 
 
 def test_should_route_stream_tool_round_via_gateway_flag_off(monkeypatch):
@@ -43,6 +44,49 @@ def test_should_route_stream_tool_round_via_gateway_flag_on(monkeypatch):
         )
         is False
     )
+    assert (
+        ee_module._should_route_stream_tool_round_via_gateway(
+            had_tool_round=True,
+            provider="openrouter",
+        )
+        is True
+    )
+
+
+@pytest.mark.asyncio
+async def test_openrouter_stream_uses_dedicated_gateway_once(monkeypatch):
+    calls = []
+
+    async def fake_stream(self, **kwargs):
+        calls.append(kwargs)
+        yield StreamEvent(
+            type="text_delta",
+            content="ok",
+            metadata={"provider": "openrouter", "model": kwargs["model"]},
+        )
+        yield StreamEvent(
+            type="done",
+            content=None,
+            metadata={"provider": "openrouter", "model": kwargs["model"]},
+        )
+
+    monkeypatch.setattr(OpenRouterGateway, "stream", fake_stream)
+    events = [
+        event
+        async for event in ee_module._async_iter_llm_stream(
+            {
+                "provider": "openrouter",
+                "model": "vendor/exact-model",
+                "api_key": "CALLER_KEY_MUST_BE_IGNORED",
+                "chat_history": [{"role": "user", "content": "hello"}],
+            },
+            tools_llm=None,
+        )
+    ]
+
+    assert [event.type for event in events] == ["text_delta", "done"]
+    assert len(calls) == 1
+    assert "api_key" not in calls[0]
 
 
 def test_build_stream_gateway_handoff_kwargs_strips_stream_only_fields():

@@ -592,6 +592,45 @@ Dashboard-Regeln:
 
 ## DONE
 
+### BACKLOG-132 - OpenRouter-Settings-E2E verpasst einmaliges App-Ready-Console-Event
+
+- **Typ:** BUG
+- **Status:** DONE
+- **Quelle:** Audit
+- **Erstellt:** 2026-07-17
+- **Aktualisiert:** 2026-07-17
+- **Kurzbeschreibung:** Der headed Runner `tests/e2e/openrouter-settings.spec.js` wartete nach dem Reload ausschließlich auf das einmalige Console-Event `Initialization complete. Janus is ready.`. In zwei identischen Task-`.3`-Retests war die Janus-Oberfläche laut Snapshot vollständig gerendert, der Listener lief aber in ein 30-Sekunden-Timeout, bevor die erste OpenRouter-Assertion ausgeführt wurde.
+- **Erwartetes Verhalten:** Der Runner erkennt die tatsächliche App-Bereitschaft deterministisch und startet die Settings-Assertions, unabhängig davon, ob ein einmaliges Console-Event vor oder während des Waits eintrifft.
+- **Tatsaechliches Verhalten:** Vor dem Fix endete `page.waitForEvent('console')` zweimal mit Timeout; nach dem Fix wartet der Runner auf den wiederholt beobachtbaren sichtbaren `Einstellungen`-Button.
+- **Reproduktion / Kontext:** `npx playwright test tests/e2e/openrouter-settings.spec.js --headed --workers=1 --reporter=list` nach dem Stream-Fail-Closed-Debug für `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.3`; zwei Vorher-Läufe mit Readiness-Timeout, danach zwei vollständige PASS-Läufe.
+- **Betroffener Bereich:** E2E / Playwright / Frontend-Readiness / Test-Infrastruktur
+- **Nachweise:** `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.3_debug_result_stream_fail_closed.md`; `documentation/tasks/BACKLOG-132_execution_result.md`; `tests/e2e/openrouter-settings.spec.js`
+- **Akzeptanzkriterien:**
+  - [x] Die Readiness-Prüfung verwendet einen wiederholbar beobachtbaren App-/UI-Zustand.
+  - [x] Der Runner passiert den Setup-Schritt auch ohne das einmalige Console-Event.
+  - [x] Der exakte headed Befehl lief zweimal hintereinander vollständig grün (`3 passed` je Lauf).
+  - [x] Die bestehenden OpenRouter-Settings-Assertions, Secret-Leak-Prüfungen und die ChatGPT-Karten-Isolation blieben unverändert.
+- **Fehlende Informationen:**
+  - Keine
+- **Wichtigkeit:** HIGH
+- **Umsetzungsrisiko:** LOW
+- **Aufwand:** XS
+- **Umsetzungsreife:** READY
+- **Empfehlung:** DO NOW
+- **Entry Point:** PRE_IMPLEMENTATION_VERIFICATION
+- **Routing reason:** Kleiner lokaler E2E-Runner-Bug mit klarer Ursache, einer primären Testdatei und vollständig prüfbarer Akzeptanz; Produktlogik blieb unverändert.
+- **Routing confidence:** HIGH
+- **Routing decided by:** BACKLOG SKILL 3
+- **Routing decided at:** 2026-07-17
+- **Handoff:** documentation/tasks/backlog_BACKLOG-132_openrouter_settings_e2e_app_ready_race.md
+- **Recommended next skill:** SKILL 3
+- **Handoff created:** 2026-07-17
+- **Completed in version:** 0.4.17-beta.50
+- **Completed by task:** `documentation/tasks/BACKLOG-132_execution_result.md`
+- **Final audit:** PASS - accepted as the runner blocker delta in `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.3_FINAL_AUDIT.md`
+- **Validation evidence:** `node --check` PASS; scoped diff PASS; exact headed OpenRouter Settings runner twice consecutively `3 passed`.
+- **Notizen:** Separater Infrastruktur-Follow-up; Task `.3` durfte den evidence-only Runner nicht innerhalb des Provider-Stream-Debugs ändern.
+
 ### BACKLOG-131 - Verzoegerter Settings-Handler ueberschreibt die zustandsbehaftete Navigation
 
 - **Typ:** BUG

@@ -46,7 +46,8 @@ def _guard_llm_provider_silo(provider: str, model_id: str) -> Optional[Dict[str,
         return None
 
     active = get_active_llm_silo()
-    if active in ("openai", "gemini") and req in ("openai", "gemini") and active != req:
+    cloud_silos = {"openai", "openrouter", "gemini"}
+    if active in cloud_silos and req in cloud_silos and active != req:
         msg = (
             f"PROVIDER-SILO: active chat provider is {active!r}, blocked LLM call for "
             f"provider={req!r} (model={model_id!r})."
@@ -59,12 +60,12 @@ def _guard_llm_provider_silo(provider: str, model_id: str) -> Optional[Dict[str,
             "error_code": "PROVIDER_SILO_VIOLATION",
         }
 
-    if model_id and req in ("openai", "gemini"):
+    if model_id and req in cloud_silos:
         catalog = get_cached_model_catalog()
         info = catalog.get(str(model_id))
         if isinstance(info, dict):
             mp = normalize_llm_silo_provider(info.get("provider"))
-            if mp in ("openai", "gemini") and mp != req:
+            if mp in cloud_silos and mp != req:
                 msg = (
                     f"PROVIDER-SILO: call_llm provider={req!r} does not match catalog provider={mp!r} "
                     f"for model={model_id!r}."
@@ -92,11 +93,13 @@ def _ensure_gateway_silos() -> Dict[str, Any]:
             return _gateway_silos
         from backend.llm_providers.gemini.gateway import GeminiGateway
         from backend.llm_providers.openai.gateway import OpenAIGateway
+        from backend.llm_providers.openrouter.gateway import OpenRouterGateway
         from backend.llm_providers.ollama.gateway import OllamaGateway
 
         _gateway_silos = {
             "gemini": GeminiGateway(),
             "openai": OpenAIGateway(),
+            "openrouter": OpenRouterGateway(),
             "ollama": OllamaGateway(),
         }
         return _gateway_silos
@@ -238,7 +241,7 @@ async def reason_and_respond(
         silo_args["forced_tool"] = forced_tool
 
     force_tool_name = kwargs.get("force_tool_name")
-    if force_tool_name is not None and provider_key in {"openai", "gemini", "google", "ollama"}:
+    if force_tool_name is not None and provider_key in {"openai", "openrouter", "gemini", "google", "ollama"}:
         silo_args["force_tool_name"] = force_tool_name
 
     all_tool_definitions = kwargs.get("all_tool_definitions")
@@ -293,6 +296,9 @@ def get_provider(provider_name: str):
     elif provider_key == "openai":
         from backend.llm_providers.openai.service import OpenAIServiceProvider
         return OpenAIServiceProvider()
+    elif provider_key == "openrouter":
+        from backend.llm_providers.openrouter.service import OpenRouterServiceProvider
+        return OpenRouterServiceProvider()
     elif provider_key == "ollama":
         from backend.llm_providers.ollama.service import OllamaServiceProvider
         return OllamaServiceProvider()
@@ -352,6 +358,16 @@ async def call_llm(*args: Any, **kwargs: Any) -> Dict[str, Any]:
         blocked = _guard_llm_provider_silo(provider, model_id)
         if blocked is not None:
             return blocked
+
+    if provider.strip().lower() == "openrouter":
+        from backend.llm_providers.openrouter.gateway import OpenRouterGateway
+
+        return await OpenRouterGateway().generate_once(
+            model=model_id,
+            messages=list(messages or []),
+            tools=None if force_no_tools else tools,
+            **kw,
+        )
 
     # 💎 CU-2: #SelfHealingIdentity - Frischer Key aus keyring wenn nicht übergeben
     if not api_key and provider:
@@ -442,6 +458,13 @@ async def simple_llm_generate_content(provider: str, model: str, api_key: str, p
     elif provider_key == "openai":
         from backend.llm_providers.openai.service import OpenAIServiceProvider
         svc = OpenAIServiceProvider()
+    elif provider_key == "openrouter":
+        from backend.llm_providers.openrouter.gateway import OpenRouterGateway
+
+        return await OpenRouterGateway().generate_once(
+            model=model,
+            messages=[{"role": "user", "content": prompt}],
+        )
     elif provider_key == "ollama":
         from backend.llm_providers.ollama.service import OllamaServiceProvider
         svc = OllamaServiceProvider()

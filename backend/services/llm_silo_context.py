@@ -1,9 +1,10 @@
 """
 BYOK / provider-silo context for LLM calls.
 
-While a chat turn runs with a concrete cloud provider (openai or gemini), any
-``call_llm`` that targets the *other* cloud family is blocked. Ollama sessions do
-not enforce this rule so local chats can still invoke optional cloud helpers.
+While a chat turn runs with a concrete cloud provider (OpenAI, OpenRouter, or
+Gemini), any ``call_llm`` that targets another cloud silo is blocked. Ollama
+sessions do not enforce this rule so local chats can still invoke optional
+cloud helpers.
 """
 
 from __future__ import annotations
@@ -18,13 +19,13 @@ _active_llm_silo: ContextVar[Optional[str]] = ContextVar("janus_active_llm_silo"
 
 
 def normalize_llm_silo_provider(provider: Optional[str]) -> Optional[str]:
-    """Normalize UI/API provider keys to openai | gemini | ollama | None."""
+    """Normalize UI/API provider keys to a concrete Janus provider silo."""
     raw = str(provider or "").strip().lower()
     if not raw:
         return None
     if raw in ("google",):
         return "gemini"
-    if raw in ("openai", "gemini", "ollama"):
+    if raw in ("openai", "openrouter", "gemini", "ollama"):
         return raw
     return None
 

@@ -7,6 +7,10 @@ import keyring
 import pytest
 
 from backend.api.routers import system
+from backend.services.openrouter_credential_authority import (
+    get_openrouter_runtime_invalidator,
+    get_openrouter_runtime_reader,
+)
 
 
 SERVICE = "Janus-Projekt"
@@ -292,3 +296,50 @@ def test_existing_provider_save_contract_remains_unchanged(test_client, memory_k
     assert response.status_code == 200
     assert response.json() == {"message": "API Key saved successfully"}
     assert memory_keyring.values[(SERVICE, "openai")] == "OPENAI_SENTINEL"
+
+
+def test_runtime_invalidation_is_visible_and_replacement_does_not_inherit_it(
+    test_client, memory_keyring, monkeypatch
+):
+    install_http(monkeypatch, HttpScenario(FakeResponse(200, {"data": {}})))
+    assert post_openrouter(test_client, SENTINEL_A).json()["key"]["state"] == "VALID"
+    credential = get_openrouter_runtime_reader().get_eligible_credential()
+    assert credential is not None
+
+    assert (
+        get_openrouter_runtime_invalidator().invalidate_authenticated_rejection(
+            credential.binding
+        )
+        is True
+    )
+    assert public_openrouter_state(test_client)["state"] == "INVALID"
+
+    install_http(monkeypatch, HttpScenario(error=httpx.TimeoutException("temporary")))
+    replacement = post_openrouter(test_client, SENTINEL_B)
+    assert replacement.json()["key"]["state"] == "UNVERIFIED"
+    assert (
+        get_openrouter_runtime_invalidator().invalidate_authenticated_rejection(
+            credential.binding
+        )
+        is False
+    )
+    assert memory_keyring.values[(SERVICE, RAW_ACCOUNT)] == SENTINEL_B
+    assert public_openrouter_state(test_client)["state"] == "UNVERIFIED"
+
+
+def test_only_new_successful_settings_validation_can_restore_valid_after_runtime_invalid(
+    test_client, memory_keyring, monkeypatch
+):
+    install_http(monkeypatch, HttpScenario(FakeResponse(200, {"data": {}})))
+    assert post_openrouter(test_client, SENTINEL_A).json()["key"]["state"] == "VALID"
+    credential = get_openrouter_runtime_reader().get_eligible_credential()
+    assert credential is not None
+    get_openrouter_runtime_invalidator().invalidate_authenticated_rejection(
+        credential.binding
+    )
+
+    install_http(monkeypatch, HttpScenario(error=httpx.TimeoutException("temporary")))
+    assert post_openrouter(test_client, SENTINEL_A).json()["key"]["state"] == "UNVERIFIED"
+
+    install_http(monkeypatch, HttpScenario(FakeResponse(200, {"data": {}})))
+    assert post_openrouter(test_client, SENTINEL_A).json()["key"]["state"] == "VALID"

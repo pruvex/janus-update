@@ -190,12 +190,10 @@ test.describe('OpenRouter credential settings (TASK-OPENROUTER-JANUS-CHAT-PROVID
     const token = createE2eJwt();
     await page.evaluate(() => localStorage.clear());
     await page.evaluate((jwt) => localStorage.setItem('auth_token', jwt), token);
-    const appReady = page.waitForEvent('console', {
-      predicate: (message) => message.text().includes('Initialization complete. Janus is ready.'),
+    await page.reload();
+    await expect(page.getByRole('button', { name: 'Einstellungen' })).toBeVisible({
       timeout: 30_000,
     });
-    await page.reload();
-    await appReady;
     await acknowledgeBetaPrivacyNoticeIfVisible(page);
     await openApiKeySettings(page);
   });

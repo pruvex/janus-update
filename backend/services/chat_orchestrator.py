@@ -4837,7 +4837,7 @@ class ChatOrchestrator:
         model = str(getattr(ctx.request, "model", "") or "").strip().lower()
         provider = str(getattr(ctx.request, "provider", "") or "").strip().lower()
 
-        if model:
+        if model and str(provider or "").strip().lower() != "openrouter":
             # Detect provider from model prefix/pattern
             detected_provider = None
             if model.startswith("gpt-"):

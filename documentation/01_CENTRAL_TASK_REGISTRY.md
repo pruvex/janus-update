@@ -4,12 +4,31 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### TASK-OPENROUTER-JANUS-CHAT-PROVIDER.3 - Isolated fail-closed OpenRouter chat and tool path
+
+- **Status**: DONE (task-scoped Final Audit PASS; parent Feature Spec remains active).
+- **Final Audit**: `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.3_FINAL_AUDIT.md` (PASS).
+- **Audit Package**: `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.3_AUDIT_PACKAGE.md`.
+- **Spec**: `documentation/SPEC/OPENROUTER_JANUS_CHAT_PROVIDER_FEATURE_SPEC.md` (APPROVED - PARTIAL IMPLEMENTATION `3/6`; Tasks `.4` through `.6` remain open).
+- **Validation**: bound Python suites `116 passed`; direct stream fail-closed/auth/model matrix PASS; Python/JavaScript syntax and scoped diff/credential checks PASS; exact headed Settings runner twice consecutively `3 passed`; safe manual non-activation observation PASS; Final-Audit-Validator PASS.
+- **Scope**: shared exact-key credential authority, read-only runtime eligibility, invalidate-only authenticated-rejection transition, dedicated zero-retry OpenRouter service/gateway, exact certified-model identity, provider silo, cloud kill switch, streaming and central tool/permission parity.
+- **Production State**: DISABLED; the certification registry remains empty, so no OpenRouter model is visible or selectable and no live credential/provider call was authorized.
+
+### BACKLOG-132 - OpenRouter Settings E2E observable readiness
+
+- **Status**: DONE.
+- **Task**: `documentation/tasks/backlog_BACKLOG-132_openrouter_settings_e2e_app_ready_race.md`.
+- **Execution Result**: `documentation/tasks/BACKLOG-132_execution_result.md` (PASS).
+- **Final Audit**: accepted in the Task `.3` blocker-delta re-audit at `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.3_FINAL_AUDIT.md` (PASS).
+- **Validation**: JavaScript syntax and scoped diff PASS; exact headed OpenRouter Settings runner twice consecutively `3 passed`.
+- **Scope**: E2E readiness seam only; product behavior and all existing Settings/security assertions remain unchanged.
+
 ### TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2 - Isolated OpenRouter key lifecycle
 
 - **Status**: DONE (task-scoped Final Audit PASS; parent Feature Spec remains active).
 - **Final Audit**: `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2_final_audit.md` (PASS).
 - **Audit Package**: `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2_AUDIT_PACKAGE.md`.
-- **Spec**: `documentation/SPEC/OPENROUTER_JANUS_CHAT_PROVIDER_FEATURE_SPEC.md` (APPROVED - PARTIAL IMPLEMENTATION `2/6`; Tasks `.3` through `.6` remain open).
+- **Spec**: `documentation/SPEC/OPENROUTER_JANUS_CHAT_PROVIDER_FEATURE_SPEC.md` (APPROVED - PARTIAL IMPLEMENTATION `3/6`; Tasks `.4` through `.6` remain open).
 - **Validation**: OpenRouter API lifecycle `19 passed`; isolated ChatGPT non-interference `1 passed`; Python/JavaScript syntax PASS; scoped mocked Headed Playwright `3 passed`; manual Settings missing-state evidence PASS; Final-Audit-Validator PASS.
 - **Scope**: provider-specific keyring storage, exact-key-bound non-secret validation metadata, content-free key validation, fail-closed `VALID` / `INVALID` / `UNVERIFIED` handling, masked Settings state, and OpenRouter-only deletion.
 - **Production State**: DISABLED; OpenRouter remains credential-management-only with no chat provider, model, selection, transport, live credential call, or production activation.
@@ -19,7 +38,7 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 - **Status**: DONE (task-scoped Final Audit PASS; parent Feature Spec remains active).
 - **Final Audit**: `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1_final_audit.md` (PASS).
 - **Audit Package**: `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1_AUDIT_PACKAGE.md`.
-- **Spec**: `documentation/SPEC/OPENROUTER_JANUS_CHAT_PROVIDER_FEATURE_SPEC.md` (APPROVED - PARTIAL IMPLEMENTATION `2/6`; Tasks `.3` through `.6` remain open).
+- **Spec**: `documentation/SPEC/OPENROUTER_JANUS_CHAT_PROVIDER_FEATURE_SPEC.md` (APPROVED - PARTIAL IMPLEMENTATION `3/6`; Tasks `.4` through `.6` remain open).
 - **Validation**: certification/catalog Pytest `18 passed`; Python compile and packaged JSON parsing PASS; scoped diff PASS; headed existing-provider E2E `10 passed`; manual Janus validation PASS; exact-version `latest` re-audit tripwire PASS.
 - **Scope**: one packaged release-owned certification authority, fail-closed exact model/version/battery/evidence binding, catalog-loader/API parity, AppData/runtime non-authority, and zero production candidate activation only.
 - **Production State**: DISABLED; the packaged registry is empty and no OpenRouter model is visible or selectable.
