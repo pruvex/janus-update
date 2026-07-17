@@ -1,11 +1,11 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
-As of `2026-07-17 16:26:48 +02:00`, `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.3` has task-scoped Final Audit `PASS`, its stream fail-closed blocker is repaired, `BACKLOG-132` is completed, and the parent OpenRouter feature is documented as `PARTIAL IMPLEMENTATION (3/6)`. Production remains disabled because the certification registry is intentionally empty.
+As of `2026-07-17 16:32:59 +02:00`, `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.3` has task-scoped Final Audit `PASS`, its stream fail-closed blocker is repaired, `BACKLOG-132` is completed, and the validated delivery block is committed as `bd0b9e39e` and confirmed on `backup/master`. The current handoff snapshot was also published to `origin/codex-sync`. The parent OpenRouter feature remains `PARTIAL IMPLEMENTATION (3/6)` and production remains disabled because the certification registry is intentionally empty.
 
-Current goal: preserve this validated Task `.3` checkpoint and route next either to Git governance or, in a separately authorized work block, to Task `.4` provider/model selection and privacy UI.
+Current goal: route Task `.4` provider/model selection and privacy UI through task breakdown and preimplementation check.
 
-Active phase: `janus-documentation-update`, canonical state `PASS`; next skill `janus-git-governance`.
+Active phase: `janus-git-governance`, canonical state `PASS`; commit, backup push, and ChatGPT CURRENT_STATE sync complete.
 
 Last Codex work:
 - incorporated the operator's Manual Janus Gate `PASS`
@@ -18,7 +18,9 @@ Last Codex work:
 - marked Task `.3` DONE in the task/spec/registry/project/changelog documentation while preserving the parent Spec as partial
 - moved `BACKLOG-132` to DONE and synchronized the dashboard snapshot
 - appended two validated reusable learning patterns for stream completion proof and observable Playwright readiness
-- performed no live OpenRouter request, real credential action, Git mutation, release, or production action
+- created scoped commit `bd0b9e39e` (`feat(openrouter): add fail-closed chat provider path`)
+- confirmed `backup/master` exactly matches `bd0b9e39e`; merge was not applicable because the validated block was already on `master`
+- performed no live OpenRouter request, real credential action, release, or production activation
 
 Changed files in the completed block:
 - OpenRouter Task `.3` provider/runtime/test cluster listed in the execution result
@@ -59,13 +61,13 @@ Open risks:
 - no live OpenRouter request or real credential validation occurred by design
 - optional vector/vision dependencies still log unrelated degraded-startup warnings during headed runs
 - the repository-wide Backlog validator remains red on unrelated legacy structure; this block did not broaden into cleanup of older Backlog items
-- no commit, push, or `origin/codex-sync` update occurred; GitHub and remote ChatGPT state do not yet contain this latest PASS checkpoint
+- `origin/codex-sync` was published successfully; unrelated dirty and untracked operator files remain intentionally untouched
 
-Next recommended step for ChatGPT: treat Task `.3` as final-audit-passed and the parent OpenRouter feature as `3/6` partial, not production-ready.
+Next recommended step for ChatGPT: treat Task `.3` as final-audit-passed and committed, and the parent OpenRouter feature as `3/6` partial, not production-ready.
 
-Next recommended step for Codex: run `janus-git-governance` for a scoped checkpoint only after explicit Git approval; otherwise begin Task `.4` through the normal task-breakdown/precheck route in a separate work block.
+Next recommended step for Codex: begin Task `.4` through the normal task-breakdown/precheck route in a separate work block.
 
-Last updated: `2026-07-17 16:26:48 +02:00`.
+Last updated: `2026-07-17 16:32:59 +02:00`.
 
 ## Current Snapshot Update
 As of `2026-07-17 16:14:23 +02:00`, the operator Manual Janus Gate for `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.3` is `PASS`. The first final audit found one real stream fail-closed/evidence gap; that provider delta is repaired and all focused plus aggregate Python checks pass. Final closure is now blocked only by a separate headed Playwright readiness race captured as `BACKLOG-132`.
