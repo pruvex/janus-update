@@ -28,7 +28,7 @@ test.describe('Kern-Funktionalität des Chats', () => {
           'janus_beta_privacy_ack_v1',
           JSON.stringify({
             accepted: true,
-            noticeVersion: '2026-05-21.1',
+            noticeVersion: '2026-07-17.1',
             acceptedAt: new Date().toISOString(),
           })
         );
@@ -43,6 +43,58 @@ test.describe('Kern-Funktionalität des Chats', () => {
       };
     }, internalApiKey);
 
+    await page.route('**/api/models/catalog', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([
+          {
+            id: 'gpt-5.4-mini',
+            name: 'GPT-5.4 mini',
+            provider: 'openai',
+            type: 'text',
+          },
+        ]),
+      });
+    });
+    await page.route('**/api/models/selection/openai', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ selected_models: ['gpt-5.4-mini'] }),
+      });
+    });
+    await page.route('**/api/local-llm/models', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ models: [] }),
+      });
+    });
+    await page.route('**/api/last-used-model', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ provider: 'openai', model: 'gpt-5.4-mini' }),
+      });
+    });
+    await page.route('**/api/chat/stream', async (route) => {
+      const request = route.request().postDataJSON();
+      expect(request.provider).toBe('openai');
+      expect(request.model).toBe('gpt-5.4-mini');
+      await route.fulfill({
+        status: 200,
+        contentType: 'text/event-stream',
+        body: [
+          'data: {"type":"text","content":"Hallo aus dem deterministischen Chat-Core-Test.","partial":false}',
+          '',
+          'data: {"type":"done"}',
+          '',
+          '',
+        ].join('\n'),
+      });
+    });
+
     // 1. Starten
     await page.goto('/');
 
@@ -51,9 +103,17 @@ test.describe('Kern-Funktionalität des Chats', () => {
     await expect(newChatButton).toBeVisible({ timeout: 15000 });
     await newChatButton.click();
 
+    // The chat shell becomes visible before the asynchronous catalog/selection
+    // bootstrap is necessarily stable. Wait for the repeatable effective
+    // provider/model state before submitting, otherwise the request can race
+    // with an empty model value.
+    await expect(page.locator('#provider-select')).toHaveValue('openai', { timeout: 15000 });
+    await expect(page.locator('#model-select')).toHaveValue('gpt-5.4-mini', { timeout: 15000 });
+    await expect(page.locator('#chat-header-model-A')).toHaveValue('gpt-5.4-mini', { timeout: 15000 });
+
     // 3. Nachricht tippen
     const chatWindowA = page.getByRole('region', { name: /chat-fenster a/i });
-    const messageInput = chatWindowA.getByRole('textbox', { name: 'Nachricht an Janus senden...' });
+    const messageInput = page.locator('#user-input-A');
     await expect(messageInput).toBeVisible(); 
     
     const myMessage = 'Hallo Janus';

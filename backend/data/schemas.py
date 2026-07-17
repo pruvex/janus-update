@@ -31,6 +31,21 @@ class OpenRouterKeyPublicState(BaseModel):
     state: OpenRouterKeyValidationState = OpenRouterKeyValidationState.UNVERIFIED
 
 
+class OpenRouterChatEligibilityResponse(BaseModel):
+    provider: Literal["openrouter"] = "openrouter"
+    key_present: bool
+    key_state: OpenRouterKeyValidationState
+    eligible: bool
+    reason: Literal[
+        "eligible",
+        "key_missing",
+        "key_invalid",
+        "key_unverified",
+        "no_certified_models",
+    ]
+    models: List[str] = Field(default_factory=list)
+
+
 # --- Tool Schemas ---
 class GenerateImageToolArgs(BaseModel):
     prompt: str = Field(

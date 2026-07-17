@@ -1,6 +1,6 @@
 # Janus Beta Privacy Notice
 
-Version: `2026-05-21.1`
+Version: `2026-07-17.1`
 
 This notice applies to the Janus packaged-local Electron beta. Janus runs a local desktop app with a local backend on loopback (`127.0.0.1` / `localhost`). It is not a hosted multi-tenant SaaS service in the current beta scope.
 
@@ -22,6 +22,7 @@ Janus may process these beta data categories:
 By default, Janus stores beta data locally under the Janus AppData/user folders and local project/workspace locations. Some features can send selected request content or metadata outside the device:
 
 - LLM providers such as OpenAI, Gemini/Google or other configured providers receive prompts, context, file/image content or tool results needed for the selected model request.
+- When you deliberately select an OpenRouter chat model, the content required for that turn may pass through OpenRouter to the selected upstream model provider.
 - Local Ollama requests stay on the local machine unless your Ollama setup is configured otherwise.
 - Web/current-data tools may contact search, RSS/news, Wikipedia/knowledge, weather, geo/distance/routing and price/current-data providers.
 - Image, audio, calendar or other integration providers may receive the minimum content needed for the requested feature.

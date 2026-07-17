@@ -7,7 +7,12 @@ from typing import Optional, List, Dict, Any
 import keyring
 import httpx
 from backend.data import crud
-from backend.data.schemas import ApiKey, OpenRouterKeyPublicState, OpenRouterKeyValidationState
+from backend.data.schemas import (
+    ApiKey,
+    OpenRouterChatEligibilityResponse,
+    OpenRouterKeyPublicState,
+    OpenRouterKeyValidationState,
+)
 from backend.services.telemetry_service import submit_feedback_async
 from backend.utils.config_loader import initialize_file_from_template, load_model_catalog
 from backend.utils.paths import get_app_data_dir, resource_path
@@ -400,6 +405,41 @@ async def get_model_catalog(request: Request):
     except CodexAppServerError:
         logger.warning("ChatGPT models omitted because current verification failed.")
     return catalog
+
+
+@router.get(
+    "/models/openrouter/eligibility",
+    response_model=OpenRouterChatEligibilityResponse,
+)
+async def get_openrouter_chat_eligibility():
+    public_state = _openrouter_public_state()
+    certified_models = sorted(
+        {
+            str(model.get("id") or "").strip()
+            for model in load_model_catalog().values()
+            if str(model.get("provider") or "").strip().lower() == _OPENROUTER_PROVIDER
+            and str(model.get("id") or "").strip()
+        }
+    )
+
+    if not public_state.present:
+        reason = "key_missing"
+    elif public_state.state == OpenRouterKeyValidationState.INVALID:
+        reason = "key_invalid"
+    elif public_state.state != OpenRouterKeyValidationState.VALID:
+        reason = "key_unverified"
+    elif not certified_models:
+        reason = "no_certified_models"
+    else:
+        reason = "eligible"
+
+    return OpenRouterChatEligibilityResponse(
+        key_present=public_state.present,
+        key_state=public_state.state,
+        eligible=reason == "eligible",
+        reason=reason,
+        models=certified_models,
+    )
 
 
 @router.get("/codex-connection/models")

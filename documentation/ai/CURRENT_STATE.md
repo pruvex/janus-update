@@ -1,6 +1,116 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-17 17:44:55 +02:00`, `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.4` has task-scoped Final Audit `PASS` with no findings and its documentation closeout is complete. The parent OpenRouter Feature Spec is now `PARTIAL IMPLEMENTATION (4/6)`. Production remains disabled because the packaged certification registry is intentionally empty.
+
+Current goal: create a scoped Git checkpoint for the validated Task `.4` delivery block after explicit operator approval.
+
+Active phase: `janus-documentation-update`, canonical state `PASS`; next gate `janus-git-governance`.
+
+Last Codex work:
+- incorporated the operator's two safe manual observations as Task `.4` Manual Janus Validation `PASS`
+- built and reviewed the compact Task `.4` audit package
+- completed the independent task-scoped Final Audit with `PASS` and no findings
+- validated the final-audit artifact
+- marked Task `.4` DONE in the compiled task and updated the parent Spec to `4/6`
+- synchronized the central task registry, project state, and unreleased changelog
+- preserved the parent Spec as active because Tasks `.5` and `.6` remain open
+- preserved production default-deny because the certification registry remains empty
+- skipped Backlog/dashboard/TestPipeline updates because this compiled Feature-Spec task has no Backlog or TestRun marker
+- skipped a new `WHAT_I_LEARNED` entry because the existing `#PlaywrightReadinessMustBeObservableState` pattern already covers the validated runner-readiness lesson
+- performed no commit, push, merge, `origin/codex-sync`, release, registry population, live OpenRouter request, or real credential action
+
+Changed files in this closeout block:
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.4_FINAL_AUDIT.md`
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.4_AUDIT_PACKAGE.md`
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.md`
+- `documentation/SPEC/OPENROUTER_JANUS_CHAT_PROVIDER_FEATURE_SPEC.md`
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `CHANGELOG.md`
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.4_documentation_update.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- final-audit validator: PASS
+- documentation-update validator for the Task `.4` marker across task, Spec, registry, project state, and changelog: PASS
+- `WHAT_I_LEARNED` duplicate search: PASS; existing readiness pattern found
+- scoped documentation `git diff --check`: PASS
+- inherited product evidence remains: backend `41 passed`, headed OpenRouter selection suite `4 passed`, Chat-Core `1 passed`, syntax/compile/diff/leak checks PASS, manual privacy/non-activation observation PASS
+
+Open risks:
+- positive OpenRouter selection remains fixture-only because the production registry is intentionally empty
+- Tasks `.5` and `.6`, DeepDive telemetry, versioned conformance, real candidate certification, release, and production activation remain open
+- no commit, push, or `origin/codex-sync` has occurred for Task `.4`; GitHub and ChatGPT remote state do not yet contain this latest CURRENT_STATE
+- unrelated dirty and untracked operator files remain intentionally untouched
+
+Next recommended step for ChatGPT: treat Task `.4` as final-audit-passed and documented, the parent OpenRouter feature as `4/6` partial, and production as disabled; do not infer the local state from GitHub until `origin/codex-sync` is published.
+
+Next recommended step for Codex: use `janus-git-governance` after fresh explicit `Commit: YES`, `Push: YES`, and `Sync: YES`; scope the checkpoint to the Task `.4` delivery and documentation files only.
+
+Last updated: `2026-07-17 17:44:55 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-17 17:21:34 +02:00`, `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.4` is implemented and automatically validated. The new chat eligibility, deliberate selection, retained-disabled selection, send blocking, recovery, window override, privacy copy, and existing-provider regressions pass. The only remaining Task `.4` gate is one safe manual Janus observation; no real credential or live OpenRouter request is required.
+
+Current goal: complete the one manual Task `.4` UI/non-activation check, then run `janus-final-audit`.
+
+Active phase: `janus-executioner` with bounded `janus-debug` runner repairs complete; canonical state `NEEDS_INFO`; Manual Janus Validation Gate `PENDING_USER_TEST`.
+
+Last Codex work:
+- routed Task `.4` through task breakdown and preimplementation check
+- implemented a non-secret OpenRouter chat-eligibility API from public key state plus the already filtered certification catalog
+- integrated deliberate OpenRouter selection, exact certified model IDs, retained-disabled sidebar/window selections, send blocking, recovery, Settings refresh, and explicit privacy wording
+- preserved the packaged empty certification registry and performed no production activation
+- added focused backend and headed UI evidence without using a real key or live OpenRouter request
+- debugged two runner readiness races separately: Chat-Core model bootstrap and full-suite OpenRouter-option bootstrap
+- completed the exact Headed runner with `4 passed`, Chat-Core with `1 passed`, and the focused backend matrix with `41 passed`
+- completed JavaScript syntax, Python compile, scoped diff/whitespace, and non-secret leak gates
+- performed no commit, push, merge, codex-sync, release, registry population, or publish action
+
+Changed files in this block:
+- `backend/api/routers/system.py`
+- `backend/data/schemas.py`
+- `backend/tests/test_openrouter_selection_api.py`
+- `frontend/index.html`
+- `frontend/css/settings.css`
+- `frontend/js/app.js`
+- `frontend/js/beta-privacy-notice.js`
+- `frontend/js/chat.js`
+- `frontend/js/settings.js`
+- `documentation/beta/BETA_PRIVACY_NOTICE.md`
+- `tests/e2e/openrouter-settings.spec.js`
+- `tests/functional/chat-core.spec.js`
+- Task `.4` breakdown, precheck, two debug results, and execution result
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- task-breakdown validator: PASS
+- preimplementation validator: PASS
+- focused backend key/catalog/selection evidence: PASS, `41 passed`
+- exact Headed OpenRouter Settings runner: PASS, `4 passed`
+- deterministic Chat-Core runner: PASS, `1 passed`
+- JavaScript syntax and Python compile: PASS
+- scoped `git diff --check`: PASS
+- scoped OpenRouter-secret and raw Bearer scan: PASS, zero matches
+- both debug-result validators and the execution-result validator: PASS
+
+Open risks:
+- the manual Janus UI/non-activation observation is still pending
+- the productive certification registry remains intentionally empty; positive selection was tested only with controlled fixtures
+- Tasks `.5` and `.6`, real model certification, release, and production activation remain open
+- optional vector/vision dependencies continue to emit unrelated degraded-startup warnings during headed runs
+- no commit, push, or `origin/codex-sync` occurred; GitHub and ChatGPT remote state do not contain this Task `.4` block or the latest CURRENT_STATE
+
+Next recommended step for ChatGPT: treat Task `.4` as automatically green but not final-audit-passed until the operator reports the one manual Janus observation.
+
+Next recommended step for Codex: after manual `PASS`, build the audit package and run `janus-final-audit`; on a visible mismatch, route only that finding to `janus-debug`.
+
+Last updated: `2026-07-17 17:21:34 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-17 16:32:59 +02:00`, `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.3` has task-scoped Final Audit `PASS`, its stream fail-closed blocker is repaired, `BACKLOG-132` is completed, and the validated delivery block is committed as `bd0b9e39e` and confirmed on `backup/master`. The current handoff snapshot was also published to `origin/codex-sync`. The parent OpenRouter feature remains `PARTIAL IMPLEMENTATION (3/6)` and production remains disabled because the certification registry is intentionally empty.
 
 Current goal: route Task `.4` provider/model selection and privacy UI through task breakdown and preimplementation check.

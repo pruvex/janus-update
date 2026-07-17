@@ -1742,6 +1742,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (provider === "openrouter") {
           await loadApiKeys();
+          window.dispatchEvent(new CustomEvent("openrouter-eligibility-changed"));
           showOpenRouterKeyFeedback("OpenRouter-Key-Status wurde aktualisiert.");
           return;
         }
@@ -1776,6 +1777,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const response = await fetch(`${API_BASE_URL}/api/keys/openrouter`, { method: "DELETE" });
       if (!response.ok) throw new Error("OpenRouter key delete failed");
       await loadApiKeys();
+      window.dispatchEvent(new CustomEvent("openrouter-eligibility-changed"));
       showOpenRouterKeyFeedback("OpenRouter-Key wurde gelöscht.");
     } catch (error) {
       console.error("Fehler beim Löschen des OpenRouter-Keys:", error);

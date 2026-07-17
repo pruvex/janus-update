@@ -6,6 +6,8 @@ import path from 'node:path';
 
 const SENTINEL_A = 'TEST_OPENROUTER_SECRET_ALPHA';
 const SENTINEL_B = 'TEST_OPENROUTER_SECRET_BETA';
+const OPENROUTER_MODEL_A = 'anthropic/claude-3.7-sonnet-20250219';
+const OPENROUTER_MODEL_B = 'qwen/qwen3-235b-a22b-2507';
 
 
 function base64Url(input) {
@@ -73,6 +75,163 @@ async function openApiKeySettings(page) {
   await page.getByRole('button', { name: 'Einstellungen' }).click();
   await page.getByRole('link', { name: 'API Keys' }).click();
   await expect(page.locator('#api-key-section')).toBeVisible();
+}
+
+async function installOpenRouterSelectionRoutes(page, state) {
+  await page.route('**/api/models/catalog', async (route) => {
+    const openrouterModels = state.certifiedModels.map((id) => ({
+      id,
+      name: id,
+      provider: 'openrouter',
+      type: 'text',
+      model_version: id.split('/').at(-1),
+    }));
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify([
+        {
+          id: 'gpt-5.4-mini',
+          name: 'GPT-5.4 mini',
+          provider: 'openai',
+          type: 'text',
+        },
+        ...openrouterModels,
+      ]),
+    });
+  });
+
+  await page.route('**/api/models/openrouter/eligibility', async (route) => {
+    const keyPresent = state.keyState !== 'MISSING';
+    const eligible = state.keyState === 'VALID' && state.certifiedModels.length > 0;
+    const reason = !keyPresent
+      ? 'key_missing'
+      : state.keyState === 'INVALID'
+        ? 'key_invalid'
+        : state.keyState !== 'VALID'
+          ? 'key_unverified'
+          : state.certifiedModels.length === 0
+            ? 'no_certified_models'
+            : 'eligible';
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        provider: 'openrouter',
+        key_present: keyPresent,
+        key_state: keyPresent ? state.keyState : 'UNVERIFIED',
+        eligible,
+        reason,
+        models: [...state.certifiedModels],
+      }),
+    });
+  });
+
+  await page.route('**/api/models/selection/**', async (route) => {
+    const provider = new URL(route.request().url()).pathname.split('/').at(-1);
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        selected_models: provider === 'openai' ? ['gpt-5.4-mini'] : [],
+      }),
+    });
+  });
+
+  await page.route('**/api/local-llm/models', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ models: [] }),
+    });
+  });
+
+  await page.route('**/api/last-used-model', async (route) => {
+    if (route.request().method() === 'PUT') {
+      state.lastUsed = route.request().postDataJSON();
+      state.lastUsedWrites.push({ ...state.lastUsed });
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(state.lastUsed),
+    });
+  });
+
+  await page.route('**/api/keys', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        api_keys: {
+          openai: '********',
+          openrouter: {
+            present: state.keyState !== 'MISSING',
+            masked: state.keyState !== 'MISSING' ? '********' : null,
+            state: state.keyState === 'MISSING' ? 'UNVERIFIED' : state.keyState,
+          },
+        },
+      }),
+    });
+  });
+
+  await page.route('**/api/codex-connection', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        available: true,
+        codex_connection: {
+          connection_state: 'disconnected',
+          capabilities: {
+            managed_chatgpt_login: true,
+            keyring_only: true,
+            janus_isolated: true,
+          },
+        },
+      }),
+    });
+  });
+
+  await page.route('**/api/chats?**', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify([state.chat]),
+    });
+  });
+  await page.route('**/api/chats/1/messages', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify([]),
+    });
+  });
+  await page.route('**/api/chats/1/llm', async (route) => {
+    const payload = route.request().postDataJSON();
+    state.chat.header_provider = payload.provider;
+    state.chat.header_model = payload.model;
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(state.chat),
+    });
+  });
+  await page.route('**/api/chats/1', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(state.chat),
+    });
+  });
+  await page.route('**/api/chat/stream', async (route) => {
+    state.streamRequests += 1;
+    await route.fulfill({
+      status: 500,
+      contentType: 'application/json',
+      body: JSON.stringify({ detail: 'unexpected OpenRouter transmission' }),
+    });
+  });
 }
 
 
@@ -269,5 +428,148 @@ test.describe('OpenRouter credential settings (TASK-OPENROUTER-JANUS-CHAT-PROVID
     await expect(page.locator('#codex-connection-card')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Mit ChatGPT anmelden' })).toBeVisible();
     await expect(page.locator('#api-key-section')).toBeVisible();
+  });
+});
+
+test.describe('OpenRouter retained provider/model selection (TASK-OPENROUTER-JANUS-CHAT-PROVIDER.4)', () => {
+  test.describe.configure({ mode: 'serial', timeout: 90_000 });
+
+  test('requires deliberate selection and retains disabled sidebar and window choices', async ({ page }) => {
+    const state = {
+      keyState: 'VALID',
+      certifiedModels: [OPENROUTER_MODEL_A, OPENROUTER_MODEL_B],
+      lastUsed: { provider: 'openai', model: 'gpt-5.4-mini' },
+      lastUsedWrites: [],
+      chat: {
+        id: 1,
+        title: 'OpenRouter Auswahltest',
+        project_id: null,
+        is_archived: false,
+        header_provider: null,
+        header_model: null,
+      },
+      streamRequests: 0,
+    };
+
+    const { config } = loadJanusAppDataConfig();
+    await installInternalApiKeyRoute(page, config.api_key);
+    await installOpenRouterSelectionRoutes(page, state);
+    const token = createE2eJwt();
+    await page.addInitScript(({ jwt }) => {
+      localStorage.clear();
+      localStorage.setItem('auth_token', jwt);
+      localStorage.setItem(
+        'janus_beta_privacy_ack_v1',
+        JSON.stringify({
+          accepted: true,
+          noticeVersion: '2026-07-17.1',
+          acceptedAt: new Date().toISOString(),
+        }),
+      );
+      localStorage.setItem(
+        'janus_window_workspace_v1',
+        JSON.stringify({
+          v: 1,
+          activeWindowId: 'A',
+          chatA: 1,
+          chatB: null,
+          isOpenB: true,
+        }),
+      );
+    }, { jwt: token });
+
+    await page.goto('http://localhost:5173/');
+    await expect(page.getByRole('button', { name: 'Einstellungen' })).toBeVisible({
+      timeout: 30_000,
+    });
+    await expect(page.locator('#beta-privacy-modal')).toContainText(
+      'über OpenRouter an den ausgewählten Modellanbieter',
+    );
+
+    const providerSelect = page.locator('#provider-select');
+    const modelSelect = page.locator('#model-select');
+    const sendButtonA = page.locator('#send-button-A');
+
+    await expect(providerSelect.locator('option[value="openrouter"]')).toBeEnabled({
+      timeout: 30_000,
+    });
+    const writesBeforeOpenRouter = state.lastUsedWrites.length;
+    await providerSelect.selectOption('openrouter');
+    await expect(modelSelect).toHaveValue('');
+    expect(state.lastUsedWrites.length).toBe(writesBeforeOpenRouter);
+
+    await modelSelect.selectOption(OPENROUTER_MODEL_A);
+    await expect(sendButtonA).toBeEnabled();
+    expect(state.lastUsed).toEqual({
+      provider: 'openrouter',
+      model: OPENROUTER_MODEL_A,
+    });
+
+    const writesBeforeInvalidReload = state.lastUsedWrites.length;
+    state.keyState = 'INVALID';
+    await page.reload();
+    await expect(page.getByRole('button', { name: 'Einstellungen' })).toBeVisible({
+      timeout: 30_000,
+    });
+    await expect(providerSelect).toHaveValue('openrouter');
+    await expect(providerSelect.locator('option[value="openrouter"]')).toBeDisabled();
+    await expect(modelSelect).toHaveValue(OPENROUTER_MODEL_A);
+    await expect(modelSelect).toBeDisabled();
+    await expect(sendButtonA).toBeDisabled();
+    await expect(page.locator('#openrouter-chat-eligibility')).toContainText(
+      'Der API-Key ist ungültig',
+    );
+    expect(state.lastUsedWrites.length).toBe(writesBeforeInvalidReload);
+
+    await page.evaluate(() => {
+      document.getElementById('chat-form-A')?.dispatchEvent(
+        new Event('submit', { bubbles: true, cancelable: true }),
+      );
+    });
+    await page.waitForTimeout(200);
+    expect(state.streamRequests).toBe(0);
+
+    state.keyState = 'VALID';
+    state.certifiedModels = [OPENROUTER_MODEL_B];
+    await page.reload();
+    await expect(page.getByRole('button', { name: 'Einstellungen' })).toBeVisible({
+      timeout: 30_000,
+    });
+    await expect(providerSelect).toHaveValue('openrouter');
+    await expect(modelSelect).toHaveValue(OPENROUTER_MODEL_A);
+    await expect(modelSelect.locator(`option[value="${OPENROUTER_MODEL_A}"]`)).toBeDisabled();
+    await expect(modelSelect.locator(`option[value="${OPENROUTER_MODEL_B}"]`)).toBeEnabled();
+    await expect(sendButtonA).toBeDisabled();
+
+    await modelSelect.selectOption(OPENROUTER_MODEL_B);
+    await expect(sendButtonA).toBeEnabled();
+    expect(state.lastUsed).toEqual({
+      provider: 'openrouter',
+      model: OPENROUTER_MODEL_B,
+    });
+
+    await providerSelect.selectOption('openai');
+    await expect(providerSelect).toHaveValue('openai');
+    const headerProvider = page.locator('#chat-header-provider-A');
+    const headerModel = page.locator('#chat-header-model-A');
+    await headerProvider.selectOption('openrouter');
+    await expect(headerModel).toHaveValue('');
+    await headerModel.selectOption(OPENROUTER_MODEL_B);
+    await expect(sendButtonA).toBeEnabled();
+    expect(state.chat.header_provider).toBe('openrouter');
+    expect(state.chat.header_model).toBe(OPENROUTER_MODEL_B);
+
+    state.keyState = 'UNVERIFIED';
+    await page.reload();
+    await expect(page.getByRole('button', { name: 'Einstellungen' })).toBeVisible({
+      timeout: 30_000,
+    });
+    await expect(providerSelect).toHaveValue('openai');
+    await expect(headerProvider).toHaveValue('openrouter');
+    await expect(headerProvider.locator('option[value="openrouter"]')).toBeDisabled();
+    await expect(headerModel).toHaveValue(OPENROUTER_MODEL_B);
+    await expect(headerModel).toBeDisabled();
+    await expect(sendButtonA).toBeDisabled();
+    expect(state.streamRequests).toBe(0);
   });
 });

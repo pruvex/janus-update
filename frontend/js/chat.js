@@ -366,6 +366,31 @@ function effectiveProviderModelForWindow(windowId) {
   };
 }
 
+function requireOpenRouterSelectionEligibility(windowId, provider, model) {
+  if (String(provider || "").toLowerCase() !== "openrouter") return true;
+  const decision =
+    typeof window.getOpenRouterSelectionEligibility === "function"
+      ? window.getOpenRouterSelectionEligibility(provider, model)
+      : { eligible: false, reason: "eligibility_unavailable" };
+  if (decision?.eligible === true) return true;
+
+  const messages = {
+    key_missing: "OpenRouter ist gesperrt: Kein API-Key gespeichert.",
+    key_invalid: "OpenRouter ist gesperrt: Der API-Key ist ungültig.",
+    key_unverified: "OpenRouter ist gesperrt: Der API-Key ist noch nicht verifiziert.",
+    no_certified_models: "OpenRouter ist gesperrt: Kein zertifiziertes Modell verfügbar.",
+    model_unavailable: "Bitte wähle ein aktuell zertifiziertes OpenRouter-Modell.",
+    eligibility_unavailable: "OpenRouter ist derzeit nicht verfügbar.",
+  };
+  const input = document.getElementById(paneId("user-input", windowId));
+  if (input) {
+    input.setCustomValidity(messages[decision?.reason] || "OpenRouter ist derzeit nicht verfügbar.");
+    input.reportValidity();
+    input.setCustomValidity("");
+  }
+  return false;
+}
+
 const USER_INPUT_MAX_PX = 200;
 
 /**
@@ -551,6 +576,7 @@ async function processFile(file, paneWindowId) {
       }
 
       const { provider, model } = effectiveProviderModelForWindow(windowId);
+      if (!requireOpenRouterSelectionEligibility(windowId, provider, model)) return;
       const chat_id = getActiveChatIdForWindow(windowId);
       appendMessage("user", { text: `Ich habe das Dokument '${file.name}' hochgeladen.` }, { windowId });
 
@@ -679,6 +705,7 @@ Wähle eine Aktion (Antworte mit 1, 2 oder 3):
 
     // 2. Request vorbereiten
     const { provider, model } = effectiveProviderModelForWindow(windowId);
+    if (!requireOpenRouterSelectionEligibility(windowId, provider, model)) return;
     const chat_id = getActiveChatIdForWindow(windowId);
     // Der Standard-Prompt, der später im UI ausgeblendet wird
     const defaultPrompt = "Gib eine kurze Bestätigung und die wichtigsten Merkmale des Bildes in einem Satz.";
@@ -800,6 +827,7 @@ export async function sendMessage(fromWindowId) {
   lastVideoListMetadata = null;
 
   const { provider, model } = effectiveProviderModelForWindow(windowId);
+  if (!requireOpenRouterSelectionEligibility(windowId, provider, model)) return;
   if (provider === "chatgpt") {
     const verified = await hasCurrentChatgptModel(model);
     if (!verified) {

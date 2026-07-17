@@ -147,7 +147,177 @@ const appState = {
     model: "gpt-3.5-turbo",
   },
   model_catalog: {}, // Will be loaded dynamically
+  openrouter_eligibility: {
+    provider: "openrouter",
+    key_present: false,
+    key_state: "UNVERIFIED",
+    eligible: false,
+    reason: "eligibility_unavailable",
+    models: [],
+  },
 };
+
+function normalizeOpenRouterEligibility(payload) {
+  const keyState = ["VALID", "INVALID", "UNVERIFIED"].includes(payload?.key_state)
+    ? payload.key_state
+    : "UNVERIFIED";
+  const allowedReasons = new Set([
+    "eligible",
+    "key_missing",
+    "key_invalid",
+    "key_unverified",
+    "no_certified_models",
+  ]);
+  const models = Array.from(
+    new Set(
+      (Array.isArray(payload?.models) ? payload.models : [])
+        .map((modelId) => String(modelId || "").trim())
+        .filter(Boolean),
+    ),
+  );
+  const reason = allowedReasons.has(payload?.reason)
+    ? payload.reason
+    : "eligibility_unavailable";
+  const eligible =
+    payload?.provider === "openrouter" &&
+    payload?.eligible === true &&
+    keyState === "VALID" &&
+    reason === "eligible" &&
+    models.length > 0;
+  return {
+    provider: "openrouter",
+    key_present: payload?.key_present === true,
+    key_state: keyState,
+    eligible,
+    reason: eligible ? "eligible" : reason,
+    models,
+  };
+}
+
+async function loadOpenRouterChatEligibility() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/models/openrouter/eligibility`);
+    if (!response.ok) {
+      throw new Error(`HTTP Error ${response.status}`);
+    }
+    appState.openrouter_eligibility = normalizeOpenRouterEligibility(await response.json());
+  } catch (error) {
+    console.warn("OpenRouter chat eligibility could not be refreshed:", error.message);
+    appState.openrouter_eligibility = normalizeOpenRouterEligibility(null);
+  }
+  return appState.openrouter_eligibility;
+}
+
+function getOpenRouterSelectionEligibility(provider, model) {
+  if (String(provider || "").toLowerCase() !== "openrouter") {
+    return { eligible: true, reason: "not_openrouter" };
+  }
+  const state = appState.openrouter_eligibility;
+  if (!state?.eligible) {
+    return {
+      eligible: false,
+      reason: state?.reason || "eligibility_unavailable",
+    };
+  }
+  const exactModel = String(model || "").trim();
+  if (!exactModel || !state.models.includes(exactModel)) {
+    return { eligible: false, reason: "model_unavailable" };
+  }
+  return { eligible: true, reason: "eligible" };
+}
+
+window.getOpenRouterSelectionEligibility = getOpenRouterSelectionEligibility;
+
+function hasRetainedOpenRouterSelection() {
+  if (appState.last_active.provider === "openrouter") return true;
+  return WINDOW_IDS.some((windowId) => getWindowState().windows[windowId]?.provider === "openrouter");
+}
+
+function syncOpenRouterProviderOption() {
+  const providerSelect = document.getElementById("provider-select");
+  if (!providerSelect) return;
+
+  const shouldShow =
+    appState.openrouter_eligibility.eligible || hasRetainedOpenRouterSelection();
+  let option = providerSelect.querySelector('option[value="openrouter"]');
+  if (!shouldShow) {
+    option?.remove();
+    return;
+  }
+  if (!option) {
+    option = document.createElement("option");
+    option.value = "openrouter";
+    providerSelect.appendChild(option);
+  }
+  option.disabled = !appState.openrouter_eligibility.eligible;
+  option.textContent = appState.openrouter_eligibility.eligible
+    ? "OpenRouter"
+    : "OpenRouter (derzeit nicht verfügbar)";
+}
+
+function effectiveSelectionForWindow(windowId) {
+  const windowSelection = getWindowState().windows[windowId] || {};
+  const sidebarProvider = document.getElementById("provider-select")?.value || "";
+  const sidebarModel = document.getElementById("model-select")?.value || "";
+  const headerProvider =
+    document.getElementById(`chat-header-provider-${windowId}`)?.value || "";
+  const headerModel =
+    document.getElementById(`chat-header-model-${windowId}`)?.value || "";
+  return {
+    provider: windowSelection.provider || headerProvider || sidebarProvider,
+    model: windowSelection.modelId || headerModel || sidebarModel,
+  };
+}
+
+function openRouterEligibilityMessage(reason) {
+  const messages = {
+    key_missing: "OpenRouter ist gesperrt: Kein API-Key gespeichert.",
+    key_invalid: "OpenRouter ist gesperrt: Der API-Key ist ungültig.",
+    key_unverified: "OpenRouter ist gesperrt: Der API-Key ist noch nicht verifiziert.",
+    no_certified_models: "OpenRouter ist gesperrt: Kein zertifiziertes Modell verfügbar.",
+    model_unavailable: "Das gespeicherte OpenRouter-Modell ist derzeit nicht verfügbar.",
+    eligibility_unavailable: "OpenRouter ist gesperrt: Status derzeit nicht verfügbar.",
+  };
+  return messages[reason] || "OpenRouter ist derzeit nicht verfügbar.";
+}
+
+function syncOpenRouterComposerAvailability() {
+  WINDOW_IDS.forEach((windowId) => {
+    const { provider, model } = effectiveSelectionForWindow(windowId);
+    const decision = getOpenRouterSelectionEligibility(provider, model);
+    const sendButton = document.getElementById(`send-button-${windowId}`);
+    if (!sendButton) return;
+    if (provider === "openrouter" && !decision.eligible) {
+      sendButton.disabled = true;
+      sendButton.dataset.openrouterBlocked = decision.reason;
+      sendButton.title = openRouterEligibilityMessage(decision.reason);
+      sendButton.setAttribute("aria-disabled", "true");
+    } else if (sendButton.dataset.openrouterBlocked) {
+      sendButton.disabled = false;
+      delete sendButton.dataset.openrouterBlocked;
+      sendButton.removeAttribute("title");
+      sendButton.removeAttribute("aria-disabled");
+    }
+  });
+
+  const status = document.getElementById("openrouter-chat-eligibility");
+  if (!status) return;
+  const sidebarProvider = appState.last_active.provider;
+  const sidebarModel = appState.last_active.model;
+  if (sidebarProvider !== "openrouter") {
+    status.hidden = true;
+    status.textContent = "";
+    return;
+  }
+  const decision = getOpenRouterSelectionEligibility(sidebarProvider, sidebarModel);
+  if (!decision.eligible) {
+    status.textContent = openRouterEligibilityMessage(decision.reason);
+    status.hidden = false;
+  } else {
+    status.hidden = true;
+    status.textContent = "";
+  }
+}
 
 function switchView(viewName, data = null) {
     const chatView = document.getElementById('chat-view');
@@ -219,11 +389,19 @@ window.addEventListener('models-updated', async () => {
   console.info('[Auto-Aggregation] Modelle wurden angepasst, aktualisiere Dropdown.');
   try {
     await loadModelCatalog();
+    await loadOpenRouterChatEligibility();
     await loadUserSelections();
     render();
   } catch (error) {
     console.error('Failed to refresh models after update event:', error);
   }
+});
+
+window.addEventListener("openrouter-eligibility-changed", async () => {
+  await loadModelCatalog();
+  await loadOpenRouterChatEligibility();
+  await loadUserSelections();
+  render();
 });
 
 window.switchView = switchView;
@@ -551,9 +729,62 @@ window.updateLastUsedModelInBackend = async function updateLastUsedModelInBacken
  * @param {HTMLSelectElement} selectEl
  * @param {string} targetProvider
  */
-function fillModelOptionsIntoSelect(selectEl, targetProvider) {
+function fillModelOptionsIntoSelect(selectEl, targetProvider, options = {}) {
   if (!selectEl || !targetProvider) return;
   selectEl.innerHTML = "";
+  selectEl.disabled = false;
+  delete selectEl.dataset.openrouterRetained;
+
+  const selectedModel = String(options.selectedModel || "").trim();
+  if (targetProvider === "openrouter") {
+    const state = appState.openrouter_eligibility;
+    const allowedIds = new Set(state.models);
+    const certifiedModels = (appState.model_catalog.openrouter || []).filter(
+      (model) => allowedIds.has(String(model.id || "")),
+    );
+
+    if (!state.eligible) {
+      const retained = document.createElement("option");
+      retained.value = selectedModel;
+      retained.textContent = selectedModel
+        ? `${selectedModel} (derzeit nicht verfügbar)`
+        : "-- OpenRouter derzeit nicht verfügbar --";
+      retained.disabled = true;
+      retained.selected = true;
+      selectEl.appendChild(retained);
+      selectEl.disabled = true;
+      selectEl.dataset.openrouterRetained = state.reason;
+      return;
+    }
+
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = "-- OpenRouter-Modell bewusst wählen --";
+    placeholder.disabled = true;
+    placeholder.selected = !selectedModel;
+    selectEl.appendChild(placeholder);
+
+    if (selectedModel && !allowedIds.has(selectedModel)) {
+      const retained = document.createElement("option");
+      retained.value = selectedModel;
+      retained.textContent = `${selectedModel} (derzeit nicht verfügbar)`;
+      retained.disabled = true;
+      retained.selected = true;
+      selectEl.appendChild(retained);
+      selectEl.dataset.openrouterRetained = "model_unavailable";
+    }
+
+    certifiedModels.forEach((model) => {
+      const option = document.createElement("option");
+      option.value = model.id;
+      option.textContent = model.id;
+      option.dataset.provider = "openrouter";
+      option.selected = model.id === selectedModel;
+      selectEl.appendChild(option);
+    });
+    return;
+  }
+
   let allowedModels = appState.user_selections[targetProvider] || [];
 
   // Wenn keine Modelle ausgewählt sind, zeige keine an (nicht alle als Fallback)
@@ -633,6 +864,7 @@ function rebuildHeaderProviderOptions(headerSel) {
     const c = document.createElement("option");
     c.value = o.value;
     c.textContent = o.textContent;
+    c.disabled = o.disabled;
     headerSel.appendChild(c);
   });
 }
@@ -642,6 +874,7 @@ function rebuildHeaderProviderOptions(headerSel) {
  * Nach jedem render() und bei Fenster-State-Events.
  */
 function syncChatWindowHeaderLlm() {
+  syncOpenRouterProviderOption();
   const sbp = document.getElementById("provider-select");
   const sbm = document.getElementById("model-select");
   if (!sbp || !sbm) return;
@@ -656,15 +889,20 @@ function syncChatWindowHeaderLlm() {
     hp.value = w.provider != null ? w.provider : "";
 
     const effProvider = w.provider ?? sbp.value;
-    fillModelOptionsIntoSelect(hm, effProvider);
-
-    const wantModel = w.modelId ?? sbm.value;
+    const explicitProviderDiffersFromSidebar =
+      w.provider != null && w.provider !== sbp.value;
+    const wantModel =
+      w.modelId ?? (explicitProviderDiffersFromSidebar ? null : sbm.value);
+    fillModelOptionsIntoSelect(hm, effProvider, { selectedModel: wantModel });
     if ([...hm.options].some((o) => o.value === wantModel)) {
       hm.value = wantModel;
-    } else if (hm.options.length > 0) {
+    } else if (effProvider !== "openrouter" && hm.options.length > 0) {
       hm.value = hm.options[0].value;
+    } else {
+      hm.value = "";
     }
   }
+  syncOpenRouterComposerAvailability();
 }
 
 function setupChatHeaderLlmListeners() {
@@ -689,13 +927,15 @@ function setupChatHeaderLlmListeners() {
       const sbp = document.getElementById("provider-select");
       const effP = v ?? sbp?.value;
       if (effP) {
-        fillModelOptionsIntoSelect(hm, effP);
         const sbm = document.getElementById("model-select");
-        const want = sbm?.value;
+        const want = effP === "openrouter" ? null : sbm?.value;
+        fillModelOptionsIntoSelect(hm, effP, { selectedModel: want });
         if (want && [...hm.options].some((o) => o.value === want)) {
           hm.value = want;
-        } else if (hm.options.length) {
+        } else if (effP !== "openrouter" && hm.options.length) {
           hm.value = hm.options[0].value;
+        } else {
+          hm.value = "";
         }
       }
       syncChatWindowHeaderLlm();
@@ -713,6 +953,7 @@ function setupChatHeaderLlmListeners() {
           console.warn("[chat-header] Failed to persist model override:", error);
         });
       }
+      syncOpenRouterComposerAvailability();
       scheduleContextRefresh(wid);
     });
   }
@@ -723,6 +964,7 @@ function render() {
   const chatView = document.getElementById("chat-view");
   const settingsView = document.getElementById("settings-view");
 
+  syncOpenRouterProviderOption();
   const sidebarProviderSelect = document.getElementById("provider-select");
   const sidebarModelSelect = document.getElementById("model-select");
 
@@ -732,7 +974,11 @@ function render() {
     // 0. Zustand aus dem Dropdown übernehmen, bevor wir es leeren. Sonst bleibt
     //    appState hinter der Nutzerwahl zurück (Modellwechsel aktualisierte bisher nur das DOM).
     //    Beim Öffnen der Einstellungen würde render() sonst z. B. wieder "Gemini Pro" setzen.
-    if (sidebarModelSelect.options && sidebarModelSelect.options.length > 0) {
+    if (
+      !appState.providerSwitchInProgress &&
+      sidebarModelSelect.options &&
+      sidebarModelSelect.options.length > 0
+    ) {
       const domProvider = sidebarProviderSelect.value;
       const domModel = sidebarModelSelect.value;
       if (domProvider && domModel) {
@@ -764,8 +1010,10 @@ function render() {
     // 3. Fülle die Modell-Liste basierend auf dem korrekten Provider (gleiche Logik wie Chat-Header).
     console.log(`--> [Render] Populating model list for provider: ${targetProvider}`);
     console.log("--- DROPDOWN-FILTER (Sidebar + Header teilen fillModelOptionsIntoSelect) ---");
-    if (appState.model_catalog[targetProvider]) {
-      fillModelOptionsIntoSelect(sidebarModelSelect, targetProvider);
+    if (appState.model_catalog[targetProvider] || targetProvider === "openrouter") {
+      fillModelOptionsIntoSelect(sidebarModelSelect, targetProvider, {
+        selectedModel: targetModel,
+      });
     } else {
       console.warn(`No models found for provider: ${targetProvider}`);
     }
@@ -776,7 +1024,13 @@ function render() {
     console.log(`--> [Render] Verfügbare Modell-Optionen:`, availableOptions);
     console.log(`--> [Render] Ziel-Modell: ${targetModel}`);
 
-    if (availableOptions.includes(targetModel)) {
+    if (targetProvider === "openrouter") {
+      if (targetModel && availableOptions.includes(targetModel)) {
+        sidebarModelSelect.value = targetModel;
+      } else {
+        sidebarModelSelect.value = "";
+      }
+    } else if (availableOptions.includes(targetModel)) {
       // Fall A: Alles gut, das Modell existiert.
       console.log(`--> [Render] Ziel-Modell '${targetModel}' gefunden, wird ausgewählt.`);
       sidebarModelSelect.value = targetModel;
@@ -1103,6 +1357,9 @@ async function initializeApp() {
     try {
       console.log("--> [3.1] Loading model catalog...");
       await loadModelCatalog();
+
+      console.log("--> [3.1.5] Loading OpenRouter chat eligibility...");
+      await loadOpenRouterChatEligibility();
       
       console.log("--> [3.2] Loading user selections...");
       await loadUserSelections();
@@ -1242,6 +1499,7 @@ function setupEventListeners() {
     
     // 1. Reload catalog (required for newly installed local models)
     await loadModelCatalog();
+    await loadOpenRouterChatEligibility();
 
     // 2. Reload user selections from server
     await loadUserSelections();
@@ -1281,8 +1539,12 @@ function setupEventListeners() {
 
       // 2. Ein sinnvolles Standard-Modell für den neuen Provider finden und setzen
       // Das verhindert, dass ein ungültiges Modell (z.B. GPT in Gemini) ausgewählt bleibt.
-      const firstAvailableModel = findFirstAvailableModel(newProvider);
-      if (firstAvailableModel) {
+      const firstAvailableModel =
+        newProvider === "openrouter" ? null : findFirstAvailableModel(newProvider);
+      if (newProvider === "openrouter") {
+        appState.last_active.model = null;
+        console.log("--> [Event] OpenRouter requires a deliberate model selection.");
+      } else if (firstAvailableModel) {
         appState.last_active.model = firstAvailableModel.id;
         console.log(`--> [Event] New model set in state: ${firstAvailableModel.id}`);
       } else {
@@ -1291,7 +1553,9 @@ function setupEventListeners() {
       }
 
       // 3. Den Backend-Status aktualisieren (wichtig für den nächsten App-Start)
-      await updateLastUsedModelInBackend();
+      if (newProvider !== "openrouter") {
+        await updateLastUsedModelInBackend();
+      }
 
       // 4. Die UI komplett neu zeichnen, um die Änderungen anzuzeigen
       // 💎 FIX: Setze ein Flag, um zu verhindern, dass render() die Fallback-Logik auslöst
@@ -1311,6 +1575,7 @@ function setupEventListeners() {
   if (sidebarModelSelectForChange) {
     sidebarModelSelectForChange.addEventListener("change", async () => {
       const m = sidebarModelSelectForChange.value;
+      if (!m) return;
       appState.last_active.model = m;
       if (window.Sentry && m) {
         Sentry.setTag("active_model", m);
@@ -1946,6 +2211,12 @@ async function loadLastUsedModel() {
 
     // Nur aktualisieren, wenn gültige Daten zurückkommen
     if (data && data.provider && data.model) {
+        if (data.provider === "openrouter") {
+          appState.last_active.provider = "openrouter";
+          appState.last_active.model = data.model;
+          console.log("Restored retained OpenRouter selection:", data.model);
+          return;
+        }
         const providerSelect = document.getElementById("provider-select");
         const chatgptModels = Array.isArray(appState.model_catalog.chatgpt)
           ? appState.model_catalog.chatgpt
@@ -2011,6 +2282,13 @@ async function loadUserSelections() {
     const availableProviders = Object.keys(appState.model_catalog);
     
     const selectionPromises = availableProviders.map(async (provider) => {
+      if (provider === "openrouter") {
+        appState.user_selections.openrouter = [
+          ...(appState.openrouter_eligibility.models || []),
+        ];
+        return;
+      }
+
       // ChatGPT models are exclusively supplied by the verified Codex catalog.
       // Never depend on the generic provider-selection API or retain a stale
       // selection if that catalog is unavailable.
@@ -2126,6 +2404,9 @@ function sortSidebarModelsForProvider(provider, models) {
 }
 
 function findFirstAvailableModel(provider) {
+  if (provider === "openrouter") {
+    return null;
+  }
   // Stellt sicher, dass der Provider im Katalog existiert, um Fehler zu vermeiden.
   if (!appState.model_catalog[provider]) {
     console.error(`Provider '${provider}' not found in model catalog.`);

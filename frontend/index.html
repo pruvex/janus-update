@@ -111,6 +111,12 @@
               <option value="ollama">Ollama (Lokal)</option>
             </select>
             <select id="model-select" aria-label="Modell"></select>
+            <p
+              id="openrouter-chat-eligibility"
+              class="openrouter-chat-eligibility"
+              aria-live="polite"
+              hidden
+            ></p>
           </div>
 
           <nav id="sidebar-nav" class="sidebar-main-nav" aria-label="Hauptnavigation">
@@ -2475,7 +2481,7 @@
     <!-- ============================================= -->
     <!-- ==== Beta Privacy Notice Modal ============== -->
     <!-- ============================================= -->
-    <div id="beta-privacy-modal" class="modal hidden" data-notice-version="2026-05-21.1">
+    <div id="beta-privacy-modal" class="modal hidden" data-notice-version="2026-07-17.1">
         <div class="modal-content" style="max-width: 720px;">
             <div class="modal-header">
                 <h3>Beta-Datenschutz & Datenrechte</h3>
@@ -2492,6 +2498,10 @@
                     Wetter-, Geo/Distanz-, Preis/Current-Data-, Kalender- oder Telemetrie-Provider
                     gesendet werden. Lokale Ollama-Anfragen bleiben lokal, sofern deine Ollama-Umgebung
                     nicht anders konfiguriert ist.
+                </p>
+                <p>
+                    Bei bewusst ausgewähltem OpenRouter-Chat können die für den Turn benötigten
+                    Inhalte über OpenRouter an den ausgewählten Modellanbieter übermittelt werden.
                 </p>
                 <p>
                     Bitte keine Secrets, API-Keys, PasswÃ¶rter, produktiven Kundendaten,

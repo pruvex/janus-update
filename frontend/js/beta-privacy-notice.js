@@ -1,5 +1,5 @@
 const ACK_STORAGE_KEY = "janus_beta_privacy_ack_v1";
-const NOTICE_VERSION = "2026-05-21.1";
+const NOTICE_VERSION = "2026-07-17.1";
 
 function readAck() {
   try {
