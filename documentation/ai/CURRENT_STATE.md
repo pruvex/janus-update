@@ -1,6 +1,15 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-19 00:40:00 +02:00`, OR hardening merged to master + codex-sync.
+
+Merged `feature/openrouter-catalog-ux` → `master` (--no-ff). Pushed `backup/master`. Syncing `CURRENT_STATE.md` to `origin/codex-sync` for ChatGPT.
+
+canonical state: `PASS`.
+
+Last updated: `2026-07-19 00:40:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-19 00:35:00 +02:00`, Hardening 1→2→3 complete on feature branch.
 
 1) Smoke committed+pushed: `9466345be` on `backup/feature/openrouter-catalog-ux`.
