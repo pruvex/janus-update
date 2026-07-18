@@ -156,12 +156,30 @@ class ToolCallAdapter:
         seen_names: set[str] = set()
         for tool in tools:
             try:
-                name = getattr(tool, "name", tool.get("name") if isinstance(tool, dict) else "unknown")
-                desc = getattr(tool, "description", tool.get("description") if isinstance(tool, dict) else "")
-                args_schema_model = getattr(tool, "args_schema", None)
-                schema: Dict[str, Any] = {"type": "object", "properties": {}}
-                if isinstance(tool, dict) and isinstance(tool.get("parameters"), dict):
-                    schema = tool.get("parameters")
+                # Already-OpenAI-shaped payloads expose name under function.name.
+                # Top-level .get("name") would become None and break tool_choice matching.
+                func_def = None
+                if isinstance(tool, dict) and isinstance(tool.get("function"), dict):
+                    func_def = tool["function"]
+
+                if func_def is not None:
+                    name = func_def.get("name")
+                    desc = func_def.get("description", "")
+                    schema = (
+                        func_def.get("parameters")
+                        if isinstance(func_def.get("parameters"), dict)
+                        else {"type": "object", "properties": {}}
+                    )
+                    args_schema_model = None
+                else:
+                    name = getattr(tool, "name", tool.get("name") if isinstance(tool, dict) else "unknown")
+                    desc = getattr(
+                        tool, "description", tool.get("description") if isinstance(tool, dict) else ""
+                    )
+                    args_schema_model = getattr(tool, "args_schema", None)
+                    schema = {"type": "object", "properties": {}}
+                    if isinstance(tool, dict) and isinstance(tool.get("parameters"), dict):
+                        schema = tool.get("parameters")
 
                 if args_schema_model:
                     if hasattr(args_schema_model, "model_json_schema"):
@@ -169,7 +187,7 @@ class ToolCallAdapter:
                     elif hasattr(args_schema_model, "schema"):
                         schema = args_schema_model.schema()
 
-                raw_name = str(name)
+                raw_name = str(name or "")
                 openai_safe_name = self.outbound_name(raw_name)
                 if openai_safe_name in seen_names:
                     logger.debug("OpenAI: Skipping duplicate tool name '%s'", openai_safe_name)
@@ -464,6 +482,19 @@ class ToolCallAdapter:
         if not isinstance(schema, dict):
             return {"type": "object", "properties": {}}
 
+        # OpenAI-compatible providers (incl. OpenRouter upstreams like Moonshot/xAI)
+        # often reject unresolved `$ref` once `$defs` are stripped. Resolve refs first,
+        # matching the Gemini sanitizer contract.
+        try:
+            schema = self._resolve_schema_refs(schema)
+            logger.debug("OPENAI_SCHEMA_REF_RESOLVE ok provider=%s", self.provider)
+        except Exception as exc:
+            logger.warning(
+                "OpenAI-compatible tool schema $ref resolve failed (%s); using empty object schema.",
+                exc,
+            )
+            return {"type": "object", "properties": {}}
+
         def _sanitize_node(node: Any) -> Any:
             if isinstance(node, dict):
                 cleaned = {
@@ -478,6 +509,7 @@ class ToolCallAdapter:
                         "$defs",
                         "definitions",
                         "strict",
+                        "$ref",
                     }
                 }
 

@@ -1,6 +1,5 @@
 import re
 from typing import List, Dict, Any
-from backend.tool_registry import get_all_tool_definitions
 from backend.services.tool_manager import tool_manager
 
 WEBSEARCH_SKILL_ID = "system.websearch"
@@ -13,6 +12,13 @@ _CONTACT_FACT_STATEMENT_RE = re.compile(
     r"\b(?:wohnt|lebt|hei(?:ß|ss)t|mag|liebt|hasst|hat\s+(?:einen|eine|ein)|besitzt\s+(?:einen|eine|ein))\b",
     re.IGNORECASE,
 )
+
+
+def _get_all_tool_definitions():
+    # Lazy: tool_registry pulls many tool modules and dominates cold startup.
+    from backend.tool_registry import get_all_tool_definitions
+
+    return get_all_tool_definitions()
 
 class ToolSelector:
     """
@@ -186,7 +192,7 @@ class ToolSelector:
             if any(kw in prompt_lower for kw in nav_keywords):
                 # Fokus auf E-Mail Interaktion
                 return [
-                    t for t in get_all_tool_definitions()
+                    t for t in _get_all_tool_definitions()
                     if cls._matches_identifier(t["function"]["name"], "read_email")
                     or cls._matches_identifier(t["function"]["name"], WEBSEARCH_SKILL_ID)
                 ]
@@ -199,7 +205,7 @@ class ToolSelector:
         candidate_names = {c["tool_name"] for c in candidates}
 
         # Schritt 2: Definitionen aus dem Katalog filtern
-        all_tools = get_all_tool_definitions()
+        all_tools = _get_all_tool_definitions()
         
         filtered_tools = []
         for tool in all_tools:

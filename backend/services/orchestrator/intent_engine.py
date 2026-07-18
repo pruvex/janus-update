@@ -604,6 +604,25 @@ FILESYSTEM_ACTION_MARKERS: Tuple[str, ...] = (
     "dateien verschiebe",
     "datei verschieben",
     "datei verschiebe",
+    # Read/list discovery (OpenRouter/GLM regression: "Liste Dateinamen" was not FS)
+    "liste",
+    "listen",
+    "auflist",
+    "auflisten",
+    "aufliste",
+    "dateinamen",
+    "zeig",
+    "zeige",
+    "zeigen",
+    "anzeigen",
+    "lies",
+    "lese",
+    "lesen",
+    "read",
+    "öffne",
+    "oeffne",
+    "öffnen",
+    "oeffnen",
 )
 
 FILESYSTEM_OBJECT_MARKERS: Tuple[str, ...] = (
@@ -1433,9 +1452,29 @@ class IntentEngine:
         has_action = _contains_any_phrase(text_norm, self.filesystem_action_markers)
         has_object = _contains_any_phrase(text_norm, self.filesystem_object_markers)
         has_path = _contains_any_phrase(text_norm, self.filesystem_path_markers)
+        # Concrete Windows/POSIX drive paths count as path evidence.
+        has_windows_path = bool(re.search(r"[a-zA-Z]:[\\/]", user_text))
+        if has_windows_path:
+            has_path = True
+        # Explicit "use the filesystem" + target object/path is enough.
+        has_fs_directive = "dateisystem" in text_norm
+        has_known_file_ext = bool(
+            re.search(
+                r"\.(?:json|md|txt|csv|py|js|ts|tsx|jsx|html|xml|ya?ml|toml|ini|pdf|docx?|xlsx?|pptx?|log)\b",
+                user_text,
+                flags=re.IGNORECASE,
+            )
+        )
 
-        # Filesystem-Intent wenn: Action + Object ODER Action + Path
-        is_filesystem = (has_action and has_object) or (has_action and has_path)
+        # Filesystem-Intent wenn: Action + Object ODER Action + Path ODER Directive + Target
+        # OR concrete path + (object|known file) for version/content questions without verbs.
+        is_filesystem = (
+            (has_action and has_object)
+            or (has_action and has_path)
+            or (has_fs_directive and (has_object or has_path))
+            or (has_windows_path and has_object)
+            or (has_windows_path and has_known_file_ext)
+        )
 
         if is_filesystem:
             logger.debug(
@@ -1576,7 +1615,24 @@ class IntentEngine:
         p = f" {t} "
         if " vom kanal " in p or " from channel " in p:
             return True
-        if re.search(r"(?:^|\s)(?:kanal|channel)\s+[a-z0-9]", t, re.IGNORECASE):
+        # "Gib Titel und Kanal an" must NOT match — require a real channel token.
+        channel_stopwords = {
+            "an",
+            "und",
+            "oder",
+            "bitte",
+            "mir",
+            "den",
+            "die",
+            "das",
+            "ein",
+            "eine",
+            "namen",
+            "name",
+            "titel",
+        }
+        channel_match = re.search(r"(?:^|\s)(?:kanal|channel)\s+([a-z0-9][\w-]{0,40})", t, re.IGNORECASE)
+        if channel_match and str(channel_match.group(1) or "").casefold() not in channel_stopwords:
             return True
         if " von " in p:
             if any(
@@ -1741,14 +1797,29 @@ class IntentEngine:
         
         DIAMOND-FIX: "Erstelle" allein darf keinen PDF-Flow auslösen.
         Es muss explizit nach einem physischen Dateiformat gefragt werden.
+
+        Filesystem discovery/read turns must not enter the meta-agent PDF path
+        (false positives: "Dateinamen"→datei, "Websuche"→suche).
         """
         if not user_text:
             return False
-        
+        if self.detect_filesystem_intent(user_text):
+            return False
+
         text_lower = user_text.lower()
-        has_production = any(keyword in text_lower for keyword in self.production_keywords)
-        has_research = any(keyword in text_lower for keyword in self.research_keywords)
-        
+
+        def _has_keyword(keyword: str) -> bool:
+            # Prefer word-ish boundaries so "websuche"/"dateisystem" do not match.
+            return bool(
+                re.search(
+                    rf"(?<!\w){re.escape(str(keyword).lower())}(?!\w)",
+                    text_lower,
+                )
+            )
+
+        has_production = any(_has_keyword(keyword) for keyword in self.production_keywords)
+        has_research = any(_has_keyword(keyword) for keyword in self.research_keywords)
+
         return has_production and has_research
     
     def is_simple_document_check(self, user_text: str) -> bool:
@@ -1819,6 +1890,9 @@ class IntentEngine:
         if not user_text:
             return False
         if intent_classifier.is_greeting(user_text):
+            return False
+        # Searching/playing a YouTube/tutorial video is an action turn, not Help.
+        if self.detect_video_intent(user_text):
             return False
         if not any(pattern.search(user_text) for pattern in HELP_HOW_TO_PATTERNS):
             return False
@@ -1958,6 +2032,13 @@ class IntentEngine:
         if not user_text or not user_text.strip():
             return False
         t = user_text.casefold()
+        # Strip explicit opt-outs so "Keine Nachrichten, keine Websuche" does not
+        # force rss_news/websearch on filesystem turns.
+        t = re.sub(
+            r"\b(?:keine|kein|ohne|nicht)\s+(?:news|nachrichten|neuigkeiten|schlagzeilen|websuche|web\s*suche)\b",
+            " ",
+            t,
+        )
         # Explizite News-Marker
         if re.search(r"\b(?:news|nachrichten|neuigkeiten|schlagzeilen|aktuell|neueste|latest news)\b", t):
             return True
@@ -2227,6 +2308,17 @@ class IntentEngine:
             user_text,
             calendar_snapshot=calendar_snapshot,
         )
+
+        # Concrete filesystem turns must not keep a residual news flag that forces
+        # rss_news/websearch tool queues (OpenRouter/GLM desktop list regression).
+        if result.is_filesystem_intent and result.is_news_intent:
+            result.is_news_intent = False
+            result.vetoed_intents["news"] = "filesystem_intent_priority"
+        # Clear ambiguity hard-blocks for concrete filesystem discovery/read turns.
+        if result.is_filesystem_intent and result.is_ambiguous:
+            result.is_ambiguous = False
+            result.ambiguity_confidence = 0.0
+            result.vetoed_intents["ambiguity"] = "filesystem_intent_priority"
 
         precedence = (
             ("policy_consent", result.is_policy_consent),

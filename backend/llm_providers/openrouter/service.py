@@ -93,6 +93,142 @@ class OpenRouterServiceProvider(BaseLLMProvider):
     def _convert_tools_to_openai_format(self, tools: List[Any]) -> List[Dict[str, Any]]:
         return self._tool_adapter.convert_tools_to_openai_format(tools)
 
+    @staticmethod
+    def _is_qwen_openrouter_model(model: str) -> bool:
+        """True for OpenRouter Qwen model ids (Alibaba thinking-mode tool constraints)."""
+        mid = str(model or "").strip().lower()
+        if not mid:
+            return False
+        if mid.startswith("qwen/") or mid.startswith("qwen."):
+            return True
+        return "/qwen" in mid or mid.startswith("qwen")
+
+    @staticmethod
+    def _is_moonshot_openrouter_model(model: str) -> bool:
+        """True for OpenRouter Moonshot/Kimi model ids (thinking + forced tool_choice)."""
+        mid = str(model or "").strip().lower()
+        if not mid:
+            return False
+        if mid.startswith("moonshotai/") or mid.startswith("moonshot/"):
+            return True
+        return "kimi" in mid.split("/", 1)[-1]
+
+    @staticmethod
+    def _is_z_ai_glm_openrouter_model(model: str) -> bool:
+        """True for OpenRouter Z.AI GLM model ids (forced named tool_choice hangs)."""
+        mid = str(model or "").strip().lower()
+        if not mid:
+            return False
+        if mid.startswith("z-ai/") or mid.startswith("zhipu/"):
+            return "glm" in mid.split("/", 1)[-1]
+        return mid.startswith("glm-") or mid.startswith("glm/")
+
+    @classmethod
+    def _apply_forced_tool_required_narrow_compat(
+        cls,
+        params: Dict[str, Any],
+        *,
+        model: str,
+        force_tool_name: str,
+        log_tag: str,
+    ) -> None:
+        """Downgrade named tool_choice to required + single forced tool.
+
+        Used when the upstream provider hangs or rejects named function force
+        under thinking/tooling constraints (Kimi, GLM Flash live evidence).
+        """
+        tool_choice = params.get("tool_choice")
+        forced_outbound = ""
+        if (
+            isinstance(tool_choice, dict)
+            and tool_choice.get("type") == "function"
+            and isinstance(tool_choice.get("function"), dict)
+        ):
+            forced_outbound = str(
+                (tool_choice.get("function") or {}).get("name") or ""
+            ).strip()
+        tools = params.get("tools")
+        if forced_outbound and isinstance(tools, list) and tools:
+            narrowed: List[Dict[str, Any]] = []
+            for item in tools:
+                if not isinstance(item, dict):
+                    continue
+                fn = item.get("function") if isinstance(item.get("function"), dict) else {}
+                name = str(fn.get("name") or item.get("name") or "").strip()
+                if name == forced_outbound:
+                    narrowed.append(item)
+            if narrowed:
+                params["tools"] = narrowed
+        params["tool_choice"] = "required"
+        logger = __import__("logging").getLogger("janus_backend")
+        logger.info(
+            "%s model=%s forced=%s tool_choice=required tools=%s",
+            log_tag,
+            model,
+            forced_outbound or force_tool_name,
+            len(params.get("tools") or []),
+        )
+
+    @classmethod
+    def _apply_forced_tool_thinking_compat(
+        cls,
+        params: Dict[str, Any],
+        *,
+        model: str,
+        force_tool_name: Optional[str],
+    ) -> None:
+        """Compat for providers that reject named tool_choice under thinking mode.
+
+        Live evidence:
+        - qwen/qwen3.7-plus: named tool_choice fails in thinking mode →
+          extra_body.reasoning.effort=none keeps the named force.
+        - moonshotai/kimi-k3: named tool_choice ('specified') fails with thinking,
+          and reasoning cannot be disabled ('Reasoning is mandatory').
+          Downgrade to tool_choice='required' and keep only the forced tool in
+          the tools list so 'required' effectively forces that skill.
+        - z-ai/glm-4.7-flash: named tool_choice hangs until OpenRouter idle
+          timeout (OPENROUTER_PROVIDER_ERROR). Same required+narrow fix as
+          Kimi; reasoning.effort=none alone does not unblock.
+        """
+        if not force_tool_name:
+            return
+        tool_choice = params.get("tool_choice")
+        if not (
+            isinstance(tool_choice, dict)
+            and tool_choice.get("type") == "function"
+            and isinstance(tool_choice.get("function"), dict)
+        ):
+            return
+
+        if cls._is_moonshot_openrouter_model(model):
+            cls._apply_forced_tool_required_narrow_compat(
+                params,
+                model=model,
+                force_tool_name=force_tool_name,
+                log_tag="MOONSHOT_FORCED_TOOL_COMPAT",
+            )
+            return
+
+        if cls._is_z_ai_glm_openrouter_model(model):
+            cls._apply_forced_tool_required_narrow_compat(
+                params,
+                model=model,
+                force_tool_name=force_tool_name,
+                log_tag="GLM_FORCED_TOOL_COMPAT",
+            )
+            return
+
+        if not cls._is_qwen_openrouter_model(model):
+            return
+        extra_body = params.get("extra_body")
+        extra_body = dict(extra_body) if isinstance(extra_body, dict) else {}
+        reasoning = extra_body.get("reasoning")
+        reasoning = dict(reasoning) if isinstance(reasoning, dict) else {}
+        # Preserve an explicit caller override; only fill the proven default.
+        reasoning.setdefault("effort", "none")
+        extra_body["reasoning"] = reasoning
+        params["extra_body"] = extra_body
+
     async def generate_response(
         self,
         api_key: str,
@@ -139,6 +275,11 @@ class OpenRouterServiceProvider(BaseLLMProvider):
         ):
             kwargs.pop(forbidden, None)
         params.update(kwargs)
+        self._apply_forced_tool_thinking_compat(
+            params,
+            model=model,
+            force_tool_name=force_tool_name,
+        )
 
         try:
             response = await self._client(api_key).chat.completions.create(**params)
@@ -228,6 +369,11 @@ class OpenRouterServiceProvider(BaseLLMProvider):
         kwargs.pop("image_data", None)
         kwargs.pop("force_no_tools", None)
         params.update(kwargs)
+        self._apply_forced_tool_thinking_compat(
+            params,
+            model=model,
+            force_tool_name=force_tool_name,
+        )
 
         saw_model_identity = False
         pending_finish: Optional[StreamEvent] = None

@@ -1,0 +1,11 @@
+{
+  "credential_reads": 0,
+  "gate": "KEY_INSTALLATION_GATE: READY",
+  "model_transmissions": 0,
+  "next_action": "Operator creates and stores the dedicated key through Janus Settings.",
+  "offline_case_result_count": 43,
+  "offline_matrix_sha256": "1F72336F01F514491096DE961150452C1723DCED0C7E12A02A8FE87356F8480F",
+  "plan_sha256": "D2D1ECAC9BE734705AC7E8D76E13A260FC71F4D034AAD313C057E85E16E531F1",
+  "status": "PASS",
+  "test_run_id": "TEST-RUN-2026-07-18-002"
+}

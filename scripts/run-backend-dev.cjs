@@ -38,7 +38,10 @@ function resolveCodexBackendEnvironment(projectRoot = process.cwd()) {
 }
 
 function main() {
-  const mode = process.argv[2] === "noreload" ? "noreload" : "reload";
+  // Default to noreload for faster cold start. Uvicorn --reload imports the app
+  // twice (reloader + worker) and routinely doubles Janus startup (~9s → ~18s).
+  // Opt in with: node scripts/run-backend-dev.cjs reload
+  const mode = process.argv[2] === "reload" ? "reload" : "noreload";
   const python = resolvePython();
   const codexEnv = resolveCodexBackendEnvironment();
   const uvicornArgs = [
@@ -53,7 +56,9 @@ function main() {
   ];
 
   if (mode === "reload") {
-    uvicornArgs.push("--reload", "--reload-dir", "backend");
+    // Uvicorn otherwise installs a Windows Selector loop for reload workers,
+    // which cannot own the isolated Codex App Server subprocess.
+    uvicornArgs.push("--loop", "none", "--reload", "--reload-dir", "backend");
   }
 
   console.log(`[backend-start] python=${python.cmd} mode=${mode}`);

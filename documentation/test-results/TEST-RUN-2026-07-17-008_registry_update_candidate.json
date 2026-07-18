@@ -1,0 +1,35 @@
+{
+  "candidate_set_id": "OPENROUTER-FOUR-FAMILY-2026-07-17.1",
+  "models": [
+    {
+      "battery_id": "OPENROUTER-JANUS-CONFORMANCE",
+      "battery_version": "1.0.0",
+      "model_id": "anthropic/claude-sonnet-5",
+      "model_version": "anthropic/claude-sonnet-5-20260630",
+      "status": "TEST_PASS_AUDIT_PENDING"
+    },
+    {
+      "battery_id": "OPENROUTER-JANUS-CONFORMANCE",
+      "battery_version": "1.0.0",
+      "model_id": "z-ai/glm-5.2",
+      "model_version": "z-ai/glm-5.2-20260616",
+      "status": "TEST_PASS_AUDIT_PENDING"
+    },
+    {
+      "battery_id": "OPENROUTER-JANUS-CONFORMANCE",
+      "battery_version": "1.0.0",
+      "model_id": "deepseek/deepseek-v4-pro",
+      "model_version": "deepseek/deepseek-v4-pro-20260423",
+      "status": "TEST_PASS_AUDIT_PENDING"
+    },
+    {
+      "battery_id": "OPENROUTER-JANUS-CONFORMANCE",
+      "battery_version": "1.0.0",
+      "model_id": "qwen/qwen3.7-plus",
+      "model_version": "qwen/qwen3.7-plus-20260602",
+      "status": "TEST_PASS_AUDIT_PENDING"
+    }
+  ],
+  "runtime": false,
+  "schema_version": "janus.openrouter.registry-candidate.v1"
+}

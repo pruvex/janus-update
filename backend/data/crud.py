@@ -1524,18 +1524,67 @@ def get_orchestrator_kpi_dashboard(db: Session, year: int, month: int) -> Dict[s
 
 # --- NEU: Kosten-Funktion (Ersatz für database.get_costs_for_month) ---
 def get_costs_for_month(db: Session, year: int, month: int):
-    """Berechnet die Gesamtkosten für einen bestimmten Monat."""
+    """Berechnet die API-Key-Gesamtkosten für einen bestimmten Monat.
+
+    OpenRouter-Credits bleiben bewusst aus dieser Summe; für die kombinierte
+    Sidebar-/Dashboard-Sicht `get_costs_dashboard_totals` verwenden.
+    """
     start_date = datetime(year, month, 1)
     if month == 12:
         end_date = datetime(year + 1, 1, 1)
     else:
         end_date = datetime(year, month + 1, 1)
-        
-    costs = db.query(models.Cost).filter(
-        models.Cost.timestamp >= start_date,
-        models.Cost.timestamp < end_date
-    ).all()
-    return sum(cost.total_cost for cost in costs)
+
+    costs = (
+        db.query(models.Cost)
+        .filter(
+            models.Cost.timestamp >= start_date,
+            models.Cost.timestamp < end_date,
+        )
+        .all()
+    )
+    total = 0.0
+    for cost in costs:
+        if str(getattr(cost, "provider", "") or "").casefold() == "openrouter":
+            continue
+        total += float(getattr(cost, "total_cost", 0.0) or 0.0)
+    return total
+
+
+def get_costs_dashboard_totals(db: Session, year: int, month: int) -> Dict[str, Any]:
+    """API-Key-Kosten, OpenRouter-Credits und kombinierte Monatssumme."""
+    start_date = datetime(year, month, 1)
+    if month == 12:
+        end_date = datetime(year + 1, 1, 1)
+    else:
+        end_date = datetime(year, month + 1, 1)
+
+    costs = (
+        db.query(models.Cost)
+        .filter(
+            models.Cost.timestamp >= start_date,
+            models.Cost.timestamp < end_date,
+        )
+        .all()
+    )
+    api_key_total = 0.0
+    openrouter_total = 0.0
+    for cost in costs:
+        if str(getattr(cost, "provider", "") or "").casefold() == "openrouter":
+            credits = getattr(cost, "openrouter_credits_cost", None)
+            if credits is None:
+                continue
+            openrouter_total += float(credits)
+            continue
+        api_key_total += float(getattr(cost, "total_cost", 0.0) or 0.0)
+
+    combined = api_key_total + openrouter_total
+    return {
+        "api_key_total_cost": round(api_key_total, 6),
+        "openrouter_total_cost": round(openrouter_total, 6),
+        "combined_total_cost": round(combined, 6),
+        "current_month_cost": round(combined, 6),
+    }
 
 
 def get_monthly_cost_summary_by_model(db: Session, year: int, month: int) -> List[Dict[str, Any]]:
@@ -1806,6 +1855,55 @@ def _accumulate_cost_totals(target: Dict[str, Any], cost: models.Cost, total_cos
     target["total_cost_saved"] += float(getattr(cost, "cost_saved", 0.0) or 0.0)
 
 
+def _sum_optional_number(current: Any, value: Any) -> Any:
+    """Sum finite numbers while preserving all-null fields as None."""
+    if value is None or isinstance(value, bool) or not isinstance(value, (int, float)):
+        return current
+    if isinstance(value, float):
+        addend = float(value)
+        if current is None:
+            return addend
+        return float(current) + addend
+    addend = int(value)
+    if current is None:
+        return addend
+    if isinstance(current, float):
+        return float(current) + float(addend)
+    return int(current) + addend
+
+
+def _finalize_openrouter_model_aggregates(
+    aggregates: Dict[str, Dict[str, Any]],
+    turn_ids_by_model: Dict[str, set],
+) -> List[Dict[str, Any]]:
+    rows: List[Dict[str, Any]] = []
+    for model, entry in aggregates.items():
+        credits = entry.get("credits_cost")
+        rows.append(
+            {
+                "provider": "openrouter",
+                "model": model,
+                "entry_count": int(entry.get("entry_count") or 0),
+                "turn_count": len(turn_ids_by_model.get(model) or set()),
+                "prompt_tokens": entry.get("prompt_tokens"),
+                "completion_tokens": entry.get("completion_tokens"),
+                "total_tokens": entry.get("total_tokens"),
+                "cached_tokens": entry.get("cached_tokens"),
+                "cache_write_tokens": entry.get("cache_write_tokens"),
+                "reasoning_tokens": entry.get("reasoning_tokens"),
+                "credits_cost": credits,
+                "upstream_inference_cost": entry.get("upstream_inference_cost"),
+            }
+        )
+    rows.sort(
+        key=lambda item: (
+            -(float(item["credits_cost"]) if item.get("credits_cost") is not None else -1.0),
+            str(item.get("model") or ""),
+        )
+    )
+    return rows
+
+
 def get_costs_deep_dive_summary(db: Session, year: int, month: int) -> Dict[str, Any]:
     start_date, end_date = _cost_month_bounds(year, month)
     costs = (
@@ -1830,7 +1928,8 @@ def get_costs_deep_dive_summary(db: Session, year: int, month: int) -> Dict[str,
     gemini_avoidable_pro_total = 0.0
     historical_mode = year == 2026 and month == 5
     cross_provider_totals = _new_cost_totals()
-    openrouter_telemetry: List[Dict[str, Any]] = []
+    openrouter_aggregates: Dict[str, Dict[str, Any]] = {}
+    openrouter_turn_ids: Dict[str, set] = defaultdict(set)
 
     for cost in costs:
         provider = str(cost.provider or "unknown")
@@ -1840,28 +1939,35 @@ def get_costs_deep_dive_summary(db: Session, year: int, month: int) -> Dict[str,
         component_name = _cost_component_name(cost)
 
         if provider.casefold() == "openrouter":
-            openrouter_telemetry.append(
+            entry = openrouter_aggregates.setdefault(
+                model,
                 {
-                    "turn_id": getattr(cost, "attribution_request_id", None),
-                    "session_id": getattr(cost, "attribution_session_id", None),
-                    "component": getattr(cost, "attribution_component", None),
-                    "timestamp": cost.timestamp.isoformat() if getattr(cost, "timestamp", None) else None,
-                    "provider": "openrouter",
-                    "model": model,
-                    "prompt_tokens": getattr(cost, "openrouter_prompt_tokens", None),
-                    "completion_tokens": getattr(cost, "openrouter_completion_tokens", None),
-                    "total_tokens": getattr(cost, "openrouter_total_tokens", None),
-                    "cached_tokens": getattr(cost, "openrouter_cached_tokens", None),
-                    "cache_write_tokens": getattr(cost, "openrouter_cache_write_tokens", None),
-                    "reasoning_tokens": getattr(cost, "openrouter_reasoning_tokens", None),
-                    "credits_cost": getattr(cost, "openrouter_credits_cost", None),
-                    "upstream_inference_cost": getattr(
-                        cost,
-                        "openrouter_upstream_inference_cost",
-                        None,
-                    ),
-                }
+                    "entry_count": 0,
+                    "prompt_tokens": None,
+                    "completion_tokens": None,
+                    "total_tokens": None,
+                    "cached_tokens": None,
+                    "cache_write_tokens": None,
+                    "reasoning_tokens": None,
+                    "credits_cost": None,
+                    "upstream_inference_cost": None,
+                },
             )
+            entry["entry_count"] += 1
+            turn_id = getattr(cost, "attribution_request_id", None)
+            if turn_id:
+                openrouter_turn_ids[model].add(str(turn_id))
+            for field, attr in (
+                ("prompt_tokens", "openrouter_prompt_tokens"),
+                ("completion_tokens", "openrouter_completion_tokens"),
+                ("total_tokens", "openrouter_total_tokens"),
+                ("cached_tokens", "openrouter_cached_tokens"),
+                ("cache_write_tokens", "openrouter_cache_write_tokens"),
+                ("reasoning_tokens", "openrouter_reasoning_tokens"),
+                ("credits_cost", "openrouter_credits_cost"),
+                ("upstream_inference_cost", "openrouter_upstream_inference_cost"),
+            ):
+                entry[field] = _sum_optional_number(entry[field], getattr(cost, attr, None))
             continue
 
         _accumulate_cost_totals(cross_provider_totals, cost, total_cost)
@@ -2131,6 +2237,24 @@ def get_costs_deep_dive_summary(db: Session, year: int, month: int) -> Dict[str,
     )
     truthfulness_status = "partial" if truthfulness_hints else "complete"
 
+    openrouter_telemetry = _finalize_openrouter_model_aggregates(
+        openrouter_aggregates,
+        openrouter_turn_ids,
+    )
+    openrouter_total_cost = 0.0
+    openrouter_has_cost = False
+    for row in openrouter_telemetry:
+        credits = row.get("credits_cost")
+        if credits is None:
+            continue
+        openrouter_has_cost = True
+        openrouter_total_cost += float(credits)
+    api_key_total_cost = float(cross_provider_totals["total_cost"] or 0.0)
+    combined_total_cost = api_key_total_cost + openrouter_total_cost
+    openrouter_model_count = len(openrouter_telemetry)
+    effective_provider_count = len(provider_breakdown) + (1 if openrouter_telemetry else 0)
+    effective_model_count = len(model_breakdown) + openrouter_model_count
+
     return {
         "provider_scope": "cross_provider",
         "openrouter_telemetry": openrouter_telemetry,
@@ -2143,9 +2267,12 @@ def get_costs_deep_dive_summary(db: Session, year: int, month: int) -> Dict[str,
         },
         "user_summary": {
             "primary_message": "Kosten verstehen und Optimierungspotenziale erkennen.",
-            "total_cost": round(cross_provider_totals["total_cost"], 6),
-            "provider_count": len(provider_breakdown),
-            "model_count": len(model_breakdown),
+            "total_cost": round(combined_total_cost, 6),
+            "api_key_total_cost": round(api_key_total_cost, 6),
+            "openrouter_total_cost": round(openrouter_total_cost, 6),
+            "combined_total_cost": round(combined_total_cost, 6),
+            "provider_count": effective_provider_count,
+            "model_count": effective_model_count,
             "total_cached_tokens": cross_provider_totals["total_cached_tokens"],
             "total_tokens_saved": cross_provider_totals["total_tokens_saved"],
             "total_cost_saved": round(cross_provider_totals["total_cost_saved"], 6),
@@ -2155,9 +2282,16 @@ def get_costs_deep_dive_summary(db: Session, year: int, month: int) -> Dict[str,
         "truthfulness_hints": truthfulness_hints,
         "anomaly_overview": anomalies,
         "cross_provider_summary": {
-            "total_cost": round(cross_provider_totals["total_cost"], 6),
-            "provider_count": len(provider_breakdown),
-            "model_count": len(model_breakdown),
+            "total_cost": round(combined_total_cost, 6),
+            "api_key_total_cost": round(api_key_total_cost, 6),
+            "openrouter_total_cost": round(openrouter_total_cost, 6),
+            "openrouter_has_cost": openrouter_has_cost,
+            "combined_total_cost": round(combined_total_cost, 6),
+            "provider_count": effective_provider_count,
+            "api_provider_count": len(provider_breakdown),
+            "model_count": effective_model_count,
+            "api_model_count": len(model_breakdown),
+            "openrouter_model_count": openrouter_model_count,
             "total_cached_tokens": cross_provider_totals["total_cached_tokens"],
             "total_tokens_saved": cross_provider_totals["total_tokens_saved"],
             "total_cost_saved": round(cross_provider_totals["total_cost_saved"], 6),

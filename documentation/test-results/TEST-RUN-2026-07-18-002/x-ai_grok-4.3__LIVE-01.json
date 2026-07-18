@@ -1,0 +1,65 @@
+{
+  "assertions": {
+    "completion_limit_enforced": true,
+    "credential_absent": true,
+    "exact_model_sent": true,
+    "input_limit_enforced": true,
+    "plain_response_exact": true,
+    "private_content_absent": true,
+    "productive_side_effect_absent": true,
+    "raw_payload_absent": true,
+    "transmission_budget_respected": true
+  },
+  "candidate_id": "x-ai/grok-4.3",
+  "case_ids": [
+    "TC-002",
+    "TC-003",
+    "TC-018"
+  ],
+  "ended_at": "2026-07-18T13:35:34Z",
+  "fallback_model": null,
+  "fallback_provider": null,
+  "model_version": "x-ai/grok-4.3-20260430",
+  "retry_count": 0,
+  "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+  "scenario_id": "LIVE-01",
+  "schema_version": "janus.openrouter.live-scenario-evidence.v1",
+  "started_at": "2026-07-18T13:35:32Z",
+  "status": "PASS",
+  "telemetry": {
+    "cache_read_tokens": {
+      "present": true,
+      "value": 192
+    },
+    "cache_write_tokens": {
+      "present": true,
+      "value": 0
+    },
+    "completion_tokens": {
+      "present": true,
+      "value": 272
+    },
+    "openrouter_credit_cost": {
+      "present": true,
+      "value": 0.0007309
+    },
+    "prompt_tokens": {
+      "present": true,
+      "value": 202
+    },
+    "reasoning_tokens": {
+      "present": true,
+      "value": 268
+    },
+    "total_tokens": {
+      "present": true,
+      "value": 474
+    },
+    "upstream_inference_cost": {
+      "present": true,
+      "value": 0.0007309
+    }
+  },
+  "test_run_id": "TEST-RUN-2026-07-18-002",
+  "transmission_count": 1
+}

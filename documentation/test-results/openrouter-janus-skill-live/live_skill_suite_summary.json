@@ -1,0 +1,73 @@
+{
+  "status": "PASS",
+  "passed": 6,
+  "failed": 0,
+  "blocked_provider": 0,
+  "total": 6,
+  "models": [
+    "qwen/qwen3.7-plus"
+  ],
+  "timestamp": "2026-07-18T12:01:28.389125+00:00",
+  "results": [
+    {
+      "model_id": "qwen/qwen3.7-plus",
+      "case_id": "ping",
+      "status": "PASS",
+      "detail": "",
+      "tools_used": [],
+      "text_fingerprint": "OK"
+    },
+    {
+      "model_id": "qwen/qwen3.7-plus",
+      "case_id": "fs_list",
+      "status": "PASS",
+      "detail": "",
+      "tools_used": [
+        "filesystem.list_directory"
+      ],
+      "text_fingerprint": "data.json nota.txt notes.md package.json README.md"
+    },
+    {
+      "model_id": "qwen/qwen3.7-plus",
+      "case_id": "fs_read_version",
+      "status": "PASS",
+      "detail": "",
+      "tools_used": [
+        "filesystem.read_file"
+      ],
+      "text_fingerprint": "9.9.9-or-test"
+    },
+    {
+      "model_id": "qwen/qwen3.7-plus",
+      "case_id": "news_tool",
+      "status": "PASS",
+      "detail": "",
+      "tools_used": [
+        "system.rss_news"
+      ],
+      "text_fingerprint": "Hier sind die aktuellen Schlagzeilen vom **18. Juli 2026**: --- 🔴 **Unions-Fraktionschef Spahn tritt zurück** Nach an..."
+    },
+    {
+      "model_id": "qwen/qwen3.7-plus",
+      "case_id": "weather_tool",
+      "status": "PASS",
+      "detail": "",
+      "tools_used": [
+        "system.weather"
+      ],
+      "text_fingerprint": "Hier ist die Wettervorhersage für **Berlin** heute (18.07.2026): - ☁️ **Zustand:** Leichter Regen - 🌡️ **Temperaturen..."
+    },
+    {
+      "model_id": "qwen/qwen3.7-plus",
+      "case_id": "wikipedia_tool",
+      "status": "PASS",
+      "detail": "",
+      "tools_used": [
+        "system.wikipedia_summary"
+      ],
+      "text_fingerprint": "Hier die Zusammenfassung aus der deutschen Wikipedia zu **Albert Einstein**: - **Geboren**: 14. März 1879 in Ulm - **..."
+    }
+  ],
+  "note": "No secrets/raw payloads retained; fingerprints only. BLOCKED_PROVIDER = OpenRouter upstream tool-call failure.",
+  "fix": "qwen_force_tool_thinking_compat"
+}

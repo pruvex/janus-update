@@ -1,0 +1,24 @@
+{
+  "battery_id": "OPENROUTER-JANUS-CONFORMANCE",
+  "battery_version": "1.0.0",
+  "candidate_set_id": "OPENROUTER-THREE-FAMILY-ADDON-2026-07-18.1",
+  "credential_profile_id": "OPENROUTER-JANUS-CERTIFICATION-KEY/1.0.0",
+  "credential_public_state": {
+    "masked": "********",
+    "present": true,
+    "state": "VALID"
+  },
+  "estimated_max_cost_usd": "0.67072",
+  "key_credit_limit_usd": "ACCOUNT_FUNDED",
+  "live_approval_required": "OK START LIVE TEST",
+  "max_completion_tokens_per_transmission": 1024,
+  "max_input_tokens_per_transmission": 8192,
+  "max_total_transmissions": 30,
+  "mode": "LIVE_PREFLIGHT_ONLY",
+  "model_transmissions": 0,
+  "price_drift_limit_usd": "1.00",
+  "registry_sha256": "7712D5B2775F5BDED03EF1C2DAE4228F9FCC8B7441140FC4F1AB8F56210EC46F",
+  "schema_version": "janus.openrouter.live-preflight.v1",
+  "status": "READY",
+  "test_run_id": "TEST-RUN-2026-07-18-001"
+}

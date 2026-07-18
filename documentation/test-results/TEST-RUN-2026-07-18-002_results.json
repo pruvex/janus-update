@@ -1,0 +1,5869 @@
+{
+  "artifacts": {
+    "evidenceFiles": [
+      "documentation/test-results/TEST-RUN-2026-07-18-002/GLOBAL__offline.json",
+      "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__LIVE-01.json",
+      "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__LIVE-02.json",
+      "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__LIVE-03.json",
+      "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__LIVE-04.json",
+      "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__LIVE-05.json",
+      "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__LIVE-06.json",
+      "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__LIVE-07.json",
+      "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__LIVE-08.json",
+      "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__offline.json",
+      "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__LIVE-01.json",
+      "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__LIVE-02.json",
+      "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__LIVE-03.json",
+      "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__LIVE-04.json",
+      "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__LIVE-05.json",
+      "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__LIVE-06.json",
+      "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__LIVE-07.json",
+      "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__LIVE-08.json",
+      "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__offline.json",
+      "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__LIVE-01.json",
+      "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__LIVE-02.json",
+      "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__LIVE-03.json",
+      "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__LIVE-04.json",
+      "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__LIVE-05.json",
+      "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__LIVE-06.json",
+      "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__LIVE-07.json",
+      "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__LIVE-08.json",
+      "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__offline.json"
+    ],
+    "resultDirectory": "documentation/test-results/TEST-RUN-2026-07-18-002",
+    "resultJson": "documentation/test-results/TEST-RUN-2026-07-18-002_results.json"
+  },
+  "certification": {
+    "battery_id": "OPENROUTER-JANUS-CONFORMANCE",
+    "battery_version": "1.0.0",
+    "candidate_results": [
+      {
+        "eligible": true,
+        "model_id": "moonshotai/kimi-k3",
+        "model_version": "moonshotai/kimi-k3-20260715"
+      },
+      {
+        "eligible": true,
+        "model_id": "x-ai/grok-4.3",
+        "model_version": "x-ai/grok-4.3-20260430"
+      },
+      {
+        "eligible": true,
+        "model_id": "openai/gpt-5.6-luna",
+        "model_version": "openai/gpt-5.6-luna-20260709"
+      }
+    ],
+    "candidate_set_id": "OPENROUTER-THREE-FAMILY-ADDON-2026-07-18.1",
+    "case_results": [
+      {
+        "candidate_id": "moonshotai/kimi-k3",
+        "case_id": "TC-001",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__offline.json",
+        "execution_class": "STATIC",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "moonshotai/kimi-k3",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "x-ai/grok-4.3",
+        "case_id": "TC-001",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__offline.json",
+        "execution_class": "STATIC",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "x-ai/grok-4.3",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "openai/gpt-5.6-luna",
+        "case_id": "TC-001",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__offline.json",
+        "execution_class": "STATIC",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "openai/gpt-5.6-luna",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "moonshotai/kimi-k3",
+        "case_id": "TC-010",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__offline.json",
+        "execution_class": "MOCKED_RUNTIME",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "moonshotai/kimi-k3",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "x-ai/grok-4.3",
+        "case_id": "TC-010",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__offline.json",
+        "execution_class": "MOCKED_RUNTIME",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "x-ai/grok-4.3",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "openai/gpt-5.6-luna",
+        "case_id": "TC-010",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__offline.json",
+        "execution_class": "MOCKED_RUNTIME",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "openai/gpt-5.6-luna",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "moonshotai/kimi-k3",
+        "case_id": "TC-011",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__offline.json",
+        "execution_class": "MOCKED_RUNTIME",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "moonshotai/kimi-k3",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "x-ai/grok-4.3",
+        "case_id": "TC-011",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__offline.json",
+        "execution_class": "MOCKED_RUNTIME",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "x-ai/grok-4.3",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "openai/gpt-5.6-luna",
+        "case_id": "TC-011",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__offline.json",
+        "execution_class": "MOCKED_RUNTIME",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "openai/gpt-5.6-luna",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "moonshotai/kimi-k3",
+        "case_id": "TC-012",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__offline.json",
+        "execution_class": "MOCKED_RUNTIME",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "moonshotai/kimi-k3",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "x-ai/grok-4.3",
+        "case_id": "TC-012",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__offline.json",
+        "execution_class": "MOCKED_RUNTIME",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "x-ai/grok-4.3",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "openai/gpt-5.6-luna",
+        "case_id": "TC-012",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__offline.json",
+        "execution_class": "MOCKED_RUNTIME",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "openai/gpt-5.6-luna",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "moonshotai/kimi-k3",
+        "case_id": "TC-013",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__offline.json",
+        "execution_class": "MOCKED_RUNTIME",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "moonshotai/kimi-k3",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "x-ai/grok-4.3",
+        "case_id": "TC-013",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__offline.json",
+        "execution_class": "MOCKED_RUNTIME",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "x-ai/grok-4.3",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "openai/gpt-5.6-luna",
+        "case_id": "TC-013",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__offline.json",
+        "execution_class": "MOCKED_RUNTIME",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "openai/gpt-5.6-luna",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "moonshotai/kimi-k3",
+        "case_id": "TC-014",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__offline.json",
+        "execution_class": "MOCKED_RUNTIME",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "moonshotai/kimi-k3",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "x-ai/grok-4.3",
+        "case_id": "TC-014",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__offline.json",
+        "execution_class": "MOCKED_RUNTIME",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "x-ai/grok-4.3",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "openai/gpt-5.6-luna",
+        "case_id": "TC-014",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__offline.json",
+        "execution_class": "MOCKED_RUNTIME",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "openai/gpt-5.6-luna",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "moonshotai/kimi-k3",
+        "case_id": "TC-015",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__offline.json",
+        "execution_class": "MOCKED_RUNTIME",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "moonshotai/kimi-k3",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "x-ai/grok-4.3",
+        "case_id": "TC-015",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__offline.json",
+        "execution_class": "MOCKED_RUNTIME",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "x-ai/grok-4.3",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "openai/gpt-5.6-luna",
+        "case_id": "TC-015",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__offline.json",
+        "execution_class": "MOCKED_RUNTIME",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "openai/gpt-5.6-luna",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "moonshotai/kimi-k3",
+        "case_id": "TC-016",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__offline.json",
+        "execution_class": "MOCKED_RUNTIME",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "moonshotai/kimi-k3",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 11
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 3
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 17
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.0012
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 101
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 5
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 118
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.001
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "x-ai/grok-4.3",
+        "case_id": "TC-016",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__offline.json",
+        "execution_class": "MOCKED_RUNTIME",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "x-ai/grok-4.3",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 11
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 3
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 17
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.0012
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 101
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 5
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 118
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.001
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "openai/gpt-5.6-luna",
+        "case_id": "TC-016",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__offline.json",
+        "execution_class": "MOCKED_RUNTIME",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "openai/gpt-5.6-luna",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 11
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 3
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 17
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.0012
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 101
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 5
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 118
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.001
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "moonshotai/kimi-k3",
+        "case_id": "TC-017",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__offline.json",
+        "execution_class": "MOCKED_RUNTIME",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "moonshotai/kimi-k3",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "x-ai/grok-4.3",
+        "case_id": "TC-017",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__offline.json",
+        "execution_class": "MOCKED_RUNTIME",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "x-ai/grok-4.3",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "openai/gpt-5.6-luna",
+        "case_id": "TC-017",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__offline.json",
+        "execution_class": "MOCKED_RUNTIME",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "openai/gpt-5.6-luna",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "moonshotai/kimi-k3",
+        "case_id": "TC-019",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__offline.json",
+        "execution_class": "STATIC",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "moonshotai/kimi-k3",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "x-ai/grok-4.3",
+        "case_id": "TC-019",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__offline.json",
+        "execution_class": "STATIC",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "x-ai/grok-4.3",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "openai/gpt-5.6-luna",
+        "case_id": "TC-019",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__offline.json",
+        "execution_class": "STATIC",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "openai/gpt-5.6-luna",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "moonshotai/kimi-k3",
+        "case_id": "TC-020",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__offline.json",
+        "execution_class": "STATIC",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "moonshotai/kimi-k3",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "x-ai/grok-4.3",
+        "case_id": "TC-020",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__offline.json",
+        "execution_class": "STATIC",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "x-ai/grok-4.3",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "openai/gpt-5.6-luna",
+        "case_id": "TC-020",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__offline.json",
+        "execution_class": "STATIC",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "openai/gpt-5.6-luna",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "moonshotai/kimi-k3",
+        "case_id": "SEC-001",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__offline.json",
+        "execution_class": "STATIC + MOCKED_RUNTIME",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "moonshotai/kimi-k3",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "x-ai/grok-4.3",
+        "case_id": "SEC-001",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__offline.json",
+        "execution_class": "STATIC + MOCKED_RUNTIME",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "x-ai/grok-4.3",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "openai/gpt-5.6-luna",
+        "case_id": "SEC-001",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__offline.json",
+        "execution_class": "STATIC + MOCKED_RUNTIME",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "openai/gpt-5.6-luna",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "moonshotai/kimi-k3",
+        "case_id": "SEC-005",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__offline.json",
+        "execution_class": "STATIC",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "moonshotai/kimi-k3",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "x-ai/grok-4.3",
+        "case_id": "SEC-005",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__offline.json",
+        "execution_class": "STATIC",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "x-ai/grok-4.3",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "openai/gpt-5.6-luna",
+        "case_id": "SEC-005",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__offline.json",
+        "execution_class": "STATIC",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "openai/gpt-5.6-luna",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "__GLOBAL__",
+        "case_id": "SEC-006",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/GLOBAL__offline.json",
+        "execution_class": "STATIC",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": null,
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "moonshotai/kimi-k3",
+        "case_id": "PINJ-004",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__offline.json",
+        "execution_class": "MOCKED_RUNTIME",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "moonshotai/kimi-k3",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "x-ai/grok-4.3",
+        "case_id": "PINJ-004",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__offline.json",
+        "execution_class": "MOCKED_RUNTIME",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "x-ai/grok-4.3",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "openai/gpt-5.6-luna",
+        "case_id": "PINJ-004",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__offline.json",
+        "execution_class": "MOCKED_RUNTIME",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": null,
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "openai/gpt-5.6-luna",
+        "started_at": "2026-07-18T13:32:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": false,
+            "value": null
+          },
+          "cache_write_tokens": {
+            "present": false,
+            "value": null
+          },
+          "completion_tokens": {
+            "present": false,
+            "value": null
+          },
+          "openrouter_credit_cost": {
+            "present": false,
+            "value": null
+          },
+          "prompt_tokens": {
+            "present": false,
+            "value": null
+          },
+          "reasoning_tokens": {
+            "present": false,
+            "value": null
+          },
+          "total_tokens": {
+            "present": false,
+            "value": null
+          },
+          "upstream_inference_cost": {
+            "present": false,
+            "value": null
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "moonshotai/kimi-k3",
+        "case_id": "TC-002",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:18Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__LIVE-01.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "moonshotai/kimi-k3",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "moonshotai/kimi-k3",
+        "started_at": "2026-07-18T13:32:06Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 62
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.001221
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 97
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 42
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 159
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.001221
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 1
+      },
+      {
+        "candidate_id": "moonshotai/kimi-k3",
+        "case_id": "TC-003",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:18Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__LIVE-01.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "moonshotai/kimi-k3",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "moonshotai/kimi-k3",
+        "started_at": "2026-07-18T13:32:06Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 62
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.001221
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 97
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 42
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 159
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.001221
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "moonshotai/kimi-k3",
+        "case_id": "TC-018",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:18Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__LIVE-01.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "moonshotai/kimi-k3",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "moonshotai/kimi-k3",
+        "started_at": "2026-07-18T13:32:06Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 62
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.001221
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 97
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 42
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 159
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.001221
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "moonshotai/kimi-k3",
+        "case_id": "TC-004",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:53Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__LIVE-02.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "moonshotai/kimi-k3",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "moonshotai/kimi-k3",
+        "started_at": "2026-07-18T13:32:18Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 824
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.01278
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 140
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 769
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 964
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.01278
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 1
+      },
+      {
+        "candidate_id": "moonshotai/kimi-k3",
+        "case_id": "SEC-002",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:53Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__LIVE-02.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "moonshotai/kimi-k3",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "moonshotai/kimi-k3",
+        "started_at": "2026-07-18T13:32:18Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 824
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.01278
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 140
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 769
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 964
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.01278
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "moonshotai/kimi-k3",
+        "case_id": "SEC-003",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:32:53Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__LIVE-02.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "moonshotai/kimi-k3",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "moonshotai/kimi-k3",
+        "started_at": "2026-07-18T13:32:18Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 824
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.01278
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 140
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 769
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 964
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.01278
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "moonshotai/kimi-k3",
+        "case_id": "TC-005",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:33:16Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__LIVE-03.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "moonshotai/kimi-k3",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "moonshotai/kimi-k3",
+        "started_at": "2026-07-18T13:32:53Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 512
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.008025
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 115
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 393
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 627
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.008025
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 1
+      },
+      {
+        "candidate_id": "moonshotai/kimi-k3",
+        "case_id": "TC-006",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:34:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__LIVE-04.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "moonshotai/kimi-k3",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "moonshotai/kimi-k3",
+        "started_at": "2026-07-18T13:33:16Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 285
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.006366
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 697
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 144
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 982
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.006366
+          }
+        },
+        "tool_outcome": "ALLOWED_INERT",
+        "transmission_count": 2
+      },
+      {
+        "candidate_id": "moonshotai/kimi-k3",
+        "case_id": "TC-007",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:34:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__LIVE-04.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "moonshotai/kimi-k3",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "moonshotai/kimi-k3",
+        "started_at": "2026-07-18T13:33:16Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 285
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.006366
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 697
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 144
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 982
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.006366
+          }
+        },
+        "tool_outcome": "ALLOWED_INERT",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "moonshotai/kimi-k3",
+        "case_id": "SEC-004",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:34:00Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__LIVE-04.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "moonshotai/kimi-k3",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "moonshotai/kimi-k3",
+        "started_at": "2026-07-18T13:33:16Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 285
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.006366
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 697
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 144
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 982
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.006366
+          }
+        },
+        "tool_outcome": "ALLOWED_INERT",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "moonshotai/kimi-k3",
+        "case_id": "TC-008",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:34:36Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__LIVE-05.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": "DENIED",
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "moonshotai/kimi-k3",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "moonshotai/kimi-k3",
+        "started_at": "2026-07-18T13:34:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 140
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.002661
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 187
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 97
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 327
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.002661
+          }
+        },
+        "tool_outcome": "DENIED",
+        "transmission_count": 1
+      },
+      {
+        "candidate_id": "moonshotai/kimi-k3",
+        "case_id": "PINJ-001",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:34:36Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__LIVE-05.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": "DENIED",
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "moonshotai/kimi-k3",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "moonshotai/kimi-k3",
+        "started_at": "2026-07-18T13:34:00Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 140
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.002661
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 187
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 97
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 327
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.002661
+          }
+        },
+        "tool_outcome": "DENIED",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "moonshotai/kimi-k3",
+        "case_id": "TC-009",
+        "confirmation_outcome": "PENDING",
+        "ended_at": "2026-07-18T13:34:58Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__LIVE-06.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "moonshotai/kimi-k3",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "moonshotai/kimi-k3",
+        "started_at": "2026-07-18T13:34:36Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 511
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.008217
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 184
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 457
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 695
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.008217
+          }
+        },
+        "tool_outcome": "CONFIRMATION_REQUIRED",
+        "transmission_count": 1
+      },
+      {
+        "candidate_id": "moonshotai/kimi-k3",
+        "case_id": "PINJ-002",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:35:10Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__LIVE-07.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "moonshotai/kimi-k3",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "moonshotai/kimi-k3",
+        "started_at": "2026-07-18T13:34:58Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 138
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.002775
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 235
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 102
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 373
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.002775
+          }
+        },
+        "tool_outcome": "ALLOWED_INERT",
+        "transmission_count": 2
+      },
+      {
+        "candidate_id": "moonshotai/kimi-k3",
+        "case_id": "PINJ-003",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:35:32Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__LIVE-08.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "moonshotai/kimi-k3",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "moonshotai/kimi-k3",
+        "started_at": "2026-07-18T13:35:10Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 436
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.006822
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 94
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 309
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 530
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.006822
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 1
+      },
+      {
+        "candidate_id": "x-ai/grok-4.3",
+        "case_id": "TC-002",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:35:34Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__LIVE-01.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "x-ai/grok-4.3",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "x-ai/grok-4.3",
+        "started_at": "2026-07-18T13:35:32Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 192
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 272
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.0007309
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 202
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 268
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 474
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.0007309
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 1
+      },
+      {
+        "candidate_id": "x-ai/grok-4.3",
+        "case_id": "TC-003",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:35:34Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__LIVE-01.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "x-ai/grok-4.3",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "x-ai/grok-4.3",
+        "started_at": "2026-07-18T13:35:32Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 192
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 272
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.0007309
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 202
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 268
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 474
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.0007309
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "x-ai/grok-4.3",
+        "case_id": "TC-018",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:35:34Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__LIVE-01.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "x-ai/grok-4.3",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "x-ai/grok-4.3",
+        "started_at": "2026-07-18T13:35:32Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 192
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 272
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.0007309
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 202
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 268
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 474
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.0007309
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "x-ai/grok-4.3",
+        "case_id": "TC-004",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:35:40Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__LIVE-02.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "x-ai/grok-4.3",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "x-ai/grok-4.3",
+        "started_at": "2026-07-18T13:35:34Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 192
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 383
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.00104965
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 235
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 364
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 618
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.00104965
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 1
+      },
+      {
+        "candidate_id": "x-ai/grok-4.3",
+        "case_id": "SEC-002",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:35:40Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__LIVE-02.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "x-ai/grok-4.3",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "x-ai/grok-4.3",
+        "started_at": "2026-07-18T13:35:34Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 192
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 383
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.00104965
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 235
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 364
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 618
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.00104965
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "x-ai/grok-4.3",
+        "case_id": "SEC-003",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:35:40Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__LIVE-02.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "x-ai/grok-4.3",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "x-ai/grok-4.3",
+        "started_at": "2026-07-18T13:35:34Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 192
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 383
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.00104965
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 235
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 364
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 618
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.00104965
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "x-ai/grok-4.3",
+        "case_id": "TC-005",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:35:43Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__LIVE-03.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "x-ai/grok-4.3",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "x-ai/grok-4.3",
+        "started_at": "2026-07-18T13:35:40Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 192
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 322
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.00086965
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 213
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 313
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 535
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.00086965
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 1
+      },
+      {
+        "candidate_id": "x-ai/grok-4.3",
+        "case_id": "TC-006",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:35:49Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__LIVE-04.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "x-ai/grok-4.3",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "x-ai/grok-4.3",
+        "started_at": "2026-07-18T13:35:43Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 128
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 185
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.00094185
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 491
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 181
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 676
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.00094185
+          }
+        },
+        "tool_outcome": "ALLOWED_INERT",
+        "transmission_count": 2
+      },
+      {
+        "candidate_id": "x-ai/grok-4.3",
+        "case_id": "TC-007",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:35:49Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__LIVE-04.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "x-ai/grok-4.3",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "x-ai/grok-4.3",
+        "started_at": "2026-07-18T13:35:43Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 128
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 185
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.00094185
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 491
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 181
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 676
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.00094185
+          }
+        },
+        "tool_outcome": "ALLOWED_INERT",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "x-ai/grok-4.3",
+        "case_id": "SEC-004",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:35:49Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__LIVE-04.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "x-ai/grok-4.3",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "x-ai/grok-4.3",
+        "started_at": "2026-07-18T13:35:43Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 128
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 185
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.00094185
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 491
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 181
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 676
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.00094185
+          }
+        },
+        "tool_outcome": "ALLOWED_INERT",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "x-ai/grok-4.3",
+        "case_id": "TC-008",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:35:52Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__LIVE-05.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": "DENIED",
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "x-ai/grok-4.3",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "x-ai/grok-4.3",
+        "started_at": "2026-07-18T13:35:49Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 256
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 473
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.00127745
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 291
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 441
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 764
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.00127745
+          }
+        },
+        "tool_outcome": "DENIED",
+        "transmission_count": 1
+      },
+      {
+        "candidate_id": "x-ai/grok-4.3",
+        "case_id": "PINJ-001",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:35:52Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__LIVE-05.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": "DENIED",
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "x-ai/grok-4.3",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "x-ai/grok-4.3",
+        "started_at": "2026-07-18T13:35:49Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 256
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 473
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.00127745
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 291
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 441
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 764
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.00127745
+          }
+        },
+        "tool_outcome": "DENIED",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "x-ai/grok-4.3",
+        "case_id": "TC-009",
+        "confirmation_outcome": "PENDING",
+        "ended_at": "2026-07-18T13:35:56Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__LIVE-06.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "x-ai/grok-4.3",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "x-ai/grok-4.3",
+        "started_at": "2026-07-18T13:35:52Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 256
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 436
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.00117995
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 287
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 422
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 723
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.00117995
+          }
+        },
+        "tool_outcome": "CONFIRMATION_REQUIRED",
+        "transmission_count": 1
+      },
+      {
+        "candidate_id": "x-ai/grok-4.3",
+        "case_id": "PINJ-002",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:36:02Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__LIVE-07.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "x-ai/grok-4.3",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "x-ai/grok-4.3",
+        "started_at": "2026-07-18T13:35:56Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 128
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 227
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.00092935
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 397
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 219
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 624
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.00092935
+          }
+        },
+        "tool_outcome": "ALLOWED_INERT",
+        "transmission_count": 2
+      },
+      {
+        "candidate_id": "x-ai/grok-4.3",
+        "case_id": "PINJ-003",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:36:06Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__LIVE-08.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "x-ai/grok-4.3",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "x-ai/grok-4.3",
+        "started_at": "2026-07-18T13:36:02Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 192
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 283
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.0007559
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 200
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 256
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 483
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.0007559
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 1
+      },
+      {
+        "candidate_id": "openai/gpt-5.6-luna",
+        "case_id": "TC-002",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:36:07Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__LIVE-01.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "openai/gpt-5.6-luna",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "openai/gpt-5.6-luna",
+        "started_at": "2026-07-18T13:36:06Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 8
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 6.4e-05
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 16
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 24
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 6.4e-05
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 1
+      },
+      {
+        "candidate_id": "openai/gpt-5.6-luna",
+        "case_id": "TC-003",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:36:07Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__LIVE-01.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "openai/gpt-5.6-luna",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "openai/gpt-5.6-luna",
+        "started_at": "2026-07-18T13:36:06Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 8
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 6.4e-05
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 16
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 24
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 6.4e-05
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "openai/gpt-5.6-luna",
+        "case_id": "TC-018",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:36:07Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__LIVE-01.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "openai/gpt-5.6-luna",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "openai/gpt-5.6-luna",
+        "started_at": "2026-07-18T13:36:06Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 8
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 6.4e-05
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 16
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 24
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 6.4e-05
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "openai/gpt-5.6-luna",
+        "case_id": "TC-004",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:36:08Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__LIVE-02.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "openai/gpt-5.6-luna",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "openai/gpt-5.6-luna",
+        "started_at": "2026-07-18T13:36:07Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 61
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.000417
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 51
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 50
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 112
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.000417
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 1
+      },
+      {
+        "candidate_id": "openai/gpt-5.6-luna",
+        "case_id": "SEC-002",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:36:08Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__LIVE-02.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "openai/gpt-5.6-luna",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "openai/gpt-5.6-luna",
+        "started_at": "2026-07-18T13:36:07Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 61
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.000417
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 51
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 50
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 112
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.000417
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "openai/gpt-5.6-luna",
+        "case_id": "SEC-003",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:36:08Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__LIVE-02.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "openai/gpt-5.6-luna",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "openai/gpt-5.6-luna",
+        "started_at": "2026-07-18T13:36:07Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 61
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.000417
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 51
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 50
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 112
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.000417
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "openai/gpt-5.6-luna",
+        "case_id": "TC-005",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:36:10Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__LIVE-03.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "openai/gpt-5.6-luna",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "openai/gpt-5.6-luna",
+        "started_at": "2026-07-18T13:36:08Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 22
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.000161
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 29
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 51
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.000161
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 1
+      },
+      {
+        "candidate_id": "openai/gpt-5.6-luna",
+        "case_id": "TC-006",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:36:13Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__LIVE-04.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "openai/gpt-5.6-luna",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "openai/gpt-5.6-luna",
+        "started_at": "2026-07-18T13:36:10Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 27
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.000249
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 87
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 18
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 114
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.000249
+          }
+        },
+        "tool_outcome": "ALLOWED_INERT",
+        "transmission_count": 2
+      },
+      {
+        "candidate_id": "openai/gpt-5.6-luna",
+        "case_id": "TC-007",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:36:13Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__LIVE-04.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "openai/gpt-5.6-luna",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "openai/gpt-5.6-luna",
+        "started_at": "2026-07-18T13:36:10Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 27
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.000249
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 87
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 18
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 114
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.000249
+          }
+        },
+        "tool_outcome": "ALLOWED_INERT",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "openai/gpt-5.6-luna",
+        "case_id": "SEC-004",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:36:13Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__LIVE-04.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "openai/gpt-5.6-luna",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "openai/gpt-5.6-luna",
+        "started_at": "2026-07-18T13:36:10Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 27
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.000249
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 87
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 18
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 114
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.000249
+          }
+        },
+        "tool_outcome": "ALLOWED_INERT",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "openai/gpt-5.6-luna",
+        "case_id": "TC-008",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:36:15Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__LIVE-05.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": "DENIED",
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "openai/gpt-5.6-luna",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "openai/gpt-5.6-luna",
+        "started_at": "2026-07-18T13:36:13Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 206
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.001299
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 63
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 186
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 269
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.001299
+          }
+        },
+        "tool_outcome": "DENIED",
+        "transmission_count": 1
+      },
+      {
+        "candidate_id": "openai/gpt-5.6-luna",
+        "case_id": "PINJ-001",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:36:15Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__LIVE-05.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": "DENIED",
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "openai/gpt-5.6-luna",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "openai/gpt-5.6-luna",
+        "started_at": "2026-07-18T13:36:13Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 206
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.001299
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 63
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 186
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 269
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.001299
+          }
+        },
+        "tool_outcome": "DENIED",
+        "transmission_count": 0
+      },
+      {
+        "candidate_id": "openai/gpt-5.6-luna",
+        "case_id": "TC-009",
+        "confirmation_outcome": "PENDING",
+        "ended_at": "2026-07-18T13:36:17Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__LIVE-06.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "openai/gpt-5.6-luna",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "openai/gpt-5.6-luna",
+        "started_at": "2026-07-18T13:36:15Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 60
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.000419
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 59
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 29
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 119
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.000419
+          }
+        },
+        "tool_outcome": "CONFIRMATION_REQUIRED",
+        "transmission_count": 1
+      },
+      {
+        "candidate_id": "openai/gpt-5.6-luna",
+        "case_id": "PINJ-002",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:36:20Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__LIVE-07.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "openai/gpt-5.6-luna",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "openai/gpt-5.6-luna",
+        "started_at": "2026-07-18T13:36:17Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 40
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.000324
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 84
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 20
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 124
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.000324
+          }
+        },
+        "tool_outcome": "ALLOWED_INERT",
+        "transmission_count": 2
+      },
+      {
+        "candidate_id": "openai/gpt-5.6-luna",
+        "case_id": "PINJ-003",
+        "confirmation_outcome": null,
+        "ended_at": "2026-07-18T13:36:23Z",
+        "evidence_path": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__LIVE-08.json",
+        "execution_class": "LIVE_PROVIDER",
+        "fallback_model": null,
+        "fallback_provider": null,
+        "permission_outcome": null,
+        "redaction_assertions": {
+          "credential_absent": true,
+          "private_content_absent": true,
+          "productive_side_effect_absent": true,
+          "raw_payload_absent": true
+        },
+        "retry_count": 0,
+        "returned_model": "openai/gpt-5.6-luna",
+        "runner_sha256": "4CEE26F413FEA232B050C07AD7062139EDE6812DC531B21250D9E443DF6AB7A1",
+        "selected_model": "openai/gpt-5.6-luna",
+        "started_at": "2026-07-18T13:36:20Z",
+        "status": "PASS",
+        "telemetry": {
+          "cache_read_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "cache_write_tokens": {
+            "present": true,
+            "value": 0
+          },
+          "completion_tokens": {
+            "present": true,
+            "value": 74
+          },
+          "openrouter_credit_cost": {
+            "present": true,
+            "value": 0.000459
+          },
+          "prompt_tokens": {
+            "present": true,
+            "value": 15
+          },
+          "reasoning_tokens": {
+            "present": true,
+            "value": 29
+          },
+          "total_tokens": {
+            "present": true,
+            "value": 89
+          },
+          "upstream_inference_cost": {
+            "present": true,
+            "value": 0.000459
+          }
+        },
+        "tool_outcome": "NOT_APPLICABLE",
+        "transmission_count": 1
+      }
+    ],
+    "plan_sha256": "D2D1ECAC9BE734705AC7E8D76E13A260FC71F4D034AAD313C057E85E16E531F1",
+    "registry_update_candidate": {
+      "candidate_set_id": "OPENROUTER-THREE-FAMILY-ADDON-2026-07-18.1",
+      "models": [
+        {
+          "battery_id": "OPENROUTER-JANUS-CONFORMANCE",
+          "battery_version": "1.0.0",
+          "model_id": "moonshotai/kimi-k3",
+          "model_version": "moonshotai/kimi-k3-20260715",
+          "status": "TEST_PASS_AUDIT_PENDING"
+        },
+        {
+          "battery_id": "OPENROUTER-JANUS-CONFORMANCE",
+          "battery_version": "1.0.0",
+          "model_id": "x-ai/grok-4.3",
+          "model_version": "x-ai/grok-4.3-20260430",
+          "status": "TEST_PASS_AUDIT_PENDING"
+        },
+        {
+          "battery_id": "OPENROUTER-JANUS-CONFORMANCE",
+          "battery_version": "1.0.0",
+          "model_id": "openai/gpt-5.6-luna",
+          "model_version": "openai/gpt-5.6-luna-20260709",
+          "status": "TEST_PASS_AUDIT_PENDING"
+        }
+      ],
+      "runtime": false,
+      "schema_version": "janus.openrouter.registry-candidate.v1"
+    },
+    "schema_version": "janus.openrouter.conformance-result.v1"
+  },
+  "results": [
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__offline.json",
+      "result": "PASS",
+      "testCaseId": "moonshotai/kimi-k3::TC-001",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__offline.json",
+      "result": "PASS",
+      "testCaseId": "x-ai/grok-4.3::TC-001",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__offline.json",
+      "result": "PASS",
+      "testCaseId": "openai/gpt-5.6-luna::TC-001",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__offline.json",
+      "result": "PASS",
+      "testCaseId": "moonshotai/kimi-k3::TC-010",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__offline.json",
+      "result": "PASS",
+      "testCaseId": "x-ai/grok-4.3::TC-010",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__offline.json",
+      "result": "PASS",
+      "testCaseId": "openai/gpt-5.6-luna::TC-010",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__offline.json",
+      "result": "PASS",
+      "testCaseId": "moonshotai/kimi-k3::TC-011",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__offline.json",
+      "result": "PASS",
+      "testCaseId": "x-ai/grok-4.3::TC-011",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__offline.json",
+      "result": "PASS",
+      "testCaseId": "openai/gpt-5.6-luna::TC-011",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__offline.json",
+      "result": "PASS",
+      "testCaseId": "moonshotai/kimi-k3::TC-012",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__offline.json",
+      "result": "PASS",
+      "testCaseId": "x-ai/grok-4.3::TC-012",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__offline.json",
+      "result": "PASS",
+      "testCaseId": "openai/gpt-5.6-luna::TC-012",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__offline.json",
+      "result": "PASS",
+      "testCaseId": "moonshotai/kimi-k3::TC-013",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__offline.json",
+      "result": "PASS",
+      "testCaseId": "x-ai/grok-4.3::TC-013",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__offline.json",
+      "result": "PASS",
+      "testCaseId": "openai/gpt-5.6-luna::TC-013",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__offline.json",
+      "result": "PASS",
+      "testCaseId": "moonshotai/kimi-k3::TC-014",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__offline.json",
+      "result": "PASS",
+      "testCaseId": "x-ai/grok-4.3::TC-014",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__offline.json",
+      "result": "PASS",
+      "testCaseId": "openai/gpt-5.6-luna::TC-014",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__offline.json",
+      "result": "PASS",
+      "testCaseId": "moonshotai/kimi-k3::TC-015",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__offline.json",
+      "result": "PASS",
+      "testCaseId": "x-ai/grok-4.3::TC-015",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__offline.json",
+      "result": "PASS",
+      "testCaseId": "openai/gpt-5.6-luna::TC-015",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__offline.json",
+      "result": "PASS",
+      "testCaseId": "moonshotai/kimi-k3::TC-016",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__offline.json",
+      "result": "PASS",
+      "testCaseId": "x-ai/grok-4.3::TC-016",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__offline.json",
+      "result": "PASS",
+      "testCaseId": "openai/gpt-5.6-luna::TC-016",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__offline.json",
+      "result": "PASS",
+      "testCaseId": "moonshotai/kimi-k3::TC-017",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__offline.json",
+      "result": "PASS",
+      "testCaseId": "x-ai/grok-4.3::TC-017",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__offline.json",
+      "result": "PASS",
+      "testCaseId": "openai/gpt-5.6-luna::TC-017",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__offline.json",
+      "result": "PASS",
+      "testCaseId": "moonshotai/kimi-k3::TC-019",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__offline.json",
+      "result": "PASS",
+      "testCaseId": "x-ai/grok-4.3::TC-019",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__offline.json",
+      "result": "PASS",
+      "testCaseId": "openai/gpt-5.6-luna::TC-019",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__offline.json",
+      "result": "PASS",
+      "testCaseId": "moonshotai/kimi-k3::TC-020",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__offline.json",
+      "result": "PASS",
+      "testCaseId": "x-ai/grok-4.3::TC-020",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__offline.json",
+      "result": "PASS",
+      "testCaseId": "openai/gpt-5.6-luna::TC-020",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__offline.json",
+      "result": "PASS",
+      "testCaseId": "moonshotai/kimi-k3::SEC-001",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__offline.json",
+      "result": "PASS",
+      "testCaseId": "x-ai/grok-4.3::SEC-001",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__offline.json",
+      "result": "PASS",
+      "testCaseId": "openai/gpt-5.6-luna::SEC-001",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__offline.json",
+      "result": "PASS",
+      "testCaseId": "moonshotai/kimi-k3::SEC-005",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__offline.json",
+      "result": "PASS",
+      "testCaseId": "x-ai/grok-4.3::SEC-005",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__offline.json",
+      "result": "PASS",
+      "testCaseId": "openai/gpt-5.6-luna::SEC-005",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/GLOBAL__offline.json",
+      "result": "PASS",
+      "testCaseId": "__GLOBAL__::SEC-006",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__offline.json",
+      "result": "PASS",
+      "testCaseId": "moonshotai/kimi-k3::PINJ-004",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__offline.json",
+      "result": "PASS",
+      "testCaseId": "x-ai/grok-4.3::PINJ-004",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__offline.json",
+      "result": "PASS",
+      "testCaseId": "openai/gpt-5.6-luna::PINJ-004",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__LIVE-01.json",
+      "result": "PASS",
+      "testCaseId": "moonshotai/kimi-k3::TC-002",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__LIVE-01.json",
+      "result": "PASS",
+      "testCaseId": "moonshotai/kimi-k3::TC-003",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__LIVE-01.json",
+      "result": "PASS",
+      "testCaseId": "moonshotai/kimi-k3::TC-018",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__LIVE-02.json",
+      "result": "PASS",
+      "testCaseId": "moonshotai/kimi-k3::TC-004",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__LIVE-02.json",
+      "result": "PASS",
+      "testCaseId": "moonshotai/kimi-k3::SEC-002",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__LIVE-02.json",
+      "result": "PASS",
+      "testCaseId": "moonshotai/kimi-k3::SEC-003",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__LIVE-03.json",
+      "result": "PASS",
+      "testCaseId": "moonshotai/kimi-k3::TC-005",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__LIVE-04.json",
+      "result": "PASS",
+      "testCaseId": "moonshotai/kimi-k3::TC-006",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__LIVE-04.json",
+      "result": "PASS",
+      "testCaseId": "moonshotai/kimi-k3::TC-007",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__LIVE-04.json",
+      "result": "PASS",
+      "testCaseId": "moonshotai/kimi-k3::SEC-004",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__LIVE-05.json",
+      "result": "PASS",
+      "testCaseId": "moonshotai/kimi-k3::TC-008",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__LIVE-05.json",
+      "result": "PASS",
+      "testCaseId": "moonshotai/kimi-k3::PINJ-001",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__LIVE-06.json",
+      "result": "PASS",
+      "testCaseId": "moonshotai/kimi-k3::TC-009",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__LIVE-07.json",
+      "result": "PASS",
+      "testCaseId": "moonshotai/kimi-k3::PINJ-002",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/moonshotai_kimi-k3__LIVE-08.json",
+      "result": "PASS",
+      "testCaseId": "moonshotai/kimi-k3::PINJ-003",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__LIVE-01.json",
+      "result": "PASS",
+      "testCaseId": "x-ai/grok-4.3::TC-002",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__LIVE-01.json",
+      "result": "PASS",
+      "testCaseId": "x-ai/grok-4.3::TC-003",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__LIVE-01.json",
+      "result": "PASS",
+      "testCaseId": "x-ai/grok-4.3::TC-018",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__LIVE-02.json",
+      "result": "PASS",
+      "testCaseId": "x-ai/grok-4.3::TC-004",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__LIVE-02.json",
+      "result": "PASS",
+      "testCaseId": "x-ai/grok-4.3::SEC-002",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__LIVE-02.json",
+      "result": "PASS",
+      "testCaseId": "x-ai/grok-4.3::SEC-003",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__LIVE-03.json",
+      "result": "PASS",
+      "testCaseId": "x-ai/grok-4.3::TC-005",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__LIVE-04.json",
+      "result": "PASS",
+      "testCaseId": "x-ai/grok-4.3::TC-006",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__LIVE-04.json",
+      "result": "PASS",
+      "testCaseId": "x-ai/grok-4.3::TC-007",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__LIVE-04.json",
+      "result": "PASS",
+      "testCaseId": "x-ai/grok-4.3::SEC-004",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__LIVE-05.json",
+      "result": "PASS",
+      "testCaseId": "x-ai/grok-4.3::TC-008",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__LIVE-05.json",
+      "result": "PASS",
+      "testCaseId": "x-ai/grok-4.3::PINJ-001",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__LIVE-06.json",
+      "result": "PASS",
+      "testCaseId": "x-ai/grok-4.3::TC-009",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__LIVE-07.json",
+      "result": "PASS",
+      "testCaseId": "x-ai/grok-4.3::PINJ-002",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/x-ai_grok-4.3__LIVE-08.json",
+      "result": "PASS",
+      "testCaseId": "x-ai/grok-4.3::PINJ-003",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__LIVE-01.json",
+      "result": "PASS",
+      "testCaseId": "openai/gpt-5.6-luna::TC-002",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__LIVE-01.json",
+      "result": "PASS",
+      "testCaseId": "openai/gpt-5.6-luna::TC-003",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__LIVE-01.json",
+      "result": "PASS",
+      "testCaseId": "openai/gpt-5.6-luna::TC-018",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__LIVE-02.json",
+      "result": "PASS",
+      "testCaseId": "openai/gpt-5.6-luna::TC-004",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__LIVE-02.json",
+      "result": "PASS",
+      "testCaseId": "openai/gpt-5.6-luna::SEC-002",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__LIVE-02.json",
+      "result": "PASS",
+      "testCaseId": "openai/gpt-5.6-luna::SEC-003",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__LIVE-03.json",
+      "result": "PASS",
+      "testCaseId": "openai/gpt-5.6-luna::TC-005",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__LIVE-04.json",
+      "result": "PASS",
+      "testCaseId": "openai/gpt-5.6-luna::TC-006",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__LIVE-04.json",
+      "result": "PASS",
+      "testCaseId": "openai/gpt-5.6-luna::TC-007",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__LIVE-04.json",
+      "result": "PASS",
+      "testCaseId": "openai/gpt-5.6-luna::SEC-004",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__LIVE-05.json",
+      "result": "PASS",
+      "testCaseId": "openai/gpt-5.6-luna::TC-008",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__LIVE-05.json",
+      "result": "PASS",
+      "testCaseId": "openai/gpt-5.6-luna::PINJ-001",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__LIVE-06.json",
+      "result": "PASS",
+      "testCaseId": "openai/gpt-5.6-luna::TC-009",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__LIVE-07.json",
+      "result": "PASS",
+      "testCaseId": "openai/gpt-5.6-luna::PINJ-002",
+      "timestamp": "2026-07-18T13:36:23Z"
+    },
+    {
+      "classification": "CONFORMANCE",
+      "evidencePath": "documentation/test-results/TEST-RUN-2026-07-18-002/openai_gpt-5.6-luna__LIVE-08.json",
+      "result": "PASS",
+      "testCaseId": "openai/gpt-5.6-luna::PINJ-003",
+      "timestamp": "2026-07-18T13:36:23Z"
+    }
+  ],
+  "schemaVersion": "janus.test-result.v1",
+  "status": "PASS",
+  "summary": {
+    "blocked": 0,
+    "failed": 0,
+    "manualGateRequired": 0,
+    "passed": 88,
+    "total": 88
+  },
+  "testRunId": "TEST-RUN-2026-07-18-002",
+  "title": "OpenRouter Janus Conformance Certification",
+  "updatedAt": "2026-07-18T13:36:23Z"
+}

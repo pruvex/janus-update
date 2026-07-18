@@ -1,0 +1,65 @@
+{
+  "assertions": {
+    "boundary_tool_not_executed": true,
+    "completion_limit_enforced": true,
+    "credential_absent": true,
+    "exact_model_sent": true,
+    "input_limit_enforced": true,
+    "private_content_absent": true,
+    "productive_side_effect_absent": true,
+    "raw_payload_absent": true,
+    "requested_boundary_tool_only": true,
+    "response_identity_exact": true,
+    "transmission_budget_respected": true
+  },
+  "candidate_id": "anthropic/claude-sonnet-5",
+  "case_ids": [
+    "TC-009"
+  ],
+  "ended_at": "2026-07-17T20:54:30Z",
+  "fallback_model": null,
+  "fallback_provider": null,
+  "model_version": "anthropic/claude-sonnet-5-20260630",
+  "retry_count": 0,
+  "runner_sha256": "6B45B5E6DFBEDCF85F324489EE027691064973D8BFA07F57B0624CA94442ECE3",
+  "scenario_id": "LIVE-06",
+  "schema_version": "janus.openrouter.live-scenario-evidence.v1",
+  "started_at": "2026-07-17T20:54:27Z",
+  "status": "PASS",
+  "telemetry": {
+    "cache_read_tokens": {
+      "present": true,
+      "value": 0
+    },
+    "cache_write_tokens": {
+      "present": true,
+      "value": 0
+    },
+    "completion_tokens": {
+      "present": true,
+      "value": 96
+    },
+    "openrouter_credit_cost": {
+      "present": true,
+      "value": 0.001908
+    },
+    "prompt_tokens": {
+      "present": true,
+      "value": 474
+    },
+    "reasoning_tokens": {
+      "present": true,
+      "value": 0
+    },
+    "total_tokens": {
+      "present": true,
+      "value": 570
+    },
+    "upstream_inference_cost": {
+      "present": true,
+      "value": 0.001908
+    }
+  },
+  "test_run_id": "TEST-RUN-2026-07-17-007",
+  "transmission_count": 1
+}

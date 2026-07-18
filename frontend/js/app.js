@@ -2,6 +2,7 @@ import { sanitizeReleaseNotes, sanitizeTemplateHtml } from "./dompurify-config.j
 import { initializeSettings } from "./settings.js";
 import { initializeStudio } from "./image-studio.js";
 import { initUpdateUI, setSidebarVersionBase } from "./update-ui.js";
+import { sortModelsForProvider } from "./model-sort.js";
 
 // ================= WRAPPER FÜR FETCH (API KEY) =================
 (() => {
@@ -223,6 +224,12 @@ function getOpenRouterSelectionEligibility(provider, model) {
   if (!exactModel || !state.models.includes(exactModel)) {
     return { eligible: false, reason: "model_unavailable" };
   }
+  const selectedIds = (appState.user_selections.openrouter || []).filter((modelId) =>
+    state.models.includes(String(modelId || "").trim()),
+  );
+  if (!selectedIds.includes(exactModel)) {
+    return { eligible: false, reason: "model_unavailable" };
+  }
   return { eligible: true, reason: "eligible" };
 }
 
@@ -411,7 +418,6 @@ let backFromModelsBtn;
 let modelList;
 
 function formatCost(cost, suffix, isImageCost = false) { // NEU: isImageCost Parameter
-  console.log("formatCost called with cost:", cost, "suffix:", suffix, "isImageCost:", isImageCost); // Debug Log
   if (cost === 0) {
     return `0.00${suffix}`;
   }
@@ -431,8 +437,6 @@ function formatCost(cost, suffix, isImageCost = false) { // NEU: isImageCost Par
 }
 
 function showLoginScreen() {
-    console.log("Showing login screen");
-    
     // Hide main app container if it exists
     const appContainer = document.querySelector('.app-container');
     if (appContainer) {
@@ -622,7 +626,6 @@ function showLoginScreen() {
 }
 
 function hideLoginScreen() {
-    console.log("Hiding login screen");
     const loginScreen = document.getElementById('login-screen');
     if (loginScreen) {
         // Instead of removing, just hide it so we can show it again if needed
@@ -738,9 +741,13 @@ function fillModelOptionsIntoSelect(selectEl, targetProvider, options = {}) {
   const selectedModel = String(options.selectedModel || "").trim();
   if (targetProvider === "openrouter") {
     const state = appState.openrouter_eligibility;
-    const allowedIds = new Set(state.models);
-    const certifiedModels = (appState.model_catalog.openrouter || []).filter(
-      (model) => allowedIds.has(String(model.id || "")),
+    const certifiedIds = new Set(state.models || []);
+    const selectedIds = (appState.user_selections.openrouter || []).filter((modelId) =>
+      certifiedIds.has(String(modelId || "").trim()),
+    );
+    const allowedIds = new Set(selectedIds);
+    const certifiedModels = (appState.model_catalog.openrouter || []).filter((model) =>
+      allowedIds.has(String(model.id || "")),
     );
 
     if (!state.eligible) {
@@ -754,6 +761,14 @@ function fillModelOptionsIntoSelect(selectEl, targetProvider, options = {}) {
       selectEl.appendChild(retained);
       selectEl.disabled = true;
       selectEl.dataset.openrouterRetained = state.reason;
+      return;
+    }
+
+    if (allowedIds.size === 0) {
+      const option = document.createElement("option");
+      option.value = "";
+      option.textContent = "-- Keine OpenRouter-Modelle ausgewählt --";
+      selectEl.appendChild(option);
       return;
     }
 
@@ -774,10 +789,14 @@ function fillModelOptionsIntoSelect(selectEl, targetProvider, options = {}) {
       selectEl.dataset.openrouterRetained = "model_unavailable";
     }
 
-    certifiedModels.forEach((model) => {
+    sortModelsForProvider("openrouter", certifiedModels).forEach((model) => {
       const option = document.createElement("option");
       option.value = model.id;
-      option.textContent = model.id;
+      let costDisplay = "";
+      if (model.cost_per_token_input) {
+        costDisplay = `${formatCost(model.cost_per_token_input * 1000000, "€/Mio. in")} / ${formatCost(model.cost_per_token_output * 1000000, "€/Mio. out")}`;
+      }
+      option.textContent = `${model.name || model.id}${costDisplay ? ` (${costDisplay})` : ""}`;
       option.dataset.provider = "openrouter";
       option.selected = model.id === selectedModel;
       selectEl.appendChild(option);
@@ -819,7 +838,7 @@ function fillModelOptionsIntoSelect(selectEl, targetProvider, options = {}) {
     return isAllowed && isNotExcluded;
   });
 
-  const modelsForDropdown = sortSidebarModelsForProvider(targetProvider, filteredModels);
+  const modelsForDropdown = sortModelsForProvider(targetProvider, filteredModels);
 
   modelsForDropdown.forEach((model) => {
     const option = document.createElement("option");
@@ -960,7 +979,6 @@ function setupChatHeaderLlmListeners() {
 }
 
 function render() {
-  console.log("Rendering app with appState.last_active.provider:", appState.last_active.provider); // Debug Log
   const chatView = document.getElementById("chat-view");
   const settingsView = document.getElementById("settings-view");
 
@@ -996,20 +1014,14 @@ function render() {
         Sentry.setTag("active_provider", targetProvider);
         if (targetModel) {
             Sentry.setTag("active_model", targetModel);
-            console.log(`[Sentry] Initial tags set: provider=${targetProvider}, model=${targetModel}`);
-        } else {
-            console.log(`[Sentry] Initial tag set: provider=${targetProvider}`);
         }
     }
     // ----------------------------------------------
 
     // 2. Setze den Provider-Wert. Dies kann ein 'change'-Event auslösen, aber das ist uns jetzt egal.
-    console.log(`--> [Render] Setting provider to: ${targetProvider}`);
     sidebarProviderSelect.value = targetProvider;
 
     // 3. Fülle die Modell-Liste basierend auf dem korrekten Provider (gleiche Logik wie Chat-Header).
-    console.log(`--> [Render] Populating model list for provider: ${targetProvider}`);
-    console.log("--- DROPDOWN-FILTER (Sidebar + Header teilen fillModelOptionsIntoSelect) ---");
     if (appState.model_catalog[targetProvider] || targetProvider === "openrouter") {
       fillModelOptionsIntoSelect(sidebarModelSelect, targetProvider, {
         selectedModel: targetModel,
@@ -1021,8 +1033,6 @@ function render() {
     // 4. Intelligentes Setzen des Modells
     // Wir prüfen erst, ob das gewünschte Modell überhaupt in der Liste existiert.
     const availableOptions = Array.from(sidebarModelSelect.options).map(o => o.value);
-    console.log(`--> [Render] Verfügbare Modell-Optionen:`, availableOptions);
-    console.log(`--> [Render] Ziel-Modell: ${targetModel}`);
 
     if (targetProvider === "openrouter") {
       if (targetModel && availableOptions.includes(targetModel)) {
@@ -1032,29 +1042,24 @@ function render() {
       }
     } else if (availableOptions.includes(targetModel)) {
       // Fall A: Alles gut, das Modell existiert.
-      console.log(`--> [Render] Ziel-Modell '${targetModel}' gefunden, wird ausgewählt.`);
       sidebarModelSelect.value = targetModel;
     } else if (availableOptions.length > 0) {
       // Fall B: Das gespeicherte Modell existiert nicht mehr (z.B. gpt-4o-mini).
       // 💎 FIX: Überspringe die Fallback-Logik beim Provider-Wechsel, da das Modell bereits korrekt gesetzt wurde
       if (appState.providerSwitchInProgress) {
-        console.log(`--> [Render] Provider-Wechsel läuft, verwende bereits gesetztes Modell aus State`);
         // Verwende das bereits gesetzte Modell aus dem State (nicht targetModel, das das alte Modell sein kann)
         const currentModel = appState.last_active.model;
         if (currentModel && availableOptions.includes(currentModel)) {
           sidebarModelSelect.value = currentModel;
-          console.log(`--> [Render] Modell '${currentModel}' aus State ausgewählt`);
         } else {
           // Fallback: erstes verfügbares Modell
           const fallbackModel = availableOptions[0];
           sidebarModelSelect.value = fallbackModel;
           appState.last_active.model = fallbackModel;
-          console.log(`--> [Render] Fallback auf '${fallbackModel}' (State-Modell nicht verfügbar)`);
         }
       } else {
         // Selbstheilung: Wir wählen automatisch das erste verfügbare Modell.
         const fallbackModel = availableOptions[0];
-        console.log(`--> [Render] Gespeichertes Modell '${targetModel}' nicht verfügbar. Wechsele zu Fallback: '${fallbackModel}'`);
 
         sidebarModelSelect.value = fallbackModel;
 
@@ -1213,13 +1218,10 @@ async function attemptSilentLogin() {
 
 // The single entry point of the application
 document.addEventListener("DOMContentLoaded", async () => {
-  console.log("--> [1] DOM fully loaded. Starting application initialization...");
-
   // Apply Dark Mode immediately from localStorage cache (before async operations)
   const cachedDarkMode = localStorage.getItem("dark_mode_enabled");
   if (cachedDarkMode !== null) {
     applyDarkMode(cachedDarkMode === "true");
-    console.log("[Dark Mode] Applied from localStorage cache:", cachedDarkMode === "true");
   }
 
   // Initialize state-driven update UI (independent of authentication)
@@ -1236,10 +1238,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 function applyDarkMode(darkModeEnabled) {
   if (darkModeEnabled === true) {
     document.body.classList.add('dark-mode');
-    console.log("[Dark Mode] Applied dark mode");
   } else {
     document.body.classList.remove('dark-mode');
-    console.log("[Dark Mode] Applied light mode");
   }
 }
 
@@ -1269,7 +1269,6 @@ async function loadAndApplyDarkModeOnStartup() {
       if (checkbox) {
         checkbox.checked = darkModeEnabled;
       }
-      console.log("[Dark Mode] Loaded and applied dark_mode_enabled:", darkModeEnabled);
     } else {
       console.warn("[Dark Mode] Failed to load dark mode setting, defaulting to light mode");
       applyDarkMode(false);
@@ -1280,21 +1279,54 @@ async function loadAndApplyDarkModeOnStartup() {
   }
 }
 
+async function waitForBackendReady({
+  timeoutMs = 20000,
+  intervalMs = 400,
+} = {}) {
+  const startedAt = Date.now();
+  while (Date.now() - startedAt < timeoutMs) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/health`, {
+        method: "GET",
+        cache: "no-store",
+      });
+      if (response.ok) {
+        return true;
+      }
+    } catch (_error) {
+      // Backend still starting — keep polling.
+    }
+    await new Promise((resolve) => setTimeout(resolve, intervalMs));
+  }
+  return false;
+}
+
+function scheduleDeferredStartupWork(task) {
+  const run = () => {
+    Promise.resolve()
+      .then(task)
+      .catch((error) => {
+        console.warn("[startup] Deferred init failed:", error);
+      });
+  };
+  if (typeof window.requestIdleCallback === "function") {
+    window.requestIdleCallback(run, { timeout: 2500 });
+  } else {
+    window.setTimeout(run, 0);
+  }
+}
+
 // The central initialization function that controls the entire startup process
 async function initializeApp() {
-  console.log("--> [1] Starting application initialization...");
-
   // Warten, bis das DOM wirklich da ist
-  if (document.readyState === 'loading') {
-      console.log("--> [0.5] Waiting for DOM to be fully loaded...");
-      await new Promise(r => document.addEventListener('DOMContentLoaded', r));
+  if (document.readyState === "loading") {
+    await new Promise((r) => document.addEventListener("DOMContentLoaded", r));
   }
 
   const settingsBtn = document.getElementById("settings-btn");
   if (settingsBtn && !settingsBtn.dataset.settingsNavigationBound) {
     settingsBtn.dataset.settingsNavigationBound = "true";
     settingsBtn.addEventListener("click", () => {
-      console.log("Settings button clicked!");
       appState.currentView = "settings";
       const chatViewEl = document.getElementById("chat-view");
       const settingsViewEl = document.getElementById("settings-view");
@@ -1304,138 +1336,83 @@ async function initializeApp() {
     });
   }
 
-  let isAuthenticated = false;
-  
-  // --- RETRY LOGIK FÜR DEN START ---
-  // Wir probieren es bis zu 20 Mal (20 Sekunden), damit das Backend Zeit hat zu starten.
-  const maxRetries = 20;
-  
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        console.log(`--> [1.1] Authentication attempt ${attempt}/${maxRetries}...`);
-        
-        // --- AUTH-FIX: Erst erneuern, dann validieren ---
-        // 1. Zuerst versuchen wir immer, den Token zu erneuern.
-        // Das fängt abgelaufene Tokens ab, bevor sie einen Fehler verursachen.
-        console.log("--> [2a] Attempting silent login first...");
-        try {
-          await attemptSilentLogin();
-          console.log("--> [2b] Silent login successful.");
-        } catch (error) {
-          console.warn("Silent login failed. This might be expected on first run.", error);
-          // Wir machen trotzdem weiter, da der User eventuell noch keinen Account hat.
-        }
-        
-        // 2. Jetzt, wo wir sicher einen frischen Token haben, können wir validieren
-        console.log("--> [2c] Validating token...");
-        const isTokenValid = await validateToken();
-        if (isTokenValid) {
-            console.log("--> [2d] Token validation successful.");
-            isAuthenticated = true;
-            break; // Erfolg! Schleife verlassen
-        } else {
-            console.log("--> [2e] No valid session found after silent login attempt.");
-        }
-
-      } catch (e) {
-          console.warn(`Attempt ${attempt} failed with error:`, e);
-      }
-
-      // Wenn wir noch nicht drin sind und es nicht der letzte Versuch war: Warten.
-      if (!isAuthenticated && attempt < maxRetries) {
-          console.log("Backend not ready yet. Waiting 1s...");
-          await new Promise(resolve => setTimeout(resolve, 1000));
-      }
+  // Wait for backend readiness via health poll, then authenticate once.
+  const backendReady = await waitForBackendReady();
+  if (!backendReady) {
+    console.warn("[startup] Backend health check timed out; attempting auth anyway.");
   }
 
-  // FINALE PHASE: Wird nur ausgeführt, wenn einer der Versuche erfolgreich war
-  if (isAuthenticated) {
-    console.log("--> [3] Authentication successful. Loading application data...");
-    
-    // Lade ALLE notwendigen Daten.
-    // Diese Funktionen sollten jetzt erfolgreich sein, da wir einen gültigen Token haben.
+  let isAuthenticated = false;
+  try {
     try {
-      console.log("--> [3.1] Loading model catalog...");
-      await loadModelCatalog();
+      await attemptSilentLogin();
+    } catch (error) {
+      console.warn("Silent login failed. This might be expected on first run.", error);
+    }
+    isAuthenticated = await validateToken();
+  } catch (error) {
+    console.warn("[startup] Authentication failed:", error);
+  }
 
-      console.log("--> [3.1.5] Loading OpenRouter chat eligibility...");
-      await loadOpenRouterChatEligibility();
-      
-      console.log("--> [3.2] Loading user selections...");
-      await loadUserSelections();
-      
-      console.log("--> [3.3] Loading last used model...");
-      await loadLastUsedModel();
+  if (isAuthenticated) {
+    try {
+      // Models + chat list in parallel after auth. Ollama discovery and message
+      // bodies are deferred so the UI becomes usable sooner.
+      const modelsReady = (async () => {
+        await Promise.all([
+          loadModelCatalog(),
+          loadOpenRouterChatEligibility(),
+        ]);
+        await Promise.all([
+          loadUserSelections(),
+          loadLastUsedModel(),
+        ]);
+      })();
+      const chatsListReady = loadChats(true, null, { deferMessageRestore: true });
 
-      console.log("--> [3.4] Loading projects...");
-      await loadProjects();
-
-      // 💎 CU-3: Initialisiere Settings NACH Auth (verhindert Race-Condition)
-      console.log("--> [3.4.5] Initializing settings...");
-      await initializeSettings();
-
-      // Dark Mode: Load and apply theme setting
-      console.log("--> [3.4.6] Loading dark mode setting...");
-      await loadAndApplyDarkModeOnStartup();
-
-      // 💎 CU-3: Initialisiere Image Studio NACH Auth (verhindert Race-Condition)
-      console.log("--> [3.4.7] Initializing image studio...");
-      await initializeStudio();
-
-      // RENDERE die UI und MACHE sie INTERAKTIV
-      console.log("--> [3.5] Rendering UI and setting up event listeners...");
+      await modelsReady;
       render();
       setupEventListeners();
       setupContextAwareness();
-
-      // Lade die Chat-Liste als letzten Schritt
-      console.log("--> [3.6] Loading chat list...");
-      await loadChats();
 
       /* Fenster-Layout: keine persistierten Positionen — immer Standard (--dual-chat-host-*) */
       resetChatWindowLayout("A");
       resetChatWindowLayout("B");
 
-      // --- NEU: VERSION IN SIDEBAR ANZEIGEN ---
-      
-      // Diagnose: Schau in die Browser-Konsole (F12)
-      // Wenn hier "ReferenceError" kommt, hat Vite nichts ersetzt.
-      // Wenn hier "1.0.5" steht, funktioniert es.
-      try {
-          console.log("Browser Check Version:", __APP_VERSION__);
-      } catch (e) {
-          console.log("Browser Check: Variable nicht definiert");
-      }
-
-      // Sichere Zuweisung
       let currentVersion = "Fehler";
-      if (typeof __APP_VERSION__ !== 'undefined') {
-          currentVersion = __APP_VERSION__;
+      if (typeof __APP_VERSION__ !== "undefined") {
+        currentVersion = __APP_VERSION__;
       }
-
-      const sidebarLabel = `v${currentVersion}`;
-      setSidebarVersionBase(sidebarLabel);
-      
-      const settingsVersionEl = document.getElementById('app-version-display');
+      setSidebarVersionBase(`v${currentVersion}`);
+      const settingsVersionEl = document.getElementById("app-version-display");
       if (settingsVersionEl) {
-          settingsVersionEl.textContent = `v${currentVersion}`;
+        settingsVersionEl.textContent = `v${currentVersion}`;
       }
 
-      // Show the app container and hide login screen
-      const appContainer = document.querySelector('.app-container');
+      const appContainer = document.querySelector(".app-container");
       if (appContainer) {
-        appContainer.style.display = '';
+        appContainer.style.display = "";
       }
       hideLoginScreen();
 
-      console.log("--> [4] Initialization complete. Janus is ready.");
+      await chatsListReady;
+
+      // Non-critical modules: load after chat UI is usable.
+      scheduleDeferredStartupWork(async () => {
+        await loadProjects();
+        await initializeSettings();
+        await loadAndApplyDarkModeOnStartup();
+        await initializeStudio();
+      });
     } catch (error) {
-      console.error("--> [ERROR] Failed to initialize application after successful authentication:", error);
+      console.error(
+        "--> [ERROR] Failed to initialize application after successful authentication:",
+        error
+      );
       showLoginScreen();
     }
   } else {
-    // Fallback, wenn absolut nichts funktioniert hat
-    console.error("--> [!] All authentication attempts failed. Showing login screen.");
+    console.error("--> [!] Authentication failed. Showing login screen.");
     showLoginScreen();
   }
 }
@@ -1446,7 +1423,6 @@ subscribeWindowState(() => {
 });
 
 function setupEventListeners() {
-  console.log("Setting up UI event listeners...");
   setupChatHeaderLlmListeners();
 
   const appContainer = document.querySelector(".app-container");
@@ -1641,8 +1617,6 @@ function setupEventListeners() {
     });
     requestAnimationFrame(() => autoResize.call(userInput));
   });
-
-  console.log("Event listeners successfully set up.");
 }
 
 function injectKnowledgeButton() {
@@ -2116,72 +2090,103 @@ async function handleFiles(files, projectId) {
 
 async function loadModelCatalog() {
   try {
-    const [catalogResponse, localModelsResponse] = await Promise.all([
-      fetch(`${API_BASE_URL}/api/models/catalog`),
-      fetch(`${API_BASE_URL}/api/local-llm/models`).catch(() => null),
-    ]);
+    // Critical path: cloud/catalog only. Ollama discovery can take multiple seconds
+    // (local daemon round-trip) and must not block provider dropdowns.
+    const catalogResponse = await fetch(`${API_BASE_URL}/api/models/catalog`);
     if (!catalogResponse.ok) throw new Error(`HTTP Error ${catalogResponse.status}`);
 
     const data = await catalogResponse.json();
-    const localModelsPayload = localModelsResponse && localModelsResponse.ok ? await localModelsResponse.json() : null;
-    const localModels = Array.isArray(localModelsPayload?.models) ? localModelsPayload.models : [];
-    const withoutOllama = Array.isArray(data) ? data.filter((model) => model.provider !== "ollama") : [];
-    const mergedData = [...withoutOllama, ...localModels];
-    
-    // SAFETY CHECK: Is the data actually an array?
-    if (!Array.isArray(mergedData)) {
-      console.error("Model catalog data is not an array:", mergedData);
-      appState.model_catalog = {};
-      return;
-    }
+    applyModelCatalogEntries(Array.isArray(data) ? data : [], { replaceOllama: true });
 
-    const catalogByProvider = {};
-    mergedData.forEach((model) => {
-      if (!catalogByProvider[model.provider]) {
-        catalogByProvider[model.provider] = [];
-      }
-      catalogByProvider[model.provider].push(model);
-    });
-    appState.model_catalog = catalogByProvider;
-
-    const chatgptModels = Array.isArray(catalogByProvider.chatgpt)
-      ? catalogByProvider.chatgpt
-      : [];
-    const providerSelect = document.getElementById("provider-select");
-    const chatgptOption = providerSelect?.querySelector('option[value="chatgpt"]');
-    if (chatgptModels.length > 0) {
-      if (!chatgptOption && providerSelect) {
-        const option = document.createElement("option");
-        option.value = "chatgpt";
-        option.textContent = "ChatGPT über Codex";
-        providerSelect.appendChild(option);
-      }
-      appState.user_selections.chatgpt = chatgptModels.map((model) => model.id);
-    } else {
-      chatgptOption?.remove();
-      delete appState.user_selections.chatgpt;
-      if (appState.last_active.provider === "chatgpt") {
-        appState.last_active.provider = providerSelect?.value || "openai";
-        appState.last_active.model = null;
-      }
-    }
-
-    // Auto-select all local Ollama models so they appear in the dropdown
-    if (localModels.length > 0) {
-      const ollamaModelIds = localModels.map((m) => m.id);
-      if (!appState.user_selections) {
-        appState.user_selections = {};
-      }
-      // Merge with existing selections (don't overwrite if already set)
-      const existingSelections = appState.user_selections.ollama || [];
-      const allOllamaIds = new Set([...existingSelections, ...ollamaModelIds]);
-      appState.user_selections.ollama = Array.from(allOllamaIds);
-      console.log("[loadModelCatalog] Auto-selected Ollama models:", appState.user_selections.ollama);
-    }
+    void mergeLocalOllamaModelsIntoCatalog();
   } catch (error) {
     console.error("Failed to load model catalog:", error);
     // Set empty object to prevent crashes in dependent code
-    appState.model_catalog = {}; 
+    appState.model_catalog = {};
+  }
+}
+
+function applyModelCatalogEntries(models, { replaceOllama = false } = {}) {
+  if (!Array.isArray(models)) {
+    console.error("Model catalog data is not an array:", models);
+    if (replaceOllama) {
+      appState.model_catalog = {};
+    }
+    return;
+  }
+
+  if (replaceOllama) {
+    const catalogByProvider = {};
+    models
+      .filter((model) => model.provider !== "ollama")
+      .forEach((model) => {
+        if (!catalogByProvider[model.provider]) {
+          catalogByProvider[model.provider] = [];
+        }
+        catalogByProvider[model.provider].push(model);
+      });
+    appState.model_catalog = catalogByProvider;
+  } else {
+    const catalogByProvider = { ...(appState.model_catalog || {}) };
+    const ollamaModels = models.filter((model) => model.provider === "ollama");
+    if (ollamaModels.length > 0) {
+      catalogByProvider.ollama = ollamaModels;
+      appState.model_catalog = catalogByProvider;
+    }
+  }
+
+  const chatgptModels = Array.isArray(appState.model_catalog.chatgpt)
+    ? appState.model_catalog.chatgpt
+    : [];
+  const providerSelect = document.getElementById("provider-select");
+  const chatgptOption = providerSelect?.querySelector('option[value="chatgpt"]');
+  if (chatgptModels.length > 0) {
+    if (!chatgptOption && providerSelect) {
+      const option = document.createElement("option");
+      option.value = "chatgpt";
+      option.textContent = "ChatGPT über Codex";
+      providerSelect.appendChild(option);
+    }
+    appState.user_selections.chatgpt = chatgptModels.map((model) => model.id);
+  } else if (replaceOllama) {
+    chatgptOption?.remove();
+    delete appState.user_selections.chatgpt;
+    if (appState.last_active.provider === "chatgpt") {
+      appState.last_active.provider = providerSelect?.value || "openai";
+      appState.last_active.model = null;
+    }
+  }
+}
+
+async function mergeLocalOllamaModelsIntoCatalog() {
+  try {
+    const localModelsResponse = await fetch(`${API_BASE_URL}/api/local-llm/models`).catch(
+      () => null,
+    );
+    if (!localModelsResponse || !localModelsResponse.ok) return;
+
+    const localModelsPayload = await localModelsResponse.json();
+    const localModels = Array.isArray(localModelsPayload?.models)
+      ? localModelsPayload.models
+      : [];
+    if (localModels.length === 0) return;
+
+    applyModelCatalogEntries(localModels, { replaceOllama: false });
+
+    if (!appState.user_selections) {
+      appState.user_selections = {};
+    }
+    const ollamaModelIds = localModels.map((m) => m.id);
+    const existingSelections = appState.user_selections.ollama || [];
+    appState.user_selections.ollama = Array.from(
+      new Set([...existingSelections, ...ollamaModelIds]),
+    );
+
+    if (appState.last_active.provider === "ollama") {
+      render();
+    }
+  } catch (error) {
+    console.warn("[startup] Local Ollama catalog merge skipped:", error?.message || error);
   }
 }
 
@@ -2282,13 +2287,6 @@ async function loadUserSelections() {
     const availableProviders = Object.keys(appState.model_catalog);
     
     const selectionPromises = availableProviders.map(async (provider) => {
-      if (provider === "openrouter") {
-        appState.user_selections.openrouter = [
-          ...(appState.openrouter_eligibility.models || []),
-        ];
-        return;
-      }
-
       // ChatGPT models are exclusively supplied by the verified Codex catalog.
       // Never depend on the generic provider-selection API or retain a stale
       // selection if that catalog is unavailable.
@@ -2317,6 +2315,22 @@ async function loadUserSelections() {
           return;
         }
         // -------------------------
+
+        if (provider === "openrouter") {
+          const certifiedIds = new Set(
+            (appState.openrouter_eligibility.models || []).map((modelId) =>
+              String(modelId || "").trim(),
+            ).filter(Boolean),
+          );
+          const selected = data.selected_models
+            .map((modelId) => String(modelId || "").trim())
+            .filter((modelId) => certifiedIds.has(modelId));
+          // First-run default: all currently certified models until the user saves a subset.
+          appState.user_selections.openrouter = selected.length
+            ? selected
+            : Array.from(certifiedIds);
+          return;
+        }
         
         // For Ollama, merge with existing selections (to keep locally installed models)
         // For other providers, use server selections
@@ -2348,59 +2362,8 @@ async function loadUserSelections() {
   }
 }
 
-/**
- * OpenAI-Sidebar: nano → mini → … (Katalog-Reihenfolge = leichter zuerst).
- * Gemini-Katalog listet teils Pro vor Flash — hier Flash vor Pro, damit das Dropdown
- * dasselbe „kleinstes/schnellstes oben“-Muster hat.
- */
-function geminiSidebarModelRank(m) {
-  const id = String(m.id || "");
-  const typ = m.type || "text";
-  if (typ === "text") {
-    if (/flash/i.test(id) && !/image/i.test(id)) return 100;
-    if (/pro/i.test(id) && !/vision/i.test(id) && !/image/i.test(id)) return 101;
-    return 150;
-  }
-  if (typ === "image") {
-    if (/flash/i.test(id)) return 200;
-    if (/pro/i.test(id)) return 201;
-    return 250;
-  }
-  if (typ === "text_image") return 300;
-  return 400;
-}
-
 function sortSidebarModelsForProvider(provider, models) {
-  if (!Array.isArray(models)) return models;
-
-  // OpenAI: Definierte Reihenfolge (kleinstes zuerst)
-  if (provider === "openai") {
-    const openaiRank = {
-      "gpt-5.4-nano": 1,
-      "gpt-5.4-mini": 2,
-      "gpt-5.4": 3,
-      "gpt-5.4-pro": 4,
-      "gpt-5.5": 5,
-      "gpt-5.5-pro": 6
-    };
-    return [...models].sort((a, b) => {
-      const ra = openaiRank[a.id] || 999;
-      const rb = openaiRank[b.id] || 999;
-      return ra - rb;
-    });
-  }
-
-  // Gemini: Bestehende Sortierung
-  if (provider === "gemini") {
-    return [...models].sort((a, b) => {
-      const ra = geminiSidebarModelRank(a);
-      const rb = geminiSidebarModelRank(b);
-      if (ra !== rb) return ra - rb;
-      return String(a.id).localeCompare(String(b.id));
-    });
-  }
-
-  return models;
+  return sortModelsForProvider(provider, models);
 }
 
 function findFirstAvailableModel(provider) {

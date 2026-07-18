@@ -1,24 +1,26 @@
 TASK-OPENROUTER-JANUS-CHAT-PROVIDER
-- Source Spec: `documentation/SPEC/OPENROUTER_JANUS_CHAT_PROVIDER_FEATURE_SPEC.md`
+- Source Spec: `documentation/SPEC/Spec Done/OPENROUTER_JANUS_CHAT_PROVIDER_FEATURE_SPEC.md`
 - Backlog Item: N/A
 - Feature: OpenRouter als Janus-Chatprovider mit zertifizierten Modellen
 - Generated At: 2026-07-16 18:31:00 +02:00
 
 ## Implementation Status
 
-- Overall Feature: `PARTIAL IMPLEMENTATION` (`5/6` tasks final-audit PASS)
+- Overall Feature: `DONE` (`6/6` tasks final-audit PASS or PASS WITH FIXES)
 - `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1`: `DONE` - Final Audit PASS on 2026-07-16
 - `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2`: `DONE` - Final Audit PASS on 2026-07-17
 - `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.3`: `DONE` - Final Audit PASS on 2026-07-17
 - `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.4`: `DONE` - Final Audit PASS on 2026-07-17
 - `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.5`: `DONE` - Final Audit PASS WITH FIXES on 2026-07-17
-- `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6`: `OPEN`
-- Production State: `DISABLED` - the certification registry is intentionally empty and no OpenRouter model is visible or selectable.
+- `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6`: `DONE` - Final Audit PASS WITH FIXES on 2026-07-18; documentation-update activated four exact certified models
+- Production State: `ENABLED` for the four audit-approved OpenRouter models when a `VALID` OpenRouter key is present
+- Spec path: `documentation/SPEC/Spec Done/OPENROUTER_JANUS_CHAT_PROVIDER_FEATURE_SPEC.md`
 - Task `.1` Evidence: `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1_final_audit.md`, `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.1_AUDIT_PACKAGE.md`
 - Task `.2` Evidence: `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2_final_audit.md`, `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2_AUDIT_PACKAGE.md`
 - Task `.3` Evidence: `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.3_FINAL_AUDIT.md`, `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.3_AUDIT_PACKAGE.md`
 - Task `.4` Evidence: `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.4_FINAL_AUDIT.md`, `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.4_AUDIT_PACKAGE.md`
 - Task `.5` Evidence: `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.5_FINAL_AUDIT.md`, `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.5_AUDIT_PACKAGE.md`
+- Task `.6` Evidence: `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6_FINAL_AUDIT.md`, `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6_AUDIT_PACKAGE.md`, `documentation/test-results/TEST-RUN-2026-07-17-008_results.md`, `documentation/test-results/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6_certification_evidence.md`
 
 ## Generated Tasks
 

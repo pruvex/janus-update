@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from typing import Any, AsyncIterator, Callable, Dict, List, Optional, Tuple
 
 from backend.llm_providers.openrouter.service import (
@@ -10,6 +11,8 @@ from backend.llm_providers.openrouter.service import (
     OpenRouterModelIdentityError,
     OpenRouterServiceProvider,
 )
+
+logger = logging.getLogger("janus_backend")
 from backend.llm_providers.shared.tool_loop_runner import (
     NonToolResponseAction,
     ToolLoopContext,
@@ -130,16 +133,19 @@ class OpenRouterGateway:
                 "OpenRouter rejected the request credential.",
             )
         except OpenRouterModelIdentityError:
+            logger.warning("OPENROUTER_MODEL_IDENTITY_MISMATCH model=%s", model, exc_info=True)
             return self._error(
                 "OPENROUTER_MODEL_IDENTITY_MISMATCH",
                 "OpenRouter returned an unexpected model identity.",
             )
         except OpenRouterMalformedResponseError:
+            logger.warning("OPENROUTER_MALFORMED_RESPONSE model=%s", model, exc_info=True)
             return self._error(
                 "OPENROUTER_MALFORMED_RESPONSE",
                 "OpenRouter returned an invalid response.",
             )
         except Exception:
+            logger.error("OPENROUTER_PROVIDER_ERROR model=%s", model, exc_info=True)
             return self._error(
                 "OPENROUTER_PROVIDER_ERROR",
                 "OpenRouter could not complete the current turn.",
@@ -297,6 +303,11 @@ class OpenRouterGateway:
                 "OPENROUTER_CREDENTIAL_INELIGIBLE",
                 "OpenRouter credential is not eligible for chat.",
             )
+            logger.warning(
+                "OPENROUTER_STREAM_AUTHORIZE_FAILED model=%s code=%s",
+                model,
+                failure.get("error_code"),
+            )
             yield StreamEvent(
                 type="error",
                 content=failure["error"],
@@ -304,6 +315,13 @@ class OpenRouterGateway:
             )
             return
 
+        logger.info(
+            "OPENROUTER_STREAM_START model=%s tools=%s max_completion_tokens=%s messages=%s",
+            model,
+            len(tools or []),
+            max_completion_tokens,
+            len(messages or []),
+        )
         try:
             async for event in self.service.generate_response_stream(
                 api_key=credential.api_key,
@@ -315,6 +333,7 @@ class OpenRouterGateway:
             ):
                 yield event
         except OpenRouterAuthenticationRejected:
+            logger.warning("OPENROUTER_AUTHENTICATION_REJECTED model=%s", model)
             self._invalidate(credential.binding)
             yield StreamEvent(
                 type="error",
@@ -325,6 +344,7 @@ class OpenRouterGateway:
                 },
             )
         except OpenRouterModelIdentityError:
+            logger.warning("OPENROUTER_MODEL_IDENTITY_MISMATCH model=%s", model, exc_info=True)
             yield StreamEvent(
                 type="error",
                 content="OpenRouter returned an unexpected model identity.",
@@ -334,6 +354,7 @@ class OpenRouterGateway:
                 },
             )
         except OpenRouterMalformedResponseError:
+            logger.warning("OPENROUTER_MALFORMED_RESPONSE model=%s", model, exc_info=True)
             yield StreamEvent(
                 type="error",
                 content="OpenRouter returned an invalid stream.",
@@ -343,6 +364,12 @@ class OpenRouterGateway:
                 },
             )
         except Exception:
+            logger.error(
+                "OPENROUTER_PROVIDER_ERROR model=%s max_completion_tokens=%s",
+                model,
+                max_completion_tokens,
+                exc_info=True,
+            )
             yield StreamEvent(
                 type="error",
                 content="OpenRouter could not complete the current turn.",

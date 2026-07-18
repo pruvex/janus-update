@@ -4,12 +4,6 @@ import re
 from typing import Any, Dict, List, Optional
 
 from backend.services.orchestrator.schemas import ToolDefinition
-from backend.services.skill_router import (
-    SkillNotFoundError,
-    get_blocked_skills_for_query,
-    is_realtime_search_query,
-    skill_router,
-)
 from backend.services.tool_manager import tool_manager
 from backend.llm_providers.shared.constants import (
     _GOOGLE_MAPS_DIR_RE,
@@ -800,6 +794,13 @@ def _dedupe_tool_calls(tool_calls: List[Dict[str, Any]]) -> List[Dict[str, Any]]
 
 
 def _prevalidate_tool_calls(tool_calls: List[Dict[str, Any]], user_prompt: str = "") -> Dict[str, Any]:
+    from backend.services.skill_router import (
+        SkillNotFoundError,
+        get_blocked_skills_for_query,
+        is_realtime_search_query,
+        skill_router,
+    )
+
     valid_calls: List[Dict[str, Any]] = []
     immediate_results: Dict[int, Dict[str, Any]] = {}
     system_hints: List[str] = []

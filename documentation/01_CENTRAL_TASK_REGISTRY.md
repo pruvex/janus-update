@@ -4,6 +4,24 @@ This registry tracks feature tasks, test validations, and pipeline runs.
 
 ## Spec Closures
 
+### OPENROUTER-THREE-FAMILY-ADDON-2026-07-18.1 - Kimi K3, Grok 4.3, GPT-5.6 Luna certification + activation
+- **Status**: DONE - Final Audit PASS WITH FIXES on 2026-07-18; documentation-update activated three exact addon models into the runtime registry and release catalog alongside the prior four.
+- **TestSpec**: `documentation/TEST_SPEC/02_security_safety/20_openrouter_model_conformance_certification.md`
+- **Final Audit**: `documentation/tasks/TASK-OPENROUTER-THREE-FAMILY-ADDON-2026-07-18_FINAL_AUDIT.md` (PASS WITH FIXES).
+- **Audit Package**: `documentation/tasks/TASK-OPENROUTER-THREE-FAMILY-ADDON-2026-07-18_AUDIT_PACKAGE.md`.
+- **Live Evidence**: `documentation/test-results/TEST-RUN-2026-07-18-002_results.json` (`88/88 PASS`); `documentation/test-results/TASK-OPENROUTER-THREE-FAMILY-ADDON-2026-07-18_certification_evidence.md`.
+- **Activated Addon Models**: `moonshotai/kimi-k3`, `x-ai/grok-4.3`, `openai/gpt-5.6-luna` with exact `model_version` bindings.
+- **Production**: OpenRouter chat selectable with `VALID` key plus any of the seven certified models. Further GPT OR families remain later waves.
+
+### TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6 - Versioned conformance battery and initial four-family certification
+- **Status**: DONE - Final Audit PASS WITH FIXES on 2026-07-18; documentation-update activated four exact certified models into the runtime registry and release catalog.
+- **Spec**: `documentation/SPEC/Spec Done/OPENROUTER_JANUS_CHAT_PROVIDER_FEATURE_SPEC.md`
+- **Final Audit**: `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6_FINAL_AUDIT.md` (PASS WITH FIXES).
+- **Audit Package**: `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6_AUDIT_PACKAGE.md`.
+- **Live Evidence**: `documentation/test-results/TEST-RUN-2026-07-17-008_results.md` (`117/117 PASS`); `documentation/test-results/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6_certification_evidence.md`.
+- **Activated Models**: `anthropic/claude-sonnet-5`, `z-ai/glm-5.2`, `deepseek/deepseek-v4-pro`, `qwen/qwen3.7-plus` with exact `model_version` bindings (later expanded by the three-family addon activation).
+- **Production**: OpenRouter chat selectable only with `VALID` key plus at least one certified OpenRouter model.
+
 ### TASK-OPENROUTER-JANUS-CHAT-PROVIDER.5 - Authoritative OpenRouter telemetry in DeepDive
 
 - **Status**: DONE (task-scoped Final Audit PASS WITH FIXES; parent Feature Spec remains active).

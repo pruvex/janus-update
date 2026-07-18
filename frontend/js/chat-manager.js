@@ -386,8 +386,8 @@ document.addEventListener("DOMContentLoaded", () => {
  * @param {{ suppressAutoCreate?: boolean }} [options] — bei createNewChat() immer suppressAutoCreate: true setzen
  */
 export async function loadChats(clear = true, projectId = null, options = {}) {
-  console.log("loadChats: Function entered.");
   const suppressAutoCreate = options.suppressAutoCreate === true;
+  const deferMessageRestore = options.deferMessageRestore === true;
   const showArchived = document.getElementById("show-archived-chats")?.checked || false;
   
   // Build the URL with query parameters
@@ -395,17 +395,23 @@ export async function loadChats(clear = true, projectId = null, options = {}) {
   if (projectId) {
     url += `&project_id=${projectId}`; // Add project filter if provided
   }
-  
-  console.log("loadChats: Fetching chats from URL:", url);
+
+  const restoreChat = (chatId, loadOptions) => {
+    if (deferMessageRestore) {
+      void loadChat(chatId, loadOptions).catch((error) => {
+        console.warn("[loadChats] deferred chat restore failed:", error);
+      });
+      return Promise.resolve();
+    }
+    return loadChat(chatId, loadOptions);
+  };
 
   try {
     const response = await fetch(url);
-    console.log("loadChats: Response received, response.ok:", response.ok);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     let chats = await response.json();
-    console.log("loadChats: Chats received:", chats);
 
     if (!projectId) {
       chats = chats.filter((c) => !isProjectChat(c));
@@ -431,15 +437,15 @@ export async function loadChats(clear = true, projectId = null, options = {}) {
       if (idA != null || idB != null) {
         try {
           if (idA != null) {
-            await loadChat(idA, { context: "assistant", windowId: "A" });
+            await restoreChat(idA, { context: "assistant", windowId: "A" });
           } else {
             const lastAssistantChatId = getLastAssistantChatId();
             const existsInList = lastAssistantChatId && chats.some((c) => c.id === lastAssistantChatId);
             const pickA = existsInList ? lastAssistantChatId : chats[0].id;
-            await loadChat(pickA, { context: "assistant", windowId: "A" });
+            await restoreChat(pickA, { context: "assistant", windowId: "A" });
           }
           if (idB != null) {
-            await loadChat(idB, {
+            await restoreChat(idB, {
               context: "assistant",
               windowId: "B",
               restoreClosedPane: !bOpen,
@@ -462,11 +468,9 @@ export async function loadChats(clear = true, projectId = null, options = {}) {
           : chats[0].id;
 
       if (desiredChatId && desiredChatId !== idInA) {
-        console.log("loadChats: Restoring assistant chat:", desiredChatId);
-        loadChat(desiredChatId, { context: "assistant", windowId: "A" });
+        void restoreChat(desiredChatId, { context: "assistant", windowId: "A" });
       } else if (!idInA) {
-        console.log("loadChats: No chat in pane A, loading first assistant chat:", chats[0].id);
-        loadChat(chats[0].id, { context: "assistant", windowId: "A" });
+        void restoreChat(chats[0].id, { context: "assistant", windowId: "A" });
       }
       return;
     }
@@ -475,13 +479,11 @@ export async function loadChats(clear = true, projectId = null, options = {}) {
     const anyPane =
       getActiveChatIdForWindow("A") != null || getActiveChatIdForWindow("B") != null;
     if (chats.length > 0 && !anyPane) {
-      console.log("loadChats: No chat in any pane, loading first chat:", chats[0].id);
-      loadChat(chats[0].id, { context: "assistant", windowId: "A" });
+      void restoreChat(chats[0].id, { context: "assistant", windowId: "A" });
     } else if (chats.length === 0 && !suppressAutoCreate) {
       if (_autoCreateFromLoadChatsInFlight) {
-        console.log("loadChats: empty list but auto-create already running — skip.");
+        // empty list but auto-create already running — skip
       } else {
-        console.log("loadChats: No chats available, creating one (awaited).");
         _autoCreateFromLoadChatsInFlight = true;
         try {
           await createNewChat();
@@ -544,7 +546,6 @@ function createChatItemElement(chat) {
 }
 
 function renderChatList(chats) {
-  console.log("renderChatList: Function entered with chats:", chats);
   _sidebarChatsSnapshot = Array.isArray(chats) ? chats : [];
 
   const chatListDiv = document.getElementById("chat-list");
@@ -557,7 +558,6 @@ function renderChatList(chats) {
 
   const appendItems = (listEl, chatList) => {
     chatList.forEach((chat) => {
-      console.log("renderChatList: Rendering chat item for chat ID:", chat.id, "title:", chat.title);
       listEl.appendChild(createChatItemElement(chat));
     });
   };
@@ -738,7 +738,6 @@ async function handleDeleteChat(chatId) {
 }
 
 export async function createNewChat() {
-  console.log("createNewChat: Function entered.");
   try {
     const activeWindowId = getActiveWindowId();
     const activeWindow = getWindowState().windows[activeWindowId];
@@ -759,7 +758,6 @@ export async function createNewChat() {
       // Send an empty body, the backend will handle the title
       body: JSON.stringify({}),
     });
-    console.log("createNewChat: response.ok =", response.ok);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -816,7 +814,6 @@ export async function createNewChat() {
 }
 
 export async function loadChat(chatId) {
-  console.log("loadChat: Function entered with chatId:", chatId);
   let options = {};
   if (arguments.length > 1 && typeof arguments[1] === "object" && arguments[1] !== null) {
     options = arguments[1];
@@ -845,12 +842,10 @@ export async function loadChat(chatId) {
 
   try {
     const chatResponse = await fetch(`${API_BASE_URL}/api/chats/${chatId}`);
-    console.log("loadChat: Chat details response received, chatResponse.ok:", chatResponse.ok);
     if (!chatResponse.ok) {
       throw new Error(`HTTP error! status: ${chatResponse.status}`);
     }
     const chatDetails = await chatResponse.json();
-    console.log("loadChat: Chat details:", chatDetails);
 
     if (chatDetails && (chatDetails.project_id != null || chatDetails.projectId != null)) {
       const projectId = chatDetails.project_id ?? chatDetails.projectId;
@@ -879,12 +874,10 @@ export async function loadChat(chatId) {
     }
 
     const response = await fetch(`${API_BASE_URL}/api/chats/${chatId}/messages`);
-    console.log("loadChat: Messages response received, response.ok:", response.ok);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const messages = await response.json();
-    console.log("loadChat: Messages:", messages);
     let lastAssistantIndex = -1;
     messages.forEach((msg, idx) => {
       if (String(msg.sender || "").toLowerCase() === "model") {

@@ -59,6 +59,35 @@ async function installInternalApiKeyRoute(page, internalKey) {
 }
 
 
+async function installE2eAppShellRoutes(page, token) {
+  await page.route('**/api/auth/token', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ access_token: token, token_type: 'bearer' }),
+    });
+  });
+  await page.route('**/api/users/me', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        id: 1,
+        username: 'OpenRouter E2E',
+        dark_mode_enabled: false,
+      }),
+    });
+  });
+  await page.route('**/api/projects', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify([]),
+    });
+  });
+}
+
+
 async function acknowledgeBetaPrivacyNoticeIfVisible(page) {
   const modal = page.locator('#beta-privacy-modal');
   if (await modal.isVisible()) {
@@ -347,6 +376,7 @@ test.describe('OpenRouter credential settings (TASK-OPENROUTER-JANUS-CHAT-PROVID
 
     await page.goto('http://localhost:5173/');
     const token = createE2eJwt();
+    await installE2eAppShellRoutes(page, token);
     await page.evaluate(() => localStorage.clear());
     await page.evaluate((jwt) => localStorage.setItem('auth_token', jwt), token);
     await page.reload();
@@ -387,7 +417,7 @@ test.describe('OpenRouter credential settings (TASK-OPENROUTER-JANUS-CHAT-PROVID
     expect(bodyText).not.toContain(SENTINEL_B);
     expect(consoleMessages.join('\n')).not.toContain(SENTINEL_A);
     expect(consoleMessages.join('\n')).not.toContain(SENTINEL_B);
-    await expect(page.getByRole('button', { name: /Modelle für openrouter verwalten/i })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /Modelle für openrouter verwalten/i })).toHaveCount(1);
     await expect(page.locator('#codex-connection-card')).toBeVisible();
   });
 
@@ -409,7 +439,7 @@ test.describe('OpenRouter credential settings (TASK-OPENROUTER-JANUS-CHAT-PROVID
     expect(await page.locator('body').innerText()).not.toContain(SENTINEL_A);
     expect(consoleMessages.join('\n')).not.toContain(SENTINEL_A);
     await expect(page.locator('#codex-connection-card')).toBeVisible();
-    await expect(page.getByRole('button', { name: /Modelle für openrouter verwalten/i })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /Modelle für openrouter verwalten/i })).toHaveCount(1);
   });
 
   test('deletes only OpenRouter state and leaves the ChatGPT card in place', async ({ page }) => {
@@ -432,7 +462,7 @@ test.describe('OpenRouter credential settings (TASK-OPENROUTER-JANUS-CHAT-PROVID
 });
 
 test.describe('OpenRouter retained provider/model selection (TASK-OPENROUTER-JANUS-CHAT-PROVIDER.4)', () => {
-  test.describe.configure({ mode: 'serial', timeout: 90_000 });
+  test.describe.configure({ mode: 'serial', timeout: 150_000 });
 
   test('requires deliberate selection and retains disabled sidebar and window choices', async ({ page }) => {
     const state = {
@@ -455,6 +485,7 @@ test.describe('OpenRouter retained provider/model selection (TASK-OPENROUTER-JAN
     await installInternalApiKeyRoute(page, config.api_key);
     await installOpenRouterSelectionRoutes(page, state);
     const token = createE2eJwt();
+    await installE2eAppShellRoutes(page, token);
     await page.addInitScript(({ jwt }) => {
       localStorage.clear();
       localStorage.setItem('auth_token', jwt);
@@ -511,7 +542,10 @@ test.describe('OpenRouter retained provider/model selection (TASK-OPENROUTER-JAN
     await expect(page.getByRole('button', { name: 'Einstellungen' })).toBeVisible({
       timeout: 30_000,
     });
-    await expect(providerSelect).toHaveValue('openrouter');
+    // The settings button is present in the static shell before async app
+    // initialization finishes. Use the retained selection itself as the
+    // repeatable readiness state without weakening the product assertion.
+    await expect(providerSelect).toHaveValue('openrouter', { timeout: 30_000 });
     await expect(providerSelect.locator('option[value="openrouter"]')).toBeDisabled();
     await expect(modelSelect).toHaveValue(OPENROUTER_MODEL_A);
     await expect(modelSelect).toBeDisabled();
@@ -535,7 +569,7 @@ test.describe('OpenRouter retained provider/model selection (TASK-OPENROUTER-JAN
     await expect(page.getByRole('button', { name: 'Einstellungen' })).toBeVisible({
       timeout: 30_000,
     });
-    await expect(providerSelect).toHaveValue('openrouter');
+    await expect(providerSelect).toHaveValue('openrouter', { timeout: 30_000 });
     await expect(modelSelect).toHaveValue(OPENROUTER_MODEL_A);
     await expect(modelSelect.locator(`option[value="${OPENROUTER_MODEL_A}"]`)).toBeDisabled();
     await expect(modelSelect.locator(`option[value="${OPENROUTER_MODEL_B}"]`)).toBeEnabled();
@@ -564,8 +598,8 @@ test.describe('OpenRouter retained provider/model selection (TASK-OPENROUTER-JAN
     await expect(page.getByRole('button', { name: 'Einstellungen' })).toBeVisible({
       timeout: 30_000,
     });
-    await expect(providerSelect).toHaveValue('openai');
-    await expect(headerProvider).toHaveValue('openrouter');
+    await expect(providerSelect).toHaveValue('openai', { timeout: 30_000 });
+    await expect(headerProvider).toHaveValue('openrouter', { timeout: 30_000 });
     await expect(headerProvider.locator('option[value="openrouter"]')).toBeDisabled();
     await expect(headerModel).toHaveValue(OPENROUTER_MODEL_B);
     await expect(headerModel).toBeDisabled();

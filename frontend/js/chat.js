@@ -1921,11 +1921,8 @@ export function appendMessage(sender, data, appendOpts = {}) {
     }
 
   if (textContent) {
-    console.log("Raw LLM textContent:", textContent);
-    console.log("textContent before markdown render:", textContent); // NEU
     const textNode = document.createElement("p"); // Kann auch div oder span sein, um img aufzunehmen
     textNode.innerHTML = sanitizeChatHtml(renderChatMarkdown(textContent));
-    console.log("textNode.innerHTML after markdown render:", textNode.innerHTML); // NEU
     normalizeLinksAndImages(textNode);
     hydrateVideoLinks(textNode);
     if (
@@ -1973,7 +1970,6 @@ export function appendMessage(sender, data, appendOpts = {}) {
     textNode.querySelectorAll("img").forEach(img => {
         img.addEventListener("click", (event) => {
             event.stopPropagation();
-            console.log("Image clicked from markdown render, opening modal for URL:", img.src, "Target:", event.target);
             openImageModal(img.src);
         });
         img.style.cursor = "pointer"; // Visueller Hinweis, dass es klickbar ist

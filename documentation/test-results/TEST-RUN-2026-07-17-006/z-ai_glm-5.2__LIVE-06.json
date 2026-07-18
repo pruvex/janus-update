@@ -1,0 +1,65 @@
+{
+  "assertions": {
+    "boundary_tool_not_executed": true,
+    "completion_limit_enforced": true,
+    "credential_absent": true,
+    "exact_model_sent": true,
+    "input_limit_enforced": true,
+    "private_content_absent": true,
+    "productive_side_effect_absent": true,
+    "raw_payload_absent": true,
+    "requested_boundary_tool_only": true,
+    "response_identity_exact": true,
+    "transmission_budget_respected": true
+  },
+  "candidate_id": "z-ai/glm-5.2",
+  "case_ids": [
+    "TC-009"
+  ],
+  "ended_at": "2026-07-17T20:29:50Z",
+  "fallback_model": null,
+  "fallback_provider": null,
+  "model_version": "z-ai/glm-5.2-20260616",
+  "retry_count": 0,
+  "runner_sha256": "4E4C106801050A34B580D2A6CABB890CF986137E3F0342E94AAD61A6E7DCA071",
+  "scenario_id": "LIVE-06",
+  "schema_version": "janus.openrouter.live-scenario-evidence.v1",
+  "started_at": "2026-07-17T20:29:47Z",
+  "status": "PASS",
+  "telemetry": {
+    "cache_read_tokens": {
+      "present": true,
+      "value": 134
+    },
+    "cache_write_tokens": {
+      "present": true,
+      "value": 0
+    },
+    "completion_tokens": {
+      "present": true,
+      "value": 109
+    },
+    "openrouter_credit_cost": {
+      "present": true,
+      "value": 0.00037575882
+    },
+    "prompt_tokens": {
+      "present": true,
+      "value": 176
+    },
+    "reasoning_tokens": {
+      "present": true,
+      "value": 86
+    },
+    "total_tokens": {
+      "present": true,
+      "value": 285
+    },
+    "upstream_inference_cost": {
+      "present": true,
+      "value": 0.00037575882
+    }
+  },
+  "test_run_id": "TEST-RUN-2026-07-17-006",
+  "transmission_count": 1
+}

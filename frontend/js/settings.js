@@ -1,6 +1,7 @@
 import "../css/settings.css";
 import { API_BASE_URL } from "./config.js";
 import { initTTS } from "./tts.js";
+import { sortModelsForProvider, groupModelsByFamily } from "./model-sort.js";
 
 const appState = {
   // Minimal appState for settings
@@ -445,43 +446,128 @@ function setActiveSettingsSection(targetId) {
   }
 }
 
-async function loadApiKeys() {
-  apiKeyList.innerHTML = "";
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/keys`);
-    if (!response.ok) throw new Error("API key status request failed");
-    const data = await response.json();
-    for (const provider in (data.api_keys || {})) {
-      const listItem = document.createElement("li");
-      if (provider === "openrouter") {
-        const publicState = data.api_keys[provider] || {};
-        const state = ["VALID", "INVALID", "UNVERIFIED"].includes(publicState.state)
-          ? publicState.state
-          : "UNVERIFIED";
-        listItem.id = "openrouter-key-status";
-        listItem.className = "openrouter-key-row";
+let refreshModelManagementButtonsInFlight = null;
 
-        const status = document.createElement("span");
-        status.className = `openrouter-key-state openrouter-key-state-${state.toLowerCase()}`;
-        status.textContent = `OpenRouter: ${publicState.present ? "gespeichert" : "nicht gespeichert"} · ${state}`;
-        listItem.appendChild(status);
-
-        if (publicState.present) {
-          const deleteButton = document.createElement("button");
-          deleteButton.type = "button";
-          deleteButton.className = "openrouter-key-delete";
-          deleteButton.dataset.openrouterKeyAction = "delete";
-          deleteButton.textContent = "OpenRouter-Key löschen";
-          listItem.appendChild(deleteButton);
-        }
-      } else {
-        listItem.textContent = `Provider: ${provider}, Key: ****`;
-      }
-      apiKeyList.appendChild(listItem);
-    }
-  } catch (error) {
-    console.error("Error loading API keys:", error);
+async function refreshModelManagementButtons(apiKeys = null) {
+  if (!modelManagementButtons) return;
+  // Single-flight: concurrent loadApiKeys/renderSettingsView must not append twice.
+  if (refreshModelManagementButtonsInFlight) {
+    return refreshModelManagementButtonsInFlight;
   }
+
+  refreshModelManagementButtonsInFlight = (async () => {
+    modelManagementButtons.innerHTML = "";
+    try {
+      let keys = apiKeys;
+      if (!keys) {
+        const response = await fetch(`${API_BASE_URL}/api/keys`);
+        if (!response.ok) throw new Error("API key status request failed");
+        const data = await response.json();
+        keys = data.api_keys || {};
+      }
+
+      const preferredOrder = ["openai", "gemini", "openrouter"];
+      const providers = [];
+      const seen = new Set();
+
+      for (const provider of Object.keys(keys || {})) {
+        const name = String(provider || "").trim().toLowerCase();
+        if (!name || seen.has(name)) continue;
+        if (name === "openrouter") {
+          const keyInfo = keys[provider];
+          const present =
+            keyInfo && typeof keyInfo === "object"
+              ? keyInfo.present === true
+              : Boolean(keyInfo);
+          if (!present) continue;
+        }
+        seen.add(name);
+        providers.push(name);
+      }
+
+      providers.sort((a, b) => {
+        const ra = preferredOrder.indexOf(a);
+        const rb = preferredOrder.indexOf(b);
+        const ia = ra === -1 ? preferredOrder.length : ra;
+        const ib = rb === -1 ? preferredOrder.length : rb;
+        if (ia !== ib) return ia - ib;
+        return a.localeCompare(b);
+      });
+
+      for (const provider of providers) {
+        const manageModelsBtn = document.createElement("button");
+        manageModelsBtn.type = "button";
+        manageModelsBtn.textContent = `Modelle für ${provider} verwalten`;
+        manageModelsBtn.dataset.provider = provider;
+        manageModelsBtn.classList.add("model-manage-btn");
+        modelManagementButtons.appendChild(manageModelsBtn);
+      }
+    } catch (error) {
+      console.error("Error loading providers for model management buttons:", error);
+    } finally {
+      refreshModelManagementButtonsInFlight = null;
+    }
+  })();
+
+  return refreshModelManagementButtonsInFlight;
+}
+
+let loadApiKeysInFlight = null;
+
+async function loadApiKeys() {
+  if (!apiKeyList) return;
+  if (loadApiKeysInFlight) return loadApiKeysInFlight;
+
+  loadApiKeysInFlight = (async () => {
+    apiKeyList.innerHTML = "";
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/keys`);
+      if (!response.ok) throw new Error("API key status request failed");
+      const data = await response.json();
+      const keys = data.api_keys || {};
+      const seenProviders = new Set();
+
+      for (const provider of Object.keys(keys)) {
+        const name = String(provider || "").trim().toLowerCase();
+        if (!name || seenProviders.has(name)) continue;
+        seenProviders.add(name);
+
+        const listItem = document.createElement("li");
+        if (name === "openrouter") {
+          const publicState = keys[provider] || {};
+          const state = ["VALID", "INVALID", "UNVERIFIED"].includes(publicState.state)
+            ? publicState.state
+            : "UNVERIFIED";
+          listItem.id = "openrouter-key-status";
+          listItem.className = "openrouter-key-row";
+
+          const status = document.createElement("span");
+          status.className = `openrouter-key-state openrouter-key-state-${state.toLowerCase()}`;
+          status.textContent = `OpenRouter: ${publicState.present ? "gespeichert" : "nicht gespeichert"} · ${state}`;
+          listItem.appendChild(status);
+
+          if (publicState.present) {
+            const deleteButton = document.createElement("button");
+            deleteButton.type = "button";
+            deleteButton.className = "openrouter-key-delete";
+            deleteButton.dataset.openrouterKeyAction = "delete";
+            deleteButton.textContent = "OpenRouter-Key löschen";
+            listItem.appendChild(deleteButton);
+          }
+        } else {
+          listItem.textContent = `Provider: ${name}, Key: ****`;
+        }
+        apiKeyList.appendChild(listItem);
+      }
+      await refreshModelManagementButtons(keys);
+    } catch (error) {
+      console.error("Error loading API keys:", error);
+    } finally {
+      loadApiKeysInFlight = null;
+    }
+  })();
+
+  return loadApiKeysInFlight;
 }
 
 function showOpenRouterKeyFeedback(message, isError = false) {
@@ -798,31 +884,8 @@ async function renderSettingsView(targetSection = "api-key-section") {
     setActiveSettingsSection(targetSection);
     await loadApiKeys();
     await loadCodexConnectionCard();
+    // loadApiKeys already rebuilds model-management buttons once (single-flight).
 
-    // Sicherstellen, dass Buttons komplett neu aufgebaut werden
-    modelManagementButtons.innerHTML = "";
-    // Kurzer Delay um DOM zu entschlacken
-    await new Promise(resolve => setTimeout(resolve, 0));
-    modelManagementButtons.innerHTML = "";
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/keys`);
-      const data = await response.json();
-      // Tracken welche Provider bereits hinzugefügt wurden (Schutz gegen Duplikate)
-      const addedProviders = new Set();
-      for (const provider in data.api_keys) {
-        if (provider === "openrouter") continue;
-        if (addedProviders.has(provider)) continue;
-        addedProviders.add(provider);
-        const manageModelsBtn = document.createElement("button");
-        manageModelsBtn.textContent = `Modelle für ${provider} verwalten`;
-        manageModelsBtn.dataset.provider = provider;
-        manageModelsBtn.classList.add('model-manage-btn');
-        modelManagementButtons.appendChild(manageModelsBtn);
-      }
-    } catch (error) {
-      console.error("Error loading providers for model management buttons:", error);
-    }
     await updateImageGenStatus();
     if (targetSection === "assistenz-section") {
       await loadSuggestionModeSettings();
@@ -835,16 +898,22 @@ async function renderSettingsView(targetSection = "api-key-section") {
   }
 }
 
+let renderModelManagementViewInFlight = null;
+
 async function renderModelManagementView(provider) {
+  if (renderModelManagementViewInFlight) {
+    return renderModelManagementViewInFlight;
+  }
+
+  renderModelManagementViewInFlight = (async () => {
   setActiveSettingsSection("model-management-section");
   document.querySelector("#model-management-section h3").textContent =
     `Modelle für ${provider} verwalten`;
 
-  // Liste KOMPLETT leeren - zweimal für Sicherheit
+  // Liste einmal leeren — kein setTimeout-Yield (Race → doppelte Einträge).
   modelList.innerHTML = "";
-  // Kleiner Delay um DOM zu entschlacken
-  await new Promise(resolve => setTimeout(resolve, 0));
-  modelList.innerHTML = "";
+  modelList.classList.toggle("model-list--families", provider === "openrouter");
+  modelList.classList.remove("model-list--multi-col");
 
   // Sicherstellen, dass wir mit einer frischen ID-Liste arbeiten (Schutz gegen Duplikate)
   const renderedModelIds = new Set();
@@ -856,6 +925,9 @@ async function renderModelManagementView(provider) {
     selectedModels = data.selected_models;
   } catch (error) {
     console.error("Error fetching selected models:", error);
+  }
+  if (!Array.isArray(selectedModels)) {
+    selectedModels = [];
   }
 
   const excludedModels = [
@@ -893,8 +965,12 @@ async function renderModelManagementView(provider) {
 
   const modelsForProvider = appState.model_catalog[provider];
   if (modelsForProvider && Array.isArray(modelsForProvider)) {
-    // Erstelle Map für schnellen Zugriff
-    const modelMap = new Map(modelsForProvider.map(m => [m.id, m]));
+    // Map deduped by id (last wins)
+    const modelMap = new Map();
+    for (const model of modelsForProvider) {
+      const id = String(model?.id || "").trim();
+      if (id) modelMap.set(id, model);
+    }
 
     // Definiere Reihenfolge je nach Provider
     let modelOrder;
@@ -906,9 +982,57 @@ async function renderModelManagementView(provider) {
         "gemini-3-flash-preview",
         "gemini-3.1-pro-preview"
       ];
+    } else if (provider === "openrouter") {
+      // First-run parity with chat: empty saved selection means all certified models.
+      if (selectedModels.length === 0) {
+        selectedModels = [...modelMap.keys()];
+      }
+      const familyGroups = groupModelsByFamily([...modelMap.values()]);
+      for (const group of familyGroups) {
+        const section = document.createElement("li");
+        section.className = "model-family-section";
+        section.dataset.family = group.key;
+
+        const header = document.createElement("div");
+        header.className = "model-family-header";
+        header.textContent = group.label;
+        section.appendChild(header);
+
+        const grid = document.createElement("div");
+        grid.className = "model-family-grid";
+
+        for (const model of group.models) {
+          if (excludedModels.includes(model.id)) continue;
+          if (renderedModelIds.has(model.id)) continue;
+          renderedModelIds.add(model.id);
+
+          const isChecked = selectedModels.includes(model.id) ? "checked" : "";
+          const costInfo = formatModelCost(model);
+          const description = model.desc || "";
+
+          const card = document.createElement("div");
+          card.className = "model-list-item";
+          if (description) card.title = description;
+          card.innerHTML = `
+            <div class="model-list-item-row">
+              <input type="checkbox" id="${model.id}" value="${model.id}" ${isChecked} class="model-list-checkbox">
+              <div class="model-list-item-body">
+                <label for="${model.id}" class="model-list-item-name">${model.name}</label>
+                <div class="model-list-item-cost">${costInfo}</div>
+                <div class="model-list-item-desc">${description}</div>
+              </div>
+            </div>
+          `;
+          grid.appendChild(card);
+        }
+
+        section.appendChild(grid);
+        modelList.appendChild(section);
+      }
+      modelOrder = [];
     } else {
-      // Für andere Provider: Alle verfügbaren Modelle verwenden
-      modelOrder = modelsForProvider.map(m => m.id);
+      // Andere Provider: gleiche Sortierregel (Familie + Preis), soweit Kosten vorhanden.
+      modelOrder = sortModelsForProvider(provider, [...modelMap.values()]).map((m) => m.id);
     }
 
     // Gehe in definierter Reihenfolge durch die Modelle
@@ -928,14 +1052,14 @@ async function renderModelManagementView(provider) {
       const description = model.desc || "";
 
       const listItem = document.createElement("li");
-      listItem.style.cssText = "margin-bottom: 12px; padding: 8px; border-bottom: 1px solid #333;";
+      listItem.className = "model-list-item";
       listItem.innerHTML = `
-        <div style="display: flex; align-items: flex-start; gap: 10px;">
-          <input type="checkbox" id="${model.id}" value="${model.id}" ${isChecked} style="margin-top: 4px;">
-          <div style="flex: 1;">
-            <label for="${model.id}" style="font-weight: bold; font-size: 14px; cursor: pointer;">${model.name}</label>
-            <div style="font-size: 11px; color: #888; margin-top: 2px;">${costInfo}</div>
-            <div style="font-size: 12px; color: #aaa; margin-top: 4px; line-height: 1.3;">${description}</div>
+        <div class="model-list-item-row">
+          <input type="checkbox" id="${model.id}" value="${model.id}" ${isChecked} class="model-list-checkbox">
+          <div class="model-list-item-body">
+            <label for="${model.id}" class="model-list-item-name">${model.name}</label>
+            <div class="model-list-item-cost">${costInfo}</div>
+            <div class="model-list-item-desc">${description}</div>
           </div>
         </div>
       `;
@@ -947,6 +1071,11 @@ async function renderModelManagementView(provider) {
   }
 
   modelSelectionForm.dataset.provider = provider;
+  })().finally(() => {
+    renderModelManagementViewInFlight = null;
+  });
+
+  return renderModelManagementViewInFlight;
 }
 
 async function renderWorkspacesView() {
@@ -1842,8 +1971,14 @@ document.addEventListener("DOMContentLoaded", () => {
     e.preventDefault();
     const provider = modelSelectionForm.dataset.provider;
     const checkboxes = modelList.querySelectorAll('input[type="checkbox"]:checked');
-    const newSelection = Array.from(checkboxes).map((cb) => cb.value);
-    
+    let newSelection = Array.from(checkboxes).map((cb) => cb.value);
+    if (provider === "openrouter") {
+      const certifiedIds = new Set(
+        (appState.model_catalog.openrouter || []).map((model) => String(model.id || "").trim()).filter(Boolean),
+      );
+      newSelection = newSelection.filter((modelId) => certifiedIds.has(String(modelId || "").trim()));
+    }
+
     await fetch(`${API_BASE_URL}/api/models/selection`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -1853,7 +1988,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // Send update signal to the main app
     console.log("Modelle gespeichert, sende Update-Signal...");
     document.dispatchEvent(new CustomEvent("models-updated"));
-    
+    if (provider === "openrouter") {
+      window.dispatchEvent(new CustomEvent("openrouter-eligibility-changed"));
+    }
+
     renderSettingsView();
   });
 

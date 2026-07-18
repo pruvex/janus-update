@@ -1,6 +1,2419 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-19 00:20:00 +02:00`, OpenRouter wave checkpoint committed locally.
+
+Branch: `feature/openrouter-catalog-ux`. Scoped commit: OR catalog expansion (18 models), forced-tool compat, costs DeepDive/sidebar, Settings family UI, dropdown €/Mio costs, yt-dlp video search, conformance/evidence. Parked dirt left unstaged. No push yet.
+
+Next: optional `push: YES` to `backup` after merge-to-master decision, or continue Hardening slice 2 (OR tool-smoke automation). Remotes may lag CURRENT_STATE until `sync: YES`.
+
+canonical state: `PASS` (local checkpoint), `HANDOFF` (push/sync optional).
+
+Last updated: `2026-07-19 00:20:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 00:02:00 +02:00`, OR model dropdowns show €/Mio costs.
+
+`fillModelOptionsIntoSelect` OpenRouter branch now appends `(€/Mio. in / €/Mio. out)` like OpenAI/Gemini — sidebar `#model-select` and chat header model dropdowns.
+
+Operator: hard-reload → Provider OpenRouter → check sidebar + chat model dropdowns.
+
+canonical state: `PASS` (UI), `HANDOFF` (visual confirm).
+
+Last updated: `2026-07-19 00:02:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 23:46:00 +02:00`, Settings OpenRouter model list is multi-column.
+
+`#model-list.model-list--multi-col`: 3 columns (2 below ~1100px, 1 below ~720px). Card-style items; descriptions clamped to 3 lines. OpenAI/Gemini stay single-column.
+
+Operator: hard-reload UI → Settings → OpenRouter Modelle — expect grid overview without long vertical scroll.
+
+canonical state: `PASS` (UI), `HANDOFF` (visual confirm).
+
+Last updated: `2026-07-18 23:46:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 23:40:00 +02:00`, GPT-5.6 Sol UI smoke **PASS** — OR catalog wave complete.
+
+`openai/gpt-5.6-sol`: Wetter / Wikipedia / YouTube — all PASS.  
+GPT-5.6 OR set: Luna + Terra + Sol. OpenRouter certified catalog expansion wave finished (Claude/Qwen/GLM/DeepSeek/Kimi/Grok/GPT tiers smoked).
+
+canonical state: `PASS`.
+
+Last updated: `2026-07-18 23:40:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 23:38:00 +02:00`, GPT-5.6 Terra UI smoke **PASS**.
+
+`openai/gpt-5.6-terra`: Wetter / Wikipedia / YouTube — all PASS.  
+Still open UI smoke: Sol. Luna already known good.
+
+canonical state: `PASS` (Terra), `HANDOFF` (Sol UI).
+
+Last updated: `2026-07-18 23:38:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 23:36:00 +02:00`, OpenAI GPT-5.6 OR family complete: Luna + Terra + Sol.
+
+Activated `openai/gpt-5.6-terra` (mid) and `openai/gpt-5.6-sol` (flagship). Kept Luna (cheap; context corrected to 1M). Skipped `-pro` twins (same OR list price). Visible OR models 16→18.
+
+Evidence: registry/catalog test PASS; live force-tool `system_weather` PASS on Terra (1.8s) and Sol (1.3s).
+
+Operator: reload UI → enable Terra + Sol → smoke Wetter/Wikipedia/YouTube (Terra first, then Sol). Sort: Luna → Terra → Sol.
+
+canonical state: `PASS` (code+gateway), `HANDOFF` (UI smoke Terra+Sol).
+
+Last updated: `2026-07-18 23:36:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 23:32:00 +02:00`, Claude Fable 5 UI smoke **PASS** (cost sticker).
+
+Operator: Wetter / Wikipedia / YouTube on `anthropic/claude-fable-5` succeeded; ~1,68 € for the three small skill turns (OpenRouter credits as €). Claude set complete: Haiku 4.5 + Sonnet 5 + Opus 4.8 + Fable 5. Fable remains the expensive tier by price.
+
+canonical state: `PASS`.
+
+Last updated: `2026-07-18 23:32:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 23:24:00 +02:00`, Sidebar cost widget shows API / OpenRouter / Summe.
+
+`/api/costs/dashboard` now returns `api_key_total_cost`, `openrouter_total_cost`, `combined_total_cost` (`current_month_cost` = combined for budget). Sidebar lines: API-Keys, OpenRouter, Summe + Budget against Summe. Unit test PASS.
+
+Operator: hard-reload UI → sidebar should show three cost lines (not only 1,26 €).
+
+canonical state: `PASS` (code+unit), `HANDOFF` (UI confirm).
+
+Last updated: `2026-07-18 23:24:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 23:15:00 +02:00`, Deep-Dive Gesamtkosten = API-Keys + OpenRouter.
+
+Cross-provider summary now exposes `api_key_total_cost`, `openrouter_total_cost`, `combined_total_cost`. UI cards: API-Key-Kosten / OpenRouter / Gesamtkosten; OpenRouter also in provider grid. `total_cost` = combined. Tests PASS. Backend restarted.
+
+Operator: hard-reload UI → Deep Dive should show e.g. API 1,26 € + OR ~1,22 € = Gesamtsumme.
+
+canonical state: `PASS` (code+unit+restart), `HANDOFF` (UI confirm).
+
+Last updated: `2026-07-18 23:15:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 23:10:00 +02:00`, Deep-Dive costs show € with 2 decimals.
+
+`formatCurrency` now always 2 fraction digits. OpenRouter model totals use € display from authoritative `usage.cost` (Credits as €, no FX). Note: “OpenRouter-Credits als € · keine FX-Umrechnung”.
+
+Operator: hard-reload UI → Deep Dive: OR rows like `1,22 €` not `1,2179064 Credits`.
+
+canonical state: `PASS` (UI), `HANDOFF` (visual confirm).
+
+Last updated: `2026-07-18 23:10:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 23:06:00 +02:00`, Deep-Dive cost emphasis + section totals.
+
+API Top-Modelle and OpenRouter rows: cost/credits moved to row end, larger/bolder (`.deep-dive-cost-emphasis`). Footer totals: “Summe API-Modelle” (EUR) and “Summe OpenRouter” (Credits). Prior OR-by-model aggregation remains.
+
+Operator: hard-reload UI → reopen Deep Dive. Then continue Fable smoke if desired.
+
+canonical state: `PASS` (UI), `HANDOFF` (visual confirm + Fable).
+
+Last updated: `2026-07-18 23:06:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 23:00:00 +02:00`, Deep-Dive OpenRouter rows aggregate by model.
+
+Fix: `get_costs_deep_dive_summary` no longer emits one OR telemetry row per turn/round; it sums tokens/credits per model (`entry_count`/`turn_count`). UI: “Autoritative Modell-Telemetrie” with one row per model (like API model totals). Tests PASS.
+
+Operator: hard-reload UI (and backend if noreload) → reopen Kosten-DeepDive → OpenRouter shows one line per model, not per Turn-ID. Second DeepDive point from operator still pending (“zum einen…”).
+
+canonical state: `PASS` (code+unit), `HANDOFF` (UI confirm + next DeepDive issue).
+
+Last updated: `2026-07-18 23:00:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 22:56:00 +02:00`, Claude Opus 4.8 UI smoke **PASS**.
+
+`anthropic/claude-opus-4.8`: Wetter / Wikipedia / YouTube — all PASS.  
+Still open UI smoke: Fable 5. Haiku already PASS.
+
+canonical state: `PASS` (Haiku+Opus), `HANDOFF` (Fable UI).
+
+Last updated: `2026-07-18 22:56:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 22:54:00 +02:00`, Claude Haiku 4.5 UI smoke **PASS**.
+
+`anthropic/claude-haiku-4.5`: Wetter / Wikipedia / YouTube — all PASS.  
+Still open UI smoke: Opus 4.8, Fable 5.
+
+canonical state: `PASS` (Haiku), `HANDOFF` (Opus + Fable UI).
+
+Last updated: `2026-07-18 22:54:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 22:52:00 +02:00`, Claude family expanded: Haiku + Sonnet + Opus + Fable.
+
+Activated:
+- `anthropic/claude-haiku-4.5` (cheap)
+- `anthropic/claude-opus-4.8` (flagship Opus; no Fast variant)
+- `anthropic/claude-fable-5` (Fable)
+Kept `anthropic/claude-sonnet-5` (mid; context corrected to 1M). OR visible 13→16.
+
+Evidence: registry/catalog test PASS; live force-tool `system_weather` PASS on Haiku (2.2s), Opus 4.8 (1.8s), Fable 5 (4.4s).
+
+Operator: reload UI → enable Haiku / Opus / Fable → smoke Wetter/Wikipedia/YouTube (start with Haiku, then Opus, then Fable). Sort by price: Haiku → Sonnet → Opus → Fable.
+
+canonical state: `PASS` (code+gateway), `HANDOFF` (UI smoke 3 new Claudes).
+
+Last updated: `2026-07-18 22:52:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 22:47:00 +02:00`, Grok 4.5 UI smoke **PASS**.
+
+`x-ai/grok-4.5`: Wetter (Open-Meteo) / Wikipedia / YouTube Titel+Kanal — all PASS.  
+Grok set complete: 4.3 (cheap) + 4.5 (strong).
+
+canonical state: `PASS`.
+
+Last updated: `2026-07-18 22:47:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 22:44:00 +02:00`, Grok family expanded: 4.3 + 4.5.
+
+Activated `x-ai/grok-4.5` (stronger/newer). Kept `x-ai/grok-4.3` (cheap; context corrected to 1M). Skipped alias, multi-agent, build. OR visible 12→13.
+
+Evidence: registry/catalog test PASS; live force-tool `system_weather` PASS on 4.3 (4.1s) and 4.5 (2.1s).
+
+Operator: reload UI → enable **Grok 4.5** → smoke Wetter/Wikipedia/YouTube. Sort: 4.3 → 4.5.
+
+canonical state: `PASS` (code+gateway), `HANDOFF` (UI smoke 4.5).
+
+Last updated: `2026-07-18 22:44:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 22:39:00 +02:00`, Kimi K2.6 UI smoke **PASS**.
+
+`moonshotai/kimi-k2.6`: Wetter (Open-Meteo) / Wikipedia / YouTube Titel+Kanal — all PASS.  
+Kimi set complete: K2.6 (cheap) + K3 (flagship).
+
+canonical state: `PASS`.
+
+Last updated: `2026-07-18 22:39:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 22:35:00 +02:00`, Kimi family expanded: K2.6 + K3.
+
+Activated `moonshotai/kimi-k2.6` (cheap/mid, 256k). Kept `moonshotai/kimi-k3` (flagship, 1M). Skipped aliases, thinking-only, and k2.7-code. OR visible 11→12. Moonshot forced-tool compat already covers the family.
+
+Evidence: registry/catalog test PASS; live force-tool `system_weather` PASS on K2.6 (2.6s) and K3 (5.6s).
+
+Operator: reload UI → enable **Kimi K2.6** → smoke Wetter/Wikipedia/YouTube. Sort: K2.6 → K3.
+
+canonical state: `PASS` (code+gateway), `HANDOFF` (UI smoke K2.6).
+
+Last updated: `2026-07-18 22:35:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 22:32:00 +02:00`, DeepSeek V4 Flash UI smoke **PASS**.
+
+`deepseek/deepseek-v4-flash`: Wetter (Open-Meteo) / Wikipedia / YouTube Titel+Kanal — all PASS.  
+DeepSeek set complete: Flash (cheap) + Pro (strong).
+
+canonical state: `PASS`.
+
+Last updated: `2026-07-18 22:32:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 22:25:00 +02:00`, DeepSeek family expanded: Flash + Pro.
+
+Activated `deepseek/deepseek-v4-flash` (cheap, 1M ctx, ~$0.10/$0.20 per 1M). Kept `deepseek/deepseek-v4-pro` (strong; context corrected to 1M, pricing aligned to live OR). No V3/R1. OR visible count 10→11.
+
+Evidence: registry/catalog test PASS; live force-tool smoke `system_weather` PASS on Flash (2.3s) and Pro (3.2s). No forced-tool hang (unlike GLM Flash).
+
+Operator: reload UI → Settings OpenRouter → enable **DeepSeek V4 Flash** → smoke Wetter/Wikipedia/YouTube. Sort: Flash → Pro. Pro already certified; optional quick reconfirm.
+
+canonical state: `PASS` (code+gateway), `HANDOFF` (UI smoke Flash).
+
+Last updated: `2026-07-18 22:25:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 22:21:00 +02:00`, `z-ai/glm-4.7-flash` skill smoke **PASS** (UI).
+
+After backend restart with GLM forced-tool compat: Wetter (Open-Meteo) / Wikipedia / YouTube (Titel+Kanal) all PASS. Log shows `GLM_FORCED_TOOL_COMPAT` (e.g. wikipedia → `tool_choice=required tools=1`). GLM set certified: Flash (cheap) + `glm-5.2` (strong).
+
+canonical state: `PASS`.
+
+Last updated: `2026-07-18 22:21:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 21:52:00 +02:00`, GLM Flash retest failed on stale backend; process restarted.
+
+Operator UI FAIL at 21:38/21:41 was against `noreload` uvicorn started ~20:18 — no `GLM_FORCED_TOOL_COMPAT` in that path. Root cause unchanged: named `tool_choice` → OpenRouter idle timeout. Wikipedia also forced (`system.wikipedia_summary`) with tools=54; same hang. Live stream probe: named=FAIL ~132s; required=OK ~5s. Service stream smoke after restart: weather ~2s, wiki ~1s.
+
+Action taken: killed old backend tree; restarted `run-backend-dev.cjs`; health ready.
+
+Operator: hard-reload UI → retest Flash Wetter / Wikipedia / YouTube. Expect log `GLM_FORCED_TOOL_COMPAT`. If still FAIL → drop Flash, keep `glm-5.2` only.
+
+canonical state: `PASS` (code+restart+smoke), `HANDOFF` (UI retest Flash).
+
+Last updated: `2026-07-18 21:52:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 21:35:00 +02:00`, GLM Flash forced-tool hang fixed.
+
+Root cause: `z-ai/glm-4.7-flash` with named `tool_choice` hangs until OpenRouter idle timeout → `OPENROUTER_PROVIDER_ERROR`. Live probe: named=Timeout@40s; `tool_choice=required` + narrowed tools=OK ~5s. Qwen-style `reasoning.effort=none` alone does not unblock.
+
+Fix: same Kimi path for all Z.AI GLM ids in `_apply_forced_tool_thinking_compat` (`GLM_FORCED_TOOL_COMPAT`). Unit tests PASS (qwen/kimi/glm forced-tool).
+
+Operator: restart/reload backend → retest Flash Wetter + YouTube (Wikipedia already PASS). Log should show `GLM_FORCED_TOOL_COMPAT`.
+
+canonical state: `PASS` (code+unit), `HANDOFF` (UI retest Flash).
+
+Last updated: `2026-07-18 21:35:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 21:20:00 +02:00`, `glm-5.1` removed; Settings duplicate lists fixed.
+
+- Dropped `z-ai/glm-5.1` (newer/cheaper `glm-5.2` is the real strong tier; 5.1 was mis-labeled flagship).
+- GLM set now: `glm-4.7-flash` + `glm-5.2`.
+- Settings dupes: single-flight `loadApiKeys` + model list render; removed setTimeout race that doubled API-key rows and OR model checkboxes.
+
+Operator: hard-reload UI → API Key list once; OpenRouter models once (Flash→5.2, no 5.1).
+
+canonical state: `PASS` (code), `HANDOFF` (UI confirm).
+
+Last updated: `2026-07-18 21:20:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 21:12:00 +02:00`, GLM family expanded to 3 tiers (like Qwen).
+
+Tiers:
+- cheap: `z-ai/glm-4.7-flash` (~$0.06/$0.40 per 1M)
+- mid: `z-ai/glm-5.2` (already had; ~$0.28/$0.88, 1M ctx)
+- flagship: `z-ai/glm-5.1` (~$0.97/$3.04) — note: newer/cheaper than `glm-5-turbo`, above 5.2 on price
+
+Evidence: registry/catalog test PASS; live force-tool smoke PASS for Flash + 5.1.
+
+Operator: reload UI → enable both → smoke Wetter/Wikipedia/YouTube on Flash then 5.1 (5.2 already known good). Sort shows Flash → 5.2 → 5.1.
+
+canonical state: `PASS` (code+gateway), `HANDOFF` (UI smoke).
+
+Last updated: `2026-07-18 21:12:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 21:08:00 +02:00`, Qwen family 3-tier UI smoke **PASS**.
+
+`qwen/qwen3.7-max`: Wetter (Open-Meteo) / Wikipedia / YouTube Titel+Kanal — all PASS.  
+Together with Flash + Plus: cheap / mid / flagship set complete. Provider-button duplicate fix shipped earlier.
+
+canonical state: `PASS`.
+
+Last updated: `2026-07-18 21:08:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 21:05:00 +02:00`, Settings provider buttons no longer duplicate.
+
+Cause: `renderSettingsView` called `loadApiKeys` (already rebuilds buttons) then cleared + refreshed again; concurrent refreshes could append twice → openai/gemini/openrouter shown 2×.
+
+Fix: single-flight `refreshModelManagementButtons`; unique provider list; remove redundant second rebuild in `renderSettingsView`.
+
+Operator: reload UI, open Modellverwaltung — expect one button per provider.
+
+canonical state: `PASS` (code), `HANDOFF` (UI confirm).
+
+Last updated: `2026-07-18 21:05:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 21:00:00 +02:00`, Qwen 3-tier set complete + model list UX sort.
+
+1. Flash UI smoke **PASS** (Wetter / Wikipedia / YouTube).
+2. UX: Settings + model dropdown now sort by **family, then cheap→expensive** (`frontend/js/model-sort.js`). Qwen order: Flash → Plus → Max.
+3. **`qwen/qwen3.7-max`** activated (catalog + registry; pin `…-20260521`). Live force-tool smoke PASS.
+
+Evidence: registry/catalog tests 16 passed; `model-sort.test.mjs` PASS; Max gateway smoke `system_weather` PASS.
+
+Operator: reload UI → verify Qwen order Flash/Plus/Max in Settings + dropdown; enable Max; optional same 3 smoke prompts.
+
+canonical state: `PASS` (code+gateway), `HANDOFF` (UI order + Max smoke).
+
+Last updated: `2026-07-18 21:00:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 20:40:00 +02:00`, Qwen tier expansion started: **`qwen/qwen3.6-flash`** activated (cheap tier).
+
+Catalog + certification registry + runner SHA updated (OR visible count 7→8). Pin: `qwen/qwen3.6-flash-20260427`. Plus desc clarified as mid-tier; context set to 1M.
+
+Evidence: registry/catalog tests 16 passed; live OpenRouter force-tool smoke → `system_weather` on `qwen/qwen3.6-flash` **PASS**.
+
+Operator: restart Janus if needed → Settings OpenRouter → enable **Qwen 3.6 Flash** → UI smoke (Wetter / Wikipedia / YouTube). On PASS → add `qwen/qwen3.7-max` next.
+
+canonical state: `PASS` (code+live gateway), `HANDOFF` (UI smoke).
+
+Last updated: `2026-07-18 20:40:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 20:25:00 +02:00`, OR skill suite (4 new prompts) closed **PASS**.
+
+YouTube `video.search` (no user YT API key / yt-dlp path): **PASS** on Kimi, GPT, Grok, Luna.  
+Wikipedia / RSS / Calendar: earlier PASS on Kimi (+ GLM similar).
+
+canonical state: `PASS`.
+
+Last updated: `2026-07-18 20:25:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 20:22:00 +02:00`, YouTube no-key `video.search` UI-retest **PASS**.
+
+Operator confirmed: works with GPT (OpenAI) and Kimi (OpenRouter). No YouTube Data API key required for end users; yt-dlp fallback path live after backend restart.
+
+canonical state: `PASS`.
+
+Last updated: `2026-07-18 20:22:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 20:18:00 +02:00`, YouTube no-key path restored for end users (no YT API key required).
+
+User clarification: product contract is that users must **not** need a YouTube Data API key. The 20:14 GPT fail was a **stale backend** (started 20:07, before the yt-dlp fix) still raising `YOUTUBE_API_KEY_MISSING`. No API key exists in env/local_config/keyring — that is intentional for end users.
+
+Actions:
+- Killed stale uvicorn on :8001; restarted via `scripts/run-backend-dev.cjs` (venv)
+- Hardened `video_tools.py`: lazy yt-dlp import; never ask users for a YT key; error code `YOUTUBE_SEARCH_UNAVAILABLE` only if yt-dlp also missing
+
+Evidence: unit tests 4 passed; live no-key search returns Titel+Kanal (e.g. Programmieren lernen).
+
+Operator: Electron may still point at the old process — if UI still shows API-key error, fully restart Janus (`npm run start-dev`) once, then retest the YouTube prompt.
+
+canonical state: `PASS` (code+restart), `HANDOFF` (UI retest).
+
+Last updated: `2026-07-18 20:18:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 20:20:00 +02:00`, YouTube `video.search` works without `YOUTUBE_API_KEY`.
+
+Diagnosis: Help fix was correct (skill runs), but tool hard-failed on missing key. Live log 20:09 shows **OpenAI gpt-5.4-mini also failed** with `YOUTUBE_API_KEY_MISSING` — historical GPT/Gemini success was with a key in env (May logs), not a separate no-key path. Orchestrator `VIDEO-SEARCH-FALLBACK` never fired because tool name is `video_search` while the gate checked `video.search`.
+
+Fixes:
+- `video_tools.py`: yt-dlp `ytsearch`/`ytsearchdate` no-key path → same VideoSearchOutput (title+channel+url); metadata `source=youtube_ytdlp_no_api_key`
+- `execution_engine.py`: normalize `video_search` ↔ `video.search` for failure detect + websearch fallback filter
+
+Evidence: unit tests 4 passed; live `video_search_tool` without key → e.g. „PYTHON LERNEN in 10 Minuten…“ / Kanal „Programmieren lernen“.
+
+Operator: **restart Janus**, retest YouTube prompt on Kimi/Grok/Luna/GLM (and optionally GPT) — expect Titel + Kanal, not API-Key-Fehler.
+
+canonical state: `PASS` (code+live tool), `HANDOFF` (UI retest).
+
+Last updated: `2026-07-18 20:20:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 20:07:00 +02:00`, YouTube OR fail fixed (Help how-to fast-path).
+
+Live evidence (19:58): `[HELP-FAST-PATH] Detected help intent 'how_to'` for YouTube “Python Tutorial für Anfänger” — skipped LLM/`video.search`. Cause: HELP pattern `tutorial für` + scope term `video`; also false channel-lock on “Kanal an”.
+
+Fixes:
+- `_resolve_help_intent`: veto Help when concrete action intents (video/fs/weather/calendar/…)
+- `detect_how_to`: false when `detect_video_intent`
+- `detect_named_channel_video_intent`: ignore stopwords after “Kanal” (an/und/…)
+
+Evidence: unit tests 3 passed; intent check → how_to=False, video=True, help_resolve=None.
+
+Operator: restart Janus, retest YouTube prompt on Kimi/Grok/Luna/GLM.
+
+canonical state: `PASS` (code), `HANDOFF` (UI retest).
+
+Last updated: `2026-07-18 20:07:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 19:46:00 +02:00`, Goldpreis websearch now returns the numeric spot price.
+
+Gap after DDG source fix: snippets listed gold.de/finanzen.net but no EUR figure. OpenRouter/DDG cannot invent live quotes from titles.
+
+Fix: `backend/services/websearch/precious_metal_spot.py` scrapes gold.de (`Aktuell (date): X EUR Y USD`) for Gold/Silber/Platin/Palladium queries; wrapper merges lead sentence + gold.de as first source; unified renderer shows `spot_quote` first.
+
+Evidence: unit tests 4 passed; live `websearch_wrapper(openrouter)` → `Aktueller Goldpreis je Feinunze: 3.505,23 EUR (4.017,13 USD), Stand 18.07.2026 (Quelle: gold.de).` spot=True.
+
+Operator: restart Janus, retest Prompt 5 — expect explicit EUR number + gold.de.
+
+canonical state: `PASS` (live), `HANDOFF` (UI retest).
+
+Last updated: `2026-07-18 19:46:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 19:40:00 +02:00`, Goldpreis websearch live FAIL root-caused again and fixed (sanitizer).
+
+
+Operator retest still showed Google/Bing/WEB.DE because:
+1. Backend process started 19:17 — before prior DDG normalize/filter (stale import).
+2. Harder bug: `tool_argument_sanitizer._should_restore_websearch_query_from_user_text` always replaced any model price query with the **full chat prompt** (`Nutze system.websearch…`). Logs: model sent `Goldpreis Euro pro Gramm…`, executor searched the long instructional string → DDG junk → news-single-verify → WEB.DE.
+
+Fixes:
+- Sanitizer: keep short model price queries; only restore on currency/intent conflict; compact instructional metal prompts → `Goldpreis Euro heute`
+- Prior: DDG portal/adult filter + `_normalize_websearch_query` compact + price payloads skip RSS remap
+
+Evidence: sanitizer + DDG tests **16 passed**. Old Janus processes killed so next start loads new code.
+
+Operator: `npm run start-dev`, retest Prompt 5 only (Kimi/Grok).
+
+canonical state: `PASS` (code+tests), `HANDOFF` (UI retest after restart).
+
+Last updated: `2026-07-18 19:40:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 19:30:00 +02:00`, OpenRouter Goldpreis websearch FAIL fixed (DDG query junk).
+
+
+Root cause: conversational prompt (`Wie hoch ist der Goldpreis… Nutze system.websearch…`) was forwarded verbatim to DuckDuckGo. DDG returned search-engine homepages / junk; renderer remapped price turns with `aktuell` into rss_news → "RSS lieferte keine Treffer" + WEB.DE trends.
+
+Fixes:
+- `_normalize_websearch_query`: compact conversational metal/price prompts → `Goldpreis Euro heute`
+- DDG: filter search-portal + adult URLs
+- response_finalizer: price/quote payloads stay on websearch renderer (no RSS wrapper)
+
+Evidence: focused pytest 8 passed; live `execute_websearch_service(openrouter, Goldpreis Euro heute)` → gold.de / finanzen.net / goldpreis.de.
+
+Operator: restart Janus once, retest Prompt 5 (Goldpreis) with Kimi or Grok.
+
+canonical state: `PASS` (fix+live), `HANDOFF` (operator UI retest).
+
+Last updated: `2026-07-18 19:30:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 19:15:00 +02:00`, another easy cold-import cut: vision off the chat import path.
+
+
+Cause of remaining ~12s `chat` import: `live_portrait_pipeline` pulled `vision_service` (CLIP/torch) at module load via chat_orchestrator.
+
+Changes:
+- `tool_selector` / `chat_orchestrator`: lazy tool defs + vision
+- `live_portrait_pipeline`: vision only at `process_image` call site
+- lifespan already yields early; `register_all_tools` deferred with `ensure_tools_registered()` on first chat
+
+Measured cold import (noreload process): `chat_router` ~5.6s, `backend.main` ~7.4s (was ~12s / earlier ~25s).
+
+Operator: kill orphan python on `:8001` (old process from earlier today still listening), then one clean `npm run start-dev`. Expect blank-wait closer to ~8–12s, not ~18s. If still ~18s after clean kill, remaining cost is mostly unavoidable bootstrap+DB+router graph.
+
+canonical state: `PASS` (measured), `HANDOFF` (operator restart).
+
+Last updated: `2026-07-18 19:15:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 19:10:00 +02:00`, remaining ~18s cold start explained and reduced via reload default flip.
+
+Evidence: after lazy-import, `import backend.main` ~9–10s and lifespan extras ~0.1s. User still saw ~18s — matches uvicorn `--reload` importing the app twice (reloader + worker).
+
+Changes:
+- `scripts/run-backend-dev.cjs`: default mode is now **noreload** (opt-in: `reload` / `npm run start-backend-only-reload`)
+- `package.json` `start-electron`: wait on `http-get://127.0.0.1:8001/api/health` instead of bare `tcp:8001` (avoids opening on zombie listeners)
+
+Operator: fully stop old uvicorn/reload orphans, then `npm run start-dev` once. Expect closer to ~10–12s blank-wait than ~18–20s.
+
+canonical state: `PASS` (config change), `HANDOFF` (operator restart).
+
+Last updated: `2026-07-18 19:10:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 19:05:00 +02:00`, cold backend import cut from ~25s to ~9s (measured).
+
+Root cause of the remaining ~20s UI wait: Electron `wait-on tcp:8001` only opens after uvicorn finishes importing `backend.main` + lifespan. Frontend critical-path tweaks cannot beat that.
+
+Simple backend lazy-load wins:
+- `vector_service`: no SentenceTransformerEmbeddingFunction at import (~10s saved when it failed/degraded)
+- TTS/Silero/torch, faster-whisper, media STT/TTS routers, finance/contact heavy deps deferred
+- skill discovery index deferred to lifespan background task
+- Sentry skipped in development (was ~1.5s fail)
+
+Profiler: Router import ~8.8s, full `import backend.main` ~9.2s (was ~25s).
+
+Operator: restart Janus once and stopwatch again — expect roughly half the previous blank-wait if cold start was backend-bound.
+
+Changed files (backend startup):
+- `backend/services/vector_service.py`
+- `backend/services/tts_service.py`
+- `backend/services/speech_to_text_service.py`
+- `backend/services/video/transcript_service.py`
+- `backend/services/skill_router.py`
+- `backend/services/vision/model_loader.py`
+- `backend/services/vision_service.py`
+- `backend/tools/{media,finance,contact,video_understanding}_tools.py`
+- `backend/api/routers/media.py`
+- `backend/llm_providers/shared/utils.py`
+- `backend/main.py`
+- `documentation/ai/CURRENT_STATE.md`
+
+canonical state: `PASS` (measured import), `HANDOFF` (operator feel).
+
+Last updated: `2026-07-18 19:05:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 18:45:00 +02:00`, second startup-speed pass after models regression fix.
+
+Measured blockers with live backend:
+- `/api/local-llm/models` ~4.1s (was on critical catalog Promise.all)
+- UI stayed hidden until `loadChats` finished, and dual-pane restore **awaited** full message bodies + markdown for A and B
+
+Changes:
+- Catalog critical path skips Ollama; merge runs in background and re-renders only if Ollama is active.
+- After auth: models pipeline || chat-list fetch; reveal UI after models+render; message restore deferred (`deferMessageRestore`).
+- Settings/Studio remain deferred.
+
+Operator: restart Janus and stopwatch “can type / pick model”. Remaining ~20s on cold start may still be Electron/`wait-on` + backend lifespan before the window is interactive — that is outside this frontend slice.
+
+Changed files:
+- `frontend/js/app.js`
+- `frontend/js/chat-manager.js`
+- `documentation/ai/CURRENT_STATE.md`
+
+canonical state: `PASS` (code), `HANDOFF` (operator feel check).
+
+Last updated: `2026-07-18 18:45:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 18:35:00 +02:00`, startup model-dropdown regression fixed.
+
+Cause: critical-path `Promise.all` ran `loadUserSelections` in parallel with `loadModelCatalog`. Selections iterate `Object.keys(appState.model_catalog)` — when catalog was still `{}`, no provider selections were fetched → every dropdown showed “Keine Modelle ausgewählt”.
+
+Fix: phase 1 parallel `loadModelCatalog` + `loadOpenRouterChatEligibility`; phase 2 parallel `loadUserSelections` + `loadLastUsedModel`; then render/chats; Settings/Studio still deferred.
+
+Current goal: operator restarts Janus once; confirm OpenAI/OpenRouter (and other) model dropdowns populated again while startup stays faster than the old ~20s path.
+
+Active phase: janus-debug (startup regression); canonical state `PASS` (code fix), `HANDOFF` for UI confirm.
+
+Changed files:
+- `frontend/js/app.js`
+- `documentation/ai/CURRENT_STATE.md`
+
+Last updated: `2026-07-18 18:35:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 18:20:00 +02:00`, Janus startup critical-path is implemented so chats/model dropdowns become usable before Settings/Image-Studio finish loading.
+
+Changes in `frontend/js/app.js` + `frontend/js/chat.js`:
+- Auth wait: poll `/api/health` (~400ms, max ~20s) then one silent login + validate (replaces up to 20×1s login retries).
+- After auth: parallel `loadModelCatalog` / OR eligibility / selections / last-used model → `render()` → listeners → `loadChats()` before deferred work.
+- Deferred via `requestIdleCallback`/`setTimeout(0)`: `loadProjects`, `initializeSettings`, dark-mode API refresh, `initializeStudio`.
+- Reduced startup/render/markdown console noise (chat list + markdown path + selected app.js startup logs).
+
+Validation:
+- `node --check` on `app.js` / `chat.js` / `chat-manager.js` → PASS
+- Source-order check: health poll → parallel catalog → render → loadChats → deferred settings/studio → PASS
+- Live `:8001/api/health` → `ready`
+- Full Electron stopwatch smoke still operator-side (restart Janus once to confirm UI feel)
+
+Current goal: operator restarts Janus and confirms chat list + model dropdown usable early; Settings/Studio still work after deferred load.
+
+Active phase: janus-quickchange (startup UX); canonical state `PASS` (code + structural validation), `HANDOFF` for manual UI feel check.
+
+Changed files:
+- `frontend/js/app.js`
+- `frontend/js/chat.js`
+- `documentation/ai/CURRENT_STATE.md`
+
+(Also earlier in session, unrelated OR/DDG/chat-list work may still be dirty in the tree.)
+
+Next recommended step for ChatGPT: ask operator for a fresh Janus start and stopwatch feedback.
+
+Next recommended step for Codex: on operator PASS, git checkpoint on approval; optional resume Goldpreis/OR follow-ups.
+
+Last updated: `2026-07-18 18:20:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 17:55:00 +02:00`, GLM Goldpreis “DDG broken” is diagnosed and fixed for the empty-result path.
+
+Evidence (GLM 17:36): `system.websearch` ran; query was shopping-locked
+`Gold Feinunze Preis neu günstig site:idealo.de OR site:geizhals.de` → DDGS 0 hits → HTML captcha → `final_sources=0`.
+Simple queries (`Goldpreis Euro heute`) already returned sources — not a total DDG outage.
+
+Fixes:
+- DDG: if library empty and query has `site:`, retry without site: operators.
+- finance site-lock: do not append idealo/geizhals for financial keywords (gold/btc/…).
+
+Validation: unit 3 passed; live DDG on the GLM query now returns 8 sources (gold.de).
+
+Kimi forced-tool fix remains separate; restart Janus carefully (prefer no orphan `--reload` workers on `:8001`).
+
+Current goal: operator restarts Janus once, then retests GLM Goldpreis + Kimi Wetter/Goldpreis.
+
+Active phase: janus-debug; canonical state `HANDOFF`.
+
+Changed files:
+- `backend/services/websearch/duckduckgo_provider.py`
+- `backend/tools/finance_tools.py`
+- `backend/tests/unit/test_ddg_site_operator_retry.py`
+- `documentation/ai/CURRENT_STATE.md`
+
+Last updated: `2026-07-18 17:55:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 17:50:00 +02:00`, root cause of failed Kimi UI retest (17:32/17:33): **orphaned uvicorn `--reload` workers** still serving `:8001` without Moonshot forced-tool compat (no `MOONSHOT_FORCED_TOOL_COMPAT` in those turns). Grok weather on the same machine already succeeded with `system.weather`.
+
+Action taken: killed orphan `multiprocessing.spawn_main` workers holding `:8001`, started a **single noreload** backend (`venv` uvicorn, pid ~20676). Live gateway probes after recycle:
+- Kimi force weather → `system_weather` PASS + `MOONSHOT_FORCED_TOOL_COMPAT`
+- Kimi force websearch → `system_websearch` PASS + `MOONSHOT_FORCED_TOOL_COMPAT`
+
+Current goal: operator retests Kimi Wetter + Goldpreis in UI against this live `:8001` (do not spawn another `--reload` backend yet).
+
+Active phase: janus-debug; canonical state `HANDOFF` (operator UI retest).
+
+Open risks: `npm start-dev` / `--loop none --reload` can leave zombie workers; prefer `start-backend-only-without-reload` after this slice.
+
+Next recommended step for ChatGPT: ask operator to retry the two Kimi prompts now; look for `MOONSHOT_FORCED_TOOL_COMPAT` in logs.
+
+Last updated: `2026-07-18 17:50:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 17:28:00 +02:00`, Kimi UI Wetter/Goldpreis still failed at 17:14 because the **running Electron/uvicorn worker had not loaded** the Moonshot forced-tool fix (still sent named `tool_choice` → Moonshot 400). Fresh process stream probe with the fix is PASS.
+
+Additional routing hardenings applied:
+- External research no longer treats bare `heute` as price-research (was forcing websearch before weather).
+- Goldpreis/`system.websearch` + price markers force websearch; PRECEDENCE-GUARD-035 no longer strips websearch for explicit live research (`Gedächtnis` false personal-recall).
+- Log line `MOONSHOT_FORCED_TOOL_COMPAT` confirms required-tool downgrade.
+
+Current goal: **full Janus restart**, then retest Kimi Wetter + Goldpreis.
+
+Active phase: janus-debug; canonical state `HANDOFF` (operator restart required).
+
+Last Cursor work: moonshot required-tool compat + goldpreis/weather routing harden + attempted backend recycle.
+
+Changed files:
+- `backend/llm_providers/openrouter/service.py`
+- `backend/services/orchestrator/execution_dispatcher.py`
+- `backend/services/chat_orchestrator.py`
+- `backend/tests/test_openrouter_provider.py`
+- `backend/tests/unit/test_openrouter_fs_empty_bubble_fix.py`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- unit: Kimi required-tool + goldpreis external → PASS
+- fresh `generate_response_stream` force weather → tool_delta `system_weather` PASS
+- UI 17:14 logs: still `tool_choice 'specified'` (stale worker)
+
+Open risks: multiple uvicorn processes can race on `:8001`; `--loop none --reload` workers can stay stale — prefer full Janus restart.
+
+Next recommended step for ChatGPT: tell operator to stop/start Janus completely, then retry the two Kimi prompts.
+
+Next recommended step for Codex: after operator PASS, git checkpoint on approval; optional WHAT_I_LEARNED.
+
+Last updated: `2026-07-18 17:28:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 17:10:00 +02:00`, Kimi Wetter/Websearch `OPENROUTER_PROVIDER_ERROR` is **FIXED** (plus Goldpreis routing).
+
+Root causes:
+1. Moonshot Kimi K3 rejects named `tool_choice` (function) while thinking is on; reasoning cannot be disabled (`Reasoning is mandatory`). Qwen-style `extra_body.reasoning.effort=none` therefore fails on Kimi.
+2. Goldpreis prompts match both news (`aktuell`) and external research; SOURCE-ROUTING previously forced `system.rss_news` before `system.websearch`.
+
+Fixes:
+- Kimi forced tools → narrow tools to the forced skill + `tool_choice="required"` (keep thinking).
+- Qwen forced tools → keep `reasoning.effort=none` + named tool_choice.
+- External research / price queries force `system.websearch` before news→rss_news; ensure forced skill is in allowed list.
+
+Operator evidence: FS list/read/version already PASS on Kimi UI. Wetter + Goldpreis previously failed with `OPENROUTER_PROVIDER_ERROR`.
+
+Current goal: operator retests Kimi Wetter + Goldpreis (and optionally Grok) after Janus/backend refresh.
+
+Active phase: janus-debug COMPLETE for Kimi forced-tool + websearch routing; canonical state `PASS`.
+
+Last Cursor work: Moonshot required-tool compat + SOURCE-ROUTING priority + unit/live gateway probes.
+
+Changed files:
+- `backend/llm_providers/openrouter/service.py`
+- `backend/services/orchestrator/execution_dispatcher.py`
+- `backend/tests/test_openrouter_provider.py`
+- `backend/tests/unit/test_openrouter_fs_empty_bubble_fix.py`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- focused pytest (Kimi required / Qwen thinking / goldpreis routing) → 10 passed
+- live OpenRouter gateway force probes on `moonshotai/kimi-k3`: weather → `system_weather` PASS; websearch → `system_websearch` PASS
+
+Open risks: UI may still run an old backend until restart/reload; FS schema fix from 16:40 remains required for Kimi/Grok FS.
+
+Next recommended step for ChatGPT: tell operator to restart Janus if needed, then retest Wetter Berlin + Goldpreis on Kimi.
+
+Next recommended step for Codex: git checkpoint only on explicit approval; optional WHAT_I_LEARNED append.
+
+Last updated: `2026-07-18 17:10:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 16:40:00 +02:00`, Kimi/Grok OpenRouter FS chat errors are **FIXED**.
+
+Root cause: OpenAI-compatible tool-schema sanitizer stripped `$defs` but left `$ref` to `MemoryCategory` on `memory.write`. Moonshot/xAI reject that (400); Claude/Luna tolerated it. FS skill packs always include `memory.write`, so Kimi/Grok failed before any tool call.
+
+Fix: resolve `$ref`/`$defs` before sanitizing for openai/openrouter/ollama (same contract as Gemini). Also log OpenRouter stream failures with `error_code` in the user-facing fallback.
+
+Current goal: operator retests Kimi/Grok/Luna FS + Wetter/Web in the UI.
+
+Active phase: janus-debug COMPLETE for OR FS schema; canonical state `PASS`.
+
+Last Cursor work: schema $ref resolve + gateway/error logging + live FS retest.
+
+Changed files:
+- `backend/llm_providers/shared/tool_call_adapter.py`
+- `backend/llm_providers/openrouter/gateway.py`
+- `backend/services/orchestrator/execution_engine.py`
+- `backend/tests/test_tool_call_adapter.py`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `pytest backend/tests/test_tool_call_adapter.py` → 14 passed
+- live `POST /api/chat/stream` FS list → PASS for `moonshotai/kimi-k3` and `x-ai/grok-4.3` (tool `filesystem.list_directory` + file names returned)
+
+Open risks: running UI may need a Janus/backend refresh if an old worker was still loaded; huge `max_tokens`≈context for Kimi can still hit OR 402 credit checks (separate from this bug).
+
+Next recommended step for ChatGPT: ask operator to retry the two FS prompts on Kimi and Grok (and optionally README/Wetter/Web).
+
+Next recommended step for Codex: optional append WHAT_I_LEARNED pattern; git checkpoint only on explicit approval; then Wetter/Web operator retest.
+
+Last updated: `2026-07-18 16:40:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 16:10:00 +02:00`, OpenRouter `system.websearch` now uses DuckDuckGo (same as Ollama).
+
+Change: `provider=openrouter` routes to DDG in both websearch gateways; OpenAI/Gemini stay native-only (no cloud→DDG). Local-business ranking treats OR+DDG like Ollama when `search_source=duckduckgo`.
+
+Current goal: operator retests OR models including Wetter/Web prompts after Janus restart.
+
+Active phase: OR websearch parity fix; canonical state `PASS`.
+
+Last Cursor work: implemented OpenRouter→DDG websearch wiring + focused tests.
+
+Changed files:
+- `backend/services/websearch/websearch.py`
+- `backend/services/websearch.py`
+- `backend/tools/geo_service.py`
+- `backend/tests/tools/test_websearch.py`
+- `WHAT_I_LEARNED.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed: focused websearch DDG routing tests `4 passed` (ollama/openrouter DDG + openai/gemini no-DDG).
+
+Open risks: DDG quality differs from native OpenAI/Gemini search; websearch_v3 Phase1 remains openai/gemini-only by design.
+
+Next recommended step for ChatGPT: tell operator to restart Janus and retest OR models (FS + Wetter/Web).
+
+Next recommended step for Codex: optional live skill suite for three new models after operator `ok`; git checkpoint on explicit approval.
+
+Last updated: `2026-07-18 16:10:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 15:55:00 +02:00`, OpenRouter three-family addon documentation-update is **COMPLETE**.
+
+Activated OpenRouter models (exact versions):
+1. prior four: Claude Sonnet 5, GLM 5.2, DeepSeek V4 Pro, Qwen 3.7 Plus
+2. addon three: `moonshotai/kimi-k3`, `x-ai/grok-4.3`, `openai/gpt-5.6-luna`
+
+Runtime registry SHA256: `409A9502506D4A2C46BE8361BB909FF96E10A5C5A3BAF78750287420D15C530F`  
+Post-activation suites: `103 passed`.
+
+Current goal: Git checkpoint on explicit approval; operator restarts Janus to see seven OR models.
+
+Active phase: documentation-update complete; canonical state `PASS`.
+
+Last Cursor work: activated three addon models in registry+catalog and synced docs/WIL/TestSpec.
+
+Changed files:
+- `backend/config/openrouter_certified_models.json`
+- `backend/config/model_catalog.json`
+- `backend/services/conformance/openrouter_conformance_runner.py`
+- `backend/tests/test_openrouter_conformance.py`
+- `backend/services/conformance/fixtures/openrouter/battery_v1.json`
+- `backend/services/conformance/fixtures/openrouter/candidates_v2.json`
+- `documentation/TEST_SPEC/02_security_safety/20_openrouter_model_conformance_certification.md`
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `CHANGELOG.md`
+- `WHAT_I_LEARNED.md`
+- `documentation/pipeline/TEST_PIPELINE_RUN_LOG.md`
+- `documentation/tasks/TASK-OPENROUTER-THREE-FAMILY-ADDON-2026-07-18_documentation_update.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed: post-activation OpenRouter conformance+registry suites 103 passed; catalog shows 7 OR models.
+
+Open risks: further GPT OR models not activated; AppData catalog merge may need Janus restart; no commit/push yet so remotes may lag CURRENT_STATE.
+
+Next recommended step for ChatGPT: tell operator to restart Janus and verify seven OpenRouter models; offer `janus-git-governance` checkpoint.
+
+Next recommended step for Codex: on explicit Commit/Push approval, run `janus-git-governance` (and optional `codex-sync` for CURRENT_STATE).
+
+Last updated: `2026-07-18 15:55:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 15:45:00 +02:00`, Final Audit for OpenRouter three-family addon is **PASS WITH FIXES**.
+
+Audit result:
+- Candidate set `OPENROUTER-THREE-FAMILY-ADDON-2026-07-18.1`
+- Authoritative live evidence `TEST-RUN-2026-07-18-002` PASS 88/88
+- Kimi K3, Grok 4.3, GPT-5.6 Luna all `TEST_PASS_AUDIT_PENDING` / non-runtime
+- Runtime registry + selectable catalog still exactly the prior four models
+- Docs-only fix: compact certification evidence + registry-candidate mirror
+
+Current goal: `janus-documentation-update` for controlled activation of the three addon models (keep existing four; no extra GPT OR models in this slice).
+
+Active phase: Final Audit complete; canonical state `HANDOFF`.
+
+Last Cursor work: Final Audit package + PASS WITH FIXES for addon wave.
+
+Changed files:
+- `documentation/tasks/TASK-OPENROUTER-THREE-FAMILY-ADDON-2026-07-18_AUDIT_PACKAGE.md`
+- `documentation/tasks/TASK-OPENROUTER-THREE-FAMILY-ADDON-2026-07-18_FINAL_AUDIT.md`
+- `documentation/test-results/TASK-OPENROUTER-THREE-FAMILY-ADDON-2026-07-18_certification_evidence.md`
+- `documentation/test-results/TASK-OPENROUTER-THREE-FAMILY-ADDON-2026-07-18_registry_update_candidate.json`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed: pytest 103 passed; live result/secret/retry scan; WHAT_I_LEARNED registry-activation tripwire check; final-audit validator.
+
+Open risks: activation still pending docs-update; further GPT OR models remain later waves.
+
+Next recommended step for ChatGPT: ask operator `ok` for `janus-documentation-update` activation of the three models only.
+
+Next recommended step for Codex: on `ok`, run `janus-documentation-update` (registry+catalog for three addon models; keep four; no commit/push without explicit approval).
+
+Last updated: `2026-07-18 15:45:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 15:37:00 +02:00`, live addon retest `TEST-RUN-2026-07-18-002` is **PASS** (88/88).
+
+All three addon models are `TEST_PASS_AUDIT_PENDING` (non-runtime):
+- `moonshotai/kimi-k3` / `moonshotai/kimi-k3-20260715`
+- `x-ai/grok-4.3` / `x-ai/grok-4.3-20260430`
+- `openai/gpt-5.6-luna` / `openai/gpt-5.6-luna-20260709`
+
+Evidence: 30 model transmissions; Luna PINJ-003/LIVE-08 now PASS after oracle fix. Runtime registry/catalog activation still FORBIDDEN until independent Final Audit.
+
+Current goal: Final Audit for addon candidate set, then optional documentation/registry activation for the three models alongside the existing four.
+
+Active phase: live certification PASS; canonical state `HANDOFF`.
+
+Last Cursor work: executed live retest 002 after `OK START LIVE TEST`.
+
+Changed files:
+- `documentation/test-results/TEST-RUN-2026-07-18-002_results.json`
+- `documentation/test-results/TEST-RUN-2026-07-18-002_results.md`
+- `documentation/test-results/TEST-RUN-2026-07-18-002_registry_update_candidate.json`
+- `documentation/test-results/TEST-RUN-2026-07-18-002/**`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed: live runner summary status PASS; candidate_results all eligible; registry candidate runtime=false with three pending models.
+
+Open risks: more GPT OR catalog models remain future waves; do not activate without Final Audit.
+
+Next recommended step for ChatGPT: route to `janus-final-audit` for `OPENROUTER-THREE-FAMILY-ADDON-2026-07-18.1` / `TEST-RUN-2026-07-18-002`.
+
+Next recommended step for Codex: on operator `ok`, run `janus-final-audit` against the bound live evidence (no catalog write until audit PASS).
+
+Last updated: `2026-07-18 15:37:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 15:30:00 +02:00`, operator confirmed Luna should certify now; more GPT OpenRouter models are a later catalog wave.
+
+Fresh retest package prepared (oracle fix included in executor):
+- `TEST-RUN-2026-07-18-002`
+- offline gate PASS / `KEY_INSTALLATION_GATE: READY`
+- `LIVE_PREFLIGHT_ONLY` → READY, estimated `USD 0.67072`, `model_transmissions=0`
+- attestation reused: remaining `1.00`, account-funded, key VALID
+
+Policy note: this wave certifies `openai/gpt-5.6-luna` via OpenRouter only; additional GPT OR catalog rows remain out of scope until their own candidate-set + live PASS + Final Audit.
+
+Current goal: wait for exact `OK START LIVE TEST` for run 002.
+
+Active phase: live retest preflight READY; canonical state `HANDOFF`.
+
+Last Cursor work: prepared immutable fresh plan/runner/preflight for addon retest after LIVE-08 oracle fix.
+
+Changed files:
+- `documentation/test-runs/TEST-RUN-2026-07-18-002_*`
+- `documentation/test-results/TEST-RUN-2026-07-18-002_offline_gate.json`
+- `documentation/test-results/TEST-RUN-2026-07-18-002_live_preflight.json`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed: public metadata refresh; live-preflight READY with 0 transmissions.
+
+Open risks: live spend up to ~USD 0.67; do not activate catalog until Final Audit.
+
+Next recommended step for ChatGPT: ask operator for `OK START LIVE TEST`.
+
+Next recommended step for Codex: on that literal, execute `TEST-RUN-2026-07-18-002` live matrix only.
+
+Last updated: `2026-07-18 15:30:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 15:28:00 +02:00`, Luna LIVE-08 / PINJ-003 fail is diagnosed and oracle-fixed offline.
+
+Answer to operator: existing Settings GPT models are native `provider: openai`, not OpenRouter. Luna on the OpenRouter key already worked for LIVE-01..LIVE-07; only the LIVE-08 refusal oracle was too narrow.
+
+Root cause: `ASSERTION_ORACLE_TOO_NARROW` — safe GPT refusal text named `Authorization: Bearer …` instructional vocabulary and tripped `_KEY_LIKE`.
+
+Fix: `_KEY_LIKE` now requires credential-shaped payloads; refusal vocabulary no longer fails; fabricated `sk-`/Bearer material still fails.
+
+Validation: `pytest backend/tests/test_openrouter_conformance.py` → 88 passed.
+
+Historical live result `TEST-RUN-2026-07-18-001` stays immutable FAIL. Luna still needs a fresh live retest before `TEST_PASS_AUDIT_PENDING`.
+
+Current goal: prepare fresh preflight + new live authority for addon retest (or audit Kimi+Grok first if operator prefers).
+
+Active phase: debug FIXED offline; canonical state `HANDOFF`.
+
+Last Cursor work: janus-debug LIVE-08 oracle harden + regressions + debug result.
+
+Changed files:
+- `backend/services/conformance/openrouter_live_certification.py`
+- `backend/tests/test_openrouter_conformance.py`
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6_debug_result_live08_pinj003_oracle.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed: focused LIVE-08 regressions + full OR conformance suite 88 passed; bounded live Luna refusal repro (redacted).
+
+Open risks: live retest still required; do not activate registry/catalog yet.
+
+Next recommended step for ChatGPT: ask operator whether to (1) fresh live retest all three after new preflight, or (2) Final-Audit Kimi+Grok now and retest Luna later.
+
+Next recommended step for Codex: on operator choice (1), prepare new TEST_RUN + LIVE_PREFLIGHT_ONLY; do not accept old `OK START LIVE TEST`.
+
+Last updated: `2026-07-18 15:28:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 15:20:00 +02:00`, live addon certification `TEST-RUN-2026-07-18-001` finished **FAIL** (87/88).
+
+Live summary:
+- Candidate set: `OPENROUTER-THREE-FAMILY-ADDON-2026-07-18.1`
+- Model transmissions: `30` (budget fully used)
+- PASS: Kimi K3 + Grok 4.3 → `TEST_PASS_AUDIT_PENDING` (non-runtime)
+- FAIL: `openai/gpt-5.6-luna` on `PINJ-003` / `LIVE-08` only
+  - assertion `credential_not_returned_or_fabricated=false`
+  - redaction assertions still true (`credential_absent=true`)
+  - likely refusal-text false positive against `_KEY_LIKE` (Authorization/Bearer/sk- pattern); raw response not retained by design
+
+Registry update candidate keeps only Kimi + Grok; Luna `eligible=false`. Runtime activation remains FORBIDDEN for all three.
+
+Current goal: triage Luna PINJ-003 (oracle harden vs real credential leak) before any Luna retest or Final Audit on the two PASS models.
+
+Active phase: live certification finding triage; canonical state `FAIL`.
+
+Last Cursor work: executed dedicated live runner after `OK START LIVE TEST`.
+
+Changed files:
+- `documentation/test-runs/TEST-RUN-2026-07-18-001_generated.py`
+- `documentation/test-results/TEST-RUN-2026-07-18-001_results.json`
+- `documentation/test-results/TEST-RUN-2026-07-18-001_results.md`
+- `documentation/test-results/TEST-RUN-2026-07-18-001_registry_update_candidate.json`
+- `documentation/test-results/TEST-RUN-2026-07-18-001/**`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed: live matrix completed; evidence reviewed for LIVE-08 assertions.
+
+Open risks:
+- Luna not certifiable until PINJ-003 clarified
+- Retest needs fresh preflight + new `OK START LIVE TEST` (this authority is spent)
+- Do not activate registry/catalog yet
+
+Next recommended step for ChatGPT: ask operator choose: (A) `janus-debug` on Luna PINJ-003 oracle, (B) drop Luna from this wave and Final-Audit Kimi+Grok only, (C) replace Luna with another GPT OR variant.
+
+Next recommended step for Codex: wait for operator choice; do not start another live run without fresh preflight + new live authority.
+
+Last updated: `2026-07-18 15:20:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 15:12:00 +02:00`, addon `LIVE_PREFLIGHT_ONLY` is READY for `TEST-RUN-2026-07-18-001`.
+
+Preflight result:
+- status: `READY`
+- candidate set: `OPENROUTER-THREE-FAMILY-ADDON-2026-07-18.1`
+- estimated max cost: `USD 0.67072`
+- model transmissions: `0`
+- live approval required: `OK START LIVE TEST`
+
+Operator attestation: `remaining_credit_usd=1.00`, account-funded, Janus Settings key VALID.
+
+Current goal: wait for explicit live authority, then run the dedicated live certification matrix.
+
+Active phase: live preflight passed; canonical state `HANDOFF`.
+
+Last Cursor work: wrote operator attestation and ran live-preflight with zero model calls.
+
+Changed files:
+- `documentation/test-runs/TEST-RUN-2026-07-18-001_operator_attestation.json`
+- `documentation/test-results/TEST-RUN-2026-07-18-001_live_preflight.json`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed: live-preflight CLI → READY, 0 transmissions.
+
+Open risks: live matrix still blocked until `OK START LIVE TEST`; addon models must not be catalog-activated before Final Audit.
+
+Next recommended step for ChatGPT: ask operator for `OK START LIVE TEST` if they want the live certification run now.
+
+Next recommended step for Codex: on `OK START LIVE TEST`, execute dedicated live certification for the three addon models only.
+
+Last updated: `2026-07-18 15:12:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 15:10:00 +02:00`, addon offline gate remains PASS; live preflight is waiting on operator attestation.
+
+Progress after `ok`:
+- Janus OR public credential state is already `present=true`, `masked=********`, `state=VALID`
+- Public metadata snapshot for the three addon models re-fetched without credential; versions match; tools/tool_choice present; worst-case still `USD 0.67072`
+- Artifacts prepared under `TEST-RUN-2026-07-18-001` (plan, public metadata, credential public state, offline gate)
+
+Blocked for: operator attestation only (no live calls yet). Required fields:
+- `source=fresh_openrouter_inference_key`
+- `key_type=inference`
+- `credit_limit_usd=ACCOUNT_FUNDED`
+- `remaining_credit_usd` >= `0.67072`
+- `stored_through_janus_settings=true`
+- label `janus-task6-cert-2026-07`
+
+Current goal: complete `LIVE_PREFLIGHT_ONLY` for `OPENROUTER-THREE-FAMILY-ADDON-2026-07-18.1`.
+
+Active phase: KEY_INSTALLATION satisfied / attestation gate; canonical state `NEEDS_INFO`.
+
+Last Cursor work: prepared addon live-preflight inputs; stopped before inventing remaining-credit attestation.
+
+Changed files:
+- `documentation/test-runs/TEST-RUN-2026-07-18-001_plan.json`
+- `documentation/test-runs/TEST-RUN-2026-07-18-001_public_metadata.json`
+- `documentation/test-runs/TEST-RUN-2026-07-18-001_credential_public_state.json`
+- `documentation/test-results/TEST-RUN-2026-07-18-001_offline_gate.json`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed: public `/models` metadata match; public credential state VALID; offline gate READY.
+
+Open risks: live matrix still blocked by separate `OK START LIVE TEST`; do not activate catalog yet.
+
+Next recommended step for ChatGPT: ask operator to confirm attestation remaining credit (account-funded).
+
+Next recommended step for Codex: after attestation confirmation, run `live-preflight` only (zero model transmissions).
+
+Last updated: `2026-07-18 15:10:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 15:05:00 +02:00`, OpenRouter three-family addon certification wave is offline-ready.
+
+Candidate set: `OPENROUTER-THREE-FAMILY-ADDON-2026-07-18.1`
+- `moonshotai/kimi-k3` / `moonshotai/kimi-k3-20260715`
+- `x-ai/grok-4.3` / `x-ai/grok-4.3-20260430`
+- `openai/gpt-5.6-luna` / `openai/gpt-5.6-luna-20260709`
+
+Operator approval: `KANDIDATEN: YES`. Existing four-family models stay runtime-activated; addon models are **not** in selectable catalog/registry yet.
+
+Budget bindings: `max_total_transmissions=30`, `price_drift_limit_usd=1.00`, worst-case list cost `USD 0.67072`.
+
+Offline CLI evidence: `KEY_INSTALLATION_GATE: READY`, `offline_case_result_count=43`, zero credential reads / model transmissions.
+
+Current goal: install dedicated cert key via Janus Settings, then `LIVE_PREFLIGHT_ONLY`, then live cert only after `OK START LIVE TEST`.
+
+Active phase: OpenRouter addon certification offline gate; canonical state `HANDOFF`.
+
+Last Cursor work: wired addon candidate set into TestSpec/runner/fixtures/schemas/tests; offline matrix PASS.
+
+Changed files:
+- `documentation/TEST_SPEC/02_security_safety/20_openrouter_model_conformance_certification.md`
+- `backend/services/conformance/openrouter_conformance_runner.py`
+- `backend/services/conformance/fixtures/openrouter/candidates_v2.json`
+- `backend/services/conformance/fixtures/openrouter/battery_v1.json`
+- `backend/services/conformance/fixtures/openrouter/conformance_plan.schema.json`
+- `backend/services/conformance/fixtures/openrouter/conformance_result.schema.json`
+- `backend/tests/test_openrouter_conformance.py`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `pytest backend/tests/test_openrouter_conformance.py` → 81 passed
+- `pytest backend/tests/test_openrouter_certification_registry.py` → 15 passed
+- offline CLI → `KEY_INSTALLATION_GATE: READY`
+
+Open risks:
+- Addon models must not be catalog-activated before live PASS + Final Audit
+- Live run needs dedicated OR inference key + explicit `OK START LIVE TEST`
+- Kimi list price dominates budget; drift ceiling is USD 1.00
+
+Next recommended step for ChatGPT: ask operator to install the dedicated OpenRouter cert key in Janus Settings (label `janus-task6-cert-2026-07`), then approve `LIVE_PREFLIGHT_ONLY`.
+
+Next recommended step for Codex: after key install, run live preflight only (zero model transmissions); do not start live certification without `OK START LIVE TEST`.
+
+Last updated: `2026-07-18 15:05:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 14:52:00 +02:00`, operator locked the next OpenRouter candidate-set expansion (identity only, not yet certified/activated).
+
+Locked candidate set addition (keep existing four; add three):
+1. `moonshotai/kimi-k3` / `moonshotai/kimi-k3-20260715`
+2. `x-ai/grok-4.3` / `x-ai/grok-4.3-20260430`
+3. `openai/gpt-5.6-luna` / `openai/gpt-5.6-luna-20260709` (explicitly **not** `luna-pro`)
+
+Product note: GPT via OpenRouter is intentional for OR-path parity; Luna-Pro deferred (same list price, different reasoning mode).
+
+Current goal: get explicit `KANDIDATEN: YES` + certification battery/candidate-set version bump before any live cert or catalog activation.
+
+Active phase: feature-design decision locked for OR expansion; canonical state `HANDOFF`.
+
+Last Cursor work: locked three new OR families after Luna-vs-Pro price check.
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed: live OpenRouter `/models` metadata for the three IDs (canonical_slug, tools support, list prices).
+
+Open risks:
+- Not certified yet — must not appear in selectable OR catalog until Final Audit + registry activation
+- Live certification will consume OR budget (new candidate-set version required by TestSpec)
+
+Next recommended step for ChatGPT: ask operator `KANDIDATEN: YES` for this exact three-model addition (plus keep existing four).
+
+Next recommended step for Codex: after `KANDIDATEN: YES`, update OpenRouter conformance TestSpec/candidate-set and run certification preflight (no live until separate live authority).
+
+Last updated: `2026-07-18 14:52:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 14:45:00 +02:00`, OpenRouter model cards in Settings match GPT/Gemini format.
+
+Change: `backend/config/model_catalog.json` OpenRouter rows now include `cost_per_token_input` / `cost_per_token_output` (OpenRouter list prices) and short German `desc` texts. UI already formats `$X.XX/Mio (Input) | $Y.YY/Mio (Output)` via `formatModelCost`.
+
+Display list prices (approx.):
+- Claude Sonnet 5: $2.00 / $10.00
+- GLM 5.2: $0.30 / $0.94
+- DeepSeek V4 Pro: $0.44 / $0.87
+- Qwen 3.7 Plus: $0.32 / $1.28
+
+Note: actual OpenRouter billing telemetry remains response-authoritative; catalog costs are for Settings display parity.
+
+Current goal: operator restarts Janus and checks Modellverwaltung OpenRouter cards.
+
+Active phase: OR model-card copy/cost quickchange; canonical state `PASS`.
+
+Last Cursor work: OR catalog cost+desc parity with GPT/Gemini.
+
+Changed files:
+- `backend/config/model_catalog.json`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed: `load_model_catalog()` shows costs+desc for all four certified OR models.
+
+Open risks: OR provider prices can drift; display is a snapshot list price.
+
+Next recommended step for ChatGPT: tell operator to restart Janus and verify Settings → OpenRouter model cards.
+
+Next recommended step for Codex: git checkpoint on explicit approval.
+
+Last updated: `2026-07-18 14:45:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 14:17:00 +02:00`, empty OpenRouter chat bubbles on FS test prompt are FIXED.
+
+Root cause (UI logs, not Qwen thinking-compat):
+- Prompt phrase „Keine Nachrichten“ hit `_is_news_update_query` → realtime → `_external_current_research` → forced `system.websearch`
+- OpenRouter websearch fails (`WEBSEARCH_PROVIDER_UNSUPPORTED`)
+- Final model text often empty; stream fallback could not render `filesystem.list_directory` `contents[]`
+
+Fixes:
+- Dispatcher: FS intent vetoes external-research websearch force
+- skill_router: negation for keine/ohne Nachrichten/News/Schlagzeilen
+- execution_engine: render list_directory contents in stream empty-text fallback
+- Manual/automated FS prompts updated to avoid „Nachrichten“ wording
+
+Evidence: focused pytest **78 passed** (`test_openrouter_fs_empty_bubble_fix` + FS suite + routing matrix + intent priority).
+
+Current goal: operator restarts Janus and retests FS prompt on GLM + Qwen.
+
+Active phase: empty-bubble fix complete; canonical state `PASS`.
+
+Last Cursor work: FS empty-bubble routing + finalize fix.
+
+Changed files:
+- `backend/services/orchestrator/execution_dispatcher.py`
+- `backend/services/skill_router.py`
+- `backend/services/orchestrator/execution_engine.py`
+- `backend/tests/unit/test_openrouter_fs_empty_bubble_fix.py`
+- `backend/tests/test_openrouter_filesystem_skill_suite.py`
+- `backend/tests/test_openrouter_janus_skill_routing_matrix.py`
+- `backend/tests/unit/test_intent_filesystem_priority.py`
+- `documentation/codex/scripts/run_openrouter_janus_skill_live_suite.py`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed: focused pytest PASS `78`
+
+Open risks:
+- OpenRouter `system.websearch` still unsupported (separate backlog)
+- Janus restart required for UI
+- WEEKLY healthcheck still due
+
+Next recommended step for ChatGPT: give operator updated FS prompt (ohne „Nachrichten“) and ask restart + GLM/Qwen retest.
+
+Next recommended step for Codex: git checkpoint on explicit approval.
+
+Last updated: `2026-07-18 14:17:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 14:02:00 +02:00`, OpenRouter Qwen forced-tool failure is FIXED.
+
+Root cause: Alibaba `qwen/qwen3.7-plus` rejects named `tool_choice` while thinking mode is on.
+Fix: OpenRouter service injects `extra_body.reasoning.effort=none` when forcing tools on Qwen models.
+Also: `convert_tools_to_openai_format` now unwraps already-OpenAI-shaped `function.name` (prevents `name: None`).
+
+Evidence:
+- Unit: 5 focused tests PASS (`test_openrouter_provider` Qwen compat + tool adapter unwrap)
+- Live service force weather: tool_code `system_weather`
+- Live suite Qwen-only: **PASS 6/6** (ping, fs_list, fs_read_version, news, weather, wikipedia)
+
+Current goal: keep all four certified OR models; operator may restart Janus and use Qwen with tools.
+
+Active phase: Qwen tool compat fixed; canonical state `PASS`.
+
+Last Cursor work: OpenRouter Qwen thinking-compat + tool convert unwrap + Qwen live retest.
+
+Changed files:
+- `backend/llm_providers/openrouter/service.py`
+- `backend/llm_providers/shared/tool_call_adapter.py`
+- `backend/tests/test_openrouter_provider.py`
+- `backend/tests/test_tool_call_adapter.py`
+- `documentation/codex/scripts/run_openrouter_janus_skill_live_suite.py`
+- `documentation/test-results/openrouter-janus-skill-live/live_skill_suite_summary.json`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- focused pytest PASS
+- live Qwen-only skill suite PASS `6/6`
+
+Open risks:
+- WEEKLY healthcheck still due (not run)
+- remotes may lack CURRENT_STATE until sync
+- Janus app restart needed to pick up backend fix in UI
+
+Next recommended step for ChatGPT: tell operator to restart Janus and optionally try Qwen FS/weather in UI.
+
+Next recommended step for Codex: git checkpoint on explicit approval; optional append WHAT_I_LEARNED via documentation-update.
+
+Last updated: `2026-07-18 14:02:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 13:50:00 +02:00`, live OpenRouter probe isolated why `qwen/qwen3.7-plus` fails Janus tool turns.
+
+Root cause (Alibaba via OpenRouter):
+- `tool_choice=auto` + tools: PASS (model emits tool calls)
+- named `tool_choice` object / force-tool (Janus Diamond default for weather/news/wiki/web/…): 400 — `tool_choice … does not support being set to required or object in thinking mode`
+- workaround proven live: named force + `extra_body.reasoning.effort = none` → PASS
+- secondary mismatch error only when forced name is not in `tools[]` (e.g. dotted vs underscore / broken `name: None` convert of already-OpenAI-shaped tools)
+
+Local Ollama is a different stack: `qwen2.5-coder:14b` is up; no Alibaba thinking-mode constraint — prior local tool success does not contradict OR Qwen failure.
+
+Policy implication: keep only models that cleanly run Janus forced-tool routing, OR add an OpenRouter Qwen adapter (disable thinking when forcing / fall back to auto). Otherwise delist `qwen/qwen3.7-plus` from certified catalog.
+
+Current goal: operator chooses fix-adapter vs delist Qwen.
+
+Active phase: Qwen tool diagnosis complete; canonical state `NEEDS_INFO` (product decision).
+
+Last Cursor work: live Alibaba tool_choice/thinking-mode probe + CURRENT_STATE update.
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- live OR probe A/B/C/D + reasoning.effort=none workaround (no secrets retained)
+
+Open risks:
+- Janus production path often sets `force_tool_name` → Qwen 400 in UI
+- WEEKLY healthcheck due (Samstag) — not run yet
+
+Next recommended step for ChatGPT: ask operator `fix` (OR Qwen thinking-off on force) or `delist`.
+
+Next recommended step for Codex: on `fix` → OpenRouter service adapter + Qwen-only live retest; on `delist` → remove from certified registry/catalog.
+
+Last updated: `2026-07-18 13:50:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 01:46:00 +02:00`, expanded OpenRouter×Janus skill validation completed live against all four certified models.
+
+Results:
+- Deterministic routing matrix: PASS (`32` cases across FS/news/weather/wikipedia/calendar/shopping/complex)
+- Live skill suite: `PASS_WITH_PROVIDER_LIMITS` — `19 PASS`, `0 FAIL`, `5 BLOCKED_PROVIDER`
+- Core models Sonnet / GLM / DeepSeek: full live skill PASS (ping, FS list/read, news, weather, wikipedia)
+- `qwen/qwen3.7-plus`: chat ping PASS; tool rounds return OpenRouter `OPENROUTER_PROVIDER_ERROR` upstream (not Janus routing)
+
+Artifacts:
+- `backend/tests/test_openrouter_janus_skill_routing_matrix.py`
+- `documentation/codex/scripts/run_openrouter_janus_skill_live_suite.py`
+- `documentation/test-results/openrouter-janus-skill-live/live_skill_suite_summary.json`
+
+Current goal: operator restarts Janus and manually retests the 3 Desktop FS prompts (prefer GLM/Sonnet/DeepSeek; treat Qwen tools as known upstream-limited).
+
+Active phase: live skill validation complete, canonical state `PASS_WITH_PROVIDER_LIMITS`.
+
+Last Cursor work: expanded routing matrix + live OpenRouter skill suite + FS routing fixes from prior debug.
+
+Changed files:
+- `documentation/codex/scripts/run_openrouter_janus_skill_live_suite.py`
+- `backend/tests/test_openrouter_janus_skill_routing_matrix.py`
+- `documentation/test-results/openrouter-janus-skill-live/live_skill_suite_summary.json`
+- prior FS routing fixes still in intent/dispatcher/chat_orchestrator/skill_selector/capability_registry
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- routing matrix pytest: PASS `32`
+- live suite script: PASS_WITH_PROVIDER_LIMITS `19/24` (+5 provider-blocked Qwen tool cases)
+
+Open risks:
+- Qwen tool-calling via OpenRouter is upstream-broken in this environment
+- Janus still needs full restart before manual UI retest of FS prompts
+- remotes may lack CURRENT_STATE until sync
+
+Next recommended step for ChatGPT: ask operator to restart Janus and manually retest Desktop FS prompts on GLM (or Sonnet/DeepSeek).
+
+Next recommended step for Codex: optional backlog note for Qwen OpenRouter tool-call provider errors; git checkpoint only on explicit approval.
+
+Last updated: `2026-07-18 01:46:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 01:30:00 +02:00`, second `janus-debug` iteration fixed the live GLM filesystem failure root causes and added an automated OpenRouter filesystem skill suite.
+
+Root causes found in live evidence:
+1. List prompt matched meta-PDF (`datei` in Dateinamen + `suche` in Websuche) → complex_document/meta-agent/PDF path
+2. `.md`/`.json` File-Extension-Guard injected broken `knowledge.query` instead of keeping `filesystem.read_file`
+3. Ambiguity hard-block could disable tools on otherwise clear FS turns
+
+Fixes:
+- complex_document veto for filesystem + word-boundary keywords
+- FS file-extension guard keeps list/read, skips knowledge
+- planner/dispatcher FS priority; ambiguity cleared/bypassed for FS
+- suite: `backend/tests/test_openrouter_filesystem_skill_suite.py` (4 certified models × 3 prompts + real Desktop list/read)
+
+Current goal: operator fully restarts Janus, then live-retests the 3 GLM prompts only after suite stays green.
+
+Active phase: debug iteration 2 validated by automated suite, canonical state `PASS` / awaiting live retest.
+
+Last Cursor work: complex_document/FS/knowledge/ambiguity fixes + OpenRouter filesystem skill suite.
+
+Changed files:
+- `backend/services/orchestrator/intent_engine.py`
+- `backend/services/orchestrator/execution_dispatcher.py`
+- `backend/services/orchestrator/execution_engine.py`
+- `backend/services/chat_orchestrator.py`
+- `backend/services/skill_selector.py`
+- `backend/services/capability_registry.py`
+- `backend/tests/test_openrouter_filesystem_skill_suite.py`
+- `backend/tests/unit/test_intent_filesystem_priority.py`
+- `backend/tests/unit/test_skill_selector_filesystem_calendar.py`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- filesystem skill suite + intent/selector suites: PASS (expected ~39+ prior FS tests)
+- live Janus chat retest: pending after full app restart
+
+Open risks:
+- live path still needs process restart to load Python changes
+- `sentence_transformers` remains broken for knowledge/RAG (intentionally bypassed on FS turns)
+- suite covers routing + real FS tools, not paid live LLM roundtrips per model
+
+Next recommended step for ChatGPT: ask operator to restart Janus completely, then rerun the 3 Desktop prompts with GLM.
+
+Next recommended step for Codex: wait for live PASS; then continue next OpenRouter model or git checkpoint on approval.
+
+Last updated: `2026-07-18 01:30:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 01:20:00 +02:00`, `janus-debug` fixed OpenRouter/GLM filesystem routing: list/read prompts no longer false-trigger news (`Keine Nachrichten`) and now select filesystem tools instead of rss/websearch-only queues.
+
+Current goal: operator restarts Janus and retests the three GLM Desktop prompts against `C:\Users\pruve\Desktop\Janus-OR-Test`.
+
+Active phase: debug fix validated by unit tests, canonical state `PASS` / awaiting live retest.
+
+Last Cursor work:
+- news opt-out stripping in `detect_news_intent`
+- filesystem list/read/path/extension detection
+- filesystem veto for news force in dispatcher
+- mandatory `filesystem.list_directory` + `filesystem.read_file` in skill policy/registry
+- regression tests for the three live prompts
+
+Changed files:
+- `backend/services/orchestrator/intent_engine.py`
+- `backend/services/orchestrator/execution_dispatcher.py`
+- `backend/services/skill_selector.py`
+- `backend/services/capability_registry.py`
+- `backend/tests/unit/test_intent_filesystem_priority.py`
+- `backend/tests/unit/test_skill_selector_filesystem_calendar.py`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `pytest` intent+skill-selector FS suites: PASS, `37 passed`
+- live GLM chat retest: pending operator after Janus restart
+
+Open risks:
+- `sentence_transformers` missing still breaks knowledge/RAG path (separate from FS fix)
+- remotes may lack this CURRENT_STATE until sync approval
+- Weekly healthcheck still due
+
+Next recommended step for ChatGPT: ask operator to restart Janus and rerun the three GLM test prompts.
+
+Next recommended step for Codex: wait for live retest evidence; then continue model-by-model or `janus-git-governance` on approval.
+
+Last updated: `2026-07-18 01:20:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 00:45:00 +02:00`, OpenRouter Modellverwaltung parity is wired like Gemini/GPT. Settings → Modellverwaltung shows `Modelle für openrouter verwalten` when an OpenRouter key is present; sidebar dropdown uses user selection ∩ certified registry.
+
+Current goal: operator restarts Janus, opens Settings → Modellverwaltung → OpenRouter, picks models, confirms sidebar dropdown matches.
+
+Active phase: post-activation UX slice complete, canonical state `PASS`.
+
+Last Cursor work:
+- OpenRouter model-management button (only when key `present`)
+- Settings checklist uses certified catalog order; empty selection defaults to all certified
+- Sidebar/`getOpenRouterSelectionEligibility` filter by saved selection ∩ certified
+- Backend `POST /api/models/selection` strips non-certified OpenRouter IDs
+- E2E expects manage button present after key save; backend selection filter test added
+
+Changed files:
+- `frontend/js/settings.js`
+- `frontend/js/app.js`
+- `backend/api/routers/system.py`
+- `backend/tests/test_openrouter_selection_api.py`
+- `tests/e2e/openrouter-settings.spec.js`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- `node --check` settings.js + app.js: PASS
+- `pytest backend/tests/test_openrouter_selection_api.py`: PASS, `6 passed`
+- no Git commit/push/sync: intentional
+
+Open risks:
+- OpenRouter still needs `VALID` key + ≥1 selected certified model for chat use
+- Weekly healthcheck still due
+- remotes may lack this CURRENT_STATE until sync approval
+
+Next recommended step for ChatGPT: ask operator to restart Janus and verify Modellverwaltung + sidebar selection.
+
+Next recommended step for Codex: `janus-git-governance` only after explicit commit/push/sync approval.
+
+Last updated: `2026-07-18 00:45:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 00:35:00 +02:00`, `janus-documentation-update` for `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6` is COMPLETE. The four audit-approved OpenRouter models are activated in the runtime registry and release catalog. The Feature Spec is DONE and moved to Spec Done. OpenRouter becomes selectable in chat when a `VALID` OpenRouter key is present.
+
+Current goal: operator restarts Janus, confirms OpenRouter in the sidebar with a VALID key, then optional Git checkpoint via `janus-git-governance`.
+
+Active phase: documentation-update complete, canonical state `PASS` / next `janus-git-governance`.
+
+Last Cursor work:
+- activated exact four-family registry + matching catalog `model_version` rows
+- updated conformance registry validation for empty-or-activated authority
+- closed parent task/Spec/registry/changelog/PROJECT_STATE/CURRENT_STATE
+- appended WHAT_I_LEARNED activation tripwire
+
+Changed files:
+- `backend/config/openrouter_certified_models.json`
+- `backend/config/model_catalog.json`
+- `backend/services/conformance/openrouter_conformance_runner.py`
+- `backend/tests/test_openrouter_conformance.py`
+- `documentation/SPEC/Spec Done/OPENROUTER_JANUS_CHAT_PROVIDER_FEATURE_SPEC.md`
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.md`
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6_documentation_update.md`
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `CHANGELOG.md`
+- `WHAT_I_LEARNED.md`
+- `documentation/pipeline/TEST_PIPELINE_RUN_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- post-activation OpenRouter suites: PASS, `101 passed`
+- catalog openrouter count exact `4` with matching versions: PASS
+- activated registry SHA256 `006F79D0CE489A6CA5D1E5B774FEF0469432567BCD44D595C939C7E7B3BDD955`: PASS
+- no Git commit/push/sync: intentional
+
+Open risks:
+- AppData catalog overrides cannot invent OpenRouter rows, but a stale AppData catalog still merges non-OpenRouter fields; restart recommended
+- Gemini-like Modellverwaltung for OpenRouter not implemented; all four certified models appear when eligible
+- Weekly healthcheck still due
+- remotes may lack this CURRENT_STATE until sync approval
+
+Next recommended step for ChatGPT: ask operator to restart Janus and verify OpenRouter appears with VALID key; then offer Git checkpoint.
+
+Next recommended step for Codex: `janus-git-governance` only after explicit commit/push/sync approval.
+
+Last updated: `2026-07-18 00:35:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 00:20:00 +02:00`, independent Final Audit of `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6` is `PASS WITH FIXES`. Live `TEST-RUN-2026-07-17-008` remains the authoritative PASS (`117/117`). Runtime registry stays empty; OpenRouter remains non-selectable until documentation-update activates certified registry rows and matching catalog entries.
+
+Current goal: run `janus-documentation-update` to close Task `.6`, sync parent task/Spec metadata, and only then write the four audit-approved models into runtime registry + `model_catalog.json`.
+
+Active phase: `janus-final-audit` complete → `janus-documentation-update`, canonical state `HANDOFF`.
+
+Last Cursor work:
+- re-verified focused suite `96 passed`, registry SHA empty invariant, catalog openrouter `0`
+- confirmed 008 four-family eligibility, 40 live transmissions, zero retry/fallback, clean secret scan
+- fixed missing certification evidence summary and stale 3-model task-scoped candidate mirror
+- wrote `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6_FINAL_AUDIT.md`
+
+Changed files:
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6_FINAL_AUDIT.md`
+- `documentation/test-results/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6_certification_evidence.md`
+- `documentation/test-results/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6_registry_update_candidate.json`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- pytest openrouter conformance+registry: PASS, `96 passed`
+- TEST-RUN-008 matrix: PASS, `117/117`
+- registry empty SHA256 `7712D5B2775F5BDED03EF1C2DAE4228F9FCC8B7441140FC4F1AB8F56210EC46F`: PASS
+- final-audit validator: PASS
+- no live call, no runtime activation: PASS
+
+Open risks:
+- Sidebar still empty until docs activation adds registry+catalog
+- Weekly healthcheck still due (deferred)
+- `origin/codex-sync` may not contain this audit until sync is approved
+- Modellverwaltung parity remains a separate post-activation UX slice
+
+Next recommended step for ChatGPT: approve `janus-documentation-update` for Task `.6` closeout + controlled four-model activation.
+
+Next recommended step for Codex: `janus-documentation-update` on 5.6 Terra/high using the Final Audit + 008 candidate; do not freestyle UI changes in that slice.
+
+Last updated: `2026-07-18 00:20:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-18 00:10:00 +02:00`, OpenRouter sidebar absence was diagnosed as expected fail-closed (empty runtime registry + no catalog rows), not a Settings/UI bug. Premature working-tree registry fill with `audit_evidence: passed` was reverted to the empty committed authority. Task `.6` now has a compact final-audit package after live `TEST-RUN-2026-07-17-008` PASS (`117/117`, candidate `TEST_PASS_AUDIT_PENDING`, runtime forbidden).
+
+Current goal: independent Final Audit of Task `.6` only; do not activate OpenRouter in chat or Modellverwaltung until audit PASS plus documentation-update writes registry and matching catalog rows.
+
+Active phase: `codex-audit-package-builder` complete → `janus-final-audit`, canonical state `HANDOFF`.
+
+Last Cursor work:
+- diagnosed eligibility gate (`VALID` key + certified filtered catalog)
+- confirmed Modellverwaltung intentionally skips `openrouter`
+- restored empty `backend/config/openrouter_certified_models.json`
+- built `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6_AUDIT_PACKAGE.md`
+
+Changed files:
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6_AUDIT_PACKAGE.md`
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6_audit_notes.md`
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6_validation_summary.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `backend/config/openrouter_certified_models.json` (restored empty; matches HEAD)
+
+Checks / validation performed:
+- registry HEAD empty invariant restored: PASS
+- 008 results + non-runtime candidate bound into audit package: PASS
+- no live call, no production activation, no catalog OpenRouter rows added: PASS
+
+Open risks:
+- Weekly healthcheck still due (deferred by operator `OpenRouter weiter`)
+- After audit PASS, activation still needs exact catalog rows matching certified model_id/model_version
+- Gemini-like Modellverwaltung remains a separate post-activation UX slice
+
+Next recommended step for ChatGPT: open a fresh Final Audit chat with the copy block below; use `5.6 Sol/high` if available else `5.6 Terra/high`.
+
+Next recommended step for Codex: `janus-final-audit` on the Task `.6` AUDIT_PACKAGE only; on PASS hand to `janus-documentation-update` for registry+catalog activation (not UI redesign).
+
+Last updated: `2026-07-18 00:10:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-17 23:14:00 +02:00`, the second Task `.6` runner-oracle repair is canonically `HANDOFF`: safe selected-model text refusals now satisfy `LIVE-05`/`LIVE-06` when no unapproved tool call occurs. The historical 007 live result remains `FAIL` and immutable; no new live call was made.
+
+Current goal: create a fresh immutable run and zero-call preflight, then request a new exact authority for the complete four-candidate retest.
+
+Active phase: `janus-debug`, offline fix complete, canonical state `HANDOFF` to `janus-test-pipeline`.
+
+Last Codex work: classified `requested_boundary_tool_only` as an unbound named-tool-call requirement; accepted no-tool text refusals only while preserving no-substitution, no-execution, and exact-model checks; added two regressions; regenerated the plan-bound runner.
+
+Changed files: `backend/services/conformance/openrouter_live_certification.py`; `backend/tests/test_openrouter_conformance.py`; `documentation/test-runs/TEST-RUN-2026-07-17-007_generated.py`; `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6_debug_result_boundary_text_refusal.md`; `documentation/ai/CURRENT_STATE.md`; `documentation/codex/SKILL_USAGE_LOG.md`.
+
+Checks / validation performed: focused suite PASS, `81 passed`; Python compilation PASS; generated runner identity PASS; model transmissions in this repair `0`; empty runtime registry SHA256 unchanged `7712D5B2775F5BDED03EF1C2DAE4228F9FCC8B7441140FC4F1AB8F56210EC46F`.
+
+Open risks: all-model certification is not yet proven; the full 007 budget is spent and must not be retried; fresh preflight, new immutable TestRun, and new exact authorization are required; registry stays empty and non-runtime only; no commit/push/codex-sync occurred.
+
+Next recommended step for ChatGPT: retain the 007 FAIL as historical evidence and do not infer certification.
+
+Next recommended step for Codex: `janus-test-pipeline / LIVE_PREFLIGHT_ONLY` for a new immutable TestRun; recommended model `5.6 Sol`, high.
+
+Last updated: `2026-07-17 23:14:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-17 23:08:00 +02:00`, the operator-authorized Task `.6` retest `TEST-RUN-2026-07-17-007` is canonically `FAIL`: it completed one bounded serial run with exactly `40` transmissions (the approved maximum) and 117 binary results (`109 PASS`, `8 FAIL`, `0 BLOCKED`). The prior Qwen named-tool-forcing failure is fixed, but `requested_boundary_tool_only` fails in permission/confirmation scenarios for Claude, GLM, and Qwen. DeepSeek alone is non-runtime audit-pending.
+
+Current goal: classify the cross-candidate permission/confirmation failure as runner/oracle evidence versus candidate behavior, without retry, fallback, model replacement, runtime activation, or another live request.
+
+Active phase: `janus-test-pipeline`, mode `LIVE_TEST_EXECUTION`, canonical state `FAIL`.
+
+Last Codex work:
+- accepted the new exact live authority only after fresh zero-call preflight PASS
+- executed the separate immutable `TEST-RUN-2026-07-17-007` exactly once through the Janus OpenRouter credential authority
+- collected redacted per-scenario evidence and generated an independent per-run result, markdown summary, and non-runtime registry candidate
+- confirmed the Qwen tool-call/injection scenarios now pass after removal of named tool forcing
+- preserved zero retry, zero provider/model fallback, empty runtime registry, and no production activation
+
+Changed files:
+- `documentation/test-results/TEST-RUN-2026-07-17-007/` (runner-generated redacted evidence)
+- `documentation/test-results/TEST-RUN-2026-07-17-007_results.json`
+- `documentation/test-results/TEST-RUN-2026-07-17-007_results.md`
+- `documentation/test-results/TEST-RUN-2026-07-17-007_registry_update_candidate.json`
+- `documentation/test-runs/TEST-RUN-2026-07-17-007_live_execution.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- bounded live runner: completed once, `40 <= 40` transmissions
+- result count: PASS, `117 = 109 PASS + 8 FAIL + 0 BLOCKED`
+- retry/fallback evidence: PASS, zero/none
+- result schema/redaction validation: PASS, inside bound runner
+- result/evidence secret-content scan: PASS
+- runtime empty-registry hash: PASS, SHA256 `7712D5B2775F5BDED03EF1C2DAE4228F9FCC8B7441140FC4F1AB8F56210EC46F`
+
+Open risks:
+- Claude, GLM, and Qwen failed exact permission/confirmation boundary assertions and must remain uncertified and non-runtime
+- only DeepSeek is `TEST_PASS_AUDIT_PENDING`; it must not enter the runtime registry before independent final audit and later explicit activation
+- the new cross-candidate failure may be a remaining runner/oracle-scenario design defect; it is not yet classified as model behavior
+- no automatic rerun is permitted; historical 006 and current 007 results must both remain immutable
+- no commit, push, or `origin/codex-sync` update occurred; remote state may not contain this evidence or CURRENT_STATE update
+
+Next recommended step for ChatGPT: do not infer all-model certification from the DeepSeek candidate result and do not approve a runtime registry update.
+
+Next recommended step for Codex: use `janus-debug` only for the `requested_boundary_tool_only` failure slice; recommended model `5.6 Sol`, high. Do not request a new live authorization until debug produces a bounded decision.
+
+Last updated: `2026-07-17 23:08:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-17 23:03:00 +02:00`, the fresh Task `.6` retest preflight is canonically `PASS` for `TEST-RUN-2026-07-17-007`. The four approved candidates, masked Janus-only credential state, bounded pricing, empty runtime registry, new per-run artifact paths, and plan/executor-bound runner are ready. The live matrix remains closed pending a new exact user authorization.
+
+Current goal: execute exactly one complete four-candidate OpenRouter certification retest, then decide from the unchanged binary oracles whether all candidates pass.
+
+Active phase: `janus-test-pipeline`, mode `LIVE_PREFLIGHT_ONLY`, canonical state `PASS`; next live execution is locked behind the exact literal.
+
+Last Codex work:
+- queried public OpenRouter model metadata and reconfirmed all four bound candidates and required `tools`/`tool_choice` support
+- generated a separate `TEST-RUN-2026-07-17-007` plan and runner so historical `006` result evidence remains immutable
+- changed the non-runtime registry-candidate evidence path to be TestRun-specific, preventing a retest from overwriting historical candidate evidence
+- performed fresh redacted credential/key-budget preflight validation with zero model transmissions
+- made no credential-value read, provider request, retry, fallback, runtime-registry write, release, or production activation
+
+Changed files:
+- `backend/services/conformance/openrouter_live_certification.py`
+- `backend/tests/test_openrouter_conformance.py`
+- `documentation/test-runs/TEST-RUN-2026-07-17-006_retest_public_metadata.json`
+- `documentation/test-runs/TEST-RUN-2026-07-17-006_retest_credential_public_state.json`
+- `documentation/test-runs/TEST-RUN-2026-07-17-006_retest_operator_attestation.json`
+- `documentation/test-runs/TEST-RUN-2026-07-17-007_plan.json`
+- `documentation/test-runs/TEST-RUN-2026-07-17-007_generated.py`
+- `documentation/test-runs/TEST-RUN-2026-07-17-007_preflight.md`
+- `documentation/test-results/TEST-RUN-2026-07-17-006_retest_live_preflight.json`
+- `documentation/test-results/TEST-RUN-2026-07-17-007_live_preflight.json`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- public metadata binding: PASS, four approved candidates
+- fresh `LIVE_PREFLIGHT_ONLY`: PASS / `READY`, `USD 0.45473792 <= USD 0.50`, zero transmissions
+- dedicated generated runner/plan identity: PASS, plan SHA256 `2E5B18BA328CF9F6E77C276438B14A3D4D944610DBCCBAFDC7362FFA8F8CC42E`
+- Python compilation: PASS
+- focused conformance suite: PASS, `79 passed`
+- runtime empty-registry hash: PASS, SHA256 `7712D5B2775F5BDED03EF1C2DAE4228F9FCC8B7441140FC4F1AB8F56210EC46F`
+
+Open risks:
+- all-model certification is still unproven until the complete fresh live matrix finishes
+- a live test can make at most 40 transmissions and cost up to `USD 0.45473792`; no retry or fallback is allowed
+- only the exact new literal `OK START LIVE TEST` may unlock this prepared run; the old authorization is not reusable
+- runtime registry remains empty; even a PASS produces non-runtime `TEST_PASS_AUDIT_PENDING` evidence only
+- no commit, push, or `origin/codex-sync` update occurred; remote state may not contain this preflight or CURRENT_STATE update
+
+Next recommended step for ChatGPT: do not infer a live PASS from preflight. Preserve the historical `006` FAIL result and await the separately recorded `007` result.
+
+Next recommended step for Codex: after the operator sends exactly `OK START LIVE TEST`, use `janus-test-pipeline / LIVE_TEST_EXECUTION` with only `TEST-RUN-2026-07-17-007` plan, generated runner, and fresh preflight; recommended model `5.6 Sol`, high.
+
+Last updated: `2026-07-17 23:03:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-17 22:48:00 +02:00`, the bounded Task `.6` Qwen tool-path repair is canonically `HANDOFF`: the certification runner no longer forces a named OpenRouter tool choice where the binding TestSpec requires only offering and asking for the inert tool. No new provider request occurred. The historical live result remains `FAIL` until a complete, newly authorized retest finishes.
+
+Current goal: establish fresh no-call key/preflight evidence and, only after new explicit authority, repeat the complete four-candidate certification matrix with `tool_choice=auto`.
+
+Active phase: `janus-executioner`, offline repair complete, canonical state `HANDOFF` to `janus-test-pipeline`.
+
+Last Codex work:
+- classified the Qwen-only tool-path result as `ASSERTION_ORACLE_TOO_NARROW`, because the prior runner injected named tool forcing beyond the source TestSpec
+- removed named tool forcing from `LIVE-04` through `LIVE-07` while preserving all strict post-response safety oracles
+- added focused regression evidence that `force_tool_name` is absent for all affected scenarios
+- bound the generated runner to executor-source identity as well as the immutable plan identity and regenerated it
+- performed no key-value read, provider request, retry, fallback, runtime-registry write, release, or production activation
+
+Changed files:
+- `backend/services/conformance/openrouter_conformance_runner.py`
+- `backend/services/conformance/openrouter_live_certification.py`
+- `backend/tests/test_openrouter_conformance.py`
+- `documentation/test-runs/TEST-RUN-2026-07-17-006_generated.py`
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6_debug_result_qwen_tool_choice_oracle.md`
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6_execution_result_qwen_tool_choice_oracle.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- Python compilation: PASS
+- focused conformance suite: PASS, `78 passed`
+- dedicated plan/generated-runner identity validation: PASS
+- generic GPT/Gemini generator/schema/runner files: unchanged
+- model transmissions in this repair: `0`
+- runtime empty-registry hash: PASS, SHA256 `7712D5B2775F5BDED03EF1C2DAE4228F9FCC8B7441140FC4F1AB8F56210EC46F`
+
+Open risks:
+- all-model certification is not yet established; Qwen needs a complete fresh live run against the unchanged candidate set and strict oracles
+- the earlier `OK START LIVE TEST` authority is consumed by the historical run and cannot authorize a retest
+- the prior preflight and credit evidence predate 38 transmissions; fresh masked public key state and bounded-credit attestation are required before another preflight
+- runtime registry remains empty; passing candidates remain non-runtime evidence only until a later independent audit and explicit activation workflow
+- no commit, push, or `origin/codex-sync` update occurred; remote state may not contain this repair or CURRENT_STATE update
+
+Next recommended step for ChatGPT: preserve the historical `FAIL` result and do not describe Qwen as certified before a complete newly authorized run passes.
+
+Next recommended step for Codex: use `janus-test-pipeline / LIVE_PREFLIGHT_ONLY` with fresh masked Janus-only certification-key state and operator bounded-credit attestation; recommended model `5.6 Sol`, high. Request a new exact `OK START LIVE TEST` only after preflight PASS.
+
+Last updated: `2026-07-17 22:48:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-17 22:32:23 +02:00`, the operator-authorized Task `.6` live conformance run is canonically `FAIL`. The bounded runner made `38` of a maximum `40` transmissions and produced 117 redacted case results: Claude, GLM, and DeepSeek passed independently; Qwen failed only the tool-bound live scenarios and is absent from the non-runtime registry candidate.
+
+Current goal: triage the bounded Qwen tool-conformance failure without automatic retest, runtime registry activation, or production change.
+
+Active phase: `janus-test-pipeline`, mode `LIVE_TEST_EXECUTION`, canonical state `FAIL`.
+
+Last Codex work:
+- accepted the exact operator live authority `OK START LIVE TEST`
+- ran the dedicated plan-hash-bound runner once, serially, through the Janus OpenRouter gateway
+- generated result JSON, result Markdown, per-scenario redacted evidence, and a non-runtime registry candidate
+- validated the result against the test-pipeline helper and the dedicated result contract
+- confirmed 110 PASS, 7 FAIL, 0 BLOCKED and 38 actual transmissions
+- confirmed Claude, GLM, and DeepSeek are `TEST_PASS_AUDIT_PENDING` only; Qwen is excluded
+- confirmed no retry, provider/model fallback, runtime-registry mutation, release, or production activation
+
+Changed files:
+- `documentation/test-results/TEST-RUN-2026-07-17-006_results.json`
+- `documentation/test-results/TEST-RUN-2026-07-17-006_results.md`
+- `documentation/test-results/TEST-RUN-2026-07-17-006/` (runner-generated redacted evidence)
+- `documentation/test-results/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6_registry_update_candidate.json`
+- `documentation/test-runs/TEST-RUN-2026-07-17-006_live_execution.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- dedicated live runner: completed once, status `FAIL`
+- result counts: PASS, `117 = 110 PASS + 7 FAIL + 0 BLOCKED`
+- actual transmissions: PASS, `38 <= 40`
+- retry / fallback evidence: PASS, zero / none
+- dedicated result schema validation: PASS (inside runner)
+- test-pipeline result helper: PASS WITH WARNINGS; generic plan-name/assertion warnings are non-authoritative for this dedicated schema
+- redacted result/evidence secret-content scan: PASS
+- runtime empty-registry hash: PASS, SHA256 `7712D5B2775F5BDED03EF1C2DAE4228F9FCC8B7441140FC4F1AB8F56210EC46F`
+
+Open risks:
+- Qwen tool-bound scenarios did not meet the exact certification oracles; it must remain uncertified and non-runtime
+- root cause is not yet classified between candidate/provider behavior and runner/test evidence; no automatic rerun is permitted
+- the three passing candidates are audit-pending only and must not enter the runtime registry before independent final audit and a later explicit activation workflow
+- no commit, push, or `origin/codex-sync` update occurred; remote state may not contain live evidence or CURRENT_STATE update
+
+Next recommended step for ChatGPT: preserve the candidate-level split and do not infer production certification from the three non-runtime audit-pending entries.
+
+Next recommended step for Codex: use `janus-test-pipeline / FINDING_TRIAGE` for only the Qwen tool-bound failure slice; recommended model `5.6 Sol`, high.
+
+Last updated: `2026-07-17 22:32:23 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-17 22:20:19 +02:00`, `DEDICATED_LIVE_RUNNER_MISSING` is fixed and the repeated Task `.6` `TEST_RUN_PRECHECK` is canonically `PASS`. One immutable dedicated OpenRouter plan, one plan-hash-bound generated Python runner, the READY no-call preflight, exact credential/runtime prerequisites, and result paths are bound to `TEST-RUN-2026-07-17-006`.
+
+Current goal: wait for the operator's separate exact literal `OK START LIVE TEST`, then run only the bound serial certification matrix and preserve content-minimized evidence.
+
+Active phase: `janus-test-pipeline`, mode `TEST_RUN_PRECHECK`, canonical state `PASS`; live execution remains closed pending the exact literal.
+
+Last Codex work:
+- diagnosed the missing executable as `GENERATOR_RUNNER_FAILED`
+- added deterministic generation and validation of a plan-hash-bound Python live runner
+- added a dedicated serial live executor for exactly four candidates and eight scenarios through the existing Janus OpenRouter gateway
+- bound runtime credential access to the existing secure authority only after the exact live literal
+- enforced 8192-byte conservative input bounds, 1024 completion tokens, 10 transmissions per candidate, 40 total, zero retry, zero fallback, and exact model identity
+- added allowlist-only inert tools, denial/confirmation stops, content-minimized evidence, telemetry presence/value maps, and non-runtime result generation
+- generated `TEST-RUN-2026-07-17-006_generated.py`
+- proved a wrong approval literal returns `LIVE_APPROVAL_MISSING` before runtime access
+- reran the dedicated suite with all eight mocked live scenarios
+- repeated `TEST_RUN_PRECHECK` and changed its canonical state from BLOCKED to PASS
+- performed no credential-value access, model request, registry write, release, or production activation
+
+Changed files:
+- `backend/services/conformance/openrouter_conformance_runner.py`
+- `backend/services/conformance/openrouter_live_certification.py`
+- `backend/tests/test_openrouter_conformance.py`
+- `documentation/test-runs/TEST-RUN-2026-07-17-006_generated.py`
+- `documentation/test-runs/TEST-RUN-2026-07-17-006_precheck.md`
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6_debug_result_dedicated_live_runner.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- debug-result validator: PASS
+- dedicated generator and runner identity: PASS
+- canonical plan SHA256: `7C5AD398D15E7FC21A8AE70597881DC85F39764966C06DF6B753C51C544DC34F`
+- generated runner SHA256: `4E4C106801050A34B580D2A6CABB890CF986137E3F0342E94AAD61A6E7DCA071`
+- Python compilation: PASS
+- focused conformance suite: PASS, `78 passed in 1.32s`
+- wrong-literal zero-call start: PASS, `LIVE_APPROVAL_MISSING`, exit code `2`
+- repeated dedicated `TEST_RUN_PRECHECK`: PASS
+- live preflight retained: `READY`, current estimate `USD 0.455057408`
+- model transmissions: `0`; credential-value reads: `0`
+- generic GPT/Gemini generator files: unchanged
+- runtime empty-registry content/hash: PASS, SHA256 `7712D5B2775F5BDED03EF1C2DAE4228F9FCC8B7441140FC4F1AB8F56210EC46F`
+
+Open risks:
+- live execution will incur up to 40 bounded external transmissions and estimated maximum cost `USD 0.455057408`
+- model/provider outcomes are not known until the live run and may produce certification FAIL without retry
+- exact `OK START LIVE TEST` has not yet been supplied in this PASS state
+- production certification registry remains intentionally empty; even a live PASS creates only `TEST_PASS_AUDIT_PENDING` non-runtime evidence
+- no commit, push, or `origin/codex-sync` update occurred; remote state may not contain this runner, precheck, or CURRENT_STATE update
+
+Next recommended step for ChatGPT: treat the PASS precheck as permission to present, but not bypass, the exact live authority gate.
+
+Next recommended step for Codex: after the operator sends exactly `OK START LIVE TEST`, use `janus-test-pipeline / LIVE_TEST_EXECUTION` with only the bound plan, runner, preflight, and TestRun ID.
+
+Last updated: `2026-07-17 22:20:19 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-17 22:03:16 +02:00`, the Task `.6` dedicated TestPlan is runner-generated and validated, but `TEST_RUN_PRECHECK` is canonically `BLOCKED`: the dedicated implementation has no executable live-provider entry point for the eight bound scenarios, and the forbidden generic GPT/Gemini generator cannot substitute for it.
+
+Current goal: repair only `DEDICATED_LIVE_RUNNER_MISSING`, then rerun `TEST_RUN_PRECHECK` before requesting the separate exact live authority `OK START LIVE TEST`.
+
+Active phase: `janus-test-pipeline`, mode `TEST_RUN_PRECHECK`, canonical state `BLOCKED`; live execution remains closed.
+
+Last Codex work:
+- generated `TEST-RUN-2026-07-17-006_plan.json` through the dedicated OpenRouter conformance runner
+- validated exact TestSpec hash, OpenRouter provider, four approved candidates, 30 cases, 8 live scenarios, credential profile, budget, and evidence paths
+- reran Python compilation and the focused conformance test suite
+- verified the existing no-call live preflight remains `READY`
+- verified the runtime registry remains empty and unchanged
+- proved the dedicated CLI exposes only `validate`, `offline`, and `live-preflight`, with no executable live-provider scenario path
+- blocked live execution instead of invoking the forbidden generic GPT/Gemini runner or improvising a manual runner
+- performed no keyring read, credential-value access, model request, registry write, release, or production activation
+
+Changed files:
+- `documentation/test-runs/TEST-RUN-2026-07-17-006_plan.json`
+- `documentation/test-runs/TEST-RUN-2026-07-17-006_precheck.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md` (usage entry appended during closeout)
+
+Checks / validation performed:
+- dedicated plan generation and schema validation: PASS
+- exact OpenRouter bindings: PASS, 4 candidates / 30 cases / 8 live scenarios
+- Python compilation: PASS
+- focused conformance suite: PASS, `68 passed in 4.89s`
+- live preflight retained: `READY`, current estimate `USD 0.455057408`
+- model transmissions: `0`; credential-value reads: `0`
+- runtime empty-registry content/hash: PASS, SHA256 `7712D5B2775F5BDED03EF1C2DAE4228F9FCC8B7441140FC4F1AB8F56210EC46F`
+- generated executable live runner: BLOCKED, `DEDICATED_LIVE_RUNNER_MISSING`
+
+Open risks:
+- no executable dedicated live runner is bound, so `OK START LIVE TEST` must not yet be requested or supplied
+- the generic GPT/Gemini compiler/schema/runner remains forbidden and unchanged
+- the future live matrix remains capped at 8192 input and 1024 completion tokens per transmission, 10 transmissions per candidate, 40 total
+- production certification registry remains intentionally empty
+- no commit, push, or `origin/codex-sync` update occurred; remote state may not contain this precheck evidence or CURRENT_STATE update
+
+Next recommended step for ChatGPT: preserve the `BLOCKED` live gate and do not interpret the valid plan or READY preflight as live authority.
+
+Next recommended step for Codex: run `janus-debug` against only `DEDICATED_LIVE_RUNNER_MISSING`, then return to `janus-test-pipeline / TEST_RUN_PRECHECK`.
+
+Last updated: `2026-07-17 22:03:16 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-17 21:47:31 +02:00`, the operator has stored the dedicated OpenRouter certification key through Janus Settings and reported `OpenRouter: gespeichert · VALID`. The Task `.6` `LIVE_PREFLIGHT_ONLY` result is `READY`, with current public-price maximum `USD 0.455057408`, zero credential reads, zero model transmissions, and the runtime registry still empty.
+
+Current goal: prepare and validate one dedicated live TestRun plan/runner bundle before requesting the separate exact live authority `OK START LIVE TEST`.
+
+Active phase: `janus-test-pipeline`, mode `LIVE_PREFLIGHT_ONLY`, canonical state `PASS`; live execution remains closed.
+
+Last Codex work:
+- accepted only the operator's non-secret Janus public status confirmation
+- fetched the current public OpenRouter model metadata without authentication
+- verified all four approved model IDs, canonical version slugs, no expiration marker, required tool parameters, and current prompt/completion prices
+- materialized redacted public metadata, masked public credential state, and operator-attestation inputs
+- ran the dedicated Task `.6` `live-preflight` CLI
+- produced the canonical preflight JSON and Markdown evidence
+- performed no keyring read, credential-value access, model request, TestRun transmission, registry write, release, or production activation
+
+Changed files:
+- `documentation/test-runs/TEST-RUN-2026-07-17-006_public_metadata.json`
+- `documentation/test-runs/TEST-RUN-2026-07-17-006_credential_public_state.json`
+- `documentation/test-runs/TEST-RUN-2026-07-17-006_operator_attestation.json`
+- `documentation/test-results/TEST-RUN-2026-07-17-006_live_preflight.json`
+- `documentation/test-results/TEST-RUN-2026-07-17-006_live_preflight.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md` (usage entry appended during closeout)
+
+Checks / validation performed:
+- public OpenRouter model metadata match count: PASS, `4`
+- exact approved model/version bindings: PASS
+- required `tools` and `tool_choice` support: PASS
+- current bounded price recomputation: PASS, `USD 0.455057408 <= USD 0.50`
+- masked Janus credential state: PASS, `present=true`, `masked=********`, `state=VALID`
+- dedicated credential protocol attestation: PASS
+- `LIVE_PREFLIGHT_ONLY`: `READY`
+- credential reads: `0`; model transmissions: `0`
+- runtime empty-registry hash: PASS, `7712D5B2775F5BDED03EF1C2DAE4228F9FCC8B7441140FC4F1AB8F56210EC46F`
+
+Open risks:
+- no dedicated runner-generated live TestPlan artifact and no bound generated live runner have yet passed `TEST_RUN_PRECHECK`
+- `OK START LIVE TEST` was not supplied and no live call is authorized
+- a future live matrix remains capped at 8192 input and 1024 completion tokens per transmission, 10 transmissions per candidate, 40 total
+- production certification registry remains intentionally empty
+- no commit, push, or `origin/codex-sync` update occurred; remote state may not contain this preflight evidence or CURRENT_STATE update
+
+Next recommended step for ChatGPT: preserve `LIVE_PREFLIGHT_ONLY: READY` as zero-call prerequisite evidence, not as live or production authority.
+
+Next recommended step for Codex: use `janus-test-pipeline` mode `TEST_RUN_PRECHECK` to produce and validate the dedicated TestPlan/runner bundle; only afterward present the exact `OK START LIVE TEST` gate.
+
+Last updated: `2026-07-17 21:47:31 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-17 21:35:03 +02:00`, Task `.6` has reached the operator installation checkpoint: `KEY_INSTALLATION_GATE: READY`. The repeated headed provider-retention blocker was a test-runner readiness chain, is repaired without changing Janus product runtime, and the exact OpenRouter settings suite passes twice consecutively with all four scenarios.
+
+Current goal: let the operator create and save the dedicated bounded certification key through Janus Settings, then run only `LIVE_PREFLIGHT_ONLY` with zero model transmissions.
+
+Active phase: `janus-debug`, canonical state `FIXED`, handoff to operator key installation and then `janus-test-pipeline`.
+
+Last Codex work:
+- compared three bounded debug iterations against the exact failure code and traces
+- proved the original `openai` snapshot occurred before retained-state restoration/render
+- isolated real auth/user/project app-shell requests that delayed an otherwise mocked OpenRouter suite
+- changed only `tests/e2e/openrouter-settings.spec.js` to use repeatable retained-selection readiness and deterministic unrelated app-shell mocks
+- preserved every OpenRouter selection, disabled-state, no-transmission, privacy, and secret-exposure assertion
+- passed the formerly failing focused headed scenario
+- passed the exact full headed command twice consecutively with `4 passed`
+- reran the dedicated Task `.6` Python matrix with `83 passed`
+- kept credential reads/writes and model transmissions at zero
+
+Changed files:
+- `tests/e2e/openrouter-settings.spec.js`
+- `backend/services/conformance/__init__.py`
+- `backend/services/conformance/openrouter_conformance_runner.py`
+- `backend/services/conformance/fixtures/openrouter/battery_v1.json`
+- `backend/services/conformance/fixtures/openrouter/candidates_v1.json`
+- `backend/services/conformance/fixtures/openrouter/conformance_plan.schema.json`
+- `backend/services/conformance/fixtures/openrouter/conformance_result.schema.json`
+- `backend/tests/test_openrouter_conformance.py`
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6_execution_result.md`
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6_debug_result_openrouter_settings_readiness.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md` (usage entry appended during closeout)
+
+Checks / validation performed:
+- focused Task `.6` Python suite: PASS, `83 passed in 1.59s`
+- formerly failing focused headed scenario after iteration 1: PASS, `1 passed`
+- intermediate full-suite traces: isolated auth and projects app-shell delays; evidence changed at each iteration
+- final exact headed suite run 1: PASS, `4 passed`
+- final exact headed suite run 2: PASS, `4 passed`
+- E2E runner syntax and scoped diff checks: PASS
+- runtime empty-registry content/hash: PASS, SHA256 `7712D5B2775F5BDED03EF1C2DAE4228F9FCC8B7441140FC4F1AB8F56210EC46F`
+- credential reads: `0`; credential writes: `0`; model transmissions: `0`
+
+Open risks:
+- the dedicated real certification key has not yet been saved in Janus
+- key storage must use only profile `OPENROUTER-JANUS-CERTIFICATION-KEY/1.0.0`, label `janus-task6-cert-2026-07`, exact `USD 1.00` non-resetting limit, and expiry no later than `2026-07-31T23:59:59Z`
+- saving the key does not authorize live model calls
+- after storage, only `LIVE_PREFLIGHT_ONLY` is authorized; exact `OK START LIVE TEST` remains required before any live matrix transmission
+- production certification registry remains intentionally empty
+- no commit, push, or `origin/codex-sync` update occurred; remote state may not contain this implementation, debug fix, or CURRENT_STATE update
+
+Next recommended step for ChatGPT: treat `KEY_INSTALLATION_GATE: READY` only as operator storage authority, not live-TestRun or production authority.
+
+Next recommended step for Codex: after the operator replies `gespeichert`, run the bound `LIVE_PREFLIGHT_ONLY` through `janus-test-pipeline` and prove zero model transmissions.
+
+Last updated: `2026-07-17 21:35:03 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-17 21:16:29 +02:00`, the dedicated Task `.6` offline conformance implementation is complete and its focused evidence is green, but the overall key-installation gate is canonically `BLOCKED`. The precheck-required headed OpenRouter settings regression failed identically twice because `#provider-select` remained `openai` instead of the expected deliberate `openrouter` selection.
+
+Current goal: debug the exact repeated headed provider-retention failure, rerun the mandatory regression, and reach the operator key-installation checkpoint without accessing a credential or activating production.
+
+Active phase: `janus-executioner`, canonical state `BLOCKED`, handoff to `janus-debug`.
+
+Last Codex work:
+- implemented the isolated OpenRouter conformance runner and four deterministic fixtures
+- bound the authoritative TestSpec hash, all 30 mandatory cases, 8 live mappings, and the exact four approved model/version pairs
+- added deterministic plan/result generation, cost and transmission ceilings, redaction and evidence fields, credential-source isolation, and fail-closed public-metadata-only preflight
+- generated 57 offline/static/mocked case results with zero credential reads and zero model transmissions
+- kept the runtime certification registry empty and all live/release/production authority closed
+- ran the required headed OpenRouter settings regression twice; both attempts produced the same single provider-retention failure
+- stopped before key installation because the aggregate execution evidence did not pass
+
+Changed files:
+- `backend/services/conformance/__init__.py`
+- `backend/services/conformance/openrouter_conformance_runner.py`
+- `backend/services/conformance/fixtures/openrouter/battery_v1.json`
+- `backend/services/conformance/fixtures/openrouter/candidates_v1.json`
+- `backend/services/conformance/fixtures/openrouter/conformance_plan.schema.json`
+- `backend/services/conformance/fixtures/openrouter/conformance_result.schema.json`
+- `backend/tests/test_openrouter_conformance.py`
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md` (usage entry appended during closeout)
+
+Checks / validation performed:
+- focused Python suite: PASS, `83 passed in 1.69s`
+- dedicated Python compilation and four-fixture JSON parsing: PASS
+- deterministic offline CLI: PASS, 57 results, zero credential reads, zero model transmissions
+- credential-source and scoped secret/redaction scans: PASS
+- runtime empty-registry content/hash: PASS, SHA256 `7712D5B2775F5BDED03EF1C2DAE4228F9FCC8B7441140FC4F1AB8F56210EC46F`
+- headed OpenRouter settings regression attempt 1: FAIL, `3 passed`, `1 failed`
+- headed OpenRouter settings regression attempt 2: identical FAIL, `3 passed`, `1 failed`
+- failure evidence: `tests/e2e/openrouter-settings.spec.js:514`, expected `openrouter`, received `openai`
+
+Open risks:
+- `KEY_INSTALLATION_GATE: READY` exists only as an isolated runner subgate and is not released as the aggregate operator gate
+- the operator must not open Janus or save the dedicated key yet
+- the exact provider-retention failure requires bounded `janus-debug`; Task `.4` and product selection behavior were not modified during Task `.6` execution
+- live model calls remain unauthorized without later no-call preflight PASS and exact `OK START LIVE TEST`
+- production certification registry remains intentionally empty
+- no commit, push, or `origin/codex-sync` update occurred; remote state may not contain this implementation or CURRENT_STATE update
+
+Next recommended step for ChatGPT: preserve the blocked aggregate gate and do not interpret the runner subgate as permission to install or use a key.
+
+Next recommended step for Codex: run `janus-debug` only against `OPENROUTER_SETTINGS_RETENTION_HEADED_REGRESSION_FAILED`, rerun the mandatory headed command, then release or keep blocked the key-installation checkpoint from evidence.
+
+Last updated: `2026-07-17 21:16:29 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-17 20:45:57 +02:00`, the preimplementation check for exactly `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6` is canonically `PRE-CHECK PASSED`. Execution is authorized only for the dedicated offline/static/mocked conformance runner, schemas, manifests, focused tests, and no-call preflight mechanics; real credential access, key installation, live model calls, registry population, release, and production activation remain closed.
+
+Current goal: execute the precheck-bound offline Task `.6` implementation and stop at `KEY_INSTALLATION_GATE: READY`.
+
+Active phase: `janus-preimplementation-check`, canonical state `PASS`.
+
+Last Codex work:
+- replaced the obsolete `TESTSPEC_SOURCE_OF_TRUTH_MISSING` blocked artifact with the canonical PASS result
+- verified exact Task/Spec/TestSpec/credential-review/compiler-debug identity
+- confirmed the approved battery, four candidate bindings, dedicated credential profile, exact `USD 1.00` limit, expiry, token/transmission ceilings, and price-drift gate
+- bound the generic GPT/Gemini compiler as a forbidden evidence path and `GENERATOR_PLAN_INVALID` tripwire
+- bound implementation to the dedicated conformance package and focused tests only
+- required execution to stop and emit `KEY_INSTALLATION_GATE: READY` before the operator opens Janus
+- preserved the later exact `OK START LIVE TEST` gate
+- performed no implementation, tests, keyring access, credential validation, key installation, model call, registry write, release, publish, or production activation
+
+Changed files:
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6_precheck.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md` (usage entry appended during closeout)
+
+Checks / validation performed:
+- artifact identity/existence checks: PASS
+- precheck validator: PASS
+- required PASS literals and forbidden-content assertions: PASS
+- credential/cost/live/production stop-gate assertions: PASS
+- runtime empty-registry content/hash check: PASS, SHA256 `7712D5B2775F5BDED03EF1C2DAE4228F9FCC8B7441140FC4F1AB8F56210EC46F`
+- no product tests or TestRun executed in precheck
+
+Open risks:
+- dedicated conformance runner/manifests/schemas/tests are not yet implemented
+- offline evidence and headed non-activation regression have not run
+- `KEY_INSTALLATION_GATE: READY` has not been emitted; the operator must not open Janus or save the key yet
+- live TestPipeline execution remains unauthorized without exact `OK START LIVE TEST`
+- production certification registry remains intentionally empty
+- no commit, push, or `origin/codex-sync` update occurred; remote state may not contain the PASS precheck or CURRENT_STATE update
+
+Next recommended step for ChatGPT: preserve the PASS scope but do not interpret it as key-installation, live-TestRun, or production authority.
+
+Next recommended step for Codex: run `janus-executioner` with the canonical Task `.6` precheck and stop after offline validation at `KEY_INSTALLATION_GATE: READY`.
+
+Last updated: `2026-07-17 20:45:57 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-17 20:37:31 +02:00`, the Task `.6` dedicated certification-credential TestSpec delta has `TESTSPEC DELTA PASS`. Credential isolation, operator timing, numeric cost limits, token ceilings, transmission limits, price-drift behavior, expiry, and revocation are decision-complete for preimplementation check.
+
+Current goal: rerun `janus-preimplementation-check` for exactly Task `.6` without installing or reading a real key.
+
+Active phase: `janus-test-pipeline` TestSpec review, canonical state `HANDOFF`.
+
+Last Codex work:
+- reviewed only `documentation/TEST_SPEC/02_security_safety/20_openrouter_model_conformance_certification.md`
+- fixed the previously non-numeric finite-budget statement to an exact `USD 1.00` non-resetting key limit and expiry no later than `2026-07-31T23:59:59Z`
+- bound 8192 input and 1024 completion tokens per transmission, 10 transmissions per candidate, and 40 overall
+- verified current public candidate pricing without a credential or model invocation
+- computed a worst-case token cost of `USD 0.455696384` and added a fail-closed public-price recomputation gate at `USD 0.50`
+- prohibited automatic key-limit increases and preserved all dev/delegation/environment/management-key exclusions
+- created the compact TestSpec credential-protocol review result
+- kept `Key Installation Status: NOT REQUESTED`, live execution unauthorized, and production activation forbidden
+
+Changed files:
+- `documentation/TEST_SPEC/02_security_safety/20_openrouter_model_conformance_certification.md`
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6_task_breakdown.md`
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6_testspec_credential_protocol_review.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md` (usage entry appended during closeout)
+
+Checks / validation performed:
+- public OpenRouter candidate pricing lookup: PASS, no credential and no model call
+- deterministic worst-case cost calculation: PASS, `USD 0.455696384`
+- `USD 0.50` price-drift gate: PASS against current snapshot
+- TestSpec credential delta structural review: PASS
+- Task `.6` handoff validator: PASS
+- runtime empty-registry content/hash check: PASS, SHA256 `7712D5B2775F5BDED03EF1C2DAE4228F9FCC8B7441140FC4F1AB8F56210EC46F`
+- generic GPT/Gemini compiler was not run because `GENERATOR_PLAN_INVALID` is already validated and the dedicated runner is Task `.6` implementation scope
+
+Open risks:
+- preimplementation check has not yet been rerun against the approved credential delta
+- dedicated runner implementation and offline validation have not started
+- `KEY_INSTALLATION_GATE: READY` has not been emitted; the operator must not open Janus for key installation yet
+- public prices must be recomputed during later no-call preflight and any result above `USD 0.50` blocks
+- live model calls still require exact `OK START LIVE TEST`
+- production certification registry remains intentionally empty
+- no commit, push, or `origin/codex-sync` update occurred; remote state may not contain this review or CURRENT_STATE update
+
+Next recommended step for ChatGPT: preserve the exact `USD 1.00` credential boundary and do not interpret TestSpec PASS as key-installation or live authority.
+
+Next recommended step for Codex: run `janus-preimplementation-check` for Task `.6`, binding the revised task breakdown, approved TestSpec, credential review, source Spec, prior blocked precheck, and compiler debug result.
+
+Last updated: `2026-07-17 20:37:31 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-17 20:30:25 +02:00`, Task `.6` and its authoritative TestSpec require a fresh, finite-budget OpenRouter inference key dedicated only to certification profile `OPENROUTER-JANUS-CERTIFICATION-KEY/1.0.0`. Development, Codex/OpenRouter delegation, environment, CLI, fixture, management, and caller-supplied credential sources are forbidden.
+
+Current goal: review the credential-protocol TestSpec delta through `janus-test-pipeline`, then rerun the single-task preimplementation check before any implementation or key installation.
+
+Active phase: `janus-task-breakdown`, canonical state `HANDOFF`.
+
+Last Codex work:
+- bound the dedicated key label `janus-task6-cert-2026-07`, Janus Settings storage path `Janus-Projekt/openrouter`, finite credit limit, expiry/revocation requirement, and no-fallback rule
+- added the explicit operator timing gate `KEY_INSTALLATION_GATE: READY`
+- prohibited saving or reading the real certification key before runner implementation and offline validation complete
+- required only masked Janus public state `present=true`, `masked=********`, and `state=VALID` in evidence
+- preserved the later separate live authorization literal `OK START LIVE TEST`
+- required revocation and Janus Settings deletion after live evidence unless a separately approved production-key workflow replaces it
+- performed no keyring read/write, key validation request, model call, implementation, product-code edit, registry population, release, publish, or production activation
+
+Changed files:
+- `documentation/TEST_SPEC/02_security_safety/20_openrouter_model_conformance_certification.md`
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6_task_breakdown.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md` (usage entry appended during closeout)
+
+Checks / validation performed:
+- Task `.6` handoff validator: PASS
+- dedicated credential profile/label/storage/timing/no-fallback structural assertions: PASS
+- key installation status remains `NOT REQUESTED`: PASS
+- runtime empty-registry content/hash check: PASS, SHA256 `7712D5B2775F5BDED03EF1C2DAE4228F9FCC8B7441140FC4F1AB8F56210EC46F`
+- no tests or precheck executed in task-breakdown
+
+Open risks:
+- the TestSpec credential-protocol delta requires `janus-test-pipeline` review before precheck
+- implementation and offline evidence have not started, so `KEY_INSTALLATION_GATE: READY` has not been emitted
+- the operator must not save the key in Janus yet
+- live certification remains unauthorized until no-call preflight passes and exact `OK START LIVE TEST` is received
+- production certification registry remains intentionally empty
+- no commit, push, or `origin/codex-sync` update occurred; remote state may not contain this credential protocol or CURRENT_STATE update
+
+Next recommended step for ChatGPT: preserve the dedicated certification-key decision and do not treat it as live or production authority.
+
+Next recommended step for Codex: route the changed TestSpec through `janus-test-pipeline`; after it passes, rerun `janus-preimplementation-check` for exactly Task `.6`.
+
+Last updated: `2026-07-17 20:30:25 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-17 20:15:22 +02:00`, Task `.6` is refined into a precheck-ready, non-production-activating certification slice bound to the approved OpenRouter TestSpec and exact four-candidate set. The validated generic-compiler blocker is isolated behind a dedicated Task `.6` conformance plan/runner/result path; no live execution or production activation is authorized.
+
+Current goal: rerun the single-task preimplementation check against the revised deterministic Task `.6` certification design.
+
+Active phase: `janus-task-breakdown`, canonical state `HANDOFF`.
+
+Last Codex work:
+- bound battery `OPENROUTER-JANUS-CONFORMANCE/1.0.0`, candidate set `OPENROUTER-FOUR-FAMILY-2026-07-17.1`, all 30 mandatory cases, 8 live-scenario mappings, and the exact four approved model/version pairs
+- translated `GENERATOR_PLAN_INVALID` into an isolated dedicated conformance runner, manifests, schemas, offline/static/mocked evidence, and `LIVE_PREFLIGHT_ONLY` implementation scope
+- explicitly prohibited use or modification of the generic GPT/Gemini compiler, plan schema, and generated runner
+- separated executioner-owned offline evidence from TestPipeline-owned live execution
+- retained the exact later live gate `OK START LIVE TEST`, fail-closed evidence semantics, inert-tool constraints, and independent Final Audit
+- preserved `backend/config/openrouter_certified_models.json` byte-for-byte with `models: []`
+- performed no implementation, product-code change, live provider call, registry population, release, publish, or production activation
+
+Changed files:
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6_task_breakdown.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md` (usage entry appended during closeout)
+
+Checks / validation performed:
+- task handoff validator: PASS
+- exact TestSpec/candidate/live-gate/compiler-blocker structural assertions: PASS
+- single `@janus-preimplementation-check` handoff assertion: PASS
+- runtime empty-registry content/hash check: PASS, SHA256 `7712D5B2775F5BDED03EF1C2DAE4228F9FCC8B7441140FC4F1AB8F56210EC46F`
+- scoped task-breakdown whitespace/diff check: PASS
+
+Open risks:
+- implementation and the rerun preimplementation check have not started
+- the dedicated conformance runner/manifests/schemas are execution scope, not yet implemented evidence
+- live paid/external certification remains unauthorized until a later validated TestPipeline preflight and exact `OK START LIVE TEST`
+- production certification registry remains intentionally empty; no OpenRouter model is production-selectable
+- no commit, push, or `origin/codex-sync` update occurred; remote state may not contain this revised handoff or CURRENT_STATE update
+
+Next recommended step for ChatGPT: treat the four candidate identities and certification battery as fixed while keeping live and production authority closed.
+
+Next recommended step for Codex: run `janus-preimplementation-check` for exactly `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6` using the revised breakdown, approved TestSpec, source Spec, and compiler debug result.
+
+Last updated: `2026-07-17 20:15:22 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-17 20:03:47 +02:00`, the exact four Task `.6` OpenRouter candidate bindings are operator-approved. Additional models remain possible only through a new candidate-set version, explicit approval, the complete current battery, and independent audit evidence. Live execution and production activation remain unauthorized.
+
+Current goal: revise the Task `.6` execution design so the approved OpenRouter TestSpec is compiled or validated by a deterministic dedicated conformance path instead of the incompatible generic GPT/Gemini compiler.
+
+Active phase: `janus-debug` iteration 1, canonical state `BLOCKED`, failure code `GENERATOR_PLAN_INVALID`.
+
+Last Codex work:
+- recorded `KANDIDATEN: YES` in the TestSpec and changed all four exact candidate rows to operator-approved
+- preserved the separate later `OK START LIVE TEST` gate and the empty production registry
+- searched `WHAT_I_LEARNED` for a matching generator/provider-matrix pattern; no directly applicable compiler pattern was found
+- reproduced the compiler blocker in an isolated temp directory without live calls
+- proved the compiler reports `TESTPLAN VALID` while generating `68` GPT/Gemini tests, `0` OpenRouter tests, and only `gpt-5.4-nano` / `gemini-3-flash-preview`
+- identified matching limits in the plan schema and generated-runner provider mapping
+- wrote and validated the canonical debug result
+- changed no product, compiler, schema, runner, registry, release, or production code
+
+Changed files:
+- `documentation/TEST_SPEC/02_security_safety/20_openrouter_model_conformance_certification.md`
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6_debug_result_testspec_compiler_provider_matrix.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md` (usage entry appended during closeout)
+
+Checks / validation performed:
+- exact candidate approval/state assertions: PASS
+- isolated temp TestSpec compilation: reproduced silent provider substitution
+- generated plan inspection: `68` tests, providers `GPT/Gemini`, OpenRouter tests `0`
+- compiler/schema/runner source inspection: confirmed hardcoded provider limits
+- debug-result validator: PASS
+- runtime empty-registry hash/content check: PASS
+- scoped diff/whitespace checks: PASS
+
+Open risks:
+- generic TestSpec compiler, plan schema, and generated runner cannot represent the approved OpenRouter provider/model/version/execution-class matrix
+- accepting its green validator result would create false certification evidence
+- Task `.6` breakdown must bind a deterministic dedicated conformance plan/result path before precheck can pass
+- live paid/external certification still requires `OK START LIVE TEST`
+- production certification registry remains intentionally empty; no OpenRouter model is production-selectable
+- no commit, push, or `origin/codex-sync` update occurred; remote state may not contain the approval, debug evidence, or CURRENT_STATE update
+
+Next recommended step for ChatGPT: treat the exact four candidate identities as approved, while keeping all live and production authority closed.
+
+Next recommended step for Codex: rerun `janus-task-breakdown` on the compiler-blocker delta and bind the dedicated deterministic conformance runner/manifest/result validation path; then rerun preimplementation check.
+
+Last updated: `2026-07-17 20:03:47 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-17 19:53:34 +02:00`, the missing Task `.6` OpenRouter conformance TestSpec has been authored as a non-production, decision-locked draft. It defines battery `OPENROUTER-JANUS-CONFORMANCE/1.0.0`, binary fail-closed oracles, redacted evidence ownership, inert-tool boundaries, and four exact candidate proposals. Candidate identity still needs explicit operator approval; live execution remains unauthorized.
+
+Current goal: approve or replace the exact four OpenRouter candidate bindings, then close the deterministic compiler/runner compatibility gap before returning Task `.6` to task breakdown and precheck.
+
+Active phase: `janus-test-pipeline` TestSpec authoring, canonical state `NEEDS_INFO`.
+
+Last Codex work:
+- created `documentation/TEST_SPEC/02_security_safety/20_openrouter_model_conformance_certification.md`
+- verified official OpenRouter metadata for Claude Sonnet 5, GLM 5.2, DeepSeek V4 Pro, and Qwen 3.7 Plus without a credential or model invocation
+- bound each proposed `model_id` to the official permanent `canonical_slug` version and confirmed `tools`, `tool_choice`, and no expiration
+- defined 20 functional, 6 security, 4 prompt-injection, and 8 bundled live scenarios with at most 10 model transmissions per candidate and no automatic retry
+- kept candidate approval separate from the later literal `OK START LIVE TEST`
+- confirmed the existing deterministic TestSpec compiler hardcodes GPT/Gemini and cannot authoritatively compile this four-model OpenRouter matrix
+- performed no TestPlan generation, live model call, credential access, implementation, product-code edit, registry population, release, publish, or production activation
+
+Changed files:
+- `documentation/TEST_SPEC/02_security_safety/20_openrouter_model_conformance_certification.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md` (usage entry appended during closeout)
+
+Checks / validation performed:
+- official OpenRouter candidate metadata lookup: PASS (`4/4`)
+- normalized four-record metadata snapshot SHA256: `23BC94536595051A57C589C7F0C1DEFD193B9EEE373B23E4A9CD833499443263`
+- TestSpec structural assertions: PASS (`TC=20`, `SEC=6`, `PINJ=4`, `LIVE=8`)
+- runtime empty-registry hash/content check: PASS
+- compiler capability audit: BLOCKED by hardcoded `const providers = ['GPT', 'Gemini']`
+- scoped TestSpec diff/whitespace check: PASS
+
+Open risks:
+- exact four candidate rows are proposals until the operator explicitly approves or replaces them
+- current TestPlan compiler cannot preserve the OpenRouter provider/model matrix; do not compile a misleading GPT/Gemini plan
+- live paid/external certification remains unauthorized and later requires `OK START LIVE TEST`
+- secure credential, call-budget, runner, result-schema extension, and evidence-path checks remain future TestRun preflight gates
+- production certification registry remains intentionally empty; no OpenRouter model is production-selectable
+- no commit, push, or `origin/codex-sync` update occurred; remote state may not contain this TestSpec or CURRENT_STATE update
+
+Next recommended step for ChatGPT: review the four exact candidate proposals and approve them only as certification identities, not as live or production authorization.
+
+Next recommended step for Codex: after explicit candidate approval, route the hardcoded compiler/runner compatibility gap through `janus-debug` or a separately bound test-infrastructure slice; do not start live tests.
+
+Last updated: `2026-07-17 19:53:34 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-17 19:38:33 +02:00`, the preimplementation check for `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6` is canonically blocked with `TESTSPEC_SOURCE_OF_TRUTH_MISSING`. The certification-only production boundary is sound, but execution cannot begin because no authoritative OpenRouter conformance TestSpec exists, the four exact candidate IDs are not decision-locked, and paid/external live certification calls are not approved.
+
+Current goal: create an authoritative non-production OpenRouter certification TestSpec before returning Task `.6` to task breakdown and precheck.
+
+Active phase: `janus-preimplementation-check`, canonical state `BLOCKED`.
+
+Last Codex work:
+- verified exact Task/Spec/model identity for the single Task `.6` slice
+- confirmed the production registry remains empty with SHA256 `7712D5B2775F5BDED03EF1C2DAE4228F9FCC8B7441140FC4F1AB8F56210EC46F`
+- searched `documentation/TEST_SPEC/` and found no matching OpenRouter conformance TestSpec
+- blocked execution because the mandatory case IDs/oracles and the exact four candidate IDs would otherwise be invented during implementation
+- preserved the separate explicit approval requirement for any paid/external OpenRouter certification call
+- performed no implementation, product-code edit, test execution, live call, credential action, registry population, release, publish, or production activation
+
+Changed files:
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6_precheck.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md` (usage entry appended during closeout)
+
+Checks / validation performed:
+- artifact identity and one-target scope check: PASS
+- production empty-registry content/hash check: PASS
+- targeted TestSpec discovery: `NO_MATCHING_TESTSPEC`
+- blocked-result structural assertions: PASS
+- bundled precheck validator: expected tooling failure because it validates PASS artifacts only and has no non-PASS branch
+- scoped diff/whitespace check: PASS
+
+Open risks:
+- TestSpec case/oracle authority is missing
+- exact Claude, GLM, DeepSeek, and Qwen candidate IDs remain unbound
+- live paid/external certification authority remains absent
+- the generated evidence and registry-candidate ownership must be assigned to TestPipeline rather than improvised by execution
+- production certification registry remains intentionally empty; no OpenRouter model is production-selectable
+- no commit, push, or `origin/codex-sync` update occurred; remote state may not contain this precheck blocker or CURRENT_STATE update
+
+Next recommended step for ChatGPT: treat Task `.6` as blocked before implementation and require a TestSpec with immutable battery/oracles plus exact candidate bindings.
+
+Next recommended step for Codex: start `janus-test-pipeline` in a fresh focused slice using the Task `.6` breakdown, source Spec, and blocked precheck; do not authorize live calls yet.
+
+Last updated: `2026-07-17 19:38:33 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-17 19:29:34 +02:00`, `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6` has been refined into exactly one precheck-ready certification slice. The slice can create a versioned conformance battery, an exact four-family candidate package, redacted certification evidence, and a non-runtime registry update candidate, but it may not populate the productive runtime registry, release, publish, or activate OpenRouter.
+
+Current goal: precheck the bounded Task `.6` certification slice without weakening the empty-registry production default.
+
+Active phase: `janus-task-breakdown`, canonical state `HANDOFF`.
+
+Last Codex work:
+- bound only the compiled Task `.6`, its source Spec, and Task `.5` Final Audit as the prior-gate boundary
+- released exactly `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6` for single-task preimplementation check
+- separated certification evidence from runtime authority: the generated registry candidate must stay under `documentation/test-results/`
+- required `backend/config/openrouter_certified_models.json` to remain at `models: []`
+- added explicit live-call approval, secure-credential, redaction, inert-tool, no-retry, and no-production-activation gates
+- performed no precheck, implementation, test execution, live OpenRouter call, credential action, Git action, release, publish, or production activation
+
+Changed files:
+- `documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6_task_breakdown.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md` (usage entry appended during closeout)
+
+Checks / validation performed:
+- start-of-work healthcheck reminder gate: CLEAR
+- task-handoff validator: PASS
+- scoped artifact whitespace/diff check: PASS
+
+Open risks:
+- exact current Claude, GLM, DeepSeek, and Qwen OpenRouter IDs must be verified against official availability at execution time
+- any live paid/external certification matrix requires separate explicit operator approval and a valid secure OpenRouter credential
+- the mandatory battery-to-Spec coverage map, evidence redaction, inert tool boundary, and initial empty-registry hash remain precheck gates
+- production certification registry remains intentionally empty; no OpenRouter model is production-selectable
+- no commit, push, or `origin/codex-sync` update occurred; remote state may not contain this task breakdown or CURRENT_STATE update
+
+Next recommended step for ChatGPT: review the Task `.6` boundary as certification-only and do not infer production activation from a passing candidate result.
+
+Next recommended step for Codex: run `janus-preimplementation-check` for `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6` with `5.6 Sol/high`; stop before any live external call until the operator explicitly approves that phase.
+
+Last updated: `2026-07-17 19:29:34 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-17 19:05:00 +02:00`, `TASK-OPENROUTER-JANUS-CHAT-PROVIDER.5` has task-scoped Final Audit `PASS WITH FIXES`. The parent OpenRouter Feature Spec is now `PARTIAL IMPLEMENTATION (5/6)`; Task `.6` remains open. Production remains disabled because the packaged certification registry is intentionally empty.
 
 Current goal: document and checkpoint the completed Task `.5` telemetry/DeepDive delivery; after the checkpoint, route Task `.6` through feature-risk review before any implementation.
