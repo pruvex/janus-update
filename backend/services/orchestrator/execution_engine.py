@@ -788,6 +788,34 @@ def _build_memory_read_fallback_response_v2(user_text: str, tool_results: Any) -
     return _build_memory_read_fallback_response(user_text, tool_results)
 
 
+def _extract_filesystem_list_text(data: dict[str, Any]) -> str:
+    """Render filesystem.list_directory payloads that nest contents under data.data."""
+    candidates: list[Any] = [data]
+    nested = data.get("data")
+    if isinstance(nested, dict):
+        candidates.append(nested)
+        deeper = nested.get("data")
+        if isinstance(deeper, dict):
+            candidates.append(deeper)
+
+    for block in candidates:
+        if not isinstance(block, dict):
+            continue
+        listing = str(block.get("listing_text") or "").strip()
+        if listing:
+            return listing
+        entries = block.get("contents")
+        if entries is None:
+            entries = block.get("files")
+        if isinstance(entries, list) and entries:
+            names = [str(item).strip() for item in entries if str(item).strip()]
+            if names:
+                path = str(block.get("path") or "").strip()
+                header = f"Dateien in {path}:" if path else "Dateien:"
+                return header + "\n" + "\n".join(names)
+    return ""
+
+
 def _extract_ok_tool_result_text(payload: dict[str, Any], normalized: str) -> str:
     data = payload.get("data") if isinstance(payload.get("data"), dict) else {}
     if normalized in {"system.wikipedia_summary", "system_wikipedia_summary"}:
@@ -796,6 +824,14 @@ def _extract_ok_tool_result_text(payload: dict[str, Any], normalized: str) -> st
             or str(payload.get("message") or "").strip()
             or str(payload.get("output") or "").strip()
         )
+    if normalized in {
+        "filesystem.list_directory",
+        "filesystem_list_directory",
+        "list_directory",
+    }:
+        listing = _extract_filesystem_list_text(data if isinstance(data, dict) else {})
+        if listing:
+            return listing
     return (
         str(data.get("listing_text") or "").strip()
         or str(payload.get("message") or "").strip()
@@ -1697,6 +1733,23 @@ class OrchestratorExecutionEngine:
         if getattr(intent_result, "is_shopping_intent", False) or primary_intent == "shopping":
             negative_constraints.append(
                 "Shopping-Turn: system.price_comparison ist Pflicht; system.websearch darf nicht als Ersatz geplant werden."
+            )
+        if getattr(intent_result, "is_filesystem_intent", False) or primary_intent == "filesystem":
+            required.extend(["filesystem.list_directory", "filesystem.read_file"])
+            priority.extend(["filesystem.list_directory", "filesystem.read_file"])
+            forbidden.extend(
+                [
+                    "system.websearch",
+                    "system.rss_news",
+                    "system.create_pdf",
+                    "knowledge.query",
+                    "knowledge.code_search",
+                    "knowledge.read_full_text",
+                ]
+            )
+            negative_constraints.append(
+                "Filesystem-Turn: Nutze filesystem.list_directory und filesystem.read_file. "
+                "Websuche, RSS, Knowledge und PDF sind verboten."
             )
 
         forbidden_set = {s for s in forbidden if s}
@@ -3272,6 +3325,9 @@ class OrchestratorExecutionEngine:
                     continue
                 if isinstance(parsed, dict) and parsed.get("error"):
                     tool_name = str(tool_result.get("name") or "").strip()
+                    skill_id = str(tool_result.get("_skill_id") or "").strip()
+                    tool_name_norm = tool_name.lower().replace("_", ".")
+                    skill_id_norm = skill_id.lower().replace("_", ".")
                     error_obj = parsed.get("error")
                     error_code = ""
                     error_message = ""
@@ -3282,7 +3338,8 @@ class OrchestratorExecutionEngine:
                         error_message = str(error_obj or "").strip()
                     if tool_name == "system.country_info" and error_code == "NOT_FOUND":
                         country_not_found_detected = True
-                    if tool_name == "video.search":
+                    # Tool executor may report name=video_search while skill_id=video.search
+                    if tool_name_norm == "video.search" or skill_id_norm == "video.search":
                         video_search_failure_detected = True
                         video_search_failure_text = error_message or str(error_obj)
                     if tool_name in {"system.websearch", "websearch_wrapper"}:
@@ -3328,7 +3385,7 @@ class OrchestratorExecutionEngine:
                     fallback_tool_calls: List[Dict[str, Any]] = []
                     for _tc in (tool_calls or []):
                         _fn = _tc.get("function") if isinstance(_tc, dict) else {}
-                        _name = str((_fn or {}).get("name") or "").strip().lower()
+                        _name = str((_fn or {}).get("name") or "").strip().lower().replace("_", ".")
                         if _name != "video.search":
                             continue
                         _args_raw = (_fn or {}).get("arguments") or "{}"
@@ -3359,7 +3416,8 @@ class OrchestratorExecutionEngine:
                             non_video_results = [
                                 tr
                                 for tr in (tool_results or [])
-                                if str(tr.get("name") or "").strip().lower() != "video.search"
+                                if str(tr.get("name") or "").strip().lower().replace("_", ".") != "video.search"
+                                and str(tr.get("_skill_id") or "").strip().lower().replace("_", ".") != "video.search"
                             ]
                             tool_results = non_video_results + [tr for tr in fallback_results if isinstance(tr, dict)]
                             tool_failure_message = None
@@ -4067,11 +4125,21 @@ class OrchestratorExecutionEngine:
                                 )
                         elif ev.type == "error":
                             # 💎 BACKLOG-006: Build dynamic fallback summary with error details
+                            _err_meta = ev.metadata if isinstance(ev.metadata, dict) else {}
                             dynamic_fallback = _build_dynamic_fallback_summary(
                                 provider=provider,
                                 model=model,
+                                error_code=str(_err_meta.get("error_code") or "").strip() or None,
+                                error_message=str(ev.content or "").strip() or None,
                             )
-                            yield StreamEvent(type="error", content=dynamic_fallback, metadata={"fatal": True})
+                            yield StreamEvent(
+                                type="error",
+                                content=dynamic_fallback,
+                                metadata={
+                                    "fatal": True,
+                                    "error_code": _err_meta.get("error_code"),
+                                },
+                            )
                             response = {"text": dynamic_fallback}
                             stream_fatal = True
                             break

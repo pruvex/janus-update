@@ -369,10 +369,13 @@ async def get_costs_deep_dive(
 @router.get("/costs/dashboard")
 async def get_costs_dashboard(db: Session = Depends(get_db)):
     today = datetime.now()
-    cost = crud.get_costs_for_month(db, today.year, today.month)  # Updated to use crud with db parameter
+    totals = crud.get_costs_dashboard_totals(db, today.year, today.month)
     config = load_config()
     budget = config.get("monthly_budget", 10.00)
-    return {"current_month_cost": cost, "monthly_budget": budget}
+    return {
+        **totals,
+        "monthly_budget": budget,
+    }
 
 
 @router.post("/budget")
@@ -465,7 +468,20 @@ async def save_model_selection(selection: ModelSelection):
     config = load_config()
     if "model_selection" not in config:
         config["model_selection"] = {}
-    config["model_selection"][selection.provider] = selection.models
+    models = [
+        str(model_id).strip()
+        for model_id in (selection.models or [])
+        if str(model_id or "").strip()
+    ]
+    if str(selection.provider or "").strip().lower() == _OPENROUTER_PROVIDER:
+        certified_ids = {
+            str(model.get("id") or "").strip()
+            for model in load_model_catalog().values()
+            if str(model.get("provider") or "").strip().lower() == _OPENROUTER_PROVIDER
+            and str(model.get("id") or "").strip()
+        }
+        models = [model_id for model_id in models if model_id in certified_ids]
+    config["model_selection"][selection.provider] = models
     save_config(config)
     return {"message": "Model selection saved successfully"}
 

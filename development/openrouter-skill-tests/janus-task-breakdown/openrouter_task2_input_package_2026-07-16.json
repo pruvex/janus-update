@@ -1,0 +1,63 @@
+{
+  "workflow_id": "WF-OPENROUTER-TASK2-BREAKDOWN-2026-07-16",
+  "bound_skill_context": "janus-task-breakdown",
+  "mode": "SINGLE_TARGET_TASK_REFINEMENT_ONLY",
+  "spec_path": "documentation/SPEC/OPENROUTER_JANUS_CHAT_PROVIDER_FEATURE_SPEC.md",
+  "task_file_path": "documentation/tasks/TASK-OPENROUTER-JANUS-CHAT-PROVIDER.md",
+  "backlog_item": "N/A",
+  "candidate_target_tasks": [
+    "TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2"
+  ],
+  "expected_target_task": "TASK-OPENROUTER-JANUS-CHAT-PROVIDER.2",
+  "expected_target_subtask": "N/A",
+  "expected_next_skill": "janus-preimplementation-check",
+  "expected_execution_model": "5.6 Terra",
+  "expected_decision": "TASK DESIGN COMPLETE",
+  "selection_rationale": [
+    "Task .1 is final-audit PASS, documented, merged, backed up, and synchronized",
+    "Task .2 is the next compiled atomic dependency and does not require Task .3 chat transport",
+    "The approved Spec already locks VALID, INVALID, and UNVERIFIED key-state semantics"
+  ],
+  "required_files": [
+    "backend/api/routers/system.py",
+    "backend/data/schemas.py",
+    "frontend/index.html",
+    "frontend/js/settings.js",
+    "frontend/css/settings.css",
+    "backend/tests/test_openrouter_key_settings_api.py",
+    "tests/e2e/openrouter-settings.spec.js"
+  ],
+  "required_acceptance_focus": [
+    "OpenRouter credentials use only the Janus-Projekt/openrouter keyring namespace",
+    "save and replace perform authenticated content-free key-status validation",
+    "only authenticated success yields VALID; authentication rejection yields INVALID; incomplete technical validation yields UNVERIFIED",
+    "INVALID and UNVERIFIED remain fail-closed without deleting the stored key or selection state",
+    "temporary network/provider/model failures do not automatically invalidate a previously VALID key",
+    "save, replace, and delete do not read or mutate credentials for any other provider",
+    "API, UI, logs, errors, fixtures, and evidence never expose the raw key",
+    "no chat transport, model selection, telemetry, real key, or production activation is introduced"
+  ],
+  "required_test_focus": [
+    "backend contract tests for save, replace, delete, authenticated success, auth rejection, timeout/network failure, and provider credential isolation",
+    "negative assertions that raw keys never appear in response bodies, logs, exceptions, or evidence",
+    "headed settings E2E for masked storage state and visible non-sensitive VALID, INVALID, and UNVERIFIED states",
+    "regression for existing API-key settings and the separate ChatGPT connection card",
+    "Python and JavaScript syntax checks plus scoped git diff check"
+  ],
+  "verified_local_seams": [
+    "backend/api/routers/system.py already owns /api/keys and uses keyring service Janus-Projekt with provider-lowercase entries",
+    "frontend/js/settings.js and frontend/index.html own the existing provider-key settings surface",
+    "backend/tests/test_codex_connection_settings_api.py already asserts ChatGPT/API-key non-interference",
+    "all listed existing Task .2 files are clean on master before refinement; the two new test paths do not exist yet"
+  ],
+  "forbidden_behaviors": [
+    "No implementation",
+    "No precheck execution",
+    "No test execution",
+    "No code generation",
+    "No live OpenRouter request or credential access",
+    "No raw or synthetic credential-shaped value in returned evidence",
+    "No chat transport, provider fallback, model selection, telemetry, Task .3-.6, Git, release, or production authority",
+    "No authoritative handoff write by OpenRouter"
+  ]
+}

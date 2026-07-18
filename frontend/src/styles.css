@@ -326,14 +326,22 @@ html, body {
 }
 
 .cost-line-primary,
-.cost-line-budget {
+.cost-line-budget,
+.cost-line-detail {
   margin: 0;
   line-height: 1.45;
 }
 
+.cost-line-detail {
+  color: var(--text-secondary);
+  font-size: 0.76rem;
+}
+
 .cost-line-primary {
+  margin-top: 4px;
   color: var(--text-primary);
-  font-weight: 500;
+  font-weight: 700;
+  font-size: 0.86rem;
 }
 
 .cost-line-budget {
@@ -1538,6 +1546,16 @@ button:hover {
 
 .deep-dive-summary-grid--cross-provider {
     margin-top: 0;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.deep-dive-metric-card--total {
+    background: #eef3f8;
+    border-color: #b8c6d6;
+}
+
+.deep-dive-metric-card--total .deep-dive-cost-emphasis {
+    font-size: 1.35rem;
 }
 
 .deep-dive-metric-card--muted {
@@ -1568,6 +1586,11 @@ button:hover {
     gap: 10px;
 }
 
+.deep-dive-model-row {
+    align-items: center;
+    flex-wrap: wrap;
+}
+
 .deep-dive-provider-topline strong,
 .deep-dive-model-main strong {
     font-size: 0.94rem;
@@ -1591,6 +1614,51 @@ button:hover {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    min-width: 0;
+    flex: 1 1 180px;
+}
+
+.deep-dive-model-metrics {
+    flex: 1 1 160px;
+    justify-content: flex-end;
+}
+
+.deep-dive-cost-emphasis {
+    margin-left: auto;
+    font-size: 1.2rem;
+    font-weight: 800;
+    line-height: 1.2;
+    color: #111827;
+    white-space: nowrap;
+    letter-spacing: -0.01em;
+}
+
+.deep-dive-model-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-top: 4px;
+    padding: 14px 14px;
+    border: 1px solid #b8c0cc;
+    border-radius: 8px;
+    background: #f3f6f9;
+}
+
+.deep-dive-model-total-label {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.deep-dive-model-total-label strong {
+    font-size: 0.95rem;
+    color: #111827;
+}
+
+.deep-dive-model-total-label span {
+    font-size: 0.8rem;
+    color: #5f6368;
 }
 
 .deep-dive-forensic-heading h4 {
@@ -1970,9 +2038,16 @@ button:hover {
     .deep-dive-provider-topline,
     .deep-dive-provider-meta,
     .deep-dive-model-row,
-    .deep-dive-model-metrics {
+    .deep-dive-model-metrics,
+    .deep-dive-model-total {
         flex-direction: column;
         align-items: stretch;
+    }
+
+    .deep-dive-cost-emphasis {
+        margin-left: 0;
+        align-self: flex-end;
+        font-size: 1.28rem;
     }
 }
 
@@ -2868,3 +2943,140 @@ button:hover {
 .compression-restore-btn:hover {
   background: rgba(255, 152, 0, 0.2);
 }
+
+/* Settings: OpenRouter model checklist — family sections (compact, one page) */
+#model-list {
+  list-style: none;
+  margin: 12px 0 16px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#model-list.model-list--families {
+  display: block;
+  column-count: 2;
+  column-gap: 28px;
+  gap: 0;
+}
+
+.model-family-section {
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.model-family-header {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--accent-color);
+  padding: 0 2px 2px;
+  border-bottom: 1px solid var(--sidebar-border);
+}
+
+.model-family-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: stretch;
+}
+
+.model-list-item {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--sidebar-border);
+  border-radius: 8px;
+  background: var(--background-secondary);
+  min-width: 0;
+}
+
+.model-list--families .model-list-item {
+  padding: 5px 8px;
+  border-radius: 6px;
+}
+
+.model-list-item-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.model-list--families .model-list-item-row {
+  align-items: center;
+  gap: 8px;
+}
+
+.model-list-checkbox {
+  margin-top: 3px;
+  flex: 0 0 auto;
+}
+
+.model-list--families .model-list-checkbox {
+  margin-top: 0;
+}
+
+.model-list-item-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.model-list--families .model-list-item-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 10px;
+}
+
+.model-list-item-name {
+  display: block;
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1.25;
+  cursor: pointer;
+  color: var(--text-primary);
+}
+
+.model-list--families .model-list-item-name {
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.model-list-item-cost {
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.3;
+}
+
+.model-list--families .model-list-item-cost {
+  margin-top: 0;
+  font-size: 10.5px;
+  white-space: nowrap;
+}
+
+.model-list-item-desc {
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.35;
+}
+
+/* Descriptions hidden in OR family view — kept as title tooltip for density */
+.model-list--families .model-list-item-desc {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  #model-list.model-list--families {
+    column-count: 1;
+  }
+}
+

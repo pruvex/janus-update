@@ -354,6 +354,20 @@ document.addEventListener("DOMContentLoaded", () => {
     const totalCostSaved = Number(crossProviderSummary.total_cost_saved) || 0;
     const totalTokensSaved = Number(crossProviderSummary.total_tokens_saved) || 0;
     const totalCachedTokens = Number(crossProviderSummary.total_cached_tokens) || 0;
+    const apiKeyTotal =
+      crossProviderSummary.api_key_total_cost !== undefined &&
+      crossProviderSummary.api_key_total_cost !== null
+        ? Number(crossProviderSummary.api_key_total_cost) || 0
+        : Number(crossProviderSummary.total_cost) || 0;
+    const openRouterTotal = Number(crossProviderSummary.openrouter_total_cost) || 0;
+    const combinedTotal =
+      crossProviderSummary.combined_total_cost !== undefined &&
+      crossProviderSummary.combined_total_cost !== null
+        ? Number(crossProviderSummary.combined_total_cost) || 0
+        : apiKeyTotal + openRouterTotal;
+    const apiModelCount =
+      Number(crossProviderSummary.api_model_count) || modelBreakdown.length || 0;
+    const openRouterModelCount = Number(crossProviderSummary.openrouter_model_count) || 0;
 
     return `
       <section class="deep-dive-provider-section">
@@ -369,14 +383,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <section class="deep-dive-summary-grid deep-dive-summary-grid--cross-provider">
           <article class="deep-dive-metric-card">
+            <span class="deep-dive-metric-label">API-Key-Kosten</span>
+            <strong class="deep-dive-cost-emphasis">${formatCurrency(apiKeyTotal)}</strong>
+            <small>${Number(crossProviderSummary.api_provider_count) || providerBreakdown.length || 0} Provider · ${apiModelCount} Modelle</small>
+          </article>
+          <article class="deep-dive-metric-card">
+            <span class="deep-dive-metric-label">OpenRouter</span>
+            <strong class="deep-dive-cost-emphasis">${formatCurrency(openRouterTotal)}</strong>
+            <small>${openRouterModelCount} Modell${openRouterModelCount === 1 ? "" : "e"} · Credits als €</small>
+          </article>
+          <article class="deep-dive-metric-card deep-dive-metric-card--total">
             <span class="deep-dive-metric-label">Gesamtkosten</span>
-            <strong>${formatCurrency(crossProviderSummary.total_cost)}</strong>
-            <small>${providerBreakdown.length || 0} Provider aktiv</small>
+            <strong class="deep-dive-cost-emphasis">${formatCurrency(combinedTotal)}</strong>
+            <small>API-Keys + OpenRouter</small>
           </article>
           <article class="deep-dive-metric-card">
             <span class="deep-dive-metric-label">Modelle sichtbar</span>
             <strong>${Number(crossProviderSummary.model_count) || 0}</strong>
-            <small>${modelBreakdown.length || 0} Modelle im DeepDive</small>
+            <small>${apiModelCount} API · ${openRouterModelCount} OpenRouter</small>
           </article>
           <article class="deep-dive-metric-card ${totalCachedTokens > 0 ? "" : "deep-dive-metric-card--muted"}">
             <span class="deep-dive-metric-label">Cache-Tokens</span>
@@ -386,20 +410,20 @@ document.addEventListener("DOMContentLoaded", () => {
           <article class="deep-dive-metric-card ${totalCostSaved > 0 ? "" : "deep-dive-metric-card--muted"}">
             <span class="deep-dive-metric-label">Ersparnis</span>
             <strong>${formatCurrency(totalCostSaved)}</strong>
-            <small>${formatSavingsMetricNote(totalCostSaved, totalTokensSaved, crossProviderSummary.total_cost)}</small>
+            <small>${formatSavingsMetricNote(totalCostSaved, totalTokensSaved, apiKeyTotal)}</small>
           </article>
         </section>
 
         <div class="deep-dive-provider-grid">
           ${
-            providerBreakdown.length
-              ? providerBreakdown
-                  .map(
+            providerBreakdown.length || openRouterTotal > 0 || openRouterModelCount > 0
+              ? [
+                  ...providerBreakdown.map(
                     (provider) => `
                       <article class="deep-dive-provider-card">
                         <div class="deep-dive-provider-topline">
                           <strong>${escapeHtml(formatProviderLabel(provider.provider))}</strong>
-                          <span>${formatCurrency(provider.total_cost)}</span>
+                          <span class="deep-dive-cost-emphasis">${formatCurrency(provider.total_cost)}</span>
                         </div>
                         <div class="deep-dive-provider-meta">
                           <span>${escapeHtml(formatModelCountLabel(provider.models))}</span>
@@ -408,8 +432,23 @@ document.addEventListener("DOMContentLoaded", () => {
                         </div>
                       </article>
                     `,
-                  )
-                  .join("")
+                  ),
+                  openRouterModelCount > 0 || openRouterTotal > 0
+                    ? `
+                      <article class="deep-dive-provider-card">
+                        <div class="deep-dive-provider-topline">
+                          <strong>OpenRouter</strong>
+                          <span class="deep-dive-cost-emphasis">${formatCurrency(openRouterTotal)}</span>
+                        </div>
+                        <div class="deep-dive-provider-meta">
+                          <span>${openRouterModelCount} Modell${openRouterModelCount === 1 ? "" : "e"}</span>
+                          <span>Credits als €</span>
+                          <span>keine FX-Umrechnung</span>
+                        </div>
+                      </article>
+                    `
+                    : "",
+                ].join("")
               : '<div class="deep-dive-empty-state">Keine provideruebergreifenden Kosten fuer diesen Zeitraum verfuegbar.</div>'
           }
         </div>
@@ -432,14 +471,25 @@ document.addEventListener("DOMContentLoaded", () => {
                             <span>${escapeHtml(formatProviderLabel(item.provider))}</span>
                           </div>
                           <div class="deep-dive-model-metrics">
-                            <span>${formatCurrency(item.total_cost)}</span>
                             <span>${formatNumber(item.total_cached_tokens || 0)} Cache</span>
                             <span>${formatCurrency(item.total_cost_saved || 0)} Ersparnis</span>
+                          </div>
+                          <div class="deep-dive-cost-emphasis" title="Kosten">
+                            ${formatCurrency(item.total_cost)}
                           </div>
                         </article>
                       `,
                     )
                     .join("")}
+                  <div class="deep-dive-model-total">
+                    <div class="deep-dive-model-total-label">
+                      <strong>Summe API-Modelle</strong>
+                      <span>${modelBreakdown.length || 0} Modelle im Zeitraum</span>
+                    </div>
+                    <div class="deep-dive-cost-emphasis">
+                      ${formatCurrency(apiKeyTotal)}
+                    </div>
+                  </div>
                 </div>
               `
               : '<div class="deep-dive-empty-state">Keine Modellsicht fuer diesen Zeitraum verfuegbar.</div>'
@@ -456,38 +506,66 @@ document.addEventListener("DOMContentLoaded", () => {
       raw === null || raw === undefined
         ? "nicht verfügbar"
         : `${Number(raw).toLocaleString("de-DE", { maximumFractionDigits: 8 })}${suffix}`;
+    const totalCredits = items.reduce((sum, item) => {
+      const credits = Number(item?.credits_cost);
+      return Number.isFinite(credits) ? sum + credits : sum;
+    }, 0);
+    const hasAnyCredits = items.some(
+      (item) => item?.credits_cost !== null && item?.credits_cost !== undefined,
+    );
+    const formatOrCost = (raw) =>
+      raw === null || raw === undefined ? "nicht verfügbar" : formatCurrency(raw);
     return `
       <section class="deep-dive-provider-section" data-openrouter-telemetry>
         <div class="deep-dive-anomaly-header">
           <div>
             <div class="deep-dive-kicker">OpenRouter</div>
-            <h4>Autoritative Turn-Telemetrie</h4>
+            <h4>Autoritative Modell-Telemetrie</h4>
           </div>
-          <div class="deep-dive-provider-summary-note">Keine Schätzung oder Währungsumrechnung</div>
+          <div class="deep-dive-provider-summary-note">OpenRouter-Credits als € · je Modell summiert · keine FX-Umrechnung</div>
         </div>
         <div class="deep-dive-model-list">
           ${items
-            .map(
-              (item) => `
+            .map((item) => {
+              const turns = Number(item.turn_count || 0);
+              const entries = Number(item.entry_count || 0);
+              const countLabel =
+                turns > 0
+                  ? `${turns.toLocaleString("de-DE")} Turn${turns === 1 ? "" : "s"}`
+                  : `${entries.toLocaleString("de-DE")} Eintrag${entries === 1 ? "" : "e"}`;
+              return `
                 <article class="deep-dive-model-row">
                   <div class="deep-dive-model-main">
                     <strong>${escapeHtml(item.model || "Unbekanntes Modell")}</strong>
-                    <span>Turn ${escapeHtml(item.turn_id || "nicht verfügbar")}</span>
+                    <span>${escapeHtml(countLabel)}</span>
+                  </div>
+                  <div class="deep-dive-model-metrics">
+                    <span>${value(item.cached_tokens)} Cache</span>
+                    <span>${value(item.total_tokens)} Tokens</span>
                   </div>
                   <div class="deep-dive-provider-meta">
                     <span>Eingabe: ${value(item.prompt_tokens)}</span>
                     <span>Ausgabe: ${value(item.completion_tokens)}</span>
-                    <span>Gesamt: ${value(item.total_tokens)}</span>
-                    <span>Cache gelesen: ${value(item.cached_tokens)}</span>
                     <span>Cache geschrieben: ${value(item.cache_write_tokens)}</span>
                     <span>Reasoning: ${value(item.reasoning_tokens)}</span>
-                    <span>Belastete OpenRouter-Credits: ${value(item.credits_cost)}</span>
-                    <span>Upstream-Inferenzkosten: ${value(item.upstream_inference_cost)}</span>
+                    <span>Upstream: ${value(item.upstream_inference_cost)}</span>
+                  </div>
+                  <div class="deep-dive-cost-emphasis" title="OpenRouter-Credits als Euro ausgewiesen">
+                    ${formatOrCost(item.credits_cost)}
                   </div>
                 </article>
-              `,
-            )
+              `;
+            })
             .join("")}
+          <div class="deep-dive-model-total">
+            <div class="deep-dive-model-total-label">
+              <strong>Summe OpenRouter</strong>
+              <span>${items.length.toLocaleString("de-DE")} Modell${items.length === 1 ? "" : "e"}</span>
+            </div>
+            <div class="deep-dive-cost-emphasis">
+              ${hasAnyCredits ? formatCurrency(totalCredits) : "nicht verfügbar"}
+            </div>
+          </div>
         </div>
       </section>
     `;
@@ -827,6 +905,8 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   async function fetchCostData() {
+    const costLineApi = document.getElementById("cost-line-api");
+    const costLineOpenrouter = document.getElementById("cost-line-openrouter");
     const currentMonthCostElement = document.getElementById("current-month-cost");
     const monthlyBudgetElement = document.getElementById("monthly-budget");
     const budgetProgressFill = document.getElementById("budget-progress-fill");
@@ -836,37 +916,50 @@ document.addEventListener("DOMContentLoaded", () => {
       const dashboardResponse = await fetch(`${API_BASE_URL}/api/costs/dashboard`);
       const dashboardData = await dashboardResponse.json();
 
-      const dbTotal = Number(dashboardData.current_month_cost) || 0;
-      const liveMeta = window.lastMetadata;
-      const liveCostFloor =
-        liveMeta && typeof liveMeta.cost === "number" && liveMeta.cost > 0 ? liveMeta.cost : 0;
-      const effectiveTotal = Math.max(dbTotal, liveCostFloor);
+      const apiKeyTotal = Number(
+        dashboardData.api_key_total_cost ?? dashboardData.current_month_cost,
+      ) || 0;
+      const openRouterTotal = Number(dashboardData.openrouter_total_cost) || 0;
+      const combinedTotal = Number(
+        dashboardData.combined_total_cost ??
+          dashboardData.current_month_cost ??
+          apiKeyTotal + openRouterTotal,
+      ) || 0;
       const monthlyBudget = Number(dashboardData.monthly_budget) || 0;
 
+      if (costLineApi) {
+        costLineApi.textContent = `API-Keys: ${formatCurrency(apiKeyTotal)}`;
+      }
+      if (costLineOpenrouter) {
+        costLineOpenrouter.textContent = `OpenRouter: ${formatCurrency(openRouterTotal)}`;
+      }
       if (currentMonthCostElement) {
-        const currentText = currentMonthCostElement.textContent || "";
-        const currentMatch = currentText.match(/([\d.,]+)\s*€/);
-        const currentShown = currentMatch ? parseFloat(currentMatch[1].replace(",", ".")) : 0;
-        if (effectiveTotal > currentShown) {
-          currentMonthCostElement.textContent = `Aktueller Monat: ${effectiveTotal.toFixed(2)} €`;
-        }
+        currentMonthCostElement.textContent = `Summe: ${formatCurrency(combinedTotal)}`;
       }
 
       if (monthlyBudgetElement) {
-        monthlyBudgetElement.textContent = `Budget: ${effectiveTotal.toFixed(2)} € / ${monthlyBudget.toFixed(2)} €`;
-        monthlyBudgetElement.classList.toggle("budget-exceeded", monthlyBudget > 0 && effectiveTotal > monthlyBudget);
+        monthlyBudgetElement.textContent = `Budget: ${formatCurrency(combinedTotal)} / ${formatCurrency(monthlyBudget)}`;
+        monthlyBudgetElement.classList.toggle(
+          "budget-exceeded",
+          monthlyBudget > 0 && combinedTotal > monthlyBudget,
+        );
       }
 
       if (budgetProgressFill) {
-        const pct = monthlyBudget > 0 ? Math.min(100, (effectiveTotal / monthlyBudget) * 100) : 0;
+        const pct = monthlyBudget > 0 ? Math.min(100, (combinedTotal / monthlyBudget) * 100) : 0;
         budgetProgressFill.style.width = `${pct}%`;
       }
 
       if (costSummaryWidgetEl) {
-        costSummaryWidgetEl.classList.toggle("budget-exceeded", monthlyBudget > 0 && effectiveTotal > monthlyBudget);
+        costSummaryWidgetEl.classList.toggle(
+          "budget-exceeded",
+          monthlyBudget > 0 && combinedTotal > monthlyBudget,
+        );
       }
     } catch (error) {
       console.error("Error fetching cost data:", error);
+      if (costLineApi) costLineApi.textContent = "";
+      if (costLineOpenrouter) costLineOpenrouter.textContent = "";
       if (currentMonthCostElement) {
         currentMonthCostElement.textContent = "Fehler beim Laden der Kosten.";
       }
@@ -903,9 +996,8 @@ document.addEventListener("DOMContentLoaded", () => {
       outputTokens,
     };
 
-    const currentMonthCostElement = document.getElementById("current-month-cost");
-    if (currentMonthCostElement) {
-      currentMonthCostElement.textContent = `Letzte Anfrage: ${formatCurrency(totalCost)}`;
+    if (window.fetchCostData) {
+      window.fetchCostData();
     }
 
     if (costDeepDiveModal && costDeepDiveModal.style.display !== "none" && deepDiveState.data) {
@@ -935,7 +1027,7 @@ function formatCurrency(value) {
   const amount = Number(value) || 0;
   return `${amount.toLocaleString("de-DE", {
     minimumFractionDigits: 2,
-    maximumFractionDigits: 4,
+    maximumFractionDigits: 2,
   })} €`;
 }
 
@@ -1080,7 +1172,22 @@ function formatProviderLabel(value) {
 function formatProviderSummaryLine(summary) {
   const providerCount = Number(summary.provider_count) || 0;
   const modelCount = Number(summary.model_count) || 0;
-  return `${providerCount} Provider | ${modelCount} Modelle | ${formatCurrency(summary.total_cost)}`;
+  const apiTotal =
+    summary.api_key_total_cost !== undefined && summary.api_key_total_cost !== null
+      ? Number(summary.api_key_total_cost) || 0
+      : null;
+  const orTotal =
+    summary.openrouter_total_cost !== undefined && summary.openrouter_total_cost !== null
+      ? Number(summary.openrouter_total_cost) || 0
+      : null;
+  const combined =
+    summary.combined_total_cost !== undefined && summary.combined_total_cost !== null
+      ? Number(summary.combined_total_cost) || 0
+      : Number(summary.total_cost) || 0;
+  if (apiTotal !== null && orTotal !== null) {
+    return `${providerCount} Provider | ${modelCount} Modelle | API ${formatCurrency(apiTotal)} + OR ${formatCurrency(orTotal)} = ${formatCurrency(combined)}`;
+  }
+  return `${providerCount} Provider | ${modelCount} Modelle | ${formatCurrency(combined)}`;
 }
 
 function formatModelCountLabel(models) {

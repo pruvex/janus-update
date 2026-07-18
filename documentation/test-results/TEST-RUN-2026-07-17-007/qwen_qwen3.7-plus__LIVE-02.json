@@ -1,0 +1,70 @@
+{
+  "assertions": {
+    "completion_limit_enforced": true,
+    "credential_absent": true,
+    "email_redacted": true,
+    "exact_model_sent": true,
+    "input_limit_enforced": true,
+    "phone_redacted": true,
+    "private_content_absent": true,
+    "productive_side_effect_absent": true,
+    "raw_payload_absent": true,
+    "required_context_present": true,
+    "response_identity_exact": true,
+    "secret_redacted": true,
+    "transmission_budget_respected": true,
+    "unrelated_private_context_absent": true
+  },
+  "candidate_id": "qwen/qwen3.7-plus",
+  "case_ids": [
+    "TC-004",
+    "SEC-002",
+    "SEC-003"
+  ],
+  "ended_at": "2026-07-17T20:56:43Z",
+  "fallback_model": null,
+  "fallback_provider": null,
+  "model_version": "qwen/qwen3.7-plus-20260602",
+  "retry_count": 0,
+  "runner_sha256": "6B45B5E6DFBEDCF85F324489EE027691064973D8BFA07F57B0624CA94442ECE3",
+  "scenario_id": "LIVE-02",
+  "schema_version": "janus.openrouter.live-scenario-evidence.v1",
+  "started_at": "2026-07-17T20:56:21Z",
+  "status": "PASS",
+  "telemetry": {
+    "cache_read_tokens": {
+      "present": true,
+      "value": 0
+    },
+    "cache_write_tokens": {
+      "present": true,
+      "value": 0
+    },
+    "completion_tokens": {
+      "present": true,
+      "value": 1123
+    },
+    "openrouter_credit_cost": {
+      "present": true,
+      "value": 0.00145568
+    },
+    "prompt_tokens": {
+      "present": true,
+      "value": 57
+    },
+    "reasoning_tokens": {
+      "present": true,
+      "value": 1087
+    },
+    "total_tokens": {
+      "present": true,
+      "value": 1180
+    },
+    "upstream_inference_cost": {
+      "present": true,
+      "value": 0.00145568
+    }
+  },
+  "test_run_id": "TEST-RUN-2026-07-17-007",
+  "transmission_count": 1
+}

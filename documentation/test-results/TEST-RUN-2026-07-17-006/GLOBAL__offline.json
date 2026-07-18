@@ -1,0 +1,13 @@
+{
+  "candidate_id": "__GLOBAL__",
+  "case_results": [
+    {
+      "case_id": "SEC-006",
+      "execution_class": "STATIC",
+      "status": "PASS"
+    }
+  ],
+  "credential_reads": 0,
+  "model_transmissions": 0,
+  "schema_version": "janus.openrouter.offline-evidence.v1"
+}

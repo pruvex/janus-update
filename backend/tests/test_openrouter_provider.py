@@ -386,6 +386,193 @@ async def test_service_sets_openrouter_base_url_zero_retries_and_checks_response
 
 
 @pytest.mark.asyncio
+async def test_qwen_forced_tool_disables_thinking_mode_via_extra_body():
+    requests = []
+    qwen_model = "qwen/qwen3.7-plus"
+    service = OpenRouterServiceProvider(
+        client_factory=lambda **_kwargs: FakeCompletionClient(
+            response(model=qwen_model),
+            requests,
+        )
+    )
+
+    await service.generate_response(
+        api_key=SENTINEL,
+        model=qwen_model,
+        messages=[{"role": "user", "content": "weather?"}],
+        tools=[
+            {
+                "name": "system.weather",
+                "description": "Get weather",
+                "parameters": {
+                    "type": "object",
+                    "properties": {"location": {"type": "string"}},
+                    "required": ["location"],
+                },
+            }
+        ],
+        force_tool_name="system.weather",
+    )
+
+    assert len(requests) == 1
+    assert requests[0]["tool_choice"] == {
+        "type": "function",
+        "function": {"name": "system_weather"},
+    }
+    assert requests[0]["extra_body"] == {"reasoning": {"effort": "none"}}
+
+
+@pytest.mark.asyncio
+async def test_kimi_forced_tool_uses_required_not_named_choice():
+    """Kimi K3: named tool_choice incompatible with mandatory thinking.
+
+    Janus keeps only the forced tool and uses tool_choice='required'.
+    """
+    requests = []
+    kimi_model = "moonshotai/kimi-k3"
+    service = OpenRouterServiceProvider(
+        client_factory=lambda **_kwargs: FakeCompletionClient(
+            response(model=kimi_model),
+            requests,
+        )
+    )
+
+    await service.generate_response(
+        api_key=SENTINEL,
+        model=kimi_model,
+        messages=[{"role": "user", "content": "weather?"}],
+        tools=[
+            {
+                "name": "system.weather",
+                "description": "Get weather",
+                "parameters": {
+                    "type": "object",
+                    "properties": {"location": {"type": "string"}},
+                    "required": ["location"],
+                },
+            },
+            {
+                "name": "system.websearch",
+                "description": "Search",
+                "parameters": {"type": "object", "properties": {}},
+            },
+        ],
+        force_tool_name="system.weather",
+    )
+
+    assert len(requests) == 1
+    assert requests[0]["tool_choice"] == "required"
+    assert "extra_body" not in requests[0]
+    tool_names = [
+        (t.get("function") or {}).get("name")
+        for t in requests[0].get("tools") or []
+        if isinstance(t, dict)
+    ]
+    assert tool_names == ["system_weather"]
+
+
+@pytest.mark.asyncio
+async def test_glm_forced_tool_uses_required_not_named_choice():
+    """GLM Flash: named tool_choice hangs until OpenRouter idle timeout.
+
+    Janus keeps only the forced tool and uses tool_choice='required'.
+    """
+    requests = []
+    glm_model = "z-ai/glm-4.7-flash"
+    service = OpenRouterServiceProvider(
+        client_factory=lambda **_kwargs: FakeCompletionClient(
+            response(model=glm_model),
+            requests,
+        )
+    )
+
+    await service.generate_response(
+        api_key=SENTINEL,
+        model=glm_model,
+        messages=[{"role": "user", "content": "weather?"}],
+        tools=[
+            {
+                "name": "system.weather",
+                "description": "Get weather",
+                "parameters": {
+                    "type": "object",
+                    "properties": {"location": {"type": "string"}},
+                    "required": ["location"],
+                },
+            },
+            {
+                "name": "system.websearch",
+                "description": "Search",
+                "parameters": {"type": "object", "properties": {}},
+            },
+        ],
+        force_tool_name="system.weather",
+    )
+
+    assert len(requests) == 1
+    assert requests[0]["tool_choice"] == "required"
+    assert "extra_body" not in requests[0]
+    tool_names = [
+        (t.get("function") or {}).get("name")
+        for t in requests[0].get("tools") or []
+        if isinstance(t, dict)
+    ]
+    assert tool_names == ["system_weather"]
+
+
+@pytest.mark.asyncio
+async def test_non_qwen_forced_tool_does_not_inject_thinking_compat():
+    requests = []
+    service = OpenRouterServiceProvider(
+        client_factory=lambda **_kwargs: FakeCompletionClient(response(), requests)
+    )
+
+    await service.generate_response(
+        api_key=SENTINEL,
+        model=MODEL,
+        messages=[{"role": "user", "content": "weather?"}],
+        tools=[
+            {
+                "name": "system.weather",
+                "description": "Get weather",
+                "parameters": {"type": "object", "properties": {}},
+            }
+        ],
+        force_tool_name="system.weather",
+    )
+
+    assert "extra_body" not in requests[0]
+
+
+@pytest.mark.asyncio
+async def test_qwen_auto_tool_choice_does_not_inject_thinking_compat():
+    requests = []
+    qwen_model = "qwen/qwen3.7-plus"
+    service = OpenRouterServiceProvider(
+        client_factory=lambda **_kwargs: FakeCompletionClient(
+            response(model=qwen_model),
+            requests,
+        )
+    )
+
+    await service.generate_response(
+        api_key=SENTINEL,
+        model=qwen_model,
+        messages=[{"role": "user", "content": "weather?"}],
+        tools=[
+            {
+                "name": "system.weather",
+                "description": "Get weather",
+                "parameters": {"type": "object", "properties": {}},
+            }
+        ],
+    )
+
+    assert requests[0]["tool_choice"] == "auto"
+    assert "extra_body" not in requests[0]
+
+
+@pytest.mark.asyncio
 async def test_service_propagates_authoritative_nonstream_telemetry():
     service = OpenRouterServiceProvider(
         client_factory=lambda **_kwargs: FakeCompletionClient(

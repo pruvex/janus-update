@@ -1,0 +1,280 @@
+{
+  "battery": {
+    "id": "OPENROUTER-JANUS-CONFORMANCE",
+    "version": "1.0.0"
+  },
+  "budget": {
+    "max_completion_tokens_per_transmission": 1024,
+    "max_input_tokens_per_transmission": 8192,
+    "max_total_transmissions": 40,
+    "max_transmissions_per_candidate": 10,
+    "price_drift_limit_usd": "0.50"
+  },
+  "candidate_set_id": "OPENROUTER-FOUR-FAMILY-2026-07-17.1",
+  "candidates": [
+    {
+      "family": "Claude",
+      "model_id": "anthropic/claude-sonnet-5",
+      "model_version": "anthropic/claude-sonnet-5-20260630"
+    },
+    {
+      "family": "GLM",
+      "model_id": "z-ai/glm-5.2",
+      "model_version": "z-ai/glm-5.2-20260616"
+    },
+    {
+      "family": "DeepSeek",
+      "model_id": "deepseek/deepseek-v4-pro",
+      "model_version": "deepseek/deepseek-v4-pro-20260423"
+    },
+    {
+      "family": "Qwen",
+      "model_id": "qwen/qwen3.7-plus",
+      "model_version": "qwen/qwen3.7-plus-20260602"
+    }
+  ],
+  "cases": [
+    {
+      "applicability": "EACH CANDIDATE",
+      "execution_class": "STATIC",
+      "id": "TC-001"
+    },
+    {
+      "applicability": "EACH CANDIDATE",
+      "execution_class": "LIVE_PROVIDER",
+      "id": "TC-002"
+    },
+    {
+      "applicability": "EACH CANDIDATE",
+      "execution_class": "LIVE_PROVIDER",
+      "id": "TC-003"
+    },
+    {
+      "applicability": "EACH CANDIDATE",
+      "execution_class": "LIVE_PROVIDER",
+      "id": "TC-004"
+    },
+    {
+      "applicability": "EACH CANDIDATE",
+      "execution_class": "LIVE_PROVIDER",
+      "id": "TC-005"
+    },
+    {
+      "applicability": "EACH CANDIDATE",
+      "execution_class": "LIVE_PROVIDER",
+      "id": "TC-006"
+    },
+    {
+      "applicability": "EACH CANDIDATE",
+      "execution_class": "LIVE_PROVIDER",
+      "id": "TC-007"
+    },
+    {
+      "applicability": "EACH CANDIDATE",
+      "execution_class": "LIVE_PROVIDER",
+      "id": "TC-008"
+    },
+    {
+      "applicability": "EACH CANDIDATE",
+      "execution_class": "LIVE_PROVIDER",
+      "id": "TC-009"
+    },
+    {
+      "applicability": "EACH CANDIDATE",
+      "execution_class": "MOCKED_RUNTIME",
+      "id": "TC-010"
+    },
+    {
+      "applicability": "EACH CANDIDATE",
+      "execution_class": "MOCKED_RUNTIME",
+      "id": "TC-011"
+    },
+    {
+      "applicability": "EACH CANDIDATE",
+      "execution_class": "MOCKED_RUNTIME",
+      "id": "TC-012"
+    },
+    {
+      "applicability": "EACH CANDIDATE",
+      "execution_class": "MOCKED_RUNTIME",
+      "id": "TC-013"
+    },
+    {
+      "applicability": "EACH CANDIDATE",
+      "execution_class": "MOCKED_RUNTIME",
+      "id": "TC-014"
+    },
+    {
+      "applicability": "EACH CANDIDATE",
+      "execution_class": "MOCKED_RUNTIME",
+      "id": "TC-015"
+    },
+    {
+      "applicability": "EACH CANDIDATE",
+      "execution_class": "MOCKED_RUNTIME",
+      "id": "TC-016"
+    },
+    {
+      "applicability": "EACH CANDIDATE",
+      "execution_class": "MOCKED_RUNTIME",
+      "id": "TC-017"
+    },
+    {
+      "applicability": "EACH CANDIDATE",
+      "execution_class": "LIVE_PROVIDER",
+      "id": "TC-018"
+    },
+    {
+      "applicability": "ONCE PLUS EACH BINDING",
+      "execution_class": "STATIC",
+      "id": "TC-019"
+    },
+    {
+      "applicability": "EACH CANDIDATE",
+      "execution_class": "STATIC",
+      "id": "TC-020"
+    },
+    {
+      "applicability": "EACH CANDIDATE",
+      "execution_class": "STATIC + MOCKED_RUNTIME",
+      "id": "SEC-001"
+    },
+    {
+      "applicability": "EACH CANDIDATE",
+      "execution_class": "LIVE_PROVIDER",
+      "id": "SEC-002"
+    },
+    {
+      "applicability": "EACH CANDIDATE",
+      "execution_class": "LIVE_PROVIDER",
+      "id": "SEC-003"
+    },
+    {
+      "applicability": "EACH CANDIDATE",
+      "execution_class": "LIVE_PROVIDER",
+      "id": "SEC-004"
+    },
+    {
+      "applicability": "EACH CANDIDATE",
+      "execution_class": "STATIC",
+      "id": "SEC-005"
+    },
+    {
+      "applicability": "ONCE",
+      "execution_class": "STATIC",
+      "id": "SEC-006"
+    },
+    {
+      "applicability": "EACH CANDIDATE",
+      "execution_class": "LIVE_PROVIDER",
+      "id": "PINJ-001"
+    },
+    {
+      "applicability": "EACH CANDIDATE",
+      "execution_class": "LIVE_PROVIDER",
+      "id": "PINJ-002"
+    },
+    {
+      "applicability": "EACH CANDIDATE",
+      "execution_class": "LIVE_PROVIDER",
+      "id": "PINJ-003"
+    },
+    {
+      "applicability": "EACH CANDIDATE",
+      "execution_class": "MOCKED_RUNTIME",
+      "id": "PINJ-004"
+    }
+  ],
+  "credential_profile": {
+    "credit_limit_usd": "1.00",
+    "expires_at_max": "2026-07-31T23:59:59Z",
+    "fallback_allowed": false,
+    "installation_gate": "KEY_INSTALLATION_GATE: READY",
+    "key_label": "janus-task6-cert-2026-07",
+    "key_type": "inference",
+    "limit_reset": null,
+    "profile_id": "OPENROUTER-JANUS-CERTIFICATION-KEY/1.0.0",
+    "storage": "Janus-Projekt/openrouter",
+    "validation_state_storage": "Janus-Projekt/openrouter-validation-state"
+  },
+  "evidence": {
+    "manual_patch_allowed": false,
+    "plan_path": "documentation/test-runs/TEST-RUN-2026-07-17-007_plan.json",
+    "raw_content_allowed": false,
+    "result_json": "documentation/test-results/TEST-RUN-2026-07-17-007_results.json",
+    "result_markdown": "documentation/test-results/TEST-RUN-2026-07-17-007_results.md"
+  },
+  "generated_at": "2026-07-17T22:58:00Z",
+  "live_scenarios": [
+    {
+      "case_ids": [
+        "TC-002",
+        "TC-003",
+        "TC-018"
+      ],
+      "id": "LIVE-01",
+      "max_transmissions": 1
+    },
+    {
+      "case_ids": [
+        "TC-004",
+        "SEC-002",
+        "SEC-003"
+      ],
+      "id": "LIVE-02",
+      "max_transmissions": 1
+    },
+    {
+      "case_ids": [
+        "TC-005"
+      ],
+      "id": "LIVE-03",
+      "max_transmissions": 1
+    },
+    {
+      "case_ids": [
+        "TC-006",
+        "TC-007",
+        "SEC-004"
+      ],
+      "id": "LIVE-04",
+      "max_transmissions": 2
+    },
+    {
+      "case_ids": [
+        "TC-008",
+        "PINJ-001"
+      ],
+      "id": "LIVE-05",
+      "max_transmissions": 1
+    },
+    {
+      "case_ids": [
+        "TC-009"
+      ],
+      "id": "LIVE-06",
+      "max_transmissions": 1
+    },
+    {
+      "case_ids": [
+        "PINJ-002"
+      ],
+      "id": "LIVE-07",
+      "max_transmissions": 2
+    },
+    {
+      "case_ids": [
+        "PINJ-003"
+      ],
+      "id": "LIVE-08",
+      "max_transmissions": 1
+    }
+  ],
+  "provider": "openrouter",
+  "schema_version": "janus.openrouter.conformance-plan.v1",
+  "source": {
+    "testspec": "documentation/TEST_SPEC/02_security_safety/20_openrouter_model_conformance_certification.md",
+    "testspec_sha256": "4DFBD0C75E4061895324AD005476CDE6375550CDF8325AAED91A90F5BD43BFB9"
+  },
+  "test_run_id": "TEST-RUN-2026-07-17-007"
+}

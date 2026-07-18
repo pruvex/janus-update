@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-18T22:24:10Z",
+  "steps": [
+    {
+      "mode": "live_force_weather",
+      "status": "PASS",
+      "timeout_s": 25.0,
+      "models": [
+        "qwen/qwen3.6-flash",
+        "moonshotai/kimi-k2.6",
+        "z-ai/glm-4.7-flash"
+      ],
+      "probes": [
+        {
+          "model": "qwen/qwen3.6-flash",
+          "status": "PASS",
+          "elapsed_ms": 1586,
+          "has_tool_calls": true,
+          "finish_reason": null,
+          "error_code": null
+        },
+        {
+          "model": "moonshotai/kimi-k2.6",
+          "status": "PASS",
+          "elapsed_ms": 10827,
+          "has_tool_calls": true,
+          "finish_reason": null,
+          "error_code": null
+        },
+        {
+          "model": "z-ai/glm-4.7-flash",
+          "status": "PASS",
+          "elapsed_ms": 2173,
+          "has_tool_calls": true,
+          "finish_reason": null,
+          "error_code": null
+        }
+      ]
+    }
+  ],
+  "status": "PASS"
+}

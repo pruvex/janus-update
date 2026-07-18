@@ -1,0 +1,11 @@
+{
+  "profile_id": "OPENROUTER-JANUS-CERTIFICATION-KEY/1.0.0",
+  "key_label": "janus-task6-cert-2026-07",
+  "source": "fresh_openrouter_inference_key",
+  "key_type": "inference",
+  "credit_limit_usd": "ACCOUNT_FUNDED",
+  "limit_reset": null,
+  "expires_at": null,
+  "remaining_credit_usd": "1.00",
+  "stored_through_janus_settings": true
+}

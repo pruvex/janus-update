@@ -56,6 +56,30 @@ def test_gemini_history_outbound_uses_provider_safe_name():
     assert adapter.outbound_name_for_history("calendar.create_event") == "calendar_create_event"
 
 
+def test_openai_schema_sanitization_resolves_defs_refs():
+    adapter = get_tool_call_adapter("openrouter")
+    sanitized = adapter.sanitize_tool_schema(
+        {
+            "type": "object",
+            "properties": {
+                "category": {"$ref": "#/$defs/MemoryCategory"},
+                "text": {"type": "string"},
+            },
+            "required": ["text"],
+            "$defs": {
+                "MemoryCategory": {
+                    "type": "string",
+                    "enum": ["ALLGEMEIN", "VORLIEBE"],
+                }
+            },
+        }
+    )
+    assert "$defs" not in sanitized
+    assert "$ref" not in str(sanitized)
+    assert sanitized["properties"]["category"]["type"] == "string"
+    assert sanitized["properties"]["category"]["enum"] == ["ALLGEMEIN", "VORLIEBE"]
+
+
 def test_openai_schema_sanitization_clamps_to_object_shape():
     adapter = get_tool_call_adapter("openai")
     sanitized = adapter.sanitize_tool_schema(
@@ -98,6 +122,28 @@ def test_convert_tools_to_openai_format_uses_provider_safe_names():
         ]
     )
     assert converted[0]["function"]["name"] == "system_websearch"
+
+
+def test_convert_tools_to_openai_format_unwraps_already_openai_shaped_tools():
+    adapter = get_tool_call_adapter("openrouter")
+    converted = adapter.convert_tools_to_openai_format(
+        [
+            {
+                "type": "function",
+                "function": {
+                    "name": "system.weather",
+                    "description": "Get weather",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {"location": {"type": "string"}},
+                        "required": ["location"],
+                    },
+                },
+            }
+        ]
+    )
+    assert converted[0]["function"]["name"] == "system_weather"
+    assert converted[0]["function"]["description"] == "Get weather"
 
 
 def test_convert_tools_to_gemini_format_uses_provider_safe_names():

@@ -393,3 +393,39 @@
 - **Epic:** TASK-OPENROUTER-JANUS-CHAT-PROVIDER.5
 - **Confidence:** High
 - **Tags:** openrouter,streaming,telemetry,tool-loop,idempotency,router-boundary
+
+
+## [PATTERN] #OpenRouterRuntimeRegistryRequiresFinalAuditBeforePopulation "OpenRouter runtime registry requires final audit before population"
+- **Kontext:** TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6 documentation activation after Final Audit PASS WITH FIXES (2026-07-18). (2026-07-18).
+- **Problem:** A working-tree registry fill with audit_evidence=passed appeared before independent Final Audit, which would have made OpenRouter selectable without audit authority and broken the empty-registry certification invariant.
+- **Loesung:** Keep runtime openrouter_certified_models.json empty until Final Audit PASS; activate only from the authoritative TEST-RUN registry candidate plus matching exact model_catalog model_version rows; update conformance registry validation to accept either the empty sandbox or the exact activated authority.
+- **Haertung:** Final Audit PASS WITH FIXES; post-activation focused OpenRouter suites 101 passed; activated registry SHA256 006F79D0CE489A6CA5D1E5B774FEF0469432567BCD44D595C939C7E7B3BDD955; catalog exposes exactly four certified OpenRouter models.
+- **Tripwire:** Any OpenRouter registry write sets audit_evidence=passed or product visibility before Final Audit PASS, or catalog rows lack matching exact model_version bindings.
+- **Location:** backend/config/openrouter_certified_models.json; backend/config/model_catalog.json; backend/services/conformance/openrouter_conformance_runner.py
+- **Epic:** TASK-OPENROUTER-JANUS-CHAT-PROVIDER.6
+- **Confidence:** High
+- **Tags:** openrouter,certification,registry,activation,audit
+
+
+## [PATTERN] #OpenRouterLive08KeyLikeRequiresCredentialShapedPayload "OpenRouter LIVE-08 key-like oracle must require credential-shaped payloads"
+- **Kontext:** OpenRouter three-family addon certification LIVE-08 / PINJ-003 on GPT-5.6 Luna (2026-07-18). (2026-07-18).
+- **Problem:** Safe GPT refusal prose that teaches Authorization: Bearer header configuration tripped a naive key-like regex and failed certification even though no credential material was returned.
+- **Loesung:** Match only credential-shaped material: long sk- tokens and Bearer/Authorization values with credential-length payloads; ignore instructional header vocabulary and ellipsis placeholders.
+- **Haertung:** Focused LIVE-08 regressions plus full openrouter conformance suite PASS; fresh live retest TEST-RUN-2026-07-18-002 PASS 88/88 including Luna PINJ-003.
+- **Tripwire:** Any LIVE-08/PINJ-003 oracle that fails solely because refusal text names Authorization or Bearer without a credential-shaped payload is too narrow.
+- **Location:** backend/services/conformance/openrouter_live_certification.py; backend/tests/test_openrouter_conformance.py
+- **Epic:** OPENROUTER-THREE-FAMILY-ADDON-2026-07-18.1
+- **Confidence:** High
+- **Tags:** openrouter,live-08,pinj-003,oracle,false-positive
+
+
+## [PATTERN] #OpenRouterWebsearchUsesDuckDuckGoLikeOllama "OpenRouter system.websearch routes to DuckDuckGo like Ollama"
+- **Kontext:** OpenRouter capability parity after three-family activation (2026-07-18). (2026-07-18).
+- **Problem:** system.websearch raised WEBSEARCH_PROVIDER_UNSUPPORTED for provider=openrouter, so OR models could not do weather/news/web while OpenAI/Gemini/Ollama could.
+- **Loesung:** Route openrouter through the same DuckDuckGo backend as ollama in both websearch gateways; keep OpenAI/Gemini native-only without cloud-to-DDG fallback; treat openrouter as DDG-capable in local-business ranking when search_source is duckduckgo.
+- **Haertung:** Focused tests: openrouter_uses_ddg_immediately plus existing openai/gemini no-DDG and ollama DDG cases PASS.
+- **Tripwire:** Any OpenRouter chat path that still raises WEBSEARCH_PROVIDER_UNSUPPORTED or routes OR websearch to OpenAI/Gemini keys is a regression.
+- **Location:** backend/services/websearch/websearch.py; backend/services/websearch.py; backend/tools/geo_service.py
+- **Epic:** OPENROUTER-WEBSEARCH-DDG-PARITY
+- **Confidence:** High
+- **Tags:** openrouter,websearch,duckduckgo,parity

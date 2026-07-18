@@ -117,3 +117,40 @@ def test_openrouter_selection_returns_only_filtered_exact_openrouter_ids(test_cl
     assert "api_key" not in serialized
     assert "fingerprint" not in serialized
     assert "binding" not in serialized
+
+
+def test_openrouter_model_selection_save_keeps_only_certified_ids(test_client, monkeypatch, tmp_path):
+    config_path = tmp_path / "config.json"
+    config_path.write_text("{}", encoding="utf-8")
+    monkeypatch.setattr("backend.api.routers.system.CONFIG_FILE", str(config_path))
+    monkeypatch.setattr(
+        "backend.api.routers.system.load_config",
+        lambda: {"model_selection": {}},
+    )
+    saved = {}
+
+    def _save(config):
+        saved.update(config)
+
+    monkeypatch.setattr("backend.api.routers.system.save_config", _save)
+    with patch(
+        "backend.api.routers.system.load_model_catalog",
+        return_value=_catalog("anthropic/claude-sonnet-5", "z-ai/glm-5.2"),
+    ):
+        response = test_client.post(
+            "/api/models/selection",
+            json={
+                "provider": "openrouter",
+                "models": [
+                    "anthropic/claude-sonnet-5",
+                    "not-certified/model",
+                    "z-ai/glm-5.2",
+                ],
+            },
+        )
+
+    assert response.status_code == 200
+    assert saved["model_selection"]["openrouter"] == [
+        "anthropic/claude-sonnet-5",
+        "z-ai/glm-5.2",
+    ]

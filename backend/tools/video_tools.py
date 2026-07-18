@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 import math
@@ -20,6 +21,26 @@ from backend.data.schemas_tools import ToolErrorDetails, ToolResultV1
 from backend.utils.paths import get_app_data_dir
 
 logger = logging.getLogger("janus_backend")
+
+_YoutubeDL = None  # type: ignore
+_YT_DLP_SEARCH_AVAILABLE: Optional[bool] = None
+
+
+def _ensure_ytdlp_search_available() -> bool:
+    """Lazy import so packaged/runtime envs still get the no-key YouTube path."""
+    global _YoutubeDL, _YT_DLP_SEARCH_AVAILABLE
+    if _YT_DLP_SEARCH_AVAILABLE is not None:
+        return bool(_YT_DLP_SEARCH_AVAILABLE)
+    try:
+        from yt_dlp import YoutubeDL as _YDL
+
+        _YoutubeDL = _YDL
+        _YT_DLP_SEARCH_AVAILABLE = True
+    except Exception as exc:  # pragma: no cover - environment-specific
+        _YoutubeDL = None  # type: ignore
+        _YT_DLP_SEARCH_AVAILABLE = False
+        logger.warning("VIDEO-SEARCH: yt-dlp unavailable for no-key search (%s)", exc)
+    return bool(_YT_DLP_SEARCH_AVAILABLE)
 
 _YOUTUBE_SEARCH_URL = "https://www.googleapis.com/youtube/v3/search"
 _YOUTUBE_VIDEOS_URL = "https://www.googleapis.com/youtube/v3/videos"
@@ -732,6 +753,212 @@ def _format_published_date_human(iso_date: Optional[str]) -> Optional[str]:
         return None
 
 
+def _format_ytdlp_upload_date_human(raw: Any) -> Optional[str]:
+    """yt-dlp flat entries often expose upload_date as YYYYMMDD."""
+    s = str(raw or "").strip()
+    if len(s) == 8 and s.isdigit():
+        return f"{s[6:8]}.{s[4:6]}.{s[0:4]}"
+    return _format_published_date_human(s)
+
+
+def _ytdlp_entry_to_video_result(entry: Dict[str, Any]) -> Optional[VideoResult]:
+    if not isinstance(entry, dict):
+        return None
+    vid = str(entry.get("id") or "").strip()
+    if len(vid) != 11:
+        # Some flat entries put the id only in url/webpage_url.
+        url_blob = str(entry.get("url") or entry.get("webpage_url") or entry.get("ie_key") or "")
+        m = re.search(r"(?:v=|/shorts/|youtu\.be/)([A-Za-z0-9_-]{11})", url_blob)
+        if m:
+            vid = m.group(1)
+    if len(vid) != 11:
+        return None
+    title = str(entry.get("title") or "").strip() or "Unbekannter Titel"
+    channel = str(
+        entry.get("channel")
+        or entry.get("uploader")
+        or entry.get("channel_id")
+        or ""
+    ).strip() or "Unbekannt"
+    views = _safe_int(entry.get("view_count"), 0)
+    thumb = str(entry.get("thumbnail") or "").strip() or f"https://i.ytimg.com/vi/{vid}/hqdefault.jpg"
+    return VideoResult(
+        video_id=vid,
+        title=title,
+        channel=channel,
+        views=views,
+        thumbnail=thumb,
+        watch_url=f"https://www.youtube.com/watch?v={vid}",
+        embed_url=f"https://www.youtube.com/embed/{vid}?rel=0",
+        is_embeddable=True,
+        published_date_human=_format_ytdlp_upload_date_human(entry.get("upload_date")),
+    )
+
+
+def _search_youtube_entries_ytdlp(
+    query: str,
+    *,
+    max_results: int,
+    wants_latest: bool,
+    channel_filter: str = "",
+    min_views: int = 0,
+) -> List[VideoResult]:
+    """No-API-key YouTube search via yt-dlp (same stack as transcript fallback)."""
+    if not _ensure_ytdlp_search_available() or _YoutubeDL is None:
+        raise RuntimeError("YOUTUBE_YTDLP_UNAVAILABLE")
+
+    clean_query = str(query or "").strip()
+    if not clean_query:
+        return []
+
+    n = max(1, min(int(max_results or 5), 15))
+    channel_norm = _normalize_text_for_match(channel_filter) if channel_filter else ""
+    fetch_n = n * 3 if (channel_norm or min_views > 0) else n
+    fetch_n = max(n, min(fetch_n, 25))
+    prefix = "ytsearchdate" if wants_latest else "ytsearch"
+    opts = {
+        "quiet": True,
+        "no_warnings": True,
+        "extract_flat": "in_playlist",
+        "skip_download": True,
+        "nocheckcertificate": True,
+    }
+    with _YoutubeDL(opts) as ydl:
+        info = ydl.extract_info(f"{prefix}{fetch_n}:{clean_query}", download=False)
+    raw_entries = list((info or {}).get("entries") or [])
+
+    results: List[VideoResult] = []
+    for entry in raw_entries:
+        video = _ytdlp_entry_to_video_result(entry if isinstance(entry, dict) else {})
+        if not video:
+            continue
+        if channel_norm:
+            ch_norm = _normalize_text_for_match(video.channel)
+            if channel_norm not in ch_norm and ch_norm not in channel_norm:
+                continue
+        if min_views > 0 and video.views > 0 and video.views < min_views:
+            continue
+        results.append(video)
+        if len(results) >= n:
+            break
+
+    # If min_views filtered everything (flat search often lacks view_count), retry without it.
+    if not results and min_views > 0:
+        for entry in raw_entries:
+            video = _ytdlp_entry_to_video_result(entry if isinstance(entry, dict) else {})
+            if not video:
+                continue
+            if channel_norm:
+                ch_norm = _normalize_text_for_match(video.channel)
+                if channel_norm not in ch_norm and ch_norm not in channel_norm:
+                    continue
+            results.append(video)
+            if len(results) >= n:
+                break
+    return results
+
+
+async def _video_search_via_ytdlp(payload: VideoSearchInput, started_at: datetime) -> ToolResultV1:
+    """Provider-parity path: video.search works without YOUTUBE_API_KEY."""
+    raw_query = str(payload.query or "").strip()
+    raw_mode = str(getattr(payload, "mode", "single") or "single").strip().lower()
+    if raw_mode not in ("single", "list"):
+        raw_mode = "single"
+    if raw_mode == "single":
+        q_lower = raw_query.lower()
+        plural_signals = re.search(r"\b(?:letzten|letzte)\s+\d+\s+video", q_lower)
+        multi_signals = any(
+            tok in q_lower for tok in ("alle videos", "mehrere videos", "videos von", "video liste")
+        )
+        if plural_signals or multi_signals:
+            raw_mode = "list"
+    is_list_mode = raw_mode == "list"
+
+    explicit_channel = str(payload.channel_name or "").strip() if payload.channel_name else ""
+    extracted_hint = ""
+    if not explicit_channel and _query_has_channel_intent(raw_query):
+        candidate_hint = _extract_channel_hint(raw_query)
+        if not (candidate_hint and _is_geo_rejected_hint(candidate_hint)):
+            extracted_hint = candidate_hint
+    channel_hint = explicit_channel or extracted_hint.strip()
+    wants_chrono = bool(payload.wants_latest) or _query_wants_recency(raw_query)
+    query = _normalize_query(
+        raw_query,
+        suppress_tutorial_suffix=bool(channel_hint or payload.wants_latest),
+    )
+    search_query = query
+    if channel_hint and channel_hint.lower() not in query.lower():
+        search_query = f"{query} {channel_hint}".strip()
+
+    logger.info(
+        "VIDEO-SEARCH: no API key — yt-dlp fallback (query=%r, mode=%s, latest=%s)",
+        search_query,
+        raw_mode,
+        wants_chrono,
+    )
+    results = await asyncio.to_thread(
+        _search_youtube_entries_ytdlp,
+        search_query,
+        max_results=int(payload.max_results or 5),
+        wants_latest=wants_chrono,
+        channel_filter=channel_hint,
+        min_views=int(payload.min_views or 0),
+    )
+    if not results:
+        raise RuntimeError("NO_VIDEO_RESULTS")
+
+    if is_list_mode:
+        output = VideoSearchOutput(
+            videos=results,
+            count=len(results),
+            mode="list",
+            query=query,
+            retrieved_at=started_at.isoformat(),
+        )
+        return ToolResultV1(
+            status="ok",
+            data=output.model_dump(),
+            message=_build_video_markdown_output([v.model_dump() for v in results]),
+            is_final_response=True,
+            metadata={
+                "source": "youtube_ytdlp_no_api_key",
+                "pipeline": "video_list",
+                "mode": "list",
+                "max_results_requested": payload.max_results,
+                "actual_count": len(results),
+                "channel_hint": channel_hint or None,
+            },
+        )
+
+    best = results[0]
+    output = VideoSearchOutput(
+        selected_video=best,
+        query=query,
+        retrieved_at=started_at.isoformat(),
+        mode="single",
+    )
+    videos_list = [best.model_dump()]
+    return ToolResultV1(
+        status="ok",
+        data={
+            "videos": videos_list,
+            "count": 1,
+            "mode": "single",
+            "query": query,
+            "retrieved_at": started_at.isoformat(),
+            "selected_video": best.model_dump(),
+        },
+        message=_build_video_markdown_output(videos_list),
+        is_final_response=True,
+        metadata={
+            "source": "youtube_ytdlp_no_api_key",
+            "pipeline": "video_single",
+            "mode": "single",
+            "channel_hint": channel_hint or None,
+        },
+    )
+
+
 def _build_video_markdown_output(videos: list) -> str:
     """
     Baut eine LLM-lesbare, UI-freundliche Video-Liste.
@@ -1168,7 +1395,13 @@ async def video_search_tool(args: VideoSearchInput) -> ToolResultV1:
         payload = VideoSearchInput.model_validate(args)
         api_key = _get_youtube_api_key()
         if not api_key:
-            raise RuntimeError("YOUTUBE_API_KEY_MISSING")
+            # Product contract: end users must NOT need a YouTube Data API key.
+            # Prefer yt-dlp search (title + channel) over failing the skill.
+            if not _ensure_ytdlp_search_available():
+                raise RuntimeError(
+                    "YOUTUBE_SEARCH_UNAVAILABLE: Neither YouTube API key nor yt-dlp search is available."
+                )
+            return await _video_search_via_ytdlp(payload, started_at)
 
         raw_query = str(payload.query or "").strip()
 
