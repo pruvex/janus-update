@@ -1,14 +1,42 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-07-18T22:21:02Z",
+  "generated_at": "2026-07-18T22:24:10Z",
   "steps": [
     {
-      "mode": "offline_matrix",
+      "mode": "live_force_weather",
       "status": "PASS",
-      "exit_code": 0,
-      "elapsed_ms": 6515,
-      "stdout_tail": "/kimi-k3 forced=system_weather tool_choice=required tools=1\nPASSED                                                                   [ 80%]\nbackend\\tests\\test_openrouter_forced_tool_compat_matrix.py::test_forced_tool_compat_stream_matrix[z-ai/glm-4.7-flash-required_narrow] \n-------------------------------- live log call --------------------------------\nINFO     janus_backend:service.py:164 GLM_FORCED_TOOL_COMPAT model=z-ai/glm-4.7-flash forced=system_weather tool_choice=required tools=1\nPASSED                                                                   [ 86%]\nbackend\\tests\\test_openrouter_forced_tool_compat_matrix.py::test_forced_tool_compat_stream_matrix[z-ai/glm-5.2-required_narrow] \n-------------------------------- live log call --------------------------------\nINFO     janus_backend:service.py:164 GLM_FORCED_TOOL_COMPAT model=z-ai/glm-5.2 forced=system_weather tool_choice=required tools=1\nPASSED                                                                   [ 93%]\nbackend\\tests\\test_openrouter_forced_tool_compat_matrix.py::test_hard_family_matrix_covers_certified_catalog_ids PASSED [100%]\n\n============================= 15 passed in 0.13s ==============================\n",
-      "stderr_tail": ""
+      "timeout_s": 25.0,
+      "models": [
+        "qwen/qwen3.6-flash",
+        "moonshotai/kimi-k2.6",
+        "z-ai/glm-4.7-flash"
+      ],
+      "probes": [
+        {
+          "model": "qwen/qwen3.6-flash",
+          "status": "PASS",
+          "elapsed_ms": 1586,
+          "has_tool_calls": true,
+          "finish_reason": null,
+          "error_code": null
+        },
+        {
+          "model": "moonshotai/kimi-k2.6",
+          "status": "PASS",
+          "elapsed_ms": 10827,
+          "has_tool_calls": true,
+          "finish_reason": null,
+          "error_code": null
+        },
+        {
+          "model": "z-ai/glm-4.7-flash",
+          "status": "PASS",
+          "elapsed_ms": 2173,
+          "has_tool_calls": true,
+          "finish_reason": null,
+          "error_code": null
+        }
+      ]
     }
   ],
   "status": "PASS"

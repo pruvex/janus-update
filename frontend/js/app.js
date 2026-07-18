@@ -2,7 +2,7 @@ import { sanitizeReleaseNotes, sanitizeTemplateHtml } from "./dompurify-config.j
 import { initializeSettings } from "./settings.js";
 import { initializeStudio } from "./image-studio.js";
 import { initUpdateUI, setSidebarVersionBase } from "./update-ui.js";
-import { sortModelsForProvider } from "./model-sort.js";
+import { sortModelsForProvider, groupModelsByFamily } from "./model-sort.js";
 
 // ================= WRAPPER FÜR FETCH (API KEY) =================
 (() => {
@@ -789,18 +789,23 @@ function fillModelOptionsIntoSelect(selectEl, targetProvider, options = {}) {
       selectEl.dataset.openrouterRetained = "model_unavailable";
     }
 
-    sortModelsForProvider("openrouter", certifiedModels).forEach((model) => {
-      const option = document.createElement("option");
-      option.value = model.id;
-      let costDisplay = "";
-      if (model.cost_per_token_input) {
-        costDisplay = `${formatCost(model.cost_per_token_input * 1000000, "€/Mio. in")} / ${formatCost(model.cost_per_token_output * 1000000, "€/Mio. out")}`;
+    for (const group of groupModelsByFamily(certifiedModels)) {
+      const optgroup = document.createElement("optgroup");
+      optgroup.label = group.label;
+      for (const model of group.models) {
+        const option = document.createElement("option");
+        option.value = model.id;
+        let costDisplay = "";
+        if (model.cost_per_token_input) {
+          costDisplay = `${formatCost(model.cost_per_token_input * 1000000, "€/Mio. in")} / ${formatCost(model.cost_per_token_output * 1000000, "€/Mio. out")}`;
+        }
+        option.textContent = `${model.name || model.id}${costDisplay ? ` (${costDisplay})` : ""}`;
+        option.dataset.provider = "openrouter";
+        option.selected = model.id === selectedModel;
+        optgroup.appendChild(option);
       }
-      option.textContent = `${model.name || model.id}${costDisplay ? ` (${costDisplay})` : ""}`;
-      option.dataset.provider = "openrouter";
-      option.selected = model.id === selectedModel;
-      selectEl.appendChild(option);
-    });
+      selectEl.appendChild(optgroup);
+    }
     return;
   }
 

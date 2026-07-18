@@ -1,6 +1,19 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-19 00:35:00 +02:00`, Hardening 1→2→3 complete on feature branch.
+
+1) Smoke committed+pushed: `9466345be` on `backup/feature/openrouter-catalog-ux`.
+2) OR dropdown Optgroups: `groupModelsByFamily` in `fillModelOptionsIntoSelect` (Claude/GLM/…).
+3) Live forced-tool smoke PASS: Qwen Flash 1.6s, Kimi K2.6 10.8s, GLM Flash 2.2s (`--execute-live`).
+
+Operator: hard-reload → OpenRouter model dropdowns show family optgroups. Next: commit optgroups+live summary, or merge→master. ChatGPT CURRENT_STATE still needs `sync: YES`.
+
+canonical state: `PASS`, `HANDOFF` (commit remaining / merge).
+
+Last updated: `2026-07-19 00:35:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-19 00:28:00 +02:00`, Hardening 1+2: backup push + OR forced-tool smoke.
 
 1) Push: `backup/feature/openrouter-catalog-ux` tracks commit `bfe49b6b6` (no origin/master, no merge yet).
