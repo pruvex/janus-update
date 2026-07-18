@@ -1,6 +1,18 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-19 00:28:00 +02:00`, Hardening 1+2: backup push + OR forced-tool smoke.
+
+1) Push: `backup/feature/openrouter-catalog-ux` tracks commit `bfe49b6b6` (no origin/master, no merge yet).
+2) Offline forced-tool smoke: `run_openrouter_forced_tool_smoke.py` + matrix test (Qwen/Kimi/GLM × nonstream+stream) **PASS**. Optional live: `--execute-live`.
+
+Next: commit smoke slice (`commit: YES`), optional live probe, Optgroups (slice 3), or merge→master. Remotes for ChatGPT CURRENT_STATE still need `sync: YES`.
+
+canonical state: `PASS`, `HANDOFF` (commit smoke / next UX slice).
+
+Last updated: `2026-07-19 00:28:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-19 00:20:00 +02:00`, OpenRouter wave checkpoint committed locally.
 
 Branch: `feature/openrouter-catalog-ux`. Scoped commit: OR catalog expansion (18 models), forced-tool compat, costs DeepDive/sidebar, Settings family UI, dropdown €/Mio costs, yt-dlp video search, conformance/evidence. Parked dirt left unstaged. No push yet.
