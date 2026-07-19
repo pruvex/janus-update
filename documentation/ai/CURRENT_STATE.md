@@ -1,6 +1,61 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-19 13:40:00 +02:00`, HELP YouTube fast-path veto committed + codex-sync.
+
+`feature/help-fastpath-youtube-veto`: `_resolve_help_intent` returns None for concrete skill/action turns (video/weather/wiki/…). Unit tests 3 PASS. Syncing CURRENT_STATE to `origin/codex-sync`. Cost/hint merge already on `backup/master` (`5f98f6f1d`).
+
+canonical state: `PASS`.
+
+Last updated: `2026-07-19 13:40:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 13:35:00 +02:00`, merged cost/hint; HELP YouTube veto in progress.
+
+Merged `feature/or-cost-credit-labels` → `master` (`5f98f6f1d`), pushed `backup/master`. Next slice on `feature/help-fastpath-youtube-veto`: `_resolve_help_intent` vetoes action turns (video/weather/…) so YouTube “Tutorial” prompts cannot enter Help fast-path. Unit tests 3 PASS. Parked dirt restored via stash.
+
+Operator: optional YouTube smoke. Next: `commit: YES` for HELP slice; recommend `sync: YES` for ChatGPT CURRENT_STATE after merge.
+
+canonical state: `PASS` (merge+tests), `HANDOFF` (commit HELP / sync).
+
+Last updated: `2026-07-19 13:35:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 13:30:00 +02:00`, cost-label + everyday hint merging to master.
+
+Branch `feature/or-cost-credit-labels` (`f27c232df`, `ea9857df3`): OpenRouter-Credits labeling + Alltag hint. Merging to master / backup push. Next hardening: HELP-Fast-Path YouTube false-positive.
+
+canonical state: `PASS`, `HANDOFF` (merge+continue).
+
+Last updated: `2026-07-19 13:30:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 13:20:00 +02:00`, OR everyday recommendation hint shipped.
+
+Cost-label commit `f27c232df` on `feature/or-cost-credit-labels`. Added `OPENROUTER_EVERYDAY_HINT` in sidebar (when OR eligible) and Settings OR list: "Alltag: GPT Luna · Claude Haiku · GLM Flash".
+
+Operator: hard-reload → Provider OpenRouter → hint under model select; Settings OR list top hint.
+
+Next: commit this slice, or HELP-Fast-Path / Backend-Freshness.
+
+canonical state: `PASS` (UI+unit), `HANDOFF` (commit).
+
+Last updated: `2026-07-19 13:20:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 13:15:00 +02:00`, Hardening Kosten-Label (Credits vs €).
+
+Sidebar: `OpenRouter-Credits: … €` + titles explaining 1:1 Credits-as-€. Deep Dive metric renamed; OR dropdown costs append `· Credits`. Branch: `feature/or-cost-credit-labels`.
+
+Operator: hard-reload → Sidebar/Deep Dive/OR-Dropdown Labels prüfen.
+
+Next: Default-/Empfehlungszeile, or `commit: YES`.
+
+canonical state: `PASS` (UI), `HANDOFF` (visual / commit).
+
+Last updated: `2026-07-19 13:15:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-19 00:40:00 +02:00`, OR hardening merged to master + codex-sync.
 
 Merged `feature/openrouter-catalog-ux` → `master` (--no-ff). Pushed `backup/master`. Syncing `CURRENT_STATE.md` to `origin/codex-sync` for ChatGPT.
