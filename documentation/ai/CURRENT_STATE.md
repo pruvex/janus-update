@@ -1,6 +1,24 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-19 14:40:00 +02:00`, `0.4.17-beta.51` BUILD_REHEARSAL PASS — awaiting Publish.
+
+Docs checkpoint `a9b5ae5a8` on `master`/`backup/master`. Fresh PyInstaller backend hash-matched into installer after a first stale-backend packaging miss was corrected by rebuild.
+
+Artifacts:
+- `release/janus-setup-0.4.17-beta.51.exe`
+- `release/beta.yml`
+- `release/janus-update-manifest.json`
+- Installer SHA256 `3A2CBF73CBF57AE2108649EBD3EC172752B39DAF6D4BDBFB4E9F26A313540E15`
+- Manifest SHA512 `fgdtNE2yWS/OKxZNv/Aec2amFVo5XevnqcatHp3hp6K2DJhSaVfsM0Ax+iw54L4WU2lWBafT/e7qcdWhIXeiyw==`
+
+Parked dirt still in stash. No publish yet.
+
+canonical state: `HANDOFF` — waiting for exact `Publish: YES`.
+
+Last updated: `2026-07-19 14:40:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-19 14:20:00 +02:00`, documentation update for `0.4.17-beta.51` release prep.
 
 Version bumped `0.4.17-beta.50` -> `0.4.17-beta.51` in `package.json`, `package-lock.json`, `backend/version.py`. CHANGELOG moved OpenRouter wave + HELP veto into `[0.4.17-beta.51]`. `release_notes.md` and `PROJECT_STATE.md` updated. Parked dirt remains in stash `parked-dirt before beta.51 release prep`.
