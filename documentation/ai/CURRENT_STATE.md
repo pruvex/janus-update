@@ -1,6 +1,170 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-19 16:40:00 +02:00`, TASK-WEBSEARCH-PARITY.1 documentation update complete.
+
+Marker `BACKLOG-133` synced across Backlog (IN PROGRESS), registry, PROJECT_STATE, CHANGELOG, WHAT_I_LEARNED, TEST_PIPELINE_RUN_LOG, dashboard snapshot.
+Spec remains ACTIVE/PARTIAL; Epic not DONE.
+Next: `janus-git-governance` checkpoint (needs explicit Freigabe), then `janus-task-breakdown` for `.2`.
+Remote/GitHub may not contain latest CURRENT_STATE until sync/push.
+
+canonical state: `HANDOFF`.
+
+Last updated: `2026-07-19 16:40:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 16:35:00 +02:00`, TASK-WEBSEARCH-PARITY.1 final audit PASS.
+
+Audit: `documentation/tasks/TASK-WEBSEARCH-PARITY.1_final_audit.md`
+Package: `documentation/tasks/TASK-WEBSEARCH-PARITY.1_AUDIT_PACKAGE.md`
+Spec remains ACTIVE/PARTIAL (`.2`–`.4` open); not moved to Spec Done.
+Evidence recheck: 14 unit tests PASS.
+Next: `janus-documentation-update`, then task-breakdown for `.2`.
+
+canonical state: `HANDOFF`.
+
+Last updated: `2026-07-19 16:35:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 16:30:00 +02:00`, TASK-WEBSEARCH-PARITY.1 execution PASS.
+
+Intent + Grenzfall A wired across skill_router, dispatcher, rss_service, response_finalizer, rss_news_renderer.
+Evidence: unit tests 14/14 PASS (`test_websearch_factoid_parity_slice1` + `test_websearch_parity_intent_routing`).
+Result: `documentation/tasks/TASK-WEBSEARCH-PARITY.1_execution_result.md`
+Next: `janus-final-audit` for `.1`, then task-breakdown for `.2`.
+
+canonical state: `PASS` (execution), `HANDOFF` (audit).
+
+Last updated: `2026-07-19 16:30:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 16:24:00 +02:00`, TASK-WEBSEARCH-PARITY.1 preimplementation check PASSED.
+
+Canonical artifact: `documentation/tasks/TASK-WEBSEARCH-PARITY.1_preimplementation_check.md`
+Validator: PRECHECK VALIDATION PASS.
+Next: `janus-executioner` for Intent-Routing + Grenzfall A (Assigned Model 5.6 Terra / high).
+
+canonical state: `HANDOFF`.
+
+Last updated: `2026-07-19 16:24:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 16:20:00 +02:00`, TASK-WEBSEARCH-PARITY.1 task breakdown COMPLETE.
+
+Target: `TASK-WEBSEARCH-PARITY.1` Intent-Routing + Grenzfall A.
+Breakdown: `documentation/tasks/TASK-WEBSEARCH-PARITY.1_task_breakdown.md`
+Handoff validation PASS. Next: `janus-preimplementation-check`.
+
+canonical state: `HANDOFF`.
+
+Last updated: `2026-07-19 16:20:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 16:15:00 +02:00`, Websearch Spec compiled to tasks.
+
+Spec APPROVED: `documentation/SPEC/WEBSEARCH_CHATGPT_APP_PARITY_FEATURE_SPEC.md`
+Task file: `documentation/tasks/TASK-WEBSEARCH-PARITY.md`
+Tasks: `.1` Intent/Grenzfall A, `.2` Retrieval/Ranking, `.3` Answer-first/fail-closed, `.4` Goldfragen-Regression.
+Validation: TASK ARTIFACT VALIDATION PASS.
+Next: `janus-task-breakdown` on `TASK-WEBSEARCH-PARITY.1`.
+
+canonical state: `HANDOFF`.
+
+Last updated: `2026-07-19 16:15:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 16:12:00 +02:00`, Websearch Spec review APPROVED after Grenzfall-Lock A.
+
+Spec: `documentation/SPEC/WEBSEARCH_CHATGPT_APP_PARITY_FEATURE_SPEC.md`
+Operator chose Option A: im Zweifel Antwort-first + Quelle; Kurzlage nur bei klarer Ticker-Absicht.
+Metadata: APPROVED, Skill-1 Ready YES, Complexity 59, Risk MEDIUM.
+Next: `janus-spec-to-task`.
+
+canonical state: `HANDOFF`.
+
+Last updated: `2026-07-19 16:12:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 16:10:00 +02:00`, Websearch Spec review BLOCKED on one product decision.
+
+Spec: `documentation/SPEC/WEBSEARCH_CHATGPT_APP_PARITY_FEATURE_SPEC.md`
+Review: BLOCKED — Grenzfall Nachrichten-Ticker vs. sonstige Websuche (Antwort-first vs. Kurzlage) nicht decision-locked.
+Next: Operator waehlt Option A oder B; danach Spec-Zeile ergaenzen und Re-Review.
+
+canonical state: `BLOCKED`.
+
+Last updated: `2026-07-19 16:10:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 16:02:00 +02:00`, Websearch ChatGPT-App-Paritaet Epic Spec generated.
+
+Spec: `documentation/SPEC/WEBSEARCH_CHATGPT_APP_PARITY_FEATURE_SPEC.md`
+Decision source: Feature Design Decision Summary 2026-07-19 + Operator lock Gesamt-Websuche.
+Complexity 59 / Terra high / new_chat yes for review.
+Slice 1 live OR retest earlier PASS (21:00 MESZ, no Kurzlage); Slice-1 acceptance marked done in Feature Design.
+
+Next: `janus-spec-review` on the Spec (fresh chat recommended).
+
+canonical state: `HANDOFF`.
+
+Last updated: `2026-07-19 16:02:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 15:52:00 +02:00`, Websearch factoid Slice-1 hardened + backend restarted.
+
+Root cause of 15:34 Kurzlage retest: stale uvicorn on :8001 (started 2026-07-18 23:22), not current source. Fresh venv backend now on `127.0.0.1:8001`.
+
+Hardening after DDG noise/rate-limit:
+- WM-final factoids rewrite to EN kickoff query (no empty `site:fifa.com`)
+- DDG uses `wt-wt` for EN sports queries
+- reject wiki-edit timestamps; no Kurzlage/false `09:09`
+- bounded Wikipedia evidence fetch when SERP lacks kickoff clock
+- synthesis: `3:00 p.m.` + **21:00 MESZ** hint
+
+Validation: `test_websearch_factoid_parity_slice1.py` 10/10 PASS; live synth PASS for WM final query.
+
+Operator: in Janus UI OpenRouter still einmal neu fragen (`wann ist heute abend das endspiel der fussball wm?`). Expect answer-first, no Kurzlage.
+
+canonical state: `PASS` (code+local synth), `HANDOFF` (UI live retest).
+
+Last updated: `2026-07-19 15:52:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 15:30:00 +02:00`, Websearch Slice-1 hotfix after live Kurzlage regression.
+
+Live OR retest still showed RSS Kurzlage. Root cause: SOURCE-ROUTING / `system.rss_news` fallback path, not only renderer classification.
+
+Hotfix:
+- `execution_dispatcher`: factoid/schedule forces `system.websearch` before news→rss
+- `rss_service`: factoid calls bypass Kurzlage and return answer-first websearch payload
+- `rss_news_renderer` + `response_finalizer`: factoid never renders as Kurzlage list
+- Unit tests 8/8 PASS
+
+Operator must fully restart Janus backend/app, then retest the WM final question on OpenRouter.
+
+canonical state: `PASS` (hotfix tests), `HANDOFF` (mandatory restart + live retest).
+
+Last updated: `2026-07-19 15:30:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 15:25:00 +02:00`, Websearch ChatGPT-App-Paritaet Slice 1 implemented.
+
+Locked Decision Summary: `documentation/Planned Features/WEBSEARCH_CHATGPT_APP_PARITY_FEATURE_DESIGN.md`. Backlog `BACKLOG-133` IN PROGRESS.
+
+Slice 1 code:
+- OpenRouter websearch routes to DuckDuckGo
+- Factoid/sport-schedule queries block RSS Kurzlage default and force `system.websearch`
+- News-Kurzlage classifier no longer trips on bare `aktuell` / biased text for factoids
+- Factoid query enrichment (`kickoff`/`site:fifa.com`) + DDG answer-first synthesis when snippets contain times
+- Unit tests: `backend/tests/unit/test_websearch_factoid_parity_slice1.py` PASS (7) plus related websearch routing/bias tests PASS
+
+Operator: hard-reload / OR GLM retest „wann ist heute abend das endspiel der fussball wm?“. Epic remains FULL FEATURE PIPELINE → later `janus-spec-generator`.
+
+canonical state: `PASS` (Slice 1), `HANDOFF` (live retest + Epic Spec).
+
+Last updated: `2026-07-19 15:25:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-19 14:52:00 +02:00`, `0.4.17-beta.51` publish verification PASS.
 
 Interrupted upload had already completed all required assets. `npm run release:verify-published` PASS for installer, `beta.yml`, and `janus-update-manifest.json` with matching SHA256 digests. Evidence written under `documentation/release/PUBLISHED_RELEASE_VERIFICATION_0.4.17-beta.51.*`.
