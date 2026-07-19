@@ -1,6 +1,17 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-19 14:20:00 +02:00`, documentation update for `0.4.17-beta.51` release prep.
+
+Version bumped `0.4.17-beta.50` -> `0.4.17-beta.51` in `package.json`, `package-lock.json`, `backend/version.py`. CHANGELOG moved OpenRouter wave + HELP veto into `[0.4.17-beta.51]`. `release_notes.md` and `PROJECT_STATE.md` updated. Parked dirt remains in stash `parked-dirt before beta.51 release prep`.
+
+Next: commit docs checkpoint on `master`, push `backup/master`, then `janus-build-release` BUILD_REHEARSAL (no publish). Stop for exact `Publish: YES`.
+
+canonical state: `HANDOFF` (docs checkpoint + build rehearsal).
+
+Last updated: `2026-07-19 14:20:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-19 13:42:00 +02:00`, HELP YouTube fast-path veto merged to master.
 
 Merged `feature/help-fastpath-youtube-veto` (`a840e89f2`) into `master` and pushed `backup/master`. Action-turn Help veto is now on integration branch.
