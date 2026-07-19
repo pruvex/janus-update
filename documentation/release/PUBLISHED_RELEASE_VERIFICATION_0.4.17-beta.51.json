@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "janus.release-verification.v1",
+  "status": "PASS",
+  "repository": "pruvex/janus-update",
+  "version": "0.4.17-beta.51",
+  "tagName": "v0.4.17-beta.51",
+  "releaseUrl": "https://github.com/pruvex/janus-update/releases/tag/v0.4.17-beta.51",
+  "prerelease": true,
+  "draft": false,
+  "assets": [
+    {
+      "name": "janus-setup-0.4.17-beta.51.exe",
+      "role": "installer",
+      "githubState": "uploaded",
+      "githubSize": 840486699,
+      "localSize": 840486699,
+      "githubDigest": "sha256:3a2cbf73cbf57ae2108649ebd3ec172752b39daf6d4bdbfb4e9f26a313540e15",
+      "localSha256": "3a2cbf73cbf57ae2108649ebd3ec172752b39daf6d4bdbfb4e9f26a313540e15",
+      "browserDownloadUrl": "https://github.com/pruvex/janus-update/releases/download/v0.4.17-beta.51/janus-setup-0.4.17-beta.51.exe",
+      "result": "PASS",
+      "notes": ""
+    },
+    {
+      "name": "beta.yml",
+      "role": "electron-channel-metadata",
+      "githubState": "uploaded",
+      "githubSize": 5687,
+      "localSize": 5687,
+      "githubDigest": "sha256:8e5cda011115d54e67477c92aea15c29cd6377b4c2f78328eadbf11081eae6d8",
+      "localSha256": "8e5cda011115d54e67477c92aea15c29cd6377b4c2f78328eadbf11081eae6d8",
+      "browserDownloadUrl": "https://github.com/pruvex/janus-update/releases/download/v0.4.17-beta.51/beta.yml",
+      "result": "PASS",
+      "notes": ""
+    },
+    {
+      "name": "janus-update-manifest.json",
+      "role": "janus-update-manifest",
+      "githubState": "uploaded",
+      "githubSize": 250,
+      "localSize": 250,
+      "githubDigest": "sha256:013e18629581f9b3cce21dad75037e66d5ab5f45d4003b246d79eb89bd43366a",
+      "localSha256": "013e18629581f9b3cce21dad75037e66d5ab5f45d4003b246d79eb89bd43366a",
+      "browserDownloadUrl": "https://github.com/pruvex/janus-update/releases/download/v0.4.17-beta.51/janus-update-manifest.json",
+      "result": "PASS",
+      "notes": ""
+    }
+  ],
+  "missing": [],
+  "unexpectedRelevant": [],
+  "verifiedAt": "2026-07-19T12:51:02.985Z"
+}
