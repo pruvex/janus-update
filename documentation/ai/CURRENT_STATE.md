@@ -1,6 +1,15 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-19 13:30:00 +02:00`, cost-label + everyday hint merging to master.
+
+Branch `feature/or-cost-credit-labels` (`f27c232df`, `ea9857df3`): OpenRouter-Credits labeling + Alltag hint. Merging to master / backup push. Next hardening: HELP-Fast-Path YouTube false-positive.
+
+canonical state: `PASS`, `HANDOFF` (merge+continue).
+
+Last updated: `2026-07-19 13:30:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-19 13:20:00 +02:00`, OR everyday recommendation hint shipped.
 
 Cost-label commit `f27c232df` on `feature/or-cost-credit-labels`. Added `OPENROUTER_EVERYDAY_HINT` in sidebar (when OR eligible) and Settings OR list: "Alltag: GPT Luna · Claude Haiku · GLM Flash".
