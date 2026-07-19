@@ -1,6 +1,19 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-19 14:52:00 +02:00`, `0.4.17-beta.51` publish verification PASS.
+
+Interrupted upload had already completed all required assets. `npm run release:verify-published` PASS for installer, `beta.yml`, and `janus-update-manifest.json` with matching SHA256 digests. Evidence written under `documentation/release/PUBLISHED_RELEASE_VERIFICATION_0.4.17-beta.51.*`.
+
+Release: https://github.com/pruvex/janus-update/releases/tag/v0.4.17-beta.51
+
+Prior OpenRouter key leak remains revoked + tree-redacted (`95f35c3cc`).
+
+canonical state: `PASS`.
+
+Last updated: `2026-07-19 14:52:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-19 14:50:00 +02:00`, OpenRouter leak redacted after operator key revoke.
 
 Operator disabled/deleted the exposed OpenRouter key. Redacted `sk-or-v1-*` material in:
