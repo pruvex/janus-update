@@ -1,6 +1,37 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-19 14:50:00 +02:00`, OpenRouter leak redacted after operator key revoke.
+
+Operator disabled/deleted the exposed OpenRouter key. Redacted `sk-or-v1-*` material in:
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-SKILL-TEST-001/doc-skill-006/wrapper_command_stderr.txt`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-SKILL-TEST-002/doc-skill-006/wrapper_command_stderr.txt`
+
+Tracked-tree rescan: 0 remaining real long `sk-or-v1-` hits. Git history may still contain the old blob until optional rewrite; key is revoked so exposure risk is closed for live use.
+
+Incomplete release `v0.4.17-beta.51` still needs finish-or-rebuild after this cleanup push.
+
+canonical state: `PASS` (leak redaction), `HANDOFF` (push cleanup + decide incomplete release).
+
+Last updated: `2026-07-19 14:50:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 14:45:00 +02:00`, Publish interrupted for secret-scan alert.
+
+During `Publish: YES`, `origin/master` was pushed and GitHub release `v0.4.17-beta.51` was created; installer upload was stopped mid-flight after operator interrupt.
+
+GitHub secret scanning flagged an OpenRouter API key. Likely source (tracked, real-looking key material, not printed here):
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-SKILL-TEST-001/doc-skill-006/wrapper_command_stderr.txt`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-SKILL-TEST-002/doc-skill-006/wrapper_command_stderr.txt`
+Introduced historically in `dc337f05f` (fixed-or live mini skill evidence), exposed publicly when master was pushed to `origin` for release.
+
+Operator action required first: rotate/revoke OpenRouter key. Publish paused. No secret values written here.
+
+canonical state: `BLOCKED` (secret exposure / key rotation required before continuing publish).
+
+Last updated: `2026-07-19 14:45:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-19 14:40:00 +02:00`, `0.4.17-beta.51` BUILD_REHEARSAL PASS — awaiting Publish.
 
 Docs checkpoint `a9b5ae5a8` on `master`/`backup/master`. Fresh PyInstaller backend hash-matched into installer after a first stale-backend packaging miss was corrected by rebuild.

@@ -1,6 +1,6 @@
 ﻿C:\KI\Janus-Projekt\documentation\codex\model-routing\scripts\or_file_first_capture_wrapper.ps1 : Die
 Argumenttransformation fÃ¼r den Parameter "Headers" kann nicht verarbeitet werden. Der Wert "@{ Authorization='Bearer
-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';
+sk-or-v1-[REDACTED]';
 'HTTP-Referer'='https://github.com/pruvex/Janus-Projekt'; 'X-Title'='Janus Codex Fixed OR Mini Skills' }" vom Typ
 "System.String" kann nicht in den Typ "System.Collections.Hashtable" konvertiert werden.
     + CategoryInfo          : InvalidData: (:) [or_file_first_capture_wrapper.ps1], ParentContainsErrorRecordException
