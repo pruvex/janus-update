@@ -1,6 +1,19 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-19 13:15:00 +02:00`, Hardening Kosten-Label (Credits vs €).
+
+Sidebar: `OpenRouter-Credits: … €` + titles explaining 1:1 Credits-as-€. Deep Dive metric renamed; OR dropdown costs append `· Credits`. Branch: `feature/or-cost-credit-labels`.
+
+Operator: hard-reload → Sidebar/Deep Dive/OR-Dropdown Labels prüfen.
+
+Next: Default-/Empfehlungszeile, or `commit: YES`.
+
+canonical state: `PASS` (UI), `HANDOFF` (visual / commit).
+
+Last updated: `2026-07-19 13:15:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-19 00:40:00 +02:00`, OR hardening merged to master + codex-sync.
 
 Merged `feature/openrouter-catalog-ux` → `master` (--no-ff). Pushed `backup/master`. Syncing `CURRENT_STATE.md` to `origin/codex-sync` for ChatGPT.

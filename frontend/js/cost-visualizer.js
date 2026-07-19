@@ -388,9 +388,9 @@ document.addEventListener("DOMContentLoaded", () => {
             <small>${Number(crossProviderSummary.api_provider_count) || providerBreakdown.length || 0} Provider · ${apiModelCount} Modelle</small>
           </article>
           <article class="deep-dive-metric-card">
-            <span class="deep-dive-metric-label">OpenRouter</span>
+            <span class="deep-dive-metric-label">OpenRouter-Credits</span>
             <strong class="deep-dive-cost-emphasis">${formatCurrency(openRouterTotal)}</strong>
-            <small>${openRouterModelCount} Modell${openRouterModelCount === 1 ? "" : "e"} · Credits als €</small>
+            <small>${openRouterModelCount} Modell${openRouterModelCount === 1 ? "" : "e"} · 1:1 als €</small>
           </article>
           <article class="deep-dive-metric-card deep-dive-metric-card--total">
             <span class="deep-dive-metric-label">Gesamtkosten</span>
@@ -929,16 +929,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (costLineApi) {
         costLineApi.textContent = `API-Keys: ${formatCurrency(apiKeyTotal)}`;
+        costLineApi.title = "Kosten über eigene API-Keys (OpenAI, Gemini, …)";
       }
       if (costLineOpenrouter) {
-        costLineOpenrouter.textContent = `OpenRouter: ${formatCurrency(openRouterTotal)}`;
+        costLineOpenrouter.textContent = `OpenRouter-Credits: ${formatCurrency(openRouterTotal)}`;
+        costLineOpenrouter.title =
+          "OpenRouter-Credits 1:1 als € ausgewiesen — keine Währungsumrechnung";
       }
       if (currentMonthCostElement) {
         currentMonthCostElement.textContent = `Summe: ${formatCurrency(combinedTotal)}`;
+        currentMonthCostElement.title = "API-Keys + OpenRouter-Credits (Credits als €)";
       }
 
       if (monthlyBudgetElement) {
         monthlyBudgetElement.textContent = `Budget: ${formatCurrency(combinedTotal)} / ${formatCurrency(monthlyBudget)}`;
+        monthlyBudgetElement.title = "Budget gegen Summe aus API-Keys + OpenRouter-Credits";
         monthlyBudgetElement.classList.toggle(
           "budget-exceeded",
           monthlyBudget > 0 && combinedTotal > monthlyBudget,

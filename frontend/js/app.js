@@ -797,7 +797,7 @@ function fillModelOptionsIntoSelect(selectEl, targetProvider, options = {}) {
         option.value = model.id;
         let costDisplay = "";
         if (model.cost_per_token_input) {
-          costDisplay = `${formatCost(model.cost_per_token_input * 1000000, "€/Mio. in")} / ${formatCost(model.cost_per_token_output * 1000000, "€/Mio. out")}`;
+          costDisplay = `${formatCost(model.cost_per_token_input * 1000000, "€/Mio. in")} / ${formatCost(model.cost_per_token_output * 1000000, "€/Mio. out")} · Credits`;
         }
         option.textContent = `${model.name || model.id}${costDisplay ? ` (${costDisplay})` : ""}`;
         option.dataset.provider = "openrouter";
