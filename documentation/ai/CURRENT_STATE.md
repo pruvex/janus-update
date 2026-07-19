@@ -1,6 +1,43 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-19 16:55:00 +02:00`, TASK-WEBSEARCH-PARITY.2 documentation update complete.
+
+Marker `BACKLOG-133` synced across Backlog (IN PROGRESS, `.2` acceptance checked), registry, PROJECT_STATE, CHANGELOG, WHAT_I_LEARNED, TEST_PIPELINE_RUN_LOG, Spec metadata, dashboard snapshot.
+Spec remains ACTIVE/PARTIAL; Epic not DONE; next target `.3`.
+Git checkpoint (backup/master + codex-sync) completed this block.
+Remote/GitHub may not contain latest CURRENT_STATE until sync/push finishes.
+
+canonical state: `HANDOFF`.
+
+Last updated: `2026-07-19 16:55:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 16:52:00 +02:00`, TASK-WEBSEARCH-PARITY.2 final audit PASS.
+
+Audit: `documentation/tasks/TASK-WEBSEARCH-PARITY.2_final_audit.md`
+Package: `documentation/tasks/TASK-WEBSEARCH-PARITY.2_AUDIT_PACKAGE.md`
+Spec remains ACTIVE/PARTIAL (`.3`–`.4` open); not moved to Spec Done.
+Evidence recheck: 19 unit tests PASS.
+Next: `janus-documentation-update` (done in same block), then task-breakdown for `.3`.
+
+canonical state: `HANDOFF`.
+
+Last updated: `2026-07-19 16:52:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 16:50:00 +02:00`, TASK-WEBSEARCH-PARITY.2 execution PASS.
+
+Retrieval quality: ranking/noise/enrichment/region; OR/Ollama→DDG without cloud keys.
+Evidence: unit tests 19/19 PASS (`test_websearch_parity_retrieval_quality` + slice1).
+Result: `documentation/tasks/TASK-WEBSEARCH-PARITY.2_execution_result.md`
+Next: `janus-final-audit` for `.2`.
+
+canonical state: `PASS` (execution), `HANDOFF` (audit).
+
+Last updated: `2026-07-19 16:50:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-19 16:40:00 +02:00`, TASK-WEBSEARCH-PARITY.1 documentation update complete.
 
 Marker `BACKLOG-133` synced across Backlog (IN PROGRESS), registry, PROJECT_STATE, CHANGELOG, WHAT_I_LEARNED, TEST_PIPELINE_RUN_LOG, dashboard snapshot.
