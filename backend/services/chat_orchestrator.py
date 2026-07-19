@@ -617,6 +617,29 @@ class ChatOrchestrator:
         Returns:
             One of "model_query", "capability_overview", "how_to", "navigation", or None.
         """
+        # Concrete skill/action turns must never short-circuit into Help.
+        # Example: "YouTube … Python Tutorial für Anfänger" matched how-to via
+        # "tutorial für" + help-scope "video" and skipped video.search entirely.
+        if any(
+            bool(getattr(intents, flag, False))
+            for flag in (
+                "is_video_intent",
+                "is_video_list_intent",
+                "is_video_understanding_intent",
+                "is_filesystem_intent",
+                "is_weather_intent",
+                "is_calendar_intent",
+                "is_calendar_creation",
+                "is_calendar_mutation",
+                "is_wikipedia_intent",
+                "is_news_intent",
+                "is_shopping_intent",
+                "is_local_business_intent",
+                "is_routing_geo_intent",
+                "is_session_search_intent",
+            )
+        ):
+            return None
         if intents.is_model_query:
             return "model_query"
         if intents.is_capability_overview:
