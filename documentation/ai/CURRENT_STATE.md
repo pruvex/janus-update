@@ -1,6 +1,79 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-19 14:52:00 +02:00`, `0.4.17-beta.51` publish verification PASS.
+
+Interrupted upload had already completed all required assets. `npm run release:verify-published` PASS for installer, `beta.yml`, and `janus-update-manifest.json` with matching SHA256 digests. Evidence written under `documentation/release/PUBLISHED_RELEASE_VERIFICATION_0.4.17-beta.51.*`.
+
+Release: https://github.com/pruvex/janus-update/releases/tag/v0.4.17-beta.51
+
+Prior OpenRouter key leak remains revoked + tree-redacted (`95f35c3cc`).
+
+canonical state: `PASS`.
+
+Last updated: `2026-07-19 14:52:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 14:50:00 +02:00`, OpenRouter leak redacted after operator key revoke.
+
+Operator disabled/deleted the exposed OpenRouter key. Redacted `sk-or-v1-*` material in:
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-SKILL-TEST-001/doc-skill-006/wrapper_command_stderr.txt`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-SKILL-TEST-002/doc-skill-006/wrapper_command_stderr.txt`
+
+Tracked-tree rescan: 0 remaining real long `sk-or-v1-` hits. Git history may still contain the old blob until optional rewrite; key is revoked so exposure risk is closed for live use.
+
+Incomplete release `v0.4.17-beta.51` still needs finish-or-rebuild after this cleanup push.
+
+canonical state: `PASS` (leak redaction), `HANDOFF` (push cleanup + decide incomplete release).
+
+Last updated: `2026-07-19 14:50:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 14:45:00 +02:00`, Publish interrupted for secret-scan alert.
+
+During `Publish: YES`, `origin/master` was pushed and GitHub release `v0.4.17-beta.51` was created; installer upload was stopped mid-flight after operator interrupt.
+
+GitHub secret scanning flagged an OpenRouter API key. Likely source (tracked, real-looking key material, not printed here):
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-SKILL-TEST-001/doc-skill-006/wrapper_command_stderr.txt`
+- `documentation/codex/model-routing/fixed-or-live-runs/FIXED-OR-SKILL-TEST-002/doc-skill-006/wrapper_command_stderr.txt`
+Introduced historically in `dc337f05f` (fixed-or live mini skill evidence), exposed publicly when master was pushed to `origin` for release.
+
+Operator action required first: rotate/revoke OpenRouter key. Publish paused. No secret values written here.
+
+canonical state: `BLOCKED` (secret exposure / key rotation required before continuing publish).
+
+Last updated: `2026-07-19 14:45:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 14:40:00 +02:00`, `0.4.17-beta.51` BUILD_REHEARSAL PASS — awaiting Publish.
+
+Docs checkpoint `a9b5ae5a8` on `master`/`backup/master`. Fresh PyInstaller backend hash-matched into installer after a first stale-backend packaging miss was corrected by rebuild.
+
+Artifacts:
+- `release/janus-setup-0.4.17-beta.51.exe`
+- `release/beta.yml`
+- `release/janus-update-manifest.json`
+- Installer SHA256 `3A2CBF73CBF57AE2108649EBD3EC172752B39DAF6D4BDBFB4E9F26A313540E15`
+- Manifest SHA512 `fgdtNE2yWS/OKxZNv/Aec2amFVo5XevnqcatHp3hp6K2DJhSaVfsM0Ax+iw54L4WU2lWBafT/e7qcdWhIXeiyw==`
+
+Parked dirt still in stash. No publish yet.
+
+canonical state: `HANDOFF` — waiting for exact `Publish: YES`.
+
+Last updated: `2026-07-19 14:40:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 14:20:00 +02:00`, documentation update for `0.4.17-beta.51` release prep.
+
+Version bumped `0.4.17-beta.50` -> `0.4.17-beta.51` in `package.json`, `package-lock.json`, `backend/version.py`. CHANGELOG moved OpenRouter wave + HELP veto into `[0.4.17-beta.51]`. `release_notes.md` and `PROJECT_STATE.md` updated. Parked dirt remains in stash `parked-dirt before beta.51 release prep`.
+
+Next: commit docs checkpoint on `master`, push `backup/master`, then `janus-build-release` BUILD_REHEARSAL (no publish). Stop for exact `Publish: YES`.
+
+canonical state: `HANDOFF` (docs checkpoint + build rehearsal).
+
+Last updated: `2026-07-19 14:20:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-19 13:42:00 +02:00`, HELP YouTube fast-path veto merged to master.
 
 Merged `feature/help-fastpath-youtube-veto` (`a840e89f2`) into `master` and pushed `backup/master`. Action-turn Help veto is now on integration branch.
