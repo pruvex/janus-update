@@ -1,6 +1,59 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-19 17:10:00 +02:00`, TASK-WEBSEARCH-PARITY.3 git checkpoint in progress (operator YES).
+
+Commit + push `backup/master` + `codex-sync` for answer-first/fail-closed closeout.
+Next after sync: `janus-preimplementation-check` for `TASK-WEBSEARCH-PARITY.4`.
+Spec remains ACTIVE/PARTIAL (`.4` open).
+
+canonical state: `HANDOFF`.
+
+Last updated: `2026-07-19 17:10:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 17:05:00 +02:00`, TASK-WEBSEARCH-PARITY.3 documentation update complete.
+
+Marker `BACKLOG-133` synced; Spec remains ACTIVE/PARTIAL; next target `.4` gold network.
+Git checkpoint for `.3` needs explicit Freigabe (commit + backup/master + codex-sync).
+Remote/GitHub may not contain latest CURRENT_STATE until sync/push.
+
+canonical state: `HANDOFF`.
+
+Last updated: `2026-07-19 17:05:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 17:02:00 +02:00`, TASK-WEBSEARCH-PARITY.3 final audit PASS.
+
+Audit: `documentation/tasks/TASK-WEBSEARCH-PARITY.3_final_audit.md`
+Evidence: 16 unit tests PASS.
+Next: docs update (same block), then task-breakdown for `.4`.
+
+canonical state: `HANDOFF`.
+
+Last updated: `2026-07-19 17:02:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 17:00:00 +02:00`, TASK-WEBSEARCH-PARITY.3 execution PASS.
+
+Answer-first + fail-closed wired on OR/DDG path, finalizer, rss renderer.
+Result: `documentation/tasks/TASK-WEBSEARCH-PARITY.3_execution_result.md`
+
+canonical state: `PASS` (execution), `HANDOFF` (audit).
+
+Last updated: `2026-07-19 17:00:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 16:56:00 +02:00`, Git checkpoint for TASK-WEBSEARCH-PARITY.2 complete.
+
+Commit `20ea21ed7` on `master`; pushed `backup/master`; `origin/codex-sync` `1731355b8`.
+Continued immediately into `.3`.
+
+canonical state: `HANDOFF`.
+
+Last updated: `2026-07-19 16:56:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-19 16:55:00 +02:00`, TASK-WEBSEARCH-PARITY.2 documentation update complete.
 
 Marker `BACKLOG-133` synced across Backlog (IN PROGRESS, `.2` acceptance checked), registry, PROJECT_STATE, CHANGELOG, WHAT_I_LEARNED, TEST_PIPELINE_RUN_LOG, Spec metadata, dashboard snapshot.
