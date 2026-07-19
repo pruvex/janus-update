@@ -1,6 +1,48 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-19 19:20:00 +02:00`, BACKLOG-133 / WEBSEARCH-PARITY Epic git checkpoint in progress (operator YES).
+
+Commit + push `backup/master` + `codex-sync` for `.4` gold net and Spec Done / Backlog DONE closeout.
+Evidence: unit `27 passed`. Spec at `documentation/SPEC/Spec Done/WEBSEARCH_CHATGPT_APP_PARITY_FEATURE_SPEC.md`.
+
+canonical state: `HANDOFF`.
+
+Last updated: `2026-07-19 19:20:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 19:15:00 +02:00`, BACKLOG-133 / WEBSEARCH-PARITY Epic documentation closeout complete.
+
+Tasks `.1`–`.4` Final Audit PASS. Spec moved to `documentation/SPEC/Spec Done/WEBSEARCH_CHATGPT_APP_PARITY_FEATURE_SPEC.md`. Backlog-133 DONE.
+Evidence: gold+regression unit `27 passed`.
+Git checkpoint (commit + backup/master + codex-sync) needs explicit Freigabe.
+Remote/GitHub may not contain latest CURRENT_STATE until sync/push.
+
+canonical state: `HANDOFF`.
+
+Last updated: `2026-07-19 19:15:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 19:12:00 +02:00`, TASK-WEBSEARCH-PARITY.4 final audit PASS (Epic complete).
+
+Gold net: `backend/tests/unit/test_websearch_parity_gold_questions.py`
+Audit: `documentation/tasks/TASK-WEBSEARCH-PARITY.4_final_audit.md`
+Next: documentation-update (same block) then git checkpoint.
+
+canonical state: `HANDOFF`.
+
+Last updated: `2026-07-19 19:12:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 19:10:00 +02:00`, TASK-WEBSEARCH-PARITY.4 execution PASS.
+
+Deterministic gold fixtures for Lookup/Ticker/Grenzfall/fail-closed; 27 unit tests PASS.
+
+canonical state: `PASS` (execution), `HANDOFF` (audit).
+
+Last updated: `2026-07-19 19:10:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-19 17:10:00 +02:00`, TASK-WEBSEARCH-PARITY.3 git checkpoint in progress (operator YES).
 
 Commit + push `backup/master` + `codex-sync` for answer-first/fail-closed closeout.
