@@ -1,6 +1,19 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-19 13:20:00 +02:00`, OR everyday recommendation hint shipped.
+
+Cost-label commit `f27c232df` on `feature/or-cost-credit-labels`. Added `OPENROUTER_EVERYDAY_HINT` in sidebar (when OR eligible) and Settings OR list: "Alltag: GPT Luna · Claude Haiku · GLM Flash".
+
+Operator: hard-reload → Provider OpenRouter → hint under model select; Settings OR list top hint.
+
+Next: commit this slice, or HELP-Fast-Path / Backend-Freshness.
+
+canonical state: `PASS` (UI+unit), `HANDOFF` (commit).
+
+Last updated: `2026-07-19 13:20:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-19 13:15:00 +02:00`, Hardening Kosten-Label (Credits vs €).
 
 Sidebar: `OpenRouter-Credits: … €` + titles explaining 1:1 Credits-as-€. Deep Dive metric renamed; OR dropdown costs append `· Credits`. Branch: `feature/or-cost-credit-labels`.

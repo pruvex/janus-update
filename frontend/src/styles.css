@@ -2961,6 +2961,34 @@ button:hover {
   gap: 0;
 }
 
+.model-everyday-hint {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px dashed var(--sidebar-border);
+  background: rgba(136, 192, 208, 0.08);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  line-height: 1.35;
+  break-inside: avoid;
+  column-span: all;
+}
+
+.openrouter-chat-eligibility {
+  margin: 6px 0 0;
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.openrouter-chat-eligibility--hint {
+  color: var(--text-secondary);
+}
+
+.openrouter-chat-eligibility--blocked {
+  color: #e57373;
+}
+
 .model-family-section {
   list-style: none;
   margin: 0 0 14px;

@@ -1,7 +1,7 @@
 import "../css/settings.css";
 import { API_BASE_URL } from "./config.js";
 import { initTTS } from "./tts.js";
-import { sortModelsForProvider, groupModelsByFamily } from "./model-sort.js";
+import { sortModelsForProvider, groupModelsByFamily, OPENROUTER_EVERYDAY_HINT } from "./model-sort.js";
 
 const appState = {
   // Minimal appState for settings
@@ -987,6 +987,11 @@ async function renderModelManagementView(provider) {
       if (selectedModels.length === 0) {
         selectedModels = [...modelMap.keys()];
       }
+      const hint = document.createElement("li");
+      hint.className = "model-everyday-hint";
+      hint.textContent = OPENROUTER_EVERYDAY_HINT;
+      modelList.appendChild(hint);
+
       const familyGroups = groupModelsByFamily([...modelMap.values()]);
       for (const group of familyGroups) {
         const section = document.createElement("li");
