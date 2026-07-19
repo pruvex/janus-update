@@ -2,7 +2,7 @@ import { sanitizeReleaseNotes, sanitizeTemplateHtml } from "./dompurify-config.j
 import { initializeSettings } from "./settings.js";
 import { initializeStudio } from "./image-studio.js";
 import { initUpdateUI, setSidebarVersionBase } from "./update-ui.js";
-import { sortModelsForProvider, groupModelsByFamily } from "./model-sort.js";
+import { sortModelsForProvider, groupModelsByFamily, OPENROUTER_EVERYDAY_HINT } from "./model-sort.js";
 
 // ================= WRAPPER FÜR FETCH (API KEY) =================
 (() => {
@@ -314,15 +314,23 @@ function syncOpenRouterComposerAvailability() {
   if (sidebarProvider !== "openrouter") {
     status.hidden = true;
     status.textContent = "";
+    status.classList.remove(
+      "openrouter-chat-eligibility--blocked",
+      "openrouter-chat-eligibility--hint",
+    );
     return;
   }
   const decision = getOpenRouterSelectionEligibility(sidebarProvider, sidebarModel);
   if (!decision.eligible) {
     status.textContent = openRouterEligibilityMessage(decision.reason);
+    status.classList.add("openrouter-chat-eligibility--blocked");
+    status.classList.remove("openrouter-chat-eligibility--hint");
     status.hidden = false;
   } else {
-    status.hidden = true;
-    status.textContent = "";
+    status.textContent = OPENROUTER_EVERYDAY_HINT;
+    status.classList.add("openrouter-chat-eligibility--hint");
+    status.classList.remove("openrouter-chat-eligibility--blocked");
+    status.hidden = false;
   }
 }
 
@@ -797,7 +805,7 @@ function fillModelOptionsIntoSelect(selectEl, targetProvider, options = {}) {
         option.value = model.id;
         let costDisplay = "";
         if (model.cost_per_token_input) {
-          costDisplay = `${formatCost(model.cost_per_token_input * 1000000, "€/Mio. in")} / ${formatCost(model.cost_per_token_output * 1000000, "€/Mio. out")}`;
+          costDisplay = `${formatCost(model.cost_per_token_input * 1000000, "€/Mio. in")} / ${formatCost(model.cost_per_token_output * 1000000, "€/Mio. out")} · Credits`;
         }
         option.textContent = `${model.name || model.id}${costDisplay ? ` (${costDisplay})` : ""}`;
         option.dataset.provider = "openrouter";

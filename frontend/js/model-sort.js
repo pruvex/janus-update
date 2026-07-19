@@ -23,6 +23,10 @@ const OPENROUTER_FAMILY_RANK = {
   openai: 70,
 };
 
+/** Compact everyday pick hint for OpenRouter (cheap/fast workhorses). */
+export const OPENROUTER_EVERYDAY_HINT =
+  "Alltag: GPT Luna · Claude Haiku · GLM Flash";
+
 export function getModelFamilyLabel(familyKey) {
   const key = String(familyKey || "").trim().toLowerCase();
   if (Object.prototype.hasOwnProperty.call(OPENROUTER_FAMILY_LABELS, key)) {

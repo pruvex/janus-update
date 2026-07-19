@@ -5,6 +5,7 @@ import {
   groupModelsByFamily,
   sortModelsByFamilyAndPrice,
   sortModelsForProvider,
+  OPENROUTER_EVERYDAY_HINT,
 } from "../../frontend/js/model-sort.js";
 
 const models = [
@@ -70,5 +71,9 @@ assert.deepEqual(
     { label: "Kimi", ids: ["moonshotai/kimi-k3"] },
   ],
 );
+
+assert.ok(OPENROUTER_EVERYDAY_HINT.includes("Luna"));
+assert.ok(OPENROUTER_EVERYDAY_HINT.includes("Haiku"));
+assert.ok(OPENROUTER_EVERYDAY_HINT.includes("GLM Flash"));
 
 console.log("model-sort tests PASS");
