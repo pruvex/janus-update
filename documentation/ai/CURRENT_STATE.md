@@ -1,6 +1,29 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-20 22:15:00 +02:00`, the completed Task `.2` delivery is checkpointed locally as `377aa4cd1` (`fix(webresearch): harden guarded evidence fetch`) and pushed to `backup/master`. The `CURRENT_STATE` snapshot was also published to `origin/codex-sync`.
+
+Current goal: retain Task `.2` as completed and select Task `.3` only through its dependency-gated task breakdown when implementation resumes.
+
+Active phase: post-checkpoint sync; canonical state `PASS`.
+
+Checks / delivery evidence:
+- targeted staged diff check PASS before commit
+- local checkpoint `377aa4cd1` created
+- `git push backup master`: PASS
+- `sync_codex_current_state.ps1`: PASS
+
+Open risks:
+- Tasks `.3` budget/receipts, `.4` source/price/image evidence and `.5` consent/progress/UI remain open
+- unrelated parked worktree changes remain outside the Task `.2` checkpoint
+
+Next recommended step for ChatGPT: use `origin/codex-sync` as the remote CURRENT_STATE source and keep the parent Feature partial.
+
+Next recommended step for Codex: wait for a new task selection; do not infer Task `.3` implementation authorization.
+
+Last updated: `2026-07-20 22:15:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-20 22:05:00 +02:00`, Task `.2` documentation synchronization is complete after Final Audit PASS. The task is marked DONE in the parent task overview and central registry; the parent Webresearch Feature remains `IN PROGRESS` with Tasks `.3-.5` open.
 
 Current goal: create a targeted Git checkpoint for the completed Task `.2` documentation/product slice if the user wants it saved.
