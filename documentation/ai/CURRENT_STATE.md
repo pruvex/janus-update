@@ -1,6 +1,1798 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-20 20:30:00 +02:00`, `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1` is documentation-synchronized after blocker-delta Final Re-Audit `PASS` and stored in local commit `b445ae02a`. Parent Task `.1` is complete; the provider-agnostic Webresearch Feature remains `IN PROGRESS` because Tasks `.2` through `.5` are intentionally still open.
+
+Current goal: retain the validated provider/model and honest-failure foundation, then start Task `.2` only through a fresh security-focused task-breakdown gate after an optional explicit Git checkpoint.
+
+Active phase: `janus-documentation-update`; canonical state `PASS`.
+
+Last Codex work:
+- marked Parent Task `.1` DONE in the task overview and breakdown metadata
+- updated the central registry, project state and Unreleased changelog without closing the parent Spec
+- recorded the validated DDG raw-query/exception-target redaction pattern after duplicate search
+- created `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_documentation_update.md`
+- created local checkpoint `b445ae02a` (`fix(webresearch): preserve provider isolation and honest failures`)
+
+Changed files:
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.md`
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_task_breakdown.md`
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_documentation_update.md`
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `CHANGELOG.md`
+- `WHAT_I_LEARNED.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- Parent Final Re-Audit validator PASS
+- documentation marker validator PASS
+- `git diff --check` PASS (unrelated line-ending warnings only)
+
+Open risks:
+- Task `.2` central network guard, Task `.3` budget/receipts, Task `.4` source/price/image evidence and Task `.5` consent/progress remain required before Janus can reliably deliver the intended ChatGPT-like web-research experience
+- the local commit is not pushed and `origin/codex-sync` was not updated, so GitHub and ChatGPT remote state do not contain this snapshot
+
+Next recommended step for ChatGPT: retain the Feature as partial; do not describe the completed foundation as a finished Gold-price/source/product-research capability.
+
+Next recommended step for Codex: on explicit user approval, push the checkpoint to `backup/master` and/or sync `CURRENT_STATE.md` to `origin/codex-sync`; otherwise route Task `.2` through fresh security-focused `janus-task-breakdown`.
+
+Last updated: `2026-07-20 20:30:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-20 20:05:00 +02:00`, the blocker-delta Final Re-Audit for `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1` is `PASS`. The historic DDG diagnostic privacy issue, atomic safe-error propagation and the completed local pseudo-tool prerequisite were reviewed only against the approved Task `.1` scope. The provider-agnostic parent Feature remains `IN PROGRESS` because Tasks `.2` through `.5` are intentionally not implemented or audited here.
+
+Current goal: synchronize documentation for completed Parent Task `.1`, then prepare the security-focused Task `.2` breakdown in a fresh bounded slice.
+
+Active phase: `janus-final-audit`; canonical state `HANDOFF` to `janus-documentation-update`.
+
+Last Codex work:
+- refreshed the compact Parent Task `.1` audit package with an explicit blocker delta
+- reviewed DDG sentinel redaction, terminal atomic error propagation and the local pseudo-tool prerequisite without reopening product decisions
+- wrote and validated `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_FINAL_REAUDIT.md` as `PASS`
+- confirmed the safe local Ollama blocker is honest failure behavior, not a sourced current Gold price
+
+Changed files:
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_reaudit_delta.md`
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_AUDIT_PACKAGE.md`
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_FINAL_REAUDIT.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- Parent Task `.1` bound Python matrix evidence: `235 passed`
+- DDG sentinel log-redaction evidence: `3 passed`
+- structured-error / atomic evidence: `2 passed`
+- local prerequisite evidence: `38 passed`, `161 passed`, headed Chat Core `1 passed`
+- manual Janus Gold-price prompt: safe blocker only, no raw pseudo-tool JSON, invented price/source, false completion or provider/model switch
+- `validate_final_audit.py` PASS
+- `git diff --check` PASS (unrelated line-ending warnings only)
+
+Open risks:
+- Tasks `.2` through `.5` remain mandatory for central network protection, budget/receipt accounting, source/price/image rendering and consent/progress UX
+- no commit, push or `origin/codex-sync` update occurred, so GitHub and ChatGPT remote state do not contain this snapshot
+
+Next recommended step for ChatGPT: consider Parent Task `.1` complete, but keep the parent Feature partial and do not claim reliable current prices, sources or images yet.
+
+Next recommended step for Codex: run `janus-documentation-update` for Parent Task `.1` only; afterwards route Task `.2` to a fresh security-focused `janus-task-breakdown` gate.
+
+Last updated: `2026-07-20 20:05:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-20 19:50:00 +02:00`, `TASK-PROVIDER-AGNOSTIC-LOCAL-TOOL-PROTOCOL-RECOVERY.1` is documentation-synchronized after Final Audit PASS. Its standalone prerequisite Spec is in `Spec Done`; the provider-agnostic parent Feature remains `IN PROGRESS` because its Task `.1` still has an outdated blocked final-audit package that must be refreshed before Task `.2` can start.
+
+Current goal: refresh and re-audit `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1` against the completed DDG log-redaction, atomic-error and local pseudo-tool recovery evidence; only then release Task `.2`.
+
+Active phase: `janus-skill-router`; canonical state `HANDOFF` to compact audit-package refresh and parent Task `.1` re-audit.
+
+Last Codex work:
+- added one invisible retry only for tool-shaped invalid local Ollama pseudo-calls, constrained to the current allowed tool/schema
+- returned `OLLAMA_INVALID_PSEUDO_TOOL` with a safe no-action message after an invalid retry, without returning the raw model payload
+- stopped `AgentRuntime` before its false `TASK_COMPLETE` logging and before final synthesis for that exact failure
+- stopped the atomic loop before another skill, tool execution or synthesis for that exact failure
+- added backend SSE and frontend defense-in-depth suppression for pseudo-tool JSON
+- added service, runtime, atomic, SSE and headed UI regressions; no provider/model fallback was added
+- received user-confirmed manual PASS at 19:03: the Ollama Gold-price prompt showed only the approved safe blocker
+- built `documentation/tasks/TASK-PROVIDER-AGNOSTIC-LOCAL-TOOL-PROTOCOL-RECOVERY.1_AUDIT_PACKAGE.md`
+- independently audited the package as PASS; the exact prerequisite contract, scoped evidence and manual result are coherent
+- synchronized task, moved Spec, central registry, project state, changelog and validated learning pattern without closing the parent Feature
+- verified the parent Task `.1` final audit is still formally `BLOCKED` by historical `DDG_RAW_QUERY_LOG_LEAK` and raw-pseudo-tool evidence, although later bounded repairs and the new prerequisite supply the required remediation evidence
+
+Changed files:
+- `backend/llm_providers/ollama/service.py`
+- `backend/services/agent_runtime.py`
+- `backend/services/orchestrator/execution_engine.py`
+- `backend/api/routers/chat.py`
+- `frontend/js/chat.js`
+- `backend/tests/llm_providers/test_ollama_service.py`
+- `backend/tests/test_agent_factory_runtime.py`
+- `backend/tests/test_ollama_local_transport.py`
+- `tests/functional/chat-core.spec.js`
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-LOCAL-TOOL-PROTOCOL-RECOVERY.1_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-LOCAL-TOOL-PROTOCOL-RECOVERY.1_AUDIT_PACKAGE.md`
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-LOCAL-TOOL-PROTOCOL-RECOVERY.1_final_audit.md`
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-LOCAL-TOOL-PROTOCOL-RECOVERY.1_documentation_update.md`
+- `documentation/SPEC/Spec Done/PROVIDER_AGNOSTIC_LOCAL_TOOL_PROTOCOL_RECOVERY_FEATURE_SPEC.md`
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `CHANGELOG.md`
+- `WHAT_I_LEARNED.md`
+
+Tests / validation performed:
+- Python compile PASS for service, execution engine and stream router
+- focused bound regression suite PASS: `38 passed`
+- full bound provider/tool suite PASS: `161 passed`
+- headed Playwright chat-core PASS: `1 passed`
+- `git diff --check` PASS
+- manual Janus Ollama Gold-price prompt PASS: safe blocker shown, no raw JSON or invented price/source
+- final-audit validator PASS
+- documentation marker validation PASS
+- parent Task `.1` audit/package/result comparison PASS; identified re-audit package refresh as the required next gate
+
+Open risks:
+- parent Task `.1` re-audit must remain narrowly scoped to its already implemented remediation evidence; Tasks `.2` through `.5` remain parked
+- this prerequisite deliberately does not change provider credit, DDG routing, budget consent, source/evidence, price or image behavior
+- no commit, push or `origin/codex-sync` update occurred, so GitHub and ChatGPT remote state do not contain this snapshot
+
+Next recommended step for ChatGPT: refresh the Parent Task `.1` audit package with the exact DDG redaction, atomic fail-closed and completed local pseudo-tool recovery deltas; do not start Task `.2` yet.
+
+Next recommended step for Codex: use `codex-audit-package-builder`, then `janus-final-audit`, for exactly `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1`; if it passes, run documentation sync and then Task `.2` breakdown.
+
+Last updated: `2026-07-20 19:50:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-20 18:40:00 +02:00`, the repeat manual Ollama/DDG gate for `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1` remains blocked before Websearch execution. The corrected prerequisite task, now including `backend/services/agent_runtime.py`, has passed its renewed preimplementation gate; no product code has been changed. The existing provider-agnostic parent Feature remains `IN PROGRESS`.
+
+Current goal: execute the prechecked one-retry, safe-blocker, no-fallback and no-false-completion contract with `agent_runtime.py` formally bound.
+
+Active phase: `janus-preimplementation-check`; canonical state `HANDOFF` to `janus-executioner`.
+
+Last Codex work:
+- correlated the failed live stream `0b650085-2b6f-4711-8825-3834a4ba36e0` with the selected `ollama` / `qwen2.5-coder:14b@localhost` identity
+- proved the initial restricted phase was `memory.read`, while the model emitted the unregistered `web_research.system.websearch` pseudo-call
+- proved the pseudo-call was rejected by Ollama self-heal, Websearch never ran, the atomic loop ended `TEXT_ONLY_STEP`, and the legacy UI displayed the raw JSON shape
+- wrote the bounded debug handoff; no product code was changed
+- compared the failure owners against the compiled `.1 -> .2 -> .3 -> .4 -> .5` task chain and documented the resulting scope ambiguity
+- recorded the user-locked one-retry-then-safe-blocker contract as a spec-ready decision summary; no product code was changed
+- generated the standalone local tool-protocol recovery Feature Spec from that locked decision; no task, test or implementation was created
+- reviewed the Spec and wrote `NEEDS_REVISION` metadata because the prerequisite order before remaining parent tasks is not yet encoded
+- added the already locked parent-order invariant to constraints, Definition of Done and test strategy; removed stale review metadata so the revision can receive a fresh review decision
+- re-reviewed the revised Spec as `APPROVED`; wrote fresh review metadata with Skill-1 readiness `YES`
+- compiled exactly one prerequisite task with concrete established owners and direct service, atomic-runtime, transport and chat regression surfaces
+- refined the target into a single precheck handoff, preserved the existing Websearch TestSpec as oracle and excluded all parent-feature budget/evidence/consent work
+- passed the preimplementation artifact identity, one-task scope, concrete owner, test-oracle and no-fallback checks; no code or test run was performed
+- validated the precheck handoff and inspected the bound execution owners; stopped before edits because `backend/services/agent_runtime.py` unconditionally marks every phase complete and is not authorized by the current allowlist
+- added only that mandatory phase-completion owner and its already-bound direct runtime test surface to the task refinement
+- renewed the preimplementation check with that one owner; verified the one-task scope, no-fallback contract, evidence commands and TestSpec read-only boundary
+
+Changed files:
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_debug_result_ollama_invalid_pseudotool_stream_leak.md`
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_execution_result.md`
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH_invalid_pseudotool_scope_decision.md`
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH_local_tool_protocol_decision_summary.md`
+- `documentation/SPEC/PROVIDER_AGNOSTIC_LOCAL_TOOL_PROTOCOL_RECOVERY_FEATURE_SPEC.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- targeted `WHAT_I_LEARNED` lookup PASS
+- AppData runtime stream correlation PASS
+- scoped Ollama service, SSE router and frontend raw-fragment guard inspection PASS
+- no product code, paid research, commit or push
+
+Open risks:
+- Task `.1` must not enter audit while the normal local Websearch prompt can leak internal pseudo-tool JSON and return no honest outcome
+- the repair spans an earlier non-native tool-call boundary and pre-display stream handling, which the current `.1` precheck expressly excludes
+- Spec review must confirm that the generated prerequisite preserves existing parent-Feature boundaries before task compilation; the current Task `.1` audit remains blocked
+- execution must retain only the mandatory phase-completion owner correction; no other parent Feature work may be pulled forward; the current Task `.1` audit remains blocked
+- no commit, push or `origin/codex-sync` update occurred, so GitHub and ChatGPT remote state do not contain this snapshot
+
+Next recommended step for ChatGPT: retain the parent Feature as `IN PROGRESS`; execute only the corrected prechecked task and do not broaden retry or chat-feature scope.
+
+Next recommended step for Codex: run `janus-executioner` on the corrected prechecked task; after automated evidence obtain a fresh local Ollama manual result before any parent Task `.1` audit resumes.
+
+Last updated: `2026-07-20 18:40:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-20 17:20:23 +02:00`, the four-file identity-error propagation repair for `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1` is implemented and automated evidence is green; the repeat manual Ollama/DDG validation is pending.
+
+Current goal: return a rejected model-emitted Websearch identity as a structured safe blocker before completion or final synthesis, without accepting a foreign identity or changing generic tool-error behavior.
+
+Active phase: `janus-executioner`; canonical state `NEEDS_INFO` pending the manual Janus gate.
+
+Last Codex work:
+- added a typed ToolExecutor error for its own `system.websearch` provider/model identity guard
+- preserved that exact structured error code through the ToolExecutor boundary while retaining generic `OPERATION_FAILED` behavior for every other exception
+- added the exact code to the existing Websearch atomic direct-return set
+- added an atomic regression proving local Ollama identity retention, safe blocker return, no Task Complete, no clean synthesis and no fabricated Forbes/OpenAI claim
+- strengthened the direct ToolExecutor regression to require the exact error code and no search invocation
+
+Changed files:
+- `backend/services/tool_executor.py`
+- `backend/services/orchestrator/execution_engine.py`
+- `backend/tests/test_backlog_007_tool_routing_performance.py`
+- `backend/tests/test_agent_factory_runtime.py`
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- precheck validator PASS
+- Python compilation PASS for both implementation files
+- focused ToolExecutor plus atomic-loop regressions PASS: `2 passed in 0.29s`
+- full bound provider/model/routing matrix PASS: `235 passed in 1.74s`
+- scoped `git diff --check` pending final documentation update
+- no live provider request, paid search, commit or push
+
+Open risks:
+- manual Janus validation must confirm the user-visible Ollama/DDG flow now surfaces the safe blocker rather than synthesizing false facts
+- this repair does not yet deliver reliably sourced Gold prices; that remains later Feature work
+- no commit, push or `origin/codex-sync` update occurred, so GitHub and ChatGPT remote state do not contain this execution state
+
+Next recommended step for ChatGPT: keep the parent Feature `IN PROGRESS`; do not treat safe failure handling as the full evidence-quality experience.
+
+Next recommended step for Codex: record the repeat manual Janus check; on PASS refresh the Task `.1` audit package and re-run final audit, otherwise route the failure to `janus-debug`.
+
+Last updated: `2026-07-20 17:20:23 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-20 17:15:40 +02:00`, the corrected four-file identity-error propagation slice for `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1` passed preimplementation check and is released to `janus-executioner`.
+
+Current goal: preserve `WEBSEARCH_IDENTITY_MISMATCH` exactly at ToolExecutor's own rejected `system.websearch` identity guard, then direct-return it from the atomic loop before completion or final synthesis.
+
+Active phase: `janus-preimplementation-check`; canonical state `HANDOFF` (`PRE-CHECK PASSED`) to `janus-executioner`.
+
+Last Codex work:
+- used the shared bounded precheck gate; local Codex was selected because delegation ROI was negative (`900` estimated savings versus `2400` overhead)
+- verified the corrected Task, Spec, TestSpec, blocked precheck and four direct owners describe exactly one implementation slice
+- verified ToolExecutor is the authoritative error-shape boundary and its existing direct conflict regression is the correct preservation oracle
+- bound the atomic regression to require no Task Complete, no clean synthesis and no fabricated price/provider/source claim
+- retained all no-fallback, no-foreign-identity and no-generic-error-passthrough exclusions
+
+Changed files:
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_preimplementation_check.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- shared precheck delegation gate PASS, local Codex selected
+- task/spec/TestSpec/ToolExecutor/orchestrator/test-owner inspection PASS
+- `validate_precheck.py` PASS
+- scoped `git diff --check` PASS
+- no code edit, product test, live provider call, commit or push
+
+Open risks:
+- the implementation must preserve the structured identity code only for ToolExecutor's own Websearch guard, retaining generic behavior for every other exception
+- automated evidence and a manual Ollama/DDG retest remain required; parent Feature remains `IN PROGRESS`
+- no commit, push or `origin/codex-sync` update occurred, so GitHub and ChatGPT remote state do not contain this handoff
+
+Next recommended step for ChatGPT: the prior scope block is resolved by the four-file precheck, but the invalid live Gold-price response remains failure evidence until retest.
+
+Next recommended step for Codex: on approval, execute the four-file correction and its exact focused/full evidence gates.
+
+Last updated: `2026-07-20 17:15:40 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-20 17:08:55 +02:00`, the previously blocked identity-mismatch repair is scope-corrected and ready for one fresh preimplementation check: `ToolExecutor` must preserve the exact structured `WEBSEARCH_IDENTITY_MISMATCH` code for its own rejected `system.websearch` identity guard, then the atomic loop may direct-return that exact code.
+
+Current goal: prevent the invalid Ollama Gold-price synthesis without accepting the foreign model-emitted identity or classifying generic error messages.
+
+Active phase: `janus-task-breakdown`; canonical state `HANDOFF` to `janus-preimplementation-check`.
+
+Last Codex work:
+- used the shared task-breakdown gate; local Codex was selected because delegation ROI was negative (`800` estimated savings versus `2400` overhead)
+- selected the structured-error preservation path at the authoritative ToolExecutor rejection boundary rather than matching generic `OPERATION_FAILED` message text
+- added `backend/services/tool_executor.py` plus its direct regression owner `backend/tests/test_backlog_007_tool_routing_performance.py` to the bounded recovery cluster
+- required the existing direct guard test to prove the exact code, no search invocation and unchanged generic normalization for all unrelated exceptions
+- retained the atomic `execution_engine.py`/`test_agent_factory_runtime.py` pair and every no-fallback/no-foreign-identity exclusion
+
+Changed files:
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_task_breakdown.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- shared task-breakdown delegation gate PASS, local Codex selected
+- direct ToolExecutor guard/test-owner inspection PASS
+- task-handoff validator PASS
+- scoped `git diff --check` PASS
+- no code edit, product test, precheck, live provider call, commit or push
+
+Open risks:
+- the error-preservation branch must remain strictly limited to ToolExecutor's own `system.websearch` identity guard; generic exception behavior must not change
+- no provider/model fallback, foreign identity acceptance or message-text classification is allowed
+- a new precheck, automated evidence and manual Ollama/DDG retest are still required; parent Feature remains `IN PROGRESS`
+- no commit, push or `origin/codex-sync` update occurred, so GitHub and ChatGPT remote state do not contain this handoff
+
+Next recommended step for ChatGPT: keep the prior precheck BLOCKED result as superseded by this four-file bounded correction, not as permission to edit yet.
+
+Next recommended step for Codex: run one fresh `janus-preimplementation-check` before executing this corrected Task `.1` slice.
+
+Last updated: `2026-07-20 17:08:55 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-20 17:06:39 +02:00`, the preimplementation check for the proposed `system.websearch` / `WEBSEARCH_IDENTITY_MISMATCH` atomic repair is `BLOCKED` by a scope mismatch: the real live result is normalized to `OPERATION_FAILED` by `ToolExecutor` before it reaches the orchestrator.
+
+Current goal: bind an implementation that preserves the structured terminal identity error at its authoritative ToolExecutor boundary, then propagates only that exact error safely through the atomic loop.
+
+Active phase: `janus-preimplementation-check`; canonical state `BLOCKED` with failure code `PRECHECK_SCOPE_MISSES_TOOL_EXECUTOR_ERROR_NORMALIZATION`.
+
+Last Codex work:
+- validated the prior PASS handoff and selected local Codex through the shared execution gate because the external delegation ROI was negative
+- inspected the real allowlist helper and analogous atomic tests before editing
+- found the real runtime result code is `OPERATION_FAILED`, not `WEBSEARCH_IDENTITY_MISMATCH`, because ToolExecutor's generic exception boundary wraps the original error
+- blocked the two-file correction before code was changed because it would only satisfy an artificial fixture and leave the live failure unresolved
+- required a bounded task-breakdown decision between preserving a structured identity error in ToolExecutor or explicitly classifying the generic wrapper at the atomic boundary
+
+Changed files:
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_preimplementation_check.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- prior precheck validator PASS before deeper owner verification
+- shared execution delegation gate PASS, local Codex selected
+- exact ToolExecutor/orchestrator/runtime-error-shape source inspection PASS
+- scoped `git diff --check` pending final documentation update
+- no product-code edit, test execution, live provider call, commit or push
+
+Open risks:
+- accepting a model-emitted foreign identity is forbidden; preserving its structured failure must not weaken that rule
+- matching generic `OPERATION_FAILED` by message text can create false positives unless its classification boundary is precisely designed and tested
+- the invalid manual Gold-price response remains unresolved; no final audit or audit-package refresh is authorized
+- no commit, push or `origin/codex-sync` update occurred, so GitHub and ChatGPT remote state do not contain this blocker
+
+Next recommended step for ChatGPT: do not interpret the first precheck PASS as implementable; it is superseded by this evidence-backed scope block.
+
+Next recommended step for Codex: on approval, run `janus-task-breakdown` to bind `ToolExecutor` and its direct regression, or to document a safer alternative before any code edit.
+
+Last updated: `2026-07-20 17:06:39 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-20 17:01:48 +02:00`, the exact identity-mismatch propagation slice for `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1` passed preimplementation check and is released to `janus-executioner`.
+
+Current goal: add only `system.websearch` / `WEBSEARCH_IDENTITY_MISMATCH` to the atomic direct-return allowlist, preserving terminal rejection of the foreign model-emitted identity and preventing final synthesis hallucinations.
+
+Active phase: `janus-preimplementation-check`; canonical state `HANDOFF` (`PRE-CHECK PASSED`) to `janus-executioner`.
+
+Last Codex work:
+- used the shared bounded precheck gate; local Codex was selected because delegation ROI was negative (`900` estimated savings versus `2400` overhead)
+- verified the task, parent Spec, primary TestSpec and latest debug evidence resolve to exactly one implementation slice
+- verified `execution_engine.py` owns the two-pair helper and `test_agent_factory_runtime.py` owns the analogous atomic regressions
+- bound one third pair only: `system.websearch` / `WEBSEARCH_IDENTITY_MISMATCH`
+- preserved rejection of the foreign identity and excluded all routing, adapter, schema, DDG, price/evidence, budget, consent, UI and logging changes
+
+Changed files:
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_preimplementation_check.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- shared precheck delegation gate PASS, local Codex selected
+- task/spec/TestSpec/runtime owner inspection PASS
+- `validate_precheck.py` PASS
+- scoped `git diff --check` PASS
+- no code edit, product test, live provider call, commit or push
+
+Open risks:
+- implementation must not soften the foreign identity rejection or introduce a generic error passthrough
+- a manual Ollama/DDG retest remains mandatory after automated evidence, and the parent Feature remains `IN PROGRESS`
+- no commit, push or `origin/codex-sync` update occurred, so GitHub and ChatGPT remote state do not contain this handoff
+
+Next recommended step for ChatGPT: retain the invalid live answer as failure evidence until the exact prechecked correction and retest pass.
+
+Next recommended step for Codex: on approval, execute the two-file correction and its exact focused/full evidence gates.
+
+Last updated: `2026-07-20 17:01:48 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-20 16:59:55 +02:00`, `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1` is refined for one additional atomic safe-error pair: `system.websearch` / `WEBSEARCH_IDENTITY_MISMATCH`. It is ready for a single preimplementation check; no implementation was performed.
+
+Current goal: retain strict rejection of model-emitted foreign provider/model values while returning that rejected web-search error directly before Task Complete or final synthesis.
+
+Active phase: `janus-task-breakdown`; canonical state `HANDOFF` to `janus-preimplementation-check`.
+
+Last Codex work:
+- used the shared bounded delegation gate; local Codex was selected because delegation ROI was negative (`800` estimated savings versus `2400` overhead)
+- bound exactly one new failure pair, without altering provider/model authority or expanding to generic error propagation
+- kept `system.websearch` / `WEBSEARCH_NO_SOURCES` and `system.price_comparison` / `NO_RESULTS_FOUND` as the two existing explicit pairs
+- added a required atomic-loop regression that proves the identity error remains terminal yet cannot reach clean synthesis or fabricate price/provider/source claims
+- confirmed the primary TestSpec already requires failure honesty, exact identity and no invented current claims; no TestSpec alteration is required
+
+Changed files:
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_task_breakdown.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- shared task-breakdown delegation gate PASS, local Codex selected
+- task-handoff validator PASS
+- scoped `git diff --check` PASS
+- no code edit, product test, precheck, live provider call, commit or push
+
+Open risks:
+- the correction must direct-return only the exact identity error; accepting its foreign provider/model or generalizing all tool errors would violate the Feature contract
+- the manual Gold-price response remains invalid until the prechecked correction is implemented and retested
+- parent Feature remains `IN PROGRESS`; reliable price/evidence quality remains later Feature work
+- no commit, push or `origin/codex-sync` update occurred, so GitHub and ChatGPT remote state do not contain this handoff
+
+Next recommended step for ChatGPT: preserve the distinction between a safe identity blocker (Task `.1`) and a reliably sourced price answer (later Task `.4`).
+
+Next recommended step for Codex: run one `janus-preimplementation-check` for the modified Task `.1` handoff, then only execute after a PASS.
+
+Last updated: `2026-07-20 16:59:55 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-20 16:55:56 +02:00`, the repeat live Ollama/DDG validation for `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1` failed on a distinct atomic error-propagation path: a rejected conflicting tool identity reached final synthesis and produced a fabricated stale Gold-price response.
+
+Current goal: preserve strict rejection of model-emitted provider/model conflicts while returning the resulting `system.websearch` safe error directly, before Task Complete or clean synthesis.
+
+Active phase: `janus-debug`; canonical state `HANDOFF` to `janus-task-breakdown`.
+
+Last Codex work:
+- correlated the user-visible failure with one AppData runtime stream for `ollama` / `qwen2.5-coder:14b@localhost`
+- proved the selected provider/model never changed and no paid provider search ran
+- found the local model emitted a conflicting web-search provider; ToolExecutor correctly rejected it with `WEBSEARCH_IDENTITY_MISMATCH`
+- found the atomic loop incorrectly marked that failed web-search task complete and invoked final synthesis
+- recorded the resulting fabricated stale price, foreign-provider claim and source as a new failure slice; applied no code change
+
+Changed files:
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_debug_result_ollama_websearch_identity_mismatch_hallucination.md`
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- targeted WHAT_I_LEARNED lookup PASS
+- direct AppData runtime trace correlation PASS
+- source inspection of ToolExecutor immutable-identity enforcement and atomic runtime boundary PASS
+- no code edit, automated product test, paid provider call, commit or push
+
+Open risks:
+- model-emitted provider/model fields remain unsafe input and must stay rejected or overwritten only under an explicitly approved contract; no fallback may be introduced
+- the manual output is not a valid current Gold price and must not be treated as provider-parity success
+- parent Feature remains `IN PROGRESS`; reliable price/evidence quality remains later Feature work
+- no commit, push or `origin/codex-sync` update occurred, so GitHub and ChatGPT remote state do not contain this debug result
+
+Next recommended step for ChatGPT: keep the live Gold-price result classified as invalid; do not accept the source or provider attribution.
+
+Next recommended step for Codex: run `janus-task-breakdown` for the exact `system.websearch` / `WEBSEARCH_IDENTITY_MISMATCH` atomic propagation repair, then precheck before editing code.
+
+Last updated: `2026-07-20 16:55:56 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-20 16:43:31 +02:00`, the bounded DDG Free Basic diagnostic-redaction repair for `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1` is implemented and automated evidence is green; its repeat user-visible Janus validation is pending.
+
+Current goal: remove raw research-query and exception-derived request-target interpolation from DDG diagnostics while preserving exact outbound retrieval behavior and the existing honest Ollama/DDG safe-blocker flow.
+
+Active phase: `janus-executioner`; canonical state `NEEDS_INFO` pending the manual Janus gate.
+
+Last Codex work:
+- changed DDG success and failure diagnostics to record only aggregate counts or exception class names
+- preserved the exact outbound DDG query and retrieval mechanics
+- added provider-level sentinel regressions for library success, library failure, HTML transport failure and Instant Answer transport failure
+- proved a secret-shaped query and the same value embedded in a synthetic exception URL remain absent from captured logs
+- kept provider/model routing, cost policy, evidence quality and later Feature Tasks unchanged
+
+Changed files:
+- `backend/services/websearch/duckduckgo_provider.py`
+- `backend/tests/tools/test_websearch.py`
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- Python compilation PASS for `duckduckgo_provider.py`
+- focused DDG diagnostic-redaction tests PASS: `3 passed in 0.73s`
+- full bound provider/model/routing matrix PASS: `234 passed in 2.10s`
+- scoped `git diff --check` PASS
+- no live provider request, paid research, commit or push
+
+Open risks:
+- final audit remains blocked until the user-visible Janus/Ollama/DDG regression check is repeated and the audit package is refreshed
+- this repair protects diagnostics only; it does not yet deliver a reliably sourced Gold price, which remains later Feature work
+- no commit, push or `origin/codex-sync` update occurred, so GitHub and ChatGPT remote state do not contain this execution state
+
+Next recommended step for ChatGPT: keep the parent Feature `IN PROGRESS`; do not treat the Task `.1` safe blocker as the completed Gold-price experience.
+
+Next recommended step for Codex: record the manual Janus check; on PASS refresh the Task `.1` audit package and re-run final audit, otherwise route the failure to `janus-debug`.
+
+Last updated: `2026-07-20 16:43:31 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-20 16:35:49 +02:00`, the bounded DDG Free Basic log-redaction repair for `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1` passed preimplementation check.
+
+Current goal: remove raw research-query and exception-derived request-target interpolation from DDG diagnostics while proving the original outbound query and retrieval behavior remain intact.
+
+Active phase: `janus-preimplementation-check`; canonical state `HANDOFF` (`PRE-CHECK PASSED`) to `janus-executioner`.
+
+Last Codex work:
+- verified the final-audit `DDG_RAW_QUERY_LOG_LEAK` maps to exactly `duckduckgo_provider.py` and `test_websearch.py`
+- bound library success, library failure, Instant Answer failure and HTML failure sentinel coverage
+- required redaction of exception text that could embed an outbound query URL, not merely direct query interpolation
+- preserved the exact selected provider/model, DDG outbound query, retrieval mechanics and all later-task exclusions
+- applied no code or test change in this precheck block
+
+Changed files:
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_preimplementation_check.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- shared precheck delegation gate PASS with local Codex selected
+- final audit, task, TestSpec, DDG provider and direct test-owner inspection PASS
+- `validate_precheck.py` PASS
+- scoped documentation `git diff --check` PASS
+- no product test, code edit, live provider call, commit or push
+
+Open risks:
+- any retained exception text can reintroduce query leakage through a URL; regressions must use a sentinel in exception/request-target text
+- this remediation does not solve sourced Gold-price quality, which remains later Feature work
+- no commit, push or `origin/codex-sync` update occurred, so GitHub and ChatGPT remote state do not contain this precheck
+
+Next recommended step for ChatGPT: keep Task `.1` active until the audit blocker is repaired and re-audited.
+
+Next recommended step for Codex: on approval, execute exactly the two-file DDG log-redaction repair and its bound tests.
+
+Last updated: `2026-07-20 16:35:49 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-20 16:33:29 +02:00`, the final-audit privacy blocker for `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1` was refined into one precheck-ready correction: redact raw queries and exception-derived request targets in DDG Free Basic diagnostics, with provider-level sentinel regression coverage.
+
+Current goal: precheck the bounded DDG diagnostic-redaction slice before any code change; retain existing provider/model routing, atomic safe-blocker behavior and retrieval mechanics unchanged.
+
+Active phase: `janus-task-breakdown`; canonical state `HANDOFF` to `janus-preimplementation-check`.
+
+Last Codex work:
+- selected local task-breakdown review because the shared delegation lane was ROI-negative
+- moved `backend/services/websearch/duckduckgo_provider.py` from read-only dependency to the explicit correction allowlist
+- bound `backend/tests/tools/test_websearch.py` as the direct provider-level regression owner
+- required a secret-shaped sentinel to remain absent from DDG library success/failure, Instant Answer failure and HTML failure logs, including exception/request-target text
+- preserved the actual outbound query, retrieval order and results; no generic provider logger refactor, retrieval change or price/evidence work is authorized
+- applied no code or test change in this breakdown block
+
+Changed files:
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_task_breakdown.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- shared task-breakdown delegation gate PASS with local Codex selected
+- focused DDG provider/test owner inspection PASS
+- task-handoff validator PASS
+- scoped documentation `git diff --check` PASS
+- no product test, code edit, live provider call, commit or push
+
+Open risks:
+- exception text can contain a full request URL, so a query-free format string alone is insufficient
+- audit package must receive the blocker delta only after repair evidence exists
+- the parent Feature remains `IN PROGRESS`; this correction does not implement the desired sourced Gold-price answer
+- no commit, push or `origin/codex-sync` update occurred, so GitHub and ChatGPT remote state do not contain this handoff
+
+Next recommended step for ChatGPT: treat Task `.1` as an active audit remediation, not as full feature completion.
+
+Next recommended step for Codex: on approval, run `janus-preimplementation-check` for the two-file DDG diagnostic-redaction repair.
+
+Last updated: `2026-07-20 16:33:29 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-20 16:30:53 +02:00`, the independent final audit for `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1` is `BLOCKED` by a privacy defect in the DDG Free Basic provider: complete research queries are still interpolated into success and failure logs.
+
+Current goal: remove raw-query interpolation from all DDG diagnostics and add a focused sentinel regression before re-auditing Task `.1`; the parent provider-agnostic research Feature remains `IN PROGRESS` with Tasks `.2` through `.5` outstanding.
+
+Active phase: `janus-final-audit`; canonical state `BLOCKED` with failure code `DDG_RAW_QUERY_LOG_LEAK`.
+
+Last Codex work:
+- audited Task `.1` separately from the unfinished full Gold-price/research experience
+- confirmed provider/model isolation, atomic safe blockers, manual honest-failure behavior and the fresh `231`-test matrix remain green
+- found raw query interpolation in `backend/services/websearch/duckduckgo_provider.py` on HTML failure, library success/failure and Instant Answer failure paths
+- confirmed the bound matrix covers ToolExecutor argument redaction but not DDG provider log redaction
+- documented a blocker-focused re-audit trigger; applied no product-code fix in the audit
+
+Changed files:
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_FINAL_AUDIT.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- bound Python syntax compilation PASS
+- bound provider/model/routing suite PASS: `231 passed in 2.16s`
+- targeted WHAT_I_LEARNED search completed
+- static DDG log inspection FAIL against raw-query prohibition
+- final-audit validator PASS
+- scoped documentation `git diff --check` PASS
+- no product-code fix, live paid request, commit or push
+
+Open risks:
+- raw public research queries can contain private context or secret-shaped text and currently reach logs through DDG provider diagnostics
+- the current audit package still needs blocker-delta updates after the repair
+- the parent Feature Spec must not be marked DONE or moved to Spec Done after a Task `.1`-only audit
+- no commit, push or `origin/codex-sync` update occurred, so GitHub and ChatGPT remote state do not contain this audit blocker
+
+Next recommended step for ChatGPT: keep the parent Feature active and approve only the bounded Task `.1` DDG log-redaction correction.
+
+Next recommended step for Codex: on approval, run `janus-task-breakdown` to bind `duckduckgo_provider.py` plus a focused log-capture regression owner, then return through preimplementation check.
+
+Last updated: `2026-07-20 16:30:53 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-20 16:21:09 +02:00`, the corrected manual Ollama/DDG gate for `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1` passed and its compact audit package is ready for final audit.
+
+Current goal: independently audit the completed Task `.1` provider-agnostic routing and two-pair atomic safe-blocker repair before documentation closeout or Task `.2`.
+
+Active phase: `codex-audit-package-builder`; canonical state `HANDOFF` to `janus-final-audit`.
+
+Last Codex work:
+- recorded manual PASS: the gold-price prompt returned `Kein belegbarer Preis fuer 'Gold Feinunze' gefunden. Bitte praezisiere den Produktnamen.` rather than a fabricated price/source placeholder
+- updated the execution result with manual PASS and final-audit readiness
+- built and checked the audit package with the source Spec, task, precheck, debug artifacts, changed-file boundary, automated evidence, re-audit delta and manual evidence
+- applied no product-code change in this package block
+
+Changed files:
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_execution_result.md`
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_AUDIT_PACKAGE.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- execution-result validator PASS
+- audit-package scoped `git diff --check` PASS
+- prior bound evidence retained: py_compile PASS, atomic regressions `2 passed`, provider/routing matrix `231 passed`, manual Ollama/DDG PASS
+- no new product test, live paid request, commit or push
+
+Open risks:
+- DDG can still return no evidence under captcha/rate-limit conditions; final audit must verify that the accepted outcome remains an honest blocker
+- no commit, push or `origin/codex-sync` update occurred, so GitHub and ChatGPT remote state do not contain the audit package
+
+Next recommended step for ChatGPT: audit only the compact package; do not reload development chat history or assume remote state is current.
+
+Next recommended step for Codex: on approval, run `janus-final-audit` against the package and bound artifacts.
+
+Last updated: `2026-07-20 16:21:09 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-20 15:52:00 +02:00`, the prechecked atomic price-comparison recovery for `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1` is implemented and automated validation passed. A corrected live Janus/Ollama retry is now the only remaining gate.
+
+Current goal: verify that a source-less current-gold-price lookup returns its safe `NO_RESULTS_FOUND` blocker or a sourced answer, never a fabricated placeholder.
+
+Active phase: `janus-executioner`; canonical state `NEEDS_INFO`; Manual Janus Validation Gate `PENDING_USER_TEST`.
+
+Last Codex work:
+- selected local Codex after the shared Cursor/OpenRouter/Codex execution gate found the two-file slice ROI-negative
+- expanded the pending atomic error helper to an exact two-pair allowlist: `system.websearch` `WEBSEARCH_NO_SOURCES` and `system.price_comparison` `NO_RESULTS_FOUND`
+- preserved direct safe returns before rendering, false Task Complete and clean synthesis; unrelated tool errors retain their existing behavior
+- added a price-comparison atomic-loop regression covering prior `memory.read`, exact `ollama` plus `qwen2.5-coder:14b@localhost`, no synthesis, no false completion and no fabricated placeholder
+- applied no retrieval, price/evidence, provider, budget, consent, UI or network-guard change
+
+Changed files:
+- `backend/services/orchestrator/execution_engine.py`
+- `backend/tests/test_agent_factory_runtime.py`
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- `python -m py_compile backend/services/orchestrator/execution_engine.py` PASS
+- focused atomic regressions PASS: `2 passed in 0.29s`
+- bound provider/model/routing suite PASS: `231 passed in 2.09s`
+- execution-result validator PASS
+- scoped `git diff --check` PASS
+- no live provider call, paid search, network test, Playwright runner, commit or push
+
+Open risks:
+- DDG source scarcity/captcha can still occur; expected safe behavior is a clear blocker, not a retrieval guarantee
+- the Janus backend must be restarted/reloaded before manual verification if it does not hot-reload Python code
+- no commit, push or `origin/codex-sync` update occurred, so GitHub and ChatGPT remote state do not contain this repair
+
+Next recommended step for ChatGPT: wait for the exact manual Ollama/DDG response; do not assume a remote update.
+
+Next recommended step for Codex: after manual PASS, refresh the audit package and route to `janus-final-audit`; after manual FAIL, route to `janus-debug` with the observed response.
+
+Last updated: `2026-07-20 15:52:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-20 15:45:25 +02:00`, the bounded two-tool atomic error-propagation repair for `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1` passed preimplementation check.
+
+Current goal: implement exactly the allowlisted safe direct-return behavior for pending `system.price_comparison` `NO_RESULTS_FOUND`, alongside the existing `system.websearch` `WEBSEARCH_NO_SOURCES` behavior, then validate it before repeating the manual Ollama/DDG gate.
+
+Active phase: `janus-preimplementation-check`; canonical state `HANDOFF` (`PRE-CHECK PASSED`) to `janus-executioner`.
+
+Last Codex work:
+- verified the Feature Spec and primary TestSpec: current data requires source evidence or an honest blocker, no placeholder and no provider/model substitution
+- confirmed `execution_engine.py` presently direct-returns only the Websearch error pair, while price-comparison `NO_RESULTS_FOUND` reaches false completion and clean synthesis
+- bound one code owner and one regression owner: `backend/services/orchestrator/execution_engine.py` and `backend/tests/test_agent_factory_runtime.py`
+- required an explicit two-pair allowlist, no generic all-tool error shortcut, no clean synthesis/Task Complete/fabricated price-source placeholders, and exact Ollama provider/model retention
+- applied no code or test change in this precheck block
+
+Changed files:
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_preimplementation_check.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- shared precheck delegation gate PASS with local Codex selected
+- bound Feature Spec, source TestSpec, task, two debug artifacts, runtime helper and direct regression surface inspected
+- `validate_precheck.py` PASS
+- scoped documentation `git diff --check` PASS
+- no product test, code edit, live provider call, commit or push
+
+Open risks:
+- the implementation must not generalize the direct return to arbitrary tool errors or alter price retrieval/evidence behavior
+- source scarcity can remain; a safe blocker is the expected outcome when current price evidence is unavailable
+- no commit, push or `origin/codex-sync` update occurred, so GitHub and ChatGPT remote state do not contain this precheck
+
+Next recommended step for ChatGPT: do not treat remote state as current until an explicitly approved `codex-sync` completes.
+
+Next recommended step for Codex: on approval, run `janus-executioner` for the exact two-file repair and bound automated checks.
+
+Last updated: `2026-07-20 15:45:25 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-20 15:43:03 +02:00`, the user-approved bounded refinement for `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1` is complete. The atomic error-propagation recovery explicitly allowlists the observed price-comparison condition in addition to the already repaired Websearch condition.
+
+Current goal: precheck one two-file repair so pending `system.websearch` `WEBSEARCH_NO_SOURCES` and pending `system.price_comparison` `NO_RESULTS_FOUND` return their existing safe blockers directly instead of entering false completion and clean synthesis.
+
+Active phase: `janus-task-breakdown`; canonical state `HANDOFF` to `janus-preimplementation-check`.
+
+Last Codex work:
+- bound the second live failure evidence to the existing Task `.1` source set
+- released exactly two error-tool pairs at the atomic boundary: `system.websearch` plus `WEBSEARCH_NO_SOURCES`, and `system.price_comparison` plus `NO_RESULTS_FOUND`
+- limited the recovery to `backend/services/orchestrator/execution_engine.py` and `backend/tests/test_agent_factory_runtime.py`
+- required exact safe direct return with no false `Task Complete`, no clean synthesis, no internal no-more-tools wording and no fabricated price/source placeholder
+- explicitly prohibited generalizing the handler to arbitrary tools or changing retrieval, price/evidence, provider, budget, consent or UI behavior
+- applied no code or test change in this task-breakdown block
+
+Changed files:
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_task_breakdown.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- shared task-breakdown delegation gate PASS with local Codex selected
+- `validate_task_handoff.py` PASS for `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1`
+- scoped documentation `git diff --check` PASS
+- no product test, code edit, live provider call, commit or push
+
+Open risks:
+- the precheck must prove the exact allowlist prevents impact on unrelated tool contracts
+- DDG source scarcity/captcha can remain; the repair promises failure honesty, not a successful live price lookup
+- no commit, push or `origin/codex-sync` update occurred, so GitHub and ChatGPT remote state do not contain this handoff
+
+Next recommended step for ChatGPT: do not assume a remote update; use the local bound task artifact until a separately authorized `codex-sync` publication succeeds.
+
+Next recommended step for Codex: on approval, run `janus-preimplementation-check` for exactly this two-file recovery, without implementation.
+
+Last updated: `2026-07-20 15:43:03 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-20 15:37:26 +02:00`, the corrected manual Ollama/DDG gate for `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1` failed on a new, deterministic current-price path: `system.price_comparison` `NO_RESULTS_FOUND` is swallowed by the same atomic completion/synthesis mechanism and produces fabricated placeholders.
+
+Current goal: decide whether Task `.1` should add a bounded atomic direct-return path for the safe price-comparison error, or route the behavior to the later price/evidence Task `.4` before any further code change.
+
+Active phase: `janus-debug`; canonical state `HANDOFF` to `janus-task-breakdown` for the bounded scope decision.
+
+Last Codex work:
+- read the failed manual response and correlated the live runtime trace beginning at `2026-07-20 15:26:52`
+- confirmed the prior `system.websearch` repair was not exercised; the planner selected `memory.read` and then `system.price_comparison`
+- confirmed exact identity remained provider `ollama`, model `qwen2.5-coder:14b@localhost`, adapter `duckduckgo_free_basic`, with no LLM-provider/model fallback
+- confirmed DDG/Bing/HTML source scarcity and captcha led `system.price_comparison` to return safe structured `NO_RESULTS_FOUND`
+- confirmed the current two-file repair only intercepts `system.websearch` plus `WEBSEARCH_NO_SOURCES`, so price-comparison error payloads still become false Task Complete and clean-synthesis placeholder text
+- documented the separate failure slice and updated the execution result manual gate to FAIL
+- applied no product-code fix in this debug block
+
+Changed files:
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_debug_result_price_comparison_no_results_placeholder.md`
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- targeted WHAT_I_LEARNED lookup completed; prior price/question and answer-first patterns are relevant context but do not authorize this second tool boundary
+- live AppData runtime correlation PASS for selected skill, exact provider/model, DDG route, `NO_RESULTS_FOUND`, false completion and clean synthesis
+- debug-result validator PASS
+- updated execution-result validator PASS
+- scoped documentation `git diff --check` PASS
+- no product test, code edit, live provider call beyond the operator's manual validation, commit or push
+
+Open risks:
+- a generic atomic error handler could affect non-research tools, while an allowlisted price-comparison handler expands Task `.1` into later price/evidence territory; the task boundary must decide explicitly
+- DDG may remain source-less under captcha/rate-limit conditions; the immediate requirement is failure honesty, not a retrieval-quality promise
+- no commit, push or `origin/codex-sync` update occurred, so GitHub and ChatGPT remote state do not contain this debug result
+
+Next recommended step for ChatGPT: decide the narrow authority boundary: add only `system.price_comparison` `NO_RESULTS_FOUND` safe-return handling to Task `.1`, or defer it to Task `.4` and accept that the current manual gold-price gate remains blocked.
+
+Next recommended step for Codex: on approval, run `janus-task-breakdown` for exactly that decision and do not repeat the manual gate until a prechecked repair is available.
+
+Last updated: `2026-07-20 15:37:26 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-20 15:23:10 +02:00`, the two-file corrective execution for `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1` passed all bound automated checks. The task now waits only for the corrected live Ollama/DDG manual retry.
+
+Current goal: verify in Janus that a source-less free DDG lookup returns its clear DDG-specific blocker rather than the internal no-more-tools wording, while retaining the exact selected Ollama provider/model.
+
+Active phase: `janus-executioner`; canonical state `NEEDS_INFO`; Manual Janus Validation Gate `PENDING_USER_TEST`.
+
+Last Codex work:
+- checked the shared execution delegation gate; Codex local path was selected because external delegation had negative ROI for this two-file repair
+- performed a targeted WHAT_I_LEARNED lookup; no directly applicable atomic error-propagation pattern existed
+- updated `backend/services/orchestrator/execution_engine.py` so a pending `system.websearch` result with `WEBSEARCH_NO_SOURCES` returns its safe error directly before rendering, Task Complete or clean synthesis
+- added `test_agent_factory_atomic_websearch_no_sources_returns_safe_blocker_without_synthesis` to verify a prior successful `memory.read`, exact `ollama` plus `qwen2.5-coder:14b@localhost` retention, no false completion and no synthesis call
+- corrected the new test's fake planner sequencing after the first run showed that the Atomic Loop replans its remaining skill; this was test-fixture-only and did not alter product scope
+- updated the canonical execution result with fresh automated evidence and the corrected manual gate
+
+Changed files:
+- `backend/services/orchestrator/execution_engine.py`
+- `backend/tests/test_agent_factory_runtime.py`
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- `python -m py_compile backend/services/orchestrator/execution_engine.py` PASS
+- focused new atomic regression PASS (`1 passed`)
+- bound provider/model/routing suite PASS (`230 passed in 1.92s`)
+- execution-result validator PASS
+- scoped `git diff --check` PASS
+- no live provider call, paid search, network test, Playwright runner, commit or push
+
+Open risks:
+- DDG can still be source-less under captcha/rate-limit conditions; the repaired behavior is honest failure rather than improved retrieval quality
+- a restarted Janus backend must load the new code before the manual retry
+- no commit, push or `origin/codex-sync` update occurred, so GitHub and ChatGPT remote state do not contain the repair
+
+Next recommended step for ChatGPT: wait for the operator's exact manual Ollama/DDG result; a clear DDG-specific blocker or sourced answer is PASS, while no-more-tools/internal wording is a debug failure.
+
+Next recommended step for Codex: after manual PASS, build the compact audit package and route to `janus-final-audit`; after manual FAIL, route to `janus-debug` with the observed result.
+
+Last updated: `2026-07-20 15:23:10 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-20 15:17:47 +02:00`, the corrected preimplementation check for `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1` passed and released exactly one two-file repair: preserve a failed pending atomic Websearch result as an honest provider-specific blocker.
+
+Current goal: implement and validate the atomic `WEBSEARCH_NO_SOURCES` error-propagation repair without changing the selected Ollama provider/model, DDG retrieval mechanics, provider adapters or any later feature task.
+
+Active phase: `janus-preimplementation-check`; canonical state `HANDOFF` (`PRE-CHECK PASSED`) to `janus-executioner`.
+
+Last Codex work:
+- used `janus-preimplementation-check` against exactly one task, its approved Feature Spec, primary normalized TestSpec, refined task breakdown and live debug result
+- confirmed the root cause is the atomic executor path in `backend/services/orchestrator/execution_engine.py`: it renders only successes, then marks a failed pending Websearch call complete and gives fallback model prose to clean synthesis
+- released only `backend/services/orchestrator/execution_engine.py` and `backend/tests/test_agent_factory_runtime.py`
+- bound deterministic acceptance for `WEBSEARCH_NO_SOURCES`: safe DDG-specific blocker, no false Task Complete, no clean synthesis of error-derived prose, no internal no-more-tools wording, and exact provider/model retention
+- retained all provider routing/adapters, DDG mechanics, query quality, budget/consent, V3, UI and TestSpec source as out of scope
+- performed no product-code edit, product test, live provider call, paid search, Git, commit or push
+
+Changed files:
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_task_breakdown.md`
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_preimplementation_check.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- task handoff validator PASS
+- `validate_precheck.py` PASS
+- scoped documentation `git diff --check` PASS
+- no product tests or provider calls in the precheck
+
+Open risks:
+- execution must preserve generic failed-tool behavior outside this exact current-data Websearch error condition
+- Free DDG may still be source-less under captcha/rate-limit conditions; this repair guarantees an honest result, not a retrieval-quality increase
+- the required manual retry remains after automated execution evidence passes
+- no commit, push or `origin/codex-sync` update occurred, so GitHub and ChatGPT remote state do not contain this precheck
+
+Next recommended step for ChatGPT: use the canonical precheck artifact as the only execution authority; do not expand into DDG-quality or provider-routing work.
+
+Next recommended step for Codex: run `janus-executioner` with `5.6 Terra/high` for exactly the two affected files, execute every bound automated check, update the execution result and stop at the manual retry gate.
+
+Last updated: `2026-07-20 15:17:47 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-20 15:15:18 +02:00`, `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1` was narrowly refined after the live Ollama/DDG failure: the atomic error-propagation regression owner is now bound and exactly one target is released back to preimplementation check.
+
+Current goal: authorize and validate the minimal Task `.1` repair that returns an honest DDG-specific `WEBSEARCH_NO_SOURCES` blocker from a failed pending atomic Websearch call, without provider/model fallback or leaked internal synthesis wording.
+
+Active phase: `janus-task-breakdown`; canonical state `HANDOFF` to `janus-preimplementation-check`.
+
+Last Codex work:
+- used `janus-task-breakdown` against the approved Feature Spec, primary normalized Websearch TestSpec, existing Task `.1` artifact and bounded debug result
+- retained exactly one target, `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1`; no task `.2` through `.5` scope was released
+- added only `backend/tests/test_agent_factory_runtime.py` as the regression owner for the already-approved honest provider-specific failure oracle
+- bound the pending atomic `WEBSEARCH_NO_SOURCES` acceptance: no false Task Complete, no clean synthesis of error prose, no internal `Es gibt keine weiteren Tools mehr` wording, and immutable Ollama provider/model retention
+- retained `backend/services/orchestrator/execution_engine.py` as the sole product-code owner for the repair; DDG provider/query-quality changes remain out of scope
+- set the bounded execution recommendation to `5.6 Terra/high`; no external delegation was used because the narrow local artifact refinement had no positive delegation ROI
+- performed no product-code edit, test execution, live provider call, paid search, Git, commit or push
+
+Changed files:
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_task_breakdown.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- `validate_task_handoff.py --task ...TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_task_breakdown.md --target TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1` PASS
+- scoped documentation `git diff --check` PASS
+- no product test, precheck, implementation or live-provider request executed by this skill
+
+Open risks:
+- preimplementation must confirm that the added atomic-runtime regression is sufficient and that the repair remains limited to the existing execution-engine code owner
+- Free DDG can fail due to captcha/rate-limit/source scarcity; only failure honesty is in this repair, not retrieval-quality expansion
+- no commit, push or `origin/codex-sync` update occurred, so GitHub and ChatGPT remote state do not contain this refined handoff
+
+Next recommended step for ChatGPT: treat the source-of-truth as unchanged; the only new bound evidence is the atomic provider-specific failure regression.
+
+Next recommended step for Codex: run `janus-preimplementation-check` on `5.6 Terra/high` for Task `.1` only, then execute only if the precheck passes.
+
+Last updated: `2026-07-20 15:15:18 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-20 15:05:11 +02:00`, the manual Ollama/DDG gate for `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1` is `FAIL`; bounded `janus-debug` iteration 1 proved that provider/model isolation works but `WEBSEARCH_NO_SOURCES` is swallowed by the atomic completion/synthesis path.
+
+Current goal: repair only the Task `.1` atomic Websearch error-propagation defect so a source-less free DDG lookup produces an honest DDG-specific failure without provider/model fallback or leaked internal control wording.
+
+Active phase: `janus-debug`; canonical state `HANDOFF` to `janus-task-breakdown` for one bounded regression-owner scope correction before precheck and execution.
+
+Last Codex work:
+- correlated the live AppData runtime trace for chat `4401` and request `8c3b753d-aff3-41b8-afb3-3f358caade05`
+- confirmed exact identity retention: provider `ollama`, model `qwen2.5-coder:14b@localhost`, adapter `duckduckgo_free_basic`
+- confirmed the installed `duckduckgo_search` `8.1.1` path forced Bing, returned empty, then DDG Instant Answer returned no usable data and DDG HTML returned a bot challenge
+- confirmed `system.websearch` correctly emitted `WEBSEARCH_NO_SOURCES`
+- traced the user-visible defect to pending atomic tool results not being checked for `status: error` before the skill is marked complete and passed into clean synthesis
+- documented the minimal deterministic repair and excluded broader DDG/search-engine quality work from this failure slice
+- updated the execution result manual gate from pending to FAIL
+- applied no product-code fix under `janus-debug`
+
+Changed files:
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_debug_result_ollama_ddg_no_sources.md`
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- targeted WHAT_I_LEARNED lookup completed; no directly reusable root-cause match
+- live runtime evidence correlation PASS for exact provider/model/adapter and no LLM-provider fallback
+- source-path correlation PASS for `WEBSEARCH_NO_SOURCES` -> atomic pending-tool execution -> false Task Complete -> no-more-tools synthesis
+- installed search dependency inspection PASS: `duckduckgo_search` version `8.1.1`; its `text()` implementation forces the Bing backend
+- debug-result validator PASS
+- updated execution-result validator PASS
+- scoped documentation `git diff --check` PASS
+- no product test rerun or code fix in this diagnostic block
+
+Open risks:
+- the current Task `.1` precheck does not authorize the best regression owner, `backend/tests/test_agent_factory_runtime.py`
+- the free DDG path can legitimately fail under captcha/rate-limit conditions; Task `.1` must be honest in that case, while broader retrieval resilience remains later work
+- the planner also chose an unnecessary `memory.read` step and the live request took about 221 seconds; this is observed but outside this single failure slice
+- no commit, push or `origin/codex-sync` update occurred, so GitHub and ChatGPT remote state do not contain this debug result
+
+Next recommended step for ChatGPT: treat provider/model isolation as green and the manual gate as red only for atomic error propagation; do not broaden the repair into provider fallback or paid retrieval.
+
+Next recommended step for Codex: run `janus-task-breakdown` on `5.6 Terra/high` to add the focused atomic-runtime regression owner, then rerun `janus-preimplementation-check` before any code edit.
+
+Last updated: `2026-07-20 15:05:11 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 23:38:03 +02:00`, the final preimplementation check for `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1` passed and released exactly one HIGH-risk provider/model-isolation execution slice; no product implementation or test execution occurred in the precheck.
+
+Current goal: implement Task `.1` exactly from the validated execution handoff, preserving the selected LLM provider/model across every research phase and keeping all paid adapters disabled pending later budget authorization.
+
+Active phase: `janus-preimplementation-check`; canonical state `HANDOFF` (`PRE-CHECK PASSED`) to `janus-executioner`.
+
+Last Codex work:
+- replaced the prior blocker content in `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_preimplementation_check.md` with the canonical PASS execution handoff
+- bound the approved Feature Spec, normalized primary TestSpec, complete Task `.1` breakdown and all 26 affected implementation/test paths
+- fixed exact compile and focused pytest evidence commands for the execution slice
+- confirmed that the new `backend/tests/websearch_v3/test_provider_capability_routing.py` path is the only intentionally not-yet-existing affected file
+- retained explicit OpenRouter Exa/no-fallback/required-parameter controls, immutable runtime identity, Ollama-only automatic DDG and paid-adapter disablement
+- required a HIGH-risk Git checkpoint through `janus-git-governance` after execution evidence passes, without authorizing commit or push
+- used the shared precheck delegation gate with explicit local-Codex selection; no external delegation ran
+
+Changed files:
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_preimplementation_check.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- shared precheck delegation gate PASS (`LOCAL_CODEX_PATH_SELECTED`)
+- artifact identity, target uniqueness, approved-Spec and normalized-TestSpec checks PASS
+- complete 26-path ownership check PASS
+- stale blocker/handoff absence check PASS
+- `validate_precheck.py` PASS
+- scoped `git diff --check` PASS before this snapshot update; final scoped check remains required below
+- no product tests, live provider calls, TestPlans, TestRuns or implementation
+
+Open risks:
+- the implementation spans multiple active model-replacement seams and must preserve unrelated-skill MoA behavior
+- source tests intentionally reverse legacy Websearch model-default/escalation expectations and must stay aligned with the normalized TestSpec
+- OpenRouter server-search behavior must fail closed when exact model, Exa engine identity, no-fallback policy, required parameters or later budget authorization cannot be proven
+- paid research remains unavailable in this slice by design
+- no commit, push or `origin/codex-sync` update occurred, so remote state does not contain this execution handoff
+
+Next recommended step for ChatGPT: treat the canonical precheck artifact as the complete execution authority; do not expand into Tasks `.2` through `.5`.
+
+Next recommended step for Codex: run `janus-executioner` on `5.6 Sol` / high for Task `.1` only, execute the bound compile/pytest evidence, update the execution artifact and rolling snapshot, then route failures to `janus-debug` or success toward the next validation gate.
+
+Last updated: `2026-07-19 23:38:03 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 23:13:18 +02:00`, `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1` is again design-complete and singly released for preimplementation check after consuming the validated exact-model TestSpec delta; no implementation or product test has started.
+
+Current goal: rerun the single-task preimplementation check against the complete provider/model identity runtime and test boundary.
+
+Active phase: `janus-task-breakdown`; canonical state `HANDOFF` to `janus-preimplementation-check`.
+
+Last Codex work:
+- updated `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_task_breakdown.md`
+- changed the decision from `TASK DESIGN BLOCKED` back to `TASK DESIGN COMPLETE`
+- recorded the primary TestSpec gate as resolved through its `VALIDATED SOURCE DELTA`
+- retained the complete ToolExecutor, wrapper, orchestrator, OpenAI/Gemini gateway, shared ToolLoopRunner/MoA, provider adapter, OpenRouter and V3 allowlist
+- retained all focused legacy/source regression owners and the new capability-routing test target
+- restored exactly one handoff to `janus-preimplementation-check`
+- used the shared task-breakdown delegation gate with explicit local-Codex selection; no external delegation ran
+
+Changed files:
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_task_breakdown.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- shared task-breakdown delegation gate PASS (`LOCAL_CODEX_PATH_SELECTED`)
+- normalized TestSpec marker and four-provider exact-model matrix check PASS
+- complete runtime/test owner retention check PASS
+- stale `janus-test-pipeline` handoff absence check PASS
+- `validate_task_handoff.py` PASS
+- scoped `git diff --check` PASS before this snapshot update; final scoped check remains required below
+- no implementation, product test, TestPlan, TestRun or provider call
+
+Open risks:
+- preimplementation check must independently confirm that the expanded cross-layer slice is still atomic and executable
+- exact-model preservation must cover every legacy/shared, streaming/non-streaming planning, execution and synthesis path without changing unrelated skill MoA
+- paid adapters remain intentionally disabled pending later budget authorization
+- no commit, push or `origin/codex-sync` update occurred, so remote state does not contain this newest handoff
+
+Next recommended step for ChatGPT: use only the normalized Feature Spec, primary TestSpec and complete Task `.1` breakdown as active authorities.
+
+Next recommended step for Codex: run `janus-preimplementation-check` for `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1` only and release execution only if every bound owner, acceptance criterion and evidence command is complete.
+
+Last updated: `2026-07-19 23:13:18 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 23:05:13 +02:00`, the primary Websearch TestSpec is normalized to the approved exact-selected-model contract for OpenAI, Gemini, OpenRouter and Ollama; no TestPlan, TestRun, generated result or product file was created or edited.
+
+Current goal: return `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1` to task breakdown, clear the resolved TestSpec blocker and rerun preimplementation check.
+
+Active phase: `janus-test-pipeline`, mode `TESTSPEC_SOURCE_OF_TRUTH_NORMALIZATION`; canonical state `HANDOFF` to `janus-task-breakdown`.
+
+Last Codex work:
+- updated `documentation/TEST_SPEC/03_tools_skills/10_websearch_provider_parity_optimization.md`
+- replaced the old provider-local Websearch escalation matrix with immutable selected/effective model equality for OpenAI, Gemini, OpenRouter and Ollama
+- added focused exact-model cases for OpenAI, Gemini, OpenRouter server search and Ollama DDG Free Basic
+- added same-provider model-substitution and Web-content model-switch injection guards
+- updated evidence, acceptance and retest requirements so planning, tool execution, snippet evaluation and synthesis retain the selected model
+- preserved provider isolation, sourced-current-answer or honest blocker, source visibility, privacy, cost/timing and existing historical run evidence
+- recorded that no generated test artifacts were produced in this normalization
+
+Changed files:
+- `documentation/TEST_SPEC/03_tools_skills/10_websearch_provider_parity_optimization.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- required TestSpec exact-model literals for all four providers PASS
+- forbidden old OpenAI/Gemini escalation-oracle absence check PASS
+- normalization metadata and generated-artifact-none checks PASS
+- scoped `git diff --check` PASS before this snapshot update; final scoped check remains required below
+- TestPlan compiler, TestRun, Playwright, live provider calls and product tests intentionally not run
+
+Open risks:
+- the task breakdown still carries `TASK DESIGN BLOCKED` until `janus-task-breakdown` consumes this validated TestSpec delta
+- preimplementation check must still validate the complete bound runtime/test allowlist before execution
+- no generated plan exists for the expanded four-provider TestSpec; generation/execution belongs to a later separately approved test-pipeline run
+- no commit, push or `origin/codex-sync` update occurred, so remote state does not contain this normalized TestSpec
+
+Next recommended step for ChatGPT: treat the exact-model TestSpec conflict as resolved; do not request or infer a live four-provider run yet.
+
+Next recommended step for Codex: run `janus-task-breakdown` for Task `.1`, change its decision back to complete if no other source contradiction remains, restore the single-target precheck handoff and validate it.
+
+Last updated: `2026-07-19 23:05:13 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 22:58:36 +02:00`, the second Task `.1` scope correction binds the complete known Websearch model-identity runtime/test chain, but `janus-task-breakdown` is blocked from releasing precheck because the primary Websearch TestSpec still authorizes provider-local model escalation.
+
+Current goal: normalize the primary Websearch TestSpec to the newer approved exact-selected-model contract, then return Task `.1` to task breakdown and precheck.
+
+Active phase: `janus-task-breakdown`; canonical state `BLOCKED` (`TASK DESIGN BLOCKED`) with handoff to `janus-test-pipeline`.
+
+Last Codex work:
+- updated `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_task_breakdown.md`
+- added `ToolExecutor`, OpenAI/Gemini gateway, shared ToolLoopRunner and shared MoA ownership to the bounded implementation allowlist
+- added all five focused regression files named by the rerun precheck
+- bound one identity policy across both `TRANSPORT_WEBSEARCH_DECOUPLED` states and raw-query-safe diagnostics
+- preserved the explicit OpenRouter Exa/no-fallback request, read-only `WebsearchArgsV2`, Ollama-only automatic DDG, parked later tasks and disabled paid adapters
+- identified `documentation/TEST_SPEC/03_tools_skills/10_websearch_provider_parity_optimization.md` as the primary test-oracle source and proved its provider/model matrix conflicts with the newer Feature Spec
+- replaced the premature precheck handoff with a source-TestSpec normalization handoff to `janus-test-pipeline`
+- used the shared task-breakdown delegation gate with explicit local-Codex selection; no external delegation ran
+
+Changed files:
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_task_breakdown.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- shared task-breakdown delegation gate PASS (`LOCAL_CODEX_PATH_SELECTED`)
+- `validate_task_handoff.py` PASS for the blocked single-target artifact
+- ten-owner runtime/test scope coverage check PASS
+- TestSpec source-of-truth conflict inspection PASS
+- premature precheck-handoff absence check PASS
+- scoped `git diff --check` PASS before this snapshot update; final scoped check remains required below
+- no source TestSpec edit, generated TestPlan/TestResult edit, product test, provider call or implementation
+
+Open risks:
+- the primary TestSpec still permits or requires Websearch model escalation for GPT, Gemini and Ollama, so source assertions cannot safely be reversed yet
+- generated TestPlans/TestResults must not be patched as a shortcut around the TestSpec conflict
+- the now-complete Task `.1` runtime allowlist must be preserved when the task returns from the test pipeline
+- no commit, push or `origin/codex-sync` update occurred, so remote state does not contain this newest blocker/handoff
+
+Next recommended step for ChatGPT: treat the approved Feature Spec as the product authority and approve only the exact-model oracle delta in the primary TestSpec; retain all other provider-isolation, evidence, privacy and honest-failure requirements.
+
+Next recommended step for Codex: run `janus-test-pipeline` in source-TestSpec normalization mode, validate the TestSpec delta without generating or executing a TestRun, then return to `janus-task-breakdown`.
+
+Last updated: `2026-07-19 22:58:36 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 22:41:12 +02:00`, the rerun preimplementation check for `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1` remains blocked because additional active Websearch model-substitution seams and their contradictory tests are outside the corrected allowlist; no implementation or product test has started.
+
+Current goal: expand only Task `.1` so every active `system.websearch` provider/model replacement boundary and focused regression owner is bound before execution.
+
+Active phase: rerun `janus-preimplementation-check`; canonical state `BLOCKED` (`PRE-CHECK BLOCKED: SCOPE_MISMATCH`).
+
+Last Codex work:
+- updated `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_preimplementation_check.md`
+- confirmed that the first correction now binds `tool_registry.py`, `execution_engine.py`, explicit OpenRouter Exa/no-fallback controls and the original contradictory wrapper tests
+- proved that `backend/services/tool_executor.py` still substitutes OpenAI/Gemini Websearch models in its default-false transport branch and logs complete tool arguments including the query
+- proved that Gemini/OpenAI provider tool loops plus shared ToolLoopRunner/MoA still change the active model specifically for `system.websearch`
+- identified five additional focused test files that currently require the forbidden default/escalation behavior
+- used the shared precheck delegation gate with explicit local-Codex selection; no external delegation ran
+
+Changed files:
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_preimplementation_check.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- shared precheck delegation gate PASS (`LOCAL_CODEX_PATH_SELECTED`)
+- artifact identity and unique-target check PASS
+- targeted ToolExecutor, provider-gateway, shared-runner, MoA and focused-test ownership inspection PASS
+- blocked-artifact required-literal and false-success check PASS
+- scoped `git diff --check` PASS before this snapshot update; final scoped check remains required below
+- no product tests, live calls, TestRuns, credentials or implementation
+
+Open risks:
+- implementation against the present allowlist would leave same-provider model changes active even after wrapper and orchestrator corrections
+- the transport decoupling environment flag currently selects between two different identity-authority paths and cannot serve as a security boundary
+- Websearch model-switch oracles exist across legacy Gemini, shared runner, MoA and ToolExecutor tests and must be reversed together
+- OpenRouter explicit Exa/no-fallback and paid-adapter-disabled corrections remain valid and must not regress
+- no commit, push or `origin/codex-sync` update occurred, so remote state does not contain this newest blocker
+
+Next recommended step for ChatGPT: approve one final bounded Task `.1` scope correction; no new product decision or Spec revision is required.
+
+Next recommended step for Codex: run `janus-task-breakdown` for the same target, add the exact runtime/test owners listed in the blocker artifact, validate the handoff, then rerun this precheck.
+
+Last updated: `2026-07-19 22:41:12 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 22:23:46 +02:00`, the bounded scope correction for `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1` is complete and validated; no product code, product test or provider call was executed.
+
+Current goal: rerun the single-task preimplementation check against the corrected exact-provider/model research-routing boundary.
+
+Active phase: `janus-task-breakdown`; canonical state `HANDOFF` to `janus-preimplementation-check`.
+
+Last Codex work:
+- corrected `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_task_breakdown.md` against every documented `SCOPE_MISMATCH` blocker
+- added the authoritative `backend/tool_registry.py` and `backend/services/orchestrator/execution_engine.py` runtime seams to the implementation allowlist
+- added `backend/tests/tools/test_websearch.py` so legacy Gemini-to-DDG, model-coercion and default-model assertions can be replaced by fail-closed regression oracles
+- classified `backend/data/schemas.py::WebsearchArgsV2` as read-only legacy transport; model-emitted provider/model values are not authoritative
+- bound OpenRouter server search to explicit `engine: "exa"`, `provider.allow_fallbacks: false` and `provider.require_parameters: true` on the same exact-model request
+- preserved Tasks `.2` through `.5` as parked and kept all paid adapters disabled pending later budget authorization
+- used the shared task-breakdown delegation gate with explicit local-Codex selection; no external delegation ran
+
+Changed files:
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_task_breakdown.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- shared task-breakdown delegation gate PASS (`LOCAL_CODEX_PATH_SELECTED`)
+- `validate_task_handoff.py` PASS for `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1`
+- semantic six-blocker coverage check PASS
+- scoped `git diff --check` PASS before this snapshot update; final scoped check remains required below
+- no product tests, live calls, TestRuns or implementation
+
+Open risks:
+- the corrected precheck must prove that every streaming and non-streaming `system.websearch` model-replacement seam is now bound without widening changes to unrelated skill routing
+- OpenRouter explicit Exa engine identity and no-provider-fallback controls must remain verifiable on the same paid call or fail closed
+- paid routes remain intentionally unavailable until later budget and consent tasks provide enforceable authorization
+- no commit, push or `origin/codex-sync` update occurred, so remote state does not contain this newest handoff
+
+Next recommended step for ChatGPT: treat the corrected Task `.1` breakdown as the only target and do not infer that paid research or implementation has been enabled.
+
+Next recommended step for Codex: rerun `janus-preimplementation-check` for `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1` only; release execution only if the corrected scope, tests and provider contracts pass.
+
+Last updated: `2026-07-19 22:23:46 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 22:12:20 +02:00`, the preimplementation check for `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1` is blocked by a concrete scope mismatch; no implementation or test execution has started.
+
+Current goal: correct the Task `.1` file/test allowlist so the exact provider/model and no-silent-fallback invariant can be enforced at its real runtime owners.
+
+Active phase: first-task precheck; canonical state `BLOCKED` (`PRE-CHECK BLOCKED: SCOPE_MISMATCH`).
+
+Last Codex work:
+- created `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_preimplementation_check.md`
+- verified current official OpenAI, Gemini and OpenRouter research contracts
+- proved that `backend/tool_registry.py` and `backend/services/orchestrator/execution_engine.py` can currently substitute the research model or silently route cloud failure to DDG but are outside the task allowlist
+- proved that `backend/tests/tools/test_websearch.py` contains contradictory fallback/coercion assertions but is outside the test allowlist
+- used the shared precheck delegation gate with explicit local-Codex selection; no external delegation ran
+
+Changed files:
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_preimplementation_check.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- shared precheck delegation gate PASS (`LOCAL_CODEX_PATH_SELECTED`)
+- official-provider contract review PASS for exact-model research capability and OpenRouter no-provider-fallback control
+- targeted runtime/test ownership inspection PASS
+- no product tests, live calls, TestRuns or implementation
+
+Open risks:
+- lower-adapter-only implementation would leave upstream model substitution and silent Gemini-to-DDG fallback active
+- OpenRouter `engine:auto/native` can hide an Exa engine switch, so the corrected task must bind explicit engine identity and fail closed when it cannot be proven
+- paid routes must remain disabled until the later budget and consent tasks provide authorization
+
+Next recommended step for ChatGPT: accept the bounded `janus-task-breakdown` correction for Task `.1`; no product decision or Spec change is required.
+
+Next recommended step for Codex: update only the Task `.1` breakdown allowlist/acceptance/tests and rerun this same precheck.
+
+No commit or push happened in this block. GitHub and `origin/codex-sync` may not contain this newest CURRENT_STATE.
+
+Last updated: `2026-07-19 22:12:20 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 22:05:55 +02:00`, `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1` was refined and validated as one provider-isolation and research-routing slice for preimplementation check; no precheck or implementation has run.
+
+Current goal: precheck the exact-model, no-provider-fallback research-routing foundation before any code edit.
+
+Active phase: first task refined and singly released; canonical state `HANDOFF`.
+
+Last Codex work:
+- created `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_task_breakdown.md`
+- bound immutable provider/model inputs, exact-model native research, OpenRouter no-provider-fallback, Ollama-only automatic DDG Free Basic and fail-closed paid-route activation
+- explicitly parked network fetch hardening, budget persistence, evidence rendering and UI consent in Tasks `.2` through `.5`
+- used the shared task-breakdown delegation gate with explicit local-Codex selection; no external delegation ran
+
+Changed files:
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_task_breakdown.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- shared task-breakdown delegation gate PASS (`LOCAL_CODEX_PATH_SELECTED`)
+- source/parent-task identity and affected-file existence inspected
+- `validate_task_handoff.py` PASS for `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1`
+- scoped `git diff --check` PASS
+- no test execution, provider call, precheck or implementation
+
+Open risks:
+- precheck must verify current official OpenRouter server-search and provider-fallback controls against the exact paid call surface
+- existing OpenAI/Gemini research code contains model substitution that conflicts with the approved exact-model contract
+- paid routes must remain fail-closed until later budget authorization and consent tasks exist
+
+Next recommended step for ChatGPT: run one `janus-preimplementation-check` against the `.1` breakdown only.
+
+Next recommended step for Codex: prove provider contracts, file scope, tests and safe partial-delivery boundary; release implementation only if every mandatory proof passes.
+
+No commit or push happened in this block. GitHub and `origin/codex-sync` may not contain this newest CURRENT_STATE.
+
+Last updated: `2026-07-19 22:05:55 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 22:00:56 +02:00`, the approved provider-agnostic web-research Spec was compiled into five validated, ordered implementation tasks; no implementation or task release has started.
+
+Current goal: refine and release exactly the first task for preimplementation check.
+
+Active phase: deterministic task compilation complete; canonical state `HANDOFF`.
+
+Last Codex work:
+- generated `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.md` from the approved Spec only
+- sequenced provider isolation, network safety, budget/persistence, evidence rendering and chat/UI integration
+- used the shared compilation delegation gate with explicit local-Codex selection; no external delegation ran
+
+Changed files:
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- shared spec-to-task delegation gate PASS (`LOCAL_CODEX_PATH_SELECTED`)
+- `validate_task_artifact.py` PASS
+- no product tests and no implementation
+
+Open risks:
+- `.1` and `.2` are intentionally security-sensitive foundation tasks and require high-risk preimplementation review before edits
+- all later tasks depend on the enforced provider-isolation and central network-guard boundaries from the first two tasks
+
+Next recommended step for ChatGPT: run `janus-task-breakdown` for `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1` only.
+
+Next recommended step for Codex: refine `.1` against the approved Spec and release only that target for `janus-preimplementation-check`.
+
+No commit or push happened in this block. GitHub and `origin/codex-sync` may not contain this newest CURRENT_STATE.
+
+Last updated: `2026-07-19 22:00:56 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 21:55:37 +02:00`, the provider-agnostic agentic web-research Feature Spec passed independent review and is ready for deterministic task compilation; no product implementation has started.
+
+Current goal: compile the approved Feature Spec into bounded execution tasks.
+
+Active phase: Spec review passed; canonical state `PASS`.
+
+Last Codex work:
+- reviewed `documentation/SPEC/PROVIDER_AGNOSTIC_AGENTIC_WEB_RESEARCH_FEATURE_SPEC.md` in `REVIEW_ONLY` mode and wrote its authoritative `SPEC REVIEW METADATA` block
+- confirmed complete, deterministic, testable scope with no required feature split and no outstanding product decision
+- used the shared review delegation gate with explicit local-Codex selection; no external delegation ran
+
+Changed files:
+- `documentation/SPEC/PROVIDER_AGNOSTIC_AGENTIC_WEB_RESEARCH_FEATURE_SPEC.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- local shared delegation gate PASS (`LOCAL_CODEX_PATH_SELECTED`)
+- `validate_spec_review.py` PASS after review metadata was written
+- no product tests and no implementation
+
+Open risks:
+- the approved Spec deliberately makes adapter budget-enforcement evidence, central network guard and provider-isolation verification mandatory implementation gates
+- review recommends 5.6 Sol for later high-risk review/audit slices because the approved scope is `CRITICAL`; no model/provider behavior was changed
+
+Next recommended step for ChatGPT: compile the approved Spec with `janus-spec-to-task`; preserve the Spec as the sole product source of truth.
+
+Next recommended step for Codex: run `janus-spec-to-task` and produce only deterministic task artifacts before any preimplementation work.
+
+No commit or push happened in this block. GitHub and `origin/codex-sync` may not contain this newest CURRENT_STATE.
+
+Last updated: `2026-07-19 21:55:37 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 21:52:09 +02:00`, the complete Feature Spec for provider-agnostic agentic Janus web research was generated from the decision-locked product contract; no product implementation has started.
+
+Current goal: independently review the generated Feature Spec before compiling any implementation tasks.
+
+Active phase: feature Spec generated; canonical state `HANDOFF`.
+
+Last Codex work:
+- generated `documentation/SPEC/PROVIDER_AGNOSTIC_AGENTIC_WEB_RESEARCH_FEATURE_SPEC.md` with the approved provider-isolation, budget, DDG Free Basic, evidence, image, privacy and network-security contract
+- bound the next gate to `janus-spec-review` in a fresh `5.6 Terra/high` chat
+
+Changed files:
+- `documentation/SPEC/PROVIDER_AGNOSTIC_AGENTIC_WEB_RESEARCH_FEATURE_SPEC.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- Spec structure, mandatory routing fields, Definition-of-Done coverage and complexity-score consistency checked locally
+- no product tests and no implementation
+
+Open risks:
+- review must verify that the existing provider adapters can expose the capability and enforcement evidence required by the Spec
+- current repository fetch paths are not yet hardened; this is an implementation gate, not a bypass of the review pipeline
+
+Next recommended step for ChatGPT: conduct the independent `janus-spec-review` for this new Spec; do not treat the older completed parity Spec as sufficient.
+
+Next recommended step for Codex: after a PASS or bounded revision from Spec review, run `janus-spec-to-task` only against the reviewed Spec.
+
+No commit or push happened in this block. GitHub and `origin/codex-sync` may not contain this newest CURRENT_STATE.
+
+Last updated: `2026-07-19 21:52:09 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 21:47:18 +02:00`, provider-agnostic Janus web research is decision-locked and ready for feature-Spec generation; no product implementation has started.
+
+Current goal: generate and review one complete Feature Spec for secure, cost-transparent provider-agnostic web research.
+
+Active phase: feature design complete; canonical state `HANDOFF`.
+
+Locked contract delta:
+- both a declined `0.20 EUR` per-research overage and a declined monthly paid-research continuation offer the same explicit DDG-based free-basic fallback
+- after consent, the free-basic fallback may be used automatically for the remainder of the applicable period; it has reduced evidence guarantees and no paid fetch, image, or agentic-research actions
+- local Ollama uses this free-basic path by default whenever it lacks native web-search capability
+- cloud-provider native research uses the active provider's configured credit; any unavoidable DDG-context model tokens are separately visible as normal chat cost
+- active LLM-provider/model never changes; OpenRouter fallback routing must be disabled and all search-adapter changes disclosed
+- the Spec must include the required foundation gates: central network/SSRF guard, architectural prompt-injection isolation, technical caps, persistent research ledger, evidence-bound citations, and an adapter capability map
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- final decision-consistency check across provider isolation, strict paid budgets, free local behavior, monthly and per-research fallback behavior, privacy, and external-review deltas
+- no product tests and no implementation
+
+Open risks:
+- current repository fetch paths are not yet hardened; this is a Spec and implementation gate, not a reason to bypass the pipeline
+- current V3 evidence pipeline is limited and must be generalized without preserving unsafe/hard-coded behavior
+- provider pricing/capability details require revalidation during Spec generation and implementation planning
+
+Next recommended step for ChatGPT: review the final Feature Spec after its independent spec-review gate, not the current older completed parity Spec as if it were sufficient.
+
+Next recommended step for Codex: run `janus-spec-generator` in a fresh `5.6 Terra/high` chat using this snapshot, the final Opus review, the earlier parity Spec, `BACKLOG-134`, and directly affected websearch/cost contracts.
+
+No commit or push happened in this block. GitHub and `origin/codex-sync` may not contain this newest CURRENT_STATE.
+
+Last updated: `2026-07-19 21:47:18 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 21:45:23 +02:00`, the operator approved a transparent free-basic-web fallback after paid monthly web research is declined.
+
+Current goal: decide whether the same free-basic fallback applies when the per-research limit is reached, then consolidate the decision-locked summary for Spec generation.
+
+Active phase: `janus-feature-design` decision reconciliation; canonical state `NEEDS_INFO`.
+
+Locked decision:
+- when the paid monthly web-research budget is exhausted and the user declines further paid research, Janus offers a free DDG-based basic-web fallback
+- activation requires explicit user consent at the exhaustion notice; after consent it may be used automatically for the remaining monthly period
+- the fallback performs no paid search, page-fetch, image, or paid agentic-research action
+- Janus visibly labels reduced evidence depth, source coverage, price reliability, and unavailable paid capabilities
+- for local Ollama, this path is fully free
+- for cloud LLMs, the minimal active-model tokens needed to read the DDG snippets are permitted and shown separately as normal provider chat cost, not as paid web-research cost
+- no paid web-research action or hidden LLM/provider fallback resumes through this path
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- decision consistency check against hard paid-web budgets, free local use, provider-cost transparency, and provider isolation
+- no product tests and no implementation
+
+Open risks:
+- whether the same free-basic fallback applies after a user declines to exceed the `0.20 EUR` per-research limit remains open
+- provider capability and enforcement details must be specified and tested per adapter
+
+Next recommended step for ChatGPT: decide whether per-research budget exhaustion uses the same explicit free-basic fallback.
+
+Next recommended step for Codex: lock that behavior, then produce the final feature-design decision summary for `janus-spec-generator`.
+
+No commit or push happened in this block. GitHub and `origin/codex-sync` may not contain this newest CURRENT_STATE.
+
+Last updated: `2026-07-19 21:45:23 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 21:41:44 +02:00`, the operator clarified that local Ollama web research must remain free: Janus uses DuckDuckGo retrieval when no local native web-search capability exists, accepting a visibly lower research-quality ceiling.
+
+Current goal: resolve the strict-budget behavior for cloud-native adapters that cannot expose an enforceable cost ceiling, then finalize the design for Spec generation.
+
+Active phase: `janus-feature-design` decision reconciliation; canonical state `NEEDS_INFO`.
+
+Locked decision correction:
+- GPT, Gemini, and OpenRouter native search costs use the respective provider credit already configured in Janus
+- local Ollama models receive no paid neutral search service and require no search API key or Janus search balance
+- local Ollama falls back only to free DuckDuckGo retrieval when it lacks native web-search capability
+- Janus visibly labels the lower evidence depth, source coverage, and price-reliability guarantee of that free local path
+- the earlier interpretation of a Janus-managed paid neutral-search wallet for local models is superseded; no such paid local-search service is authorized
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- decision consistency check against free/local usage, provider isolation, and hard monetary budgets
+- no product tests and no implementation
+
+Open risks:
+- when a cloud-native adapter cannot guarantee the hard limit, the fallback behavior must be locked: free DDG degradation or a no-search result
+- the approved cloud-provider/native-search capability map remains to be formalized in the Spec
+- central paid neutral search is not authorized, so it cannot be used as an implicit quality fallback
+
+Next recommended step for ChatGPT: choose whether an unbudgetable cloud-native search degrades to free DuckDuckGo or is declined as unavailable within the hard budget.
+
+Next recommended step for Codex: lock that behavior, then consolidate the final decision summary for `janus-spec-generator`.
+
+No commit or push happened in this block. GitHub and `origin/codex-sync` may not contain this newest CURRENT_STATE.
+
+Last updated: `2026-07-19 21:41:44 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 21:35:00 +02:00`, the operator selected Janus-managed neutral search access so end users never need to obtain third-party search API keys.
+
+Current goal: lock how users fund the centrally managed Janus search service while preserving hard budgets and transparent per-research costs.
+
+Active phase: `janus-feature-design` decision reconciliation; canonical state `NEEDS_INFO`.
+
+Locked decision:
+- Janus centrally provisions and pays for approved neutral search-service credentials
+- end users do not supply Brave, Exa, Firecrawl, or similar search API keys
+- search-service secrets remain server-side and are never shipped in the desktop application
+- Janus performs server-side usage attribution, metering, budget enforcement, and receipt generation
+- Janus therefore becomes the search intermediary and must include account attribution, abuse controls, privacy disclosures, data minimization, operational availability, and billing responsibilities in the feature scope
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- decision consistency check against no-key user experience, hard cost limits, and provider isolation
+- no product tests and no implementation
+
+Open risks:
+- the user funding model for centrally purchased search usage is not yet locked
+- central search service availability and privacy responsibilities materially expand the feature beyond a desktop-only integration
+- approved primary and secondary neutral search services are not yet locked
+
+Next recommended step for ChatGPT: choose prepaid Janus search credit or subscription/invoice-based search funding.
+
+Next recommended step for Codex: lock the funding model, then ask one separate question about the approved neutral search-provider order.
+
+No commit or push happened in this block. GitHub and `origin/codex-sync` may not contain this newest CURRENT_STATE.
+
+Last updated: `2026-07-19 21:35:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 21:32:43 +02:00`, the operator selected strict cost enforcement for provider-agnostic web research.
+
+Current goal: complete the remaining product decisions for neutral retrieval ownership and approved search services before Spec generation.
+
+Active phase: `janus-feature-design` decision reconciliation; canonical state `NEEDS_INFO`.
+
+Locked decision:
+- the per-research and monthly budgets are hard actual-cost limits
+- when a native search adapter cannot expose a reliably enforceable cost ceiling, Janus automatically uses a controllable neutral retrieval adapter while preserving the active LLM provider and model
+- the search-adapter change is disclosed in the research receipt and is not an LLM-provider fallback
+- if no permitted path can be guaranteed within the authorized budget, Janus does not start the paid search
+- no provider-driven budget overshoot is silently accepted
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- decision consistency check against strict provider isolation, automatic Janus routing, and user-controlled budget continuation
+- no product tests and no implementation
+
+Open risks:
+- ownership and payment of neutral retrieval credentials is not yet locked
+- approved primary and secondary neutral search services are not yet locked
+
+Next recommended step for ChatGPT: decide whether neutral retrieval uses user-provided API keys or a Janus-managed central search wallet.
+
+Next recommended step for Codex: lock credential ownership, then ask one separate question about the approved neutral search-provider order.
+
+No commit or push happened in this block. GitHub and `origin/codex-sync` may not contain this newest CURRENT_STATE.
+
+Last updated: `2026-07-19 21:32:43 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 21:30:42 +02:00`, the final Claude Opus review has been reconciled against current provider contracts and the Janus repository; the concept remains `APPROVE WITH REQUIRED CHANGES`, with one product decision now pending.
+
+Current goal: lock the cost-enforcement behavior for native search adapters that cannot expose a deterministic pre-call maximum without weakening LLM-provider isolation or the user's budget authority.
+
+Active phase: `janus-feature-design` decision reconciliation; canonical state `NEEDS_INFO`.
+
+Last Codex work:
+- accepted the review's central direction: common Janus control plane, explicit adapter capability classes, mandatory technical caps, central fetch/network guard, architectural prompt-injection isolation, evidence-bound citations, persistent research ledger, and removal of one-off factoid scaffolding as the new architecture
+- corrected the blanket claim that native search is uniformly uncontrollable: OpenAI Responses exposes a built-in-tool call cap; OpenRouter exposes total-result controls and search-request usage; Gemini documents one-or-more internally chosen billable queries without an equivalent hard query cap
+- rejected worst-case estimation alone as a true hard-budget guarantee when an opaque native adapter may exceed the estimate
+- moved SSRF/fetch and prompt-injection controls from the proposed late hardening phase into the pre-MVP foundation gate
+- confirmed that Janus already has a limited, flag-gated `websearch_v3` news/evidence pipeline; the feature should generalize and secure it rather than assume no agentic retrieval layer exists
+- identified an omitted provider-integrity requirement: OpenRouter provider fallback defaults to enabled and must be disabled to honor Janus' no-provider-fallback contract
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- read the complete final Opus review
+- verified current official OpenAI web-search controls/pricing, Gemini grounding query billing, and OpenRouter server-search/provider-routing controls
+- targeted repository inspection of the hard-coded factoid fetch, general `websearch_v3` page fetcher, V3 routing scope, provider support, and existing tests
+- no product tests and no implementation
+
+Open risks:
+- a native adapter without an enforceable cost ceiling cannot simultaneously promise native search and a strict no-overshoot budget
+- current page-fetch paths do not yet share a central SSRF/redirect/MIME/stream-size guard
+- current V3 scope is limited to flag-gated simple news for OpenAI/Gemini and is not the provider-agnostic research contract
+- OpenRouter defaults may retry another underlying provider unless fallback is explicitly disabled
+
+Next recommended step for ChatGPT: decide whether strict budget enforcement takes precedence over opaque native search, allowing Janus to use a disclosed controllable neutral retrieval adapter while keeping the active LLM unchanged.
+
+Next recommended step for Codex: lock that decision, then ask the next single feature-design question about neutral retrieval credentials/ownership.
+
+No commit or push happened in this block. GitHub and `origin/codex-sync` may not contain this newest CURRENT_STATE.
+
+Last updated: `2026-07-19 21:30:42 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 21:19:59 +02:00`, Claude Opus returned a provisional `NEEDS_INFO` review because the external handoff was truncated immediately after the description of the earlier parity feature.
+
+Current goal: complete the independent Opus review with a compact continuation that supplies the omitted locked decisions, proposed architecture principles, cost controls, and repository-grounded implementation facts.
+
+Active phase: `janus-feature-design` external review reconciliation; canonical state `HANDOFF`.
+
+Last Codex work:
+- inspected the complete provisional Opus response and identified input truncation, rather than a generally incomplete Janus product concept, as the primary blocker
+- mapped Opus findings against the locked contract: hard monetary budgets, conflict disclosure, price-source rules, privacy minimization, search fallback disclosure, image rules, cancellation, and receipt persistence were already decided but never reached Opus
+- retained prompt-injection hardening and common provider-agnostic orchestration as valid final-review topics
+- prepared a compact continuation for the existing Opus chat; Spec generation and implementation remain paused
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- read the full attached provisional review
+- targeted repository confirmation of current provider routing, DuckDuckGo retrieval, answer-first synthesis, cost seams, completed parity Spec, and `BACKLOG-134`
+- no product tests and no implementation
+
+Open risks:
+- Opus has not yet received the omitted decision contract and therefore has not issued a final review
+- webpage content must be treated as untrusted and prevented from influencing provider routing, authorization, budgets, or tool policy
+- one common Janus research policy/normalization layer must avoid both native-provider lock-in and false promises of identical provider behavior
+
+Next recommended step for ChatGPT: send the compact continuation to the same Opus chat and return the complete final review unchanged.
+
+Next recommended step for Codex: reconcile the final Opus review in `janus-feature-design`, lock any operator-approved deltas, and only then route to `janus-spec-generator`.
+
+No commit or push happened in this block. GitHub and `origin/codex-sync` may not contain this newest CURRENT_STATE.
+
+Last updated: `2026-07-19 21:19:59 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 21:13:23 +02:00`, the decision-locked provider-agnostic Janus web-research concept has been packaged for an independent Claude Opus review before specification or implementation.
+
+Current goal: obtain a critical external assessment of the planned ChatGPT-like research experience, including provider isolation, evidence quality, price/image handling, privacy, security, cost controls, observability, evaluation, and rollout.
+
+Active phase: `janus-feature-design` external review gate; canonical state `HANDOFF`.
+
+Last Codex work:
+- prepared a bounded copy-paste review brief for Claude Opus containing the current problem, implementation reality, locked product contract, cost assumptions, known risks, and explicit review questions
+- required Opus to separate blockers from improvements and optional ideas, challenge locked decisions only with an exact justified delta, and produce no code
+- paused Spec generation and implementation until the operator returns the Opus assessment for reconciliation
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- handoff-content consistency check against the decision-locked feature-design snapshot
+- no product tests and no implementation
+
+Open risks:
+- the external review has not yet been received or assessed
+- current Janus tracking remains aggregate/coarse and cannot yet provide the planned per-research receipt
+- `BACKLOG-134` remains a symptom-level execution lane and must not be mistaken for the full research feature
+
+Next recommended step for ChatGPT: return the complete Claude Opus review unchanged so its blockers, improvements, and decision deltas can be assessed against the Janus product contract.
+
+Next recommended step for Codex: reconcile the returned Opus review with `janus-feature-design`; resolve only genuinely open or challenged decisions with the operator, then route an approved design to `janus-spec-generator`.
+
+No commit or push happened in this block. GitHub and `origin/codex-sync` may not contain this newest CURRENT_STATE.
+
+Last updated: `2026-07-19 21:13:23 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 21:08:56 +02:00`, feature design for provider-agnostic Janus web research is decision-locked and spec-ready.
+
+Current goal: replace UX-only DDG parity with ChatGPT-like provider-agnostic research quality while preserving strict LLM-provider isolation.
+
+Active phase: `janus-feature-design` complete; canonical state `HANDOFF`.
+
+Last Codex work:
+- verified the current Janus DDG/OpenAI/Gemini retrieval, synthesis, image-rendering, and cost-tracking seams read-only
+- compared current official OpenAI, Gemini, OpenRouter, Exa, Brave, and image-search capabilities/pricing
+- locked the product contract: automatic research depth, neutral search tools without LLM fallback, search-engine fallback disclosure, evidence-bound prices and citations, safe image previews, cancel/progress behavior, persistent redacted research receipts, and explicit budget controls
+- locked budgets at `0.20 EUR` per research and `10 EUR` per month; monthly exhaustion requires a user decision and any continuation requires a user-selected additional budget
+
+Changed files:
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- targeted repository inspection only; no product tests and no implementation
+- official documentation/pricing verification for OpenAI web and image search, Gemini grounding, OpenRouter server web search, Exa/Brave search, and Brave image search
+
+Open risks:
+- current Janus tracking is aggregate and uses coarse/outdated per-query assumptions; it does not yet provide a per-answer provider/engine/page/image/token receipt
+- the existing completed Websearch Parity epic and READY execution lane `BACKLOG-134` address symptoms, not the newly locked agentic multi-source research contract
+- no LLM-provider fallback is permitted; neutral search tools are allowed only as data-retrieval tools controlled by the active provider
+
+Next recommended step for ChatGPT: review the locked product contract as one full-feature scope and preserve the strict distinction between LLM-provider isolation and neutral search-engine fallback.
+
+Next recommended step for Codex: run `janus-spec-generator` in a fresh `5.6 Terra/high` context using only this snapshot, the prior Websearch Parity Spec, `BACKLOG-134`, and the directly affected websearch/cost/image contracts.
+
+No commit or push happened in this block. GitHub and `origin/codex-sync` may not contain this newest CURRENT_STATE.
+
+Last updated: `2026-07-19 21:08:56 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 20:30:00 +02:00`, BACKLOG-134 preimplementation check PASSED.
+
+Artifact: `documentation/tasks/backlog_BACKLOG-134_websearch_freshness_de_answer_precheck.md`
+Next: `janus-executioner` — freshness ranking + DE answer-first; unit pytest gate; Assigned Model 5.6 Terra high.
+
+canonical state: `HANDOFF`.
+
+Last updated: `2026-07-19 20:30:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 20:25:00 +02:00`, BACKLOG-134 SELECTED_HANDOFF complete.
+
+Status moved READY → IN PROGRESS. Entry Point: PRE_IMPLEMENTATION_VERIFICATION.
+Handoff: `documentation/tasks/backlog_BACKLOG-134_websearch_freshness_de_answer.md`
+Next: `janus-preimplementation-check` for Target Task `BACKLOG-134`.
+
+canonical state: `HANDOFF`.
+
+Last updated: `2026-07-19 20:25:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 20:20:00 +02:00`, BACKLOG-134 prioritization DELTA complete.
+
+Cache set: HIGH / MEDIUM / M / READY / DO NOW. Recommended next: `janus-backlog-handoff` SELECTED_HANDOFF for BACKLOG-134.
+Also filled missing cache on READY-122 and READY-109 (SCHEDULE).
+Competing notes: IN PROGRESS-120 still parked; READY-062 remains CRITICAL security lane.
+
+canonical state: `HANDOFF`.
+
+Last updated: `2026-07-19 20:20:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 20:15:00 +02:00`, BACKLOG-134 intake READY (follow-up to 133).
+
+New item: Frische fuer Zeitbezuege + DE-Antwort bei EN-Quellen (Answer-first).
+Source: Live-Smoke 20:07 force PASS, content stale/EN.
+Next: `janus-backlog-prioritization` for BACKLOG-134.
+Changed: `documentation/backlog/BACKLOG.md`; debug closeout artifact already on disk.
+
+canonical state: `HANDOFF`.
+
+Last updated: `2026-07-19 20:15:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 20:10:00 +02:00`, Grenzfall runtime debug closed PASS; quality follow-ups open.
+
+Live retest 20:07: force log `answer-first lookup/grenzfall` confirmed; UI answer-first + Quelle (no “keine Websuche”).
+Remaining: (1) freshness for “gestern” still weak/stale EN pages; (2) operator wants DE translation when only EN evidence exists.
+Next: `janus-backlog-intake` for freshness + DE answer translation.
+Artifact: `documentation/tasks/WEBSEARCH_PARITY_GRENZFALL_LIVE_debug_result.md`
+
+canonical state: `HANDOFF`.
+
+Last updated: `2026-07-19 20:10:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 20:05:00 +02:00`, Websearch Grenzfall debug iteration 2 — root cause hardened.
+
+Failure: Retest after Electron restart still FAIL (`force_tool_name=None`, `tools=2`, no websearch).
+Root cause: `STALE_UVICORN_ON_8001_SKIPPED_BY_ELECTRON` — old uvicorn on `:8001` (PID 10728) keeps legacy `factoid/schedule` force; Electron skips spawn when port already up. Master code already correct (`answer-first lookup/grenzfall`).
+Fix: kill uvicorn on `:8001`, restart Janus from repo, retest Grenzfall in **new chat**.
+Artifact: `documentation/tasks/WEBSEARCH_PARITY_GRENZFALL_LIVE_debug_result.md`
+
+canonical state: `HANDOFF`.
+
+Last updated: `2026-07-19 20:05:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-19 19:55:00 +02:00`, Live Websearch smoke debug ROOT CAUSE FOUND.
+
+Failure: Grenzfall `Was hat OpenAI gestern angekündigt?` → model claimed no websearch (OpenRouter GLM-5.2).
+Root cause: `STALE_RUNTIME_MISSING_GRENZFALL_WEBSEARCH_FORCE` — running backend still logs legacy `factoid/schedule lookup` force; master already forces `answer-first lookup/grenzfall`.
+Fix: full Janus restart, then retest Grenzfall; expect log line `answer-first lookup/grenzfall`.
+Artifact: `documentation/tasks/WEBSEARCH_PARITY_GRENZFALL_LIVE_debug_result.md`
+
+canonical state: `HANDOFF`.
+
+Last updated: `2026-07-19 19:55:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-19 19:20:00 +02:00`, BACKLOG-133 / WEBSEARCH-PARITY Epic git checkpoint in progress (operator YES).
 
 Commit + push `backup/master` + `codex-sync` for `.4` gold net and Spec Done / Backlog DONE closeout.
@@ -35710,3 +37502,45 @@ Next recommended step for ChatGPT: treat the Task `.3` breakdown as the only exe
 Next recommended step for Codex: start a new `5.6 Sol` / high task for `janus-preimplementation-check`; if Sol is unavailable for the ChatGPT Codex account, use `5.6 Terra` / high and record `SOL_UNAVAILABLE_FOR_CHATGPT_CODEX_ACCOUNT`.
 
 Last updated: `2026-07-17 14:29:03 +02:00`.
+
+## Current Snapshot Update
+
+As of `2026-07-20 00:08:27 +02:00`, provider-agnostic Web Research Task `.1` is implemented and automatically verified. Exact provider/model identity is now fail-closed across executor, wrapper, orchestrator, provider gateways and shared MoA/tool loops. Paid cloud adapters remain disabled until the later budget boundary authorizes them; Ollama alone may automatically use DDG Free Basic.
+
+Current goal: obtain the manual Janus Ollama/DDG validation required before preparing the final-audit package for `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1`.
+
+Active phase: `janus-executioner`, canonical state `NEEDS_INFO` because the manual Janus validation gate is pending.
+
+Last Codex work:
+- added normalized receipt-ready capability decisions for OpenAI, Gemini, OpenRouter and Ollama
+- removed model substitution, cloud-to-DDG retry and persisted-provider defaulting from the authoritative Websearch boundary
+- pinned `system.websearch` to the exact selected model through orchestrator, OpenAI/Gemini gateways, shared runner and MoA
+- added OpenRouter exact-model server-search request construction with explicit Exa plus disabled provider fallback and required-parameter enforcement
+- made ToolExecutor identity behavior identical in both transport-flag states and removed raw Websearch queries from its logs, telemetry arguments and returned diagnostics
+- generalized V3 route metadata transport and added focused capability, authorization, isolation and round-trip tests
+- rejected the selected Cursor proposal because it reused stale BACKLOG-134 context and reported out-of-allowlist files; no Cursor patch was adopted
+
+Changed files:
+- the 23 bounded implementation/test paths listed in `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_execution_result.md`
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Checks / validation performed:
+- bound 16-module `python -m py_compile` command: PASS
+- exact focused Pytest matrix: PASS, `206 passed in 5.76s`
+- execution-result validator: PASS
+- no live provider request, paid search, network test, migration, UI change, commit or push
+
+Open risks:
+- the manual Janus Ollama/DDG runtime test is still pending
+- Tasks `.2` through `.5` remain required for network hardening, atomic budget/ledger authorization, evidence/price/image quality and final chat/UI consent behavior
+- cloud paid research intentionally returns approval-required until Task `.3` supplies enforceable authorization
+- pre-existing BACKLOG-134 and unrelated dirty-worktree changes were preserved and are not part of this execution result
+- no commit, push, or `origin/codex-sync` update occurred, so GitHub and ChatGPT remote state may not contain this implementation or snapshot
+
+Next recommended step for ChatGPT: do not treat Task `.1` as complete until the operator reports the manual Ollama/DDG Janus test result.
+
+Next recommended step for Codex: on manual PASS, build the compact audit package and run `janus-final-audit`; on failure, route directly to `janus-debug`.
+
+Last updated: `2026-07-20 00:08:27 +02:00`.
