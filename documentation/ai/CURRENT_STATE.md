@@ -1,6 +1,205 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-20 22:05:00 +02:00`, Task `.2` documentation synchronization is complete after Final Audit PASS. The task is marked DONE in the parent task overview and central registry; the parent Webresearch Feature remains `IN PROGRESS` with Tasks `.3-.5` open.
+
+Current goal: create a targeted Git checkpoint for the completed Task `.2` documentation/product slice if the user wants it saved.
+
+Active phase: `janus-documentation-update`; canonical state `PASS` / handoff to `janus-git-governance`.
+
+Last Codex work:
+- updated the Task `.2` breakdown, parent task overview, central registry, `PROJECT_STATE.md` and `CHANGELOG.md`
+- appended the validated DNS pinning/rejected-target-redaction learning pattern
+- wrote `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.2_documentation_update.md`
+
+Checks / validation performed:
+- documentation-update validator PASS
+- scoped `git diff --check` PASS
+- no Backlog/dashboard sync needed because no Backlog item is bound
+
+Open risks:
+- no commit, push or `origin/codex-sync` update occurred
+- Tasks `.3` budget/receipts, `.4` source/price/image evidence and `.5` consent/progress/UI remain open
+
+Next recommended step for ChatGPT: use `janus-git-governance` only after explicit user approval for a targeted checkpoint; then route Task `.3` through the dependency pipeline.
+
+Next recommended step for Codex: do not modify product code in this documentation block; wait for Git checkpoint direction.
+
+Last updated: `2026-07-20 22:05:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-20 21:55:00 +02:00`, `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.2` passed the independent Final Audit. The central guarded research-evidence boundary is accepted as a completed task slice; the parent Webresearch Feature remains `IN PROGRESS` because Tasks `.3-.5` are still open.
+
+Current goal: synchronize Task `.2` documentation, then route the next bounded slice through the existing dependency order.
+
+Active phase: `janus-final-audit`; canonical state `HANDOFF` to `janus-documentation-update`.
+
+Last Codex work:
+- built and refreshed `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.2_AUDIT_PACKAGE.md`
+- recorded the Ollama manual gate as PASS (honest no-source result; no raw tool JSON or fallback)
+- added and passed the rejected-page URL-redaction regression (`264` focused tests)
+- completed Final Audit with result `PASS` and no findings within Task `.2`
+
+Checks / validation performed:
+- final-audit validator PASS
+- execution-result validator PASS
+- scoped `git diff --check` PASS
+
+Open risks:
+- documentation synchronization has not run yet
+- Tasks `.3` budget/receipts, `.4` sources/prices/images and `.5` consent/progress/UI remain required
+- no commit, push or `origin/codex-sync` update occurred
+
+Next recommended step for ChatGPT: on user `ok`, run `janus-documentation-update` for exactly Task `.2`; do not move the parent Spec to Spec Done.
+
+Next recommended step for Codex: synchronize only Task `.2` status, registry and CURRENT_STATE, preserving the parent Feature as partial.
+
+Last updated: `2026-07-20 21:55:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-20 21:47:00 +02:00`, `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.2` has passed Codex-owned auto-verification and the mandatory manual Janus validation. Ollama returned an honest no-citable-sources result for the Gold-price prompt without raw tool JSON or provider fallback.
+
+Current goal: run `janus-final-audit` on the compact Task `.2` audit package. Gold-price source quality remains a later Task `.4` concern.
+
+Active phase: `janus-executioner`; canonical state `HANDOFF` to `janus-final-audit`.
+
+Last Codex work:
+- reviewed the Cursor bounded result and the existing allowlisted guard diff
+- hardened blocked-target failures so private/metadata redirect targets do not become canonical source URLs
+- ran focused evidence tests, provider/no-fallback regressions, py_compile and headed Chat Core smoke
+- wrote the Task `.2` execution result with the manual validation gate
+- recorded the Ollama manual gate as PASS and built the compact audit package
+
+Changed files:
+- the 11 Task `.2` implementation/test files listed in `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.2_execution_result.md`
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.2_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Checks / validation performed:
+- focused guard/evidence suite: `263 passed`
+- provider/model isolation subset: `81 passed`
+- guard-owner `py_compile`: PASS
+- headed Chat Core smoke: `1 passed`
+- Cursor contract/allowlist validation: PASS
+
+Open risks:
+- final audit is not yet run
+- no commit, push or `origin/codex-sync` update occurred
+
+Next recommended step for ChatGPT: run `janus-final-audit` against the compact Task `.2` package; do not close the parent Feature because Tasks `.3-.5` remain open.
+
+Next recommended step for Codex: run `janus-final-audit`, then synchronize documentation only if the audit passes.
+
+Last updated: `2026-07-20 21:47:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-20 21:20:00 +02:00`, `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.2` remains precheck-PASS and is waiting at the mandatory execution backend gate. No product code or test has been changed or run in this execution block.
+
+Current goal: select one bounded proposal/execution path, then implement only the central guarded research-evidence fetch boundary.
+
+Active phase: `janus-executioner`; canonical state `NEEDS_INFO` pending operator backend choice.
+
+Last Codex work:
+- revalidated the canonical Task `.2` precheck
+- searched reusable SSRF/redirect evidence patterns; no existing central guard pattern was found
+- emitted the command-first Mini-TestPlan
+- created a task-specific execution input package and exact 12-file allowlist
+- ran the tri-modal execution gate; ROI is positive and Cursor Composer is the recommended bounded proposal path
+
+Changed files:
+- `development/openrouter-skill-tests/janus-executioner/webresearch_task2_execution_allowlist_2026-07-20.txt`
+- `development/openrouter-skill-tests/janus-executioner/webresearch_task2_execution_input_package_2026-07-20.json`
+- `documentation/ai/CURRENT_STATE.md`
+
+Tests / validation performed:
+- precheck validator PASS
+- WHAT_I_LEARNED targeted search PASS
+- execution gate validation PASS
+- no product test or live network request by design
+
+Open risks:
+- product implementation must not start until the operator chooses Codex, OpenRouter, Cursor Composer or Cursor API
+- external choices remain proposal-first; Codex owns apply, validation and completion
+- Task `.3` through `.5` remain unimplemented
+- these execution-gate artifacts and this snapshot are local only; remotes do not yet include them
+
+Next recommended step for ChatGPT: preserve the exact 12-file allowlist and do not infer execution authorization beyond the operator's selected backend.
+
+Next recommended step for Codex: after operator choice, run only the selected bounded execution path and keep all tests/live validation Codex-owned.
+
+Last updated: `2026-07-20 21:20:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-20 21:05:00 +02:00`, `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.2` passed the preimplementation gate. Exactly one security-critical implementation slice is authorized next: a central guarded web-evidence fetch boundary. No product code, test execution or live web request has been performed in this gate.
+
+Current goal: implement and validate Task `.2` only, then obtain an audit package before advancing to budget, evidence rendering or UI work.
+
+Active phase: `janus-preimplementation-check`; canonical state `HANDOFF` to `janus-executioner`.
+
+Last Codex work:
+- confirmed the delegated OpenRouter precheck lane remains dry-run only; final precheck was performed locally
+- verified target/task/spec/TestSpec identity and the complete bounded direct evidence-fetch inventory
+- released one Task `.2` execution handoff with explicit SSRF/DNS/redirect/MIME/byte/timeout and untrusted-evidence invariants
+- validated `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.2_preimplementation_check.md`
+
+Changed files:
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.2_preimplementation_check.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- precheck validator PASS
+- scoped diff check PASS
+- no product test, implementation, TestRun or external web request by design
+
+Open risks:
+- execution must manually control every redirect and validate resolved IP targets at request time; a partial host-only check is insufficient
+- execution must not broaden the guard to fixed provider APIs or unrelated HTTP clients
+- Task `.3` through `.5` remain unimplemented
+- this latest precheck handoff is local only; `backup/master` and `origin/codex-sync` do not yet include it
+
+Next recommended step for ChatGPT: treat Task `.2` as ready for implementation but not implemented.
+
+Next recommended step for Codex: use `janus-executioner` on exactly `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.2` with 5.6 Sol/high and require deterministic hostile-network evidence before final audit.
+
+Last updated: `2026-07-20 21:05:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-20 20:50:00 +02:00`, `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.2` has a single-target, security-focused task-breakdown handoff. The completed Task `.1` remains the provider/model-routing foundation; no Task `.2` code, test execution, network request or product decision has occurred.
+
+Current goal: precheck the central guarded web-evidence fetch boundary before any implementation.
+
+Active phase: `janus-task-breakdown`; canonical state `HANDOFF` to `janus-preimplementation-check`.
+
+Last Codex work:
+- ran the due weekly personal Codex-skill healthcheck: WARN only, with all validated skills passing and no required skill edit
+- opened one parent Task `.2` security slice after the required model gate
+- traced the direct evidence-fetch owners: V3 page fetcher, World-Cup special fetch and Gemini grounding redirect resolution
+- created a precheck handoff that binds redirect-by-redirect validation, DNS/IP policy, MIME/byte/timeout enforcement and untrusted-evidence control-plane separation
+- selected OpenRouter for an assist-only task-review gate; shared routing permitted a dry-run plan only, so no external worker ran and the local handoff is authoritative
+
+Changed files:
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.2_task_breakdown.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+- weekly Codex skill validation PASS; healthcheck status WARN only for repeated audit-package rebuild patterns
+- Task handoff validator PASS for `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.2`
+- scoped diff check PASS
+
+Open risks:
+- Task `.2` must prove request-time DNS/IP validation and explicit redirect control without blocking fixed provider APIs or local health checks
+- Task `.3` through `.5` remain unimplemented
+- this newer handoff and CURRENT_STATE snapshot are local only; `backup/master` and `origin/codex-sync` do not yet include them
+
+Next recommended step for ChatGPT: review the new Task `.2` scope as a security foundation, not as completed protection.
+
+Next recommended step for Codex: run `janus-preimplementation-check` for exactly `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.2` with 5.6 Sol/high; block if the direct-fetch inventory or test seams are incomplete.
+
+Last updated: `2026-07-20 20:50:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-20 20:30:00 +02:00`, `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.1` is documentation-synchronized after blocker-delta Final Re-Audit `PASS` and stored in local commit `b445ae02a`. Parent Task `.1` is complete; the provider-agnostic Webresearch Feature remains `IN PROGRESS` because Tasks `.2` through `.5` are intentionally still open.
 
 Current goal: retain the validated provider/model and honest-failure foundation, then start Task `.2` only through a fresh security-focused task-breakdown gate after an optional explicit Git checkpoint.
