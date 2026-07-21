@@ -1,6 +1,145 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-21 00:10:00 +02:00`, Task `.3` documentation synchronization is complete after Final Audit PASS. The parent provider-agnostic Webresearch Feature remains in progress; only Tasks `.1` through `.3` are done.
+
+Current goal: optionally create a targeted Git checkpoint for the validated Task `.3` delivery.
+
+Active phase: `janus-documentation-update`; canonical state `PASS` / handoff to `janus-git-governance`.
+
+Last Codex work:
+- marked Task `.3` DONE in its parent task and central registry
+- updated PROJECT_STATE, CHANGELOG and an evidence-backed learning pattern
+- preserved explicit open status for Tasks `.4` and `.5`; no Backlog/dashboard sync was applicable
+
+Checks / validation performed:
+- documentation-update validator PASS for `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.3`
+- scoped `git diff --check` PASS
+
+Open risks:
+- product flow/UI connection for the persisted budget contract remains Task `.5`
+- this documentation update and CURRENT_STATE snapshot are local only; neither `backup/master` nor `origin/codex-sync` includes them
+
+Next recommended step for ChatGPT: do not infer full Feature completion from the Task `.3` marker.
+
+Next recommended step for Codex: on explicit approval, use `janus-git-governance` for a targeted Task `.3` checkpoint and optional `origin/codex-sync` snapshot sync.
+
+Last updated: `2026-07-21 00:10:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-20 23:55:00 +02:00`, the final audit for `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.3` passed. The completed slice provides the persisted atomic paid-research budget/receipt boundary; the parent Feature remains in progress with Tasks `.4` and `.5` open.
+
+Current goal: synchronize documentation for the passed Task `.3` audit before selecting Task `.4`.
+
+Active phase: `janus-final-audit`; canonical state `PASS` / handoff to `janus-documentation-update`.
+
+Last Codex work:
+- audited Task `.3` against its Spec/task/precheck/evidence boundary
+- confirmed explicit approval and decline persistence, atomic concurrency coverage, receipt minimization, Chat deletion cascade and cost separation
+- preserved the Task `.5` UI/consent ownership boundary
+
+Checks / validation performed:
+- final-audit validator PASS
+- automated budget/receipt evidence `32 passed`; provider/no-fallback evidence `46 passed`
+- compile, scoped diff check, headed cost-dashboard smoke and user-confirmed Deep Dive gate PASS
+
+Open risks:
+- Task `.4` source/price/image evidence and Task `.5` consent/progress/cancel integration remain open
+- final-audit artifacts and this CURRENT_STATE update are local only; neither `backup/master` nor `origin/codex-sync` includes them
+
+Next recommended step for ChatGPT: do not consider the parent Webresearch Feature complete; only Task `.3` passed.
+
+Next recommended step for Codex: run `janus-documentation-update` for Task `.3` with 5.6 Terra/high.
+
+Last updated: `2026-07-20 23:55:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-20 23:35:00 +02:00`, `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.3` implementation is automated-green and waiting solely for the mandatory manual Janus smoke gate. The scope adds the persisted paid-research budget/receipt boundary; it does not yet connect consent, progress or cancellation UI (Task `.5`).
+
+Current goal: obtain one manual Janus confirmation that ordinary Chat and the cost view remain usable, then package and audit Task `.3`.
+
+Active phase: `janus-executioner`; canonical state `NEEDS_INFO` / `PENDING_USER_TEST`.
+
+Last Codex work:
+- added atomic SQLite-backed paid-research reservations, answer/month approvals, settlement/cancellation and redacted Chat-bound receipts
+- added aggregate research-cost API data while preserving normal Chat costs and provider/model isolation
+- added deterministic limit, monthly uplift, concurrency, cancellation, redaction, deletion-cascade and component-separation regressions
+
+Checks / validation performed:
+- budget/receipt suite PASS: `31 passed`
+- provider/no-fallback subset PASS: `46 passed`
+- affected Python compile PASS; scoped diff check PASS
+- required named Playwright runner missing; existing headed cost-dashboard smoke PASS: `1 passed`
+- Cursor Composer proposal attempt produced no usable result; local review/validation owns the final change
+
+Open risks:
+- manual Janus smoke is still required before audit; failure routes to `janus-debug`
+- Task `.5` remains required to connect the persisted authorization state to user consent/progress/cancel transport
+- these Task `.3` changes and this CURRENT_STATE update are local only; neither `backup/master` nor `origin/codex-sync` includes them
+
+Next recommended step for ChatGPT: preserve that approval persistence alone is not UI consent integration; do not close Tasks `.4` or `.5`.
+
+Next recommended step for Codex: after user reports `pass`, build the compact Task `.3` audit package and run `janus-final-audit` with 5.6 Terra/high.
+
+Last updated: `2026-07-20 23:35:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-20 22:45:00 +02:00`, the mandatory preimplementation gate for `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.3` passed. No product code, database migration or product test has run; the canonical execution handoff is ready but implementation still requires explicit user approval.
+
+Current goal: implement the bounded paid-research budget, redacted receipt and cost-separation slice only after the execution gate is approved.
+
+Active phase: `janus-preimplementation-check`; canonical state `HANDOFF` to `janus-executioner`.
+
+Last Codex work:
+- verified the one-task identity against the parent task, Feature Spec and provider-parity TestSpec
+- confirmed the existing Chat deletion owner and SQLite migration/transaction seams
+- bound strict no-fallback, no-UI, privacy-minimized receipt and ordinary-chat-cost preservation rules
+
+Checks / validation performed:
+- task/spec/TestSpec identity and affected-owner inspection PASS
+- targeted `WHAT_I_LEARNED` cost-attribution/privacy lookup PASS
+- precheck validator pending; no product test by design
+
+Open risks:
+- execution must use an actual serialized database reservation boundary; process-local state is insufficient
+- Task `.5` remains the sole owner of consent/progress/cancel transport and UI
+- this precheck, CURRENT_STATE update and usage-log entry are local only; neither `backup/master` nor `origin/codex-sync` includes them
+
+Next recommended step for ChatGPT: do not infer that budget authorizations apply across answers or months; preserve the fixed per-answer/current-month scope.
+
+Next recommended step for Codex: on explicit execution approval, run `janus-executioner` for exactly Task `.3` with 5.6 Terra/high.
+
+Last updated: `2026-07-20 22:45:00 +02:00`.
+
+## Current Snapshot Update
+As of `2026-07-20 22:30:00 +02:00`, the next dependency-gated Webresearch slice is refined as `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH.3`. No product code, database change or test execution has occurred; the task is handed to the mandatory preimplementation check.
+
+Current goal: validate the bounded research-budget, receipt and redacted-persistence scope before any implementation.
+
+Active phase: `janus-task-breakdown`; canonical state `HANDOFF` to `janus-preimplementation-check`.
+
+Last Codex work:
+- routed the completed Task `.2` checkpoint to exactly the next sequential Task `.3`
+- bound only the parent Spec, Task `.3` scope, concrete owner cluster and deterministic budget/receipt tests
+- explicitly parked provider routing, evidence/price/image rendering and consent/progress UI
+
+Checks / validation performed:
+- Task handoff validator PASS
+- scoped `git diff --check` PASS
+- no product test or live research request by design
+
+Open risks:
+- precheck must prove actual transactional reservation semantics and the owning Chat deletion seam
+- Tasks `.4` and `.5` remain intentionally parked
+- this new breakdown and CURRENT_STATE update are local only; `backup/master` and `origin/codex-sync` do not yet include them
+
+Next recommended step for ChatGPT: preserve the exact Task `.3` budget/receipt boundary and do not infer UI consent implementation authorization.
+
+Next recommended step for Codex: run `janus-preimplementation-check` for exactly Task `.3` with 5.6 Terra/high.
+
+Last updated: `2026-07-20 22:30:00 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-20 22:15:00 +02:00`, the completed Task `.2` delivery is checkpointed locally as `377aa4cd1` (`fix(webresearch): harden guarded evidence fetch`) and pushed to `backup/master`. The `CURRENT_STATE` snapshot was also published to `origin/codex-sync`.
 
 Current goal: retain Task `.2` as completed and select Task `.3` only through its dependency-gated task breakdown when implementation resumes.
