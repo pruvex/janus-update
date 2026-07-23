@@ -1,6 +1,52 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+
+As of `2026-07-23 23:06 +02:00`, documentation sync for `TASK-CURSOR-AUTO-FULL-SLICE-DELEGATION.2` is complete and its checkpoint is locally recorded after Final Re-Audit PASS.
+
+Current goal: continue only with the still-open Task `.3`, or push/sync the approved local checkpoint after separate explicit approval.
+
+Active phase: Task `.2` documentation closed and locally committed; parent Spec `ACTIVE / PARTIAL` with Task `.3` open.
+
+Last Codex work:
+
+- marked Task `.2` DONE with final evidence and completed acceptance criteria
+- synchronized the parent Spec progress without closing or moving the parent Spec
+- updated central registry, project state and changelog to retain Task `.3` as the only remaining delegation-feature task
+- recorded exact skip reasons for Backlog/dashboard and duplicate `WHAT_I_LEARNED` pattern
+- amended the checkpoint after restoring the full prior `CURRENT_STATE.md` history and retaining this compact current snapshot
+
+Changed files:
+
+- `documentation/tasks/TASK-CURSOR-AUTO-FULL-SLICE-DELEGATION.md`
+- `documentation/SPEC/CURSOR_AUTO_FULL_SLICE_DELEGATION.md`
+- `documentation/01_CENTRAL_TASK_REGISTRY.md`
+- `PROJECT_STATE.md`
+- `CHANGELOG.md`
+- `documentation/tasks/TASK-CURSOR-AUTO-FULL-SLICE-DELEGATION.2_documentation_update.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Tests / validation performed:
+
+- Task `.2` Final Re-Audit: PASS, 112 tests plus JSON/diff checks
+- documentation marker validator: PASS for central registry, project state and changelog
+- scoped documentation diff check: PASS
+- amended checkpoint scope: PASS - `CURRENT_STATE.md` differs from its parent only by this current snapshot
+
+Open risks:
+
+- Task `.3` remains open for deterministic Codex acceptance/rejection, savings recording and healthcheck feedback
+- live Cursor execution remains intentionally out of Task `.2` scope
+- checkpoint is local only; `backup/master` and `origin/codex-sync` may be stale
+
+Next recommended step for ChatGPT: do not treat the parent feature as complete.
+
+Next recommended step for Codex: choose Task `.3` preimplementation routing, or push/sync the checkpoint only after explicit `Push: YES` / `Sync: YES`.
+
+Last updated: `2026-07-23 23:06 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-23 16:41:49 +02:00`, the validated Budget-Control Task `.1` delivery checkpoint is committed on `master` as `6792e090d` and pushed to `backup/master`. `documentation/ai/CURRENT_STATE.md` is synchronized to `origin/codex-sync`; this task-level checkpoint intentionally excludes unrelated parked worktree changes.
 
 Current goal: Task `.1` is closed and checkpointed. Keep Budget-Control Tasks `.2` Chat/Settings and `.3` DeepDive unreleased until their own bound pipeline gates run.
