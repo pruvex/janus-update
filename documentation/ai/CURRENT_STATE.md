@@ -1,6 +1,41 @@
 # CURRENT_STATE
 
 ## Current Snapshot Update
+As of `2026-07-23 16:41:49 +02:00`, the validated Budget-Control Task `.1` delivery checkpoint is committed on `master` as `6792e090d` and pushed to `backup/master`. `documentation/ai/CURRENT_STATE.md` is synchronized to `origin/codex-sync`; this task-level checkpoint intentionally excludes unrelated parked worktree changes.
+
+Current goal: Task `.1` is closed and checkpointed. Keep Budget-Control Tasks `.2` Chat/Settings and `.3` DeepDive unreleased until their own bound pipeline gates run.
+
+Active phase: `janus-git-governance` complete; no further action is required for Task `.1`.
+
+Last Codex work:
+
+- committed exactly the eight Task `.1` implementation/test files plus its dedicated task, validation, audit and documentation artifacts
+- validated the cached changeset with `git diff --cached --check` before committing
+- pushed commit `6792e090d` to the private `backup/master` remote
+- synchronized this rolling state to `origin/codex-sync` without pushing normal development commits to `origin/master`
+
+Changed files:
+
+- `documentation/ai/CURRENT_STATE.md` (Git completion snapshot only)
+
+Tests / validation performed:
+
+- cached changeset `git diff --cached --check`: PASS
+- `backup/master` push: PASS
+- `origin/codex-sync` content comparison: PASS
+
+Open risks:
+
+- unrelated parked worktree changes remain intentionally unstaged and uncommitted
+- Budget-Control Tasks `.2` and `.3` remain unreleased; parent Spec remains active
+
+Next recommended step for ChatGPT: use `origin/codex-sync` as the current remote truth for this completed Task `.1` checkpoint.
+
+Next recommended step for Codex: begin no further work automatically; route a separately requested Task `.2`/`.3` or another bounded item through the Janus pipeline.
+
+Last updated: `2026-07-23 16:41:49 +02:00`.
+
+## Current Snapshot Update
 As of `2026-07-23 16:25:30 +02:00`, documentation synchronization for `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH-BUDGET-CONTROL.1` is complete after Final Audit PASS. The task is recorded DONE; the parent Budget-Control delta and parent Spec remain partial because Tasks `.2` and `.3` are unreleased.
 
 Current goal: preserve the audited Task `.1` documentation checkpoint and decide separately whether to create a Git checkpoint; no product, Spec-completion or release work is pending in this documentation slice.
