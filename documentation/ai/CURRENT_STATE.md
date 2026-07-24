@@ -2,6 +2,41 @@
 
 ## Current Snapshot Update
 
+As of `2026-07-24 21:25 +02:00`, Task `.2` is merged into `master` by merge commit `042f32a11` and backed up on `backup/master`. This committed status snapshot is the source for the final approved `origin/codex-sync` publication.
+
+Current goal: Task `.2` delivery is complete; the approved status checkpoint and `origin/codex-sync` publication finalize its Git visibility.
+
+Active phase: `janus-git-governance`; `PASS`.
+
+Last Codex work:
+
+- merged `codex/web-research-budget-control-2` into `master` without delivery-file conflict
+- pushed `master` to `backup` (`98276c6f9..042f32a11`)
+- published the prior committed snapshot to `origin/codex-sync` (`1ec53d659`) and prepared this final merge/push confirmation for the approved follow-up publication
+- restored all parked/unrelated work after the approved sync-script auto-stash
+
+Changed files:
+
+- `documentation/ai/CURRENT_STATE.md` (this post-merge status snapshot only)
+
+Tests / validation performed:
+
+- delivery diff check before merge: PASS
+- parked-dirt overlap with the 28 delivery files: NONE
+- merge, backup push and codex-sync script: PASS
+
+Open risks:
+
+- parked unrelated changes remain preserved and were not staged, committed or otherwise changed
+
+Next recommended step for ChatGPT: after the approved publication succeeds, `origin/codex-sync` is the current remote truth for this Task `.2` closeout.
+
+Next recommended step for Codex: no further Task `.2` Git action; start the next bounded Janus task from the current `master` state when requested.
+
+Last updated: `2026-07-24 21:25 +02:00`.
+
+## Current Snapshot Update
+
 As of `2026-07-24 21:17 +02:00`, the validated Task `.2` delivery block is committed locally as `feat(web-research): add budget control chat flow` on branch `codex/web-research-budget-control-2`.
 
 Current goal: decide separately on backup push and `origin/codex-sync`.
