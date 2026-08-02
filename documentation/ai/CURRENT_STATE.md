@@ -2,38 +2,38 @@
 
 ## Current Snapshot Update
 
-As of `2026-08-02 17:11 +02:00`, the Git governance check recommends one bounded BACKLOG-136 delivery commit on `master`; no Git mutation has been authorized or performed.
+As of `2026-08-02 17:14 +02:00`, BACKLOG-136 is checkpointed in commit `68ed4f1e8` on `master`, pushed to `backup/master`, and its rolling CURRENT_STATE has been published to `origin/codex-sync`.
 
-Current goal: retain the validated BACKLOG-136 evidence until the operator explicitly chooses whether to create the proposed checkpoint.
+Current goal: retain BACKLOG-136 as a closed infrastructure repair and keep Task `.3` separate until it is explicitly resumed.
 
-Active phase: `janus-git-governance`; `NEEDS_INFO` (explicit Git approval required).
+Active phase: `janus-git-governance`; `PASS`.
 
 Last Codex work:
 
-- verified `master` and the bound BACKLOG-136 change set only
-- verified configured `backup` and `origin` remotes
-- prepared no stage, commit, push, merge, tag or `codex-sync` action
+- created the one targeted BACKLOG-136 delivery commit with the validated implementation and closeout evidence
+- pushed `master` to `backup/master`
+- published CURRENT_STATE through the dedicated `origin/codex-sync` channel; unrelated parked worktree changes were auto-stashed and restored by the sync script
 
 Changed files:
 
 - `documentation/ai/CURRENT_STATE.md`
-- `documentation/codex/SKILL_USAGE_LOG.md`
 
 Tests / validation performed:
 
-- bound-path Git status: BACKLOG-136 implementation, evidence and closeout artifacts are present and uncommitted
-- prior final audit and marker-scoped documentation validation remain PASS
+- commit `68ed4f1e8`: created successfully after `git diff --cached --check` PASS
+- `backup/master`: push PASS
+- `origin/codex-sync`: CURRENT_STATE sync PASS
 
 Open risks:
 
-- bare `ok` is not authorization for Git mutation; the delivery remains only in the local worktree
-- no commit, push or `origin/codex-sync` update occurred; remote state may not contain this snapshot
+- unrelated parked worktree changes remain intentionally outside this commit
+- Task `.3` remains independently incomplete
 
-Next recommended step for ChatGPT: do not assume a remote checkpoint until explicit Git approval is given and completed.
+Next recommended step for ChatGPT: use `origin/codex-sync` for the current project snapshot and treat BACKLOG-136 as closed.
 
-Next recommended step for Codex: if the operator sends `commit: YES`, stage only the listed BACKLOG-136 paths, run cached diff validation and create one evidence-backed commit; `push: YES` and `sync: YES` remain separate approvals.
+Next recommended step for Codex: no Git action is pending for BACKLOG-136; resume Task `.3` only through its separate bound pipeline.
 
-Last updated: `2026-08-02 17:11 +02:00`.
+Last updated: `2026-08-02 17:14 +02:00`.
 
 ## Current Snapshot Update
 
