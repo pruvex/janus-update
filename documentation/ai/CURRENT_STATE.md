@@ -2,6 +2,1013 @@
 
 ## Current Snapshot Update
 
+As of `2026-08-02 17:11 +02:00`, the Git governance check recommends one bounded BACKLOG-136 delivery commit on `master`; no Git mutation has been authorized or performed.
+
+Current goal: retain the validated BACKLOG-136 evidence until the operator explicitly chooses whether to create the proposed checkpoint.
+
+Active phase: `janus-git-governance`; `NEEDS_INFO` (explicit Git approval required).
+
+Last Codex work:
+
+- verified `master` and the bound BACKLOG-136 change set only
+- verified configured `backup` and `origin` remotes
+- prepared no stage, commit, push, merge, tag or `codex-sync` action
+
+Changed files:
+
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+
+- bound-path Git status: BACKLOG-136 implementation, evidence and closeout artifacts are present and uncommitted
+- prior final audit and marker-scoped documentation validation remain PASS
+
+Open risks:
+
+- bare `ok` is not authorization for Git mutation; the delivery remains only in the local worktree
+- no commit, push or `origin/codex-sync` update occurred; remote state may not contain this snapshot
+
+Next recommended step for ChatGPT: do not assume a remote checkpoint until explicit Git approval is given and completed.
+
+Next recommended step for Codex: if the operator sends `commit: YES`, stage only the listed BACKLOG-136 paths, run cached diff validation and create one evidence-backed commit; `push: YES` and `sync: YES` remain separate approvals.
+
+Last updated: `2026-08-02 17:11 +02:00`.
+
+## Current Snapshot Update
+
+As of `2026-08-02 17:08 +02:00`, BACKLOG-136 is documentation-closed as `DONE` after final re-audit `PASS WITH FIXES`; the Backlog entry, dashboard snapshot, completion handoff and compact audit package are synchronized.
+
+Current goal: preserve the repaired Cursor worker contract as a completed infrastructure slice and return Task `.3` to its independent execution gate only when separately requested.
+
+Active phase: `janus-documentation-update`; `PASS` with documented repository-wide validator limitations outside BACKLOG-136.
+
+Last Codex work:
+
+- moved BACKLOG-136 exactly once to the `DONE` section with normalized completion, final-audit and validation-evidence fields
+- refreshed `janus-dashboard/data/backlog.snapshot.json` (`total=99`, `active=16`, `done=83`, `routing_missing=0`)
+- refreshed the compact audit-package execution snapshot and appended the task completion trail
+- recorded the marker-scoped documentation validation and explicit skips for obsolete/untracked global documentation targets
+
+Changed files:
+
+- `documentation/backlog/BACKLOG.md`
+- `janus-dashboard/data/backlog.snapshot.json`
+- `documentation/tasks/backlog_BACKLOG-136_cursor_full_slice_worker_contract.md`
+- `documentation/tasks/backlog_BACKLOG-136_cursor_full_slice_worker_contract_AUDIT_PACKAGE.md`
+- `documentation/tasks/backlog_BACKLOG-136_cursor_full_slice_worker_contract_documentation_update.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Tests / validation performed:
+
+- BACKLOG-136 has no own errors or warnings in the Backlog validator; global validation remains failed only by pre-existing unrelated duplicate/legacy entries
+- dashboard snapshot sync: PASS (`total=99`, `active=16`, `done=83`, `routing_missing=0`)
+- marker-scoped documentation validator and `git diff --check`: PASS
+
+Open risks:
+
+- the repository-wide Backlog validator remains blocked by pre-existing entries, including duplicates for BACKLOG-127/126/125; this is outside BACKLOG-136
+- the default documentation validator targets several absent legacy paths and is not a valid repo-wide closeout gate in this checkout
+- Task `.3` remains independent: its product implementation, E2E evidence, audit and Clean-Copy retirement are not complete
+- no commit, push or `origin/codex-sync` update occurred; remote state may not contain this snapshot
+
+Next recommended step for ChatGPT: treat BACKLOG-136 as closed; do not infer Task `.3` completion from it.
+
+Next recommended step for Codex: on explicit approval, use `janus-git-governance` for a bounded checkpoint decision; otherwise retain the current uncommitted evidence.
+
+Last updated: `2026-08-02 17:08 +02:00`.
+
+## Current Snapshot Update
+
+As of `2026-08-02 17:00 +02:00`, the independent BACKLOG-136 final re-audit is `PASS WITH FIXES`; only a nonblocking embedded audit-package snapshot freshness update remains for documentation sync.
+
+Current goal: close BACKLOG-136 documentation cleanly, then return the preserved Task `.3` Cursor handoff to its separate execution gate.
+
+Active phase: `janus-final-audit`; `HANDOFF` to `janus-documentation-update`.
+
+Last Codex work:
+
+- independently reran the bound 74-test suite, syntax check, no-live Task `.3` dry-run and adversarial Playwright command probes
+- confirmed the original extra-target/external-config fail-open is fixed without widening product/provider/Git scope
+- recorded a `PASS WITH FIXES` re-audit; the sole fix is documentation freshness for an embedded execution-result snapshot in the compact audit package
+
+Changed files:
+
+- `documentation/tasks/backlog_BACKLOG-136_cursor_full_slice_worker_contract_final_reaudit.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Tests / validation performed:
+
+- `74` focused tests: PASS
+- exact bound Playwright command: PASS
+- extra parent/repository targets and external config: correctly rejected
+- Task `.3` no-live dry-run: PASS
+- syntax and scoped diff checks: PASS
+
+Open risks:
+
+- documentation sync must refresh the embedded audit-package execution snapshot before final closure
+- Task `.3` remains independent: its product implementation, E2E evidence, audit and Clean-Copy retirement are not complete
+- no commit, push or `origin/codex-sync` update occurred; remote state may not contain this snapshot
+
+Next recommended step for ChatGPT: consume the documentation-update result and then treat BACKLOG-136 as closed only if its Backlog/status artifacts are consistent.
+
+Next recommended step for Codex: run `janus-documentation-update` with 5.6 Terra/medium for this bounded documentation closeout.
+
+Last updated: `2026-08-02 17:00 +02:00`.
+
+## Current Snapshot Update
+
+As of `2026-08-02 16:56 +02:00`, the single `BACKLOG-136` final-audit blocker has a bounded correction and updated compact re-audit package; independent final re-audit is next.
+
+Current goal: independently verify that the Cursor full-slice contract is now fail-closed for both authorized absent paths and offline Playwright commands.
+
+Active phase: `janus-executioner`; `HANDOFF` to `janus-final-audit`.
+
+Last Codex work:
+
+- restricted the Playwright exemption to one exact bound spec plus only `--headed`, `--workers=1` and `--reporter=list`
+- moved `authorized_new_paths` into `baseline`, rejected top-level declarations, and added immutable-result evidence coverage
+- proved locally that extra parent/repository test targets and external `--config` are blocked
+- refreshed the existing BACKLOG-136 audit package with the precise re-audit delta
+
+Changed files:
+
+- `documentation/codex/model-routing/scripts/janus_worker_contract.py`
+- `documentation/codex/model-routing/scripts/janus_cursor_worker_runner.py`
+- `documentation/codex/model-routing/tests/test_janus_worker_contract.py`
+- `documentation/codex/model-routing/tests/test_janus_cursor_worker_runner.py`
+- `development/openrouter-skill-tests/janus-executioner/budget_control_task3_clean_execution_input_2026-07-24.json`
+- `documentation/tasks/backlog_BACKLOG-136_cursor_full_slice_worker_contract_execution_result.md`
+- `documentation/tasks/backlog_BACKLOG-136_cursor_full_slice_worker_contract_AUDIT_PACKAGE.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Tests / validation performed:
+
+- targeted worker-contract, Cursor-runner and delegate suite: `74 PASS`
+- Python syntax compilation: PASS
+- adversarial command probes: bound command PASS; extra parent/repository targets and external config each FAIL as required
+- Task `.3` no-live dry-run: PASS (`CURSOR_AUTO_FULL_SLICE_WORKER_CONTRACT_READY`)
+- execution-result validator and scoped `git diff --check`: PASS
+
+Open risks:
+
+- the final re-audit is still required before BACKLOG-136 can close and before Task `.3` returns to the Cursor gate
+- Task `.3` E2E determinism and product behavior remain a separate scope
+- no commit, push or `origin/codex-sync` update occurred; remote state may not contain this snapshot
+
+Next recommended step for ChatGPT: load only the refreshed BACKLOG-136 audit package and re-audit its blocker delta.
+
+Next recommended step for Codex: run `janus-final-audit` with 5.6 Sol/high if available; otherwise 5.6 Terra/high and record the fallback.
+
+Last updated: `2026-08-02 16:56 +02:00`.
+
+## Current Snapshot Update
+
+As of `2026-08-02 16:46 +02:00`, the independent `BACKLOG-136` final audit is `BLOCKED` by a reproducible Playwright command-scope gap.
+
+Current goal: close the fail-open edge in the Cursor full-slice offline Playwright exception without widening BACKLOG-136 or touching Task `.3` product code.
+
+Active phase: `janus-final-audit`; `BLOCKED`, with a bounded handoff to `janus-executioner`.
+
+Last Codex work:
+
+- independently audited the compact BACKLOG-136 package and scoped implementation diff
+- proved locally that an allowed Playwright spec plus an extra parent target, extra repo target, or external config all incorrectly pass the current contract
+- found that the execution-result claim about immutable `authorized_new_paths` evidence is not backed by the current top-level package schema or a result-validation regression
+- saved the exact blocker and minimum re-audit delta in the final-audit report
+
+Changed files:
+
+- `documentation/tasks/backlog_BACKLOG-136_cursor_full_slice_worker_contract_final_audit.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Tests / validation performed:
+
+- audit-package completeness and identity review: PASS
+- independent pure-Python contract probes: bound-only PASS; extra parent target, extra repo target and external config incorrectly PASS, establishing the blocker
+- targeted `WHAT_I_LEARNED` search: completed; external full-slice baseline/test-inventory tripwire applies
+
+Open risks:
+
+- BACKLOG-136 must not close and Task `.3` must not resume through this contract until the blocker-focused correction and re-audit pass
+- no live Cursor, Playwright/browser, provider, Git or release action was executed
+- no commit, push or `origin/codex-sync` update occurred; remote state may not contain this audit
+
+Next recommended step for ChatGPT: review only the final-audit blocker and the eventual compact re-audit delta.
+
+Next recommended step for Codex: use `janus-executioner` with 5.6 Terra/high for the bounded command-grammar and baseline-evidence correction, then update the existing audit package and re-audit the delta.
+
+Last updated: `2026-08-02 16:46 +02:00`.
+
+## Current Snapshot Update
+
+As of `2026-08-02 16:42 +02:00`, the compact independent-review package for `BACKLOG-136` has been created after implementation evidence passed.
+
+Current goal: complete the independent audit of the bounded Cursor worker-contract repair, then unblock the already-preserved Task `.3` handoff if the audit passes.
+
+Active phase: `codex-audit-package-builder`; `HANDOFF` to `janus-final-audit`.
+
+Last Codex work:
+
+- built `backlog_BACKLOG-136_cursor_full_slice_worker_contract_AUDIT_PACKAGE.md` from the bound Backlog task, precheck, execution result, Task `.3` package and five-file diff boundary
+- kept the audit source-of-truth compact: no development chat history, product code or unrelated dirty-worktree changes were included
+
+Changed files:
+
+- `documentation/tasks/backlog_BACKLOG-136_cursor_full_slice_worker_contract_AUDIT_PACKAGE.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Tests / validation performed:
+
+- audit-package builder completed: PASS
+- execution-result validator: PASS
+- prior execution evidence remains binding: `73` targeted tests PASS, syntax compilation PASS, Task `.3` no-live dry-run PASS, scoped diff check PASS
+
+Open risks:
+
+- independent final audit remains required before BACKLOG-136 can close
+- Task `.3` implementation, product validation, audit and Clean-Copy retirement remain separate future gates
+- no commit, push or `origin/codex-sync` update occurred; remote state may not contain this snapshot
+
+Next recommended step for ChatGPT: in a fresh final-audit context, load only `documentation/tasks/backlog_BACKLOG-136_cursor_full_slice_worker_contract_AUDIT_PACKAGE.md`.
+
+Next recommended step for Codex: run `janus-final-audit` with 5.6 Sol/high if actually supported; otherwise 5.6 Terra/high and record `SOL_UNAVAILABLE_FOR_CHATGPT_CODEX_ACCOUNT`.
+
+Last updated: `2026-08-02 16:42 +02:00`.
+
+## Current Snapshot Update
+
+As of `2026-08-02 16:40 +02:00`, the bounded `BACKLOG-136` Cursor full-slice worker-contract repair has completed implementation and deterministic verification; it is ready for a compact audit package.
+
+Current goal: unblock the preserved Budget-Control Task `.3` Cursor full-slice handoff without widening its product scope or allowing live provider execution.
+
+Active phase: `janus-executioner`; `HANDOFF` to `codex-audit-package-builder`.
+
+Last Codex work:
+
+- added a fail-closed `authorized_new_paths` contract for allowlisted files that were absent at baseline
+- retained SHA-256 attribution for every non-new allowlist path and made the absent-path declaration immutable in result evidence
+- allowed only explicitly attested, direct offline Playwright spec commands while preserving live-provider, browser-navigation, Git, migration and credential blocks
+- confirmed the real Task `.3` package gate as `CURSOR_AUTO_FULL_SLICE_WORKER_CONTRACT_READY` in dry-run mode only
+
+Changed files:
+
+- `documentation/codex/model-routing/scripts/janus_worker_contract.py`
+- `documentation/codex/model-routing/scripts/janus_cursor_worker_runner.py`
+- `documentation/codex/model-routing/tests/test_janus_worker_contract.py`
+- `documentation/codex/model-routing/tests/test_janus_cursor_worker_runner.py`
+- `development/openrouter-skill-tests/janus-executioner/budget_control_task3_clean_execution_input_2026-07-24.json`
+- `documentation/tasks/backlog_BACKLOG-136_cursor_full_slice_worker_contract_execution_result.md`
+- `documentation/ai/CURRENT_STATE.md`
+
+Tests / validation performed:
+
+- targeted worker-contract, Cursor-runner and delegate suite: `73 PASS`
+- Python syntax compilation: PASS
+- bound Task `.3` no-live delegation dry-run: PASS (`CURSOR_AUTO_FULL_SLICE_WORKER_CONTRACT_READY`)
+- scoped `git diff --check`: PASS
+
+Open risks:
+
+- Task `.3` still needs its separate implementation, product validation, audit and Clean-Copy retirement gates
+- `offline: true` is an explicit contract attestation; the Task `.3` E2E must still prove deterministic stubbing
+- no commit, push or `origin/codex-sync` update occurred; remote state may not contain this snapshot
+
+Next recommended step for ChatGPT: load the compact BACKLOG-136 audit package once created, then perform the bound final audit.
+
+Next recommended step for Codex: run `codex-audit-package-builder`, then `janus-final-audit` with 5.6 Terra/high unless the current environment can actually start 5.6 Sol.
+
+Last updated: `2026-08-02 16:40 +02:00`.
+
+## Current Snapshot Update
+
+As of `2026-07-25 01:46 +02:00`, the operator-approved legacy CascadeGehirn/Supervisor root files were moved to the Windows Recycle Bin.
+
+Current goal: keep only active Janus workspaces and explicitly approved retained projects under `C:\KI`.
+
+Active phase: `janus-health-check`; `PASS`.
+
+Last Codex work:
+
+- verified the five exact legacy file targets and that no process was using them
+- moved `.cascade-laune.json`, `dep_guard.log`, root `package-lock.json`, `stabilisierungsautomat.log` and `Supervisor.md` to the Windows Recycle Bin
+- verified all five original file paths are absent
+
+Changed files:
+
+- external cleanup only: five legacy-file Recycle-Bin entries
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+
+- exact-target and active-process checks: PASS
+- post-cleanup path-absence checks: PASS
+
+Open risks:
+
+- the removed files remain recoverable from the Windows Recycle Bin until it is emptied
+- legacy Task `.2` and `.3` Clean-Copies remain until their report, integration and validation retirement gates pass
+- no commit, push or `origin/codex-sync` update occurred; remote state may not contain this snapshot
+
+Next recommended step for ChatGPT: no action needed; resume Janus implementation only when the operator directs it.
+
+Next recommended step for Codex: resume `BACKLOG-136` when directed, with 5.6 Terra/high.
+
+Last updated: `2026-07-25 01:46 +02:00`.
+
+## Current Snapshot Update
+
+As of `2026-07-25 01:44 +02:00`, five legacy root files under `C:\KI` were classified as unrelated CascadeGehirn/Supervisor artifacts and safe cleanup candidates pending operator approval.
+
+Current goal: keep only active Janus workspaces and explicitly approved retained projects under `C:\KI`.
+
+Active phase: `janus-health-check`; `PASS`.
+
+Last Codex work:
+
+- inspected `.cascade-laune.json`, `dep_guard.log`, root `package-lock.json`, `stabilisierungsautomat.log` and `Supervisor.md`
+- confirmed the logs and Supervisor document belong to the older CascadeGehirn/Supervisor setup, while the root lockfile is an empty `KI` lockfile
+- confirmed no Janus governance, documentation or configuration reference to any of the five files
+
+Changed files:
+
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+
+- file content, age and root-project association review: PASS
+- Janus reference search: PASS (0 references)
+
+Open risks:
+
+- the five files have not yet been removed; they remain pending explicit operator cleanup approval
+- legacy Task `.2` and `.3` Clean-Copies remain until their report, integration and validation retirement gates pass
+- no commit, push or `origin/codex-sync` update occurred; remote state may not contain this snapshot
+
+Next recommended step for ChatGPT: no action needed; approve or reject moving the five identified legacy files to the Windows Recycle Bin.
+
+Next recommended step for Codex: resume `BACKLOG-136` when directed, with 5.6 Terra/high.
+
+Last updated: `2026-07-25 01:44 +02:00`.
+
+## Current Snapshot Update
+
+As of `2026-07-25 01:42 +02:00`, the operator-approved, unreferenced legacy MCP folders were moved to the Windows Recycle Bin.
+
+Current goal: keep only active Janus workspaces and explicitly approved retained projects under `C:\KI`.
+
+Active phase: `janus-health-check`; `PASS`.
+
+Last Codex work:
+
+- verified the three exact MCP cleanup targets and that no process was using them
+- moved `C:\KI\modules-meta`, `C:\KI\MCP_SOURCE` and `C:\KI\mcp-database-server` to the Windows Recycle Bin
+- verified all three original paths are absent
+
+Changed files:
+
+- external cleanup only: three MCP Recycle-Bin entries
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+
+- exact-target and active-process checks: PASS
+- post-cleanup path-absence checks: PASS
+
+Open risks:
+
+- the removed folders remain recoverable from the Windows Recycle Bin until it is emptied
+- legacy Task `.2` and `.3` Clean-Copies remain until their report, integration and validation retirement gates pass
+- no commit, push or `origin/codex-sync` update occurred; remote state may not contain this snapshot
+
+Next recommended step for ChatGPT: no action needed; resume Janus implementation only when the operator directs it.
+
+Next recommended step for Codex: resume `BACKLOG-136` when directed, with 5.6 Terra/high.
+
+Last updated: `2026-07-25 01:42 +02:00`.
+
+## Current Snapshot Update
+
+As of `2026-07-25 01:39 +02:00`, the approved future Clean-Copy lifecycle was made binding; existing Task `.2` and `.3` external Clean-Copies remain legacy exceptions until their individual retirement gates pass.
+
+Current goal: keep future Janus task isolation inside the main project tree and retire each Clean-Copy deterministically after review.
+
+Active phase: `janus-documentation-update`; `PASS`.
+
+Last Codex work:
+
+- reserved the ignored internal path `C:\KI\Janus-Projekt\.janus\clean-copies\<TASK-ID>` for all new Cursor Clean-Copies
+- prohibited new external sibling `Janus-Projekt__task...` workspaces in binding Janus governance
+- required a retirement gate that preserves main-repo evidence, resolves the patch, completes validation, confirms no process and then moves the clone to the Recycle Bin
+
+Changed files:
+
+- `.gitignore`
+- `AGENTS.md`
+- `documentation/codex/CODEX_WORKFLOW_PLAYBOOK.md`
+- `documentation/codex/skills/janus-executioner/SKILL.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+
+- `git check-ignore --no-index` for the internal Clean-Copy path: PASS
+- contract-presence search across binding governance, playbook and Executioner source: PASS
+- scoped `git diff --check`: PASS
+
+Open risks:
+
+- legacy Task `.2` and `.3` external Clean-Copies remain until their report, integration and validation retirement gates pass
+- no commit, push or `origin/codex-sync` update occurred; remote state may not contain this snapshot
+
+Next recommended step for ChatGPT: treat external sibling Clean-Copies as legacy-only; create the next Clean-Copy only under `.janus\clean-copies\<TASK-ID>`.
+
+Next recommended step for Codex: resume `BACKLOG-136` when directed, with 5.6 Terra/high.
+
+Last updated: `2026-07-25 01:39 +02:00`.
+
+## Current Snapshot Update
+
+As of `2026-07-25 01:31 +02:00`, the operator-approved redundant M6 transport workspace was moved to the Windows Recycle Bin after Git evidence confirmed no unique Janus code remained outside `master`.
+
+Current goal: continue Janus only from `C:\KI\Janus-Projekt` and its active bounded Clean-Copies.
+
+Active phase: `janus-git-governance`; `PASS`.
+
+Last Codex work:
+
+- verified the exact M6 workspace path and that no process was using it
+- moved only `C:\KI\Janus-M6-Transport-Prep` to the Windows Recycle Bin
+- verified the M6 path is absent and `C:\KI\Janus-Projekt` remains present
+
+Changed files:
+
+- external cleanup only: `C:\KI\Janus-M6-Transport-Prep` Recycle-Bin entry
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+
+- prior branch, patch-equivalence, commit-tree and local-change analysis: PASS
+- exact-target and active-process checks: PASS
+- post-cleanup M6 absence and main-repository presence checks: PASS
+
+Open risks:
+
+- the removed workspace remains recoverable from the Windows Recycle Bin until it is emptied; its unique history was limited to an old CURRENT_STATE variant and local runtime telemetry
+- active Task `.2` and `.3` Clean-Copies remain untouched and must not be deleted
+- no commit, push or `origin/codex-sync` update occurred; remote state may not contain this snapshot
+
+Next recommended step for ChatGPT: no action needed; return to `BACKLOG-136` only when the operator resumes Janus implementation.
+
+Next recommended step for Codex: resume `BACKLOG-136` when directed, with 5.6 Terra/high.
+
+Last updated: `2026-07-25 01:31 +02:00`.
+
+## Current Snapshot Update
+
+As of `2026-07-25 01:28 +02:00`, Git analysis determined that the separate M6 transport workspace has no unique Janus product, test or configuration code beyond the equivalent M6 merge already on `master`.
+
+Current goal: retain only integrated Janus workspaces; the M6 transport directory may be removed after the operator accepts loss of one historical snapshot delta and local runtime telemetry.
+
+Active phase: `janus-git-governance`; `HANDOFF`.
+
+Last Codex work:
+
+- compared `codex/m6-master-integration` commit `7d425730f` with `master` M6 integration commit `551b3c53b`
+- confirmed identical parent commits, integration subject and all product/test/configuration changes
+- isolated the only committed tree delta to eight lines in historical `documentation/ai/CURRENT_STATE.md`; the only uncommitted file is eleven runtime-log rows in `documentation/logs/cost-tracking-debug.jsonl`
+
+Changed files:
+
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+
+- branch ancestry and unique-commit inspection: PASS
+- commit patch-equivalence comparison: PASS
+- commit-tree delta inspection: PASS (only historical CURRENT_STATE snapshot)
+- local-change inspection: PASS (runtime telemetry only)
+
+Open risks:
+
+- `7d425730f` is not present on the configured remotes, but it contains no unique Janus code; deletion would discard only its historical CURRENT_STATE variant and local telemetry unless the Recycle Bin is retained
+- active Task `.2` and `.3` Clean-Copies remain untouched and must not be deleted
+- no commit, push or `origin/codex-sync` update occurred; remote state may not contain this snapshot
+
+Next recommended step for ChatGPT: approve or reject moving `C:\KI\Janus-M6-Transport-Prep` to the Windows Recycle Bin; no merge is required.
+
+Next recommended step for Codex: if approved, verify no M6 process is active and move only that exact directory to the Recycle Bin; otherwise resume `BACKLOG-136` when directed.
+
+Last updated: `2026-07-25 01:28 +02:00`.
+
+## Current Snapshot Update
+
+As of `2026-07-25 00:52 +02:00`, the operator-approved, unreferenced ComfyUI checkout `C:\KI\Janus-Image-Engine` was moved to the Windows Recycle Bin.
+
+Current goal: keep only active Janus workspaces and explicitly approved retained projects under `C:\KI`.
+
+Active phase: `janus-health-check`; `PASS`.
+
+Last Codex work:
+
+- confirmed the exact Image-Engine directory and that no process was using it
+- moved only `C:\KI\Janus-Image-Engine` to the Windows Recycle Bin
+- verified the Image-Engine path is absent and the separate CPU directory remains present
+
+Changed files:
+
+- external cleanup only: `C:\KI\Janus-Image-Engine` Recycle-Bin entry
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+
+- exact-target and active-process checks: PASS
+- post-cleanup Image-Engine absence and CPU-directory presence checks: PASS
+
+Open risks:
+
+- the removed checkout remains recoverable from the Windows Recycle Bin until it is emptied
+- active Task `.2` and `.3` Clean-Copies and the M6 transport workspace remain untouched and must not be deleted
+- no commit, push or `origin/codex-sync` update occurred; remote state may not contain this snapshot
+
+Next recommended step for ChatGPT: no action needed; separately decide whether the unused CPU Image-Engine wrapper should also be removed.
+
+Next recommended step for Codex: resume `BACKLOG-136` when directed, with 5.6 Terra/high.
+
+Last updated: `2026-07-25 00:52 +02:00`.
+
+## Current Snapshot Update
+
+As of `2026-07-25 00:51 +02:00`, the operator-approved, unreferenced legacy project `C:\KI\APIWeaver` was moved to the Windows Recycle Bin.
+
+Current goal: keep only active Janus workspaces and explicitly approved retained projects under `C:\KI`.
+
+Active phase: `janus-health-check`; `PASS`.
+
+Last Codex work:
+
+- confirmed no Janus Backlog, active Spec, project-status or documentation reference to APIWeaver
+- verified the exact APIWeaver path and no process using it
+- moved only `C:\KI\APIWeaver` to the Windows Recycle Bin and verified its original path is absent
+
+Changed files:
+
+- external cleanup only: `C:\KI\APIWeaver` Recycle-Bin entry
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+
+- Janus roadmap/reference search: PASS (0 APIWeaver references)
+- exact-target and active-process checks: PASS
+- post-cleanup absence check: PASS
+
+Open risks:
+
+- APIWeaver remains recoverable from the Windows Recycle Bin until it is emptied
+- active Task `.2` and `.3` Clean-Copies and the M6 transport workspace remain untouched and must not be deleted
+- no commit, push or `origin/codex-sync` update occurred; remote state may not contain this snapshot
+
+Next recommended step for ChatGPT: no action needed; separately decide whether old MCP projects should be retained as references or also removed.
+
+Next recommended step for Codex: resume `BACKLOG-136` when directed, with 5.6 Terra/high.
+
+Last updated: `2026-07-25 00:51 +02:00`.
+
+## Current Snapshot Update
+
+As of `2026-07-25 00:42 +02:00`, the operator-approved cleanup moved only two unused, untracked Image-Engine virtual environments to the Windows Recycle Bin.
+
+Current goal: preserve active Janus workspaces while reclaiming explicitly approved, non-versioned dependency storage.
+
+Active phase: `janus-health-check`; `PASS`.
+
+Last Codex work:
+
+- verified both exact `venv` targets and that no Image-Engine process was active
+- moved `C:\KI\Janus-Image-Engine\venv` and `C:\KI\Janus-Image-Engine-CPU\venv` to the Windows Recycle Bin
+- verified both Image-Engine project roots remain and both targeted virtual-environment paths are absent
+
+Changed files:
+
+- external cleanup only: two Recycle-Bin entries (approximately 6.12 GB reclaimable after the Recycle Bin is emptied)
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+
+- exact-target, directory and `pyvenv.cfg` checks: PASS
+- active-process check: PASS (no Image-Engine process)
+- post-cleanup root-presence and target-absence checks: PASS
+
+Open risks:
+
+- the removed virtual environments are recoverable from the Windows Recycle Bin until it is emptied
+- active Task `.2` and `.3` Clean-Copies and the M6 transport workspace remain untouched and must not be deleted
+- no commit, push or `origin/codex-sync` update occurred; remote state may not contain this snapshot
+
+Next recommended step for ChatGPT: no action needed; decide separately whether obsolete MCP projects should be archived or removed.
+
+Next recommended step for Codex: resume `BACKLOG-136` when directed, with 5.6 Terra/high.
+
+Last updated: `2026-07-25 00:42 +02:00`.
+
+## Current Snapshot Update
+
+As of `2026-07-25 00:40 +02:00`, a read-only `C:\KI` cleanup inventory classified Janus-critical workspaces and low-risk dependency cleanup candidates.
+
+Current goal: preserve active Janus workspaces while reclaiming only explicitly approved, non-versioned dependencies or obsolete external projects.
+
+Active phase: `janus-health-check`; `PASS`.
+
+Last Codex work:
+
+- inventoried immediate `C:\KI` directories, size, age, project markers and Git state without deleting or moving anything
+- confirmed the active Task `.3` Clean-Copy and the M6 transport integration workspace remain required
+- identified 6.12 GB of untracked virtual environments under two unreferenced, March 2026 image-engine folders as separately removable after explicit approval
+
+Changed files:
+
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+
+- `C:\KI` directory inventory and size scan: PASS
+- Janus artifact-reference and Git-state checks: PASS
+- virtual-environment tracked-file checks: PASS (0 tracked files)
+
+Open risks:
+
+- Task `.2` Clean-Copy has 19 uncommitted entries and a blocked/handed-off final-audit state; do not delete
+- Task `.3` Clean-Copy is the bound empty baseline for the pending `BACKLOG-136` gate; do not delete
+- M6 transport workspace is a referenced integration branch with one runtime-log change; do not delete
+- no commit, push or `origin/codex-sync` update occurred; remote state may not contain this snapshot
+
+Next recommended step for ChatGPT: decide whether to remove only the two identified image-engine virtual environments, or separately approve archive/delete review for the old MCP projects.
+
+Next recommended step for Codex: if approved, run a bounded, explicit-path cleanup with 5.6 Terra/low; otherwise resume `BACKLOG-136` when directed.
+
+Last updated: `2026-07-25 00:40 +02:00`.
+
+## Current Snapshot Update
+
+As of `2026-07-25 00:17 +02:00`, the approved Cursor Workspace Contract was documented and handed off without changing Janus product logic or Git state.
+
+Current goal: keep `C:\KI\Janus-Projekt` as the standing coordination home while using explicit Clean-Copies only for bounded Cursor execution.
+
+Active phase: `janus-documentation-update`; `PASS`.
+
+Last Codex work:
+
+- added the binding Cursor Workspace Contract to the Codex workflow playbook and versioned Executioner source
+- added the contract to the active, still-blocked Budget-Control Task `.3` Cursor handoff
+- created a Cursor acknowledgement handoff that records the contract and the `BACKLOG-136` gate
+
+Changed files:
+
+- `documentation/codex/CODEX_WORKFLOW_PLAYBOOK.md`
+- `documentation/codex/skills/janus-executioner/SKILL.md`
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH-BUDGET-CONTROL.3_cursor_auto_handoff.md`
+- `documentation/tasks/HANDOFF_CURSOR_WORKSPACE_CONTRACT_ACK_2026-07-25.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+
+- scoped `git diff --check`: PASS
+- contract-presence search across playbook, executioner source, active handoff and Cursor acknowledgement: PASS
+
+Open risks:
+
+- Task `.3` remains unstarted until `BACKLOG-136` repairs the Cursor worker-contract blockers
+- existing mixed root worktree remains intentionally untouched
+- no commit, push or `origin/codex-sync` update occurred; remote state may not contain this snapshot
+
+Next recommended step for ChatGPT: consume the Cursor acknowledgement handoff only as process context; do not start Task `.3`.
+
+Next recommended step for Codex: resume the already-approved `BACKLOG-136` execution path when directed, with 5.6 Terra/high.
+
+Last updated: `2026-07-25 00:17 +02:00`.
+
+## Current Snapshot Update
+
+As of `2026-07-24 23:53 +02:00`, a bounded DAILY health check confirmed that the Codex local-session deletion did not affect Janus repository content.
+
+Current goal: preserve the prechecked BACKLOG-136 execution path; no VM rollback is required for Janus.
+
+Active phase: `janus-health-check`; `PASS`.
+
+Last Codex work:
+
+- ran the read-only DAILY health snapshot after the local Codex chat-session deletion
+- confirmed all required Janus core artifacts, Backlog and dashboard snapshot exist
+- confirmed `C:\Users\pruve\.codex\sessions` and `archived_sessions` contain no Git-tracked Janus files, with no deleted or missing tracked worktree files
+
+Changed files:
+
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+
+- DAILY health snapshot: PASS
+- core-artifact presence check: PASS
+- Git tracked-session and deleted-file checks: PASS (0 / 0 / 0)
+
+Open risks:
+
+- existing mixed worktree remains intentionally dirty (149 entries); it was pre-existing and is unrelated to the removed Codex chats
+- global Backlog structural hygiene remains independently blocked by legacy entries
+- no commit, push or `origin/codex-sync` update occurred; remote state may not contain this snapshot
+
+Next recommended step for ChatGPT: continue from the current repository artifacts; do not assume the deleted Codex chats are recoverable remotely.
+
+Next recommended step for Codex: resume only the already-approved BACKLOG-136 execution path when directed, with 5.6 Terra/high.
+
+Last updated: `2026-07-24 23:53 +02:00`.
+
+## Current Snapshot Update
+
+As of `2026-07-24 20:12 +02:00`, the strict preimplementation check for `TASK-BACKLOG-136-CURSOR-FULL-SLICE-WORKER-CONTRACT` passed.
+
+Current goal: execute the isolated Cursor worker-contract repair before resuming Task `.3`.
+
+Active phase: `janus-preimplementation-check`; `PASS`.
+
+Last Codex work:
+
+- validated the selected BACKLOG-136 handoff against the worker-contract sources and focused regression-test owners
+- confirmed a fail-closed repair boundary: explicit authorized absent baseline paths and task-owned offline Playwright only; live-provider, browser navigation, `--execute-live`, credential and Git actions remain forbidden
+- emitted and validated the canonical preimplementation artifact; no code, tests or Task `.3` product files were changed
+
+Changed files:
+
+- `documentation/backlog/BACKLOG.md`
+- `documentation/tasks/backlog_BACKLOG-136_cursor_full_slice_worker_contract.md`
+- `documentation/tasks/backlog_BACKLOG-136_cursor_full_slice_worker_contract_preimplementation_check.md`
+- `janus-dashboard/data/backlog.snapshot.json`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+
+- local delegation gate: PASS (`LOCAL_CODEX_PATH_SELECTED`)
+- precheck artifact validator: PASS
+- scoped `git diff --check`: PASS
+
+Open risks:
+
+- global Backlog structural hygiene remains independently blocked by legacy entries
+- Task `.3` must remain unstarted until BACKLOG-136 is implemented and its representative package passes the dry-run gate
+- no commit, push or `origin/codex-sync` update occurred; remote state may not contain this snapshot
+
+Next recommended step for ChatGPT: confirm the bounded BACKLOG-136 execution; do not assume Task `.3` has started.
+
+Next recommended step for Codex: run `janus-executioner` for `TASK-BACKLOG-136-CURSOR-FULL-SLICE-WORKER-CONTRACT` with 5.6 Terra/high.
+
+Last updated: `2026-07-24 20:12 +02:00`.
+
+## Current Snapshot Update
+
+As of `2026-07-24 20:05 +02:00`, `BACKLOG-136` was delta-prioritized as HIGH / MEDIUM / M / READY / DO NOW.
+
+Current goal: create a selected handoff for the worker-contract repair before resuming Task `.3` execution.
+
+Active phase: `janus-backlog-prioritization`; `HANDOFF`.
+
+Last Codex work:
+
+- reviewed only the new Cursor worker-contract item and persisted its evaluation cache
+- selected the bounded contract repair as the next item because it directly unblocks the prechecked Task `.3` while keeping product scope untouched
+
+Changed files:
+
+- `documentation/backlog/BACKLOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+
+- local delegation gate: Codex path selected; no external delegation
+- BACKLOG-136 DELTA evaluation and required cache fields: PASS
+- scoped `git diff --check`: pending final intake/prioritization closeout check
+
+Open risks:
+
+- Task `.3` must not be started via the current Cursor full-slice worker until BACKLOG-136 is resolved
+- no commit, push or `origin/codex-sync` update occurred; remote state may not contain this snapshot
+
+Next recommended step for ChatGPT: approve a selected `BACKLOG-136` handoff or choose local Task `.3` execution instead.
+
+Next recommended step for Codex: run `janus-backlog-handoff` for BACKLOG-136 with 5.6 Terra/high.
+
+Last updated: `2026-07-24 20:05 +02:00`.
+
+## Current Snapshot Update
+
+As of `2026-07-24 20:04 +02:00`, the confirmed Cursor full-slice worker-contract blocker was captured as `BACKLOG-136`; Task `.3` remains prechecked but unimplemented.
+
+Current goal: prioritize and repair the Cursor worker-contract gap, or explicitly select local Task `.3` execution.
+
+Active phase: `janus-backlog-intake`; `HANDOFF`.
+
+Last Codex work:
+
+- captured the two deterministic contract defects: authorized new E2E files lack a baseline representation, and offline Playwright is falsely classified as a live-provider action
+- kept the isolated Clean-Copy intact and did not start Cursor or modify Task `.3` product scope
+
+Changed files:
+
+- `documentation/backlog/BACKLOG.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+
+- backlog required-field review: PASS
+- prior Clean-Copy HEAD/status and package JSON/diff validation remain PASS
+- Cursor full-slice package remains BLOCKED by the documented worker-contract mismatch
+
+Open risks:
+
+- Task `.3` must not be started via the current Cursor full-slice worker until BACKLOG-136 is resolved
+- no commit, push or `origin/codex-sync` update occurred; remote state may not contain this snapshot
+
+Next recommended step for ChatGPT: prioritize `BACKLOG-136` or explicitly choose local Task `.3` execution.
+
+Next recommended step for Codex: run `janus-backlog-prioritization` for `BACKLOG-136` with 5.6 Terra/low, then prepare a bounded precheck.
+
+Last updated: `2026-07-24 20:04 +02:00`.
+
+## Current Snapshot Update
+
+As of `2026-07-24 19:28 +02:00`, the requested isolated Clean-Copy for Task `.3` was created and verified at the bound `master` commit, but the current Cursor full-slice worker contract blocked live execution.
+
+Current goal: choose an approved execution path for the prechecked Task `.3` after resolving the Cursor worker-contract mismatch.
+
+Active phase: `janus-git-governance` / `janus-executioner`; `BLOCKED`.
+
+Last Codex work:
+
+- created `C:\KI\Janus-Projekt__task3_clean_baseline_20260724` from `master` at `b816d695c8a3dce51aa102e1b4456c0ab30b7fa4`
+- enabled Git long-path support only in the new clone after the initial checkout hit versioned path-length limits, then verified clean status
+- captured nine existing allowlist SHA-256 values and the authorized absent E2E baseline state
+- reran the Cursor package gate; it blocks because the worker cannot encode an authorized new file and marks Playwright as a forbidden live-provider command
+
+Changed files:
+
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH-BUDGET-CONTROL.3_clean_baseline.md`
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH-BUDGET-CONTROL.3_cursor_auto_handoff.md`
+- `development/openrouter-skill-tests/janus-executioner/budget_control_task3_clean_execution_input_2026-07-24.json`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+
+- clean clone HEAD and empty status: PASS
+- nine existing allowlist files match the bound source commit before SHA-256 capture: PASS
+- package JSON parse and scoped `git diff --check`: PASS
+- Cursor full-slice package: BLOCKED (`authorized new file` attribution and Playwright false-positive)
+
+Open risks:
+
+- do not start Cursor through the current full-slice worker; it would violate its own contract
+- the Root workspace remains mixed and must not be used as an execution workspace
+- no commit, push or `origin/codex-sync` update occurred; remote state may not contain this snapshot
+
+Next recommended step for ChatGPT: do not assume Task `.3` implementation started; review a corrected worker contract or alternate execution handoff.
+
+Next recommended step for Codex: route the worker-contract mismatch through `janus-backlog-intake` as a separate infrastructure item, or execute Task `.3` locally with 5.6 Terra/high after explicit direction.
+
+Last updated: `2026-07-24 19:28 +02:00`.
+
+## Current Snapshot Update
+
+As of `2026-07-24 19:14 +02:00`, a Cursor Auto handoff for the already prechecked Task `.3` was prepared, but no execution workspace or live Cursor run was started.
+
+Current goal: create and verify an isolated clean baseline before any Cursor execution of Task `.3`.
+
+Active phase: `janus-executioner`; `HANDOFF`.
+
+Last Codex work:
+
+- recorded a ten-file allowlist, explicit privacy/ledger invariants, bound offline checks and Codex-review report contract for Cursor
+- verified the precheck and recorded `master` baseline commit `b816d695c8a3dce51aa102e1b4456c0ab30b7fa4`
+- detected that the new Cursor full-slice worker additionally requires SHA-256 attribution from an actually created clean workspace; no workspace or live worker was created
+
+Changed files:
+
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH-BUDGET-CONTROL.3_cursor_auto_handoff.md`
+- `development/openrouter-skill-tests/janus-executioner/budget_control_task3_clean_execution_allowlist_2026-07-24.txt`
+- `development/openrouter-skill-tests/janus-executioner/budget_control_task3_clean_execution_input_2026-07-24.json`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+
+- precheck validator: PASS
+- Cursor delegation ROI: POSITIVE; Cursor Auto selected as recommended backend
+- package JSON parse and scoped `git diff --check`: PASS
+- live worker gate: BLOCKED pending real clean-baseline attribution
+
+Open risks:
+
+- the mixed Root workspace must remain untouched; execution without a verified isolated clean baseline would invalidate change attribution
+- no commit, push or `origin/codex-sync` update occurred; remote state may not contain this snapshot
+
+Next recommended step for ChatGPT: review Cursor's report only after the Clean-Copy baseline and Cursor run exist.
+
+Next recommended step for Codex: if explicitly authorized, use `janus-git-governance` to create the isolated Clean-Copy baseline, then revalidate the Cursor package before starting Cursor.
+
+Last updated: `2026-07-24 19:14 +02:00`.
+
+## Current Snapshot Update
+
+As of `2026-07-24 18:58 +02:00`, the strict preimplementation check for `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH-BUDGET-CONTROL.3` passed and released exactly one execution handoff.
+
+Current goal: implement the prechecked Task `.3` DeepDive receipt, deletion and retention slice.
+
+Active phase: `janus-preimplementation-check`; `PASS` with execution handoff.
+
+Last Codex work:
+
+- verified the one-task identity, approved Spec, N/A Backlog binding, concrete owners and explicit test/E2E gates
+- bound the canonical execution handoff to the existing Receipt, Ledger, chat-cascade and DeepDive boundaries
+- retained the new task-owned E2E runner as the UI oracle and prohibited TestPlan/TestResult patching
+
+Changed files:
+
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH-BUDGET-CONTROL.3_preimplementation_check.md`
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+
+- local bounded-delegation gate: Codex path selected; no external delegation
+- `validate_precheck.py`: PASS
+- scoped `git diff --check`: PASS
+- no product tests, implementation, Git, release or provider action by precheck contract
+
+Open risks:
+
+- execution must prove the SQLite model-column migration, the receipt/ledger deletion invariant, the redacted payload allowlist and the real DeepDive DOM contract
+- no commit, push or `origin/codex-sync` update occurred; remote state may not contain this snapshot
+
+Next recommended step for ChatGPT: review the eventual execution and test evidence; do not treat a remote as current.
+
+Next recommended step for Codex: on explicit `ok`, execute only Task `.3` via `janus-executioner` with 5.6 Terra/high.
+
+Last updated: `2026-07-24 18:58 +02:00`.
+
+## Current Snapshot Update
+
+As of `2026-07-24 18:51 +02:00`, only `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH-BUDGET-CONTROL.3` was refined against its approved Feature Spec and released to the preimplementation gate.
+
+Current goal: validate the single Task `.3` DeepDive receipt, deletion and retention slice before any implementation.
+
+Active phase: `janus-task-breakdown`; `HANDOFF`.
+
+Last Codex work:
+
+- bound the missing persisted receipt-model owner, an explicit redacted API projection and targeted detail deletion to Task `.3`
+- corrected the missing E2E reference into one explicitly new, task-owned Playwright runner
+- retained Task `.1` cleanup/ledger and Task `.2` development/audit history outside this slice
+
+Changed files:
+
+- `documentation/tasks/TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH-BUDGET-CONTROL.md` (Task `.3` only)
+- `documentation/ai/CURRENT_STATE.md`
+- `documentation/codex/SKILL_USAGE_LOG.md`
+
+Tests / validation performed:
+
+- start-of-work reminder check: CLEAR
+- `validate_task_handoff.py --target TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH-BUDGET-CONTROL.3`: PASS
+- scoped `git diff --check`: PASS
+- no product tests, preimplementation check, implementation or Git action by task-breakdown contract
+
+Open risks:
+
+- strict preimplementation must verify the additive receipt-model migration, receipt/ledger deletion invariant, redacted payload allowlist and task-owned E2E oracle before code changes
+- no commit, push or `origin/codex-sync` update occurred; remote state may not contain this snapshot
+
+Next recommended step for ChatGPT: do not treat a remote as current; review the Task `.3` precheck outcome once it exists.
+
+Next recommended step for Codex: run `janus-preimplementation-check` only for `TASK-PROVIDER-AGNOSTIC-WEB-RESEARCH-BUDGET-CONTROL.3` with 5.6 Terra/high.
+
+Last updated: `2026-07-24 18:51 +02:00`.
+
+## Current Snapshot Update
+
 As of `2026-07-24 21:25 +02:00`, Task `.2` is merged into `master` by merge commit `042f32a11` and backed up on `backup/master`. This committed status snapshot is the source for the final approved `origin/codex-sync` publication.
 
 Current goal: Task `.2` delivery is complete; the approved status checkpoint and `origin/codex-sync` publication finalize its Git visibility.
